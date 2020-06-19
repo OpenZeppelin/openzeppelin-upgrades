@@ -26,10 +26,12 @@ jobs:
     - name: Cache node modules
       uses: actions/cache@v2
       with:
-        path: ${{steps.yarn-cache-dir-path.outputs.dir}}
+        path: |
+          ${{steps.yarn-cache-dir-path.outputs.dir}}
+          ~/.cache/node-gyp-cache
         key: ${{runner.os}}-yarn-${{env.cache-version}}-${{hashFiles('yarn.lock')}}
       env:
-        cache-version: 1
+        cache-version: 2
 
     - name: Install dependencies
       run: yarn --frozen-lockfile
