@@ -1,0 +1,7 @@
+{
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/plugin-buidler" }
+  ],
+  "files": []
+}

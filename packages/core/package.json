@@ -2,17 +2,16 @@
   "name": "@openzeppelin/upgrades-core",
   "version": "0.1.0",
   "description": "",
-  "private": true,
+  "license": "MIT",
+  "main": "dist/index.js",
   "files": [
     "/dist"
   ],
   "scripts": {
-    "prepare": "tsc",
-    "test": "tsc && ava",
-    "test:watch": "fgbg 'ava --watch' 'tsc --watch'"
+    "prepare": "tsc -b",
+    "test": "tsc -b && ava",
+    "test:watch": "fgbg 'ava --watch' 'tsc -b --watch'"
   },
-  "keywords": [],
-  "license": "MIT",
   "devDependencies": {
     "@nomiclabs/buidler": "^1.3.6",
     "@types/mocha": "^7.0.2",
