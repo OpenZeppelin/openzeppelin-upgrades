@@ -7116,10 +7116,10 @@ solc@0.6.8:
     semver "^5.5.0"
     tmp "0.0.33"
 
-solidity-ast@^0.4.1-0:
-  version "0.4.1-0"
-  resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.1-0.tgz#1661b17da267780d05157d0c3c3673c17f2b225e"
-  integrity sha512-9kNPhpUtOJP9pmjimzo7QdXO8LiPGJoQq4o6J1d5e7WBBZTh9i4U/7spkY09JaFbzJS0gO7sXTOFkCMkOvjxTA==
+solidity-ast@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.1.tgz#54915e31e4d6902e8bb65b8ebf520ad8784e8390"
+  integrity sha512-6GkLZacUEQbtlbs7GQmx2zVvi9CtBtEkrvw6Ac/ONLFgnlUz3sHSgolUWHT7Bqet0RWNJhDi9EuWPl5Dkzfl5w==
 
 sort-keys-length@^1.0.0:
   version "1.0.1"
