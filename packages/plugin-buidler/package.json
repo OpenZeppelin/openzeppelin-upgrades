@@ -8,7 +8,8 @@
     "/dist"
   ],
   "scripts": {
-    "prepare": "tsc -b"
+    "prepare": "tsc -b",
+    "test": "tsc -b && yarn --cwd test buidler run test.js"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.3.7",
