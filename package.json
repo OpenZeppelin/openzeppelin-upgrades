@@ -6,6 +6,7 @@
     "node-gyp-cache": "^0.2.1"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/plugin-buidler/test"
   ]
 }
