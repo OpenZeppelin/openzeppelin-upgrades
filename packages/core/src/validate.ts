@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { SourceUnit, ContractDefinition, FunctionDefinition } from 'solidity-ast';
 
+import { getVersionId } from '.';
+
 export type Validation = Record<string, ValidationResult>;
 
 interface ValidationResult {
@@ -98,12 +100,6 @@ function* getStateVariableErrors(contractDef: ContractDefinition): Generator<Val
       }
     }
   }
-}
-
-function getVersionId(bytecode: string) {
-  const hash = crypto.createHash('sha256');
-  hash.update(bytecode);
-  return hash.digest().toString('base64');
 }
 
 interface SolcOutput {

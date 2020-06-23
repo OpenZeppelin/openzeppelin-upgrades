@@ -1,7 +1,7 @@
 import path from 'path';
 import { promises as fs, constants as fsConstants } from 'fs';
 
-import { getVersionId } from '.';
+import { getVersionId } from './version';
 
 interface ImplStore {
   impls: {
