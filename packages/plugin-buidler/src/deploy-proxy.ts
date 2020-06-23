@@ -1,9 +1,8 @@
-import { ethers } from '@nomiclabs/buidler';
-import { BuidlerPluginError } from '@nomiclabs/buidler/plugins';
-import crypto from 'crypto';
+import { ethers, network, config } from '@nomiclabs/buidler';
+import { readArtifact, BuidlerPluginError } from '@nomiclabs/buidler/plugins';
 import fs from 'fs';
 
-import { isUpgradeSafe, getErrors } from '@openzeppelin/upgrades-core';
+import { isUpgradeSafe, getErrors, fetchOrDeploy, getVersionId } from '@openzeppelin/upgrades-core';
 
 export async function deployProxy(contractName: string, args: unknown[]) {
   const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
@@ -16,23 +15,19 @@ export async function deployProxy(contractName: string, args: unknown[]) {
   }
 
   const ImplFactory = await ethers.getContractFactory(contractName);
-  // const version = getVersionId(ImplFactory.bytecode.slice(2));
 
-  // TODO: reuse deployed impls
-  const impl = await ImplFactory.deploy();
+  const artifact = await readArtifact(config.paths.artifacts, contractName);
+  const version = getVersionId(artifact.deployedBytecode);
+  const impl = await fetchOrDeploy(version, network.provider, async () =>
+    (await ImplFactory.deploy()).address
+  );
 
   // TODO: support choice of initializer function? support overloaded initialize function
-  const data = impl.interface.functions.initialize.encode(args);
+  const data = ImplFactory.interface.functions.initialize.encode(args);
   const ProxyFactory = await ethers.getContractFactory('UpgradeabilityProxy');
-  const proxy = await ProxyFactory.deploy(impl.address, data);
+  const proxy = await ProxyFactory.deploy(impl, data);
 
-  const inst = impl.attach(proxy.address);
+  const inst = ImplFactory.attach(proxy.address);
   // inst.deployTransaction = proxy.deployTransaction;
   return inst;
-}
-
-function getVersionId(bytecode: string) {
-  const hash = crypto.createHash('sha256');
-  hash.update(bytecode);
-  return hash.digest().toString('base64');
 }
