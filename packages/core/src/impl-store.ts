@@ -2,12 +2,7 @@ import path from 'path';
 import { promises as fs, constants as fsConstants } from 'fs';
 
 import { getVersionId } from './version';
-
-interface ImplStore {
-  impls: {
-    [version in string]?: string;
-  };
-}
+import { Manifest } from './manifest';
 
 interface EthereumProvider {
   send(method: 'eth_chainId', params?: []): Promise<string>;
@@ -20,8 +15,9 @@ export async function fetchOrDeploy(
   provider: EthereumProvider,
   deploy: () => Promise<string>,
 ): Promise<string> {
-  const chainId = await getChainId(provider);
-  const fetched = await fetchDeployed(chainId, version);
+  const manifest = new Manifest(await getChainId(provider));
+
+  const fetched = await manifest.getDeployment(version);
 
   if (fetched) {
     const code = await provider.send('eth_getCode', [fetched]);
@@ -32,32 +28,8 @@ export async function fetchOrDeploy(
   }
 
   const deployed = await deploy();
-  await storeDeployed(chainId, version, deployed);
+  await manifest.storeDeployment(version, deployed);
   return deployed;
-}
-
-async function fetchDeployed(chainId: string, version: string): Promise<string | undefined> {
-  const storeFile = path.join('.openzeppelin', `${chainId}.json`);
-  try {
-    await fs.access(storeFile, fsConstants.R_OK);
-  } catch (e) {
-    return undefined;
-  }
-  const store = JSON.parse(await fs.readFile(storeFile, 'utf8')) as ImplStore;
-  return store.impls[version];
-}
-
-async function storeDeployed(chainId: string, version: string, address: string): Promise<void> {
-  const storeFile = path.join('.openzeppelin', `${chainId}.json`);
-  await fs.mkdir('.openzeppelin', { recursive: true });
-  let store: ImplStore = { impls: {} };
-  try {
-    await fs.access(storeFile, fsConstants.R_OK | fsConstants.W_OK);
-    store = JSON.parse(await fs.readFile(storeFile, 'utf8')) as ImplStore;
-  } catch (e) {
-  }
-  store.impls[version] = address;
-  await fs.writeFile(storeFile, JSON.stringify(store, null, 2));
 }
 
 async function getChainId(provider: EthereumProvider): Promise<string> {
