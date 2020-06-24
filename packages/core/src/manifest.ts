@@ -32,11 +32,14 @@ export class Manifest {
 
   private async read(): Promise<ManifestData> {
     try {
-      await fs.access(this.file, fsConstants.R_OK);
+      return JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
     } catch (e) {
-      return defaultManifest();
+      if (e.code === 'ENOENT') {
+        return defaultManifest();
+      } else {
+        throw e;
+      }
     }
-    return JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
   }
 
   private async update(updater: (data: ManifestData) => void) {
