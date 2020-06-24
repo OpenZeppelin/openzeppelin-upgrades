@@ -7,9 +7,11 @@ interface ManifestData {
   };
 }
 
-const defaultManifest = {
-  impls: {},
-};
+function defaultManifest() {
+  return {
+    impls: {},
+  };
+}
 
 const manifestDir = '.openzeppelin';
 
@@ -32,7 +34,7 @@ export class Manifest {
     try {
       await fs.access(this.file, fsConstants.R_OK);
     } catch (e) {
-      return defaultManifest;
+      return defaultManifest();
     }
     return JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
   }
