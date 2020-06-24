@@ -11,7 +11,6 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  await bre.run('compile');
   const solcOutput = JSON.parse(fs.readFileSync('cache/solc-output.json', 'utf8'));
   t.context.validation = validate(solcOutput);
 });
