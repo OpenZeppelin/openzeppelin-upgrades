@@ -44,7 +44,8 @@ contract HasSelfDestruct {
 
 contract HasDelegateCall {
   function d() public {
-    msg.sender.delegatecall("");
+    (bool s, ) = msg.sender.delegatecall("");
+    s;
   }
 }
 
