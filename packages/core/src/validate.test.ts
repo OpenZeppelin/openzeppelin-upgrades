@@ -1,6 +1,5 @@
-import bre from '@nomiclabs/buidler';
 import _test, { TestInterface } from 'ava';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 
 import { validate, isUpgradeSafe, Validation } from './validate';
 
@@ -11,7 +10,7 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const solcOutput = JSON.parse(fs.readFileSync('cache/solc-output.json', 'utf8'));
+  const solcOutput = JSON.parse(await fs.readFile('cache/solc-output.json', 'utf8'));
   t.context.validation = validate(solcOutput);
 });
 
