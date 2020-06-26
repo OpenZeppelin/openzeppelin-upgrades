@@ -1,7 +1,8 @@
 import fs from 'fs';
 import crypto from 'crypto';
 import { isNodeType, findAll } from 'solidity-ast/utils';
-import type { SourceUnit, ContractDefinition, FunctionDefinition } from 'solidity-ast';
+import type { ContractDefinition } from 'solidity-ast';
+import { SolcOutput } from './solc-output';
 
 import { getVersionId } from '.';
 
@@ -100,23 +101,4 @@ function* getStateVariableErrors(contractDef: ContractDefinition): Generator<Val
       }
     }
   }
-}
-
-interface SolcOutput {
-  contracts: {
-    [file in string]: {
-      [contract in string]: {
-        evm: {
-          deployedBytecode: {
-            object: string;
-          };
-        };
-      };
-    };
-  };
-  sources: {
-    [file in string]: {
-      ast: SourceUnit;
-    };
-  };
 }
