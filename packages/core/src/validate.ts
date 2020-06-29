@@ -4,7 +4,8 @@ import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
 import { SolcOutput } from './solc-output';
 
-import { getVersionId } from '.';
+import { getVersionId } from './version';
+import { extractStorageLayout, StorageLayout } from './storage';
 
 export type Validation = Record<string, ValidationResult>;
 
@@ -12,6 +13,7 @@ interface ValidationResult {
   version?: string;
   inherit: string[];
   errors: ValidationError[];
+  layout: StorageLayout;
 }
 
 interface ValidationError {
@@ -33,7 +35,15 @@ export function validate(solcOutput: SolcOutput): Validation {
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.deployedBytecode.object;
       const version = bytecode === '' ? undefined : getVersionId(bytecode);
-      validation[contractName] = { version, inherit: [], errors: [] };
+      validation[contractName] = {
+        version,
+        inherit: [],
+        errors: [],
+        layout: {
+          storage: [],
+          types: {},
+        },
+      };
     }
 
     for (const contractDef of findAll('ContractDefinition', solcOutput.sources[source].ast)) {
@@ -47,6 +57,8 @@ export function validate(solcOutput: SolcOutput): Validation {
           ...getDelegateCallErrors(contractDef),
           ...getStateVariableErrors(contractDef),
         ];
+
+        validation[contractDef.name].layout = extractStorageLayout(contractDef);
       }
     }
   }
@@ -56,6 +68,19 @@ export function validate(solcOutput: SolcOutput): Validation {
   }
 
   return validation;
+}
+
+export function getStorageLayout(validation: Validation, contractName: string): StorageLayout {
+  const c = validation[contractName];
+  if (c === undefined) {
+    throw new Error(`Contract ${contractName} not found`);
+  }
+  const layout: StorageLayout = { storage: [], types: {} };
+  for (const name of [contractName].concat(c.inherit)) {
+    layout.storage.unshift(...validation[name].layout.storage);
+    Object.assign(layout.types, validation[name].layout.types);
+  }
+  return layout;
 }
 
 export function getErrors(validation: Validation, contractName: string) {

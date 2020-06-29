@@ -79,3 +79,23 @@ contract Storage2 {
   MyComplexStruct internal my_complex_struct;
   MyStruct internal my_other_struct;
 }
+
+contract StorageInheritGrandParent {
+  uint256 v0;
+  uint256 v1;
+}
+
+contract StorageInheritParent1 is StorageInheritGrandParent {
+  uint256 v2;
+  uint256 v3;
+}
+
+contract StorageInheritParent2 is StorageInheritGrandParent {
+  uint256 v4;
+  uint256 v5;
+}
+
+contract StorageInheritChild is StorageInheritParent1, StorageInheritParent2 {
+  uint256 v6;
+  uint256 v7;
+}

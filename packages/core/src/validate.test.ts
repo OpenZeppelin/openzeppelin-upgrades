@@ -1,7 +1,7 @@
 import _test, { TestInterface } from 'ava';
 import { promises as fs } from 'fs';
 
-import { validate, isUpgradeSafe, Validation } from './validate';
+import { validate, isUpgradeSafe, getStorageLayout, Validation } from './validate';
 
 interface Context {
   validation: Validation;
@@ -32,3 +32,12 @@ testValid('HasImmutableStateVariable', false);
 testValid('HasSelfDestruct', false);
 testValid('HasDelegateCall', false);
 testValid('ImportedParentHasStateVariableAssignment', false);
+
+test('inherited storage', t => {
+  const layout = getStorageLayout(t.context.validation, 'StorageInheritChild');
+  t.is(layout.storage.length, 8);
+  for (let i = 0; i < layout.storage.length; i++) {
+    t.is(layout.storage[i].label, `v${i}`);
+    t.truthy(layout.types[layout.storage[i].type]);
+  }
+});
