@@ -8,6 +8,7 @@ import os from 'os';
 import crypto from 'crypto';
 import { EthereumProvider } from '@nomiclabs/buidler/types';
 
+import { Deployment } from './manifest';
 import { fetchOrDeploy } from './impl-store';
 
 const rimraf = util.promisify(rimrafAsync);
@@ -50,10 +51,16 @@ function stubProvider() {
     get deployCount() {
       return addresses.size;
     },
-    async deploy(): Promise<string> {
+    async deploy(): Promise<Deployment> {
       const address = '0x' + crypto.randomBytes(20).toString('hex');
       addresses.add(address);
-      return address;
+      return {
+        address,
+        layout: {
+          storage: [],
+          types: {},
+        },
+      };
     },
     async send(method: string, params?: unknown[]) {
       if (method === 'eth_chainId') {

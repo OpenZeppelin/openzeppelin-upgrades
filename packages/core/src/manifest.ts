@@ -1,10 +1,17 @@
 import path from 'path';
 import { promises as fs, constants as fsConstants } from 'fs';
 
+import { StorageLayout } from './storage';
+
 interface ManifestData {
   impls: {
-    [version in string]?: string;
+    [version in string]?: Deployment;
   };
+}
+
+export interface Deployment {
+  address: string;
+  layout: StorageLayout;
 }
 
 function defaultManifest() {
@@ -22,12 +29,12 @@ export class Manifest {
     this.file = path.join(manifestDir, `${chainId}.json`);
   }
 
-  async getDeployment(version: string): Promise<string | undefined> {
+  async getDeployment(version: string): Promise<Deployment | undefined> {
     return (await this.read()).impls[version];
   }
 
-  async storeDeployment(version: string, address: string) {
-    await this.update(data => data.impls[version] = address);
+  async storeDeployment(version: string, deployment: Deployment) {
+    await this.update(data => data.impls[version] = deployment);
   }
 
   private async read(): Promise<ManifestData> {

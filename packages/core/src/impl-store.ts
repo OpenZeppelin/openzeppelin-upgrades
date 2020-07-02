@@ -2,7 +2,7 @@ import path from 'path';
 import { promises as fs, constants as fsConstants } from 'fs';
 
 import { getVersionId } from './version';
-import { Manifest } from './manifest';
+import { Manifest, Deployment } from './manifest';
 
 interface EthereumProvider {
   send(method: 'eth_chainId', params?: []): Promise<string>;
@@ -13,23 +13,24 @@ interface EthereumProvider {
 export async function fetchOrDeploy(
   version: string,
   provider: EthereumProvider,
-  deploy: () => Promise<string>,
+  deploy: () => Promise<Deployment>,
 ): Promise<string> {
   const manifest = new Manifest(await getChainId(provider));
 
   const fetched = await manifest.getDeployment(version);
 
   if (fetched) {
-    const code = await provider.send('eth_getCode', [fetched]);
+    const { address } = fetched;
+    const code = await provider.send('eth_getCode', [address]);
     // TODO: fail if code is missing in non-dev chains?
     if (code !== '0x') {
-      return fetched;
+      return address;
     }
   }
 
   const deployed = await deploy();
   await manifest.storeDeployment(version, deployed);
-  return deployed;
+  return deployed.address;
 }
 
 async function getChainId(provider: EthereumProvider): Promise<string> {
