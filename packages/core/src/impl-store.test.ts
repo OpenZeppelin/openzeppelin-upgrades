@@ -1,7 +1,7 @@
 import test from 'ava';
 
 import { promises as fs } from 'fs';
-import rimraf from 'rimraf';
+import rimrafAsync from 'rimraf';
 import util from 'util';
 import path from 'path';
 import os from 'os';
@@ -10,12 +10,14 @@ import { EthereumProvider } from '@nomiclabs/buidler/types';
 
 import { fetchOrDeploy } from './impl-store';
 
+const rimraf = util.promisify(rimrafAsync);
+
 test.before(async t => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test')));
 });
 
 test.after(async t => {
-  await util.promisify(rimraf)(process.cwd());
+  await rimraf(process.cwd());
 });
 
 test('deploys on cache miss', async t => {
