@@ -46,6 +46,6 @@ export class Manifest {
     const data = await this.read();
     updater(data);
     await fs.mkdir(manifestDir, { recursive: true });
-    await fs.writeFile(this.file, JSON.stringify(data, null, 2));
+    await fs.writeFile(this.file, JSON.stringify(data, null, 2) + '\n');
   }
 }
