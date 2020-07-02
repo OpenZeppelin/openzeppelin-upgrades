@@ -56,7 +56,7 @@ contract Storage2 {
     uint256 struct_uint256;
     string struct_string;
     address struct_address;
-  }  
+  }
 
   MyStruct internal my_struct;
   MyStruct[] private my_struct_dynarray;
@@ -64,7 +64,7 @@ contract Storage2 {
   mapping(uint256 => MyStruct) private my_struct_mapping;
 
   enum MyEnum { State1, State2 }
- 
+
   MyEnum public my_enum;
   MyEnum[] internal my_enum_dynarray;
   MyEnum[10] internal my_enum_staticarray;
