@@ -13,7 +13,7 @@ import { fetchOrDeploy } from './impl-store';
 const rimraf = util.promisify(rimrafAsync);
 
 test.before(async t => {
-  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test')));
+  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
 });
 
 test.after(async t => {
