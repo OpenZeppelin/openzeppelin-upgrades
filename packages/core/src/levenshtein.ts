@@ -45,15 +45,10 @@ function buildMatrix<T>(a: T[], b: T[], eq: Equal<T>): number[][] {
 
 type Match<T, A> = (a: T, b: T) => A | 'equal';
 
-interface WithIndex<T> {
-  index: number;
-  element: T;
-}
-
-interface Operation<T, A> {
+export interface Operation<T, A> {
   action: A | 'append' | 'insert' | 'pop' | 'delete';
-  original?: WithIndex<T>;
-  updated?: WithIndex<T>;
+  original?: T;
+  updated?: T;
 }
 
 // Walks an edit distance matrix, returning the sequence of operations performed
@@ -77,8 +72,8 @@ function walkMatrix<T, A>(
     const matchResult = i > 0 && j > 0 ? match(a[i - 1], b[j - 1]) : undefined;
     const substitutionCost = matchResult === 'equal' ? 0 : SUBSTITUTION_COST;
 
-    const original = i > 0 ? { index: i - 1, element: a[i - 1] } : undefined;
-    const updated = j > 0 ? { index: j - 1, element: b[j - 1] } : undefined;
+    const original = i > 0 ? a[i - 1] : undefined;
+    const updated = j > 0 ? b[j - 1] : undefined;
 
     if (i > 0 && j > 0 && cost === matrix[i - 1][j - 1] + substitutionCost) {
       if (matchResult !== 'equal') {
