@@ -4,7 +4,6 @@ import "@nomiclabs/buidler/console.sol";
 
 contract GreeterV2 {
 
-    uint inserted;
     string greeting;
 
     function initialize(string memory _greeting) public {

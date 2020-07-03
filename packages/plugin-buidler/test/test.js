@@ -6,6 +6,8 @@ async function main() {
 
   console.log('Attempting upgrade to GreeterV2');
   const greeter2 = await upgradeProxy(greeter.address, 'GreeterV2');
+
+  await greeter2.resetGreeting();
 }
 
 // We recommend this pattern to be able to use async/await everywhere
