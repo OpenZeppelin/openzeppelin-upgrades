@@ -3,6 +3,8 @@ import { SolcOutput } from './solc-output';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import { ContractDefinition, VariableDeclaration } from 'solidity-ast';
 
+import { levenshtein } from './levenshtein';
+
 export interface StorageItem {
   contract: string;
   label: string;
@@ -41,6 +43,28 @@ export function extractStorageLayout(contractDef: ContractDefinition): StorageLa
   }
 
   return layout;
+}
+
+export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout) {
+  function matchStorageItem(o: StorageItem, u: StorageItem) {
+    const nameMatches = o.label === u.label;
+
+    // TODO: type matching should compare struct members, etc.
+    const typeMatches = original.types[o.type].label === updated.types[u.type].label;
+
+    if (typeMatches && nameMatches) {
+      return 'equal';
+    } else if (typeMatches) {
+      return 'typechange';
+    } else if (nameMatches) {
+      return 'rename';
+    } else {
+      return 'replace';
+    }
+  }
+
+  const ops = levenshtein(original.storage, updated.storage, matchStorageItem);
+  return ops.filter(o => o.action !== 'append');
 }
 
 // Type Identifiers contain AST id numbers, which makes them sensitive to

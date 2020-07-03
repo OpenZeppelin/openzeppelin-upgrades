@@ -4,7 +4,7 @@ import { ContractDefinition } from 'solidity-ast';
 import { findAll } from 'solidity-ast/utils';
 
 import { SolcOutput } from './solc-output';
-import { extractStorageLayout } from './storage';
+import { extractStorageLayout, getStorageUpgradeErrors } from './storage';
 
 interface Context {
   contracts: Record<string, ContractDefinition>;
@@ -32,4 +32,32 @@ test('Storage2', t => {
   const def = t.context.contracts[contract];
   const layout = extractStorageLayout(def);
   t.snapshot(layout);
+});
+
+test('storage upgrade equal', t => {
+  const v1 = extractStorageLayout(t.context.contracts['StorageUpgrade_Equal_V1']);
+  const v2 = extractStorageLayout(t.context.contracts['StorageUpgrade_Equal_V2']);
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, []);
+});
+
+test('storage upgrade append', t => {
+  const v1 = extractStorageLayout(t.context.contracts['StorageUpgrade_Append_V1']);
+  const v2 = extractStorageLayout(t.context.contracts['StorageUpgrade_Append_V2']);
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, []);
+});
+
+test('storage upgrade delete', t => {
+  const v1 = extractStorageLayout(t.context.contracts['StorageUpgrade_Delete_V1']);
+  const v2 = extractStorageLayout(t.context.contracts['StorageUpgrade_Delete_V2']);
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, [{
+    action: 'delete',
+    original: {
+      contract: 'StorageUpgrade_Delete_V1',
+      label: 'x1',
+      type: 't_uint256',
+    },
+  }]);
 });
