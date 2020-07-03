@@ -5,7 +5,7 @@ import { StorageLayout } from './storage';
 
 interface ManifestData {
   impls: {
-    [version in string]?: Deployment;
+    [version in string]: Deployment;
   };
 }
 
@@ -35,6 +35,15 @@ export class Manifest {
 
   async storeDeployment(version: string, deployment: Deployment) {
     await this.update(data => data.impls[version] = deployment);
+  }
+
+  async getDeploymentFromAddress(address: string): Promise<Deployment> {
+    const data = await this.read();
+    const deployment = Object.values(data.impls).find(d => d.address === address);
+    if (deployment === undefined) {
+      throw new Error(`Deployment at address ${address} is not registered`);
+    }
+    return deployment;
   }
 
   private async read(): Promise<ManifestData> {

@@ -137,3 +137,15 @@ contract UpgradeabilityProxy is Proxy {
     }
   }
 }
+
+contract Proxy2 is UpgradeabilityProxy {
+    constructor(address _logic, bytes memory _data) UpgradeabilityProxy(_logic, _data) public payable {}
+
+    function implementation() external view returns (address) {
+        return _implementation();
+    }
+
+    function upgradeTo(address newImplementation) external {
+        _upgradeTo(newImplementation);
+    }
+}
