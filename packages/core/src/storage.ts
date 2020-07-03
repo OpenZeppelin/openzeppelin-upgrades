@@ -23,7 +23,7 @@ export function extractStorageLayout(contractDef: ContractDefinition): StorageLa
 
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
-      if (varDecl.mutability === 'mutable') {
+      if (!varDecl.constant && varDecl.mutability !== 'immutable') {
         const { typeIdentifier, typeString } = varDecl.typeDescriptions;
         assert(typeof typeIdentifier === 'string');
         assert(typeof typeString === 'string');
