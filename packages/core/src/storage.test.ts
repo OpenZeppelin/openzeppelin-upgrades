@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import { ContractDefinition } from 'solidity-ast';
 import { findAll } from 'solidity-ast/utils';
 
-import { SolcOutput } from './solc-output';
+import { SolcOutput } from './solc-api';
 import { extractStorageLayout, getStorageUpgradeErrors } from './storage';
 
 interface Context {

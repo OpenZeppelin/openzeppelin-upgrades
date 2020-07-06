@@ -2,7 +2,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
-import { SolcOutput } from './solc-output';
+import { SolcOutput } from './solc-api';
 
 import { getVersionId } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';

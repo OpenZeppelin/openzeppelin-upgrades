@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { SolcOutput } from './solc-output';
+import { SolcOutput } from './solc-api';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import { ContractDefinition, VariableDeclaration } from 'solidity-ast';
 
