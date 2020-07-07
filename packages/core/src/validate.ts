@@ -90,7 +90,7 @@ export function validate(solcOutput: SolcOutput, solcInput?: SolcInput): Validat
           ...getStateVariableErrors(contractDef, decodeSrc),
         ];
 
-        validation[contractDef.name].layout = extractStorageLayout(contractDef);
+        validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc);
       }
     }
   }

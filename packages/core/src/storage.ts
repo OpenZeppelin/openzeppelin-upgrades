@@ -1,14 +1,17 @@
 import assert from 'assert';
+import chalk from 'chalk';
 import { SolcOutput } from './solc-api';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import { ContractDefinition, VariableDeclaration } from 'solidity-ast';
 
 import { levenshtein } from './levenshtein';
+import { UpgradesError } from './error';
 
 export interface StorageItem {
   contract: string;
   label: string;
   type: string;
+  src: string;
 }
 
 export interface TypeItem {
@@ -20,7 +23,9 @@ export interface StorageLayout {
   types: Record<string, TypeItem>;
 }
 
-export function extractStorageLayout(contractDef: ContractDefinition): StorageLayout {
+type SrcDecoder = (node: { src: string }) => string;
+
+export function extractStorageLayout(contractDef: ContractDefinition, decodeSrc: SrcDecoder): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {} };
 
   for (const varDecl of contractDef.nodes) {
@@ -34,6 +39,7 @@ export function extractStorageLayout(contractDef: ContractDefinition): StorageLa
           contract: contractDef.name,
           label: varDecl.name,
           type,
+          src: decodeSrc(varDecl),
         });
         layout.types[type] = {
           label: typeString,
@@ -43,6 +49,26 @@ export function extractStorageLayout(contractDef: ContractDefinition): StorageLa
   }
 
   return layout;
+}
+
+export function assertStorageUpgradeSafe(original: StorageLayout, updated: StorageLayout) {
+  const errors = getStorageUpgradeErrors(original, updated);
+
+  if (errors.length > 0) {
+    throw new StorageUpgradeErrors(errors);
+  }
+}
+
+class StorageUpgradeErrors extends UpgradesError {
+  constructor(readonly errors: ReturnType<typeof getStorageUpgradeErrors>) {
+    super(`New storage layout is incompatible`);
+  }
+
+  details() {
+    return this.errors.map(e => {
+      return chalk.bold(e.updated?.src ?? 'unknown') + ': ' + e.action + ' of variable ' + e.updated?.label;
+    }).join('\n\n');
+  }
 }
 
 export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout) {
