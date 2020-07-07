@@ -7,7 +7,7 @@ export default function () {
   internalTask(TASK_COMPILE_RUN_COMPILER, async (args, bre, runSuper) => {
     // TODO: patch input
     const output = await runSuper();
-    const validations = validate(output);
+    const validations = validate(output, (args as any).input);
     await fs.mkdir('cache', { recursive: true });
     await fs.writeFile('cache/validations.json', JSON.stringify(validations, null, 2));
     return output;

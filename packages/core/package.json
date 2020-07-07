@@ -23,6 +23,7 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "chalk": "^4.1.0",
     "solidity-ast": "^0.4.1"
   }
 }

@@ -10,8 +10,9 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
+  const solcInput = JSON.parse(await fs.readFile('cache/solc-input.json', 'utf8'));
   const solcOutput = JSON.parse(await fs.readFile('cache/solc-output.json', 'utf8'));
-  t.context.validation = validate(solcOutput);
+  t.context.validation = validate(solcOutput, solcInput);
 });
 
 function testValid(name: string, valid: boolean) {

@@ -18,3 +18,11 @@ export interface SolcOutput {
     };
   };
 }
+
+export interface SolcInput {
+  sources: {
+    [source in string]: {
+      content?: string;
+    };
+  };
+}

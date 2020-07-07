@@ -2,18 +2,13 @@ import { ethers, network, config } from '@nomiclabs/buidler';
 import { readArtifact, BuidlerPluginError } from '@nomiclabs/buidler/plugins';
 import fs from 'fs';
 
-import { isUpgradeSafe, getErrors, getStorageLayout, fetchOrDeploy, getVersionId, Manifest } from '@openzeppelin/upgrades-core';
+import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId, Manifest } from '@openzeppelin/upgrades-core';
 import { getStorageUpgradeErrors } from '@openzeppelin/upgrades-core';
 
 export async function upgradeProxy(proxyAddress: string, contractName: string) {
   const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
-  if (!isUpgradeSafe(validations, contractName)) {
-    for (const error of getErrors(validations, contractName)) {
-      console.log(`There is a ${error.kind} in the contract`);
-    }
-    throw new BuidlerPluginError('This contract is not upgrade safe');
-  }
+  assertUpgradeSafe(validations, contractName);
 
   const ProxyFactory = await ethers.getContractFactory('Proxy2');
   const proxy = ProxyFactory.attach(proxyAddress);
