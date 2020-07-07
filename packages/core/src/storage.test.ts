@@ -15,7 +15,7 @@ const test = _test as TestInterface<Context>;
 test.before(async t => {
   const solcOutput: SolcOutput = JSON.parse(await fs.readFile('cache/solc-output.json', 'utf8'));
   t.context.contracts = {};
-  for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/Storage.sol'].ast)) {
+  for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/Storage.sol'].ast)) {
     t.context.contracts[def.name] = def;
   }
 });
