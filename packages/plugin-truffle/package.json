@@ -1,0 +1,19 @@
+{
+  "name": "@openzeppelin/upgrades-truffle",
+  "version": "0.1.0",
+  "description": "",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "prepare": "tsc -b",
+    "test": "tsc -b && yarn --cwd test buidler run test.js"
+  },
+  "devDependencies": {
+  },
+  "dependencies": {
+    "@openzeppelin/upgrades-core": "^0.1.0"
+  }
+}

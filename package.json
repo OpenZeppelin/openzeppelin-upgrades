@@ -7,6 +7,7 @@
   },
   "workspaces": [
     "packages/*",
-    "packages/plugin-buidler/test"
+    "packages/plugin-buidler/test",
+    "packages/plugin-truffle/test"
   ]
 }

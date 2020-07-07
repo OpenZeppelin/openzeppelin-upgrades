@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "files": [
+    "../../node_modules/@nomiclabs/buidler-ethers/src/type-extensions.d.ts"
+  ],
+  "include": [
+    "src/**/*"
+  ],
+  "references": [
+    { "path": "../core" }
+  ]
+}
