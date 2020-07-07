@@ -4,10 +4,10 @@ import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
 import { SolcOutput, SolcInput } from './solc-api';
 import chalk from 'chalk';
-import util from 'util';
 
 import { getVersionId } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
+import { UpgradesError } from './error';
 
 export type Validation = Record<string, ValidationResult>;
 
@@ -123,13 +123,13 @@ export function assertUpgradeSafe(validation: Validation, contractName: string) 
   }
 }
 
-class ValidationErrors extends Error {
+class ValidationErrors extends UpgradesError {
   constructor(contractName: string, readonly errors: ValidationError[]) {
     super(`Contract \`${contractName}\` is not upgrade safe`);
   }
 
-  [util.inspect.custom]() {
-    return chalk.red.bold('Error:') + ' ' + this.message + '\n\n' + this.errors.map(describeError).join('\n\n');
+  details() {
+    return this.errors.map(describeError).join('\n\n');
   }
 }
 
