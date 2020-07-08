@@ -20,7 +20,7 @@ export async function deployProxy(contractName: string, args: unknown[]) {
   });
 
   // TODO: support choice of initializer function? support overloaded initialize function
-  const data = ImplFactory.interface.functions.initialize.encode(args);
+  const data = ImplFactory.interface.encodeFunctionData('initialize', args);
   const ProxyFactory = await ethers.getContractFactory('Proxy2');
   const proxy = await ProxyFactory.deploy(impl, data);
 
