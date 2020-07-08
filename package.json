@@ -1,6 +1,10 @@
 {
+  "name": "openzeppelin-upgrades",
   "private": true,
   "license": "MIT",
+  "scripts": {
+    "prepare": "lerna run prepare"
+  },
   "devDependencies": {
     "lerna": "^3.22.1",
     "node-gyp-cache": "^0.2.1"
