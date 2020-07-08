@@ -4,6 +4,8 @@ import fs from 'fs';
 
 import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId } from '@openzeppelin/upgrades-core';
 
+import { getProxyFactory } from './proxy-factory';
+
 export async function deployProxy(contractName: string, args: unknown[]) {
   const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
@@ -21,8 +23,8 @@ export async function deployProxy(contractName: string, args: unknown[]) {
 
   // TODO: support choice of initializer function? support overloaded initialize function
   const data = ImplFactory.interface.encodeFunctionData('initialize', args);
-  const ProxyFactory = await ethers.getContractFactory('Proxy2');
-  const proxy = await ProxyFactory.deploy(impl, data);
+  const ProxyFactory = await getProxyFactory();
+  const proxy = await ProxyFactory.deploy(impl, await ImplFactory.signer.getAddress(), data);
 
   const inst = ImplFactory.attach(proxy.address);
   // inst.deployTransaction = proxy.deployTransaction;
