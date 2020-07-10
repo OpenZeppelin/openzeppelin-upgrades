@@ -3,3 +3,4 @@ export * from './impl-store';
 export * from './version';
 export * from './manifest';
 export * from './storage';
+export * from './src-decoder';

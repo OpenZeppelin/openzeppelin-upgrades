@@ -4,6 +4,7 @@ import { SolcOutput } from './solc-api';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import { ContractDefinition, VariableDeclaration } from 'solidity-ast';
 
+import { SrcDecoder } from './src-decoder';
 import { levenshtein } from './levenshtein';
 import { UpgradesError } from './error';
 
@@ -22,8 +23,6 @@ export interface StorageLayout {
   storage: StorageItem[];
   types: Record<string, TypeItem>;
 }
-
-type SrcDecoder = (node: { src: string }) => string;
 
 export function extractStorageLayout(contractDef: ContractDefinition, decodeSrc: SrcDecoder): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {} };

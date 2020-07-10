@@ -2,6 +2,7 @@ import _test, { TestInterface } from 'ava';
 import { promises as fs } from 'fs';
 
 import { validate, isUpgradeSafe, getStorageLayout, Validation } from './validate';
+import { solcInputOutputDecoder } from './src-decoder';
 
 interface Context {
   validation: Validation;
@@ -12,7 +13,8 @@ const test = _test as TestInterface<Context>;
 test.before(async t => {
   const solcInput = JSON.parse(await fs.readFile('cache/solc-input.json', 'utf8'));
   const solcOutput = JSON.parse(await fs.readFile('cache/solc-output.json', 'utf8'));
-  t.context.validation = validate(solcOutput, solcInput);
+  const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
+  t.context.validation = validate(solcOutput, decodeSrc);
 });
 
 function testValid(name: string, valid: boolean) {

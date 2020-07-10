@@ -2,12 +2,13 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
-import { SolcOutput, SolcInput } from './solc-api';
 import chalk from 'chalk';
 
+import { SolcOutput, SolcInput } from './solc-api';
 import { getVersionId } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
 import { UpgradesError } from './error';
+import { SrcDecoder } from './src-decoder';
 
 export type Validation = Record<string, ValidationResult>;
 
@@ -46,9 +47,7 @@ interface ValidationErrorSelfdestruct extends ValidationErrorBase {
   kind: 'selfdestruct';
 }
 
-type SrcDecoder = (node: { src: string }) => string;
-
-export function validate(solcOutput: SolcOutput, solcInput?: SolcInput): Validation {
+export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validation {
   const validation: Validation = {};
   const fromId: Record<number, string> = {};
   const inheritIds: Record<string, number[]> = {}
@@ -67,16 +66,6 @@ export function validate(solcOutput: SolcOutput, solcInput?: SolcInput): Validat
         },
       };
     }
-
-    const content = solcInput?.sources[source].content;
-    if (content === undefined) {
-      throw new Error(`Source for file ${source} not found`);
-    }
-    const decodeSrc: SrcDecoder = ({src}) => {
-      const begin = Number(src.split(':', 1)[0]);
-      const line = content.substr(0, begin).split('\n').length;
-      return source + ':' + line;
-    };
 
     for (const contractDef of findAll('ContractDefinition', solcOutput.sources[source].ast)) {
       fromId[contractDef.id] = contractDef.name;
