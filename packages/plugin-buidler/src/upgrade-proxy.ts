@@ -24,7 +24,7 @@ export async function upgradeProxy(proxyAddress: string, contractName: string) {
   assertStorageUpgradeSafe(deployment.layout, getStorageLayout(validations, contractName));
 
   const artifact = await readArtifact(config.paths.artifacts, contractName);
-  const version = getVersionId(artifact.deployedBytecode);
+  const version = getVersionId(artifact.bytecode);
   const nextImpl = await fetchOrDeploy(version, network.provider, async () => {
     const { address } = await ImplFactory.deploy();
     const layout = getStorageLayout(validations, contractName);

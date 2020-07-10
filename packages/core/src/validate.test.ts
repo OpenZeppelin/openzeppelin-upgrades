@@ -17,6 +17,7 @@ test.before(async t => {
 
 function testValid(name: string, valid: boolean) {
   test(name, t => {
+    t.snapshot(t.context.validation[name].version);
     t.is(isUpgradeSafe(t.context.validation, name), valid);
   });
 }

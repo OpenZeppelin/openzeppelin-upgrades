@@ -5,7 +5,7 @@ export interface SolcOutput {
     [file in string]: {
       [contract in string]: {
         evm: {
-          deployedBytecode: {
+          bytecode: {
             object: string;
           };
         };

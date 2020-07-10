@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
-export function getVersionId(deployedBytecode: string) {
+export function getVersionId(bytecode: string) {
   const hash = crypto.createHash('sha256');
-  hash.update(deployedBytecode.replace(/^0x/, ''));
+  hash.update(bytecode.replace(/^0x/, ''));
   return hash.digest().toString('base64');
 }

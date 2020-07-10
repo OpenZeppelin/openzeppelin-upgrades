@@ -14,7 +14,7 @@ export async function deployProxy(contractName: string, args: unknown[]) {
   const ImplFactory = await ethers.getContractFactory(contractName);
 
   const artifact = await readArtifact(config.paths.artifacts, contractName);
-  const version = getVersionId(artifact.deployedBytecode);
+  const version = getVersionId(artifact.bytecode);
   const impl = await fetchOrDeploy(version, network.provider, async () => {
     const { address } = await ImplFactory.deploy();
     const layout = getStorageLayout(validations, contractName);

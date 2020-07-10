@@ -55,7 +55,7 @@ export function validate(solcOutput: SolcOutput, solcInput?: SolcInput): Validat
 
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
-      const bytecode = solcOutput.contracts[source][contractName].evm.deployedBytecode.object;
+      const bytecode = solcOutput.contracts[source][contractName].evm.bytecode.object;
       const version = bytecode === '' ? undefined : getVersionId(bytecode);
       validation[contractName] = {
         version,
