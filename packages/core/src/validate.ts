@@ -91,6 +91,14 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
   return validation;
 }
 
+export function getContractVersion(validation: Validation, contractName: string): string {
+  const { version } = validation[contractName];
+  if (version === undefined) {
+    throw new Error(`Contract ${contractName} is abstract`);
+  }
+  return version;
+}
+
 function getContractName(validation: Validation, version: string): string {
   const contractName = Object.keys(validation).find(name => validation[name].version === version);
   if (contractName === undefined) {
@@ -169,16 +177,17 @@ function describeError(e: ValidationError): string {
   return log;
 }
 
-export function getErrors(validation: Validation, contractName: string): ValidationError[] {
-  const c = validation[contractName];
-  if (c === undefined) {
-    throw new Error(`Contract ${contractName} not found`);
+export function getErrors(validation: Validation, version: string): ValidationError[] {
+  const contractName = Object.keys(validation).find(name => validation[name].version === version);
+  if (contractName === undefined) {
+    throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
   }
+  const c = validation[contractName];
   return c.errors.concat(...c.inherit.map(name => validation[name].errors));
 }
 
-export function isUpgradeSafe(validation: Validation, contractName: string): boolean {
-    return getErrors(validation, contractName).length == 0;
+export function isUpgradeSafe(validation: Validation, version: string): boolean {
+    return getErrors(validation, version).length == 0;
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {

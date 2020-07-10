@@ -1,7 +1,7 @@
 import _test, { TestInterface } from 'ava';
 import { promises as fs } from 'fs';
 
-import { validate, isUpgradeSafe, getStorageLayout, Validation } from './validate';
+import { validate, isUpgradeSafe, getStorageLayout, getContractVersion, Validation } from './validate';
 import { solcInputOutputDecoder } from './src-decoder';
 
 interface Context {
@@ -19,8 +19,8 @@ test.before(async t => {
 
 function testValid(name: string, valid: boolean) {
   test(name, t => {
-    t.snapshot(t.context.validation[name].version);
-    t.is(isUpgradeSafe(t.context.validation, name), valid);
+    const version = getContractVersion(t.context.validation, name);
+    t.is(isUpgradeSafe(t.context.validation, version), valid);
   });
 }
 
@@ -38,9 +38,8 @@ testValid('HasDelegateCall', false);
 testValid('ImportedParentHasStateVariableAssignment', false);
 
 test('inherited storage', t => {
-  const { version } = t.context.validation['StorageInheritChild'];
-  t.not(version, undefined);
-  const layout = getStorageLayout(t.context.validation, version!);
+  const version = getContractVersion(t.context.validation, 'StorageInheritChild');
+  const layout = getStorageLayout(t.context.validation, version);
   t.is(layout.storage.length, 8);
   for (let i = 0; i < layout.storage.length; i++) {
     t.is(layout.storage[i].label, `v${i}`);
