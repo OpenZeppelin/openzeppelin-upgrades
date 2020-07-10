@@ -1,29 +1,27 @@
 import { ethers, network, config } from '@nomiclabs/buidler';
 import { readArtifact, BuidlerPluginError } from '@nomiclabs/buidler/plugins';
 import fs from 'fs';
+import type { ContractFactory } from 'ethers';
 
 import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId } from '@openzeppelin/upgrades-core';
 
 import { getProxyFactory } from './proxy-factory';
 
-export async function deployProxy(contractName: string, args: unknown[]) {
+export async function deployProxy(ImplFactory: ContractFactory, args: unknown[]) {
   const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
-  assertUpgradeSafe(validations, contractName);
+  const version = getVersionId(ImplFactory.bytecode);
+  assertUpgradeSafe(validations, version);
 
-  const ImplFactory = await ethers.getContractFactory(contractName);
-
-  const artifact = await readArtifact(config.paths.artifacts, contractName);
-  const version = getVersionId(artifact.bytecode);
   const impl = await fetchOrDeploy(version, network.provider, async () => {
     const { address } = await ImplFactory.deploy();
-    const layout = getStorageLayout(validations, contractName);
+    const layout = getStorageLayout(validations, version);
     return { address, layout };
   });
 
   // TODO: support choice of initializer function? support overloaded initialize function
   const data = ImplFactory.interface.encodeFunctionData('initialize', args);
-  const ProxyFactory = await getProxyFactory();
+  const ProxyFactory = await getProxyFactory(ImplFactory.signer);
   const proxy = await ProxyFactory.deploy(impl, await ImplFactory.signer.getAddress(), data);
 
   const inst = ImplFactory.attach(proxy.address);

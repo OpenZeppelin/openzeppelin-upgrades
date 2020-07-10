@@ -36,7 +36,9 @@ testValid('HasDelegateCall', false);
 testValid('ImportedParentHasStateVariableAssignment', false);
 
 test('inherited storage', t => {
-  const layout = getStorageLayout(t.context.validation, 'StorageInheritChild');
+  const { version } = t.context.validation['StorageInheritChild'];
+  t.not(version, undefined);
+  const layout = getStorageLayout(t.context.validation, version!);
   t.is(layout.storage.length, 8);
   for (let i = 0; i < layout.storage.length; i++) {
     t.is(layout.storage[i].label, `v${i}`);

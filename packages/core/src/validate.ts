@@ -102,11 +102,17 @@ export function validate(solcOutput: SolcOutput, solcInput?: SolcInput): Validat
   return validation;
 }
 
-export function getStorageLayout(validation: Validation, contractName: string): StorageLayout {
-  const c = validation[contractName];
-  if (c === undefined) {
-    throw new Error(`Contract ${contractName} not found`);
+function getContractName(validation: Validation, version: string): string {
+  const contractName = Object.keys(validation).find(name => validation[name].version === version);
+  if (contractName === undefined) {
+    throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
   }
+  return contractName;
+}
+
+export function getStorageLayout(validation: Validation, version: string): StorageLayout {
+  const contractName = getContractName(validation, version);
+  const c = validation[contractName];
   const layout: StorageLayout = { storage: [], types: {} };
   for (const name of [contractName].concat(c.inherit)) {
     layout.storage.unshift(...validation[name].layout.storage);
@@ -115,7 +121,8 @@ export function getStorageLayout(validation: Validation, contractName: string): 
   return layout;
 }
 
-export function assertUpgradeSafe(validation: Validation, contractName: string) {
+export function assertUpgradeSafe(validation: Validation, version: string) {
+  const contractName = getContractName(validation, version);
   const errors = getErrors(validation, contractName);
 
   if (errors.length > 0) {

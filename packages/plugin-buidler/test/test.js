@@ -2,10 +2,12 @@ const { deployProxy } = require('@openzeppelin/upgrades-buidler/dist/deploy-prox
 const { upgradeProxy } = require('@openzeppelin/upgrades-buidler/dist/upgrade-proxy');
 
 async function main() {
-  const greeter = await deployProxy('Greeter', ['Hello, Buidler!']);
+  const Greeter = await ethers.getContractFactory('Greeter');
+  const greeter = await deployProxy(Greeter, ['Hello, Buidler!']);
 
   console.log('Attempting upgrade to GreeterV2...');
-  const greeter2 = await upgradeProxy(greeter.address, 'GreeterV2');
+  const GreeterV2 = await ethers.getContractFactory('GreeterV2');
+  const greeter2 = await upgradeProxy(greeter.address, GreeterV2);
 
   console.log('Resetting greeting...');
   const signer3 = (await ethers.getSigners())[1];
