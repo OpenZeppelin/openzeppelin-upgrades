@@ -6744,6 +6744,11 @@ promise-retry@^1.1.1:
     err-code "^1.0.0"
     retry "^0.10.0"
 
+promisified@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/promisified/-/promisified-0.5.0.tgz#3a4fdb9a565a243c089f8e6e61dc4b1159ad5789"
+  integrity sha512-2DwVPsTkapN5pM6rF7PGfciqYy8W6GIJ3CC0xM4vqR6A5w3s426kj6oJ5mukDSiZFcv1OBpSWBJnh7xi4MEOKg==
+
 promzard@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/promzard/-/promzard-0.3.0.tgz#26a5d6ee8c7dee4cb12208305acfb93ba382a9ee"
