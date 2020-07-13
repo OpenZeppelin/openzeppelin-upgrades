@@ -120,7 +120,7 @@ export function getStorageLayout(validation: Validation, version: string): Stora
 
 export function assertUpgradeSafe(validation: Validation, version: string) {
   const contractName = getContractName(validation, version);
-  const errors = getErrors(validation, contractName);
+  const errors = getErrors(validation, version);
 
   if (errors.length > 0) {
     throw new ValidationErrors(contractName, errors);
