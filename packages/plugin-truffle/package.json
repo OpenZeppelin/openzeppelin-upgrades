@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "prepare": "tsc -b",
-    "test": "tsc -b && yarn --cwd test buidler run test.js"
+    "test": "tsc -b && yarn --cwd test truffle test"
   },
   "devDependencies": {
   },
