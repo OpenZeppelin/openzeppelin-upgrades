@@ -26,6 +26,8 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "@types/cbor": "^5.0.0",
+    "cbor": "^5.0.2",
     "chalk": "^4.1.0",
     "solidity-ast": "^0.4.1"
   }
