@@ -1,14 +1,21 @@
 import crypto from 'crypto';
 import cbor from 'cbor';
 
-export function getVersionId(bytecode: string) {
+export function getVersionId(bytecode: string) : string {
+  return hashBytecode(bytecode);
+}
+
+export function hashBytecode(bytecode: string) : string {
   const hash = crypto.createHash('sha256');
-  bytecode = tryRemoveMetadata(bytecode);
   hash.update(bytecode.replace(/^0x/, ''));
   return hash.digest().toString('base64');
 }
 
-export function tryRemoveMetadata(bytecode: string): string {
+export function hashBytecodeWithoutMetadata(bytecode: string) : string {
+  return hashBytecode(trimBytecodeMetadata(bytecode));
+}
+
+function trimBytecodeMetadata(bytecode: string): string {
   // Bail on empty bytecode
   if (bytecode.length <= 4) {
     return bytecode;
