@@ -27,7 +27,7 @@ test('removes metadata from Solidity 0.4 bytecode', t => {
 });
 
 test('removes metadata from Solidity ^0.5.9 bytecode', t => {
-  // Solidity 0.5.9 includes solc version into the metadata
+  // Solidity 0.5.9 includes solc version into the CBOR encoded metadata
   // https://github.com/ethereum/solidity/releases/tag/v0.5.9
   const swarmHash = '69b1869ae52f674ffccdd8f6d35de04d578a778e919a1b41b7a2177668e08e1a';
   const swarmHashWrapper = `65627a7a72305820${swarmHash}`;
