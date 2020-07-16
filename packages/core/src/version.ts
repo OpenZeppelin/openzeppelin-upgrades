@@ -1,17 +1,17 @@
 import crypto from 'crypto';
 import cbor from 'cbor';
 
-export function getVersionId(bytecode: string) : string {
+export function getVersionId(bytecode: string): string {
   return hashBytecode(bytecode);
 }
 
-export function hashBytecode(bytecode: string) : string {
+export function hashBytecode(bytecode: string): string {
   const hash = crypto.createHash('sha256');
   hash.update(bytecode.replace(/^0x/, ''));
   return hash.digest().toString('base64');
 }
 
-export function hashBytecodeWithoutMetadata(bytecode: string) : string {
+export function hashBytecodeWithoutMetadata(bytecode: string): string {
   return hashBytecode(trimBytecodeMetadata(bytecode));
 }
 
@@ -25,7 +25,7 @@ function trimBytecodeMetadata(bytecode: string): string {
   const rawLength = bytecode.slice(bytecode.length - 4);
   const metadataLength = parseInt(rawLength, 16) * 2;
 
-  // Bail on unreasonable values for length (meaning we read something else other than metadata length)
+  // Bail on unreasonable values for length
   if (metadataLength > bytecode.length - 4) {
     return bytecode;
   }
