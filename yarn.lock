@@ -1369,6 +1369,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/cbor@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@types/cbor/-/cbor-5.0.0.tgz#b48dcc5f75191399ed6ea7cef862ef38a0945fa0"
+  integrity sha512-9HFbkKNnQUn8bseuoggKdgynqAuM31Bf5IPMlPFh7SOKApjMFG1M+yoIrVbXOo/ohzovKkFW14zsDGlnuBofqA==
+  dependencies:
+    "@types/node" "*"
+
 "@types/color-name@^1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@types/color-name/-/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
@@ -1898,6 +1905,11 @@ before-after-hook@^2.0.0:
   resolved "https://registry.yarnpkg.com/before-after-hook/-/before-after-hook-2.1.0.tgz#b6c03487f44e24200dd30ca5e6a1979c5d2fb635"
   integrity sha512-IWIbu7pMqyw3EAJHzzHbWa85b6oud/yfKYg5rqB5hNE8CeMi3nX+2C2sj0HswfblST86hpVEOAb9x34NZd6P7A==
 
+bignumber.js@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.0.0.tgz#805880f84a329b5eac6e7cb6f8274b6d82bdf075"
+  integrity sha512-t/OYhhJ2SD+YGBQcjY8GzzDHEk9f3nerxjtfa6tlMXfe7frs/WozhvCNoGvpM0P3bNf3Gq5ZRMlGr5f3r4/N8A==
+
 binary-extensions@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.0.0.tgz#23c0df14f6a88077f5f986c0d167ec03c3d5537c"
@@ -2265,6 +2277,14 @@ caw@^2.0.1:
     isurl "^1.0.0-alpha5"
     tunnel-agent "^0.6.0"
     url-to-options "^1.0.1"
+
+cbor@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/cbor/-/cbor-5.0.2.tgz#aa8c3820280ebb9f3a45b2a4c66ac344294443de"
+  integrity sha512-6JiKVURxxO92FntzTJq54QdN/8fBaBwD7+nNyGIAi1HL9mBgU3YK6ULV8k7WTuT/EwfRsjy3MuqDKlkQMCmfXg==
+  dependencies:
+    bignumber.js "^9.0.0"
+    nofilter "^1.0.3"
 
 chalk@^2.0.0, chalk@^2.3.1, chalk@^2.4.2:
   version "2.4.2"
@@ -6089,6 +6109,11 @@ node-gyp@^5.0.2:
     semver "^5.7.1"
     tar "^4.4.12"
     which "^1.3.1"
+
+nofilter@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-1.0.3.tgz#34e54b4cc9757de0cad38cc0d19462489b1b7f5d"
+  integrity sha512-FlUlqwRK6reQCaFLAhMcF+6VkVG2caYjKQY3YsRDTl4/SEch595Qb3oLjJRDr8dkHAAOVj2pOx3VknfnSgkE5g==
 
 nopt@^4.0.1:
   version "4.0.3"
