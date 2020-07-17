@@ -17,7 +17,7 @@ export async function getImplementationAddress(provider: EthereumProvider, addre
   const storage = await getEip1967Storage(provider, address, IMPLEMENTATION_LABEL, FALLBACK_IMPLEMENTATION_LABEL);
 
   if (isEmptySlot(storage)) {
-    throw new Error(`Contract at ${address} doesn't look like an ERC 1967 proxy`);
+    throw new Error(`Contract at ${address} doesn't look like an EIP 1967 proxy`);
   }
 
   return toChecksumAddress(storage);
