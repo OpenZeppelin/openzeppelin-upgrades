@@ -39,13 +39,13 @@ async function getEip1967Storage(
 }
 
 export function toFallbackEip1967Hash(label: string): string {
-  return `0x${keccak256(Buffer.from(label))}`;
+  return '0x' + keccak256(Buffer.from(label)).toString('hex');
 }
 
 export function toEip1967Hash(label: string): string {
   const hash = keccak256(Buffer.from(label));
-  const bigNumber = new BN(hash, 'hex').sub(new BN(1));
-  return `0x${bigNumber.toString(16)}`;
+  const bigNumber = new BN(hash).sub(new BN(1));
+  return '0x' + bigNumber.toString(16);
 }
 
 function isEmptySlot(storage: string): boolean {
