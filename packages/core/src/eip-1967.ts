@@ -1,4 +1,6 @@
-import { toChecksumAddress, BN, keccak256 } from 'ethereumjs-util';
+import { toChecksumAddress, keccak256 } from 'ethereumjs-util';
+import BN from 'bn.js';
+
 import { EthereumProvider, getStorageAt } from './provider';
 
 export async function getAdminAddress(provider: EthereumProvider, address: string): Promise<string> {
