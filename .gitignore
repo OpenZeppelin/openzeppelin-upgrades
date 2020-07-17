@@ -1,2 +1,7 @@
 node_modules
 *.tsbuildinfo
+dist
+cache
+artifacts
+.openzeppelin
+
