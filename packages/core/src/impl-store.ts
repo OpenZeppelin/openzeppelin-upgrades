@@ -1,7 +1,6 @@
 import { Manifest, Deployment } from './manifest';
 import { EthereumProvider, getChainId, getCode } from './provider';
 
-
 export async function fetchOrDeploy(
   version: string,
   provider: EthereumProvider,

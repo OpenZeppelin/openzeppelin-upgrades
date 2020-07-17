@@ -9,7 +9,8 @@ export abstract class UpgradesError extends Error {
   }
 
   [util.inspect.custom](): string {
-    return chalk.red.bold('Error:') + ' ' + this.message + '\n\n' + this.details();
+    return (
+      chalk.red.bold('Error:') + ' ' + this.message + '\n\n' + this.details()
+    );
   }
 }
-
