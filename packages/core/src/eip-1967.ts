@@ -39,7 +39,7 @@ async function getEip1967Storage(
 }
 
 export function toFallbackEip1967Hash(label: string): string {
-  return `0x${keccak256(Buffer.from(label))}`;
+  return `0x${keccak256(Buffer.from(label)).toString('hex')}`;
 }
 
 export function toEip1967Hash(label: string): string {
