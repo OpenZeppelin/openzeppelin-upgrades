@@ -33,18 +33,13 @@ export class Manifest {
     return (await this.read()).impls[version];
   }
 
-  async storeDeployment(
-    version: string,
-    deployment: Deployment,
-  ): Promise<void> {
+  async storeDeployment(version: string, deployment: Deployment): Promise<void> {
     await this.update(data => (data.impls[version] = deployment));
   }
 
   async getDeploymentFromAddress(address: string): Promise<Deployment> {
     const data = await this.read();
-    const deployment = Object.values(data.impls).find(
-      d => d.address === address,
-    );
+    const deployment = Object.values(data.impls).find(d => d.address === address);
     if (deployment === undefined) {
       throw new Error(`Deployment at address ${address} is not registered`);
     }

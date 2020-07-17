@@ -7,19 +7,14 @@ interface Source {
   content: string;
 }
 
-export function solcInputOutputDecoder(
-  solcInput: SolcInput,
-  solcOutput: SolcOutput,
-): SrcDecoder {
+export function solcInputOutputDecoder(solcInput: SolcInput, solcOutput: SolcOutput): SrcDecoder {
   const sources: Record<number, Source> = {};
 
   function getSource(sourceId: number): Source {
     if (sourceId in sources) {
       return sources[sourceId];
     } else {
-      const name = Object.entries(solcOutput.sources).find(
-        ([, { id }]) => sourceId === id,
-      )?.[0];
+      const name = Object.entries(solcOutput.sources).find(([, { id }]) => sourceId === id)?.[0];
       if (name === undefined) {
         throw new Error(`Source file not available`);
       }

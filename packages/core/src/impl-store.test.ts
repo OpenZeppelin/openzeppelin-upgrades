@@ -13,9 +13,7 @@ import { fetchOrDeploy } from './impl-store';
 const rimraf = util.promisify(rimrafAsync);
 
 test.before(async () => {
-  process.chdir(
-    await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')),
-  );
+  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
 });
 
 test.after(async () => {
@@ -30,8 +28,7 @@ test('deploys on cache miss', async t => {
 
 test('reuses on cache hit', async t => {
   const provider = stubProvider();
-  const cachedDeploy = () =>
-    fetchOrDeploy('version1', provider, provider.deploy);
+  const cachedDeploy = () => fetchOrDeploy('version1', provider, provider.deploy);
   const address1 = await cachedDeploy();
   const address2 = await cachedDeploy();
   t.is(provider.deployCount, 1);

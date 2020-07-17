@@ -15,14 +15,9 @@ import {
 
 import { getProxyFactory } from './proxy-factory';
 
-export async function upgradeProxy(
-  proxyAddress: string,
-  ImplFactory: ContractFactory,
-): Promise<Contract> {
+export async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFactory): Promise<Contract> {
   const { provider } = network;
-  const validations = JSON.parse(
-    fs.readFileSync('cache/validations.json', 'utf8'),
-  );
+  const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
   const version = getVersionId(ImplFactory.bytecode);
   assertUpgradeSafe(validations, version);
@@ -30,14 +25,9 @@ export async function upgradeProxy(
   const ProxyFactory = await getProxyFactory(ImplFactory.signer);
   const proxy = ProxyFactory.attach(proxyAddress);
 
-  const currentImplAddress = await getImplementationAddress(
-    provider,
-    proxyAddress,
-  );
+  const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const manifest = new Manifest(await getChainId(provider));
-  const deployment = await manifest.getDeploymentFromAddress(
-    currentImplAddress,
-  );
+  const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
   const layout = getStorageLayout(validations, version);
   assertStorageUpgradeSafe(deployment.layout, layout);
