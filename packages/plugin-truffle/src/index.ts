@@ -13,7 +13,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/AdminUpgradeabilityProxy.json';
 
-import { TruffleContract, ContractClass, ContractInstance } from './truffle';
+import { TruffleContract, ContractClass, ContractInstance, TruffleProvider } from './truffle';
 import { validateArtifacts } from './validate';
 
 interface Options {
@@ -21,7 +21,7 @@ interface Options {
 }
 
 interface Deployer {
-  provider: EthereumProvider;
+  provider: TruffleProvider;
   deploy(contract: ContractClass, ...args: unknown[]): Promise<ContractInstance>;
 }
 
@@ -93,8 +93,7 @@ function getProxyFactory(Contract: ContractClass) {
   return AdminUpgradeabilityProxy;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function wrapProvider(provider: any): EthereumProvider {
+function wrapProvider(provider: TruffleProvider): EthereumProvider {
   const web3Send = promisify(provider.send.bind(provider));
   return {
     async send(method: string, params?: unknown[]) {
