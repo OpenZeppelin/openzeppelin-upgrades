@@ -2,6 +2,7 @@ import { SourceUnit } from 'solidity-ast';
 
 export interface ContractClass {
   new (address: string): ContractInstance;
+  'new'(...args: unknown[]): ContractInstance;
   deployed(): Promise<ContractInstance>;
   setProvider(provider: unknown): void;
   defaults(defaults: ContractClassDefaults): void;

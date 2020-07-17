@@ -17,7 +17,7 @@ import { TruffleContract, ContractClass, ContractInstance, TruffleProvider } fro
 import { validateArtifacts } from './validate';
 
 interface Options {
-  deployer: Deployer;
+  deployer?: Deployer;
 }
 
 interface Deployer {
@@ -25,8 +25,23 @@ interface Deployer {
   deploy(contract: ContractClass, ...args: unknown[]): Promise<ContractInstance>;
 }
 
-export async function deployProxy(Contract: ContractClass, args: unknown[], opts: Options): Promise<ContractInstance> {
-  const { deployer } = opts;
+declare const config: { provider: TruffleProvider };
+
+const defaultDeployer: Deployer = {
+  get provider() {
+    return config.provider;
+  },
+  async deploy(Contract: ContractClass, ...args: unknown[]): Promise<ContractInstance> {
+    return Contract.new(...args);
+  },
+};
+
+export async function deployProxy(
+  Contract: ContractClass,
+  args: unknown[],
+  opts: Options = {},
+): Promise<ContractInstance> {
+  const { deployer = defaultDeployer } = opts;
 
   const validations = await validateArtifacts();
 
@@ -54,10 +69,10 @@ export async function deployProxy(Contract: ContractClass, args: unknown[], opts
 export async function upgradeProxy(
   proxyAddress: string,
   Contract: ContractClass,
-  opts: Options,
+  opts: Options = {},
 ): Promise<ContractInstance> {
   console.log('proxy 2', proxyAddress);
-  const { deployer } = opts;
+  const { deployer = defaultDeployer } = opts;
   const provider = wrapProvider(deployer.provider);
 
   const validations = await validateArtifacts();
