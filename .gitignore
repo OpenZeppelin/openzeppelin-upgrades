@@ -3,4 +3,5 @@ node_modules
 dist
 cache
 artifacts
+build
 .openzeppelin
