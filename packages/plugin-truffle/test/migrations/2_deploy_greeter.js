@@ -12,4 +12,4 @@ module.exports = async function (deployer) {
   await sleep(1000);
   console.log('slept');
   await upgradeProxy(g.address, GreeterV2, { deployer });
-}
+};

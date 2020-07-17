@@ -1,6 +1,16 @@
 import { promisify } from 'util';
 
-import { assertUpgradeSafe, assertStorageUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId, Manifest, getImplementationAddress, getChainId, EthereumProvider} from '@openzeppelin/upgrades-core';
+import {
+  assertUpgradeSafe,
+  assertStorageUpgradeSafe,
+  getStorageLayout,
+  fetchOrDeploy,
+  getVersionId,
+  Manifest,
+  getImplementationAddress,
+  getChainId,
+  EthereumProvider,
+} from '@openzeppelin/upgrades-core';
 import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/AdminUpgradeabilityProxy.json';
 
 import { TruffleContract, ContractClass, ContractInstance } from './truffle';
@@ -90,6 +100,6 @@ function wrapProvider(provider: any): EthereumProvider {
       } else {
         return result;
       }
-    }
+    },
   };
 }

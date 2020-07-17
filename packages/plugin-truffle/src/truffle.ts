@@ -20,7 +20,9 @@ export interface ContractInstance {
   address: string;
   contract: {
     methods: {
-      initialize(...args: unknown[]): {
+      initialize(
+        ...args: unknown[]
+      ): {
         encodeABI(): string;
       };
     };
