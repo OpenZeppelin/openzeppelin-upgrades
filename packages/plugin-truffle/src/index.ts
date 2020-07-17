@@ -1,6 +1,6 @@
 import { promisify } from 'util';
 
-import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId } from '@openzeppelin/upgrades-core';
+import { assertUpgradeSafe, assertStorageUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId, Manifest, getImplementationAddress, getChainId, EthereumProvider} from '@openzeppelin/upgrades-core';
 import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/AdminUpgradeabilityProxy.json';
 
 import { TruffleContract, ContractClass, ContractInstance } from './truffle';
@@ -15,13 +15,6 @@ interface Deployer {
   deploy(contract: ContractClass, ...args: unknown[]): Promise<ContractInstance>;
 }
 
-interface EthereumProvider {
-  send(method: 'eth_chainId', params?: []): Promise<string>;
-  send(method: 'eth_accounts', params?: []): Promise<string[]>;
-  send(method: 'eth_getCode', params: [string, string?]): Promise<string>;
-  send(method: string, params?: unknown[]): Promise<unknown>;
-}
-
 export async function deployProxy(Contract: ContractClass, args: unknown[], opts: Options) {
   const { deployer } = opts;
 
@@ -34,6 +27,7 @@ export async function deployProxy(Contract: ContractClass, args: unknown[], opts
   const impl = await fetchOrDeploy(version, provider, async () => {
     const { address } = await deployer.deploy(Contract);
     const layout = getStorageLayout(validations, version);
+    console.log('deploy 1', address);
     return { address, layout };
   });
 
@@ -41,6 +35,38 @@ export async function deployProxy(Contract: ContractClass, args: unknown[], opts
   const sender = Contract.class_defaults.from;
   const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
   const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, sender, data);
+
+  console.log('proxy 1', proxy.address);
+  Contract.address = proxy.address;
+  return Contract.deployed();
+}
+
+export async function upgradeProxy(proxyAddress: string, Contract: ContractClass, opts: Options) {
+  console.log('proxy 2', proxyAddress);
+  const { deployer } = opts;
+  const provider = wrapProvider(deployer.provider);
+
+  const validations = await validateArtifacts();
+
+  const version = getVersionId(Contract.bytecode);
+  assertUpgradeSafe(validations, version);
+
+  const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
+  const proxy = new AdminUpgradeabilityProxy(proxyAddress);
+
+  const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
+  const manifest = new Manifest(await getChainId(provider));
+  const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
+
+  const layout = getStorageLayout(validations, version);
+  assertStorageUpgradeSafe(deployment.layout, layout);
+
+  const nextImpl = await fetchOrDeploy(version, provider, async () => {
+    const { address } = await deployer.deploy(Contract);
+    return { address, layout };
+  });
+
+  await proxy.upgradeTo(nextImpl);
 
   Contract.address = proxy.address;
   return Contract.deployed();
@@ -57,6 +83,7 @@ function wrapProvider(provider: any): EthereumProvider {
   const web3Send = promisify(provider.send.bind(provider));
   return {
     async send(method: string, params?: unknown[]) {
+      console.log({ method, params });
       const { result, error } = await web3Send({ method, params });
       if (error) {
         throw new Error(error.message);

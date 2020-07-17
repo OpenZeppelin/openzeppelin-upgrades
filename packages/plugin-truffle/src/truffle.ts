@@ -25,6 +25,7 @@ export interface ContractInstance {
       };
     };
   };
+  [other: string]: any;
 }
 
 export interface TruffleArtifact {
