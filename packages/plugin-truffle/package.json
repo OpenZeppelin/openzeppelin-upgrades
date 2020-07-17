@@ -9,11 +9,13 @@
   ],
   "scripts": {
     "prepare": "tsc -b",
-    "test": "tsc -b && yarn --cwd test truffle test"
+    "test": "tsc -b && bash test.sh"
   },
   "devDependencies": {
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^0.1.0"
+    "@openzeppelin/upgrades-core": "^0.1.0",
+    "@truffle/contract": "^4.2.12",
+    "solidity-ast": "^0.4.1"
   }
 }

@@ -10,7 +10,7 @@ import { SrcDecoder } from './src-decoder';
 
 export type Validation = Record<string, ValidationResult>;
 
-interface ValidationResult {
+export interface ValidationResult {
   version?: string;
   inherit: string[];
   errors: ValidationError[];
