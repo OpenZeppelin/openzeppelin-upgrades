@@ -3,11 +3,20 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "prepare": "lerna run prepare"
+    "prepare": "lerna run prepare",
+    "lint": "yarn lint:path .",
+    "lint:path": "eslint --ignore-path .gitignore"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.6.1",
+    "@typescript-eslint/parser": "^3.6.1",
+    "eslint": "^7.4.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
     "lerna": "^3.22.1",
-    "node-gyp-cache": "^0.2.1"
+    "node-gyp-cache": "^0.2.1",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.5"
   },
   "workspaces": [
     "packages/*",

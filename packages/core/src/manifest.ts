@@ -1,5 +1,5 @@
 import path from 'path';
-import { promises as fs, constants as fsConstants } from 'fs';
+import { promises as fs } from 'fs';
 
 import { StorageLayout } from './storage';
 
@@ -33,13 +33,18 @@ export class Manifest {
     return (await this.read()).impls[version];
   }
 
-  async storeDeployment(version: string, deployment: Deployment) {
-    await this.update(data => data.impls[version] = deployment);
+  async storeDeployment(
+    version: string,
+    deployment: Deployment,
+  ): Promise<void> {
+    await this.update(data => (data.impls[version] = deployment));
   }
 
   async getDeploymentFromAddress(address: string): Promise<Deployment> {
     const data = await this.read();
-    const deployment = Object.values(data.impls).find(d => d.address === address);
+    const deployment = Object.values(data.impls).find(
+      d => d.address === address,
+    );
     if (deployment === undefined) {
       throw new Error(`Deployment at address ${address} is not registered`);
     }

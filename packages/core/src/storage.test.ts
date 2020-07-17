@@ -13,9 +13,14 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const solcOutput: SolcOutput = JSON.parse(await fs.readFile('cache/solc-output.json', 'utf8'));
+  const solcOutput: SolcOutput = JSON.parse(
+    await fs.readFile('cache/solc-output.json', 'utf8'),
+  );
   t.context.contracts = {};
-  for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/Storage.sol'].ast)) {
+  for (const def of findAll(
+    'ContractDefinition',
+    solcOutput.sources['contracts/test/Storage.sol'].ast,
+  )) {
     t.context.contracts[def.name] = def;
   }
 });
@@ -37,30 +42,50 @@ test('Storage2', t => {
 });
 
 test('storage upgrade equal', t => {
-  const v1 = extractStorageLayout(t.context.contracts['StorageUpgrade_Equal_V1'], dummyDecodeSrc);
-  const v2 = extractStorageLayout(t.context.contracts['StorageUpgrade_Equal_V2'], dummyDecodeSrc);
+  const v1 = extractStorageLayout(
+    t.context.contracts['StorageUpgrade_Equal_V1'],
+    dummyDecodeSrc,
+  );
+  const v2 = extractStorageLayout(
+    t.context.contracts['StorageUpgrade_Equal_V2'],
+    dummyDecodeSrc,
+  );
   const comparison = getStorageUpgradeErrors(v1, v2);
   t.deepEqual(comparison, []);
 });
 
 test('storage upgrade append', t => {
-  const v1 = extractStorageLayout(t.context.contracts['StorageUpgrade_Append_V1'], dummyDecodeSrc);
-  const v2 = extractStorageLayout(t.context.contracts['StorageUpgrade_Append_V2'], dummyDecodeSrc);
+  const v1 = extractStorageLayout(
+    t.context.contracts['StorageUpgrade_Append_V1'],
+    dummyDecodeSrc,
+  );
+  const v2 = extractStorageLayout(
+    t.context.contracts['StorageUpgrade_Append_V2'],
+    dummyDecodeSrc,
+  );
   const comparison = getStorageUpgradeErrors(v1, v2);
   t.deepEqual(comparison, []);
 });
 
 test('storage upgrade delete', t => {
-  const v1 = extractStorageLayout(t.context.contracts['StorageUpgrade_Delete_V1'], dummyDecodeSrc);
-  const v2 = extractStorageLayout(t.context.contracts['StorageUpgrade_Delete_V2'], dummyDecodeSrc);
+  const v1 = extractStorageLayout(
+    t.context.contracts['StorageUpgrade_Delete_V1'],
+    dummyDecodeSrc,
+  );
+  const v2 = extractStorageLayout(
+    t.context.contracts['StorageUpgrade_Delete_V2'],
+    dummyDecodeSrc,
+  );
   const comparison = getStorageUpgradeErrors(v1, v2);
-  t.deepEqual(comparison, [{
-    action: 'delete',
-    original: {
-      contract: 'StorageUpgrade_Delete_V1',
-      label: 'x1',
-      type: 't_uint256',
-      src: 'file.sol:1',
+  t.deepEqual(comparison, [
+    {
+      action: 'delete',
+      original: {
+        contract: 'StorageUpgrade_Delete_V1',
+        label: 'x1',
+        type: 't_uint256',
+        src: 'file.sol:1',
+      },
     },
-  }]);
+  ]);
 });

@@ -1,4 +1,8 @@
-export function levenshtein<T, A>(a: T[], b: T[], match: Match<T, A>): Operation<T, A>[] {
+export function levenshtein<T, A>(
+  a: T[],
+  b: T[],
+  match: Match<T, A>,
+): Operation<T, A>[] {
   const matrix = buildMatrix(a, b, (a, b) => match(a, b) === 'equal');
   return walkMatrix(matrix, a, b, match);
 }
@@ -14,9 +18,11 @@ function buildMatrix<T>(a: T[], b: T[], eq: Equal<T>): number[][] {
   const matrix: number[][] = new Array(a.length + 1);
 
   type CostFunction = (i: number, j: number) => number;
-  const insertionCost: CostFunction = (i, j) => (j > a.length ? 0 : INSERTION_COST);
-  const substitutionCost: CostFunction = (i, j) => (eq(a[i - 1], b[j - 1]) ? 0 : SUBSTITUTION_COST);
-  const deletionCost: CostFunction = (i, j) => DELETION_COST;
+  const insertionCost: CostFunction = (i, j) =>
+    j > a.length ? 0 : INSERTION_COST;
+  const substitutionCost: CostFunction = (i, j) =>
+    eq(a[i - 1], b[j - 1]) ? 0 : SUBSTITUTION_COST;
+  const deletionCost: CostFunction = () => DELETION_COST;
 
   // increment along the first column of each row
   for (let i = 0; i <= a.length; i++) {
@@ -77,6 +83,7 @@ function walkMatrix<T, A>(
 
     if (i > 0 && j > 0 && cost === matrix[i - 1][j - 1] + substitutionCost) {
       if (matchResult !== 'equal') {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         operations.unshift({ action: matchResult!, updated, original });
       }
       i--;

@@ -6,30 +6,32 @@ import util from 'util';
 import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
-import { EthereumProvider } from '@nomiclabs/buidler/types';
 
 import { Deployment } from './manifest';
 import { fetchOrDeploy } from './impl-store';
 
 const rimraf = util.promisify(rimrafAsync);
 
-test.before(async t => {
-  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
+test.before(async () => {
+  process.chdir(
+    await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')),
+  );
 });
 
-test.after(async t => {
+test.after(async () => {
   await rimraf(process.cwd());
 });
 
 test('deploys on cache miss', async t => {
   const provider = stubProvider();
-  const address = await fetchOrDeploy('version1', provider, provider.deploy);
+  await fetchOrDeploy('version1', provider, provider.deploy);
   t.is(provider.deployCount, 1);
 });
 
 test('reuses on cache hit', async t => {
   const provider = stubProvider();
-  const cachedDeploy = () => fetchOrDeploy('version1', provider, provider.deploy);
+  const cachedDeploy = () =>
+    fetchOrDeploy('version1', provider, provider.deploy);
   const address1 = await cachedDeploy();
   const address2 = await cachedDeploy();
   t.is(provider.deployCount, 1);

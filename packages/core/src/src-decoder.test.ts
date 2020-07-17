@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import test from 'ava';
 
 import { SolcInput, SolcOutput } from './solc-api';

@@ -14,7 +14,7 @@ test.before(async t => {
 function testFile(name) {
   test(name, async t => {
     try {
-      const child = await proc.execFile('node', [name], { cwd: 'test' });
+      await proc.execFile('node', [name], { cwd: 'test' });
       t.pass();
     } catch (e) {
       t.fail(e.stderr);
