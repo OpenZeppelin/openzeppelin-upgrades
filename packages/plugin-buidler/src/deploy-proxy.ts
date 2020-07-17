@@ -1,13 +1,12 @@
-import { ethers, network, config } from '@nomiclabs/buidler';
-import { readArtifact, BuidlerPluginError } from '@nomiclabs/buidler/plugins';
+import { network } from '@nomiclabs/buidler';
 import fs from 'fs';
-import type { ContractFactory } from 'ethers';
+import type { ContractFactory, Contract } from 'ethers';
 
 import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId } from '@openzeppelin/upgrades-core';
 
 import { getProxyFactory } from './proxy-factory';
 
-export async function deployProxy(ImplFactory: ContractFactory, args: unknown[]) {
+export async function deployProxy(ImplFactory: ContractFactory, args: unknown[]): Promise<Contract> {
   const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
   const version = getVersionId(ImplFactory.bytecode);

@@ -1,5 +1,5 @@
 import path from 'path';
-import { promises as fs, constants as fsConstants } from 'fs';
+import { promises as fs } from 'fs';
 
 import { StorageLayout } from './storage';
 
@@ -33,7 +33,7 @@ export class Manifest {
     return (await this.read()).impls[version];
   }
 
-  async storeDeployment(version: string, deployment: Deployment) {
+  async storeDeployment(version: string, deployment: Deployment): Promise<void> {
     await this.update(data => data.impls[version] = deployment);
   }
 

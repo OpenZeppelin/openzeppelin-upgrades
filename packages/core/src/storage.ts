@@ -1,11 +1,10 @@
 import assert from 'assert';
 import chalk from 'chalk';
-import { SolcOutput } from './solc-api';
-import { isNodeType, findAll } from 'solidity-ast/utils';
-import { ContractDefinition, VariableDeclaration } from 'solidity-ast';
+import { isNodeType } from 'solidity-ast/utils';
+import { ContractDefinition } from 'solidity-ast';
 
 import { SrcDecoder } from './src-decoder';
-import { levenshtein } from './levenshtein';
+import { levenshtein, Operation } from './levenshtein';
 import { UpgradesError } from './error';
 
 export interface StorageItem {
@@ -50,7 +49,7 @@ export function extractStorageLayout(contractDef: ContractDefinition, decodeSrc:
   return layout;
 }
 
-export function assertStorageUpgradeSafe(original: StorageLayout, updated: StorageLayout) {
+export function assertStorageUpgradeSafe(original: StorageLayout, updated: StorageLayout): void {
   const errors = getStorageUpgradeErrors(original, updated);
 
   if (errors.length > 0) {
@@ -70,7 +69,7 @@ class StorageUpgradeErrors extends UpgradesError {
   }
 }
 
-export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout) {
+export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout): Operation<StorageItem, 'typechange' | 'rename' | 'replace'>[] {
   function matchStorageItem(o: StorageItem, u: StorageItem) {
     const nameMatches = o.label === u.label;
 

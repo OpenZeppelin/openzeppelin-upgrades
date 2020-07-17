@@ -1,7 +1,3 @@
-import path from 'path';
-import { promises as fs, constants as fsConstants } from 'fs';
-
-import { getVersionId } from './version';
 import { Manifest, Deployment } from './manifest';
 import { EthereumProvider, getChainId, getCode } from './provider';
 

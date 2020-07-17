@@ -1,10 +1,8 @@
-import fs from 'fs';
-import crypto from 'crypto';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
 import chalk from 'chalk';
 
-import { SolcOutput, SolcInput } from './solc-api';
+import { SolcOutput } from './solc-api';
 import { getVersionId } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
 import { UpgradesError } from './error';
@@ -118,7 +116,7 @@ export function getStorageLayout(validation: Validation, version: string): Stora
   return layout;
 }
 
-export function assertUpgradeSafe(validation: Validation, version: string) {
+export function assertUpgradeSafe(validation: Validation, version: string): void {
   const contractName = getContractName(validation, version);
   const errors = getErrors(validation, version);
 
@@ -141,7 +139,7 @@ interface ErrorInfo<K> {
   msg: (e: ValidationError & { kind: K }) => string;
   hint?: string;
   link: string;
-};
+}
 
 const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
   'constructor': {
@@ -150,11 +148,11 @@ const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
     link: 'https://zpl.in/upgrades/error-001',
   },
   'delegatecall': {
-    msg: e => `Use of delegatecall is not allowed`,
+    msg: () => `Use of delegatecall is not allowed`,
     link: 'https://zpl.in/upgrades/error-002',
   },
   'selfdestruct': {
-    msg: e => `Use of selfdestruct is not allowed`,
+    msg: () => `Use of selfdestruct is not allowed`,
     link: 'https://zpl.in/upgrades/error-003',
   },
   'state-variable-assignment': {
@@ -171,6 +169,7 @@ const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
 
 function describeError(e: ValidationError): string {
   const info = errorInfo[e.kind];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let log = chalk.bold(e.src) + ': ' + info.msg(e as any) + '\n    ';
   if (info.hint) log += info.hint + '\n    ';
   log += chalk.dim(info.link);

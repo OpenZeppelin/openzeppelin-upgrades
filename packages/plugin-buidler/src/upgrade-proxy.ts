@@ -1,12 +1,12 @@
 import { network } from '@nomiclabs/buidler';
 import fs from 'fs';
-import type { ContractFactory } from 'ethers';
+import type { ContractFactory, Contract } from 'ethers';
 
 import { assertUpgradeSafe, assertStorageUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId, Manifest, getImplementationAddress, getChainId } from '@openzeppelin/upgrades-core';
 
 import { getProxyFactory } from './proxy-factory';
 
-export async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFactory) {
+export async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFactory): Promise<Contract> {
   const { provider } = network
   const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
