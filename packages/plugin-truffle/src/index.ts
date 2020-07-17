@@ -25,7 +25,7 @@ interface Deployer {
   deploy(contract: ContractClass, ...args: unknown[]): Promise<ContractInstance>;
 }
 
-export async function deployProxy(Contract: ContractClass, args: unknown[], opts: Options) {
+export async function deployProxy(Contract: ContractClass, args: unknown[], opts: Options): Promise<ContractInstance> {
   const { deployer } = opts;
 
   const validations = await validateArtifacts();
@@ -51,7 +51,11 @@ export async function deployProxy(Contract: ContractClass, args: unknown[], opts
   return Contract.deployed();
 }
 
-export async function upgradeProxy(proxyAddress: string, Contract: ContractClass, opts: Options) {
+export async function upgradeProxy(
+  proxyAddress: string,
+  Contract: ContractClass,
+  opts: Options,
+): Promise<ContractInstance> {
   console.log('proxy 2', proxyAddress);
   const { deployer } = opts;
   const provider = wrapProvider(deployer.provider);
@@ -89,6 +93,7 @@ function getProxyFactory(Contract: ContractClass) {
   return AdminUpgradeabilityProxy;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function wrapProvider(provider: any): EthereumProvider {
   const web3Send = promisify(provider.send.bind(provider));
   return {

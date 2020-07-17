@@ -26,5 +26,13 @@ module.exports = {
         sourceType: 'module',
       },
     },
+    {
+      files: ['packages/plugin-truffle/**'],
+      globals: {
+        artifacts: 'readonly',
+        contract: 'readonly',
+        it: 'readonly',
+      },
+    },
   ],
 };

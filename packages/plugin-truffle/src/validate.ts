@@ -1,12 +1,12 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 import { findAll } from 'solidity-ast/utils';
-import { validate, solcInputOutputDecoder } from '@openzeppelin/upgrades-core';
+import { validate, solcInputOutputDecoder, ValidationResult } from '@openzeppelin/upgrades-core';
 import { SolcInput, SolcOutput } from '@openzeppelin/upgrades-core/dist/solc-api';
 
 import { TruffleArtifact } from './truffle';
 
-export async function validateArtifacts() {
+export async function validateArtifacts(): Promise<Record<string, ValidationResult>> {
   const artifacts = await readArtifacts('build/contracts');
   const { input, output } = reconstructSolcInputOutput(artifacts);
   const srcDecoder = solcInputOutputDecoder(input, output);
