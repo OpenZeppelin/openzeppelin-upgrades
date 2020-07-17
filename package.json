@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "prepare": "lerna run prepare",
-    "lint": "eslint . --ignore-path .gitignore"
+    "lint": "yarn lint:path .",
+    "lint:path": "eslint --ignore-path .gitignore"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^3.6.1",
