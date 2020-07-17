@@ -16,6 +16,10 @@ export async function getImplementationAddress(provider: EthereumProvider, addre
   const FALLBACK_IMPLEMENTATION_LABEL = 'org.zeppelinos.proxy.implementation';
   const storage = await getEip1967Storage(provider, address, IMPLEMENTATION_LABEL, FALLBACK_IMPLEMENTATION_LABEL);
 
+  if (isEmptySlot(storage)) {
+    throw new Error(`Contract at ${address} doesn't look like an ERC 1967 proxy`);
+  }
+
   return toChecksumAddress(storage);
 }
 
@@ -24,10 +28,6 @@ async function getEip1967Storage(provider: EthereumProvider, address: string, sl
 
   if (isEmptySlot(storage)) {  
     storage = await getStorageAt(provider, address, toFallbackEip1967Hash(fallbackSlot));
-  }
-
-  if (isEmptySlot(storage)) {  
-    throw new Error(`Could not find "${slot}" nor "${fallbackSlot}" slots in proxy storage`);
   }
 
   return storage;
@@ -44,10 +44,6 @@ export function toEip1967Hash(label: string): string {
 }
 
 function isEmptySlot(storage: string): boolean {
-  if (storage.slice(0, 2) === '0x') {
-    // remove 0x if present
-    storage = storage.slice(2);
-  }
-
+  storage = storage.replace(/^0x/, '');
   return new BN(storage, 'hex').isZero();
 }
