@@ -1,6 +1,5 @@
+import { toChecksumAddress, BN, keccak256 } from 'ethereumjs-util';
 import { EthereumProvider, getStorageAt } from './provider';
-import { toEip1967Hash, toDeprecatedEip1967Hash, toChecksumAddress } from './crypto';
-
 
 export async function getAdminAddress(provider: EthereumProvider, address: string): Promise<string> {
   const ADMIN_LABEL = 'eip1967.proxy.admin';
@@ -21,9 +20,32 @@ export async function getImplementationAddress(provider: EthereumProvider, addre
 async function getEip1967Storage(provider: EthereumProvider, address: string, newSlot: string, deprecatedSlot: string): Promise<string> {
   let storage = await getStorageAt(provider, address, toEip1967Hash(newSlot));
 
-  if (storage === '0x0') {  
+  if (isEmptySlot(storage)) {  
     storage = await getStorageAt(provider, address, toDeprecatedEip1967Hash(deprecatedSlot));
   }
 
+  if (isEmptySlot(storage)) {  
+    throw new Error(`Could not find "${newSlot}" nor "${deprecatedSlot}" slots in proxy storage`);
+  }
+
   return storage;
+}
+
+export function toDeprecatedEip1967Hash(label: string): string {
+  return `0x${keccak256(Buffer.from(label))}`;
+}
+
+export function toEip1967Hash(label: string): string {
+  const hash = keccak256(Buffer.from(label));
+  const bigNumber = new BN(hash, 'hex').sub(new BN(1));
+  return `0x${bigNumber.toString(16)}`;
+}
+
+function isEmptySlot(storage: string): boolean {
+  if (storage.slice(0, 2) === '0x') {
+    // remove 0x if present
+    storage = storage.slice(2);
+  }
+
+  return new BN(storage, 'hex').isZero();
 }
