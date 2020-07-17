@@ -44,7 +44,7 @@ export function toFallbackEip1967Hash(label: string): string {
 
 export function toEip1967Hash(label: string): string {
   const hash = keccak256(Buffer.from(label));
-  const bigNumber = new BN(hash, 'hex').sub(new BN(1));
+  const bigNumber = new BN(hash).sub(new BN(1));
   return `0x${bigNumber.toString(16)}`;
 }
 
