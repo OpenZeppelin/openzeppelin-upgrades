@@ -1,11 +1,7 @@
 const { ethers } = require('@nomiclabs/buidler');
 
-const {
-  deployProxy,
-} = require('@openzeppelin/upgrades-buidler/dist/deploy-proxy');
-const {
-  upgradeProxy,
-} = require('@openzeppelin/upgrades-buidler/dist/upgrade-proxy');
+const { deployProxy } = require('@openzeppelin/upgrades-buidler/dist/deploy-proxy');
+const { upgradeProxy } = require('@openzeppelin/upgrades-buidler/dist/upgrade-proxy');
 
 async function main() {
   const Greeter = await ethers.getContractFactory('Greeter');

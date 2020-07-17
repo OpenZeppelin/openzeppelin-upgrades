@@ -23,10 +23,7 @@ export interface StorageLayout {
   types: Record<string, TypeItem>;
 }
 
-export function extractStorageLayout(
-  contractDef: ContractDefinition,
-  decodeSrc: SrcDecoder,
-): StorageLayout {
+export function extractStorageLayout(contractDef: ContractDefinition, decodeSrc: SrcDecoder): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {} };
 
   for (const varDecl of contractDef.nodes) {
@@ -52,10 +49,7 @@ export function extractStorageLayout(
   return layout;
 }
 
-export function assertStorageUpgradeSafe(
-  original: StorageLayout,
-  updated: StorageLayout,
-): void {
+export function assertStorageUpgradeSafe(original: StorageLayout, updated: StorageLayout): void {
   const errors = getStorageUpgradeErrors(original, updated);
 
   if (errors.length > 0) {
@@ -71,13 +65,7 @@ class StorageUpgradeErrors extends UpgradesError {
   details() {
     return this.errors
       .map(e => {
-        return (
-          chalk.bold(e.updated?.src ?? 'unknown') +
-          ': ' +
-          e.action +
-          ' of variable ' +
-          e.updated?.label
-        );
+        return chalk.bold(e.updated?.src ?? 'unknown') + ': ' + e.action + ' of variable ' + e.updated?.label;
       })
       .join('\n\n');
   }
@@ -91,8 +79,7 @@ export function getStorageUpgradeErrors(
     const nameMatches = o.label === u.label;
 
     // TODO: type matching should compare struct members, etc.
-    const typeMatches =
-      original.types[o.type].label === updated.types[u.type].label;
+    const typeMatches = original.types[o.type].label === updated.types[u.type].label;
 
     if (typeMatches && nameMatches) {
       return 'equal';
@@ -118,19 +105,16 @@ export function getStorageUpgradeErrors(
 // Thus, the following regex has to perform a lookahead to make sure it gets
 // the substitution right.
 function decodeTypeIdentifier(typeIdentifier: string): string {
-  return typeIdentifier.replace(
-    /(\$_|_\$_|_\$)(?=(\$_|_\$_|_\$)*([^_$]|$))/g,
-    m => {
-      switch (m) {
-        case '$_':
-          return '(';
-        case '_$':
-          return ')';
-        case '_$_':
-          return ',';
-        default:
-          throw new Error('Unreachable');
-      }
-    },
-  );
+  return typeIdentifier.replace(/(\$_|_\$_|_\$)(?=(\$_|_\$_|_\$)*([^_$]|$))/g, m => {
+    switch (m) {
+      case '$_':
+        return '(';
+      case '_$':
+        return ')';
+      case '_$_':
+        return ',';
+      default:
+        throw new Error('Unreachable');
+    }
+  });
 }
