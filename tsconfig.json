@@ -1,7 +1,8 @@
 {
   "references": [
     { "path": "packages/core" },
-    { "path": "packages/plugin-buidler" }
+    { "path": "packages/plugin-buidler" },
+    { "path": "packages/plugin-truffle" }
   ],
   "files": []
 }

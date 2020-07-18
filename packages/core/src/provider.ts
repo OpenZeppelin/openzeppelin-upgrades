@@ -14,10 +14,12 @@ export async function getStorageAt(
   address: string,
   position: string,
   block?: string,
-): Promise<string> {
-  return provider.send('eth_getStorageAt', [address, position, block]);
+): Promise<string>;
+export async function getStorageAt(provider: EthereumProvider, ...args: [string, string, string?]): Promise<string> {
+  return provider.send('eth_getStorageAt', args);
 }
 
-export async function getCode(provider: EthereumProvider, address: string, block?: string): Promise<string> {
-  return provider.send('eth_getCode', [address, block]);
+export async function getCode(provider: EthereumProvider, address: string, block?: string): Promise<string>;
+export async function getCode(provider: EthereumProvider, ...args: [string, string?]): Promise<string> {
+  return provider.send('eth_getCode', args);
 }

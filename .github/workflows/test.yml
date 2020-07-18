@@ -11,6 +11,7 @@ jobs:
         package:
           - core
           - plugin-buidler
+          - plugin-truffle
 
     runs-on: ubuntu-latest
 
