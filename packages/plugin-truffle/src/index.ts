@@ -52,7 +52,6 @@ export async function deployProxy(
   const impl = await fetchOrDeploy(version, provider, async () => {
     const { address } = await deployer.deploy(Contract);
     const layout = getStorageLayout(validations, version);
-    console.log('deploy 1', address);
     return { address, layout };
   });
 
@@ -61,7 +60,6 @@ export async function deployProxy(
   const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
   const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, sender, data);
 
-  console.log('proxy 1', proxy.address);
   Contract.address = proxy.address;
   return Contract.deployed();
 }
@@ -71,7 +69,6 @@ export async function upgradeProxy(
   Contract: ContractClass,
   opts: Options = {},
 ): Promise<ContractInstance> {
-  console.log('proxy 2', proxyAddress);
   const { deployer = defaultDeployer } = opts;
   const provider = wrapProvider(deployer.provider);
 
@@ -112,7 +109,6 @@ function wrapProvider(provider: TruffleProvider): EthereumProvider {
   const web3Send = promisify(provider.send.bind(provider));
   return {
     async send(method: string, params?: unknown[]) {
-      console.log({ method, params });
       const { result, error } = await web3Send({ method, params });
       if (error) {
         throw new Error(error.message);
