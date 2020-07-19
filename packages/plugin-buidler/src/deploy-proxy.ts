@@ -8,7 +8,7 @@ import fs from 'fs';
 export type DeployFunction = (ImplFactory: ContractFactory, args: unknown[]) => Promise<Contract>;
 
 export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction {
-  return async function (ImplFactory: ContractFactory, args: unknown[]): Promise<Contract> {
+  return async function deployProxy(ImplFactory, args) {
     const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
     const version = getVersionId(ImplFactory.bytecode);

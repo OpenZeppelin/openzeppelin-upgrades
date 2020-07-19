@@ -18,7 +18,7 @@ import fs from 'fs';
 export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory) => Promise<Contract>;
 
 export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunction {
-  return async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFactory): Promise<Contract> {
+  return async function upgradeProxy(proxyAddress, ImplFactory) {
     const { provider } = bre.network;
     const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
