@@ -1,4 +1,4 @@
-import { BuidlerRuntimeEnvironment } from "@nomiclabs/buidler/types";
+import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import type { ContractFactory, Contract } from 'ethers';
 
 import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId } from '@openzeppelin/upgrades-core';
@@ -27,5 +27,5 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const inst = ImplFactory.attach(proxy.address);
     // inst.deployTransaction = proxy.deployTransaction;
     return inst;
-  }
+  };
 }

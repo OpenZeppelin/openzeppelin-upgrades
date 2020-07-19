@@ -1,4 +1,4 @@
-import { BuidlerRuntimeEnvironment } from "@nomiclabs/buidler/types";
+import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import type { ContractFactory, Contract } from 'ethers';
 
 import {
@@ -42,5 +42,5 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     await proxy.upgradeTo(nextImpl);
 
     return ImplFactory.attach(proxyAddress);
-  }
+  };
 }

@@ -1,4 +1,4 @@
-import { BuidlerRuntimeEnvironment } from "@nomiclabs/buidler/types";
+import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import { Signer, ContractFactory } from 'ethers';
 import AdminUpgradeabilityProxy from '@openzeppelin/upgrades-core/artifacts/AdminUpgradeabilityProxy.json';
 

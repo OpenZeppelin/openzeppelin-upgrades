@@ -1,7 +1,7 @@
 import { internalTask, extendEnvironment } from '@nomiclabs/buidler/config';
-import { BuidlerRuntimeEnvironment } from "@nomiclabs/buidler/types";
+import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import { TASK_COMPILE_RUN_COMPILER } from '@nomiclabs/buidler/builtin-tasks/task-names';
-import { lazyObject } from "@nomiclabs/buidler/plugins";
+import { lazyObject } from '@nomiclabs/buidler/plugins';
 
 import { validate, solcInputOutputDecoder, SolcInput } from '@openzeppelin/upgrades-core';
 import { makeDeployProxy } from './deploy-proxy';
@@ -27,7 +27,7 @@ export default function (): void {
   extendEnvironment((bre: BuidlerRuntimeEnvironment) => {
     bre.upgrades = lazyObject(() => ({
       deployProxy: makeDeployProxy(bre),
-      upgradeProxy: makeUpgradeProxy(bre)
+      upgradeProxy: makeUpgradeProxy(bre),
     }));
   });
 }
