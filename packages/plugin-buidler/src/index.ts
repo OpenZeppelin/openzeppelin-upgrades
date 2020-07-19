@@ -1,5 +1,4 @@
 import { internalTask, extendEnvironment } from '@nomiclabs/buidler/config';
-import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import { TASK_COMPILE_RUN_COMPILER } from '@nomiclabs/buidler/builtin-tasks/task-names';
 import { lazyObject } from '@nomiclabs/buidler/plugins';
 
@@ -24,7 +23,7 @@ export default function (): void {
     return output;
   });
 
-  extendEnvironment((bre: BuidlerRuntimeEnvironment) => {
+  extendEnvironment(bre => {
     bre.upgrades = lazyObject(() => ({
       deployProxy: makeDeployProxy(bre),
       upgradeProxy: makeUpgradeProxy(bre),
