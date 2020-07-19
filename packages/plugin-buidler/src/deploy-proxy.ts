@@ -3,8 +3,9 @@ import type { ContractFactory, Contract } from 'ethers';
 
 import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId } from '@openzeppelin/upgrades-core';
 import { getProxyFactory } from './proxy-factory';
-import { DeployFunction } from './types';
 import fs from 'fs';
+
+export type DeployFunction = (ImplFactory: ContractFactory, args: unknown[]) => Promise<Contract>;
 
 export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction {
   return async function (ImplFactory: ContractFactory, args: unknown[]): Promise<Contract> {

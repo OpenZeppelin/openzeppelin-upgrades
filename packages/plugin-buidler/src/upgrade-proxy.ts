@@ -13,8 +13,9 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyFactory } from './proxy-factory';
-import { UpgradeFunction } from './types';
 import fs from 'fs';
+
+export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory) => Promise<Contract>;
 
 export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunction {
   return async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFactory): Promise<Contract> {
