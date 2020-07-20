@@ -5,13 +5,16 @@ import {
   assertStorageUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
+  fetchOrDeployAdmin,
   getVersionId,
   Manifest,
   getImplementationAddress,
+  getAdminAddress,
   getChainId,
   EthereumProvider,
 } from '@openzeppelin/upgrades-core';
 import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/AdminUpgradeabilityProxy.json';
+import ProxyAdminArtifact from '@openzeppelin/upgrades-core/artifacts/ProxyAdmin.json';
 
 import { TruffleContract, ContractClass, ContractInstance, TruffleProvider } from './truffle';
 import { validateArtifacts } from './validate';
@@ -55,10 +58,15 @@ export async function deployProxy(
     return { address, layout };
   });
 
+  const AdminFactory = await getProxyAdminFactory(Contract);
+  const adminAddress = await fetchOrDeployAdmin(provider, async () => {
+    const { address } = await deployer.deploy(AdminFactory);
+    return address;
+  });
+
   const data = await new Contract('').contract.methods.initialize(...args).encodeABI();
-  const sender = Contract.class_defaults.from;
   const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
-  const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, sender, data);
+  const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data);
 
   Contract.address = proxy.address;
   return Contract.deployed();
@@ -77,8 +85,8 @@ export async function upgradeProxy(
   const version = getVersionId(Contract.bytecode);
   assertUpgradeSafe(validations, version);
 
-  const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
-  const proxy = new AdminUpgradeabilityProxy(proxyAddress);
+  const AdminFactory = await getProxyAdminFactory(Contract);
+  const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const manifest = new Manifest(await getChainId(provider));
@@ -92,9 +100,9 @@ export async function upgradeProxy(
     return { address, layout };
   });
 
-  await proxy.upgradeTo(nextImpl);
+  await admin.upgrade(proxyAddress, nextImpl);
 
-  Contract.address = proxy.address;
+  Contract.address = proxyAddress;
   return Contract.deployed();
 }
 
@@ -103,6 +111,13 @@ function getProxyFactory(Contract: ContractClass) {
   AdminUpgradeabilityProxy.setProvider(Contract.currentProvider);
   AdminUpgradeabilityProxy.defaults(Contract.class_defaults);
   return AdminUpgradeabilityProxy;
+}
+
+function getProxyAdminFactory(Contract: ContractClass) {
+  const ProxyAdmin = TruffleContract(ProxyAdminArtifact);
+  ProxyAdmin.setProvider(Contract.currentProvider);
+  ProxyAdmin.defaults(Contract.class_defaults);
+  return ProxyAdmin;
 }
 
 function wrapProvider(provider: TruffleProvider): EthereumProvider {
