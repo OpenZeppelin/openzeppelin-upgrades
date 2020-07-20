@@ -23,3 +23,20 @@ export async function fetchOrDeploy(
   await manifest.storeDeployment(version, deployed);
   return deployed.address;
 }
+
+export async function fetchOrDeployAdmin(provider: EthereumProvider, deploy: () => Promise<string>): Promise<string> {
+  const manifest = new Manifest(await getChainId(provider));
+
+  const fetched = await manifest.getAdmin();
+
+  if (fetched) {
+    const code = await getCode(provider, fetched);
+    if (code !== '0x') {
+      return fetched;
+    }
+  }
+
+  const deployed = await deploy();
+  await manifest.setAdmin(deployed);
+  return deployed;
+}

@@ -17,6 +17,7 @@ function testFile(name) {
       await proc.execFile('node', [name], { cwd: 'test' });
       t.pass();
     } catch (e) {
+      t.log(e.stdout);
       t.fail(e.stderr);
     }
   });

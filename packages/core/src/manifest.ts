@@ -7,6 +7,7 @@ interface ManifestData {
   impls: {
     [version in string]: Deployment;
   };
+  admin?: string;
 }
 
 export interface Deployment {
@@ -14,7 +15,7 @@ export interface Deployment {
   layout: StorageLayout;
 }
 
-function defaultManifest() {
+function defaultManifest(): ManifestData {
   return {
     impls: {},
   };
@@ -27,6 +28,14 @@ export class Manifest {
 
   constructor(chainId: string) {
     this.file = path.join(manifestDir, `${chainId}.json`);
+  }
+
+  async getAdmin(): Promise<string | undefined> {
+    return (await this.read()).admin;
+  }
+
+  async setAdmin(address: string): Promise<void> {
+    await this.update(data => (data.admin = address));
   }
 
   async getDeployment(version: string): Promise<Deployment | undefined> {

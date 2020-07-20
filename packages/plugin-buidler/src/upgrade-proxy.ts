@@ -10,10 +10,11 @@ import {
   getVersionId,
   Manifest,
   getImplementationAddress,
+  getAdminAddress,
   getChainId,
 } from '@openzeppelin/upgrades-core';
 
-import { getProxyFactory } from './proxy-factory';
+import { getProxyAdminFactory } from './proxy-factory';
 
 export async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFactory): Promise<Contract> {
   const { provider } = network;
@@ -21,9 +22,6 @@ export async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFa
 
   const version = getVersionId(ImplFactory.bytecode);
   assertUpgradeSafe(validations, version);
-
-  const ProxyFactory = await getProxyFactory(ImplFactory.signer);
-  const proxy = ProxyFactory.attach(proxyAddress);
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const manifest = new Manifest(await getChainId(provider));
@@ -37,7 +35,10 @@ export async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFa
     return { address, layout };
   });
 
-  await proxy.upgradeTo(nextImpl);
+  const AdminFactory = await getProxyAdminFactory(ImplFactory.signer);
+  const admin = await AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
+
+  await admin.upgrade(proxyAddress, nextImpl);
 
   return ImplFactory.attach(proxyAddress);
 }
