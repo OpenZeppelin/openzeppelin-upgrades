@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 import { internalTask, extendEnvironment } from '@nomiclabs/buidler/config';
 import { TASK_COMPILE_RUN_COMPILER } from '@nomiclabs/buidler/builtin-tasks/task-names';
 import { lazyObject } from '@nomiclabs/buidler/plugins';
