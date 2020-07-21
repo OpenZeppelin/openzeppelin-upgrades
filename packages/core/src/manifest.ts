@@ -45,6 +45,7 @@ export class Manifest {
   }
 
   async storeDeployment(version: string, deployment: ImplDeployment): Promise<void> {
+    deployment = pick(deployment, ['address', 'layout']); // remove excess properties
     await this.update(data => (data.impls[version] = deployment));
   }
 
