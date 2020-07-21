@@ -19,7 +19,8 @@
     "ava": "^3.9.0",
     "ethers": "^5.0.5",
     "fgbg": "^0.1.4",
-    "promisified": "^0.5.0"
+    "promisified": "^0.5.0",
+    "rimraf": "^3.0.2"
   },
   "dependencies": {
     "@openzeppelin/upgrades-core": "^0.1.0"
