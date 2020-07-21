@@ -14,12 +14,22 @@ export async function getStorageAt(
   address: string,
   position: string,
   block?: string,
-): Promise<string>;
-export async function getStorageAt(provider: EthereumProvider, ...args: [string, string, string?]): Promise<string> {
-  return provider.send('eth_getStorageAt', args);
+): Promise<string> {
+  return provider.send('eth_getStorageAt', paramsArray(address, position, block));
 }
 
-export async function getCode(provider: EthereumProvider, address: string, block?: string): Promise<string>;
-export async function getCode(provider: EthereumProvider, ...args: [string, string?]): Promise<string> {
-  return provider.send('eth_getCode', args);
+export async function getCode(provider: EthereumProvider, address: string, block?: string): Promise<string> {
+  return provider.send('eth_getCode', paramsArray(address, block));
+}
+
+// Ganache will fail if any items in the params array are undefined, so we use
+// this function to remove any undefined values from the tail of the array.
+// With TypeScript 4.0 it will be possible to statically assert that undefined
+// params are in tail position.
+function paramsArray<T extends (string | undefined)[]>(...args: T): T {
+  const rest = args.splice(args.indexOf(undefined));
+  if (rest.some(e => e !== undefined)) {
+    throw new Error('Array contains undefined values in non-tail position');
+  }
+  return args;
 }

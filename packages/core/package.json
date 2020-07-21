@@ -10,7 +10,8 @@
     "/artifacts/ProxyAdmin.json"
   ],
   "scripts": {
-    "prepare": "tsc -b && buidler compile",
+    "prepare": "tsc -b && yarn prepare:contracts",
+    "prepare:contracts": "buidler compile",
     "test": "tsc -b && buidler compile && ava",
     "test:watch": "buidler compile && fgbg 'ava --watch' 'tsc -b --watch'"
   },
