@@ -1,9 +1,9 @@
 import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import type { ContractFactory, Contract } from 'ethers';
+import fs from 'fs';
 
 import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId } from '@openzeppelin/upgrades-core';
 import { getProxyFactory } from './proxy-factory';
-import fs from 'fs';
 
 export type DeployFunction = (ImplFactory: ContractFactory, args: unknown[]) => Promise<Contract>;
 

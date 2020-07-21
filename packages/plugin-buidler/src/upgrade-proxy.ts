@@ -1,5 +1,6 @@
 import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import type { ContractFactory, Contract } from 'ethers';
+import fs from 'fs';
 
 import {
   assertUpgradeSafe,
@@ -13,7 +14,6 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyFactory } from './proxy-factory';
-import fs from 'fs';
 
 export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory) => Promise<Contract>;
 
