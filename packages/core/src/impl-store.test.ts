@@ -7,7 +7,7 @@ import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
 
-import { Deployment } from './manifest';
+import { ImplDeployment } from './manifest';
 import { fetchOrDeploy } from './impl-store';
 
 const rimraf = util.promisify(rimrafAsync);
@@ -50,7 +50,7 @@ function stubProvider() {
     get deployCount() {
       return addresses.size;
     },
-    async deploy(): Promise<Deployment> {
+    async deploy(): Promise<ImplDeployment> {
       const address = '0x' + crypto.randomBytes(20).toString('hex');
       addresses.add(address);
       return {

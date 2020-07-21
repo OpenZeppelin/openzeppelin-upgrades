@@ -1,17 +1,17 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 
+import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
 
-interface ManifestData {
+export interface ManifestData {
   impls: {
-    [version in string]: Deployment;
+    [version in string]: ImplDeployment;
   };
   admin?: string;
 }
 
-export interface Deployment {
-  address: string;
+export interface ImplDeployment extends Deployment {
   layout: StorageLayout;
 }
 
@@ -38,15 +38,15 @@ export class Manifest {
     await this.update(data => (data.admin = address));
   }
 
-  async getDeployment(version: string): Promise<Deployment | undefined> {
+  async getDeployment(version: string): Promise<ImplDeployment | undefined> {
     return (await this.read()).impls[version];
   }
 
-  async storeDeployment(version: string, deployment: Deployment): Promise<void> {
+  async storeDeployment(version: string, deployment: ImplDeployment): Promise<void> {
     await this.update(data => (data.impls[version] = deployment));
   }
 
-  async getDeploymentFromAddress(address: string): Promise<Deployment> {
+  async getDeploymentFromAddress(address: string): Promise<ImplDeployment> {
     const data = await this.read();
     const deployment = Object.values(data.impls).find(d => d.address === address);
     if (deployment === undefined) {

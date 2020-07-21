@@ -1,27 +1,22 @@
-import { Manifest, Deployment } from './manifest';
+import { Manifest, ImplDeployment } from './manifest';
 import { EthereumProvider, getChainId, getCode } from './provider';
+import { resumeOrDeploy } from './deployment';
 
 export async function fetchOrDeploy(
   version: string,
   provider: EthereumProvider,
-  deploy: () => Promise<Deployment>,
+  deploy: () => Promise<ImplDeployment>,
 ): Promise<string> {
   const manifest = new Manifest(await getChainId(provider));
-
   const fetched = await manifest.getDeployment(version);
 
-  if (fetched) {
-    const { address } = fetched;
-    const code = await getCode(provider, address);
-    // TODO: fail if code is missing in non-dev chains?
-    if (code !== '0x') {
-      return address;
-    }
+  const deployment = await resumeOrDeploy(provider, fetched, deploy);
+
+  if (fetched !== deployment) {
+    await manifest.storeDeployment(version, deployment);
   }
 
-  const deployed = await deploy();
-  await manifest.storeDeployment(version, deployed);
-  return deployed.address;
+  return deployment.address;
 }
 
 export async function fetchOrDeployAdmin(provider: EthereumProvider, deploy: () => Promise<string>): Promise<string> {
