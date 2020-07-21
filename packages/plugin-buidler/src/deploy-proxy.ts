@@ -25,10 +25,7 @@ export async function deployProxy(ImplFactory: ContractFactory, args: unknown[])
   });
 
   const AdminFactory = await getProxyAdminFactory(ImplFactory.signer);
-  const adminAddress = await fetchOrDeployAdmin(network.provider, async () => {
-    const { address } = await AdminFactory.deploy();
-    return address;
-  });
+  const adminAddress = await fetchOrDeployAdmin(network.provider, () => AdminFactory.deploy());
 
   // TODO: support choice of initializer function? support overloaded initialize function
   const data = ImplFactory.interface.encodeFunctionData('initialize', args);

@@ -59,10 +59,7 @@ export async function deployProxy(
   });
 
   const AdminFactory = await getProxyAdminFactory(Contract);
-  const adminAddress = await fetchOrDeployAdmin(provider, async () => {
-    const { address } = await deployer.deploy(AdminFactory);
-    return address;
-  });
+  const adminAddress = await fetchOrDeployAdmin(provider, () => deployer.deploy(AdminFactory));
 
   const data = await new Contract('').contract.methods.initialize(...args).encodeABI();
   const AdminUpgradeabilityProxy = await getProxyFactory(Contract);

@@ -1,6 +1,6 @@
 import { Manifest, ImplDeployment } from './manifest';
-import { EthereumProvider, getChainId, getCode } from './provider';
-import { resumeOrDeploy } from './deployment';
+import { EthereumProvider, getChainId } from './provider';
+import { Deployment, resumeOrDeploy } from './deployment';
 
 export async function fetchOrDeploy(
   version: string,
@@ -19,19 +19,18 @@ export async function fetchOrDeploy(
   return deployment.address;
 }
 
-export async function fetchOrDeployAdmin(provider: EthereumProvider, deploy: () => Promise<string>): Promise<string> {
+export async function fetchOrDeployAdmin(
+  provider: EthereumProvider,
+  deploy: () => Promise<Deployment>,
+): Promise<string> {
   const manifest = new Manifest(await getChainId(provider));
-
   const fetched = await manifest.getAdmin();
 
-  if (fetched) {
-    const code = await getCode(provider, fetched);
-    if (code !== '0x') {
-      return fetched;
-    }
+  const deployment = await resumeOrDeploy(provider, fetched, deploy);
+
+  if (fetched !== deployment) {
+    await manifest.setAdmin(deployment);
   }
 
-  const deployed = await deploy();
-  await manifest.setAdmin(deployed);
-  return deployed;
+  return deployment.address;
 }

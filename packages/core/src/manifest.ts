@@ -3,12 +3,13 @@ import { promises as fs } from 'fs';
 
 import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
+import { pick } from './utils/pick';
 
 export interface ManifestData {
   impls: {
     [version in string]: ImplDeployment;
   };
-  admin?: string;
+  admin?: Deployment;
 }
 
 export interface ImplDeployment extends Deployment {
@@ -30,12 +31,13 @@ export class Manifest {
     this.file = path.join(manifestDir, `${chainId}.json`);
   }
 
-  async getAdmin(): Promise<string | undefined> {
+  async getAdmin(): Promise<Deployment | undefined> {
     return (await this.read()).admin;
   }
 
-  async setAdmin(address: string): Promise<void> {
-    await this.update(data => (data.admin = address));
+  async setAdmin(deployment: Deployment): Promise<void> {
+    deployment = pick(deployment, ['address']); // remove excess properties
+    await this.update(data => (data.admin = deployment));
   }
 
   async getDeployment(version: string): Promise<ImplDeployment | undefined> {
