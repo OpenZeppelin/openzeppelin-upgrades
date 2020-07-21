@@ -2,7 +2,7 @@ import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import type { ContractFactory, Contract } from 'ethers';
 import fs from 'fs';
 
-import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getDeploymentVersion } from '@openzeppelin/upgrades-core';
+import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersion } from '@openzeppelin/upgrades-core';
 
 import { getProxyFactory } from './proxy-factory';
 
@@ -12,12 +12,12 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
   return async function deployProxy(ImplFactory, args) {
     const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
-    const version = getDeploymentVersion(ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version);
+    const version = getVersion(ImplFactory.bytecode);
+    assertUpgradeSafe(validations, version.validation);
 
-    const impl = await fetchOrDeploy(version, bre.network.provider, async () => {
+    const impl = await fetchOrDeploy(version.deployment, bre.network.provider, async () => {
       const { address } = await ImplFactory.deploy();
-      const layout = getStorageLayout(validations, version);
+      const layout = getStorageLayout(validations, version.validation);
       return { address, layout };
     });
 

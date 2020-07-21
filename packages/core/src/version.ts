@@ -1,12 +1,16 @@
 import crypto from 'crypto';
 import cbor from 'cbor';
 
-export function getDeploymentVersion(bytecode: string): string {
-  return hashBytecode(bytecode);
+interface Version {
+  deployment: string;
+  validation: string;
 }
 
-export function getValidationVersion(bytecode: string): string {
-  return hashBytecodeWithoutMetadata(bytecode);
+export function getVersion(bytecode: string): Version {
+  return {
+    deployment: hashBytecodeWithoutMetadata(bytecode),
+    validation: hashBytecode(bytecode),
+  };
 }
 
 export function hashBytecode(bytecode: string): string {

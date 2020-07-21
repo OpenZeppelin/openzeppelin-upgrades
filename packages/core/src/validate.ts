@@ -3,7 +3,7 @@ import type { ContractDefinition } from 'solidity-ast';
 import chalk from 'chalk';
 
 import { SolcOutput } from './solc-api';
-import { getValidationVersion } from './version';
+import { getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
 import { UpgradesError } from './error';
 import { SrcDecoder } from './src-decoder';
@@ -53,7 +53,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.bytecode.object;
-      const version = bytecode === '' ? undefined : getValidationVersion(bytecode);
+      const version = bytecode === '' ? undefined : getVersion(bytecode).validation;
       validation[contractName] = {
         version,
         inherit: [],
