@@ -5,7 +5,7 @@ import {
   assertStorageUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
-  getDeploymentVersion,
+  getVersion,
   Manifest,
   getImplementationAddress,
   getChainId,
@@ -45,13 +45,13 @@ export async function deployProxy(
 
   const validations = await validateArtifacts();
 
-  const version = getDeploymentVersion(Contract.bytecode);
-  assertUpgradeSafe(validations, version);
+  const version = getVersion(Contract.bytecode);
+  assertUpgradeSafe(validations, version.validation);
 
   const provider = wrapProvider(deployer.provider);
-  const impl = await fetchOrDeploy(version, provider, async () => {
+  const impl = await fetchOrDeploy(version.deployment, provider, async () => {
     const { address } = await deployer.deploy(Contract);
-    const layout = getStorageLayout(validations, version);
+    const layout = getStorageLayout(validations, version.validation);
     return { address, layout };
   });
 
@@ -74,8 +74,8 @@ export async function upgradeProxy(
 
   const validations = await validateArtifacts();
 
-  const version = getDeploymentVersion(Contract.bytecode);
-  assertUpgradeSafe(validations, version);
+  const version = getVersion(Contract.bytecode);
+  assertUpgradeSafe(validations, version.validation);
 
   const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
   const proxy = new AdminUpgradeabilityProxy(proxyAddress);
@@ -84,10 +84,10 @@ export async function upgradeProxy(
   const manifest = new Manifest(await getChainId(provider));
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
-  const layout = getStorageLayout(validations, version);
+  const layout = getStorageLayout(validations, version.validation);
   assertStorageUpgradeSafe(deployment.layout, layout);
 
-  const nextImpl = await fetchOrDeploy(version, provider, async () => {
+  const nextImpl = await fetchOrDeploy(version.deployment, provider, async () => {
     const { address } = await deployer.deploy(Contract);
     return { address, layout };
   });
