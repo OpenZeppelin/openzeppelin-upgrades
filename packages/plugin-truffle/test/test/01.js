@@ -5,10 +5,10 @@ const { deployProxy, upgradeProxy } = require('@openzeppelin/upgrades-truffle');
 const Greeter = artifacts.require('Greeter');
 const GreeterV2 = artifacts.require('GreeterV2');
 
-contract('Greeter', function ([, other]) {
+contract('Greeter', function () {
   it('greeting', async function () {
     const greeter = await Greeter.deployed();
-    assert.strictEqual(await greeter.greet({ from: other }), 'Hello Truffle');
+    assert.strictEqual(await greeter.greet(), 'Hello Truffle');
   });
 
   it('deployProxy', async function () {

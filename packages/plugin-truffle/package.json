@@ -12,6 +12,7 @@
     "test": "tsc -b && bash test.sh"
   },
   "devDependencies": {
+    "rimraf": "^3.0.2"
   },
   "dependencies": {
     "@openzeppelin/upgrades-core": "^0.1.0",
