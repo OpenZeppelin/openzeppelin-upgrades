@@ -5,7 +5,7 @@ import {
   assertStorageUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
-  getVersionId,
+  getDeploymentVersion,
   Manifest,
   getImplementationAddress,
   getChainId,
@@ -45,7 +45,7 @@ export async function deployProxy(
 
   const validations = await validateArtifacts();
 
-  const version = getVersionId(Contract.bytecode);
+  const version = getDeploymentVersion(Contract.bytecode);
   assertUpgradeSafe(validations, version);
 
   const provider = wrapProvider(deployer.provider);
@@ -74,7 +74,7 @@ export async function upgradeProxy(
 
   const validations = await validateArtifacts();
 
-  const version = getVersionId(Contract.bytecode);
+  const version = getDeploymentVersion(Contract.bytecode);
   assertUpgradeSafe(validations, version);
 
   const AdminUpgradeabilityProxy = await getProxyFactory(Contract);

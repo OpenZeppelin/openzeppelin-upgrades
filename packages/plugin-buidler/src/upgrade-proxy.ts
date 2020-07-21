@@ -7,7 +7,7 @@ import {
   assertStorageUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
-  getVersionId,
+  getDeploymentVersion,
   Manifest,
   getImplementationAddress,
   getChainId,
@@ -19,7 +19,7 @@ export async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFa
   const { provider } = network;
   const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
-  const version = getVersionId(ImplFactory.bytecode);
+  const version = getDeploymentVersion(ImplFactory.bytecode);
   assertUpgradeSafe(validations, version);
 
   const ProxyFactory = await getProxyFactory(ImplFactory.signer);
