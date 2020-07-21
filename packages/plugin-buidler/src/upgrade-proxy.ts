@@ -1,6 +1,6 @@
-import { network } from '@nomiclabs/buidler';
-import fs from 'fs';
+import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import type { ContractFactory, Contract } from 'ethers';
+import fs from 'fs';
 
 import {
   assertUpgradeSafe,
@@ -16,29 +16,33 @@ import {
 
 import { getProxyAdminFactory } from './proxy-factory';
 
-export async function upgradeProxy(proxyAddress: string, ImplFactory: ContractFactory): Promise<Contract> {
-  const { provider } = network;
-  const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
+export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory) => Promise<Contract>;
 
-  const version = getVersionId(ImplFactory.bytecode);
-  assertUpgradeSafe(validations, version);
+export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunction {
+  return async function upgradeProxy(proxyAddress, ImplFactory) {
+    const { provider } = bre.network;
+    const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
-  const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-  const manifest = new Manifest(await getChainId(provider));
-  const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
+    const version = getVersionId(ImplFactory.bytecode);
+    assertUpgradeSafe(validations, version);
 
-  const layout = getStorageLayout(validations, version);
-  assertStorageUpgradeSafe(deployment.layout, layout);
+    const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
+    const manifest = new Manifest(await getChainId(provider));
+    const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
-  const nextImpl = await fetchOrDeploy(version, provider, async () => {
-    const { address } = await ImplFactory.deploy();
-    return { address, layout };
-  });
+    const layout = getStorageLayout(validations, version);
+    assertStorageUpgradeSafe(deployment.layout, layout);
 
-  const AdminFactory = await getProxyAdminFactory(ImplFactory.signer);
-  const admin = await AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
+    const nextImpl = await fetchOrDeploy(version, provider, async () => {
+      const { address } = await ImplFactory.deploy();
+      return { address, layout };
+    });
 
-  await admin.upgrade(proxyAddress, nextImpl);
+    const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
+    const admin = await AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
 
-  return ImplFactory.attach(proxyAddress);
+    await admin.upgrade(proxyAddress, nextImpl);
+
+    return ImplFactory.attach(proxyAddress);
+  };
 }
