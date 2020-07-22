@@ -11,7 +11,7 @@ import { SrcDecoder } from './src-decoder';
 export type Validation = Record<string, ValidationResult>;
 
 export interface ValidationResult {
-  version: Version;
+  version?: Version;
   inherit: string[];
   errors: ValidationError[];
   layout: StorageLayout;
@@ -53,7 +53,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.bytecode.object;
-      const version = getVersion(bytecode);
+      const version = bytecode === '' ? undefined : getVersion(bytecode);
       validation[contractName] = {
         version,
         inherit: [],
@@ -98,10 +98,6 @@ export function getContractVersion(validation: Validation, contractName: string)
 }
 
 function getContractName(validation: Validation, version: Version): string {
-  if (version === undefined) {
-    throw new Error(`Contract is abstract`);
-  }
-
   const contractName = Object.keys(validation).find(
     name => validation[name].version?.withMetadata === version.withMetadata,
   );
