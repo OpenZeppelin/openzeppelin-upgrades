@@ -1,6 +1,6 @@
 import test from 'ava';
 import { promises as fs } from 'fs';
-import { hashBytecodeWithoutMetadata, hashBytecode } from './version';
+import { getVersion, hashBytecode } from './version';
 
 const contractBytecode = '01234567890abcdef';
 
@@ -12,9 +12,11 @@ test('same code different formatting produces different metadata', async t => {
 
   const GreeterBytecode = await getBytecodeByContractName('Greeter');
   const GreeterDifferentFormattingBytecode = await getBytecodeByContractName('GreeterDifferentFormatting');
+  const GreeterVersion = getVersion(GreeterBytecode);
+  const GreeterDifferentVersion = getVersion(GreeterDifferentFormattingBytecode);
 
-  t.not(hashBytecode(GreeterBytecode), hashBytecode(GreeterDifferentFormattingBytecode));
-  t.is(hashBytecodeWithoutMetadata(GreeterBytecode), hashBytecodeWithoutMetadata(GreeterDifferentFormattingBytecode));
+  t.not(GreeterVersion?.withMetadata, GreeterDifferentVersion?.withMetadata);
+  t.is(GreeterVersion?.withoutMetadata, GreeterDifferentVersion?.withoutMetadata);
 });
 
 test('removes metadata from Solidity 0.4 bytecode', t => {
@@ -22,8 +24,9 @@ test('removes metadata from Solidity 0.4 bytecode', t => {
   const swarmHashWrapper = `65627a7a72305820${swarmHash}`;
   const metadata = `a1${swarmHashWrapper}0029`;
   const bytecode = `0x${contractBytecode}${metadata}`;
+  const version = getVersion(bytecode);
 
-  t.is(hashBytecodeWithoutMetadata(bytecode), hashBytecode(`0x${contractBytecode}`));
+  t.is(version?.withoutMetadata, hashBytecode(`0x${contractBytecode}`));
 });
 
 test('removes metadata from Solidity ^0.5.9 bytecode', t => {
@@ -34,22 +37,25 @@ test('removes metadata from Solidity ^0.5.9 bytecode', t => {
   const solcVersionWrapper = '64736f6c6343000509';
   const metadata = `a2${swarmHashWrapper}${solcVersionWrapper}0032`;
   const bytecode = `0x${contractBytecode}${metadata}`;
+  const version = getVersion(bytecode);
 
-  t.is(hashBytecodeWithoutMetadata(bytecode), hashBytecode(`0x${contractBytecode}`));
+  t.is(version?.withoutMetadata, hashBytecode(`0x${contractBytecode}`));
 });
 
 test('does not change the bytecode if metadata encoding is invalid', t => {
   const swarmHash = '69b1869ae52f674ffccdd8f6d35de04d578a778e919a1b41b7a2177668e08e1a';
   const invalidSwarmHashWrapper = `a165627a7a72305821${swarmHash}0029`;
   const bytecode = `0x${contractBytecode}${invalidSwarmHashWrapper}`;
+  const version = getVersion(bytecode);
 
-  t.is(hashBytecodeWithoutMetadata(bytecode), hashBytecode(bytecode));
+  t.is(version?.withoutMetadata, hashBytecode(bytecode));
 });
 
 test('does not change the bytecode if metadata length is not reliable', t => {
   const swarmHash = '69b1869ae52f674ffccdd8f6d35de04d578a778e919a1b41b7a2177668e08e1a';
   const invalidSwarmHashWrapper = `a165627a7a72305821${swarmHash}9929`;
   const bytecode = `0x${contractBytecode}${invalidSwarmHashWrapper}`;
+  const version = getVersion(bytecode);
 
-  t.is(hashBytecodeWithoutMetadata(bytecode), hashBytecode(bytecode));
+  t.is(version?.withoutMetadata, hashBytecode(bytecode));
 });
