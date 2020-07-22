@@ -21,8 +21,8 @@ test.after(async () => {
   await rimraf(process.cwd());
 });
 
-const version1 = getVersion('1');
-const version2 = getVersion('2');
+const version1 = getVersion('01');
+const version2 = getVersion('02');
 
 test('deploys on cache miss', async t => {
   const provider = stubProvider();
