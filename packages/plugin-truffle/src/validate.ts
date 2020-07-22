@@ -6,8 +6,8 @@ import { SolcInput, SolcOutput } from '@openzeppelin/upgrades-core/dist/solc-api
 
 import { TruffleArtifact } from './truffle';
 
-export async function validateArtifacts(): Promise<Record<string, ValidationResult>> {
-  const artifacts = await readArtifacts('build/contracts');
+export async function validateArtifacts(artifactsPath: string): Promise<Record<string, ValidationResult>> {
+  const artifacts = await readArtifacts(artifactsPath);
   const { input, output } = reconstructSolcInputOutput(artifacts);
   const srcDecoder = solcInputOutputDecoder(input, output);
   return validate(output, srcDecoder);

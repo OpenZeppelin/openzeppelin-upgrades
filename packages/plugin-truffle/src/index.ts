@@ -27,7 +27,10 @@ interface Deployer {
   deploy(contract: ContractClass, ...args: unknown[]): Promise<ContractInstance>;
 }
 
-declare const config: { provider: TruffleProvider };
+declare const config: {
+  provider: TruffleProvider;
+  contracts_build_directory: string;
+};
 
 const defaultDeployer: Deployer = {
   get provider() {
@@ -45,7 +48,7 @@ export async function deployProxy(
 ): Promise<ContractInstance> {
   const { deployer = defaultDeployer } = opts;
 
-  const validations = await validateArtifacts();
+  const validations = await validateArtifacts(config.contracts_build_directory);
 
   const version = getVersionId(Contract.bytecode);
   assertUpgradeSafe(validations, version);
@@ -76,7 +79,7 @@ export async function upgradeProxy(
   const { deployer = defaultDeployer } = opts;
   const provider = wrapProvider(deployer.provider);
 
-  const validations = await validateArtifacts();
+  const validations = await validateArtifacts(config.contracts_build_directory);
 
   const version = getVersionId(Contract.bytecode);
   assertUpgradeSafe(validations, version);
