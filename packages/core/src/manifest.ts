@@ -1,21 +1,24 @@
 import path from 'path';
 import { promises as fs } from 'fs';
+import { EthereumProvider, getChainId } from './provider';
 
+import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
+import { pick } from './utils/pick';
 import type { Version } from './version';
 
-interface ManifestData {
+export interface ManifestData {
   impls: {
-    [version in string]: Deployment;
+    [version in string]: ImplDeployment;
   };
+  admin?: Deployment;
 }
 
-export interface Deployment {
-  address: string;
+export interface ImplDeployment extends Deployment {
   layout: StorageLayout;
 }
 
-function defaultManifest() {
+function defaultManifest(): ManifestData {
   return {
     impls: {},
   };
@@ -26,27 +29,33 @@ const manifestDir = '.openzeppelin';
 export class Manifest {
   file: string;
 
+  static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
+    return new Manifest(await getChainId(provider));
+  }
+
   constructor(chainId: string) {
     this.file = path.join(manifestDir, `${chainId}.json`);
   }
 
-  async getDeployment(version: Version): Promise<Deployment | undefined> {
-    if (version === undefined) {
-      throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
-    }
-
-    return (await this.read()).impls[version.withoutMetadata];
+  async getAdmin(): Promise<Deployment | undefined> {
+    return (await this.read()).admin;
   }
 
-  async storeDeployment(version: Version, deployment: Deployment): Promise<void> {
-    if (version === undefined) {
-      throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
-    }
-
-    await this.update(data => (data.impls[version.withoutMetadata] = deployment));
+  async setAdmin(deployment: Deployment): Promise<void> {
+    deployment = pick(deployment, ['address']); // remove excess properties
+    await this.update(data => (data.admin = deployment));
   }
 
-  async getDeploymentFromAddress(address: string): Promise<Deployment> {
+  async getDeployment(version: Version): Promise<ImplDeployment | undefined> {
+    return (await this.read()).impls[version?.withoutMetadata];
+  }
+
+  async storeDeployment(version: Version, deployment: ImplDeployment): Promise<void> {
+    deployment = pick(deployment, ['address', 'layout']); // remove excess properties
+    await this.update(data => (data.impls[version?.withoutMetadata] = deployment));
+  }
+
+  async getDeploymentFromAddress(address: string): Promise<ImplDeployment> {
     const data = await this.read();
     const deployment = Object.values(data.impls).find(d => d.address === address);
     if (deployment === undefined) {
