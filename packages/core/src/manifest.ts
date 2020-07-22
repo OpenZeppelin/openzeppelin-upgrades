@@ -47,12 +47,20 @@ export class Manifest {
   }
 
   async getDeployment(version: Version): Promise<ImplDeployment | undefined> {
-    return (await this.read()).impls[version?.withoutMetadata];
+    if (version === undefined) {
+      throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
+    }
+
+    return (await this.read()).impls[version.withoutMetadata];
   }
 
   async storeDeployment(version: Version, deployment: ImplDeployment): Promise<void> {
+    if (version === undefined) {
+      throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
+    }
+
     deployment = pick(deployment, ['address', 'layout']); // remove excess properties
-    await this.update(data => (data.impls[version?.withoutMetadata] = deployment));
+    await this.update(data => (data.impls[version.withoutMetadata] = deployment));
   }
 
   async getDeploymentFromAddress(address: string): Promise<ImplDeployment> {
