@@ -1,5 +1,5 @@
 import { Manifest, ImplDeployment } from './manifest';
-import { EthereumProvider, getChainId } from './provider';
+import { EthereumProvider } from './provider';
 import { Deployment, resumeOrDeploy } from './deployment';
 
 export async function fetchOrDeploy(
@@ -7,7 +7,7 @@ export async function fetchOrDeploy(
   provider: EthereumProvider,
   deploy: () => Promise<ImplDeployment>,
 ): Promise<string> {
-  const manifest = new Manifest(await getChainId(provider));
+  const manifest = await Manifest.forNetwork(provider);
   const fetched = await manifest.getDeployment(version);
 
   const deployment = await resumeOrDeploy(provider, fetched, deploy);
@@ -23,7 +23,7 @@ export async function fetchOrDeployAdmin(
   provider: EthereumProvider,
   deploy: () => Promise<Deployment>,
 ): Promise<string> {
-  const manifest = new Manifest(await getChainId(provider));
+  const manifest = await Manifest.forNetwork(provider);
   const fetched = await manifest.getAdmin();
 
   const deployment = await resumeOrDeploy(provider, fetched, deploy);

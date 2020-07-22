@@ -11,7 +11,6 @@ import {
   Manifest,
   getImplementationAddress,
   getAdminAddress,
-  getChainId,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyAdminFactory } from './proxy-factory';
@@ -27,7 +26,7 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     assertUpgradeSafe(validations, version);
 
     const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-    const manifest = new Manifest(await getChainId(provider));
+    const manifest = await Manifest.forNetwork(provider);
     const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
     const layout = getStorageLayout(validations, version);

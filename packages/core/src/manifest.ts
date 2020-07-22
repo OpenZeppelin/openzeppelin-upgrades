@@ -1,5 +1,6 @@
 import path from 'path';
 import { promises as fs } from 'fs';
+import { EthereumProvider, getChainId } from './provider';
 
 import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
@@ -26,6 +27,10 @@ const manifestDir = '.openzeppelin';
 
 export class Manifest {
   file: string;
+
+  static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
+    return new Manifest(await getChainId(provider));
+  }
 
   constructor(chainId: string) {
     this.file = path.join(manifestDir, `${chainId}.json`);
