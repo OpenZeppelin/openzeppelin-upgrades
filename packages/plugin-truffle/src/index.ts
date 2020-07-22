@@ -15,7 +15,7 @@ import {
 import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/AdminUpgradeabilityProxy.json';
 import ProxyAdminArtifact from '@openzeppelin/upgrades-core/artifacts/ProxyAdmin.json';
 
-import { TruffleContract, ContractClass, ContractInstance, TruffleProvider } from './truffle';
+import { TruffleContract, ContractClass, ContractInstance, TruffleProvider, getTruffleConfig } from './truffle';
 import { validateArtifacts } from './validate';
 
 interface Options {
@@ -27,11 +27,9 @@ interface Deployer {
   deploy(contract: ContractClass, ...args: unknown[]): Promise<ContractInstance>;
 }
 
-declare const config: { provider: TruffleProvider };
-
 const defaultDeployer: Deployer = {
   get provider() {
-    return config.provider;
+    return getTruffleConfig().provider;
   },
   async deploy(Contract: ContractClass, ...args: unknown[]): Promise<ContractInstance> {
     return Contract.new(...args);
@@ -45,7 +43,7 @@ export async function deployProxy(
 ): Promise<ContractInstance> {
   const { deployer = defaultDeployer } = opts;
 
-  const validations = await validateArtifacts();
+  const validations = await validateArtifacts(getTruffleConfig().contracts_build_directory);
 
   const version = getVersionId(Contract.bytecode);
   assertUpgradeSafe(validations, version);
@@ -76,7 +74,7 @@ export async function upgradeProxy(
   const { deployer = defaultDeployer } = opts;
   const provider = wrapProvider(deployer.provider);
 
-  const validations = await validateArtifacts();
+  const validations = await validateArtifacts(getTruffleConfig().contracts_build_directory);
 
   const version = getVersionId(Contract.bytecode);
   assertUpgradeSafe(validations, version);
