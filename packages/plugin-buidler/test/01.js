@@ -9,9 +9,7 @@ async function main() {
   const greeter2 = await upgrades.upgradeProxy(greeter.address, GreeterV2);
 
   console.log('Resetting greeting...');
-  const signer3 = (await ethers.getSigners())[1];
-  const greeter3 = greeter2.connect(signer3);
-  await greeter3.resetGreeting();
+  await greeter2.resetGreeting();
 }
 
 // We recommend this pattern to be able to use async/await everywhere

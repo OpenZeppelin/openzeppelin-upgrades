@@ -10,10 +10,11 @@ import {
   getVersionId,
   Manifest,
   getImplementationAddress,
+  getAdminAddress,
   getChainId,
 } from '@openzeppelin/upgrades-core';
 
-import { getProxyFactory } from './proxy-factory';
+import { getProxyAdminFactory } from './proxy-factory';
 
 export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory) => Promise<Contract>;
 
@@ -24,9 +25,6 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
 
     const version = getVersionId(ImplFactory.bytecode);
     assertUpgradeSafe(validations, version);
-
-    const ProxyFactory = await getProxyFactory(bre, ImplFactory.signer);
-    const proxy = ProxyFactory.attach(proxyAddress);
 
     const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
     const manifest = new Manifest(await getChainId(provider));
@@ -40,7 +38,15 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
       return { address, layout };
     });
 
-    await proxy.upgradeTo(nextImpl);
+    const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
+    const admin = await AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
+    const manifestAdmin = await manifest.getAdmin();
+
+    if (admin.address !== manifestAdmin?.address) {
+      throw new Error('Proxy admin is not the registered ProxyAdmin contract');
+    }
+
+    await admin.upgrade(proxyAddress, nextImpl);
 
     return ImplFactory.attach(proxyAddress);
   };

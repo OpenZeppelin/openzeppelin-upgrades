@@ -2,8 +2,14 @@ import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import type { ContractFactory, Contract } from 'ethers';
 import fs from 'fs';
 
-import { assertUpgradeSafe, getStorageLayout, fetchOrDeploy, getVersionId } from '@openzeppelin/upgrades-core';
-import { getProxyFactory } from './proxy-factory';
+import {
+  assertUpgradeSafe,
+  getStorageLayout,
+  fetchOrDeploy,
+  fetchOrDeployAdmin,
+  getVersionId,
+} from '@openzeppelin/upgrades-core';
+import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 
 export type DeployFunction = (ImplFactory: ContractFactory, args: unknown[]) => Promise<Contract>;
 
@@ -20,10 +26,13 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
       return { address, layout };
     });
 
+    const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
+    const adminAddress = await fetchOrDeployAdmin(bre.network.provider, () => AdminFactory.deploy());
+
     // TODO: support choice of initializer function? support overloaded initialize function
     const data = ImplFactory.interface.encodeFunctionData('initialize', args);
     const ProxyFactory = await getProxyFactory(bre, ImplFactory.signer);
-    const proxy = await ProxyFactory.deploy(impl, await ImplFactory.signer.getAddress(), data);
+    const proxy = await ProxyFactory.deploy(impl, adminAddress, data);
 
     const inst = ImplFactory.attach(proxy.address);
     // inst.deployTransaction = proxy.deployTransaction;

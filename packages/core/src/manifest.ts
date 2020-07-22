@@ -1,20 +1,22 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 
+import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
+import { pick } from './utils/pick';
 
-interface ManifestData {
+export interface ManifestData {
   impls: {
-    [version in string]: Deployment;
+    [version in string]: ImplDeployment;
   };
+  admin?: Deployment;
 }
 
-export interface Deployment {
-  address: string;
+export interface ImplDeployment extends Deployment {
   layout: StorageLayout;
 }
 
-function defaultManifest() {
+function defaultManifest(): ManifestData {
   return {
     impls: {},
   };
@@ -29,15 +31,25 @@ export class Manifest {
     this.file = path.join(manifestDir, `${chainId}.json`);
   }
 
-  async getDeployment(version: string): Promise<Deployment | undefined> {
+  async getAdmin(): Promise<Deployment | undefined> {
+    return (await this.read()).admin;
+  }
+
+  async setAdmin(deployment: Deployment): Promise<void> {
+    deployment = pick(deployment, ['address']); // remove excess properties
+    await this.update(data => (data.admin = deployment));
+  }
+
+  async getDeployment(version: string): Promise<ImplDeployment | undefined> {
     return (await this.read()).impls[version];
   }
 
-  async storeDeployment(version: string, deployment: Deployment): Promise<void> {
+  async storeDeployment(version: string, deployment: ImplDeployment): Promise<void> {
+    deployment = pick(deployment, ['address', 'layout']); // remove excess properties
     await this.update(data => (data.impls[version] = deployment));
   }
 
-  async getDeploymentFromAddress(address: string): Promise<Deployment> {
+  async getDeploymentFromAddress(address: string): Promise<ImplDeployment> {
     const data = await this.read();
     const deployment = Object.values(data.impls).find(d => d.address === address);
     if (deployment === undefined) {
