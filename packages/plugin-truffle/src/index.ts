@@ -10,7 +10,6 @@ import {
   Manifest,
   getImplementationAddress,
   getAdminAddress,
-  getChainId,
   EthereumProvider,
 } from '@openzeppelin/upgrades-core';
 import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/AdminUpgradeabilityProxy.json';
@@ -86,7 +85,7 @@ export async function upgradeProxy(
   const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-  const manifest = new Manifest(await getChainId(provider));
+  const manifest = await Manifest.forNetwork(provider);
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
   const layout = getStorageLayout(validations, version);
