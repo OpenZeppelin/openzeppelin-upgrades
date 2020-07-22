@@ -9,6 +9,7 @@ import crypto from 'crypto';
 
 import { Deployment } from './manifest';
 import { fetchOrDeploy } from './impl-store';
+import { getVersion } from './version';
 
 const rimraf = util.promisify(rimrafAsync);
 
@@ -22,13 +23,13 @@ test.after(async () => {
 
 test('deploys on cache miss', async t => {
   const provider = stubProvider();
-  await fetchOrDeploy('version1', provider, provider.deploy);
+  await fetchOrDeploy(getVersion('version1'), provider, provider.deploy);
   t.is(provider.deployCount, 1);
 });
 
 test('reuses on cache hit', async t => {
   const provider = stubProvider();
-  const cachedDeploy = () => fetchOrDeploy('version1', provider, provider.deploy);
+  const cachedDeploy = () => fetchOrDeploy(getVersion('version1'), provider, provider.deploy);
   const address1 = await cachedDeploy();
   const address2 = await cachedDeploy();
   t.is(provider.deployCount, 1);
@@ -37,8 +38,8 @@ test('reuses on cache hit', async t => {
 
 test('does not reuse unrelated version', async t => {
   const provider = stubProvider();
-  const address1 = await fetchOrDeploy('version1', provider, provider.deploy);
-  const address2 = await fetchOrDeploy('version2', provider, provider.deploy);
+  const address1 = await fetchOrDeploy(getVersion('version1'), provider, provider.deploy);
+  const address2 = await fetchOrDeploy(getVersion('version2'), provider, provider.deploy);
   t.is(provider.deployCount, 2);
   t.not(address2, address1);
 });

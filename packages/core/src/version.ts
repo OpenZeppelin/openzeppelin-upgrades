@@ -1,16 +1,20 @@
 import crypto from 'crypto';
 import cbor from 'cbor';
 
-interface Version {
-  deployment: string;
-  validation: string;
+interface HashedBytecode {
+  withMetadata: string;
+  withoutMetadata: string;
 }
 
+export type Version = HashedBytecode | undefined;
+
 export function getVersion(bytecode: string): Version {
-  return {
-    deployment: hashBytecodeWithoutMetadata(bytecode),
-    validation: hashBytecode(bytecode),
-  };
+  if (bytecode !== '') {
+    return {
+      withMetadata: hashBytecode(bytecode),
+      withoutMetadata: hashBytecodeWithoutMetadata(bytecode),
+    };
+  }
 }
 
 export function hashBytecode(bytecode: string): string {

@@ -13,11 +13,11 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
     const version = getVersion(ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version.validation);
+    assertUpgradeSafe(validations, version);
 
-    const impl = await fetchOrDeploy(version.deployment, bre.network.provider, async () => {
+    const impl = await fetchOrDeploy(version, bre.network.provider, async () => {
       const { address } = await ImplFactory.deploy();
-      const layout = getStorageLayout(validations, version.validation);
+      const layout = getStorageLayout(validations, version);
       return { address, layout };
     });
 

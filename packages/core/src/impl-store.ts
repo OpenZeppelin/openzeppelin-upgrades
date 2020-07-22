@@ -1,8 +1,9 @@
 import { Manifest, Deployment } from './manifest';
 import { EthereumProvider, getChainId, getCode } from './provider';
+import type { Version } from './version';
 
 export async function fetchOrDeploy(
-  version: string,
+  version: Version,
   provider: EthereumProvider,
   deploy: () => Promise<Deployment>,
 ): Promise<string> {

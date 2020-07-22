@@ -2,6 +2,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 
 import { StorageLayout } from './storage';
+import type { Version } from './version';
 
 interface ManifestData {
   impls: {
@@ -29,12 +30,20 @@ export class Manifest {
     this.file = path.join(manifestDir, `${chainId}.json`);
   }
 
-  async getDeployment(version: string): Promise<Deployment | undefined> {
-    return (await this.read()).impls[version];
+  async getDeployment(version: Version): Promise<Deployment | undefined> {
+    if (version === undefined) {
+      throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
+    }
+
+    return (await this.read()).impls[version.withoutMetadata];
   }
 
-  async storeDeployment(version: string, deployment: Deployment): Promise<void> {
-    await this.update(data => (data.impls[version] = deployment));
+  async storeDeployment(version: Version, deployment: Deployment): Promise<void> {
+    if (version === undefined) {
+      throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
+    }
+
+    await this.update(data => (data.impls[version.withoutMetadata] = deployment));
   }
 
   async getDeploymentFromAddress(address: string): Promise<Deployment> {

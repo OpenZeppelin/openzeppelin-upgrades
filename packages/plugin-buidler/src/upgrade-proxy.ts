@@ -23,7 +23,7 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
     const version = getVersion(ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version.validation);
+    assertUpgradeSafe(validations, version);
 
     const ProxyFactory = await getProxyFactory(bre, ImplFactory.signer);
     const proxy = ProxyFactory.attach(proxyAddress);
@@ -32,10 +32,10 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     const manifest = new Manifest(await getChainId(provider));
     const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
-    const layout = getStorageLayout(validations, version.validation);
+    const layout = getStorageLayout(validations, version);
     assertStorageUpgradeSafe(deployment.layout, layout);
 
-    const nextImpl = await fetchOrDeploy(version.deployment, provider, async () => {
+    const nextImpl = await fetchOrDeploy(version, provider, async () => {
       const { address } = await ImplFactory.deploy();
       return { address, layout };
     });
