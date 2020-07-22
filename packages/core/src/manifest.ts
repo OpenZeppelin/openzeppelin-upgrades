@@ -5,6 +5,7 @@ import { EthereumProvider, getChainId } from './provider';
 import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
 import { pick } from './utils/pick';
+import type { Version } from './version';
 
 export interface ManifestData {
   impls: {
@@ -45,13 +46,13 @@ export class Manifest {
     await this.update(data => (data.admin = deployment));
   }
 
-  async getDeployment(version: string): Promise<ImplDeployment | undefined> {
-    return (await this.read()).impls[version];
+  async getDeployment(version: Version): Promise<ImplDeployment | undefined> {
+    return (await this.read()).impls[version.withoutMetadata];
   }
 
-  async storeDeployment(version: string, deployment: ImplDeployment): Promise<void> {
+  async storeDeployment(version: Version, deployment: ImplDeployment): Promise<void> {
     deployment = pick(deployment, ['address', 'layout']); // remove excess properties
-    await this.update(data => (data.impls[version] = deployment));
+    await this.update(data => (data.impls[version.withoutMetadata] = deployment));
   }
 
   async getDeploymentFromAddress(address: string): Promise<ImplDeployment> {

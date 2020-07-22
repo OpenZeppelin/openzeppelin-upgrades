@@ -6,7 +6,7 @@ import {
   getStorageLayout,
   fetchOrDeploy,
   fetchOrDeployAdmin,
-  getVersionId,
+  getVersion,
   Manifest,
   getImplementationAddress,
   getAdminAddress,
@@ -45,7 +45,7 @@ export async function deployProxy(
 
   const validations = await validateArtifacts(getTruffleConfig().contracts_build_directory);
 
-  const version = getVersionId(Contract.bytecode);
+  const version = getVersion(Contract.bytecode);
   assertUpgradeSafe(validations, version);
 
   const provider = wrapProvider(deployer.provider);
@@ -76,7 +76,7 @@ export async function upgradeProxy(
 
   const validations = await validateArtifacts(getTruffleConfig().contracts_build_directory);
 
-  const version = getVersionId(Contract.bytecode);
+  const version = getVersion(Contract.bytecode);
   assertUpgradeSafe(validations, version);
 
   const AdminFactory = await getProxyAdminFactory(Contract);

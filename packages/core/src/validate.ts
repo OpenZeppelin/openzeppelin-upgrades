@@ -3,7 +3,7 @@ import type { ContractDefinition } from 'solidity-ast';
 import chalk from 'chalk';
 
 import { SolcOutput } from './solc-api';
-import { getVersionId } from './version';
+import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
 import { UpgradesError } from './error';
 import { SrcDecoder } from './src-decoder';
@@ -11,7 +11,7 @@ import { SrcDecoder } from './src-decoder';
 export type Validation = Record<string, ValidationResult>;
 
 export interface ValidationResult {
-  version?: string;
+  version?: Version;
   inherit: string[];
   errors: ValidationError[];
   layout: StorageLayout;
@@ -53,7 +53,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.bytecode.object;
-      const version = bytecode === '' ? undefined : getVersionId(bytecode);
+      const version = bytecode === '' ? undefined : getVersion(bytecode);
       validation[contractName] = {
         version,
         inherit: [],
@@ -89,7 +89,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
   return validation;
 }
 
-export function getContractVersion(validation: Validation, contractName: string): string {
+export function getContractVersion(validation: Validation, contractName: string): Version {
   const { version } = validation[contractName];
   if (version === undefined) {
     throw new Error(`Contract ${contractName} is abstract`);
@@ -97,15 +97,19 @@ export function getContractVersion(validation: Validation, contractName: string)
   return version;
 }
 
-function getContractName(validation: Validation, version: string): string {
-  const contractName = Object.keys(validation).find(name => validation[name].version === version);
+function getContractName(validation: Validation, version: Version): string {
+  const contractName = Object.keys(validation).find(
+    name => validation[name].version?.withMetadata === version.withMetadata,
+  );
+
   if (contractName === undefined) {
     throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
   }
+
   return contractName;
 }
 
-export function getStorageLayout(validation: Validation, version: string): StorageLayout {
+export function getStorageLayout(validation: Validation, version: Version): StorageLayout {
   const contractName = getContractName(validation, version);
   const c = validation[contractName];
   const layout: StorageLayout = { storage: [], types: {} };
@@ -116,7 +120,7 @@ export function getStorageLayout(validation: Validation, version: string): Stora
   return layout;
 }
 
-export function assertUpgradeSafe(validation: Validation, version: string): void {
+export function assertUpgradeSafe(validation: Validation, version: Version): void {
   const contractName = getContractName(validation, version);
   const errors = getErrors(validation, version);
 
@@ -176,16 +180,13 @@ function describeError(e: ValidationError): string {
   return log;
 }
 
-export function getErrors(validation: Validation, version: string): ValidationError[] {
-  const contractName = Object.keys(validation).find(name => validation[name].version === version);
-  if (contractName === undefined) {
-    throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
-  }
+export function getErrors(validation: Validation, version: Version): ValidationError[] {
+  const contractName = getContractName(validation, version);
   const c = validation[contractName];
   return c.errors.concat(...c.inherit.map(name => validation[name].errors));
 }
 
-export function isUpgradeSafe(validation: Validation, version: string): boolean {
+export function isUpgradeSafe(validation: Validation, version: Version): boolean {
   return getErrors(validation, version).length == 0;
 }
 

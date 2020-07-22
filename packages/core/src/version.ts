@@ -1,8 +1,20 @@
 import crypto from 'crypto';
 import cbor from 'cbor';
 
-export function getVersionId(bytecode: string): string {
-  return hashBytecode(bytecode);
+export interface Version {
+  withMetadata: string;
+  withoutMetadata: string;
+}
+
+export function getVersion(bytecode: string): Version {
+  if (bytecode !== '') {
+    return {
+      withMetadata: hashBytecode(bytecode),
+      withoutMetadata: hashBytecodeWithoutMetadata(bytecode),
+    };
+  } else {
+    throw new Error('Abstract contract not allowed here');
+  }
 }
 
 export function hashBytecode(bytecode: string): string {

@@ -7,7 +7,7 @@ import {
   assertStorageUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
-  getVersionId,
+  getVersion,
   Manifest,
   getImplementationAddress,
   getAdminAddress,
@@ -22,7 +22,7 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     const { provider } = bre.network;
     const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
 
-    const version = getVersionId(ImplFactory.bytecode);
+    const version = getVersion(ImplFactory.bytecode);
     assertUpgradeSafe(validations, version);
 
     const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
