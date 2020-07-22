@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import { keccak256 } from 'ethereumjs-util';
 import cbor from 'cbor';
 
 export interface Version {
@@ -18,9 +18,8 @@ export function getVersion(bytecode: string): Version {
 }
 
 export function hashBytecode(bytecode: string): string {
-  const hash = crypto.createHash('sha256');
-  hash.update(bytecode.replace(/^0x/, ''));
-  return hash.digest().toString('base64');
+  const buf = Buffer.from(bytecode.replace(/^0x/, ''), 'hex');
+  return keccak256(buf).toString('hex');
 }
 
 export function hashBytecodeWithoutMetadata(bytecode: string): string {
