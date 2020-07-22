@@ -1,6 +1,5 @@
 import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import type { ContractFactory, Contract } from 'ethers';
-import fs from 'fs';
 
 import {
   assertUpgradeSafe,
@@ -14,13 +13,14 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyAdminFactory } from './proxy-factory';
+import { readValidations } from './validations';
 
 export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory) => Promise<Contract>;
 
 export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunction {
   return async function upgradeProxy(proxyAddress, ImplFactory) {
     const { provider } = bre.network;
-    const validations = JSON.parse(fs.readFileSync('cache/validations.json', 'utf8'));
+    const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
     assertUpgradeSafe(validations, version);
