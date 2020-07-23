@@ -14,6 +14,7 @@ import {
 
 import { getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
+import { deploy } from './utils/deploy';
 
 export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory) => Promise<Contract>;
 
@@ -33,8 +34,8 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     assertStorageUpgradeSafe(deployment.layout, layout);
 
     const nextImpl = await fetchOrDeploy(version, provider, async () => {
-      const { address } = await ImplFactory.deploy();
-      return { address, layout };
+      const deployment = await deploy(ImplFactory);
+      return { ...deployment, layout };
     });
 
     const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);

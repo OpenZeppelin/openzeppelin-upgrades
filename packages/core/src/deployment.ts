@@ -2,6 +2,7 @@ import { EthereumProvider, getCode } from './provider';
 
 export interface Deployment {
   address: string;
+  txHash: string;
 }
 
 export async function resumeOrDeploy<T extends Deployment>(

@@ -56,9 +56,11 @@ function stubProvider() {
     },
     async deploy(): Promise<ImplDeployment> {
       const address = '0x' + crypto.randomBytes(20).toString('hex');
+      const txHash = '0x' + crypto.randomBytes(32).toString('hex');
       addresses.add(address);
       return {
         address,
+        txHash,
         layout: {
           storage: [],
           types: {},

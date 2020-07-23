@@ -97,12 +97,17 @@ export class Manifest {
   }
 }
 
+const DeploymentCodec = t.strict({
+  address: t.string,
+  txHash: t.string,
+});
+
 const ManifestDataCodec = t.intersection([
   t.strict({
-    impls: t.record(t.string, t.strict({ address: t.string, layout: t.any })),
+    impls: t.record(t.string, t.intersection([DeploymentCodec, t.strict({ layout: t.any })])),
   }),
   t.partial({
-    admin: t.strict({ address: t.string }),
+    admin: DeploymentCodec,
   }),
 ]);
 
