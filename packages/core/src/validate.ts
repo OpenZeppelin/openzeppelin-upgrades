@@ -13,6 +13,7 @@ export type Validation = Record<string, ValidationResult>;
 export interface ValidationResult {
   version?: string;
   inherit: string[];
+  libraries: string[];
   errors: ValidationError[];
   layout: StorageLayout;
 }
@@ -49,6 +50,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
   const validation: Validation = {};
   const fromId: Record<number, string> = {};
   const inheritIds: Record<string, number[]> = {};
+  const libraryIds: Record<string, number[]> = {};
 
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
@@ -57,6 +59,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
       validation[contractName] = {
         version,
         inherit: [],
+        libraries: [],
         errors: [],
         layout: {
           storage: [],
@@ -70,6 +73,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
       if (contractDef.name in validation) {
         inheritIds[contractDef.name] = contractDef.linearizedBaseContracts.slice(1);
+        libraryIds[contractDef.name] = getLinkedLibrariesIds(contractDef);
 
         validation[contractDef.name].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
@@ -84,6 +88,10 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
   for (const contractName in inheritIds) {
     validation[contractName].inherit = inheritIds[contractName].map(id => fromId[id]);
+  }
+
+  for (const contractName in libraryIds) {
+    validation[contractName].libraries = libraryIds[contractName].map(id => fromId[id]);
   }
 
   return validation;
@@ -182,7 +190,9 @@ export function getErrors(validation: Validation, version: string): ValidationEr
     throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
   }
   const c = validation[contractName];
-  return c.errors.concat(...c.inherit.map(name => validation[name].errors));
+  return c.errors
+    .concat(...c.inherit.map(name => validation[name].errors))
+    .concat(...c.libraries.map(name => validation[name].errors));
 }
 
 export function isUpgradeSafe(validation: Validation, version: string): boolean {
@@ -244,4 +254,21 @@ function* getStateVariableErrors(
       }
     }
   }
+}
+
+function getLinkedLibrariesIds(contractDef: ContractDefinition): number[] {
+  const libraries = [...findAll('UsingForDirective', contractDef)].map(
+    usingForDirective => usingForDirective.libraryName.referencedDeclaration,
+  );
+
+  const explicitUsage = [...findAll('Identifier', contractDef)]
+    .filter(identifier => identifier.typeDescriptions.typeString?.match(/^type\(library/))
+    .map(identifier => {
+      if (identifier.referencedDeclaration === null) {
+        throw new Error('Identifier.referencedDeclaration cannot be null');
+      }
+      return identifier.referencedDeclaration;
+    });
+
+  return libraries.concat(explicitUsage);
 }

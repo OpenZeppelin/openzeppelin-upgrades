@@ -53,3 +53,54 @@ import './ValidationsImport.sol';
 
 contract ImportedParentHasStateVariableAssignment is ImportedHasStateVariableAssignment {
 }
+
+struct Registry {
+  mapping(uint => bool) registry;
+}
+
+library SafeLibrary {
+  function register(Registry storage self, uint x) public {
+    self.registry[x] = true;
+  }
+}
+
+library UnsafeLibrary {
+  function register(Registry storage self, uint x) public {
+    self.registry[x] = true;
+    selfdestruct(msg.sender);
+  }
+}
+
+contract UsingSafeForLibrary {
+  using SafeLibrary for Registry;
+  Registry reg;
+
+  function foo(uint x) public {
+    reg.register(x);
+  }
+}
+
+contract UsingSafeExplicitLibrary {
+  Registry reg;
+
+  function foo(uint x) public {
+    SafeLibrary.register(reg, x);
+  }
+}
+
+contract UsingUnsafeForLibrary {
+  using UnsafeLibrary for Registry;
+  Registry reg;
+
+  function foo(uint x) public {
+    reg.register(x);
+  }
+}
+
+contract UsingUnsafeExplicitLibrary {
+  Registry reg;
+
+  function foo(uint x) public {
+    UnsafeLibrary.register(reg, x);
+  }
+}
