@@ -22,6 +22,7 @@
     "@types/cbor": "^5.0.0",
     "@types/mocha": "^7.0.2",
     "@types/node": "^10.17.26",
+    "@types/proper-lockfile": "^4.1.1",
     "@types/rimraf": "^3.0.0",
     "ava": "^3.9.0",
     "fgbg": "^0.1.4",
@@ -33,6 +34,9 @@
     "cbor": "^5.0.2",
     "chalk": "^4.1.0",
     "ethereumjs-util": "^7.0.3",
+    "fp-ts": "^2.7.1",
+    "io-ts": "^2.2.9",
+    "proper-lockfile": "^4.1.1",
     "solidity-ast": "^0.4.1"
   }
 }

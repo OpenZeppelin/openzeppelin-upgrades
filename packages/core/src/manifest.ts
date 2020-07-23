@@ -1,11 +1,11 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 import { EthereumProvider, getChainId } from './provider';
+import * as t from 'io-ts';
+import lockfile from 'proper-lockfile';
 
 import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
-import { pick } from './utils/pick';
-import type { Version } from './version';
 
 export interface ManifestData {
   impls: {
@@ -28,6 +28,7 @@ const manifestDir = '.openzeppelin';
 
 export class Manifest {
   file: string;
+  private locked = false;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
     return new Manifest(await getChainId(provider));
@@ -41,20 +42,6 @@ export class Manifest {
     return (await this.read()).admin;
   }
 
-  async setAdmin(deployment: Deployment): Promise<void> {
-    deployment = pick(deployment, ['address']); // remove excess properties
-    await this.update(data => (data.admin = deployment));
-  }
-
-  async getDeployment(version: Version): Promise<ImplDeployment | undefined> {
-    return (await this.read()).impls[version.withoutMetadata];
-  }
-
-  async storeDeployment(version: Version, deployment: ImplDeployment): Promise<void> {
-    deployment = pick(deployment, ['address', 'layout']); // remove excess properties
-    await this.update(data => (data.impls[version.withoutMetadata] = deployment));
-  }
-
   async getDeploymentFromAddress(address: string): Promise<ImplDeployment> {
     const data = await this.read();
     const deployment = Object.values(data.impls).find(d => d.address === address);
@@ -64,7 +51,8 @@ export class Manifest {
     return deployment;
   }
 
-  private async read(): Promise<ManifestData> {
+  async read(): Promise<ManifestData> {
+    const release = this.locked ? undefined : await this.lock();
     try {
       return JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
     } catch (e) {
@@ -73,13 +61,51 @@ export class Manifest {
       } else {
         throw e;
       }
+    } finally {
+      await release?.();
     }
   }
 
-  private async update(updater: (data: ManifestData) => void) {
-    const data = await this.read();
-    updater(data);
-    await fs.mkdir(manifestDir, { recursive: true });
-    await fs.writeFile(this.file, JSON.stringify(data, null, 2) + '\n');
+  async write(data: ManifestData): Promise<void> {
+    if (!this.locked) {
+      throw new Error('Manifest must be locked');
+    }
+    const normalized = normalizeManifestData(data);
+    await fs.writeFile(this.file, JSON.stringify(normalized, null, 2) + '\n');
   }
+
+  async lockedRun<T>(cb: () => Promise<T>): Promise<T> {
+    if (this.locked) {
+      throw new Error('Manifest is already locked');
+    }
+    const release = await this.lock();
+    try {
+      return await cb();
+    } finally {
+      await release();
+    }
+  }
+
+  private async lock() {
+    await fs.mkdir(path.dirname(this.file), { recursive: true });
+    const release = await lockfile.lock(this.file, { realpath: false });
+    this.locked = true;
+    return async () => {
+      await release();
+      this.locked = false;
+    };
+  }
+}
+
+const ManifestDataCodec = t.intersection([
+  t.strict({
+    impls: t.record(t.string, t.strict({ address: t.string, layout: t.any })),
+  }),
+  t.partial({
+    admin: t.strict({ address: t.string }),
+  }),
+]);
+
+function normalizeManifestData(data: ManifestData): ManifestData {
+  return ManifestDataCodec.encode(data);
 }
