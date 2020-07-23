@@ -1,14 +1,25 @@
-import crypto from 'crypto';
+import { keccak256 } from 'ethereumjs-util';
 import cbor from 'cbor';
 
-export function getVersionId(bytecode: string): string {
-  return hashBytecode(bytecode);
+export interface Version {
+  withMetadata: string;
+  withoutMetadata: string;
+}
+
+export function getVersion(bytecode: string): Version {
+  if (bytecode !== '') {
+    return {
+      withMetadata: hashBytecode(bytecode),
+      withoutMetadata: hashBytecodeWithoutMetadata(bytecode),
+    };
+  } else {
+    throw new Error('Abstract contract not allowed here');
+  }
 }
 
 export function hashBytecode(bytecode: string): string {
-  const hash = crypto.createHash('sha256');
-  hash.update(bytecode.replace(/^0x/, ''));
-  return hash.digest().toString('base64');
+  const buf = Buffer.from(bytecode.replace(/^0x/, ''), 'hex');
+  return keccak256(buf).toString('hex');
 }
 
 export function hashBytecodeWithoutMetadata(bytecode: string): string {

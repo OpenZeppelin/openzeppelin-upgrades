@@ -1,22 +1,24 @@
 import { Manifest, ImplDeployment } from './manifest';
 import { EthereumProvider } from './provider';
 import { Deployment, resumeOrDeploy } from './deployment';
+import type { Version } from './version';
 
 export async function fetchOrDeploy(
-  version: string,
+  version: Version,
   provider: EthereumProvider,
   deploy: () => Promise<ImplDeployment>,
 ): Promise<string> {
   const manifest = await Manifest.forNetwork(provider);
-  const fetched = await manifest.getDeployment(version);
-
-  const deployment = await resumeOrDeploy(provider, fetched, deploy);
-
-  if (fetched !== deployment) {
-    await manifest.storeDeployment(version, deployment);
-  }
-
-  return deployment.address;
+  return manifest.lockedRun(async () => {
+    const data = await manifest.read();
+    const fetched = data.impls[version.withoutMetadata];
+    const updated = await resumeOrDeploy(provider, fetched, deploy);
+    if (updated !== fetched) {
+      data.impls[version.withoutMetadata] = updated;
+      await manifest.write(data);
+    }
+    return updated.address;
+  });
 }
 
 export async function fetchOrDeployAdmin(
@@ -24,13 +26,13 @@ export async function fetchOrDeployAdmin(
   deploy: () => Promise<Deployment>,
 ): Promise<string> {
   const manifest = await Manifest.forNetwork(provider);
-  const fetched = await manifest.getAdmin();
-
-  const deployment = await resumeOrDeploy(provider, fetched, deploy);
-
-  if (fetched !== deployment) {
-    await manifest.setAdmin(deployment);
-  }
-
-  return deployment.address;
+  return manifest.lockedRun(async () => {
+    const data = await manifest.read();
+    const updated = await resumeOrDeploy(provider, data.admin, deploy);
+    if (updated !== data.admin) {
+      data.admin = updated;
+      await manifest.write(data);
+    }
+    return updated.address;
+  });
 }
