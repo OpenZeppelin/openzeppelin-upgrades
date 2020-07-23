@@ -2,7 +2,12 @@ export interface EthereumProvider {
   send(method: 'eth_chainId', params?: []): Promise<string>;
   send(method: 'eth_getCode', params: [string, string?]): Promise<string>;
   send(method: 'eth_getStorageAt', params: [string, string, string?]): Promise<string>;
+  send(method: 'eth_getTransactionByHash', params: [string]): Promise<null | EthereumTransaction>;
   send(method: string, params?: unknown[]): Promise<unknown>;
+}
+
+interface EthereumTransaction {
+  blockHash: string | null;
 }
 
 export async function getChainId(provider: EthereumProvider): Promise<string> {
@@ -20,6 +25,13 @@ export async function getStorageAt(
 
 export async function getCode(provider: EthereumProvider, address: string, block?: string): Promise<string> {
   return provider.send('eth_getCode', paramsArray(address, block));
+}
+
+export async function getTransactionByHash(
+  provider: EthereumProvider,
+  txHash: string,
+): Promise<EthereumTransaction | null> {
+  return provider.send('eth_getTransactionByHash', [txHash]);
 }
 
 // Ganache will fail if any items in the params array are undefined, so we use
