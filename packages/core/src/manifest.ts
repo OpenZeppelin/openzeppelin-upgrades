@@ -52,6 +52,7 @@ export class Manifest {
   }
 
   async read(): Promise<ManifestData> {
+    const release = this.locked ? undefined : await this.lock();
     try {
       return JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
     } catch (e) {
@@ -60,6 +61,8 @@ export class Manifest {
       } else {
         throw e;
       }
+    } finally {
+      await release?.();
     }
   }
 
