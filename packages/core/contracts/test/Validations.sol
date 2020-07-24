@@ -54,53 +54,49 @@ import './ValidationsImport.sol';
 contract ImportedParentHasStateVariableAssignment is ImportedHasStateVariableAssignment {
 }
 
-struct Registry {
-  mapping(uint => bool) registry;
-}
-
 library SafeLibrary {
-  function register(Registry storage self, uint x) public {
-    self.registry[x] = true;
+  function add(uint x, uint y) public pure returns (uint) {
+    return x + y;
   }
 }
 
 library UnsafeLibrary {
-  function register(Registry storage self, uint x) public {
-    self.registry[x] = true;
+  function explode(uint x, uint y) public {
+    x + y;
     selfdestruct(msg.sender);
   }
 }
 
-contract UsingSafeForLibrary {
-  using SafeLibrary for Registry;
-  Registry reg;
+contract UsingForSafeLibrary {
+  using SafeLibrary for uint;
+  uint x;
 
-  function foo(uint x) public {
-    reg.register(x);
+  function foo(uint y) public view {
+    x.add(y);
   }
 }
 
-contract UsingSafeExplicitLibrary {
-  Registry reg;
+contract UsingExplicitSafeLibrary {
+  uint x;
 
-  function foo(uint x) public {
-    SafeLibrary.register(reg, x);
+  function foo(uint y) public view {
+    SafeLibrary.add(x, y);
   }
 }
 
-contract UsingUnsafeForLibrary {
-  using UnsafeLibrary for Registry;
-  Registry reg;
+contract UsingForUnsafeLibrary {
+  using UnsafeLibrary for uint;
+  uint x;
 
-  function foo(uint x) public {
-    reg.register(x);
+  function foo(uint y) public {
+    x.explode(y);
   }
 }
 
-contract UsingUnsafeExplicitLibrary {
-  Registry reg;
+contract UsingExplicitUnsafeLibrary {
+  uint x;
 
-  function foo(uint x) public {
-    UnsafeLibrary.register(reg, x);
+  function foo(uint y) public {
+    UnsafeLibrary.explode(x, y);
   }
 }
