@@ -1,9 +1,9 @@
 export interface EthereumProvider {
-  send(method: 'eth_chainId', params?: []): Promise<string>;
+  send(method: 'eth_chainId', params: []): Promise<string>;
   send(method: 'eth_getCode', params: [string, string?]): Promise<string>;
   send(method: 'eth_getStorageAt', params: [string, string, string?]): Promise<string>;
   send(method: 'eth_getTransactionByHash', params: [string]): Promise<null | EthereumTransaction>;
-  send(method: string, params?: unknown[]): Promise<unknown>;
+  send(method: string, params: unknown[]): Promise<unknown>;
 }
 
 interface EthereumTransaction {
@@ -11,7 +11,7 @@ interface EthereumTransaction {
 }
 
 export async function getChainId(provider: EthereumProvider): Promise<string> {
-  return provider.send('eth_chainId');
+  return provider.send('eth_chainId', []);
 }
 
 export async function getStorageAt(
