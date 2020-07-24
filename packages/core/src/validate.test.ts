@@ -27,8 +27,8 @@ function testValid(name: string, valid: boolean) {
 testValid('HasEmptyConstructor', true);
 testValid('HasConstantStateVariableAssignment', true);
 testValid('HasStateVariable', true);
-testValid('UsingForSafeLibrary', true);
-testValid('UsingExplicitSafeLibrary', true);
+testValid('UsingForSafeInternalLibrary', true);
+testValid('UsingExplicitSafeInternalLibrary', true);
 
 testValid('HasNonEmptyConstructor', false);
 testValid('ParentHasNonEmptyConstructor', false);
@@ -38,8 +38,14 @@ testValid('HasImmutableStateVariable', false);
 testValid('HasSelfDestruct', false);
 testValid('HasDelegateCall', false);
 testValid('ImportedParentHasStateVariableAssignment', false);
-testValid('UsingForUnsafeLibrary', false);
-testValid('UsingExplicitUnsafeLibrary', false);
+testValid('UsingForUnsafeInternalLibrary', false);
+testValid('UsingExplicitUnsafeInternalLibrary', false);
+testValid('UsingForUnsafeExternalLibrary', false);
+testValid('UsingExplicitUnsafeExternalLibrary', false);
+
+// currently not supported but will in the future
+testValid('UsingForSafeExternalLibrary', false);
+testValid('UsingExplicitSafeExternalLibrary', false);
 
 test('inherited storage', t => {
   const version = getContractVersion(t.context.validation, 'StorageInheritChild');

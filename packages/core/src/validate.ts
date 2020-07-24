@@ -2,7 +2,7 @@ import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
 import chalk from 'chalk';
 
-import { SolcOutput } from './solc-api';
+import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
 import { UpgradesError } from './error';
@@ -22,7 +22,8 @@ type ValidationError =
   | ValidationErrorStateVariable
   | ValidationErrorConstructor
   | ValidationErrorDelegateCall
-  | ValidationErrorSelfdestruct;
+  | ValidationErrorSelfdestruct
+  | ValidationErrorLinking;
 
 interface ValidationErrorBase {
   src: string;
@@ -44,6 +45,11 @@ interface ValidationErrorDelegateCall extends ValidationErrorBase {
 
 interface ValidationErrorSelfdestruct extends ValidationErrorBase {
   kind: 'selfdestruct';
+}
+
+interface ValidationErrorLinking extends ValidationErrorBase {
+  kind: 'external-library-linking';
+  name: string;
 }
 
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validation {
@@ -72,6 +78,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
       fromId[contractDef.id] = contractDef.name;
 
       if (contractDef.name in validation) {
+        const { bytecode } = solcOutput.contracts[source][contractDef.name].evm;
         inheritIds[contractDef.name] = contractDef.linearizedBaseContracts.slice(1);
         libraryIds[contractDef.name] = getLinkedLibrariesIds(contractDef);
 
@@ -79,6 +86,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
+          ...getLinkingErrors(contractDef, decodeSrc, bytecode),
         ];
 
         validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc);
@@ -177,6 +185,11 @@ const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
     hint: `Use a constant or mutable variable instead`,
     link: 'https://zpl.in/upgrades/error-005',
   },
+  'external-library-linking': {
+    msg: e => `Linking \`${e.name}\` is not allowed. Linking external libraries is not yet supported.`,
+    hint: `Consider using internal libraries if possible.`,
+    link: 'https://zpl.in/upgrades/error-006',
+  },
 };
 
 function describeError(e: ValidationError): string {
@@ -272,4 +285,21 @@ function getLinkedLibrariesIds(contractDef: ContractDefinition): number[] {
     });
 
   return libraries.concat(explicitUsage);
+}
+
+function* getLinkingErrors(
+  contractDef: ContractDefinition,
+  decodeSrc: SrcDecoder,
+  bytecode: SolcBytecode,
+): Generator<ValidationErrorLinking> {
+  const { linkReferences } = bytecode;
+  for (const source of Object.keys(linkReferences)) {
+    for (const libName of Object.keys(linkReferences[source])) {
+      yield {
+        kind: 'external-library-linking',
+        name: libName,
+        src: source,
+      };
+    }
+  }
 }
