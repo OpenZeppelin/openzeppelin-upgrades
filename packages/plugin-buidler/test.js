@@ -27,4 +27,5 @@ function testFile(name) {
   });
 }
 
-testFile('01');
+testFile('happy-path');
+testFile('happy-path-with-library');
