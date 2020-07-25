@@ -6,14 +6,14 @@ import { stubProvider } from './stub-provider';
 test('deploys new contract', async t => {
   const provider = stubProvider();
   const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
-  t.truthy(deployment);
+  t.true(provider.isContract(deployment.address));
   t.is(provider.deployCount, 1);
 });
 
 test('resumes existing deployment', async t => {
   const provider = stubProvider();
-  const first = await resumeOrDeploy(provider, undefined, provider.deploy);
-  const second = await resumeOrDeploy(provider, first, provider.deploy);
+  const first = await resumeOrDeploy(provider, undefined, provider.deployPending);
+  const second = await resumeOrDeploy(provider, first, provider.deployPending);
   t.is(first, second);
   t.is(provider.deployCount, 1);
 });
