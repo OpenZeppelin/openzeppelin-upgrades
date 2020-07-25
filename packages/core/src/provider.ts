@@ -34,6 +34,17 @@ export async function getTransactionByHash(
   return provider.send('eth_getTransactionByHash', [txHash]);
 }
 
+export const networkNames: { [chainId in string]?: string } = Object.freeze({
+  '0x7a69': 'buidlerevm',
+  '0x539': 'ganache',
+});
+
+export async function isDevelopmentNetwork(provider: EthereumProvider): Promise<boolean> {
+  const chainId = await getChainId(provider);
+  const chainName = networkNames[chainId];
+  return chainName === 'buidlerevm' || chainName === 'ganache';
+}
+
 // Ganache will fail if any items in the params array are undefined, so we use
 // this function to remove any undefined values from the tail of the array.
 // With TypeScript 4.0 it will be possible to statically assert that undefined
