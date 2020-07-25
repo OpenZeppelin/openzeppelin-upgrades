@@ -80,12 +80,13 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
       if (contractDef.name in validation) {
         const { bytecode } = solcOutput.contracts[source][contractDef.name].evm;
         inheritIds[contractDef.name] = contractDef.linearizedBaseContracts.slice(1);
-        libraryIds[contractDef.name] = getLinkedLibrariesIds(contractDef);
+        libraryIds[contractDef.name] = getCalledLibrariesIds(contractDef);
 
         validation[contractDef.name].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
+          // todo: add linked libraries support and remove this
           ...getLinkingErrors(contractDef, decodeSrc, bytecode),
         ];
 
@@ -270,7 +271,7 @@ function* getStateVariableErrors(
   }
 }
 
-function getLinkedLibrariesIds(contractDef: ContractDefinition): number[] {
+function getCalledLibrariesIds(contractDef: ContractDefinition): number[] {
   const libraries = [...findAll('UsingForDirective', contractDef)].map(
     usingForDirective => usingForDirective.libraryName.referencedDeclaration,
   );
