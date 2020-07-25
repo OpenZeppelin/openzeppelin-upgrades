@@ -30,3 +30,26 @@ export async function resumeOrDeploy<T extends Deployment>(
 
   return deploy();
 }
+
+export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
+  const startTime = Date.now();
+
+  // Poll for 60 seconds.
+  while (Date.now() - startTime < 60e3) {
+    const tx = await getTransactionByHash(provider, deployment.txHash);
+    if (tx === null) {
+      throw new Error(`Invalid transaction ${deployment.txHash}`);
+    }
+    if (tx.blockHash !== null) {
+      const code = await getCode(provider, deployment.address);
+      if (code === '0x') {
+        throw new Error(`Transaction ${deployment.txHash} failed to deploy`);
+      } else {
+        return;
+      }
+    }
+    await sleep(5e3);
+  }
+
+  throw new Error(`Timed out waiting for transaction ${deployment.txHash}`);
+}

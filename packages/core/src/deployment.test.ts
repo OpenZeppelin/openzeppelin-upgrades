@@ -1,7 +1,10 @@
 import test from 'ava';
+import { promisify } from 'util';
 
-import { Deployment, resumeOrDeploy } from './deployment';
+import { Deployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import { stubProvider } from './stub-provider';
+
+const sleep = promisify(setTimeout);
 
 test('deploys new contract', async t => {
   const provider = stubProvider();
@@ -36,4 +39,21 @@ test('redeploys if tx is not found on dev network', async t => {
   const deployment = await resumeOrDeploy(provider, fakeDeployment, provider.deploy);
   t.true(provider.isContract(deployment.address));
   t.is(provider.deployCount, 1);
+});
+
+test('validates a mined deployment', async t => {
+  const provider = stubProvider();
+  const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
+  await waitAndValidateDeployment(provider, deployment);
+  t.is(provider.getMethodCount('eth_getTransactionByHash'), 1);
+});
+
+test('waits for a deployment to mine', async t => {
+  const timeout = Symbol('timeout');
+  const provider = stubProvider();
+  const deployment = await resumeOrDeploy(provider, undefined, provider.deployPending);
+  const result = await Promise.race([waitAndValidateDeployment(provider, deployment), sleep(100).then(() => timeout)]);
+  t.is(result, timeout);
+  provider.mine();
+  await waitAndValidateDeployment(provider, deployment);
 });
