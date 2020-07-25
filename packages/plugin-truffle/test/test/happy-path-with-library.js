@@ -6,9 +6,9 @@ const Adder = artifacts.require('Adder');
 const AdderV2 = artifacts.require('AdderV2');
 
 contract('Adder', function () {
-  it('greeting', async function () {
+  it('adding', async function () {
     const adder = await Adder.deployed();
-    assert.strictEqual(await adder.greet());
+    assert.strictEqual(await adder.add(1));
   });
 
   it('deployProxy', async function () {
