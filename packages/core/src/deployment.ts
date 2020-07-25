@@ -20,7 +20,7 @@ export async function resumeOrDeploy<T extends Deployment>(
     const tx = await getTransactionByHash(provider, cached.txHash);
     if (tx === null) {
       if (!(await isDevelopmentNetwork(provider))) {
-        throw new Error('Invalid transaction in non-development network');
+        throw new InvalidDeployment(cached);
       }
       // If we're in a development network, we silently redeploy.
     } else {
@@ -38,12 +38,12 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
   while (Date.now() - startTime < 60e3) {
     const tx = await getTransactionByHash(provider, deployment.txHash);
     if (tx === null) {
-      throw new Error(`Invalid transaction ${deployment.txHash}`);
+      throw new InvalidDeployment(deployment);
     }
     if (tx.blockHash !== null) {
       const code = await getCode(provider, deployment.address);
       if (code === '0x') {
-        throw new Error(`Transaction ${deployment.txHash} failed to deploy`);
+        throw new InvalidDeployment(deployment);
       } else {
         return;
       }
@@ -51,5 +51,12 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
     await sleep(5e3);
   }
 
+  // A timeout is NOT an InvalidDeployment
   throw new Error(`Timed out waiting for transaction ${deployment.txHash}`);
+}
+
+export class InvalidDeployment extends Error {
+  constructor(readonly deployment: Deployment) {
+    super(`Invalid deployment ${deployment.txHash}`);
+  }
 }

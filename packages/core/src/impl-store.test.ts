@@ -45,3 +45,15 @@ test('does not reuse unrelated version', async t => {
   t.is(provider.deployCount, 2);
   t.not(address2, address1);
 });
+
+test('cleans up invalid deployment', async t => {
+  const chainId = '0x1234';
+  const provider1 = stubProvider(chainId);
+  // create a deployment on a network
+  await fetchOrDeploy(version1, provider1, provider1.deploy);
+  // try to fetch it on a different network with same chainId
+  const provider2 = stubProvider(chainId);
+  await t.throwsAsync(fetchOrDeploy(version1, provider2, provider2.deploy));
+  // the failed deployment has been cleaned up
+  await fetchOrDeploy(version1, provider2, provider2.deploy);
+});
