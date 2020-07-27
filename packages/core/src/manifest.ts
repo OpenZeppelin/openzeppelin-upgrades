@@ -9,7 +9,7 @@ import { StorageLayout } from './storage';
 
 export interface ManifestData {
   impls: {
-    [version in string]: ImplDeployment;
+    [version in string]?: ImplDeployment;
   };
   admin?: Deployment;
 }
@@ -44,7 +44,7 @@ export class Manifest {
 
   async getDeploymentFromAddress(address: string): Promise<ImplDeployment> {
     const data = await this.read();
-    const deployment = Object.values(data.impls).find(d => d.address === address);
+    const deployment = Object.values(data.impls).find(d => d?.address === address);
     if (deployment === undefined) {
       throw new Error(`Deployment at address ${address} is not registered`);
     }
@@ -97,6 +97,8 @@ export class Manifest {
   }
 }
 
+const tNullable = <C extends t.Mixed>(codec: C) => t.union([codec, t.undefined]);
+
 const DeploymentCodec = t.strict({
   address: t.string,
   txHash: t.string,
@@ -104,10 +106,10 @@ const DeploymentCodec = t.strict({
 
 const ManifestDataCodec = t.intersection([
   t.strict({
-    impls: t.record(t.string, t.intersection([DeploymentCodec, t.strict({ layout: t.any })])),
+    impls: t.record(t.string, tNullable(t.intersection([DeploymentCodec, t.strict({ layout: t.any })]))),
   }),
   t.partial({
-    admin: DeploymentCodec,
+    admin: tNullable(DeploymentCodec),
   }),
 ]);
 
