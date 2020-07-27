@@ -88,7 +88,7 @@ export class Manifest {
 
   private async lock() {
     await fs.mkdir(path.dirname(this.file), { recursive: true });
-    const release = await lockfile.lock(this.file, { realpath: false });
+    const release = await lockfile.lock(this.file, { retries: 3, realpath: false });
     this.locked = true;
     return async () => {
       await release();
