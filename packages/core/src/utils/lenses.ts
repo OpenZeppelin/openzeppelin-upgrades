@@ -5,7 +5,6 @@ export type Lens<T, V> = (obj: T) => BoundLens<T, V>;
 export interface BoundLens<T, V> {
   get(): V;
   set(value: V): void;
-  delete(): void;
 }
 
 type Key = string;
@@ -37,10 +36,6 @@ export function pathLens<P0 extends Key, P extends Key[]>(
       set: value => {
         const { target, key } = getTarget(obj, path0, ...path);
         target[key] = value;
-      },
-      delete: () => {
-        const { target, key } = getTarget(obj, path0, ...path);
-        delete target[key];
       },
     };
   };

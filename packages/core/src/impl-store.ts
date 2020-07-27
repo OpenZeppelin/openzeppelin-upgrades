@@ -35,7 +35,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
         const deployment = lens(data);
         const stored = deployment.get();
         if (stored?.txHash === e.deployment.txHash) {
-          deployment.delete();
+          deployment.set(undefined);
           await manifest.write(data);
         }
       });
