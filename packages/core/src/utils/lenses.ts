@@ -22,8 +22,6 @@ type Get<T, K> = T extends { [k in Key & K]: infer U }
   ? U | undefined
   : undefined;
 
-type PathLens<P0 extends Key, P extends Key[]> = <T>(obj: T) => BoundLens<T, Path<T, Cons<P0, P>>>;
-
 // Cons<'a', ['b', 'c']> = ['a', 'b', 'c']
 type Cons<H, T extends any[]> = ((head: H, ...tail: T) => void) extends (...args: infer A) => void ? A : never;
 
