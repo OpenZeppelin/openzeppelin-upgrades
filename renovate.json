@@ -2,6 +2,7 @@
   "rangeStrategy": "update-lockfile",
   "extends": [
     "config:base",
+    ":disablePeerDependencies",
     "group:allNonMajor",
     "schedule:weekly"
   ]
