@@ -104,7 +104,7 @@ export function getStorageUpgradeErrors(
 // This is particularly hard to decode because it is not a prefix-free code.
 // Thus, the following regex has to perform a lookahead to make sure it gets
 // the substitution right.
-function decodeTypeIdentifier(typeIdentifier: string): string {
+export function decodeTypeIdentifier(typeIdentifier: string): string {
   return typeIdentifier.replace(/(\$_|_\$_|_\$)(?=(\$_|_\$_|_\$)*([^_$]|$))/g, m => {
     switch (m) {
       case '$_':
