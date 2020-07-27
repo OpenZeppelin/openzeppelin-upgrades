@@ -9,11 +9,12 @@ export interface BoundLens<T, V> {
 
 type Key = string;
 
+// Currently only supports paths of length 1 and 2.
 type Path<T, P extends Key[]> = P extends [infer P0]
   ? Get<T, P0>
   : P extends [infer P0, infer P1]
   ? Get<Get<T, P0>, P1>
-  : undefined;
+  : unknown;
 
 type Get<T, K> = T extends { [k in Key & K]: infer U }
   ? U
