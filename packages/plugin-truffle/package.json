@@ -8,6 +8,7 @@
     "/dist"
   ],
   "scripts": {
+    "prepublish": "rimraf dist *.tsbuildinfo",
     "prepare": "tsc -b",
     "test": "tsc -b && bash test.sh"
   },
