@@ -34,8 +34,8 @@ export function pathLens<P0 extends Key, P extends Key[]>(
     return {
       get: () => getAtPath(obj, path0, ...path),
       set: value => {
-        const { target, key } = getTarget(obj, path0, ...path);
-        target[key] = value;
+        const { container, key } = getPathContainer(obj, path0, ...path);
+        container[key] = value;
       },
     };
   };
@@ -52,12 +52,12 @@ function getAtPath(res: any, ...path: any[]) {
   return res;
 }
 
-function getTarget(res: any, path0: any, ...path: any[]): { target: any; key: any };
-function getTarget(res: any, ...path: any[]) {
+function getPathContainer(res: any, path0: any, ...path: any[]): { container: any; key: any };
+function getPathContainer(res: any, ...path: any[]) {
   const key = path.pop();
-  const target = getAtPath(res, ...path);
-  if (target === undefined) {
+  const container = getAtPath(res, ...path);
+  if (container === undefined) {
     throw new Error('Could not retrieve nested value');
   }
-  return { target, key };
+  return { container, key };
 }
