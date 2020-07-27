@@ -22,7 +22,7 @@ export async function resumeOrDeploy<T extends Deployment>(
       return cached;
     } else if (!(await isDevelopmentNetwork(provider))) {
       // If the transaction is not found we throw an error, except if we're in
-      // a a development network then we simply silently redeploy.
+      // a development network then we simply silently redeploy.
       throw new InvalidDeployment(cached);
     }
   }
