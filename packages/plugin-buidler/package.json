@@ -25,6 +25,10 @@
   "dependencies": {
     "@openzeppelin/upgrades-core": "^0.1.0"
   },
+  "peerDependencies": {
+    "@nomiclabs/buidler": "^1.3.7",
+    "@nomiclabs/buidler-ethers": "^2.0.0"
+  },
   "bundledDependencies": [
     "@openzeppelin/upgrades-core"
   ]
