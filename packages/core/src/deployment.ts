@@ -33,7 +33,8 @@ export async function resumeOrDeploy<T extends Deployment>(
 export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
   const startTime = Date.now();
 
-  // Poll for 60 seconds.
+  // Poll for 60 seconds with a 5 second poll interval.
+  // TODO: Make these parameters configurable.
   while (Date.now() - startTime < 60e3) {
     const tx = await getTransactionByHash(provider, deployment.txHash);
     if (tx === null) {
