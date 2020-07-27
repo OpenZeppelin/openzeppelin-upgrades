@@ -24,5 +24,8 @@
   },
   "dependencies": {
     "@openzeppelin/upgrades-core": "^0.1.0"
-  }
+  },
+  "bundledDependencies": [
+    "@openzeppelin/upgrades-core"
+  ]
 }

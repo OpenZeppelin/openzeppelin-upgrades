@@ -21,5 +21,8 @@
   },
   "peerDependencies": {
     "truffle": "^5.1.35"
-  }
+  },
+  "bundledDependencies": [
+    "@openzeppelin/upgrades-core"
+  ]
 }
