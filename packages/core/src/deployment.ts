@@ -18,13 +18,12 @@ export async function resumeOrDeploy<T extends Deployment>(
   // transaction is found, the deployment is reused.
   if (cached !== undefined) {
     const tx = await getTransactionByHash(provider, cached.txHash);
-    if (tx === null) {
-      if (!(await isDevelopmentNetwork(provider))) {
-        throw new InvalidDeployment(cached);
-      }
-      // If we're in a development network, we silently redeploy.
-    } else {
+    if (tx !== null) {
       return cached;
+    } else if (!(await isDevelopmentNetwork(provider))) {
+      // If the transaction is not found we throw an error, except if we're in
+      // a a development network then we simply silently redeploy.
+      throw new InvalidDeployment(cached);
     }
   }
 
