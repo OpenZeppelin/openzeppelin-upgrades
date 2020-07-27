@@ -15,16 +15,19 @@ import {
 import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/AdminUpgradeabilityProxy.json';
 import ProxyAdminArtifact from '@openzeppelin/upgrades-core/artifacts/ProxyAdmin.json';
 
-import { TruffleContract, ContractClass, ContractInstance, TruffleProvider, getTruffleConfig } from './truffle';
+import {
+  Deployer,
+  TruffleContract,
+  ContractClass,
+  ContractInstance,
+  TruffleProvider,
+  getTruffleConfig,
+} from './truffle';
 import { validateArtifacts } from './validate';
+import { deploy } from './utils/deploy';
 
 interface Options {
   deployer?: Deployer;
-}
-
-interface Deployer {
-  provider: TruffleProvider;
-  deploy(contract: ContractClass, ...args: unknown[]): Promise<ContractInstance>;
 }
 
 const defaultDeployer: Deployer = {
@@ -50,13 +53,13 @@ export async function deployProxy(
 
   const provider = wrapProvider(deployer.provider);
   const impl = await fetchOrDeploy(version, provider, async () => {
-    const { address } = await deployer.deploy(Contract);
+    const deployment = await deploy(Contract, deployer);
     const layout = getStorageLayout(validations, version);
-    return { address, layout };
+    return { ...deployment, layout };
   });
 
   const AdminFactory = await getProxyAdminFactory(Contract);
-  const adminAddress = await fetchOrDeployAdmin(provider, () => deployer.deploy(AdminFactory));
+  const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, deployer));
 
   const data = await new Contract('').contract.methods.initialize(...args).encodeABI();
   const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
@@ -90,8 +93,8 @@ export async function upgradeProxy(
   assertStorageUpgradeSafe(deployment.layout, layout);
 
   const nextImpl = await fetchOrDeploy(version, provider, async () => {
-    const { address } = await deployer.deploy(Contract);
-    return { address, layout };
+    const deployment = await deploy(Contract, deployer);
+    return { ...deployment, layout };
   });
 
   await admin.upgrade(proxyAddress, nextImpl);

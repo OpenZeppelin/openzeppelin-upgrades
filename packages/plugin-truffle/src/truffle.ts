@@ -1,5 +1,10 @@
 import { SourceUnit } from 'solidity-ast';
 
+export interface Deployer {
+  provider: TruffleProvider;
+  deploy(contract: ContractClass, ...args: unknown[]): Promise<ContractInstance>;
+}
+
 export interface ContractClass {
   new (address: string): ContractInstance;
   'new'(...args: unknown[]): ContractInstance;
@@ -19,6 +24,7 @@ export interface ContractClassDefaults {
 
 export interface ContractInstance {
   address: string;
+  transactionHash?: string;
   contract: {
     methods: {
       initialize(
