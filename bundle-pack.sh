@@ -4,9 +4,9 @@ set -xeuo pipefail
 
 yarn lerna run prepublish
 
-yarn
+yarn prepare
 
-rm -rf packages/core/node_modules
+mv packages/core/node_modules core-node_modules
 
 for t in buidler truffle; do
   mkdir -p "packages/plugin-$t/node_modules/@openzeppelin"
@@ -18,6 +18,6 @@ for t in buidler truffle; do
   cd ../..
 done
 
-yarn
+mv core-node_modules packages/core/node_modules
 
 mv packages/plugin-*/*.tgz .
