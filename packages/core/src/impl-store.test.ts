@@ -5,11 +5,10 @@ import rimrafAsync from 'rimraf';
 import util from 'util';
 import path from 'path';
 import os from 'os';
-import crypto from 'crypto';
 
-import { ImplDeployment } from './manifest';
 import { fetchOrDeploy } from './impl-store';
 import { getVersion } from './version';
+import { stubProvider } from './stub-provider';
 
 const rimraf = util.promisify(rimrafAsync);
 
@@ -47,38 +46,14 @@ test('does not reuse unrelated version', async t => {
   t.not(address2, address1);
 });
 
-function stubProvider() {
-  const chainId = '0x' + crypto.randomBytes(8).toString('hex');
-  const addresses = new Set<string>();
-  return {
-    get deployCount() {
-      return addresses.size;
-    },
-    async deploy(): Promise<ImplDeployment> {
-      const address = '0x' + crypto.randomBytes(20).toString('hex');
-      addresses.add(address);
-      return {
-        address,
-        layout: {
-          storage: [],
-          types: {},
-        },
-      };
-    },
-    async send(method: string, params?: unknown[]) {
-      if (method === 'eth_chainId') {
-        return chainId;
-      } else if (method === 'eth_getCode') {
-        const param = params?.[0];
-        if (typeof param !== 'string') throw new Error('Param must be string');
-        if (addresses.has(param)) {
-          return '0x1234';
-        } else {
-          return '0x';
-        }
-      } else {
-        throw new Error(`Method ${method} not stubbed`);
-      }
-    },
-  };
-}
+test('cleans up invalid deployment', async t => {
+  const chainId = '0x1234';
+  const provider1 = stubProvider(chainId);
+  // create a deployment on a network
+  await fetchOrDeploy(version1, provider1, provider1.deploy);
+  // try to fetch it on a different network with same chainId
+  const provider2 = stubProvider(chainId);
+  await t.throwsAsync(fetchOrDeploy(version1, provider2, provider2.deploy));
+  // the failed deployment has been cleaned up
+  await fetchOrDeploy(version1, provider2, provider2.deploy);
+});

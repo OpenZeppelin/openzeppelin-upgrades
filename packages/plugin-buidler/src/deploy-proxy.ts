@@ -11,6 +11,7 @@ import {
 
 import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
+import { deploy } from './utils/deploy';
 
 export type DeployFunction = (ImplFactory: ContractFactory, args: unknown[]) => Promise<Contract>;
 
@@ -22,13 +23,13 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     assertUpgradeSafe(validations, version);
 
     const impl = await fetchOrDeploy(version, bre.network.provider, async () => {
-      const { address } = await ImplFactory.deploy();
+      const deployment = await deploy(ImplFactory);
       const layout = getStorageLayout(validations, version);
-      return { address, layout };
+      return { ...deployment, layout };
     });
 
     const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
-    const adminAddress = await fetchOrDeployAdmin(bre.network.provider, () => AdminFactory.deploy());
+    const adminAddress = await fetchOrDeployAdmin(bre.network.provider, () => deploy(AdminFactory));
 
     // TODO: support choice of initializer function? support overloaded initialize function
     const data = ImplFactory.interface.encodeFunctionData('initialize', args);

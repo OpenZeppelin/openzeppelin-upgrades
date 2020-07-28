@@ -8,6 +8,7 @@
     "/dist"
   ],
   "scripts": {
+    "prepublish": "rimraf dist *.tsbuildinfo",
     "prepare": "tsc -b",
     "test": "tsc -b && ava",
     "test:watch": "fgbg 'ava --watch' 'tsc -b --watch'"
@@ -24,5 +25,9 @@
   },
   "dependencies": {
     "@openzeppelin/upgrades-core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@nomiclabs/buidler": "^1.3.7",
+    "@nomiclabs/buidler-ethers": "^2.0.0"
   }
 }

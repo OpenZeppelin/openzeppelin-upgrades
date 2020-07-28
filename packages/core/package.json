@@ -10,6 +10,7 @@
     "/artifacts/ProxyAdmin.json"
   ],
   "scripts": {
+    "prepublish": "rimraf artifacts cache dist *.tsbuildinfo",
     "prepare": "tsc -b && yarn prepare:contracts",
     "prepare:contracts": "buidler compile",
     "test": "tsc -b && buidler compile && ava",

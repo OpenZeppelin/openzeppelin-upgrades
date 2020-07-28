@@ -7,3 +7,4 @@ export * from './eip-1967';
 export * from './provider';
 export * from './src-decoder';
 export * from './solc-api';
+export * from './deployment';
