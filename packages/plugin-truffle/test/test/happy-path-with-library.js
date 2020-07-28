@@ -10,8 +10,8 @@ contract('Adder', function () {
   it('adds', async function () {
     const adder = await Adder.deployed();
     assert.strictEqual(new BN(await adder.n()).toNumber(), 0);
-    await adder.add(2);
-    assert.strictEqual(new BN(await adder.n()).toNumber(), 2);
+    await adder.add(1);
+    assert.strictEqual(new BN(await adder.n()).toNumber(), 1);
   });
 
   it('deployProxy', async function () {

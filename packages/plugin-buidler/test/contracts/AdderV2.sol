@@ -16,7 +16,7 @@ contract AdderV2 {
 
     uint n;
 
-    function initialize() public {
+    function initialize() public view {
         console.log("Deploying AdderV2");
     }
 

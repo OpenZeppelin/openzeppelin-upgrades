@@ -5,7 +5,7 @@ import "@nomiclabs/buidler/console.sol";
 contract Adder {
     uint n;
 
-    function initialize() public {
+    function initialize() public view {
         console.log("Deploying Adder");
     }
 
