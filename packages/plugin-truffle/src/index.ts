@@ -1,4 +1,5 @@
 import { promisify } from 'util';
+import crypto from 'crypto';
 
 import {
   assertUpgradeSafe,
@@ -120,8 +121,9 @@ function getProxyAdminFactory(Contract: ContractClass) {
 function wrapProvider(provider: TruffleProvider): EthereumProvider {
   const web3Send = promisify(provider.send.bind(provider));
   return {
-    async send(method: string, params?: unknown[]) {
-      const { result, error } = await web3Send({ method, params });
+    async send(method: string, params: unknown[]) {
+      const id = crypto.randomBytes(4).toString('hex');
+      const { result, error } = await web3Send({ method, params, id });
       if (error) {
         throw new Error(error.message);
       } else {
