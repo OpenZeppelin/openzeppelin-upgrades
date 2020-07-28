@@ -86,7 +86,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
-          // todo: add linked libraries support and remove this
+          // TODO: add linked libraries support and remove this
           ...getLinkingErrors(contractDef, decodeSrc, bytecode),
         ];
 
@@ -187,8 +187,8 @@ const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
     link: 'https://zpl.in/upgrades/error-005',
   },
   'external-library-linking': {
-    msg: e => `Linking \`${e.name}\` is not allowed. Linking external libraries is not yet supported.`,
-    hint: `Consider using internal libraries if possible.`,
+    msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
+    hint: `Stick to libraries with internal functions only`,
     link: 'https://zpl.in/upgrades/error-006',
   },
 };
@@ -280,7 +280,7 @@ function getCalledLibrariesIds(contractDef: ContractDefinition): number[] {
     .filter(identifier => identifier.typeDescriptions.typeString?.match(/^type\(library/))
     .map(identifier => {
       if (identifier.referencedDeclaration === null) {
-        throw new Error('Identifier.referencedDeclaration cannot be null');
+        throw new Error('Broken invariant: Identifier.referencedDeclaration should not be null');
       }
       return identifier.referencedDeclaration;
     });
