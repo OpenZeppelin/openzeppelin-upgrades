@@ -56,7 +56,7 @@ function isEmptySlot(storage: string): boolean {
 function parseAddress(storage: string): string {
   const buf = Buffer.from(storage.replace(/^0x/, ''), 'hex');
   if (!buf.slice(0, 12).equals(Buffer.alloc(12, 0))) {
-    throw new Error('Value in storage is not an address');
+    throw new Error(`Value in storage is not an address (${storage})`);
   }
   const address = '0x' + buf.toString('hex', 12, 32); // grab the last 20 bytes
   return toChecksumAddress(address);
