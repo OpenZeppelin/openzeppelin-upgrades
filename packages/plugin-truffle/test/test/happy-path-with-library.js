@@ -1,4 +1,5 @@
 const assert = require('assert');
+const BN = require('bn.js');
 
 const { deployProxy, upgradeProxy } = require('@openzeppelin/upgrades-truffle');
 
@@ -6,13 +7,16 @@ const Adder = artifacts.require('Adder');
 const AdderV2 = artifacts.require('AdderV2');
 
 contract('Adder', function () {
-  it('adding', async function () {
+  it('adds', async function () {
     const adder = await Adder.deployed();
-    assert.strictEqual(await adder.add(1));
+    assert.strictEqual(new BN(await adder.n()).toNumber(), 0);
+    await adder.add(2);
+    assert.strictEqual(new BN(await adder.n()).toNumber(), 2);
   });
 
   it('deployProxy', async function () {
-    const adder = await deployProxy(Adder);
+    const adder = await deployProxy(Adder, [2]);
+    assert.strictEqual(new BN(await adder.n()).toNumber(), 2);
     await upgradeProxy(adder.address, AdderV2);
   });
 });

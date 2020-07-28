@@ -3,7 +3,7 @@ pragma solidity ^0.5.1;
 import "@nomiclabs/buidler/console.sol";
 
 library SafeAdd {
-        function add(uint256 a, uint256 b) internal pure returns (uint256) {
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
         require(c >= a, "SafeMath: addition overflow");
 
