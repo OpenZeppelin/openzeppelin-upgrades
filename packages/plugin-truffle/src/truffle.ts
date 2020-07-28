@@ -9,10 +9,10 @@ export interface ContractClass {
   new (address: string): ContractInstance;
   'new'(...args: unknown[]): ContractInstance;
   deployed(): Promise<ContractInstance>;
-  setProvider(provider: unknown): void;
+  setProvider(provider: TruffleProvider): void;
   defaults(defaults: ContractClassDefaults): void;
   bytecode: string;
-  currentProvider: unknown;
+  currentProvider: TruffleProvider;
   class_defaults: ContractClassDefaults;
   contractName: string;
   address?: string;
@@ -51,7 +51,7 @@ type TruffleProviderResult = { result: any; error: { message: string } };
 
 export interface TruffleProvider {
   send(
-    args: { method: string; params?: unknown[] },
+    args: { method: string; params: unknown[]; id: string },
     callback: (err: unknown, value: TruffleProviderResult) => void,
   ): void;
 }

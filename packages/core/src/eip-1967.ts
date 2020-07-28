@@ -8,7 +8,7 @@ export async function getAdminAddress(provider: EthereumProvider, address: strin
   const FALLBACK_ADMIN_LABEL = 'org.zeppelinos.proxy.admin';
   const storage = await getEip1967Storage(provider, address, ADMIN_LABEL, FALLBACK_ADMIN_LABEL);
 
-  return toChecksumAddress(storage);
+  return parseAddress(storage);
 }
 
 export async function getImplementationAddress(provider: EthereumProvider, address: string): Promise<string> {
@@ -20,7 +20,7 @@ export async function getImplementationAddress(provider: EthereumProvider, addre
     throw new Error(`Contract at ${address} doesn't look like an EIP 1967 proxy`);
   }
 
-  return toChecksumAddress(storage);
+  return parseAddress(storage);
 }
 
 async function getEip1967Storage(
@@ -51,4 +51,13 @@ export function toEip1967Hash(label: string): string {
 function isEmptySlot(storage: string): boolean {
   storage = storage.replace(/^0x/, '');
   return new BN(storage, 'hex').isZero();
+}
+
+function parseAddress(storage: string): string {
+  const buf = Buffer.from(storage.replace(/^0x/, ''), 'hex');
+  if (!buf.slice(0, 12).equals(Buffer.alloc(12, 0))) {
+    throw new Error(`Value in storage is not an address (${storage})`);
+  }
+  const address = '0x' + buf.toString('hex', 12, 32); // grab the last 20 bytes
+  return toChecksumAddress(address);
 }
