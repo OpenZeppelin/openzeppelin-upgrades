@@ -20,7 +20,9 @@ export async function getStorageAt(
   position: string,
   block = 'latest',
 ): Promise<string> {
-  return provider.send('eth_getStorageAt', [address, position, block]);
+  const storage = await provider.send('eth_getStorageAt', [address, position, block]);
+  const padded = storage.replace(/^0x/, '').padStart(64, '0');
+  return '0x' + padded;
 }
 
 export async function getCode(provider: EthereumProvider, address: string, block = 'latest'): Promise<string> {
