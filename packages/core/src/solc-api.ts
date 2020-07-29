@@ -29,10 +29,7 @@ export interface SolcInput {
 export interface SolcBytecode {
   linkReferences: {
     [file in string]: {
-      [library in string]: {
-        length: number;
-        start: number;
-      };
+      [library in string]: unknown;
     };
   };
   object: string;
