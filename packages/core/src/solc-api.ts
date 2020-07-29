@@ -5,9 +5,7 @@ export interface SolcOutput {
     [file in string]: {
       [contract in string]: {
         evm: {
-          bytecode: {
-            object: string;
-          };
+          bytecode: SolcBytecode;
         };
       };
     };
@@ -26,4 +24,13 @@ export interface SolcInput {
       content?: string;
     };
   };
+}
+
+export interface SolcBytecode {
+  linkReferences: {
+    [file in string]: {
+      [library in string]: unknown;
+    };
+  };
+  object: string;
 }

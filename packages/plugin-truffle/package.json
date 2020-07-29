@@ -13,6 +13,7 @@
     "test": "tsc -b && bash test.sh"
   },
   "devDependencies": {
+    "bn.js": "^5.1.2",
     "rimraf": "^3.0.2"
   },
   "dependencies": {

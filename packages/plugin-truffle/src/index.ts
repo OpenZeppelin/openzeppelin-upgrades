@@ -67,7 +67,7 @@ export async function deployProxy(
   const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data);
 
   Contract.address = proxy.address;
-  return Contract.deployed();
+  return new Contract(proxy.address);
 }
 
 export async function upgradeProxy(
@@ -101,7 +101,7 @@ export async function upgradeProxy(
   await admin.upgrade(proxyAddress, nextImpl);
 
   Contract.address = proxyAddress;
-  return Contract.deployed();
+  return new Contract(proxyAddress);
 }
 
 function getProxyFactory(Contract: ContractClass) {

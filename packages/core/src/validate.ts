@@ -2,7 +2,7 @@ import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
 import chalk from 'chalk';
 
-import { SolcOutput } from './solc-api';
+import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
 import { UpgradesError } from './error';
@@ -13,6 +13,7 @@ export type Validation = Record<string, ValidationResult>;
 export interface ValidationResult {
   version?: Version;
   inherit: string[];
+  libraries: string[];
   errors: ValidationError[];
   layout: StorageLayout;
 }
@@ -21,7 +22,8 @@ type ValidationError =
   | ValidationErrorStateVariable
   | ValidationErrorConstructor
   | ValidationErrorDelegateCall
-  | ValidationErrorSelfdestruct;
+  | ValidationErrorSelfdestruct
+  | ValidationErrorLinking;
 
 interface ValidationErrorBase {
   src: string;
@@ -45,10 +47,16 @@ interface ValidationErrorSelfdestruct extends ValidationErrorBase {
   kind: 'selfdestruct';
 }
 
+interface ValidationErrorLinking extends ValidationErrorBase {
+  kind: 'external-library-linking';
+  name: string;
+}
+
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validation {
   const validation: Validation = {};
   const fromId: Record<number, string> = {};
   const inheritIds: Record<string, number[]> = {};
+  const libraryIds: Record<string, number[]> = {};
 
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
@@ -57,6 +65,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
       validation[contractName] = {
         version,
         inherit: [],
+        libraries: [],
         errors: [],
         layout: {
           storage: [],
@@ -69,12 +78,16 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
       fromId[contractDef.id] = contractDef.name;
 
       if (contractDef.name in validation) {
+        const { bytecode } = solcOutput.contracts[source][contractDef.name].evm;
         inheritIds[contractDef.name] = contractDef.linearizedBaseContracts.slice(1);
+        libraryIds[contractDef.name] = getReferencedLibraryIds(contractDef);
 
         validation[contractDef.name].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
+          // TODO: add linked libraries support and remove this
+          ...getLinkingErrors(contractDef, bytecode),
         ];
 
         validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc);
@@ -84,6 +97,10 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
   for (const contractName in inheritIds) {
     validation[contractName].inherit = inheritIds[contractName].map(id => fromId[id]);
+  }
+
+  for (const contractName in libraryIds) {
+    validation[contractName].libraries = libraryIds[contractName].map(id => fromId[id]);
   }
 
   return validation;
@@ -169,6 +186,11 @@ const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
     hint: `Use a constant or mutable variable instead`,
     link: 'https://zpl.in/upgrades/error-005',
   },
+  'external-library-linking': {
+    msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
+    hint: `Stick to libraries with internal functions only`,
+    link: 'https://zpl.in/upgrades/error-006',
+  },
 };
 
 function describeError(e: ValidationError): string {
@@ -183,7 +205,9 @@ function describeError(e: ValidationError): string {
 export function getErrors(validation: Validation, version: Version): ValidationError[] {
   const contractName = getContractName(validation, version);
   const c = validation[contractName];
-  return c.errors.concat(...c.inherit.map(name => validation[name].errors));
+  return c.errors
+    .concat(...c.inherit.map(name => validation[name].errors))
+    .concat(...c.libraries.map(name => validation[name].errors));
 }
 
 export function isUpgradeSafe(validation: Validation, version: Version): boolean {
@@ -243,6 +267,36 @@ function* getStateVariableErrors(
           src: decodeSrc(varDecl),
         };
       }
+    }
+  }
+}
+
+function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
+  const implicitUsage = [...findAll('UsingForDirective', contractDef)].map(
+    usingForDirective => usingForDirective.libraryName.referencedDeclaration,
+  );
+
+  const explicitUsage = [...findAll('Identifier', contractDef)]
+    .filter(identifier => identifier.typeDescriptions.typeString?.match(/^type\(library/))
+    .map(identifier => {
+      if (identifier.referencedDeclaration === null) {
+        throw new Error('Broken invariant: Identifier.referencedDeclaration should not be null');
+      }
+      return identifier.referencedDeclaration;
+    });
+
+  return [...new Set(implicitUsage.concat(explicitUsage))];
+}
+
+function* getLinkingErrors(contractDef: ContractDefinition, bytecode: SolcBytecode): Generator<ValidationErrorLinking> {
+  const { linkReferences } = bytecode;
+  for (const source of Object.keys(linkReferences)) {
+    for (const libName of Object.keys(linkReferences[source])) {
+      yield {
+        kind: 'external-library-linking',
+        name: libName,
+        src: source,
+      };
     }
   }
 }

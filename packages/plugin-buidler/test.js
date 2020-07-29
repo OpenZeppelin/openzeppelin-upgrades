@@ -5,8 +5,11 @@ const { promisify } = require('util');
 
 const rimraf = promisify(require('rimraf'));
 
-test.before(async t => {
+test.beforeEach(async () => {
   await rimraf('test/.openzeppelin');
+});
+
+test.before(async t => {
   const compile = proc.spawn('buidler', ['compile'], {
     cwd: 'test',
     stdio: 'inherit',
@@ -16,7 +19,7 @@ test.before(async t => {
 });
 
 function testFile(name) {
-  test(name, async t => {
+  test.serial(name, async t => {
     try {
       await proc.execFile('node', [name], { cwd: 'test' });
       t.pass();
@@ -27,4 +30,5 @@ function testFile(name) {
   });
 }
 
-testFile('01');
+testFile('happy-path');
+testFile('happy-path-with-library');

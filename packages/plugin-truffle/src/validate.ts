@@ -46,7 +46,9 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
       output.contracts[sourcePath] = {};
     }
 
-    output.contracts[sourcePath][contractName] = { evm: { bytecode: { object: artifact.bytecode } } };
+    output.contracts[sourcePath][contractName] = {
+      evm: { bytecode: { object: artifact.bytecode, linkReferences: {} } },
+    };
   }
 
   for (const { ast } of Object.values(output.sources)) {
