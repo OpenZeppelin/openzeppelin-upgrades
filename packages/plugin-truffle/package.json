@@ -21,5 +21,7 @@
     "@truffle/contract": "^4.2.12",
     "solidity-ast": "^0.4.1"
   },
-  "peerDependencies": {}
+  "peerDependencies": {
+    "truffle": "^5.1.35"
+  }
 }
