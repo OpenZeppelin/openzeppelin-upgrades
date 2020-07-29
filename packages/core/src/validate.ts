@@ -80,14 +80,14 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
       if (contractDef.name in validation) {
         const { bytecode } = solcOutput.contracts[source][contractDef.name].evm;
         inheritIds[contractDef.name] = contractDef.linearizedBaseContracts.slice(1);
-        libraryIds[contractDef.name] = getCalledLibrariesIds(contractDef);
+        libraryIds[contractDef.name] = getReferencedLibraryIds(contractDef);
 
         validation[contractDef.name].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
           // TODO: add linked libraries support and remove this
-          ...getLinkingErrors(contractDef, decodeSrc, bytecode),
+          ...getLinkingErrors(contractDef, bytecode),
         ];
 
         validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc);
@@ -271,8 +271,8 @@ function* getStateVariableErrors(
   }
 }
 
-function getCalledLibrariesIds(contractDef: ContractDefinition): number[] {
-  const libraries = [...findAll('UsingForDirective', contractDef)].map(
+function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
+  const implicitUsage = [...findAll('UsingForDirective', contractDef)].map(
     usingForDirective => usingForDirective.libraryName.referencedDeclaration,
   );
 
@@ -285,14 +285,10 @@ function getCalledLibrariesIds(contractDef: ContractDefinition): number[] {
       return identifier.referencedDeclaration;
     });
 
-  return libraries.concat(explicitUsage);
+  return [...new Set(implicitUsage.concat(explicitUsage))];
 }
 
-function* getLinkingErrors(
-  contractDef: ContractDefinition,
-  decodeSrc: SrcDecoder,
-  bytecode: SolcBytecode,
-): Generator<ValidationErrorLinking> {
+function* getLinkingErrors(contractDef: ContractDefinition, bytecode: SolcBytecode): Generator<ValidationErrorLinking> {
   const { linkReferences } = bytecode;
   for (const source of Object.keys(linkReferences)) {
     for (const libName of Object.keys(linkReferences[source])) {
