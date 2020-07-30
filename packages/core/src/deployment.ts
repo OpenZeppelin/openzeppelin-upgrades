@@ -1,5 +1,6 @@
 import { promisify } from 'util';
 
+import debug from './utils/debug';
 import { EthereumProvider, getTransactionByHash, getCode, isDevelopmentNetwork } from './provider';
 
 const sleep = promisify(setTimeout);
@@ -17,17 +18,23 @@ export async function resumeOrDeploy<T extends Deployment>(
   // If there is a deployment stored, we look its transaction up. If the
   // transaction is found, the deployment is reused.
   if (cached !== undefined) {
+    debug('found previous deployment', cached.txHash);
     const tx = await getTransactionByHash(provider, cached.txHash);
     if (tx !== null) {
+      debug('resuming previous deployment', cached.txHash);
       return cached;
     } else if (!(await isDevelopmentNetwork(provider))) {
       // If the transaction is not found we throw an error, except if we're in
       // a development network then we simply silently redeploy.
       throw new InvalidDeployment(cached);
+    } else {
+      debug('ignoring invalid deployment in development network', cached.txHash);
     }
   }
 
-  return deploy();
+  const deployment = await deploy();
+  debug('initiated deployment', deployment.txHash);
+  return deployment;
 }
 
 export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
@@ -36,11 +43,13 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
   // Poll for 60 seconds with a 5 second poll interval.
   // TODO: Make these parameters configurable.
   while (Date.now() - startTime < 60e3) {
+    debug('verifying deployment tx mined', deployment.txHash);
     const tx = await getTransactionByHash(provider, deployment.txHash);
     if (tx === null) {
       throw new InvalidDeployment(deployment);
     }
     if (tx.blockHash !== null) {
+      debug('verifying deployment tx succeeded', deployment.txHash);
       const code = await getCode(provider, deployment.address);
       if (code === '0x') {
         throw new InvalidDeployment(deployment);
@@ -48,6 +57,7 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
         return;
       }
     }
+    debug('waiting for deployment tx mined', deployment.txHash);
     await sleep(5e3);
   }
 

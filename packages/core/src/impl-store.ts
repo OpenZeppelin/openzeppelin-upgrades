@@ -1,11 +1,16 @@
+import debug from './utils/debug';
 import { Manifest, ManifestData, ImplDeployment } from './manifest';
 import { EthereumProvider } from './provider';
 import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import type { Version } from './version';
 import { Lens, pathLens } from './utils/lenses';
 
+interface LensDescription {
+  description: string;
+}
+
 async function fetchOrDeployGeneric<T extends Deployment>(
-  lens: Lens<ManifestData, T | undefined>,
+  lens: Lens<ManifestData, T | undefined> & LensDescription,
   provider: EthereumProvider,
   deploy: () => Promise<T>,
 ): Promise<string> {
@@ -13,6 +18,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
 
   try {
     const deployment = await manifest.lockedRun(async () => {
+      debug('deploying', lens.description);
       const data = await manifest.read();
       const deployment = lens(data);
       const stored = deployment.get();
@@ -50,7 +56,9 @@ export async function fetchOrDeploy(
   provider: EthereumProvider,
   deploy: () => Promise<ImplDeployment>,
 ): Promise<string> {
-  const implLens = pathLens('impls', version.withoutMetadata);
+  const implLens = Object.assign(pathLens('impls', version.withoutMetadata), {
+    description: `implementation ${version.withoutMetadata}`,
+  });
   return fetchOrDeployGeneric(implLens, provider, deploy);
 }
 
@@ -58,5 +66,8 @@ export async function fetchOrDeployAdmin(
   provider: EthereumProvider,
   deploy: () => Promise<Deployment>,
 ): Promise<string> {
-  return fetchOrDeployGeneric(pathLens('admin'), provider, deploy);
+  const adminLens = Object.assign(pathLens('admin'), {
+    description: 'proxy admin',
+  });
+  return fetchOrDeployGeneric(adminLens, provider, deploy);
 }
