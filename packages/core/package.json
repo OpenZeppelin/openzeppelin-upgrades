@@ -13,8 +13,8 @@
     "prepublish": "rimraf artifacts cache dist *.tsbuildinfo",
     "prepare": "tsc -b && yarn prepare:contracts",
     "prepare:contracts": "buidler compile",
-    "test": "tsc -b && buidler compile && ava",
-    "test:watch": "buidler compile && fgbg 'ava --watch' 'tsc -b --watch'"
+    "test": "tsc -b && buidler compile --force && ava",
+    "test:watch": "buidler compile --force && fgbg 'ava --watch' 'tsc -b --watch'"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.3.6",
