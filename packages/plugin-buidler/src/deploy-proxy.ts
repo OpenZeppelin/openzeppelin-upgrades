@@ -13,10 +13,14 @@ import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
-export type DeployFunction = (ImplFactory: ContractFactory, args: unknown[]) => Promise<Contract>;
+export type DeployFunction = (ImplFactory: ContractFactory, args?: unknown[]) => Promise<Contract>;
+
+export interface Options {
+  initializer?: string;
+}
 
 export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction {
-  return async function deployProxy(ImplFactory, args) {
+  return async function deployProxy(ImplFactory, args = [], opts: Options = {}) {
     const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
@@ -32,7 +36,7 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const adminAddress = await fetchOrDeployAdmin(bre.network.provider, () => deploy(AdminFactory));
 
     // TODO: support choice of initializer function? support overloaded initialize function
-    const data = ImplFactory.interface.encodeFunctionData('initialize', args);
+    const data = getInitializerData(ImplFactory, args, opts.initializer);
     const ProxyFactory = await getProxyFactory(bre, ImplFactory.signer);
     const proxy = await ProxyFactory.deploy(impl, adminAddress, data);
 
@@ -40,4 +44,19 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     // inst.deployTransaction = proxy.deployTransaction;
     return inst;
   };
+
+  function getInitializerData(ImplFactory: ContractFactory, args: unknown[], initializer?: string): string {
+    const allowNoInitialization = initializer === undefined && args.length === 0;
+    initializer = initializer ?? 'initialize';
+
+    const initializers = ImplFactory.interface.fragments.filter(f => f.name === initializer);
+
+    if (initializers.length > 0) {
+      return ImplFactory.interface.encodeFunctionData(initializer, args);
+    } else if (allowNoInitialization) {
+      return '0x';
+    } else {
+      throw new Error(`Contract does not have a function \`${initializer}\``);
+    }
+  }
 }

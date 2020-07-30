@@ -9,17 +9,20 @@ import {
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
 import { validateArtifacts } from './validate';
 import { deploy } from './utils/deploy';
-import { defaultDeployer } from './default-deployer';
 import { getProxyFactory, getProxyAdminFactory } from './factories';
 import { wrapProvider } from './wrap-provider';
-import { Options } from './options';
+import { Options, withDefaults } from './options';
+
+interface InitializerOptions {
+  initializer?: string;
+}
 
 export async function deployProxy(
   Contract: ContractClass,
-  args: unknown[],
-  opts: Options = {},
+  args: unknown[] = [],
+  opts: Options & InitializerOptions = {},
 ): Promise<ContractInstance> {
-  const { deployer = defaultDeployer } = opts;
+  const { deployer } = withDefaults(opts);
 
   const validations = await validateArtifacts(getTruffleConfig().contracts_build_directory);
 
@@ -36,10 +39,25 @@ export async function deployProxy(
   const AdminFactory = await getProxyAdminFactory(Contract);
   const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, deployer));
 
-  const data = await new Contract('').contract.methods.initialize(...args).encodeABI();
+  const data = getInitializerData(Contract, args, opts.initializer);
   const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
   const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data);
 
   Contract.address = proxy.address;
   return new Contract(proxy.address);
+}
+
+function getInitializerData(Contract: ContractClass, args: unknown[], initializer?: string): string {
+  const allowNoInitialization = initializer === undefined && args.length === 0;
+  initializer = initializer ?? 'initialize';
+
+  const stub = new Contract('');
+
+  if (initializer in stub.contract.methods) {
+    return stub.contract.methods[initializer](...args).encodeABI();
+  } else if (allowNoInitialization) {
+    return '0x';
+  } else {
+    throw new Error(`Contract ${Contract.name} does not have a function \`${initializer}\``);
+  }
 }
