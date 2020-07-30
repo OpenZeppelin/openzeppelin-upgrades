@@ -27,7 +27,7 @@ function defaultManifest(): ManifestData {
 const manifestDir = '.openzeppelin';
 
 export class Manifest {
-  file: string;
+  readonly file: string;
   private locked = false;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
