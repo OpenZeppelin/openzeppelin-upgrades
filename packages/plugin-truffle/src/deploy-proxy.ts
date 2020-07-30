@@ -16,7 +16,7 @@ import { Options } from './options';
 
 export async function deployProxy(
   Contract: ContractClass,
-  args: unknown[],
+  args: unknown[] = [],
   opts: Options = {},
 ): Promise<ContractInstance> {
   const { deployer = defaultDeployer } = opts;

@@ -13,10 +13,10 @@ import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
-export type DeployFunction = (ImplFactory: ContractFactory, args: unknown[]) => Promise<Contract>;
+export type DeployFunction = (ImplFactory: ContractFactory, args?: unknown[]) => Promise<Contract>;
 
 export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction {
-  return async function deployProxy(ImplFactory, args) {
+  return async function deployProxy(ImplFactory, args = []) {
     const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
