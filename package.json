@@ -6,7 +6,8 @@
     "prepare": "lerna run prepare:contracts && tsc -b",
     "lint": "yarn lint:path .",
     "lint:path": "eslint --ignore-path .gitignore",
-    "test": "yarn prepare && sh test.sh"
+    "test": "tsc -b && bash test.sh",
+    "coverage": "nyc yarn test"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^3.6.1",
@@ -16,6 +17,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "lerna": "^3.22.1",
     "node-gyp-cache": "^0.2.1",
+    "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "typescript": "^3.9.5"
   },

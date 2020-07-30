@@ -1,0 +1,10 @@
+{
+  "reporter": [
+    "text",
+    "lcov"
+  ],
+  "all": true,
+  "include": [
+    "packages/*/{src,dist}/**"
+  ]
+}
