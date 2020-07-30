@@ -6,7 +6,7 @@
     "prepare": "lerna run prepare:contracts && tsc -b",
     "lint": "yarn lint:path .",
     "lint:path": "eslint --ignore-path .gitignore",
-    "test": "tsc -b && sh test.sh",
+    "test": "tsc -b && bash test.sh",
     "coverage": "nyc yarn test"
   },
   "devDependencies": {
