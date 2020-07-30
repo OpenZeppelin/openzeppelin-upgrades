@@ -34,7 +34,7 @@ export class Manifest {
     return new Manifest(await getChainId(provider));
   }
 
-  constructor(chainId: string) {
+  constructor(chainId: number) {
     this.file = path.join(manifestDir, `${chainId}.json`);
   }
 

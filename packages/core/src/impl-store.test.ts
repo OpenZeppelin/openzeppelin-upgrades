@@ -47,7 +47,7 @@ test('does not reuse unrelated version', async t => {
 });
 
 test('cleans up invalid deployment', async t => {
-  const chainId = '0x1234';
+  const chainId = 1234;
   const provider1 = stubProvider(chainId);
   // create a deployment on a network
   await fetchOrDeploy(version1, provider1, provider1.deploy);
