@@ -21,8 +21,8 @@ test.before(async t => {
 function testFile(name) {
   test.serial(name, async t => {
     try {
-      await proc.execFile('node', [name], { cwd: 'test' });
-      t.pass();
+      const { stderr } = await proc.execFile('node', [name], { cwd: 'test' });
+      t.is(stderr, '');
     } catch (e) {
       t.log(e.stdout);
       t.fail(e.stderr);
@@ -32,3 +32,6 @@ function testFile(name) {
 
 testFile('happy-path');
 testFile('happy-path-with-library');
+testFile('deploy-validation');
+testFile('upgrade-validation');
+testFile('upgrade-storage');
