@@ -1,6 +1,6 @@
 import path from 'path';
 import { promises as fs } from 'fs';
-import { EthereumProvider, getChainId } from './provider';
+import { EthereumProvider, getChainId, networkNames } from './provider';
 import * as t from 'io-ts';
 import lockfile from 'proper-lockfile';
 
@@ -35,7 +35,8 @@ export class Manifest {
   }
 
   constructor(chainId: number) {
-    this.file = path.join(manifestDir, `${chainId}.json`);
+    const name = networkNames[chainId] ?? `unknown-${chainId}`;
+    this.file = path.join(manifestDir, `${name}.json`);
   }
 
   async getAdmin(): Promise<Deployment | undefined> {
