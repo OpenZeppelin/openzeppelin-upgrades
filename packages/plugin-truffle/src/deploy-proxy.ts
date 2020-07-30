@@ -9,17 +9,16 @@ import {
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
 import { validateArtifacts } from './validate';
 import { deploy } from './utils/deploy';
-import { defaultDeployer } from './default-deployer';
 import { getProxyFactory, getProxyAdminFactory } from './factories';
 import { wrapProvider } from './wrap-provider';
-import { Options } from './options';
+import { Options, withDefaults } from './options';
 
 export async function deployProxy(
   Contract: ContractClass,
   args: unknown[] = [],
   opts: Options = {},
 ): Promise<ContractInstance> {
-  const { deployer = defaultDeployer } = opts;
+  const { deployer } = withDefaults(opts);
 
   const validations = await validateArtifacts(getTruffleConfig().contracts_build_directory);
 
