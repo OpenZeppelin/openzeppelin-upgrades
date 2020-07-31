@@ -1,5 +1,5 @@
 usePlugin('@nomiclabs/buidler-ethers');
-usePlugin('@openzeppelin/upgrades-buidler');
+usePlugin('@openzeppelin/buidler-upgrades');
 
 // You have to export an object to set up your config
 // This object can have the following optional entries:

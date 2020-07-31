@@ -1,5 +1,5 @@
 {
-  "name": "@openzeppelin/upgrades-truffle",
+  "name": "@openzeppelin/truffle-upgrades",
   "version": "0.1.0",
   "description": "",
   "license": "MIT",

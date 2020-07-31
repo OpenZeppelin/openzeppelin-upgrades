@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-const { deployProxy, upgradeProxy } = require('@openzeppelin/upgrades-truffle');
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 const Greeter = artifacts.require('Greeter');
 const GreeterV2 = artifacts.require('GreeterV2');
