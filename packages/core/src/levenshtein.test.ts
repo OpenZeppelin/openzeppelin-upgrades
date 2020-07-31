@@ -15,7 +15,7 @@ test('append', t => {
   const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
   t.deepEqual(ops, [
     {
-      action: 'append',
+      kind: 'append',
       updated: 'd',
     },
   ]);
@@ -27,7 +27,7 @@ test('pop', t => {
   const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
   t.deepEqual(ops, [
     {
-      action: 'pop',
+      kind: 'pop',
       original: 'd',
     },
   ]);
@@ -39,7 +39,7 @@ test('delete', t => {
   const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
   t.deepEqual(ops, [
     {
-      action: 'delete',
+      kind: 'delete',
       original: 'b',
     },
   ]);
@@ -51,7 +51,7 @@ test('insert', t => {
   const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
   t.deepEqual(ops, [
     {
-      action: 'insert',
+      kind: 'insert',
       updated: 'z',
     },
   ]);

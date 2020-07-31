@@ -65,7 +65,7 @@ class StorageUpgradeErrors extends UpgradesError {
   details() {
     return this.errors
       .map(e => {
-        return chalk.bold(e.updated?.src ?? 'unknown') + ': ' + e.action + ' of variable ' + e.updated?.label;
+        return chalk.bold(e.updated?.src ?? 'unknown') + ': ' + e.kind + ' of variable ' + e.updated?.label;
       })
       .join('\n\n');
   }
@@ -93,7 +93,7 @@ export function getStorageUpgradeErrors(
   }
 
   const ops = levenshtein(original.storage, updated.storage, matchStorageItem);
-  return ops.filter(o => o.action !== 'append');
+  return ops.filter(o => o.kind !== 'append');
 }
 
 // Type Identifiers in the AST are for some reason encoded so that they don't
