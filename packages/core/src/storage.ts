@@ -84,9 +84,9 @@ export function getStorageUpgradeErrors(
     if (typeMatches && nameMatches) {
       return 'equal';
     } else if (typeMatches) {
-      return 'typechange';
-    } else if (nameMatches) {
       return 'rename';
+    } else if (nameMatches) {
+      return 'typechange';
     } else {
       return 'replace';
     }
