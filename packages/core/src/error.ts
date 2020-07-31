@@ -1,6 +1,16 @@
 import util from 'util';
 import chalk from 'chalk';
 
+interface ErrorDescriptor<E> {
+  msg: (e: E) => string;
+  hint?: string;
+  link?: string;
+}
+
+export type ErrorDescriptions<E extends { kind: string }> = {
+  [K in E['kind']]: ErrorDescriptor<E & { kind: K }>;
+};
+
 function noDetails() {
   return '';
 }

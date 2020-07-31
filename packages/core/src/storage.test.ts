@@ -57,7 +57,7 @@ test('storage upgrade delete', t => {
   const comparison = getStorageUpgradeErrors(v1, v2);
   t.deepEqual(comparison, [
     {
-      action: 'delete',
+      kind: 'delete',
       original: {
         contract: 'StorageUpgrade_Delete_V1',
         label: 'x1',

@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
-import { UpgradesError } from './error';
+import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
 
 export type Validation = Record<string, ValidationResult>;
@@ -154,13 +154,7 @@ class ValidationErrors extends UpgradesError {
   }
 }
 
-interface ErrorInfo<K> {
-  msg: (e: ValidationError & { kind: K }) => string;
-  hint?: string;
-  link: string;
-}
-
-const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
+const errorInfo: ErrorDescriptions<ValidationError> = {
   constructor: {
     msg: e => `Contract \`${e.contract}\` has a constructor`,
     hint: 'Define an initializer instead',
@@ -194,10 +188,10 @@ const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
 function describeError(e: ValidationError): string {
   const info = errorInfo[e.kind];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let log = chalk.bold(e.src) + ': ' + info.msg(e as any) + '\n    ';
-  if (info.hint) log += info.hint + '\n    ';
-  log += chalk.dim(info.link);
-  return log;
+  const log = [chalk.bold(e.src) + ': ' + info.msg(e as any)];
+  if (info.hint) log.push(info.hint);
+  if (info.link) log.push(chalk.dim(info.link));
+  return log.join('\n    ');
 }
 
 export function getErrors(validation: Validation, version: Version): ValidationError[] {
