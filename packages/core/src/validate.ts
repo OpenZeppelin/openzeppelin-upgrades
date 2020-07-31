@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
-import { UpgradesError } from './error';
+import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
 
 export type Validation = Record<string, ValidationResult>;
@@ -156,13 +156,7 @@ class ValidationErrors extends UpgradesError {
   }
 }
 
-interface ErrorInfo<K> {
-  msg: (e: ValidationError & { kind: K }) => string;
-  hint?: string;
-  link: string;
-}
-
-const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
+const errorInfo: ErrorDescriptions<ValidationError> = {
   constructor: {
     msg: e => `Contract \`${e.contract}\` has a constructor`,
     hint: 'Define an initializer instead',
