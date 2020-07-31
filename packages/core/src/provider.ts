@@ -1,3 +1,5 @@
+import BN from 'bn.js';
+
 export interface EthereumProvider {
   send(method: 'eth_chainId', params: []): Promise<string>;
   send(method: 'eth_getCode', params: [string, string]): Promise<string>;
@@ -10,8 +12,9 @@ interface EthereumTransaction {
   blockHash: string | null;
 }
 
-export async function getChainId(provider: EthereumProvider): Promise<string> {
-  return provider.send('eth_chainId', []);
+export async function getChainId(provider: EthereumProvider): Promise<number> {
+  const id = await provider.send('eth_chainId', []);
+  return new BN(id.replace(/^0x/, ''), 'hex').toNumber();
 }
 
 export async function getStorageAt(
@@ -36,13 +39,18 @@ export async function getTransactionByHash(
   return provider.send('eth_getTransactionByHash', [txHash]);
 }
 
-export const networkNames: { [chainId in string]?: string } = Object.freeze({
-  '0x7a69': 'buidlerevm',
-  '0x539': 'ganache',
+export const networkNames: { [chainId in number]?: string } = Object.freeze({
+  1: 'mainnet',
+  2: 'morden',
+  3: 'ropsten',
+  4: 'rinkeby',
+  5: 'goerli',
+  42: 'kovan',
 });
 
 export async function isDevelopmentNetwork(provider: EthereumProvider): Promise<boolean> {
   const chainId = await getChainId(provider);
-  const chainName = networkNames[chainId];
-  return chainName === 'buidlerevm' || chainName === 'ganache';
+  //  1337 => ganache and geth --dev
+  // 31337 => buidler evm
+  return chainId === 1337 || chainId === 31337;
 }

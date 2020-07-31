@@ -1,6 +1,6 @@
 import path from 'path';
 import { promises as fs } from 'fs';
-import { EthereumProvider, getChainId } from './provider';
+import { EthereumProvider, getChainId, networkNames } from './provider';
 import * as t from 'io-ts';
 import lockfile from 'proper-lockfile';
 
@@ -27,15 +27,16 @@ function defaultManifest(): ManifestData {
 const manifestDir = '.openzeppelin';
 
 export class Manifest {
-  file: string;
+  readonly file: string;
   private locked = false;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
     return new Manifest(await getChainId(provider));
   }
 
-  constructor(chainId: string) {
-    this.file = path.join(manifestDir, `${chainId}.json`);
+  constructor(chainId: number) {
+    const name = networkNames[chainId] ?? `unknown-${chainId}`;
+    this.file = path.join(manifestDir, `${name}.json`);
   }
 
   async getAdmin(): Promise<Deployment | undefined> {
