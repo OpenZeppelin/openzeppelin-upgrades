@@ -40,6 +40,12 @@ export async function getTransactionByHash(
 }
 
 export const networkNames: { [chainId in number]?: string } = Object.freeze({
+  1: 'mainnet',
+  2: 'morden',
+  3: 'ropsten',
+  4: 'rinkeby',
+  5: 'goerli',
+  42: 'kovan',
   1337: 'ganache',
   31337: 'buidlerevm',
 });
