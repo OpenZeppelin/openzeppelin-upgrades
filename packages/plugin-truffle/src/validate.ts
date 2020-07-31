@@ -10,13 +10,9 @@ export async function validateArtifacts(
   artifactsPath: string,
   sourcesPath: string,
 ): Promise<Record<string, ValidationResult>> {
-  const pathDecoder = (_path: string) => {
-    return path.relative(sourcesPath, _path);
-  };
-
   const artifacts = await readArtifacts(artifactsPath);
   const { input, output } = reconstructSolcInputOutput(artifacts);
-  const srcDecoder = solcInputOutputDecoder(input, output, pathDecoder);
+  const srcDecoder = solcInputOutputDecoder(input, output, sourcesPath);
   return validate(output, srcDecoder);
 }
 

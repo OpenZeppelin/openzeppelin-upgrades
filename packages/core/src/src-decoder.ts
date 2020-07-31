@@ -1,37 +1,29 @@
+import path from 'path';
 import { SolcOutput, SolcInput } from './solc-api';
 
 export type SrcDecoder = (node: { src: string }) => string;
-type PathDecoder = (path: string) => string;
 
 interface Source {
   name: string;
   content: string;
 }
 
-function identityPath(path: string): string {
-  return path;
-}
-
-export function solcInputOutputDecoder(
-  solcInput: SolcInput,
-  solcOutput: SolcOutput,
-  decodePath: PathDecoder = identityPath,
-): SrcDecoder {
+export function solcInputOutputDecoder(solcInput: SolcInput, solcOutput: SolcOutput, basePath = '.'): SrcDecoder {
   const sources: Record<number, Source> = {};
 
   function getSource(sourceId: number): Source {
     if (sourceId in sources) {
       return sources[sourceId];
     } else {
-      const path = Object.entries(solcOutput.sources).find(([, { id }]) => sourceId === id)?.[0];
-      if (path === undefined) {
+      const sourcePath = Object.entries(solcOutput.sources).find(([, { id }]) => sourceId === id)?.[0];
+      if (sourcePath === undefined) {
         throw new Error(`Source file not available`);
       }
-      const content = solcInput.sources[path].content;
+      const content = solcInput.sources[sourcePath].content;
+      const name = path.relative(basePath, sourcePath);
       if (content === undefined) {
-        throw new Error(`Content for ${path} not available`);
+        throw new Error(`Content for ${name} not available`);
       }
-      const name = decodePath(path);
       return (sources[sourceId] = { name, content });
     }
   }
