@@ -43,7 +43,8 @@ testValid('UsesExplicitUnsafeInternalLibrary', false);
 testValid('UsesImplicitUnsafeExternalLibrary', false);
 testValid('UsesExplicitUnsafeExternalLibrary', false);
 
-// linked external libraries are not yet supported
+// Linked external libraries are not yet supported
+// see: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
 testValid('UsesImplicitSafeExternalLibrary', false);
 testValid('UsesExplicitSafeExternalLibrary', false);
 
