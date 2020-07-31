@@ -190,10 +190,10 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
 function describeError(e: ValidationError): string {
   const info = errorInfo[e.kind];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let log = chalk.bold(e.src) + ': ' + info.msg(e as any) + '\n    ';
-  if (info.hint) log += info.hint + '\n    ';
-  log += chalk.dim(info.link);
-  return log;
+  const log = [chalk.bold(e.src) + ': ' + info.msg(e as any)];
+  if (info.hint) log.push(info.hint);
+  if (info.link) log.push(chalk.dim(info.link));
+  return log.join('\n    ');
 }
 
 export function getErrors(validation: Validation, version: Version): ValidationError[] {

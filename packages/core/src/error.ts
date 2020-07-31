@@ -4,7 +4,7 @@ import chalk from 'chalk';
 interface ErrorDescriptor<E> {
   msg: (e: E) => string;
   hint?: string;
-  link: string;
+  link?: string;
 }
 
 export type ErrorDescriptions<E extends { kind: string }> = {
