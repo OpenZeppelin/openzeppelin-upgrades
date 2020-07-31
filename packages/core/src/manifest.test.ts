@@ -3,8 +3,8 @@ import test from 'ava';
 import { Manifest } from './manifest';
 
 test('manifest name for a known network', t => {
-  const manifest = new Manifest(1337);
-  t.is(manifest.file, '.openzeppelin/ganache.json');
+  const manifest = new Manifest(1);
+  t.is(manifest.file, '.openzeppelin/mainnet.json');
 });
 
 test('manifest name for an unknown network', t => {
