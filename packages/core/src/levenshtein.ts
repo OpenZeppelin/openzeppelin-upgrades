@@ -46,7 +46,7 @@ function buildMatrix<T>(a: T[], b: T[], eq: Equal<T>): number[][] {
 type Match<T, K> = (a: T, b: T) => K | 'equal';
 
 export interface Operation<T, K> {
-  kind: K | 'append' | 'insert' | 'pop' | 'delete';
+  kind: K | 'append' | 'insert' | 'delete';
   original?: T;
   updated?: T;
 }
@@ -81,8 +81,7 @@ function walkMatrix<T, K>(matrix: number[][], a: T[], b: T[], match: Match<T, K>
       operations.unshift({ kind: isAppend ? 'append' : 'insert', updated });
       j--;
     } else if (i > 0 && cost === matrix[i - 1][j] + DELETION_COST) {
-      const isPop = i >= matrix[0].length;
-      operations.unshift({ kind: isPop ? 'pop' : 'delete', original });
+      operations.unshift({ kind: 'delete', original });
       i--;
     } else {
       throw Error(`Could not walk matrix at position ${i},${j}`);

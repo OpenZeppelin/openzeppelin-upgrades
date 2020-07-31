@@ -21,19 +21,19 @@ test('append', t => {
   ]);
 });
 
-test('pop', t => {
+test('delete from end', t => {
   const a = [...'abcd'];
   const b = [...'abc'];
   const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
   t.deepEqual(ops, [
     {
-      kind: 'pop',
+      kind: 'delete',
       original: 'd',
     },
   ]);
 });
 
-test('delete', t => {
+test('delete from middle', t => {
   const a = [...'abc'];
   const b = [...'ac'];
   const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
