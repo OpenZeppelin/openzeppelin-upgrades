@@ -59,6 +59,7 @@ export interface TruffleProvider {
 export interface TruffleConfig {
   provider: TruffleProvider;
   contracts_build_directory: string;
+  contracts_directory: string;
 }
 
 declare const config: undefined | TruffleConfig;

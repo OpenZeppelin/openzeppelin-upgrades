@@ -21,7 +21,8 @@ export async function deployProxy(
 ): Promise<ContractInstance> {
   const { deployer = defaultDeployer } = opts;
 
-  const validations = await validateArtifacts(getTruffleConfig().contracts_build_directory);
+  const { contracts_build_directory, contracts_directory } = getTruffleConfig();
+  const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
   const version = getVersion(Contract.bytecode);
   assertUpgradeSafe(validations, version);
