@@ -148,11 +148,9 @@ export function assertUpgradeSafe(validation: Validation, version: Version): voi
 
 class ValidationErrors extends UpgradesError {
   constructor(contractName: string, readonly errors: ValidationError[]) {
-    super(`Contract \`${contractName}\` is not upgrade safe`);
-  }
-
-  details() {
-    return this.errors.map(describeError).join('\n\n');
+    super(`Contract \`${contractName}\` is not upgrade safe`, () => {
+      return errors.map(describeError).join('\n\n');
+    });
   }
 }
 
