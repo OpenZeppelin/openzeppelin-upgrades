@@ -23,7 +23,8 @@ type ValidationError =
   | ValidationErrorConstructor
   | ValidationErrorDelegateCall
   | ValidationErrorSelfdestruct
-  | ValidationErrorLinking;
+  | ValidationErrorLinking
+  | ValidationErrorStruct;
 
 interface ValidationErrorBase {
   src: string;
@@ -49,6 +50,11 @@ interface ValidationErrorSelfdestruct extends ValidationErrorBase {
 
 interface ValidationErrorLinking extends ValidationErrorBase {
   kind: 'external-library-linking';
+  name: string;
+}
+
+interface ValidationErrorStruct extends ValidationErrorBase {
+  kind: 'struct-definition';
   name: string;
 }
 
@@ -87,6 +93,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
           // TODO: add linked libraries support and remove this
+          ...getStructErrors(contractDef, decodeSrc),
           ...getLinkingErrors(contractDef, bytecode),
         ];
 
@@ -188,6 +195,11 @@ const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
     msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
     hint: `Stick to libraries with internal functions only`,
     link: 'https://zpl.in/upgrades/error-006',
+  },
+  'struct-definition': {
+    msg: e => `Defining struct \`${e.name}\` is not yet supported`,
+    hint: `If you really really know what you're doing you can skip this check with the --forceStructs flag`,
+    link: 'https://zpl.in/upgrades/error-007',
   },
 };
 
@@ -296,5 +308,15 @@ function* getLinkingErrors(contractDef: ContractDefinition, bytecode: SolcByteco
         src: source,
       };
     }
+  }
+}
+
+function* getStructErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorStruct> {
+  for (const struct of findAll('StructDefinition', contractDef)) {
+    yield {
+      kind: 'struct-definition',
+      name: struct.name,
+      src: decodeSrc(struct),
+    };
   }
 }
