@@ -1,1 +1,8 @@
 comment: off
+coverage:
+  status:
+    patch:
+      default:
+        target: auto
+        threshold: 0%
+        base: auto 
