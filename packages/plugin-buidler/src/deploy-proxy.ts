@@ -13,18 +13,23 @@ import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
-export type DeployFunction = (ImplFactory: ContractFactory, args?: unknown[]) => Promise<Contract>;
+export type DeployFunction = (
+  ImplFactory: ContractFactory,
+  args?: unknown[],
+  opts?: DeployOptions,
+) => Promise<Contract>;
 
-export interface Options {
+export interface DeployOptions {
   initializer?: string;
+  dangerousIgnoreStructsAndEnumChecks?: boolean;
 }
 
 export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction {
-  return async function deployProxy(ImplFactory, args = [], opts: Options = {}) {
+  return async function deployProxy(ImplFactory, args = [], opts = {}) {
     const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version);
+    assertUpgradeSafe(validations, version, opts.dangerousIgnoreStructsAndEnumChecks);
 
     const impl = await fetchOrDeploy(version, bre.network.provider, async () => {
       const deployment = await deploy(ImplFactory);

@@ -24,7 +24,8 @@ type ValidationError =
   | ValidationErrorDelegateCall
   | ValidationErrorSelfdestruct
   | ValidationErrorLinking
-  | ValidationErrorStruct;
+  | ValidationErrorStruct
+  | ValidationErrorEnum;
 
 interface ValidationErrorBase {
   src: string;
@@ -55,6 +56,11 @@ interface ValidationErrorLinking extends ValidationErrorBase {
 
 interface ValidationErrorStruct extends ValidationErrorBase {
   kind: 'struct-definition';
+  name: string;
+}
+
+interface ValidationErrorEnum extends ValidationErrorBase {
+  kind: 'enum-definition';
   name: string;
 }
 
@@ -92,8 +98,9 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
-          // TODO: add linked libraries support and remove this
           ...getStructErrors(contractDef, decodeSrc),
+          ...getEnumErrors(contractDef, decodeSrc),
+          // TODO: add linked libraries support and remove this
           ...getLinkingErrors(contractDef, bytecode),
         ];
 
@@ -144,9 +151,30 @@ export function getStorageLayout(validation: Validation, version: Version): Stor
   return layout;
 }
 
-export function assertUpgradeSafe(validation: Validation, version: Version): void {
+function isDevEnvironment() {
+  return true;
+}
+
+export function assertUpgradeSafe(validation: Validation, version: Version, allowStructsAndEnums = false): void {
   const contractName = getContractName(validation, version);
-  const errors = getErrors(validation, version);
+  let errors = getErrors(validation, version);
+
+  if (allowStructsAndEnums) {
+    errors = errors.filter(error => {
+      const isException = ['enum-definition', 'struct-definition'].includes(error.kind);
+      const isDevEnv = isDevEnvironment();
+
+      if (isException) {
+        if (isDevEnv) {
+          console.log('small warning here, make sure you get ready for prod');
+        } else {
+          console.log('SUPER WARNING you shall not pass');
+        }
+      }
+
+      return isException;
+    });
+  }
 
   if (errors.length > 0) {
     throw new ValidationErrors(contractName, errors);
@@ -197,16 +225,22 @@ const errorInfo: { [K in ValidationError['kind']]: ErrorInfo<K> } = {
     link: 'https://zpl.in/upgrades/error-006',
   },
   'struct-definition': {
-    msg: e => `Defining struct \`${e.name}\` is not yet supported`,
-    hint: `If you really really know what you're doing you can skip this check with the --forceStructs flag`,
+    msg: e => `Defining structs like \`${e.name}\` is not yet supported`,
+    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the 'dangerousIgnoreStructsAndEnumChecks' flag`,
     link: 'https://zpl.in/upgrades/error-007',
+  },
+  'enum-definition': {
+    msg: e => `Defining enums like \`${e.name}\` is not yet supported`,
+    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the 'dangerousIgnoreStructsAndEnumChecks' flag`,
+    link: 'https://zpl.in/upgrades/error-008',
   },
 };
 
 function describeError(e: ValidationError): string {
   const info = errorInfo[e.kind];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let log = chalk.bold(e.src) + ': ' + info.msg(e as any) + '\n    ';
+  const message = info.msg(e as any);
+  let log = chalk.bold(e.src) + ': ' + message + '\n    ';
   if (info.hint) log += info.hint + '\n    ';
   log += chalk.dim(info.link);
   return log;
@@ -312,11 +346,21 @@ function* getLinkingErrors(contractDef: ContractDefinition, bytecode: SolcByteco
 }
 
 function* getStructErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorStruct> {
-  for (const struct of findAll('StructDefinition', contractDef)) {
+  for (const structDefinition of findAll('StructDefinition', contractDef)) {
     yield {
       kind: 'struct-definition',
-      name: struct.name,
-      src: decodeSrc(struct),
+      name: structDefinition.name,
+      src: decodeSrc(structDefinition),
+    };
+  }
+}
+
+function* getEnumErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorEnum> {
+  for (const enumDefinition of findAll('EnumDefinition', contractDef)) {
+    yield {
+      kind: 'enum-definition',
+      name: enumDefinition.name,
+      src: decodeSrc(enumDefinition),
     };
   }
 }

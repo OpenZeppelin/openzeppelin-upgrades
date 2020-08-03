@@ -16,15 +16,23 @@ import { getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
-export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory) => Promise<Contract>;
+export type UpgradeFunction = (
+  proxyAddress: string,
+  ImplFactory: ContractFactory,
+  opts?: UpgradeOptions,
+) => Promise<Contract>;
+
+export interface UpgradeOptions {
+  dangerousIgnoreStructsAndEnumChecks?: boolean;
+}
 
 export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunction {
-  return async function upgradeProxy(proxyAddress, ImplFactory) {
+  return async function upgradeProxy(proxyAddress, ImplFactory, opts = {}) {
     const { provider } = bre.network;
     const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version);
+    assertUpgradeSafe(validations, version, opts.dangerousIgnoreStructsAndEnumChecks);
 
     const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
     const manifest = await Manifest.forNetwork(provider);
