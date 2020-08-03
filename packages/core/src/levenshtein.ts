@@ -1,4 +1,4 @@
-export function levenshtein<T, A>(a: T[], b: T[], match: Match<T, A>): Operation<T, A>[] {
+export function levenshtein<T, K>(a: T[], b: T[], match: Match<T, K>): Operation<T, K>[] {
   const matrix = buildMatrix(a, b, (a, b) => match(a, b) === 'equal');
   return walkMatrix(matrix, a, b, match);
 }
@@ -43,20 +43,20 @@ function buildMatrix<T>(a: T[], b: T[], eq: Equal<T>): number[][] {
   return matrix;
 }
 
-type Match<T, A> = (a: T, b: T) => A | 'equal';
+type Match<T, K> = (a: T, b: T) => K | 'equal';
 
-export interface Operation<T, A> {
-  action: A | 'append' | 'insert' | 'pop' | 'delete';
+export interface Operation<T, K> {
+  kind: K | 'append' | 'insert' | 'delete';
   original?: T;
   updated?: T;
 }
 
 // Walks an edit distance matrix, returning the sequence of operations performed
-function walkMatrix<T, A>(matrix: number[][], a: T[], b: T[], match: Match<T, A>): Operation<T, A>[] {
+function walkMatrix<T, K>(matrix: number[][], a: T[], b: T[], match: Match<T, K>): Operation<T, K>[] {
   let i = matrix.length - 1;
   let j = matrix[0].length - 1;
 
-  const operations: Operation<T, A>[] = [];
+  const operations: Operation<T, K>[] = [];
 
   while (i > 0 || j > 0) {
     const cost = matrix[i][j];
@@ -73,16 +73,15 @@ function walkMatrix<T, A>(matrix: number[][], a: T[], b: T[], match: Match<T, A>
     if (i > 0 && j > 0 && cost === matrix[i - 1][j - 1] + substitutionCost) {
       if (matchResult !== 'equal') {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        operations.unshift({ action: matchResult!, updated, original });
+        operations.unshift({ kind: matchResult!, updated, original });
       }
       i--;
       j--;
     } else if (j > 0 && cost === matrix[i][j - 1] + insertionCost) {
-      operations.unshift({ action: isAppend ? 'append' : 'insert', updated });
+      operations.unshift({ kind: isAppend ? 'append' : 'insert', updated });
       j--;
     } else if (i > 0 && cost === matrix[i - 1][j] + DELETION_COST) {
-      const isPop = i >= matrix[0].length;
-      operations.unshift({ action: isPop ? 'pop' : 'delete', original });
+      operations.unshift({ kind: 'delete', original });
       i--;
     } else {
       throw Error(`Could not walk matrix at position ${i},${j}`);

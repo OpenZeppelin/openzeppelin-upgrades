@@ -5,7 +5,7 @@ import { ContractDefinition } from 'solidity-ast';
 
 import { SrcDecoder } from './src-decoder';
 import { levenshtein, Operation } from './levenshtein';
-import { UpgradesError } from './error';
+import { UpgradesError, ErrorDescriptions } from './error';
 
 export interface StorageItem {
   contract: string;
@@ -58,23 +58,54 @@ export function assertStorageUpgradeSafe(original: StorageLayout, updated: Stora
 }
 
 class StorageUpgradeErrors extends UpgradesError {
-  constructor(readonly errors: ReturnType<typeof getStorageUpgradeErrors>) {
-    super(`New storage layout is incompatible`);
-  }
-
-  details() {
-    return this.errors
-      .map(e => {
-        return chalk.bold(e.updated?.src ?? 'unknown') + ': ' + e.action + ' of variable ' + e.updated?.label;
-      })
-      .join('\n\n');
+  constructor(readonly errors: StorageOperation[]) {
+    super(`New storage layout is incompatible due to the following changes`, () => {
+      return errors.map(describeError).join('\n\n');
+    });
   }
 }
 
-export function getStorageUpgradeErrors(
-  original: StorageLayout,
-  updated: StorageLayout,
-): Operation<StorageItem, 'typechange' | 'rename' | 'replace'>[] {
+function label(variable?: { label: string }): string {
+  return variable?.label ? '`' + variable.label + '`' : '<unknown>';
+}
+
+const errorInfo: ErrorDescriptions<StorageOperation> = {
+  typechange: {
+    msg: o => `Type of variable ${label(o.updated)} was changed`,
+  },
+  rename: {
+    msg: o => `Variable ${label(o.original)} was renamed`,
+  },
+  replace: {
+    msg: o => `Variable ${label(o.original)} was replaced with ${label(o.updated)}`,
+  },
+  insert: {
+    msg: o => `Inserted variable ${label(o.updated)}`,
+    hint: 'Only insert variables at the end of the most derived contract',
+  },
+  delete: {
+    msg: o => `Deleted variable ${label(o.original)}`,
+    hint: 'Keep the variable even if unused',
+  },
+  append: {
+    // this would not be shown to the user but TypeScript needs append here
+    msg: () => 'Appended a variable but it is not an error',
+  },
+};
+
+export function describeError(e: StorageOperation): string {
+  const info = errorInfo[e.kind];
+  const src = e.updated?.src ?? e.original?.contract ?? 'unknown';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const log = [chalk.bold(src) + ': ' + info.msg(e as any)];
+  if (info.hint) log.push(info.hint);
+  if (info.link) log.push(chalk.dim(info.link));
+  return log.join('\n    ');
+}
+
+type StorageOperation = Operation<StorageItem, 'typechange' | 'rename' | 'replace'>;
+
+export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout): StorageOperation[] {
   function matchStorageItem(o: StorageItem, u: StorageItem) {
     const nameMatches = o.label === u.label;
 
@@ -93,7 +124,7 @@ export function getStorageUpgradeErrors(
   }
 
   const ops = levenshtein(original.storage, updated.storage, matchStorageItem);
-  return ops.filter(o => o.action !== 'append');
+  return ops.filter(o => o.kind !== 'append');
 }
 
 // Type Identifiers in the AST are for some reason encoded so that they don't
