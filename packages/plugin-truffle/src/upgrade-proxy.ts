@@ -38,7 +38,7 @@ export async function upgradeProxy(
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
   const layout = getStorageLayout(validations, version);
-  assertStorageUpgradeSafe(deployment.layout, layout);
+  assertStorageUpgradeSafe(deployment.layout, layout, unsafeAllowCustomTypes);
 
   const nextImpl = await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(Contract, deployer);

@@ -2,11 +2,11 @@ const { ethers, upgrades } = require('@nomiclabs/buidler');
 
 async function main() {
   const Portfolio = await ethers.getContractFactory('Portfolio');
-  const portfolio = await upgrades.deployProxy(Portfolio);
+  const portfolio = await upgrades.deployProxy(Portfolio, [], { unsafeAllowCustomTypes: true });
 
   console.log('Attempting upgrade to PortfolioV2...');
   const PortfolioV2 = await ethers.getContractFactory('PortfolioV2');
-  const portfolio2 = await upgrades.upgradeProxy(portfolio.address, PortfolioV2);
+  const portfolio2 = await upgrades.upgradeProxy(portfolio.address, PortfolioV2, { unsafeAllowCustomTypes: true });
 
   console.log('Enabling...');
   await portfolio2.enable('ETH');

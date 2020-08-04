@@ -39,7 +39,7 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
     const layout = getStorageLayout(validations, version);
-    assertStorageUpgradeSafe(deployment.layout, layout);
+    assertStorageUpgradeSafe(deployment.layout, layout, opts.unsafeAllowCustomTypes);
 
     const nextImpl = await fetchOrDeploy(version, provider, async () => {
       const deployment = await deploy(ImplFactory);

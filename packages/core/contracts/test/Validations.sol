@@ -58,6 +58,8 @@ contract HasStruct {
     struct Foo {
         bool bar;
     }
+
+    Foo foo;
 }
 
 contract HasEnum {

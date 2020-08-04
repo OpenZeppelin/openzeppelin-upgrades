@@ -49,8 +49,25 @@ export function extractStorageLayout(contractDef: ContractDefinition, decodeSrc:
   return layout;
 }
 
-export function assertStorageUpgradeSafe(original: StorageLayout, updated: StorageLayout): void {
-  const errors = getStorageUpgradeErrors(original, updated);
+export function assertStorageUpgradeSafe(
+  original: StorageLayout,
+  updated: StorageLayout,
+  unsafeAllowCustomTypes = false,
+): void {
+  let errors = getStorageUpgradeErrors(original, updated);
+
+  if (unsafeAllowCustomTypes) {
+    errors = errors
+      .filter(error => error.kind === 'typechange')
+      .filter(error => {
+        const { original, updated } = error;
+        if (original && updated) {
+          // Skip storage errors if the only difference seems to be the AST id number
+          return stabilizeTypeIdentifier(original?.type) !== stabilizeTypeIdentifier(updated?.type);
+        }
+        return error;
+      });
+  }
 
   if (errors.length > 0) {
     throw new StorageUpgradeErrors(errors);
@@ -148,4 +165,30 @@ export function decodeTypeIdentifier(typeIdentifier: string): string {
         throw new Error('Unreachable');
     }
   });
+}
+
+// Type Identifiers contain AST id numbers, which makes them sensitive to
+// unrelated changes in the source code. This function stabilizes a type
+// identifier by removing all AST ids.
+export function stabilizeTypeIdentifier(typeIdentifier: string): string {
+  let decoded = decodeTypeIdentifier(typeIdentifier);
+  const re = /(t_struct|t_enum|t_contract)\(/g;
+  let match;
+  while ((match = re.exec(decoded))) {
+    let i;
+    let d = 1;
+    for (i = match.index + match[0].length; d !== 0; i++) {
+      assert(i < decoded.length, 'index out of bounds');
+      const c = decoded[i];
+      if (c === '(') {
+        d += 1;
+      } else if (c === ')') {
+        d -= 1;
+      }
+    }
+    const re2 = /\d+_?/y;
+    re2.lastIndex = i;
+    decoded = decoded.replace(re2, '');
+  }
+  return decoded;
 }

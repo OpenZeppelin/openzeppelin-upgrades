@@ -2,10 +2,9 @@ import _test, { TestInterface } from 'ava';
 import { promises as fs } from 'fs';
 import { ContractDefinition } from 'solidity-ast';
 import { findAll } from 'solidity-ast/utils';
-import assert from 'assert';
 
 import { SolcOutput } from './solc-api';
-import { extractStorageLayout, getStorageUpgradeErrors, decodeTypeIdentifier, StorageLayout } from './storage';
+import { extractStorageLayout, getStorageUpgradeErrors, stabilizeTypeIdentifier, StorageLayout } from './storage';
 
 interface Context {
   contracts: Record<string, ContractDefinition>;
@@ -73,30 +72,4 @@ function stabilizeStorageLayout(layout: StorageLayout) {
     storage: layout.storage.map(s => ({ ...s, type: stabilizeTypeIdentifier(s.type) })),
     types: Object.entries(layout.types).map(([type, item]) => [stabilizeTypeIdentifier(type), item]),
   };
-}
-
-// Type Identifiers contain AST id numbers, which makes them sensitive to
-// unrelated changes in the source code. This function stabilizes a type
-// identifier by removing all AST ids.
-function stabilizeTypeIdentifier(typeIdentifier: string): string {
-  let decoded = decodeTypeIdentifier(typeIdentifier);
-  const re = /(t_struct|t_enum|t_contract)\(/g;
-  let match;
-  while ((match = re.exec(decoded))) {
-    let i;
-    let d = 1;
-    for (i = match.index + match[0].length; d !== 0; i++) {
-      assert(i < decoded.length, 'index out of bounds');
-      const c = decoded[i];
-      if (c === '(') {
-        d += 1;
-      } else if (c === ')') {
-        d -= 1;
-      }
-    }
-    const re2 = /\d+_?/y;
-    re2.lastIndex = i;
-    decoded = decoded.replace(re2, '');
-  }
-  return decoded;
 }
