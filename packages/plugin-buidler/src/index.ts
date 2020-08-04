@@ -7,6 +7,7 @@ import { lazyObject } from '@nomiclabs/buidler/plugins';
 import { validate, solcInputOutputDecoder, SolcInput } from '@openzeppelin/upgrades-core';
 
 import { writeValidations } from './validations';
+import { makeChangeProxyAdmin, makeTransferOwnership } from './admin';
 
 interface RunCompilerArgs {
   input: SolcInput;
@@ -30,6 +31,8 @@ export default function (): void {
       return {
         deployProxy: makeDeployProxy(bre),
         upgradeProxy: makeUpgradeProxy(bre),
+        changeProxyAdmin: makeChangeProxyAdmin(bre),
+        transferOwnerhip: makeTransferOwnership(bre),
       };
     });
   });
