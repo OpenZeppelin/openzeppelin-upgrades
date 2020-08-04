@@ -3,7 +3,7 @@ pragma solidity ^0.5.1;
 import "@nomiclabs/buidler/console.sol";
 
 contract ActionV2 {
-    enum ActionType { UP, DOWN, LEFT, RIGTH }
+    enum ActionType { UP, DOWN, LEFT, RIGHT }
     event Action(ActionType actionType);
 
     function initialize() public view {
