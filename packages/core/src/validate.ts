@@ -2,6 +2,7 @@ import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
 import chalk from 'chalk';
 
+import { EthereumProvider, isDevelopmentNetwork, networkNames, getChainId } from './provider';
 import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
@@ -18,22 +19,20 @@ export interface ValidationResult {
   layout: StorageLayout;
 }
 
-type ValidationError =
-  | ValidationErrorStateVariable
-  | ValidationErrorConstructor
-  | ValidationErrorDelegateCall
-  | ValidationErrorSelfdestruct
-  | ValidationErrorLinking
-  | ValidationErrorStruct
-  | ValidationErrorEnum;
+type ValidationError = ValidationErrorConstructor | ValidationErrorOpcode | ValidationErrorWithName;
 
 interface ValidationErrorBase {
   src: string;
 }
 
-interface ValidationErrorStateVariable extends ValidationErrorBase {
-  kind: 'state-variable-assignment' | 'state-variable-immutable';
+interface ValidationErrorWithName extends ValidationErrorBase {
   name: string;
+  kind:
+    | 'state-variable-assignment'
+    | 'state-variable-immutable'
+    | 'external-library-linking'
+    | 'struct-definition'
+    | 'enum-definition';
 }
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
@@ -41,27 +40,8 @@ interface ValidationErrorConstructor extends ValidationErrorBase {
   contract: string;
 }
 
-interface ValidationErrorDelegateCall extends ValidationErrorBase {
-  kind: 'delegatecall';
-}
-
-interface ValidationErrorSelfdestruct extends ValidationErrorBase {
-  kind: 'selfdestruct';
-}
-
-interface ValidationErrorLinking extends ValidationErrorBase {
-  kind: 'external-library-linking';
-  name: string;
-}
-
-interface ValidationErrorStruct extends ValidationErrorBase {
-  kind: 'struct-definition';
-  name: string;
-}
-
-interface ValidationErrorEnum extends ValidationErrorBase {
-  kind: 'enum-definition';
-  name: string;
+interface ValidationErrorOpcode extends ValidationErrorBase {
+  kind: 'delegatecall' | 'selfdestruct';
 }
 
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validation {
@@ -151,28 +131,25 @@ export function getStorageLayout(validation: Validation, version: Version): Stor
   return layout;
 }
 
-function isDevEnvironment() {
-  return true;
-}
-
-export function assertUpgradeSafe(validation: Validation, version: Version, allowStructsAndEnums = false): void {
+export function assertUpgradeSafe(validation: Validation, version: Version, unsafeAllowCustomTypes = false): void {
   const contractName = getContractName(validation, version);
   let errors = getErrors(validation, version);
 
-  if (allowStructsAndEnums) {
+  if (unsafeAllowCustomTypes) {
     errors = errors.filter(error => {
       const isException = ['enum-definition', 'struct-definition'].includes(error.kind);
-      const isDevEnv = isDevEnvironment();
 
       if (isException) {
-        if (isDevEnv) {
-          console.log('small warning here, make sure you get ready for prod');
-        } else {
-          console.log('SUPER WARNING you shall not pass');
-        }
+        console.error(
+          chalk.keyword('orange').bold('\nWarning: ') +
+            `Potentially unsafe deployment of ${contractName}\n\n    ` +
+            `You are using the \`unsafeAllowCustomTypes\` flag.\n    ` +
+            `Make sure you have manually checked the storage layout for incompatibilities.\n    ` +
+            `Read more: https://zpl.in/upgrades/unsafeAllowCustomTypes\n`,
+        );
       }
 
-      return isException;
+      return !isException;
     });
   }
 
@@ -220,12 +197,12 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   },
   'struct-definition': {
     msg: e => `Defining structs like \`${e.name}\` is not yet supported`,
-    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the 'dangerousIgnoreStructsAndEnumChecks' flag`,
+    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
     link: 'https://zpl.in/upgrades/error-007',
   },
   'enum-definition': {
     msg: e => `Defining enums like \`${e.name}\` is not yet supported`,
-    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the 'dangerousIgnoreStructsAndEnumChecks' flag`,
+    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
     link: 'https://zpl.in/upgrades/error-008',
   },
 };
@@ -266,7 +243,7 @@ function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDe
 function* getDelegateCallErrors(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
-): Generator<ValidationErrorDelegateCall | ValidationErrorSelfdestruct> {
+): Generator<ValidationErrorOpcode> {
   for (const fnCall of findAll('FunctionCall', contractDef)) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_baredelegatecall_/)) {
@@ -287,7 +264,7 @@ function* getDelegateCallErrors(
 function* getStateVariableErrors(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
-): Generator<ValidationErrorStateVariable> {
+): Generator<ValidationErrorWithName> {
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
       if (!varDecl.constant && varDecl.value !== null) {
@@ -325,7 +302,10 @@ function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
   return [...new Set(implicitUsage.concat(explicitUsage))];
 }
 
-function* getLinkingErrors(contractDef: ContractDefinition, bytecode: SolcBytecode): Generator<ValidationErrorLinking> {
+function* getLinkingErrors(
+  contractDef: ContractDefinition,
+  bytecode: SolcBytecode,
+): Generator<ValidationErrorWithName> {
   const { linkReferences } = bytecode;
   for (const source of Object.keys(linkReferences)) {
     for (const libName of Object.keys(linkReferences[source])) {
@@ -338,7 +318,7 @@ function* getLinkingErrors(contractDef: ContractDefinition, bytecode: SolcByteco
   }
 }
 
-function* getStructErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorStruct> {
+function* getStructErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorWithName> {
   for (const structDefinition of findAll('StructDefinition', contractDef)) {
     yield {
       kind: 'struct-definition',
@@ -348,7 +328,7 @@ function* getStructErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder
   }
 }
 
-function* getEnumErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorEnum> {
+function* getEnumErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorWithName> {
   for (const enumDefinition of findAll('EnumDefinition', contractDef)) {
     yield {
       kind: 'enum-definition',

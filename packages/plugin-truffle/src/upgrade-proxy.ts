@@ -21,14 +21,14 @@ export async function upgradeProxy(
   Contract: ContractClass,
   opts: Options = {},
 ): Promise<ContractInstance> {
-  const { deployer } = withDefaults(opts);
+  const { deployer, unsafeAllowCustomTypes } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
   const version = getVersion(Contract.bytecode);
-  assertUpgradeSafe(validations, version);
+  await assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
 
   const AdminFactory = await getProxyAdminFactory(Contract);
   const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));

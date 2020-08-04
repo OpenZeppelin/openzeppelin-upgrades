@@ -2,11 +2,11 @@ const { ethers, upgrades } = require('@nomiclabs/buidler');
 
 async function main() {
   const Action = await ethers.getContractFactory('Action');
-  const action = await upgrades.deployProxy(Action);
+  const action = await upgrades.deployProxy(Action, [], { unsafeAllowCustomTypes: true });
 
   console.log('Attempting upgrade to ActionV2...');
   const ActionV2 = await ethers.getContractFactory('ActionV2');
-  await upgrades.upgradeProxy(action.address, ActionV2);
+  await upgrades.upgradeProxy(action.address, ActionV2, { unsafeAllowCustomTypes: true });
 }
 
 // We recommend this pattern to be able to use async/await everywhere

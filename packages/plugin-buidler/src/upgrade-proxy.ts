@@ -23,7 +23,7 @@ export type UpgradeFunction = (
 ) => Promise<Contract>;
 
 export interface UpgradeOptions {
-  dangerousIgnoreStructsAndEnumChecks?: boolean;
+  unsafeAllowCustomTypes?: boolean;
 }
 
 export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunction {
@@ -32,7 +32,7 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version, opts.dangerousIgnoreStructsAndEnumChecks);
+    await assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
 
     const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
     const manifest = await Manifest.forNetwork(provider);
