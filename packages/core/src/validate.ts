@@ -78,7 +78,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
           // TODO: add support for structs and enums
-          // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/72
+          // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/3
           ...getStructErrors(contractDef, decodeSrc),
           ...getEnumErrors(contractDef, decodeSrc),
           // TODO: add linked libraries support

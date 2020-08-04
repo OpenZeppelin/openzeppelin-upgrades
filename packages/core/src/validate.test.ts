@@ -49,7 +49,7 @@ testValid('UsesImplicitSafeExternalLibrary', false);
 testValid('UsesExplicitSafeExternalLibrary', false);
 
 // Custom types (structs and enums) are not yet supported
-// see: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/72
+// see: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/3
 testValid('HasStruct', false);
 testValid('HasEnum', false);
 
