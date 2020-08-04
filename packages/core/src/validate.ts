@@ -2,7 +2,6 @@ import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
 import chalk from 'chalk';
 
-import { EthereumProvider, isDevelopmentNetwork, networkNames, getChainId } from './provider';
 import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
