@@ -143,7 +143,7 @@ export function assertUpgradeSafe(validation: Validation, version: Version, unsa
 
       if (isException) {
         console.error(
-          chalk.keyword('orange').bold('\nWarning: ') +
+          '\n' + chalk.keyword('orange').bold('Warning: ') +
             `Potentially unsafe deployment of ${contractName}\n\n    ` +
             `You are using the \`unsafeAllowCustomTypes\` flag.\n    ` +
             `Make sure you have manually checked the storage layout for incompatibilities.\n    ` +
