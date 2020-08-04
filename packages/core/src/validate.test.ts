@@ -48,6 +48,11 @@ testValid('UsesExplicitUnsafeExternalLibrary', false);
 testValid('UsesImplicitSafeExternalLibrary', false);
 testValid('UsesExplicitSafeExternalLibrary', false);
 
+// Custom types (structs and enums) are not yet supported
+// see: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/72
+testValid('HasStruct', false);
+testValid('HasEnum', false);
+
 test('inherited storage', t => {
   const version = getContractVersion(t.context.validation, 'StorageInheritChild');
   const layout = getStorageLayout(t.context.validation, version);

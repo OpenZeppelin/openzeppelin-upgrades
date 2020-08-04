@@ -54,6 +54,16 @@ import './ValidationsImport.sol';
 contract ImportedParentHasStateVariableAssignment is ImportedHasStateVariableAssignment {
 }
 
+contract HasStruct {
+    struct Foo {
+        bool bar;
+    }
+}
+
+contract HasEnum {
+    enum Foo { BAR }
+}
+
 // For each of 3 dimensions, libraries usage can be
 // 1. implicit or explicit (_use for_ directive or not)
 // 2. upgrade safe or unsafe
