@@ -30,7 +30,7 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
-    await assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
+    assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
 
     const impl = await fetchOrDeploy(version, provider, async () => {
       const deployment = await deploy(ImplFactory);

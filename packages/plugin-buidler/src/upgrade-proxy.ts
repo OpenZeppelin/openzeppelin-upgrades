@@ -32,7 +32,7 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
-    await assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
+    assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
 
     const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
     const manifest = await Manifest.forNetwork(provider);
@@ -47,7 +47,7 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     });
 
     const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
-    const admin = await AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
+    const admin = AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
     const manifestAdmin = await manifest.getAdmin();
 
     if (admin.address !== manifestAdmin?.address) {

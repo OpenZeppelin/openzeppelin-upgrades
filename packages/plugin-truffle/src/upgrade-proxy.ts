@@ -28,9 +28,9 @@ export async function upgradeProxy(
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
   const version = getVersion(Contract.bytecode);
-  await assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
+  assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
 
-  const AdminFactory = await getProxyAdminFactory(Contract);
+  const AdminFactory = getProxyAdminFactory(Contract);
   const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);

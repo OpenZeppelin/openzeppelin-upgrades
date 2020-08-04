@@ -28,7 +28,7 @@ export async function deployProxy(
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
   const version = getVersion(Contract.bytecode);
-  await assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
+  assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
 
   const provider = wrapProvider(deployer.provider);
   const impl = await fetchOrDeploy(version, provider, async () => {
@@ -37,11 +37,11 @@ export async function deployProxy(
     return { ...deployment, layout };
   });
 
-  const AdminFactory = await getProxyAdminFactory(Contract);
+  const AdminFactory = getProxyAdminFactory(Contract);
   const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, deployer));
 
   const data = getInitializerData(Contract, args, opts.initializer);
-  const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
+  const AdminUpgradeabilityProxy = getProxyFactory(Contract);
   const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data);
 
   Contract.address = proxy.address;
