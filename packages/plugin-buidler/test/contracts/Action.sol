@@ -4,14 +4,14 @@ import "@nomiclabs/buidler/console.sol";
 
 contract Action {
     enum ActionType { UP, DOWN }
-    event Action(ActionType actionType);
+    event ActionEvent(ActionType actionType);
 
     function initialize() public view {
         console.log("Deploying Action");
     }
 
     function log(ActionType action) public {
-        emit Action(action);
+        emit ActionEvent(action);
     }
 
 }

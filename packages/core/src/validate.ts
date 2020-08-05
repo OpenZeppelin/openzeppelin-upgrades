@@ -136,23 +136,25 @@ export function getStorageLayout(validation: Validation, version: Version): Stor
 export function assertUpgradeSafe(validation: Validation, version: Version, unsafeAllowCustomTypes = false): void {
   const contractName = getContractName(validation, version);
   let errors = getErrors(validation, version);
+  let thereAreExceptions = false;
 
   if (unsafeAllowCustomTypes) {
     errors = errors.filter(error => {
       const isException = ['enum-definition', 'struct-definition'].includes(error.kind);
-
-      if (isException) {
-        console.error(
-          '\n' + chalk.keyword('orange').bold('Warning: ') +
-            `Potentially unsafe deployment of ${contractName}\n\n    ` +
-            `You are using the \`unsafeAllowCustomTypes\` flag.\n    ` +
-            `Make sure you have manually checked the storage layout for incompatibilities.\n    ` +
-            `Read more: https://zpl.in/upgrades/unsafeAllowCustomTypes\n`,
-        );
-      }
-
+      thereAreExceptions = thereAreExceptions || isException;
       return !isException;
     });
+  }
+
+  if (thereAreExceptions) {
+    console.error(
+      '\n' +
+        chalk.keyword('orange').bold('Warning: ') +
+        `Potentially unsafe deployment of ${contractName}\n\n` +
+        `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
+        `    Make sure you have manually checked the storage layout for incompatibilities.\n` +
+        `    Read more: https://zpl.in/upgrades/unsafeAllowCustomTypes\n`,
+    );
   }
 
   if (errors.length > 0) {
