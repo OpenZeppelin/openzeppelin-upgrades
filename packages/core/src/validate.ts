@@ -162,7 +162,7 @@ export function assertUpgradeSafe(validation: Validation, version: Version, unsa
   }
 }
 
-class ValidationErrors extends UpgradesError {
+export class ValidationErrors extends UpgradesError {
   constructor(contractName: string, readonly errors: ValidationError[]) {
     super(`Contract \`${contractName}\` is not upgrade safe`, () => {
       return errors.map(describeError).join('\n\n');
