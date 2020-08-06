@@ -31,8 +31,10 @@ export default function (): void {
       return {
         deployProxy: makeDeployProxy(bre),
         upgradeProxy: makeUpgradeProxy(bre),
-        changeProxyAdmin: makeChangeProxyAdmin(bre),
-        transferOwnerhip: makeTransferOwnership(bre),
+        admin: {
+          changeProxyAdmin: makeChangeProxyAdmin(bre),
+          transferProxyAdminOwnerhip: makeTransferOwnership(bre),
+        },
       };
     });
   });
