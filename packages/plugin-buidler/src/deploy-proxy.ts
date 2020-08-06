@@ -13,27 +13,33 @@ import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
-export type DeployFunction = (ImplFactory: ContractFactory, args?: unknown[]) => Promise<Contract>;
+export type DeployFunction = (
+  ImplFactory: ContractFactory,
+  args?: unknown[],
+  opts?: DeployOptions,
+) => Promise<Contract>;
 
-export interface Options {
+export interface DeployOptions {
   initializer?: string;
+  unsafeAllowCustomTypes?: boolean;
 }
 
 export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction {
-  return async function deployProxy(ImplFactory, args = [], opts: Options = {}) {
+  return async function deployProxy(ImplFactory, args = [], opts = {}) {
+    const { provider } = bre.network;
     const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version);
+    assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
 
-    const impl = await fetchOrDeploy(version, bre.network.provider, async () => {
+    const impl = await fetchOrDeploy(version, provider, async () => {
       const deployment = await deploy(ImplFactory);
       const layout = getStorageLayout(validations, version);
       return { ...deployment, layout };
     });
 
     const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
-    const adminAddress = await fetchOrDeployAdmin(bre.network.provider, () => deploy(AdminFactory));
+    const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
 
     // TODO: support choice of initializer function? support overloaded initialize function
     const data = getInitializerData(ImplFactory, args, opts.initializer);
