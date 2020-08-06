@@ -76,6 +76,14 @@ The plugins will keep tabs of all the implementation contracts you have deployed
 
 > Note: the format of the files within the `.openzeppelin` folder is not compatible with those of the [OpenZeppelin CLI](https://docs.openzeppelin.com/cli/2.8/). If you want to use these plugins for an existing OpenZeppelin CLI project, we will be sharing soon a guide on how to migrate.
 
+## Managing ownership
+
+All proxies define an _admin_ address which has the rights to upgrade them. By default, the admin is a [proxy admin contract](#What%20is%20a%20proxy%20admin?) deployed behind the scenes. You can change the admin of a proxy by calling the `admin.changeAdminForProxy` function in the plugin. Keep in mind that the _admin_ of a proxy can only upgrade it, but not interact with the implementation contract. Read [here](https://docs.openzeppelin.com/upgrades/2.8/proxies#transparent-proxies-and-function-clashes) for more info on this restriction.
+
+The proxy admin contract also defines an _owner_ address which has the rights to operate it. By default, this address is the externally owned account used during deployment. You can change the proxy admin owner by calling the `admin.transferProxyAdminOwnership` function in the plugin. Note that changing the proxy admin owner effectively transfers the power to upgrade any proxy in your whole project to the new owner, so use with care.
+
+Refer to each plugin documentation for more details on the `admin` functions.
+
 ## FAQ
 
 ### What does it mean for a contract to be upgrade safe?

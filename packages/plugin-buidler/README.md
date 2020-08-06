@@ -107,6 +107,27 @@ async function upgradeProxy(
 ): Promise<ContractInstance>
 ```
 
+### admin.changeAdminForProxy
+
+Changes the admin for a specific proxy. Receives the address of the proxy to change, and the new admin address.
+
+```ts
+async function changeAdminForProxy(
+  proxyAddress: string,
+  newAdmin: string,
+): Promise<void>
+```
+
+### admin.transferProxyAdminOwnership
+
+Changes the owner of the proxy admin contract, which is the default admin for upgrade rights over all proxies. Receives the new admin address.
+
+```ts
+async function transferProxyAdminOwnership(
+  newAdmin: string,
+): Promise<void>
+```
+
 ## Learn more
 
 Refer to the project's [main documentation](../../README.md) for more info.
