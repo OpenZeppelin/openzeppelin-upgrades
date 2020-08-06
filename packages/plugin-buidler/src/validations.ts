@@ -10,7 +10,15 @@ export async function writeValidations(bre: BuidlerRuntimeEnvironment, validatio
 }
 
 export async function readValidations(bre: BuidlerRuntimeEnvironment): Promise<Validation> {
-  return JSON.parse(await fs.readFile(getValidationCachePath(bre), 'utf8'));
+  try {
+    return JSON.parse(await fs.readFile(getValidationCachePath(bre), 'utf8'));
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      throw new Error('Validations cache not found. Recompile with `buidler compile --force`');
+    } else {
+      throw e;
+    }
+  }
 }
 
 function getValidationCachePath(bre: BuidlerRuntimeEnvironment): string {
