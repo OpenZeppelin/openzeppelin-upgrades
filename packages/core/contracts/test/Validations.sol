@@ -73,7 +73,7 @@ contract ParentHasEnum is HasEnum {}
 library LibraryWithEnum {
   enum Animal { DOG, CAT }
 
-  function isCat(Animal animal) public pure returns (bool) {
+  function isCat(Animal animal) internal pure returns (bool) {
     return animal == Animal.CAT;
   }
 }
