@@ -52,7 +52,6 @@ Refer to the documentation of each plugin:
 &nbsp;&nbsp;&nbsp;&nbsp;
 [![truffle](./assets/truffle.png "truffle")](./packages/plugin-truffle/README.md)
 
-
 ## How do the plugins work?
 
 Both plugins provide two main functions, `deployProxy` and `upgradeProxy`, which take care of managing upgradeable deployments of your contracts. In the case of `deployProxy`, this means:
@@ -91,7 +90,9 @@ Both plugins will validate that the contract you are trying to deploy complies w
 
 When upgrading a proxy from one implementation to another, the _storage layout_ of both implementations must be compatible. This means that, even though you can completely change the code of the implementation, you cannot modify the existing contract state variables. The only operation allowed is to append new state variables after the ones already declared.
 
-Both plugins will validate that the new implementation contract is compatible with the previous one. You can read more about how to make storage-compatible changes to an implementation contract [here](https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable#modifying-your-contracts).
+Both plugins will validate that the new implementation contract is compatible with the previous one. However, the plugins currently do not support validating custom types (enums or structs). To force a deployment where custom types are involved, set the `unsafeAllowCustomTypes` flag to true in the `deployProxy` or `upgradeProxy` call.
+
+You can read more about how to make storage-compatible changes to an implementation contract [here](https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable#modifying-your-contracts).
 
 ### What is a proxy admin?
 

@@ -84,23 +84,26 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of [ethers
 
 Creates a proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment. Options are:
 - `initializer`: sets a different initializer function to call
+- `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#What%20does%20it%20mean%20for%20an%20implementation%20to%20be%20compatible?)) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function deployProxy(
   Contract: ContractClass,
   args: unknown[] = [],
-  opts: { deployer: Deployer, initializer: string } = {},
+  opts: { deployer: Deployer, initializer: string, unsafeAllowCustomTypes: boolean } = {},
 ): Promise<ContractInstance>
 ```
 
 ### upgradeProxy
 
-Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
+Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface. Options are:
+- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#What%20does%20it%20mean%20for%20an%20implementation%20to%20be%20compatible?)) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function upgradeProxy(
   proxyAddress: string,
   Contract: ContractClass,
+  opts: { unsafeAllowCustomTypes: boolean } = {},
 ): Promise<ContractInstance>
 ```
 
