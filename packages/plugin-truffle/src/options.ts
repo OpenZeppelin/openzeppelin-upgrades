@@ -2,11 +2,13 @@ import { Deployer, ContractClass, ContractInstance, getTruffleConfig } from './t
 
 export interface Options {
   deployer?: Deployer;
+  unsafeAllowCustomTypes?: boolean;
 }
 
 export function withDefaults(opts: Options): Required<Options> {
   return {
     deployer: opts.deployer ?? defaultDeployer,
+    unsafeAllowCustomTypes: opts.unsafeAllowCustomTypes ?? false,
   };
 }
 

@@ -18,20 +18,20 @@ export interface ValidationResult {
   layout: StorageLayout;
 }
 
-type ValidationError =
-  | ValidationErrorStateVariable
-  | ValidationErrorConstructor
-  | ValidationErrorDelegateCall
-  | ValidationErrorSelfdestruct
-  | ValidationErrorLinking;
+type ValidationError = ValidationErrorConstructor | ValidationErrorOpcode | ValidationErrorWithName;
 
 interface ValidationErrorBase {
   src: string;
 }
 
-interface ValidationErrorStateVariable extends ValidationErrorBase {
-  kind: 'state-variable-assignment' | 'state-variable-immutable';
+interface ValidationErrorWithName extends ValidationErrorBase {
   name: string;
+  kind:
+    | 'state-variable-assignment'
+    | 'state-variable-immutable'
+    | 'external-library-linking'
+    | 'struct-definition'
+    | 'enum-definition';
 }
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
@@ -39,17 +39,8 @@ interface ValidationErrorConstructor extends ValidationErrorBase {
   contract: string;
 }
 
-interface ValidationErrorDelegateCall extends ValidationErrorBase {
-  kind: 'delegatecall';
-}
-
-interface ValidationErrorSelfdestruct extends ValidationErrorBase {
-  kind: 'selfdestruct';
-}
-
-interface ValidationErrorLinking extends ValidationErrorBase {
-  kind: 'external-library-linking';
-  name: string;
+interface ValidationErrorOpcode extends ValidationErrorBase {
+  kind: 'delegatecall' | 'selfdestruct';
 }
 
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validation {
@@ -86,7 +77,12 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
-          // TODO: add linked libraries support and remove this
+          // TODO: add support for structs and enums
+          // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/3
+          ...getStructErrors(contractDef, decodeSrc),
+          ...getEnumErrors(contractDef, decodeSrc),
+          // TODO: add linked libraries support
+          // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
         ];
 
@@ -137,16 +133,36 @@ export function getStorageLayout(validation: Validation, version: Version): Stor
   return layout;
 }
 
-export function assertUpgradeSafe(validation: Validation, version: Version): void {
+export function assertUpgradeSafe(validation: Validation, version: Version, unsafeAllowCustomTypes = false): void {
   const contractName = getContractName(validation, version);
-  const errors = getErrors(validation, version);
+  let errors = getErrors(validation, version);
+  let thereAreExceptions = false;
+
+  if (unsafeAllowCustomTypes) {
+    errors = errors.filter(error => {
+      const isException = ['enum-definition', 'struct-definition'].includes(error.kind);
+      thereAreExceptions = thereAreExceptions || isException;
+      return !isException;
+    });
+  }
+
+  if (thereAreExceptions) {
+    console.error(
+      '\n' +
+        chalk.keyword('orange').bold('Warning: ') +
+        `Potentially unsafe deployment of ${contractName}\n\n` +
+        `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
+        `    Make sure you have manually checked the storage layout for incompatibilities.\n` +
+        `    Read more: https://zpl.in/upgrades/unsafeAllowCustomTypes\n`,
+    );
+  }
 
   if (errors.length > 0) {
     throw new ValidationErrors(contractName, errors);
   }
 }
 
-class ValidationErrors extends UpgradesError {
+export class ValidationErrors extends UpgradesError {
   constructor(contractName: string, readonly errors: ValidationError[]) {
     super(`Contract \`${contractName}\` is not upgrade safe`, () => {
       return errors.map(describeError).join('\n\n');
@@ -182,6 +198,16 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
     hint: `Stick to libraries with internal functions only`,
     link: 'https://zpl.in/upgrades/error-006',
+  },
+  'struct-definition': {
+    msg: e => `Defining structs like \`${e.name}\` is not yet supported`,
+    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
+    link: 'https://zpl.in/upgrades/error-007',
+  },
+  'enum-definition': {
+    msg: e => `Defining enums like \`${e.name}\` is not yet supported`,
+    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
+    link: 'https://zpl.in/upgrades/error-008',
   },
 };
 
@@ -221,7 +247,7 @@ function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDe
 function* getDelegateCallErrors(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
-): Generator<ValidationErrorDelegateCall | ValidationErrorSelfdestruct> {
+): Generator<ValidationErrorOpcode> {
   for (const fnCall of findAll('FunctionCall', contractDef)) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_baredelegatecall_/)) {
@@ -242,7 +268,7 @@ function* getDelegateCallErrors(
 function* getStateVariableErrors(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
-): Generator<ValidationErrorStateVariable> {
+): Generator<ValidationErrorWithName> {
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
       if (!varDecl.constant && varDecl.value !== null) {
@@ -280,7 +306,10 @@ function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
   return [...new Set(implicitUsage.concat(explicitUsage))];
 }
 
-function* getLinkingErrors(contractDef: ContractDefinition, bytecode: SolcBytecode): Generator<ValidationErrorLinking> {
+function* getLinkingErrors(
+  contractDef: ContractDefinition,
+  bytecode: SolcBytecode,
+): Generator<ValidationErrorWithName> {
   const { linkReferences } = bytecode;
   for (const source of Object.keys(linkReferences)) {
     for (const libName of Object.keys(linkReferences[source])) {
@@ -290,5 +319,25 @@ function* getLinkingErrors(contractDef: ContractDefinition, bytecode: SolcByteco
         src: source,
       };
     }
+  }
+}
+
+function* getStructErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorWithName> {
+  for (const structDefinition of findAll('StructDefinition', contractDef)) {
+    yield {
+      kind: 'struct-definition',
+      name: structDefinition.name,
+      src: decodeSrc(structDefinition),
+    };
+  }
+}
+
+function* getEnumErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorWithName> {
+  for (const enumDefinition of findAll('EnumDefinition', contractDef)) {
+    yield {
+      kind: 'enum-definition',
+      name: enumDefinition.name,
+      src: decodeSrc(enumDefinition),
+    };
   }
 }
