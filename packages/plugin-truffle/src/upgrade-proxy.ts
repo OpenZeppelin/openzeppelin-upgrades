@@ -21,14 +21,14 @@ export async function upgradeProxy(
   Contract: ContractClass,
   opts: Options = {},
 ): Promise<ContractInstance> {
-  const { deployer } = withDefaults(opts);
+  const { deployer, unsafeAllowCustomTypes } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
   const version = getVersion(Contract.bytecode);
-  assertUpgradeSafe(validations, version);
+  assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
 
   const AdminFactory = getProxyAdminFactory(Contract);
   const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
@@ -38,7 +38,7 @@ export async function upgradeProxy(
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
   const layout = getStorageLayout(validations, version);
-  assertStorageUpgradeSafe(deployment.layout, layout);
+  assertStorageUpgradeSafe(deployment.layout, layout, unsafeAllowCustomTypes);
 
   const nextImpl = await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(Contract, deployer);
@@ -47,6 +47,5 @@ export async function upgradeProxy(
 
   await admin.upgrade(proxyAddress, nextImpl);
 
-  Contract.address = proxyAddress;
   return new Contract(proxyAddress);
 }

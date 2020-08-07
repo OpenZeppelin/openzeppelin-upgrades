@@ -18,10 +18,13 @@ async function fetchOrDeployGeneric<T extends Deployment>(
 
   try {
     const deployment = await manifest.lockedRun(async () => {
-      debug('deploying', lens.description);
+      debug('fetching deployment of', lens.description);
       const data = await manifest.read();
       const deployment = lens(data);
       const stored = deployment.get();
+      if (stored === undefined) {
+        debug('deployment of', lens.description, 'not found');
+      }
       const updated = await resumeOrDeploy(provider, stored, deploy);
       if (updated !== stored) {
         deployment.set(updated);

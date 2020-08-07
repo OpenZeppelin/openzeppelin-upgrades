@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.8;
+pragma experimental ABIEncoderV2;
 
 contract HasEmptyConstructor {
   constructor() public { }
@@ -52,6 +53,60 @@ contract HasDelegateCall {
 import './ValidationsImport.sol';
 
 contract ImportedParentHasStateVariableAssignment is ImportedHasStateVariableAssignment {
+}
+
+contract HasStruct {
+    struct Foo {
+        bool bar;
+    }
+
+    Foo foo;
+}
+
+contract HasEnum {
+    enum Foo { BAR }
+}
+
+contract ParentHasStruct is HasStruct {}
+contract ParentHasEnum is HasEnum {}
+
+library LibraryWithEnum {
+  enum Animal { DOG, CAT }
+
+  function isCat(Animal animal) internal pure returns (bool) {
+    return animal == Animal.CAT;
+  }
+}
+
+library LibraryWithStruct {
+  struct Animal {
+    string kind;
+    uint age;
+  }
+
+  function getAge(Animal memory animal) internal pure returns (uint) {
+    return animal.age;
+  }
+}
+
+contract UsesLibraryWithStruct {
+  using LibraryWithStruct for LibraryWithStruct.Animal;
+
+  LibraryWithStruct.Animal animal;
+
+  function getAge() public view returns (uint) {
+    return animal.getAge();
+  }
+}
+
+contract UsesLibraryWithEnum {
+  using LibraryWithEnum for LibraryWithEnum.Animal;
+
+  LibraryWithEnum.Animal animal;
+
+  function isCat() public view returns (bool) {
+    return animal.isCat();
+  }
 }
 
 // For each of 3 dimensions, libraries usage can be
