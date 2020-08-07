@@ -152,8 +152,7 @@ export function assertUpgradeSafe(validation: Validation, version: Version, unsa
         chalk.keyword('orange').bold('Warning: ') +
         `Potentially unsafe deployment of ${contractName}\n\n` +
         `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
-        `    Make sure you have manually checked the storage layout for incompatibilities.\n` +
-        `    Read more: https://zpl.in/upgrades/unsafeAllowCustomTypes\n`,
+        `    Make sure you have manually checked the storage layout for incompatibilities.\n`
     );
   }
 
