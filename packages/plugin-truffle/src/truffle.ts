@@ -66,7 +66,7 @@ declare const config: undefined | TruffleConfig;
 
 export function getTruffleConfig(): TruffleConfig {
   if (config === undefined) {
-    throw new Error('Global Truffle config not found: Truffle >=0.5.35 is required');
+    throw new Error('Global Truffle config not found: Truffle >=5.1.35 is required');
   } else {
     return config;
   }
