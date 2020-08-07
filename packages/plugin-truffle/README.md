@@ -75,7 +75,11 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of [truffl
 
 ### deployProxy
 
-Creates a proxy given a truffle contract class to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment. Options are:
+Creates a proxy given a truffle contract class to use as implementation, and returns a contract instance with the proxy address and the implementation interface. During a migration, the proxy address will be stored in the implementation contract's artifact, so you can use Truffle's [`deployed()`](https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions#-code-mycontract-deployed-code-) function to load it.
+
+If `args` is set, will call an initializer function `initialize` with the supplied `args` during proxy deployment. 
+
+Options for this function are:
 - `initializer`: sets a different initializer function to call
 - `deployer`: set as the truffle migration deployer during migrations
 - `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
@@ -91,7 +95,9 @@ async function deployProxy(
 
 ### upgradeProxy
 
-Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface. Options are:
+Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface. 
+
+Options for this function are:
 - `deployer`: set as the truffle migration deployer during migrations
 - `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
 
