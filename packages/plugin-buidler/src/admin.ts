@@ -26,7 +26,7 @@ export function makeTransferProxyAdminOwnership(bre: BuidlerRuntimeEnvironment):
   };
 }
 
-async function getManifestAdmin(bre: BuidlerRuntimeEnvironment): Promise<Contract> {
+export async function getManifestAdmin(bre: BuidlerRuntimeEnvironment): Promise<Contract> {
   const manifest = await Manifest.forNetwork(bre.network.provider);
   const manifestAdmin = await manifest.getAdmin();
   const AdminFactory = await getProxyAdminFactory(bre);

@@ -5,7 +5,7 @@ import { getProxyAdminFactory } from './factories';
 import { wrapProvider } from './wrap-provider';
 import { Options, withDefaults } from './options';
 
-export async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Options): Promise<void> {
+async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Options = {}): Promise<void> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
   const admin = await getManifestAdmin(provider);
@@ -18,11 +18,11 @@ export async function changeProxyAdmin(proxyAddress: string, newAdmin: string, o
   }
 }
 
-export async function transferProxyAdminOwnership(newOwner: string, opts: Options): Promise<void> {
+async function transferProxyAdminOwnership(newOwner: string, opts: Options = {}): Promise<void> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
   const admin = await getManifestAdmin(provider);
-  await admin.transferOwnerwhip(newOwner);
+  await admin.transferOwnership(newOwner);
 }
 
 async function getManifestAdmin(provider: EthereumProvider): Promise<ContractInstance> {
@@ -37,3 +37,8 @@ async function getManifestAdmin(provider: EthereumProvider): Promise<ContractIns
 
   return new AdminFactory(proxyAdminAddress);
 }
+
+export const admin = {
+  transferProxyAdminOwnership,
+  changeProxyAdmin,
+};
