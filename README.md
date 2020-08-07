@@ -72,7 +72,7 @@ And when you call `upgradeProxy`:
 
 3. Upgrade the proxy to use the new implementation contract
 
-The plugins will keep track of all the implementation contracts you have deployed in an `.openzeppelin` folder in the project root, as well as the proxy admin. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (eg ganache).
+The plugins will keep track of all the implementation contracts you have deployed in an `.openzeppelin` folder in the project root, as well as the proxy admin. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
 
 > Note: the format of the files within the `.openzeppelin` folder is not compatible with those of the [OpenZeppelin CLI](https://docs.openzeppelin.com/cli/2.8/). If you want to use these plugins for an existing OpenZeppelin CLI project, we will be sharing soon a guide on how to migrate.
 
