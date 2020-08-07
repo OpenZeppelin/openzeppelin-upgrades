@@ -1,13 +1,14 @@
 {
   "name": "@openzeppelin/upgrades-core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
     "/dist",
     "/artifacts/AdminUpgradeabilityProxy.json",
-    "/artifacts/ProxyAdmin.json"
+    "/artifacts/ProxyAdmin.json",
+    "/contracts/Initializable.sol"
   ],
   "scripts": {
     "prepublish": "rimraf artifacts cache dist *.tsbuildinfo",
