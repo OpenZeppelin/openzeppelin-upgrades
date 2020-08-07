@@ -1,6 +1,6 @@
 # OpenZeppelin Buidler Upgrades
 
-**Buidlerp plugin for deploying and managing upgradeable contracts.** This package adds functions to your buidler scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
+**Buidler plugin for deploying and managing upgradeable contracts.** This package adds functions to your buidler scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
 
 ## Installation
 
@@ -12,7 +12,7 @@ And register the plugins in your [`buidler.config.js`](https://buidler.dev/confi
 
 ```js
 usePlugin('@nomiclabs/buidler-ethers');
-usePlugin('@openzeppelin/upgrades-buidler');
+usePlugin('@openzeppelin/buidler-upgrades');
 ```
 
 ## Usage in scripts
@@ -57,7 +57,7 @@ The plugin will take care of comparing `BoxV2` to the previous one to ensure the
 
 ## Usage in tests
 
-You can also use the `deployProxy` and `upgradeProxy` functions from your truffle tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in the migrations.
+You can also use the `deployProxy` and `upgradeProxy` functions from your Buidler tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in scripts.
 
 ```js
 const { expect } = require("chai");
@@ -84,27 +84,27 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of [ethers
 
 Creates a proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment. Options are:
 - `initializer`: sets a different initializer function to call
-- `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#What%20does%20it%20mean%20for%20an%20implementation%20to%20be%20compatible?)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function deployProxy(
-  Contract: ContractClass,
+  Contract: ethers.ContractFactory,
   args: unknown[] = [],
-  opts: { deployer: Deployer, initializer: string, unsafeAllowCustomTypes: boolean } = {},
-): Promise<ContractInstance>
+  opts: { initializer: string, unsafeAllowCustomTypes: boolean } = {},
+): Promise<ethers.Contract>
 ```
 
 ### upgradeProxy
 
 Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface. Options are:
-- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#What%20does%20it%20mean%20for%20an%20implementation%20to%20be%20compatible?)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function upgradeProxy(
   proxyAddress: string,
-  Contract: ContractClass,
+  Contract: ethers.ContractFactory,
   opts: { unsafeAllowCustomTypes: boolean } = {},
-): Promise<ContractInstance>
+): Promise<ethers.Contract>
 ```
 
 ### admin.changeAdminForProxy

@@ -18,12 +18,12 @@ To deploy an upgradeable instance of one of your contracts in your migrations, u
 
 ```js
 // migrations/NN_deploy_upgradeable_box.js
-const { deployProxy } = require('@openzeppelin/upgrades-truffle');
+const { deployProxy } = require('@openzeppelin/truffle-upgrades');
 
 const Box = artifacts.require('Box');
 
 module.exports = async function (deployer) {
-  const instance = await deployProxy(Box, [42], { initializer: 'initialize', deployer });
+  const instance = await deployProxy(Box, [42], { deployer });
   console.log('Deployed', instance.address);
 };
 ```
@@ -34,7 +34,7 @@ Then, in a future migration, you can use the `upgradeProxy` function to upgrade 
 
 ```js
 // migrations/MM_upgrade_box_contract.js
-const { upgradeProxy } = require('@openzeppelin/upgrades-truffle');
+const { upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 const Box = artifacts.require('Box');
 const BoxV2 = artifacts.require('BoxV2');
@@ -53,7 +53,7 @@ The plugin will take care of comparing `BoxV2` to the previous one to ensure the
 You can also use the `deployProxy` and `upgradeProxy` functions from your truffle tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in the migrations, only that without a `deployer` parameter.
 
 ```js
-const { deployProxy, upgradeProxy } = require('@openzeppelin/upgrades-truffle');
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 const Box = artifacts.require('Box');
 const BoxV2 = artifacts.require('BoxV2');
@@ -78,7 +78,7 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of [truffl
 Creates a proxy given a truffle contract class to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment. Options are:
 - `initializer`: sets a different initializer function to call
 - `deployer`: set as the truffle migration deployer during migrations
-- `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#What%20does%20it%20mean%20for%20an%20implementation%20to%20be%20compatible?)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
 
 
 ```ts
@@ -93,7 +93,7 @@ async function deployProxy(
 
 Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface. Options are:
 - `deployer`: set as the truffle migration deployer during migrations
-- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#What%20does%20it%20mean%20for%20an%20implementation%20to%20be%20compatible?)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function upgradeProxy(
