@@ -192,22 +192,18 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   'state-variable-immutable': {
     msg: e => `Variable \`${e.name}\` is immutable`,
     hint: `Use a constant or mutable variable instead`,
-    link: 'https://zpl.in/upgrades/error-005',
   },
   'external-library-linking': {
     msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
     hint: `Stick to libraries with internal functions only`,
-    link: 'https://zpl.in/upgrades/error-006',
   },
   'struct-definition': {
     msg: e => `Defining structs like \`${e.name}\` is not yet supported`,
     hint: `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
-    link: 'https://zpl.in/upgrades/error-007',
   },
   'enum-definition': {
     msg: e => `Defining enums like \`${e.name}\` is not yet supported`,
     hint: `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
-    link: 'https://zpl.in/upgrades/error-008',
   },
 };
 
