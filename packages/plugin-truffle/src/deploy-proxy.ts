@@ -37,11 +37,11 @@ export async function deployProxy(
     return { ...deployment, layout };
   });
 
-  const AdminFactory = await getProxyAdminFactory(Contract);
+  const AdminFactory = getProxyAdminFactory(Contract);
   const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, deployer));
 
   const data = getInitializerData(Contract, args, opts.initializer);
-  const AdminUpgradeabilityProxy = await getProxyFactory(Contract);
+  const AdminUpgradeabilityProxy = getProxyFactory(Contract);
   const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data);
 
   Contract.address = proxy.address;

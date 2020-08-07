@@ -20,6 +20,8 @@ export interface ContractClass {
 
 export interface ContractClassDefaults {
   from: string;
+  gas: number;
+  gasPrice: number;
 }
 
 export interface ContractInstance {
@@ -60,6 +62,9 @@ export interface TruffleConfig {
   provider: TruffleProvider;
   contracts_build_directory: string;
   contracts_directory: string;
+  from: string;
+  gas: number;
+  gasPrice: number;
 }
 
 declare const config: undefined | TruffleConfig;
@@ -70,6 +75,15 @@ export function getTruffleConfig(): TruffleConfig {
   } else {
     return config;
   }
+}
+
+export function getTruffleDefaults(): ContractClassDefaults {
+  const { from, gas, gasPrice } = getTruffleConfig();
+  return { from, gas, gasPrice };
+}
+
+export function getTruffleProvider(): TruffleProvider {
+  return getTruffleConfig().provider;
 }
 
 // The argument can't be of type TruffleArtifact because we use this with

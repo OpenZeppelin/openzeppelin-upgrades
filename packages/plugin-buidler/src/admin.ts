@@ -4,34 +4,37 @@ import { Contract } from 'ethers';
 import { getProxyAdminFactory } from './proxy-factory';
 
 type ChangeAdminFunction = (proxyAddress: string, newAdmin: string) => Promise<void>;
-type TransferOwnershipFunction = (proxyAdminAddress: string, newAdmin: string) => Promise<void>;
+type TransferProxyAdminOwnershipFunction = (newOwner: string) => Promise<void>;
 
 export function makeChangeProxyAdmin(bre: BuidlerRuntimeEnvironment): ChangeAdminFunction {
   return async function changeProxyAdmin(proxyAddress, newAdmin) {
-    const admin = await getManifestAdmin(bre, await getAdminAddress(bre.network.provider, proxyAddress));
+    const admin = await getManifestAdmin(bre);
+    const proxyAdminAddress = await getAdminAddress(bre.network.provider, proxyAddress);
 
-    if (admin.address !== newAdmin) {
+    if (admin.address !== proxyAdminAddress) {
+      throw new Error('Proxy admin is not the ProxyAdmin contract registered in the manifesto');
+    } else if (admin.address !== newAdmin) {
       await admin.changeProxyAdmin(proxyAddress, newAdmin);
     }
   };
 }
 
-export function makeTransferOwnership(bre: BuidlerRuntimeEnvironment): TransferOwnershipFunction {
-  return async function transferOwnership(proxyAdminAddress, newOwner) {
-    const admin = await getManifestAdmin(bre, proxyAdminAddress);
+export function makeTransferProxyAdminOwnership(bre: BuidlerRuntimeEnvironment): TransferProxyAdminOwnershipFunction {
+  return async function transferProxyAdminOwnership(newOwner) {
+    const admin = await getManifestAdmin(bre);
     await admin.transferOwnerwhip(newOwner);
   };
 }
 
-async function getManifestAdmin(bre: BuidlerRuntimeEnvironment, proxyAdminAddress: string): Promise<Contract> {
+async function getManifestAdmin(bre: BuidlerRuntimeEnvironment): Promise<Contract> {
   const manifest = await Manifest.forNetwork(bre.network.provider);
   const manifestAdmin = await manifest.getAdmin();
   const AdminFactory = await getProxyAdminFactory(bre);
-  const admin = AdminFactory.attach(proxyAdminAddress);
+  const proxyAdminAddress = manifestAdmin?.address;
 
-  if (admin.address !== manifestAdmin?.address) {
-    throw new Error('Proxy admin is not the registered ProxyAdmin contract');
+  if (proxyAdminAddress === undefined) {
+    throw new Error('No ProxyAdmin was found in the manifesto');
   }
 
-  return admin;
+  return AdminFactory.attach(proxyAdminAddress);
 }

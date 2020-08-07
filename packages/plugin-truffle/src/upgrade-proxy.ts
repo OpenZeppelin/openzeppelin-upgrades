@@ -30,7 +30,7 @@ export async function upgradeProxy(
   const version = getVersion(Contract.bytecode);
   assertUpgradeSafe(validations, version);
 
-  const AdminFactory = await getProxyAdminFactory(Contract);
+  const AdminFactory = getProxyAdminFactory(Contract);
   const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);

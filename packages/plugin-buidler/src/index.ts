@@ -3,11 +3,8 @@
 import { internalTask, extendEnvironment } from '@nomiclabs/buidler/config';
 import { TASK_COMPILE_RUN_COMPILER } from '@nomiclabs/buidler/builtin-tasks/task-names';
 import { lazyObject } from '@nomiclabs/buidler/plugins';
-
 import { validate, solcInputOutputDecoder, SolcInput } from '@openzeppelin/upgrades-core';
-
 import { writeValidations } from './validations';
-import { makeChangeProxyAdmin, makeTransferOwnership } from './admin';
 
 interface RunCompilerArgs {
   input: SolcInput;
@@ -25,6 +22,7 @@ export default function (): void {
 
   extendEnvironment(bre => {
     bre.upgrades = lazyObject(() => {
+      const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership } = require('./admin');
       const { makeDeployProxy } = require('./deploy-proxy');
       const { makeUpgradeProxy } = require('./upgrade-proxy');
 
@@ -33,7 +31,7 @@ export default function (): void {
         upgradeProxy: makeUpgradeProxy(bre),
         admin: {
           changeProxyAdmin: makeChangeProxyAdmin(bre),
-          transferProxyAdminOwnerhip: makeTransferOwnership(bre),
+          transferProxyAdminOwnerhip: makeTransferProxyAdminOwnership(bre),
         },
       };
     });
