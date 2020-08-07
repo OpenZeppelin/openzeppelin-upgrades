@@ -25,11 +25,12 @@ export default function (): void {
   extendEnvironment(bre => {
     bre.upgrades = lazyObject(() => {
       const { makeDeployProxy } = require('./deploy-proxy');
-      const { makeUpgradeProxy } = require('./upgrade-proxy');
+      const { makeUpgradeProxy, makePrepareUpgrade } = require('./upgrade-proxy');
 
       return {
         deployProxy: makeDeployProxy(bre),
         upgradeProxy: makeUpgradeProxy(bre),
+        prepareUpgrade: makePrepareUpgrade(bre)
       };
     });
   });
