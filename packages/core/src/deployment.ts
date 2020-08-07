@@ -62,7 +62,13 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
   }
 
   // A timeout is NOT an InvalidDeployment
-  throw new Error(`Timed out waiting for transaction ${deployment.txHash}`);
+  throw new TransactionMinedTimeout(deployment);
+}
+
+export class TransactionMinedTimeout extends Error {
+  constructor(readonly deployment: Deployment) {
+    super(`Timed out waiting for transaction ${deployment.txHash}`);
+  }
 }
 
 export class InvalidDeployment extends Error {
