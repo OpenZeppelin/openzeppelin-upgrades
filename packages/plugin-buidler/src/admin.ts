@@ -22,7 +22,7 @@ export function makeChangeProxyAdmin(bre: BuidlerRuntimeEnvironment): ChangeAdmi
 export function makeTransferProxyAdminOwnership(bre: BuidlerRuntimeEnvironment): TransferProxyAdminOwnershipFunction {
   return async function transferProxyAdminOwnership(newOwner) {
     const admin = await getManifestAdmin(bre);
-    await admin.transferOwnerwhip(newOwner);
+    await admin.transferOwnership(newOwner);
   };
 }
 

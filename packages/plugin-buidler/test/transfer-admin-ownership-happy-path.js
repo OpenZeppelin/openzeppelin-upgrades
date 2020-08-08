@@ -1,5 +1,5 @@
 const bre = require('@nomiclabs/buidler');
-const { getManifestAdmin } = require('@openzeppelin/buidler-upgades/dist/admin.js');
+const { getManifestAdmin } = require('@openzeppelin/buidler-upgrades/dist/admin.js');
 
 const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 

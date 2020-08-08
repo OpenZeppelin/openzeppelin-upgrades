@@ -31,7 +31,7 @@ export default function (): void {
         upgradeProxy: makeUpgradeProxy(bre),
         admin: {
           changeProxyAdmin: makeChangeProxyAdmin(bre),
-          transferProxyAdminOwnerhip: makeTransferProxyAdminOwnership(bre),
+          transferProxyAdminOwnership: makeTransferProxyAdminOwnership(bre),
         },
       };
     });
