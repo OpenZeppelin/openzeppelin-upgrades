@@ -7,7 +7,6 @@ import { compare as compareVersions } from 'compare-versions';
 
 import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
-import { Version } from './version';
 
 const manifestVersion = '3.0';
 
@@ -54,15 +53,6 @@ export class Manifest {
     const deployment = Object.values(data.impls).find(d => d?.address === address);
     if (deployment === undefined) {
       throw new Error(`Deployment at address ${address} is not registered`);
-    }
-    return deployment;
-  }
-
-  async getDeploymentFromVersion(version: Version): Promise<ImplDeployment> {
-    const data = await this.read();
-    const deployment = data.impls[version.withoutMetadata];
-    if (deployment === undefined) {
-      throw new Error(`Deployment for ${version.withoutMetadata} is not registered`);
     }
     return deployment;
   }
