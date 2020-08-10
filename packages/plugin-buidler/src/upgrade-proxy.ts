@@ -1,4 +1,4 @@
-import { BuidlerRuntimeEnvironment, EthereumProvider } from '@nomiclabs/buidler/types';
+import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import type { ContractFactory, Contract } from 'ethers';
 
 import {
@@ -10,7 +10,6 @@ import {
   Manifest,
   getImplementationAddress,
   getAdminAddress,
-  ImplDeployment,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyAdminFactory } from './proxy-factory';
