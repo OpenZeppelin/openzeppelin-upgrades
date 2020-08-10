@@ -16,7 +16,9 @@ async function main() {
   const greeter3ImplAddr = await upgrades.prepareUpgrade(greeter.address, GreeterV3);
   const greeter3 = GreeterV3.attach(greeter3ImplAddr);
   const version3 = await greeter3.version();
-  if (version3 !== 'V3') throw new Error(`expected V3 but got ${version3}`);
+  if (version3 !== 'V3') {
+    throw new Error(`expected V3 but got ${version3}`);
+  }
 }
 
 // We recommend this pattern to be able to use async/await everywhere

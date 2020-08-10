@@ -7,6 +7,9 @@ module.exports = {
   env: {
     node: true,
   },
+  rules: {
+    curly: 'error',
+  },
   overrides: [
     {
       files: ['*.ts'],

@@ -28,7 +28,9 @@ export function stubProvider(chainId = genChainId()) {
     const txHash = '0x' + crypto.randomBytes(32).toString('hex');
     contracts.add(address);
     pendingTxs.add(txHash);
-    if (immediate) await mine();
+    if (immediate) {
+      await mine();
+    }
     return {
       address,
       txHash,
@@ -62,7 +64,9 @@ export function stubProvider(chainId = genChainId()) {
         return '0x' + chainId.toString(16);
       } else if (method === 'eth_getCode') {
         const param = params?.[0];
-        if (typeof param !== 'string') throw new Error('Param must be string');
+        if (typeof param !== 'string') {
+          throw new Error('Param must be string');
+        }
         if (contracts.has(param)) {
           return '0x1234';
         } else {
@@ -70,7 +74,9 @@ export function stubProvider(chainId = genChainId()) {
         }
       } else if (method === 'eth_getTransactionByHash') {
         const param = params?.[0];
-        if (typeof param !== 'string') throw new Error('Param must be string');
+        if (typeof param !== 'string') {
+          throw new Error('Param must be string');
+        }
         if (txBlock.has(param) || pendingTxs.has(param)) {
           return {
             blockHash: txBlock.get(param) || null,

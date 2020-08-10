@@ -19,6 +19,8 @@ contract('Greeter', function () {
     const greeter3ImplAddr = await prepareUpgrade(greeter.address, GreeterV3);
     const greeter3 = await GreeterV3.at(greeter3ImplAddr);
     const version3 = await greeter3.version();
-    if (version3 !== 'V3') throw new Error(`expected V3 but got ${version3}`);
+    if (version3 !== 'V3') {
+      throw new Error(`expected V3 but got ${version3}`);
+    }
   });
 });

@@ -115,8 +115,12 @@ export function describeError(e: StorageOperation): string {
   const src = e.updated?.src ?? e.original?.contract ?? 'unknown';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const log = [chalk.bold(src) + ': ' + info.msg(e as any)];
-  if (info.hint) log.push(info.hint);
-  if (info.link) log.push(chalk.dim(info.link));
+  if (info.hint) {
+    log.push(info.hint);
+  }
+  if (info.link) {
+    log.push(chalk.dim(info.link));
+  }
   return log.join('\n    ');
 }
 

@@ -210,8 +210,12 @@ function describeError(e: ValidationError): string {
   const info = errorInfo[e.kind];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const log = [chalk.bold(e.src) + ': ' + info.msg(e as any)];
-  if (info.hint) log.push(info.hint);
-  if (info.link) log.push(chalk.dim(info.link));
+  if (info.hint) {
+    log.push(info.hint);
+  }
+  if (info.link) {
+    log.push(chalk.dim(info.link));
+  }
   return log.join('\n    ');
 }
 
