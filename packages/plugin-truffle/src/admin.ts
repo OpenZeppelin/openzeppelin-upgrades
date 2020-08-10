@@ -25,7 +25,7 @@ async function transferProxyAdminOwnership(newOwner: string, opts: Options = {})
   await admin.transferOwnership(newOwner);
 }
 
-async function getManifestAdmin(provider: EthereumProvider): Promise<ContractInstance> {
+export async function getManifestAdmin(provider: EthereumProvider): Promise<ContractInstance> {
   const manifest = await Manifest.forNetwork(provider);
   const manifestAdmin = await manifest.getAdmin();
   const AdminFactory = getProxyAdminFactory();
