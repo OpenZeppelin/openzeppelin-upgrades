@@ -78,16 +78,16 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     const { provider } = bre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const deployment = await getDeployment(provider, manifest, proxyAddress);
-    const nextImpl = await prepareUpgradeImpl(bre, deployment, ImplFactory, opts);
-
     const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
     const admin = AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
     const manifestAdmin = await manifest.getAdmin();
 
     if (admin.address !== manifestAdmin?.address) {
-      throw new Error('Proxy admin is not the registered ProxyAdmin contract');
+      throw new Error('Proxy admin is not the one registered in the network manifest');
     }
+
+    const deployment = await getDeployment(provider, manifest, proxyAddress);
+    const nextImpl = await prepareUpgradeImpl(bre, deployment, ImplFactory, opts);
 
     await admin.upgrade(proxyAddress, nextImpl);
 

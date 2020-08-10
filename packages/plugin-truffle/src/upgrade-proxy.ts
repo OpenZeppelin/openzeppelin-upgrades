@@ -19,6 +19,7 @@ import { Options, withDefaults } from './options';
 
 async function prepareUpgradeImpl(
   provider: EthereumProvider,
+  manifest: Manifest,
   proxyAddress: string,
   Contract: ContractClass,
   opts: Required<Options>,
@@ -32,7 +33,6 @@ async function prepareUpgradeImpl(
   assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-  const manifest = await Manifest.forNetwork(provider);
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
   const layout = getStorageLayout(validations, version);
@@ -52,8 +52,9 @@ export async function prepareUpgrade(
   const requiredOpts = withDefaults(opts);
   const { deployer } = requiredOpts;
   const provider = wrapProvider(deployer.provider);
+  const manifest = await Manifest.forNetwork(provider);
 
-  return await prepareUpgradeImpl(provider, proxyAddress, Contract, requiredOpts);
+  return await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts);
 }
 
 export async function upgradeProxy(
@@ -64,11 +65,17 @@ export async function upgradeProxy(
   const requiredOpts = withDefaults(opts);
   const { deployer } = requiredOpts;
   const provider = wrapProvider(deployer.provider);
-  const nextImpl = await prepareUpgradeImpl(provider, proxyAddress, Contract, requiredOpts);
+  const manifest = await Manifest.forNetwork(provider);
 
   const AdminFactory = getProxyAdminFactory(Contract);
   const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
+  const manifestAdmin = await manifest.getAdmin();
 
+  if (admin.address !== manifestAdmin?.address) {
+    throw new Error('Proxy admin is not the one registered in the network manifest');
+  }
+
+  const nextImpl = await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts);
   await admin.upgrade(proxyAddress, nextImpl);
 
   return new Contract(proxyAddress);
