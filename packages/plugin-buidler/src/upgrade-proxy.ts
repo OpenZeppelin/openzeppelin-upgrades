@@ -33,18 +33,10 @@ export interface UpgradeOptions {
   unsafeAllowCustomTypes?: boolean;
 }
 
-async function getDeployment(
-  provider: EthereumProvider,
-  manifest: Manifest,
-  proxyAddress: string,
-): Promise<ImplDeployment> {
-  const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-  return await manifest.getDeploymentFromAddress(currentImplAddress);
-}
-
 async function prepareUpgradeImpl(
   bre: BuidlerRuntimeEnvironment,
-  currentDeployment: ImplDeployment,
+  manifest: Manifest,
+  proxyAddress: string,
   implFactory: ContractFactory,
   opts: UpgradeOptions,
 ): Promise<string> {
@@ -54,8 +46,11 @@ async function prepareUpgradeImpl(
   const version = getVersion(implFactory.bytecode);
   assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
 
+  const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
+  const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
+
   const layout = getStorageLayout(validations, version);
-  assertStorageUpgradeSafe(currentDeployment.layout, layout, opts.unsafeAllowCustomTypes);
+  assertStorageUpgradeSafe(deployment.layout, layout, opts.unsafeAllowCustomTypes);
 
   return await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(implFactory);
@@ -68,8 +63,7 @@ export function makePrepareUpgrade(bre: BuidlerRuntimeEnvironment): PrepareUpgra
     const { provider } = bre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const deployment = await getDeployment(provider, manifest, proxyAddress);
-    return await prepareUpgradeImpl(bre, deployment, ImplFactory, opts);
+    return await prepareUpgradeImpl(bre, manifest, proxyAddress, ImplFactory, opts);
   };
 }
 
@@ -86,9 +80,7 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
       throw new Error('Proxy admin is not the one registered in the network manifest');
     }
 
-    const deployment = await getDeployment(provider, manifest, proxyAddress);
-    const nextImpl = await prepareUpgradeImpl(bre, deployment, ImplFactory, opts);
-
+    const nextImpl = await prepareUpgradeImpl(bre, manifest, proxyAddress, ImplFactory, opts);
     await admin.upgrade(proxyAddress, nextImpl);
 
     return ImplFactory.attach(proxyAddress);
