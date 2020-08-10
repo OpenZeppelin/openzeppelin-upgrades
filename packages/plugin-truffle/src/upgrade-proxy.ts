@@ -30,15 +30,20 @@ export async function upgradeProxy(
   const version = getVersion(Contract.bytecode);
   assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
 
-  const AdminFactory = getProxyAdminFactory(Contract);
-  const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
-
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const manifest = await Manifest.forNetwork(provider);
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
   const layout = getStorageLayout(validations, version);
   assertStorageUpgradeSafe(deployment.layout, layout, unsafeAllowCustomTypes);
+
+  const AdminFactory = getProxyAdminFactory(Contract);
+  const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
+  const manifestAdmin = await manifest.getAdmin();
+
+  if (admin.address !== manifestAdmin?.address) {
+    throw new Error('Proxy admin is not the one registered in the network manifest');
+  }
 
   const nextImpl = await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(Contract, deployer);

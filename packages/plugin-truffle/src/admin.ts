@@ -12,7 +12,7 @@ async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Op
   const proxyAdminAddress = await getAdminAddress(provider, proxyAddress);
 
   if (admin.address !== proxyAdminAddress) {
-    throw new Error('Proxy admin is not the ProxyAdmin contract registered in the manifesto');
+    throw new Error('Proxy admin is not the one registered in the network manifest');
   } else if (admin.address !== newAdmin) {
     await admin.changeProxyAdmin(proxyAddress, newAdmin);
   }
@@ -32,7 +32,7 @@ export async function getManifestAdmin(provider: EthereumProvider): Promise<Cont
   const proxyAdminAddress = manifestAdmin?.address;
 
   if (proxyAdminAddress === undefined) {
-    throw new Error('No ProxyAdmin was found in the manifesto');
+    throw new Error('No ProxyAdmin was found in the network manifest');
   }
 
   return new AdminFactory(proxyAdminAddress);

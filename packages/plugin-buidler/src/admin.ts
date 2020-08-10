@@ -12,7 +12,7 @@ export function makeChangeProxyAdmin(bre: BuidlerRuntimeEnvironment): ChangeAdmi
     const proxyAdminAddress = await getAdminAddress(bre.network.provider, proxyAddress);
 
     if (admin.address !== proxyAdminAddress) {
-      throw new Error('Proxy admin is not the ProxyAdmin contract registered in the manifesto');
+      throw new Error('Proxy admin is not the one registered in the network manifest');
     } else if (admin.address !== newAdmin) {
       await admin.changeProxyAdmin(proxyAddress, newAdmin);
     }
@@ -29,12 +29,12 @@ export function makeTransferProxyAdminOwnership(bre: BuidlerRuntimeEnvironment):
 export async function getManifestAdmin(bre: BuidlerRuntimeEnvironment): Promise<Contract> {
   const manifest = await Manifest.forNetwork(bre.network.provider);
   const manifestAdmin = await manifest.getAdmin();
-  const AdminFactory = await getProxyAdminFactory(bre);
   const proxyAdminAddress = manifestAdmin?.address;
 
   if (proxyAdminAddress === undefined) {
-    throw new Error('No ProxyAdmin was found in the manifesto');
+    throw new Error('No ProxyAdmin was found in the network manifest');
   }
 
+  const AdminFactory = await getProxyAdminFactory(bre);
   return AdminFactory.attach(proxyAdminAddress);
 }
