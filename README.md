@@ -92,6 +92,19 @@ When deploying a proxy for a contract, there are some limitations to the contrac
 
 As a replacement for the constructor, it is common to set up an `initialize` function to take care of the contract's initialization. You can use the [`Initializable`](https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable#initializers) base contract to have access to an `initializer` modifier that ensures the function is only called once.
 
+```solidity
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+// Alternatively, if you are using @openzeppelin/contracts-ethereum-package:
+// import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
+
+contract MyContract is Initializable {
+  uint256 value;
+  function initialize(uint256 initialValue) public initializer {
+    value = initialValue;
+  }
+}
+```
+
 Both plugins will validate that the contract you are trying to deploy complies with these rules. You can read more about how to write upgrade safe contracts [here](https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable).
 
 ### What does it mean for an implementation to be compatible?
