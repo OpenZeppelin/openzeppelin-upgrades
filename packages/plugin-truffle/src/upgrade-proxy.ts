@@ -7,6 +7,7 @@ import {
   Manifest,
   getImplementationAddress,
   getAdminAddress,
+  EthereumProvider,
 } from '@openzeppelin/upgrades-core';
 
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
@@ -16,22 +17,19 @@ import { getProxyAdminFactory } from './factories';
 import { wrapProvider } from './wrap-provider';
 import { Options, withDefaults } from './options';
 
-export async function upgradeProxy(
+async function prepareUpgradeImpl(
+  provider: EthereumProvider,
   proxyAddress: string,
   Contract: ContractClass,
-  opts: Options = {},
-): Promise<ContractInstance> {
-  const { deployer, unsafeAllowCustomTypes } = withDefaults(opts);
-  const provider = wrapProvider(deployer.provider);
+  opts: Required<Options>,
+): Promise<string> {
+  const { deployer, unsafeAllowCustomTypes } = opts;
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
   const version = getVersion(Contract.bytecode);
   assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
-
-  const AdminFactory = getProxyAdminFactory(Contract);
-  const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const manifest = await Manifest.forNetwork(provider);
@@ -40,10 +38,36 @@ export async function upgradeProxy(
   const layout = getStorageLayout(validations, version);
   assertStorageUpgradeSafe(deployment.layout, layout, unsafeAllowCustomTypes);
 
-  const nextImpl = await fetchOrDeploy(version, provider, async () => {
+  return await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(Contract, deployer);
     return { ...deployment, layout };
   });
+}
+
+export async function prepareUpgrade(
+  proxyAddress: string,
+  Contract: ContractClass,
+  opts: Options = {},
+): Promise<string> {
+  const requiredOpts = withDefaults(opts);
+  const { deployer } = requiredOpts;
+  const provider = wrapProvider(deployer.provider);
+
+  return await prepareUpgradeImpl(provider, proxyAddress, Contract, requiredOpts);
+}
+
+export async function upgradeProxy(
+  proxyAddress: string,
+  Contract: ContractClass,
+  opts: Options = {},
+): Promise<ContractInstance> {
+  const requiredOpts = withDefaults(opts);
+  const { deployer } = requiredOpts;
+  const provider = wrapProvider(deployer.provider);
+  const nextImpl = await prepareUpgradeImpl(provider, proxyAddress, Contract, requiredOpts);
+
+  const AdminFactory = getProxyAdminFactory(Contract);
+  const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
 
   await admin.upgrade(proxyAddress, nextImpl);
 
