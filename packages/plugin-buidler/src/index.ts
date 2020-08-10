@@ -30,7 +30,7 @@ export default function (): void {
       return {
         deployProxy: makeDeployProxy(bre),
         upgradeProxy: makeUpgradeProxy(bre),
-        prepareUpgrade: makePrepareUpgrade(bre)
+        prepareUpgrade: makePrepareUpgrade(bre),
       };
     });
   });

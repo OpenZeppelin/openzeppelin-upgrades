@@ -11,7 +11,6 @@ import {
   getImplementationAddress,
   getAdminAddress,
   ImplDeployment,
-  ValidationResult,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyAdminFactory } from './proxy-factory';
@@ -19,7 +18,7 @@ import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
 export type PrepareUpgradeFunction = (
-  proxyAddressOrImpl: string | ContractFactory,
+  proxyAddress: string,
   ImplFactory: ContractFactory,
   opts?: UpgradeOptions,
 ) => Promise<string>;
@@ -37,25 +36,21 @@ export interface UpgradeOptions {
 async function getDeployment(
   provider: EthereumProvider,
   manifest: Manifest,
-  proxyAddressOrImpl: string | ContractFactory,
-) : Promise<ImplDeployment> {
-  if (typeof(proxyAddressOrImpl) === 'string') {
-    const proxyAddress = proxyAddressOrImpl;
-    const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-    return await manifest.getDeploymentFromAddress(currentImplAddress);
-  } else {
-    const version = getVersion(proxyAddressOrImpl.bytecode);
-    return await manifest.getDeploymentFromVersion(version);
-  }
+  proxyAddress: string,
+): Promise<ImplDeployment> {
+  const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
+  return await manifest.getDeploymentFromAddress(currentImplAddress);
 }
 
 async function prepareUpgradeImpl(
-  provider: EthereumProvider,
-  validations: Record<string, ValidationResult>,
+  bre: BuidlerRuntimeEnvironment,
   currentDeployment: ImplDeployment,
   implFactory: ContractFactory,
-  opts: UpgradeOptions
-) : Promise<string> {
+  opts: UpgradeOptions,
+): Promise<string> {
+  const { provider } = bre.network;
+  const validations = await readValidations(bre);
+
   const version = getVersion(implFactory.bytecode);
   assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
 
@@ -69,24 +64,22 @@ async function prepareUpgradeImpl(
 }
 
 export function makePrepareUpgrade(bre: BuidlerRuntimeEnvironment): PrepareUpgradeFunction {
-  return async function prepareUpgrade(proxyAddressOrImpl, ImplFactory, opts = {}) {
+  return async function prepareUpgrade(proxyAddress, ImplFactory, opts = {}) {
     const { provider } = bre.network;
-    const validations = await readValidations(bre);
     const manifest = await Manifest.forNetwork(provider);
-    
-    const deployment = await getDeployment(provider, manifest, proxyAddressOrImpl);
-    return await prepareUpgradeImpl(provider, validations, deployment, ImplFactory, opts);
-  }
+
+    const deployment = await getDeployment(provider, manifest, proxyAddress);
+    return await prepareUpgradeImpl(bre, deployment, ImplFactory, opts);
+  };
 }
 
 export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunction {
   return async function upgradeProxy(proxyAddress, ImplFactory, opts = {}) {
     const { provider } = bre.network;
-    const validations = await readValidations(bre);
     const manifest = await Manifest.forNetwork(provider);
 
     const deployment = await getDeployment(provider, manifest, proxyAddress);
-    const nextImpl = await prepareUpgradeImpl(provider, validations, deployment, ImplFactory, opts);
+    const nextImpl = await prepareUpgradeImpl(bre, deployment, ImplFactory, opts);
 
     const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
     const admin = AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
