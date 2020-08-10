@@ -41,18 +41,18 @@ export function makeUpgradeProxy(bre: BuidlerRuntimeEnvironment): UpgradeFunctio
     const layout = getStorageLayout(validations, version);
     assertStorageUpgradeSafe(deployment.layout, layout, opts.unsafeAllowCustomTypes);
 
-    const nextImpl = await fetchOrDeploy(version, provider, async () => {
-      const deployment = await deploy(ImplFactory);
-      return { ...deployment, layout };
-    });
-
     const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
     const admin = AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
     const manifestAdmin = await manifest.getAdmin();
 
     if (admin.address !== manifestAdmin?.address) {
-      throw new Error('Proxy admin is not the registered ProxyAdmin contract');
+      throw new Error('Proxy admin is not the one registered in the network manifest');
     }
+
+    const nextImpl = await fetchOrDeploy(version, provider, async () => {
+      const deployment = await deploy(ImplFactory);
+      return { ...deployment, layout };
+    });
 
     await admin.upgrade(proxyAddress, nextImpl);
 
