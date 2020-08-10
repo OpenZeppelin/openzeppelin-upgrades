@@ -78,7 +78,7 @@ describe("Box", function() {
 
 ## API
 
-Both `deployProxy` and `upgradeProxy` functions will return instances of [ethers.js contracts](https://docs.ethers.io/v5/api/contract/contract/), and require [ethers.js contract factories](https://docs.ethers.io/v5/api/contract/contract-factory/) as arguments.
+Both `deployProxy` and `upgradeProxy` functions will return instances of [ethers.js contracts](https://docs.ethers.io/v5/api/contract/contract/), and require [ethers.js contract factories](https://docs.ethers.io/v5/api/contract/contract-factory/) as arguments. All functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
 
 ### deployProxy
 
@@ -105,6 +105,19 @@ async function upgradeProxy(
   Contract: ethers.ContractFactory,
   opts: { unsafeAllowCustomTypes: boolean } = {},
 ): Promise<ethers.Contract>
+```
+
+### prepareUpgrade
+
+Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Buidler. Options are:
+- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
+
+```ts
+async function prepareUpgrade(
+  proxyAddress: string,
+  Contract: ethers.ContractFactory,
+  opts: { unsafeAllowCustomTypes: boolean } = {},
+): Promise<string>
 ```
 
 ### admin.changeAdminForProxy

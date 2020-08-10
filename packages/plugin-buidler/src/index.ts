@@ -24,11 +24,12 @@ export default function (): void {
     bre.upgrades = lazyObject(() => {
       const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership } = require('./admin');
       const { makeDeployProxy } = require('./deploy-proxy');
-      const { makeUpgradeProxy } = require('./upgrade-proxy');
+      const { makeUpgradeProxy, makePrepareUpgrade } = require('./upgrade-proxy');
 
       return {
         deployProxy: makeDeployProxy(bre),
         upgradeProxy: makeUpgradeProxy(bre),
+        prepareUpgrade: makePrepareUpgrade(bre),
         admin: {
           changeProxyAdmin: makeChangeProxyAdmin(bre),
           transferProxyAdminOwnership: makeTransferProxyAdminOwnership(bre),

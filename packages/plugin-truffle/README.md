@@ -109,6 +109,20 @@ async function upgradeProxy(
 ): Promise<ContractInstance>
 ```
 
+### prepareUpgrade
+
+Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Truffle. Options are:
+- `deployer`: set as the truffle migration deployer during migrations
+- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
+
+```ts
+async function prepareUpgrade(
+  proxyAddress: string,
+  Contract: ContractClass,
+  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean } = {},
+): Promise<string>
+```
+
 ### admin.changeAdminForProxy
 
 Changes the admin for a specific proxy. Receives the address of the proxy to change, and the new admin address.
