@@ -95,7 +95,7 @@ As a replacement for the constructor, it is common to set up an `initialize` fun
 ```solidity
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 // Alternatively, if you are using @openzeppelin/contracts-ethereum-package:
-// import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
 
 contract MyContract is Initializable {
   uint256 value;
