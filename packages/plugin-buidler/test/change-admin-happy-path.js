@@ -9,7 +9,6 @@ async function main() {
 
   console.log('Attempting change Greeter proxy admin...');
   await upgrades.admin.changeProxyAdmin(greeter.address, testAddress);
-
   const newAdmin = await getAdminAddress(network.provider, greeter.address);
 
   if (newAdmin !== testAddress) {

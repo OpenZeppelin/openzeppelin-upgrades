@@ -4,10 +4,14 @@ const { getManifestAdmin } = require('@openzeppelin/buidler-upgrades/dist/admin.
 const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 
 async function main() {
+  const { ethers, upgrades } = bre;
+
+  // we need to deploy a proxy so we have a Proxy Admin
+  const Greeter = await ethers.getContractFactory('Greeter');
+  await upgrades.deployProxy(Greeter, ['Hello, Buidler!']);
+
   const admin = await getManifestAdmin(bre);
-
-  await bre.upgrades.admin.transferProxyAdminOwnership(testAddress);
-
+  await upgrades.admin.transferProxyAdminOwnership(testAddress);
   const newOwner = await admin.owner();
 
   if (newOwner !== testAddress) {
