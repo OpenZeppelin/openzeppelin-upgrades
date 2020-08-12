@@ -1,6 +1,11 @@
-# OpenZeppelin Upgrades
+# <img src="assets/banner.svg" alt="OpenZeppelin Upgrades" height="40px">
 
 **Integrate upgrades into your existing workflow.** Plugins for [Buidler](https://buidler.dev/) and [Truffle](https://www.trufflesuite.com/truffle) to deploy and manage upgradeable contracts on Ethereum.
+
+- Deploy upgradeable contracts.
+- Upgrade deployed contracts.
+- Manage proxy admin rights.
+- Easily use in tests.
 
 ## Quickstart
 
@@ -12,7 +17,7 @@ npm install --save-dev @openzeppelin/buidler-upgrades
 npm install --save-dev @openzeppelin/truffle-upgrades
 ```
 
-And set up a [buidler script](https://buidler.dev/guides/scripts.html) to deploy and upgrade, after adding `usePlugin('@openzeppelin/upgrades-buidler')` to your `buidler.config.js`:
+And set up a [Buidler script](https://buidler.dev/guides/scripts.html) to deploy and upgrade, after adding `usePlugin('@openzeppelin/buidler-upgrades')` to your `buidler.config.js`:
 
 ```js
 const { ethers, upgrades } = require("@nomiclabs/buidler");
@@ -30,10 +35,10 @@ async function main() {
 main();
 ```
 
-Or a [truffle migration](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations):
+Or a [Truffle migration](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations):
 
 ```js
-const { deployProxy, upgradeProxy } = require('@openzeppelin/upgrades-truffle');
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 const Box = artifacts.require('Box');
 const BoxV2 = artifacts.require('BoxV2');
@@ -48,9 +53,8 @@ module.exports = async function (deployer) {
 
 Refer to the documentation of each plugin:
 
-[![buidler](./assets/buidler.png "buidler")](./packages/plugin-buidler/README.md)
-&nbsp;&nbsp;&nbsp;&nbsp;
-[![truffle](./assets/truffle.png "truffle")](./packages/plugin-truffle/README.md)
+| [<img src="assets/buidler.svg" height="20px" width="30px" alt="">Buidler](./packages/plugin-buidler/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
+|-|-|
 
 ## How do the plugins work?
 
