@@ -2,6 +2,11 @@
 
 **Integrate upgrades into your existing workflow.** Plugins for [Buidler](https://buidler.dev/) and [Truffle](https://www.trufflesuite.com/truffle) to deploy and manage upgradeable contracts on Ethereum.
 
+- Deploy upgradeable contracts.
+- Upgrade deployed contracts.
+- Manage proxy admin rights.
+- Easily use in tests.
+
 ## Quickstart
 
 Install the plugin for your favorite toolchain:
