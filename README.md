@@ -1,4 +1,4 @@
-# OpenZeppelin Upgrades
+# <img src="assets/banner.svg" alt="OpenZeppelin Upgrades" height="40px">
 
 **Integrate upgrades into your existing workflow.** Plugins for [Buidler](https://buidler.dev/) and [Truffle](https://www.trufflesuite.com/truffle) to deploy and manage upgradeable contracts on Ethereum.
 
