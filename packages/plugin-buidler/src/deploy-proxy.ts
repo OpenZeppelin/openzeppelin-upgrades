@@ -46,7 +46,6 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const proxy = await ProxyFactory.deploy(impl, adminAddress, data);
 
     const inst = ImplFactory.attach(proxy.address);
-    // inst.deployTransaction = proxy.deployTransaction;
     return inst;
   };
 
