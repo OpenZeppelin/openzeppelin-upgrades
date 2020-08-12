@@ -1,3 +1,3 @@
 export * from './deploy-proxy';
 export * from './upgrade-proxy';
-export * from './admin';
+export { admin } from './admin';
