@@ -70,8 +70,8 @@ export interface TruffleConfig {
 declare const config: undefined | TruffleConfig;
 
 export function getTruffleConfig(): TruffleConfig {
-  if (config === undefined) {
-    throw new Error('Global Truffle config not found: Truffle >=5.1.35 is required');
+  if (typeof config === 'undefined') {
+    throw new Error('Global Truffle config not found: Truffle >=5.1.35 is required. Truffle exec not yet supported');
   } else {
     return config;
   }
