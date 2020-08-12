@@ -17,7 +17,7 @@ npm install --save-dev @openzeppelin/buidler-upgrades
 npm install --save-dev @openzeppelin/truffle-upgrades
 ```
 
-And set up a [Buidler script](https://buidler.dev/guides/scripts.html) to deploy and upgrade, after adding `usePlugin('@openzeppelin/upgrades-buidler')` to your `buidler.config.js`:
+And set up a [Buidler script](https://buidler.dev/guides/scripts.html) to deploy and upgrade, after adding `usePlugin('@openzeppelin/buidler-upgrades')` to your `buidler.config.js`:
 
 ```js
 const { ethers, upgrades } = require("@nomiclabs/buidler");
@@ -38,7 +38,7 @@ main();
 Or a [Truffle migration](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations):
 
 ```js
-const { deployProxy, upgradeProxy } = require('@openzeppelin/upgrades-truffle');
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 const Box = artifacts.require('Box');
 const BoxV2 = artifacts.require('BoxV2');
