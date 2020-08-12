@@ -12,7 +12,7 @@ npm install --save-dev @openzeppelin/buidler-upgrades
 npm install --save-dev @openzeppelin/truffle-upgrades
 ```
 
-And set up a [buidler script](https://buidler.dev/guides/scripts.html) to deploy and upgrade, after adding `usePlugin('@openzeppelin/upgrades-buidler')` to your `buidler.config.js`:
+And set up a [Buidler script](https://buidler.dev/guides/scripts.html) to deploy and upgrade, after adding `usePlugin('@openzeppelin/upgrades-buidler')` to your `buidler.config.js`:
 
 ```js
 const { ethers, upgrades } = require("@nomiclabs/buidler");
@@ -30,7 +30,7 @@ async function main() {
 main();
 ```
 
-Or a [truffle migration](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations):
+Or a [Truffle migration](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations):
 
 ```js
 const { deployProxy, upgradeProxy } = require('@openzeppelin/upgrades-truffle');
@@ -48,9 +48,9 @@ module.exports = async function (deployer) {
 
 Refer to the documentation of each plugin:
 
-[![buidler](./assets/buidler.png "buidler")](./packages/plugin-buidler/README.md)
+[![Buidler](./assets/buidler.png "Buidler")](./packages/plugin-buidler/README.md)
 &nbsp;&nbsp;&nbsp;&nbsp;
-[![truffle](./assets/truffle.png "truffle")](./packages/plugin-truffle/README.md)
+[![Truffle](./assets/truffle.png "Truffle")](./packages/plugin-truffle/README.md)
 
 ## How do the plugins work?
 
