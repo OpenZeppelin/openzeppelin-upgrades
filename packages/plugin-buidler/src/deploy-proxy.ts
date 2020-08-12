@@ -41,7 +41,6 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
     const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
 
-    // TODO: support choice of initializer function? support overloaded initialize function
     const data = getInitializerData(ImplFactory, args, opts.initializer);
     const ProxyFactory = await getProxyFactory(bre, ImplFactory.signer);
     const proxy = await ProxyFactory.deploy(impl, adminAddress, data);
