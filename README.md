@@ -53,7 +53,7 @@ module.exports = async function (deployer) {
 
 Refer to the documentation of each plugin:
 
-| [<img src="assets/buidler.svg" height="20px" alt=""> Buidler](./packages/plugin-buidler/README.md)| [<img src="assets/truffle.svg" height="20px" alt=""> Truffle](./packages/plugin-truffle/README.md) |
+| [<img src="assets/buidler.svg" height="20px" width="30px" alt="">Buidler](./packages/plugin-buidler/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
 |-|-|
 
 ## How do the plugins work?
