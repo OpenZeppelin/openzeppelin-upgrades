@@ -1,5 +1,3 @@
-import util from 'util';
-
 import debug from './utils/debug';
 import { Manifest, ManifestData, ImplDeployment } from './manifest';
 import { EthereumProvider, isDevelopmentNetwork } from './provider';
