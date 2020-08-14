@@ -141,7 +141,7 @@ You can read more about the proxy upgrade pattern [here](https://docs.openzeppel
 
 ### Why can't I use `immutable` variables?
 
-Solidity `0.6.5` [introduced the `immutable` keyword]([https://github.com/ethereum/solidity/releases/tag/v0.6.5](https://github.com/ethereum/solidity/releases/tag/v0.6.5)) to declare a variable that can be assigned only once during construction and can be read only after construction. It does so by calculating its value during contract creation and storing its value directly into the bytecode. 
+Solidity 0.6.5 [introduced the `immutable` keyword]([https://github.com/ethereum/solidity/releases/tag/v0.6.5](https://github.com/ethereum/solidity/releases/tag/v0.6.5)) to declare a variable that can be assigned only once during construction and can be read only after construction. It does so by calculating its value during contract creation and storing its value directly into the bytecode. 
 
 Notice that this behavior is incompatible with the way upgradeable contracts work for two reasons:
 
