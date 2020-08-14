@@ -90,18 +90,6 @@ function lens<T>(description: string, fn: (data: ManifestData) => ManifestField<
   return Object.assign(fn, { description });
 }
 
-function lookupDeployment(data: ManifestData, address: string): ManifestField<Deployment> | undefined {
-  if (data.admin?.address === address) {
-    return adminLens(data);
-  }
-
-  for (const versionWithoutMetadata in data.impls) {
-    if (data.impls[versionWithoutMetadata]?.address === address) {
-      return implLens(versionWithoutMetadata)(data);
-    }
-  }
-}
-
 async function checkForAddressClash(
   provider: EthereumProvider,
   data: ManifestData,
@@ -118,6 +106,18 @@ async function checkForAddressClash(
           JSON.stringify(updated, null, 2) +
           `\n\n`,
       );
+    }
+  }
+}
+
+function lookupDeployment(data: ManifestData, address: string): ManifestField<Deployment> | undefined {
+  if (data.admin?.address === address) {
+    return adminLens(data);
+  }
+
+  for (const versionWithoutMetadata in data.impls) {
+    if (data.impls[versionWithoutMetadata]?.address === address) {
+      return implLens(versionWithoutMetadata)(data);
     }
   }
 }
