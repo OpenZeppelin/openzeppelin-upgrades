@@ -1,7 +1,7 @@
 const assert = require('assert');
 const BN = require('bn.js');
 
-const { deployProxy, upgradeProxy } = require('@openzeppelin/upgrades-truffle');
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 const Adder = artifacts.require('Adder');
 const AdderV2 = artifacts.require('AdderV2');

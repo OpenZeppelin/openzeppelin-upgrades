@@ -1,3 +1,4 @@
+import path from 'path';
 import { SolcOutput, SolcInput } from './solc-api';
 
 export type SrcDecoder = (node: { src: string }) => string;
@@ -7,18 +8,19 @@ interface Source {
   content: string;
 }
 
-export function solcInputOutputDecoder(solcInput: SolcInput, solcOutput: SolcOutput): SrcDecoder {
+export function solcInputOutputDecoder(solcInput: SolcInput, solcOutput: SolcOutput, basePath = '.'): SrcDecoder {
   const sources: Record<number, Source> = {};
 
   function getSource(sourceId: number): Source {
     if (sourceId in sources) {
       return sources[sourceId];
     } else {
-      const name = Object.entries(solcOutput.sources).find(([, { id }]) => sourceId === id)?.[0];
-      if (name === undefined) {
+      const sourcePath = Object.entries(solcOutput.sources).find(([, { id }]) => sourceId === id)?.[0];
+      if (sourcePath === undefined) {
         throw new Error(`Source file not available`);
       }
-      const content = solcInput.sources[name].content;
+      const content = solcInput.sources[sourcePath].content;
+      const name = path.relative(basePath, sourcePath);
       if (content === undefined) {
         throw new Error(`Content for ${name} not available`);
       }

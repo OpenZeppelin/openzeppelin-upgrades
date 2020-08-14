@@ -5,7 +5,7 @@ import { ContractDefinition } from 'solidity-ast';
 
 import { SrcDecoder } from './src-decoder';
 import { levenshtein, Operation } from './levenshtein';
-import { UpgradesError } from './error';
+import { UpgradesError, ErrorDescriptions } from './error';
 
 export interface StorageItem {
   contract: string;
@@ -49,8 +49,25 @@ export function extractStorageLayout(contractDef: ContractDefinition, decodeSrc:
   return layout;
 }
 
-export function assertStorageUpgradeSafe(original: StorageLayout, updated: StorageLayout): void {
-  const errors = getStorageUpgradeErrors(original, updated);
+export function assertStorageUpgradeSafe(
+  original: StorageLayout,
+  updated: StorageLayout,
+  unsafeAllowCustomTypes = false,
+): void {
+  let errors = getStorageUpgradeErrors(original, updated);
+
+  if (unsafeAllowCustomTypes) {
+    errors = errors
+      .filter(error => error.kind === 'typechange')
+      .filter(error => {
+        const { original, updated } = error;
+        if (original && updated) {
+          // Skip storage errors if the only difference seems to be the AST id number
+          return stabilizeTypeIdentifier(original?.type) !== stabilizeTypeIdentifier(updated?.type);
+        }
+        return error;
+      });
+  }
 
   if (errors.length > 0) {
     throw new StorageUpgradeErrors(errors);
@@ -58,23 +75,58 @@ export function assertStorageUpgradeSafe(original: StorageLayout, updated: Stora
 }
 
 class StorageUpgradeErrors extends UpgradesError {
-  constructor(readonly errors: ReturnType<typeof getStorageUpgradeErrors>) {
-    super(`New storage layout is incompatible`);
-  }
-
-  details() {
-    return this.errors
-      .map(e => {
-        return chalk.bold(e.updated?.src ?? 'unknown') + ': ' + e.action + ' of variable ' + e.updated?.label;
-      })
-      .join('\n\n');
+  constructor(readonly errors: StorageOperation[]) {
+    super(`New storage layout is incompatible due to the following changes`, () => {
+      return errors.map(describeError).join('\n\n');
+    });
   }
 }
 
-export function getStorageUpgradeErrors(
-  original: StorageLayout,
-  updated: StorageLayout,
-): Operation<StorageItem, 'typechange' | 'rename' | 'replace'>[] {
+function label(variable?: { label: string }): string {
+  return variable?.label ? '`' + variable.label + '`' : '<unknown>';
+}
+
+const errorInfo: ErrorDescriptions<StorageOperation> = {
+  typechange: {
+    msg: o => `Type of variable ${label(o.updated)} was changed`,
+  },
+  rename: {
+    msg: o => `Variable ${label(o.original)} was renamed`,
+  },
+  replace: {
+    msg: o => `Variable ${label(o.original)} was replaced with ${label(o.updated)}`,
+  },
+  insert: {
+    msg: o => `Inserted variable ${label(o.updated)}`,
+    hint: 'Only insert variables at the end of the most derived contract',
+  },
+  delete: {
+    msg: o => `Deleted variable ${label(o.original)}`,
+    hint: 'Keep the variable even if unused',
+  },
+  append: {
+    // this would not be shown to the user but TypeScript needs append here
+    msg: () => 'Appended a variable but it is not an error',
+  },
+};
+
+export function describeError(e: StorageOperation): string {
+  const info = errorInfo[e.kind];
+  const src = e.updated?.src ?? e.original?.contract ?? 'unknown';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const log = [chalk.bold(src) + ': ' + info.msg(e as any)];
+  if (info.hint) {
+    log.push(info.hint);
+  }
+  if (info.link) {
+    log.push(chalk.dim(info.link));
+  }
+  return log.join('\n    ');
+}
+
+type StorageOperation = Operation<StorageItem, 'typechange' | 'rename' | 'replace'>;
+
+export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout): StorageOperation[] {
   function matchStorageItem(o: StorageItem, u: StorageItem) {
     const nameMatches = o.label === u.label;
 
@@ -84,16 +136,16 @@ export function getStorageUpgradeErrors(
     if (typeMatches && nameMatches) {
       return 'equal';
     } else if (typeMatches) {
-      return 'typechange';
-    } else if (nameMatches) {
       return 'rename';
+    } else if (nameMatches) {
+      return 'typechange';
     } else {
       return 'replace';
     }
   }
 
   const ops = levenshtein(original.storage, updated.storage, matchStorageItem);
-  return ops.filter(o => o.action !== 'append');
+  return ops.filter(o => o.kind !== 'append');
 }
 
 // Type Identifiers in the AST are for some reason encoded so that they don't
@@ -117,4 +169,30 @@ export function decodeTypeIdentifier(typeIdentifier: string): string {
         throw new Error('Unreachable');
     }
   });
+}
+
+// Type Identifiers contain AST id numbers, which makes them sensitive to
+// unrelated changes in the source code. This function stabilizes a type
+// identifier by removing all AST ids.
+export function stabilizeTypeIdentifier(typeIdentifier: string): string {
+  let decoded = decodeTypeIdentifier(typeIdentifier);
+  const re = /(t_struct|t_enum|t_contract)\(/g;
+  let match;
+  while ((match = re.exec(decoded))) {
+    let i;
+    let d = 1;
+    for (i = match.index + match[0].length; d !== 0; i++) {
+      assert(i < decoded.length, 'index out of bounds');
+      const c = decoded[i];
+      if (c === '(') {
+        d += 1;
+      } else if (c === ')') {
+        d -= 1;
+      }
+    }
+    const re2 = /\d+_?/y;
+    re2.lastIndex = i;
+    decoded = decoded.replace(re2, '');
+  }
+  return decoded;
 }

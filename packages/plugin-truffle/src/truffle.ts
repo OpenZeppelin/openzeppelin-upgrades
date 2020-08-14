@@ -20,6 +20,8 @@ export interface ContractClass {
 
 export interface ContractClassDefaults {
   from: string;
+  gas: number;
+  gasPrice: number;
 }
 
 export interface ContractInstance {
@@ -27,9 +29,9 @@ export interface ContractInstance {
   transactionHash?: string;
   contract: {
     methods: {
-      initialize(
+      [name: string]: (
         ...args: unknown[]
-      ): {
+      ) => {
         encodeABI(): string;
       };
     };
@@ -59,16 +61,29 @@ export interface TruffleProvider {
 export interface TruffleConfig {
   provider: TruffleProvider;
   contracts_build_directory: string;
+  contracts_directory: string;
+  from: string;
+  gas: number;
+  gasPrice: number;
 }
 
 declare const config: undefined | TruffleConfig;
 
 export function getTruffleConfig(): TruffleConfig {
-  if (config === undefined) {
-    throw new Error('Global Truffle config not found: Truffle >=0.5.35 is required');
+  if (typeof config === 'undefined') {
+    throw new Error('Global Truffle config not found: Truffle >=5.1.35 is required. Truffle exec not yet supported');
   } else {
     return config;
   }
+}
+
+export function getTruffleDefaults(): ContractClassDefaults {
+  const { from, gas, gasPrice } = getTruffleConfig();
+  return { from, gas, gasPrice };
+}
+
+export function getTruffleProvider(): TruffleProvider {
+  return getTruffleConfig().provider;
 }
 
 // The argument can't be of type TruffleArtifact because we use this with

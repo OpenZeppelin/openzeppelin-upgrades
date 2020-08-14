@@ -13,31 +13,54 @@ import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
-export type DeployFunction = (ImplFactory: ContractFactory, args: unknown[]) => Promise<Contract>;
+export type DeployFunction = (
+  ImplFactory: ContractFactory,
+  args?: unknown[],
+  opts?: DeployOptions,
+) => Promise<Contract>;
+
+export interface DeployOptions {
+  initializer?: string;
+  unsafeAllowCustomTypes?: boolean;
+}
 
 export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction {
-  return async function deployProxy(ImplFactory, args) {
+  return async function deployProxy(ImplFactory, args = [], opts = {}) {
+    const { provider } = bre.network;
     const validations = await readValidations(bre);
 
     const version = getVersion(ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version);
+    assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
 
-    const impl = await fetchOrDeploy(version, bre.network.provider, async () => {
+    const impl = await fetchOrDeploy(version, provider, async () => {
       const deployment = await deploy(ImplFactory);
       const layout = getStorageLayout(validations, version);
       return { ...deployment, layout };
     });
 
     const AdminFactory = await getProxyAdminFactory(bre, ImplFactory.signer);
-    const adminAddress = await fetchOrDeployAdmin(bre.network.provider, () => deploy(AdminFactory));
+    const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
 
-    // TODO: support choice of initializer function? support overloaded initialize function
-    const data = ImplFactory.interface.encodeFunctionData('initialize', args);
+    const data = getInitializerData(ImplFactory, args, opts.initializer);
     const ProxyFactory = await getProxyFactory(bre, ImplFactory.signer);
     const proxy = await ProxyFactory.deploy(impl, adminAddress, data);
 
     const inst = ImplFactory.attach(proxy.address);
-    // inst.deployTransaction = proxy.deployTransaction;
     return inst;
   };
+
+  function getInitializerData(ImplFactory: ContractFactory, args: unknown[], initializer?: string): string {
+    const allowNoInitialization = initializer === undefined && args.length === 0;
+    initializer = initializer ?? 'initialize';
+
+    const initializers = ImplFactory.interface.fragments.filter(f => f.name === initializer);
+
+    if (initializers.length > 0) {
+      return ImplFactory.interface.encodeFunctionData(initializer, args);
+    } else if (allowNoInitialization) {
+      return '0x';
+    } else {
+      throw new Error(`Contract does not have a function \`${initializer}\``);
+    }
+  }
 }

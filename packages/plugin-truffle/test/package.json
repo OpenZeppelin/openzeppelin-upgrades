@@ -5,7 +5,7 @@
   "author": "Francisco Giordano <frangio.1@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@openzeppelin/upgrades-truffle": "^0.1.0",
+    "@openzeppelin/truffle-upgrades": "^0.1.0",
     "truffle": "^5.1.35"
   }
 }

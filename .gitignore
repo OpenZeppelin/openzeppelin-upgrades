@@ -6,3 +6,5 @@ artifacts
 build
 .openzeppelin
 *.tgz
+.nyc_output
+coverage
