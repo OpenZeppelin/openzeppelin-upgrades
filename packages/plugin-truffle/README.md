@@ -1,8 +1,8 @@
 # OpenZeppelin Truffle Upgrades
 
-**Truffle package for deploying and managing upgradeable contracts.** This package adds functions to your truffle migrations and tests so you can deploy and upgrade proxies for your contracts.
+**Truffle package for deploying and managing upgradeable contracts.** This package adds functions to your Truffle migrations and tests so you can deploy and upgrade proxies for your contracts.
 
-> Note: Usage from [truffle external scripts](https://www.trufflesuite.com/docs/truffle/getting-started/writing-external-scripts) is not yet supported.
+> Note: Usage from [Truffle external scripts](https://www.trufflesuite.com/docs/truffle/getting-started/writing-external-scripts) is not yet supported.
 
 ## Installation
 
@@ -10,7 +10,7 @@
 npm install --save-dev @openzeppelin/truffle-upgrades
 ```
 
-This package requires truffle [version 5.1.35](https://github.com/trufflesuite/truffle/releases/tag/v5.1.35) or greater.
+This package requires Truffle [version 5.1.35](https://github.com/trufflesuite/truffle/releases/tag/v5.1.35) or greater.
 
 ## Usage in migrations
 
@@ -50,7 +50,7 @@ The plugin will take care of comparing `BoxV2` to the previous one to ensure the
 
 ## Usage in tests
 
-You can also use the `deployProxy` and `upgradeProxy` functions from your truffle tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in the migrations, only that without a `deployer` parameter.
+You can also use the `deployProxy` and `upgradeProxy` functions from your Truffle tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in the migrations, only that without a `deployer` parameter.
 
 ```js
 const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
@@ -71,17 +71,17 @@ describe('upgrades', () => {
 
 ## API
 
-Both `deployProxy` and `upgradeProxy` functions will return instances of [truffle contracts](https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions), and require truffle contract classes (retrieved via `artifacts.require`) as arguments.
+Both `deployProxy` and `upgradeProxy` functions will return instances of [Truffle contracts](https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions), and require Truffle contract classes (retrieved via `artifacts.require`) as arguments.
 
 ### deployProxy
 
-Creates a proxy given a truffle contract class to use as implementation, and returns a contract instance with the proxy address and the implementation interface. During a migration, the proxy address will be stored in the implementation contract's artifact, so you can use Truffle's [`deployed()`](https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions#-code-mycontract-deployed-code-) function to load it.
+Creates a proxy given a Truffle contract class to use as implementation, and returns a contract instance with the proxy address and the implementation interface. During a migration, the proxy address will be stored in the implementation contract's artifact, so you can use Truffle's [`deployed()`](https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions#-code-mycontract-deployed-code-) function to load it.
 
 If `args` is set, will call an initializer function `initialize` with the supplied `args` during proxy deployment. 
 
 Options for this function are:
 - `initializer`: sets a different initializer function to call
-- `deployer`: set as the truffle migration deployer during migrations
+- `deployer`: set as the Truffle migration deployer during migrations
 - `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
 
 
@@ -98,7 +98,7 @@ async function deployProxy(
 Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface. 
 
 Options for this function are:
-- `deployer`: set as the truffle migration deployer during migrations
+- `deployer`: set as the Truffle migration deployer during migrations
 - `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
@@ -112,7 +112,7 @@ async function upgradeProxy(
 ### prepareUpgrade
 
 Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Truffle. Options are:
-- `deployer`: set as the truffle migration deployer during migrations
+- `deployer`: set as the Truffle migration deployer during migrations
 - `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts

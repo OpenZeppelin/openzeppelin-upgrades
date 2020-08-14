@@ -1,6 +1,6 @@
 # OpenZeppelin Buidler Upgrades
 
-**Buidler plugin for deploying and managing upgradeable contracts.** This package adds functions to your buidler scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
+**Buidler plugin for deploying and managing upgradeable contracts.** This package adds functions to your Buidler scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
 
 ## Installation
 
@@ -17,7 +17,7 @@ usePlugin('@openzeppelin/buidler-upgrades');
 
 ## Usage in scripts
 
-You can use this plugin in a [buidler script](https://buidler.dev/guides/scripts.html) to deploy an upgradeable instance of one of your contracts via the `deployProxy` function:
+You can use this plugin in a [Buidler script](https://buidler.dev/guides/scripts.html) to deploy an upgradeable instance of one of your contracts via the `deployProxy` function:
 
 ```js
 // scripts/create-box.js
