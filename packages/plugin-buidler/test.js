@@ -21,8 +21,8 @@ test.before(async t => {
 function testFile(name) {
   test.serial(name, async t => {
     try {
-      const { stderr } = await proc.execFile('node', [name], { cwd: 'test' });
-      t.is(stderr, '');
+      await proc.execFile('node', [name], { cwd: 'test' });
+      t.pass();
     } catch (e) {
       t.log(e.stdout);
       t.fail(e.stderr);
