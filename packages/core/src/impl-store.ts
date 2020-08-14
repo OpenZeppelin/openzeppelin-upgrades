@@ -32,7 +32,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
       }
       const updated = await resumeOrDeploy(provider, stored, deploy);
       if (updated !== stored) {
-        const clash = addressLookup(data, updated.address);
+        const clash = lookupDeployment(data, updated.address);
         if (clash !== undefined) {
           if (await isDevelopmentNetwork(provider)) {
             debug('deleting a previous deployment at address', updated.address);
@@ -102,7 +102,7 @@ function lens<T>(description: string, fn: (data: ManifestData) => ManifestField<
   return Object.assign(fn, { description });
 }
 
-function addressLookup(data: ManifestData, address: string): ManifestField<Deployment> | undefined {
+function lookupDeployment(data: ManifestData, address: string): ManifestField<Deployment> | undefined {
   if (data.admin?.address === address) {
     return adminLens(data);
   }
