@@ -7,7 +7,7 @@ function expectError(fn, expectedError) {
     })
     .catch(error => {
       const actualError = error.message.split('\n')[0];
-      if (error.message !== expectedError) {
+      if (actualError !== expectedError) {
         console.error('Test run raised a different error than expected');
         console.error('Expected error:', expectedError);
         console.error('Actual error:  ', actualError);
