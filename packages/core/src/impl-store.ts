@@ -32,19 +32,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
       }
       const updated = await resumeOrDeploy(provider, stored, deploy);
       if (updated !== stored) {
-        const clash = lookupDeployment(data, updated.address);
-        if (clash !== undefined) {
-          if (await isDevelopmentNetwork(provider)) {
-            debug('deleting a previous deployment at address', updated.address);
-            clash.set(undefined);
-          } else {
-            throw new Error(
-              `The following deployment clashes with an existing one at ${updated.address}\n\n` +
-                JSON.stringify(updated, null, 2) +
-                `\n\n`,
-            );
-          }
-        }
+        await checkForAddressClash(provider, data, updated);
         deployment.set(updated);
         await manifest.write(data);
       }
@@ -110,6 +98,26 @@ function lookupDeployment(data: ManifestData, address: string): ManifestField<De
   for (const versionWithoutMetadata in data.impls) {
     if (data.impls[versionWithoutMetadata]?.address === address) {
       return implLens(versionWithoutMetadata)(data);
+    }
+  }
+}
+
+async function checkForAddressClash(
+  provider: EthereumProvider,
+  data: ManifestData,
+  updated: Deployment,
+): Promise<void> {
+  const clash = lookupDeployment(data, updated.address);
+  if (clash !== undefined) {
+    if (await isDevelopmentNetwork(provider)) {
+      debug('deleting a previous deployment at address', updated.address);
+      clash.set(undefined);
+    } else {
+      throw new Error(
+        `The following deployment clashes with an existing one at ${updated.address}\n\n` +
+          JSON.stringify(updated, null, 2) +
+          `\n\n`,
+      );
     }
   }
 }
