@@ -164,6 +164,12 @@ In the mean time, we encourage users to either avoid using these kind of types o
 
 You can follow or contribute to [this issue in Github](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/95).
 
+### Why do I have to recompile all contracts for Truffle?
+
+Truffle artifacts (the JSON files in `build/contracts`) contain the AST (abstract syntax tree) for each of your contracts. Our plugin uses this information to validate that your contracts are [upgrade safe](#what-does-it-mean-for-a-contract-to-be-upgrade-safe). Because Solidity does not produce deterministic ASTs, we need them to have been produced in the same compiler run to be able to resolve references correctly.
+
+Truffle sometimes partially recompiles only the contracts that have changed, and in this situation we will ask you to trigger a full recompilation either using `truffle compile --all` or deleting the `build/contracts` directory.
+
 ## Community
 
 Join the [OpenZeppelin forum](https://forum.openzeppelin.com/) to ask questions or discuss about these plugins, smart contracts upgrades, or anything related to Ethereum development!
