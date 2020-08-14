@@ -152,17 +152,17 @@ Notice that this behavior is incompatible with the way upgradeable contracts wor
 
 At the moment the plugins do not support upgradeable contracts linked to external libraries. This is because it's not known at compile time what implementation is going to be linked thus making very difficult to guarantee the safety of the upgrade operation.
 
-There are plans to add this functionality in the near future with certain constraints that make the issue easier to address like assuming that the external library's source code is either present in the codebase or that's been deployed and mined so it can be fetched from the blockchain for analysis.
+There are plans to add this functionality in the near future with certain constraints that make the issue easier to address like assuming that the external library's source code is either present in the codebase or that it's been deployed and mined so it can be fetched from the blockchain for analysis.
 
-You can follow or contribute to [this issue in Github]([https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52)).
+You can follow or contribute to [this issue in Github](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52).
 
 ### Why can't I use custom types like structs and enums?
 
-At the moment the plugins do not support upgradeable contracts that implement or make use of custom types like structs or enums in their code or linked libraries. This is because of the additional complexity of checking for incompatibilities between two contract's storage layouts.
+At the moment the plugins do not support upgradeable contracts that implement or make use of custom types like structs or enums in their code or linked libraries. This is because of the additional complexity of checking for storage layout incompatibilities during an upgrade. (See ["What does it mean for an implementation to be compatible?"](#what-does-it-mean-for-an-implementation-to-be-compatible).)
 
-In the mean time, we encourage users to either avoid using these kind of types or to manually check for [storage incompatibilities]([https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable#modifying-your-contracts](https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable#modifying-your-contracts)) and make use of the  `unsafeAllowCustomTypes` flag available for the `deployProxy`, `upgradeProxy` and `prepareUpgrade` functions. If you're unsure about how to do this, you may as well [ask in the forum]([https://forum.openzeppelin.com/](https://forum.openzeppelin.com/)).
+In the mean time, we encourage users to either avoid using these kind of types or to manually check for [storage incompatibilities](https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable#modifying-your-contracts) and make use of the `unsafeAllowCustomTypes` flag available for the `deployProxy`, `upgradeProxy` and `prepareUpgrade` functions. If you're unsure about how to do this manual check, we'll be happy to help out with your situation if you [post in the forum](https://forum.openzeppelin.com).
 
-You can follow or contribute to [this issue in Github]([https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/95](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/95)).
+You can follow or contribute to [this issue in Github](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/95).
 
 ## Community
 
