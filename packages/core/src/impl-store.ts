@@ -1,16 +1,21 @@
 import debug from './utils/debug';
 import { Manifest, ManifestData, ImplDeployment } from './manifest';
-import { EthereumProvider } from './provider';
+import { EthereumProvider, isDevelopmentNetwork } from './provider';
 import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import type { Version } from './version';
-import { Lens, pathLens } from './utils/lenses';
 
-interface LensDescription {
+interface ManifestLens<T> {
   description: string;
+  (data: ManifestData): ManifestField<T>;
+}
+
+interface ManifestField<T> {
+  get(): T | undefined;
+  set(value: T | undefined): void;
 }
 
 async function fetchOrDeployGeneric<T extends Deployment>(
-  lens: Lens<ManifestData, T | undefined> & LensDescription,
+  lens: ManifestLens<T>,
   provider: EthereumProvider,
   deploy: () => Promise<T>,
 ): Promise<string> {
@@ -27,6 +32,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
       }
       const updated = await resumeOrDeploy(provider, stored, deploy);
       if (updated !== stored) {
+        await checkForAddressClash(provider, data, updated);
         deployment.set(updated);
         await manifest.write(data);
       }
@@ -59,18 +65,59 @@ export async function fetchOrDeploy(
   provider: EthereumProvider,
   deploy: () => Promise<ImplDeployment>,
 ): Promise<string> {
-  const implLens = Object.assign(pathLens('impls', version.withoutMetadata), {
-    description: `implementation ${version.withoutMetadata}`,
-  });
-  return fetchOrDeployGeneric(implLens, provider, deploy);
+  return fetchOrDeployGeneric(implLens(version.withoutMetadata), provider, deploy);
 }
 
 export async function fetchOrDeployAdmin(
   provider: EthereumProvider,
   deploy: () => Promise<Deployment>,
 ): Promise<string> {
-  const adminLens = Object.assign(pathLens('admin'), {
-    description: 'proxy admin',
-  });
   return fetchOrDeployGeneric(adminLens, provider, deploy);
+}
+
+const adminLens = lens('proxy admin', data => ({
+  get: () => data.admin,
+  set: (value?: Deployment) => (data.admin = value),
+}));
+
+const implLens = (versionWithoutMetadata: string) =>
+  lens(`implementation ${versionWithoutMetadata}`, data => ({
+    get: () => data.impls[versionWithoutMetadata],
+    set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
+  }));
+
+function lens<T>(description: string, fn: (data: ManifestData) => ManifestField<T>): ManifestLens<T> {
+  return Object.assign(fn, { description });
+}
+
+async function checkForAddressClash(
+  provider: EthereumProvider,
+  data: ManifestData,
+  updated: Deployment,
+): Promise<void> {
+  const clash = lookupDeployment(data, updated.address);
+  if (clash !== undefined) {
+    if (await isDevelopmentNetwork(provider)) {
+      debug('deleting a previous deployment at address', updated.address);
+      clash.set(undefined);
+    } else {
+      throw new Error(
+        `The following deployment clashes with an existing one at ${updated.address}\n\n` +
+          JSON.stringify(updated, null, 2) +
+          `\n\n`,
+      );
+    }
+  }
+}
+
+function lookupDeployment(data: ManifestData, address: string): ManifestField<Deployment> | undefined {
+  if (data.admin?.address === address) {
+    return adminLens(data);
+  }
+
+  for (const versionWithoutMetadata in data.impls) {
+    if (data.impls[versionWithoutMetadata]?.address === address) {
+      return implLens(versionWithoutMetadata)(data);
+    }
+  }
 }
