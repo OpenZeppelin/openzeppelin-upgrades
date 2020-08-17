@@ -46,6 +46,9 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const proxy = await ProxyFactory.deploy(impl, adminAddress, data);
 
     const inst = ImplFactory.attach(proxy.address);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore Won't be readonly because inst was created through attach.
+    inst.deployTransaction = proxy.deployTransaction;
     return inst;
   };
 
