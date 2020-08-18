@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/buidler-upgrades",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
@@ -24,7 +24,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^0.1.0"
+    "@openzeppelin/upgrades-core": "^1.0.0"
   },
   "peerDependencies": {
     "@nomiclabs/buidler": "^1.3.7",
