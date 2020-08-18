@@ -168,7 +168,7 @@ You can follow or contribute to [this issue in Github](https://github.com/OpenZe
 
 Truffle artifacts (the JSON files in `build/contracts`) contain the AST (abstract syntax tree) for each of your contracts. Our plugin uses this information to validate that your contracts are [upgrade safe](#what-does-it-mean-for-a-contract-to-be-upgrade-safe).
 
-Truffle sometimes partially recompiles only the contracts that have changed, and since Solidity does not produce deterministic ASTs, we will ask you to trigger a full recompilation either using `truffle compile --all` or deleting the `build/contracts` directory. The technical reason we need this is that we are unable to resolve references correctly if the ASTs are from different compiler runs.
+Truffle sometimes partially recompiles only the contracts that have changed. We will ask you to trigger a full recompilation either using `truffle compile --all` or deleting the `build/contracts` directory when this happens. The technical reason is that since Solidity does not produce deterministic ASTs, the plugins are unable to resolve references correctly if they are not from the same compiler run.
 
 ## Community
 
