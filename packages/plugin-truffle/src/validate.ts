@@ -58,7 +58,11 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
     for (const importDir of findAll('ImportDirective', ast)) {
       const importedUnitId = sourceUnitId[importDir.absolutePath];
       if (importedUnitId !== importDir.sourceUnit) {
-        throw new Error(`Artifacts are from different compiler runs: run a full recompilation`);
+        throw new Error(
+          `Artifacts are from different compiler runs\n` +
+            `    Run a full recompilation using \`truffle compile --all\`\n` +
+            `    https://zpl.in/upgrades/truffle-recompile-all`,
+        );
       }
     }
   }
