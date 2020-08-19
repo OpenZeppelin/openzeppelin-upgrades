@@ -39,3 +39,4 @@ testFile('transfer-admin-ownership-happy-path');
 testFile('deploy-validation');
 testFile('upgrade-validation');
 testFile('upgrade-storage');
+testFile('admin-validation');
