@@ -30,7 +30,7 @@ See the documentation for each plugin, or take a look at the sample code snippet
 | [<img src="assets/buidler.svg" height="20px" width="30px" alt="">Buidler](./packages/plugin-buidler/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
 |-|-|
 
-Buidler users will be able to write [scripts](https://buidler.dev/guides/scripts.html) that use the plugin to deploy or upgrade a contract.
+Buidler users will be able to write [scripts](https://buidler.dev/guides/scripts.html) that use the plugin to deploy or upgrade a contract, and manage proxy admin rights.
 
 ```js
 const { ethers, upgrades } = require("@nomiclabs/buidler");
@@ -49,7 +49,7 @@ async function main() {
 main();
 ```
 
-Truffle users will be able to write [migrations](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations) that use the plugin to deploy or upgrade a contract.
+Truffle users will be able to write [migrations](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations) that use the plugin to deploy or upgrade a contract, or manage proxy admin rights.
 
 ```js
 const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
