@@ -7,35 +7,49 @@
 - Manage proxy admin rights.
 - Easily use in tests.
 
-## Quickstart
+## Installation
 
-Install the plugin for your favorite toolchain:
+### Buidler
+
 ```
-npm install --save-dev @openzeppelin/buidler-upgrades
+npm install --save-dev @openzeppelin/buidler-upgrades @nomiclabs/buidler-ethers ethers
 ```
+
+This installs our Buidler plugin along with the necessary peer dependencies.
+
+### Truffle
+
 ```
 npm install --save-dev @openzeppelin/truffle-upgrades
 ```
 
-And set up a [Buidler script](https://buidler.dev/guides/scripts.html) to deploy and upgrade, after adding `usePlugin('@openzeppelin/buidler-upgrades')` to your `buidler.config.js`:
+## Usage
+
+See the documentation for each plugin, or take a look at the sample code snippets below.
+
+| [<img src="assets/buidler.svg" height="20px" width="30px" alt="">Buidler](./packages/plugin-buidler/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
+|-|-|
+
+Buidler users will be able to write [scripts](https://buidler.dev/guides/scripts.html) that use the plugin to deploy or upgrade a contract, and manage proxy admin rights.
 
 ```js
 const { ethers, upgrades } = require("@nomiclabs/buidler");
 
 async function main() {
+  // Deploying
   const Box = await ethers.getContractFactory("Box");
   const instance = await upgrades.deployProxy(Box, [42]);
   await instance.deployed();
 
+  // Upgrading
   const BoxV2 = await ethers.getContractFactory("BoxV2");
   const upgraded = await upgrades.upgradeProxy(instance.address, BoxV2);
-  await upgraded.deployed();
 }
 
 main();
 ```
 
-Or a [Truffle migration](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations):
+Truffle users will be able to write [migrations](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations) that use the plugin to deploy or upgrade a contract, or manage proxy admin rights.
 
 ```js
 const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
@@ -49,12 +63,20 @@ module.exports = async function (deployer) {
 }
 ```
 
+Whether you're using Buidler or Truffle, you can use the plugin in your tests to ensure everything works as expected.
+
+```js
+it('works before and after upgrading', async function () {
+  const instance = await upgrades.deployProxy(Box, [42]);
+  assert.strictEqual(await instance.retrieve(), 42);
+  
+  await upgrades.upgradeProxy(instance.address, BoxV2);
+  assert.strictEqual(await instance.retrieve(), 42);
+});
+```
+
 ## Usage
 
-Refer to the documentation of each plugin:
-
-| [<img src="assets/buidler.svg" height="20px" width="30px" alt="">Buidler](./packages/plugin-buidler/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
-|-|-|
 
 ## How do the plugins work?
 
