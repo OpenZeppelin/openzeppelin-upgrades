@@ -3,6 +3,8 @@
   "private": true,
   "license": "MIT",
   "scripts": {
+    "docs": "oz-docs",
+    "docs:watch": "oz-docs watch",
     "prepare": "lerna run prepare:contracts && tsc -b",
     "lint": "yarn lint:path .",
     "lint:path": "eslint --ignore-path .gitignore",
@@ -10,6 +12,7 @@
     "coverage": "nyc yarn test"
   },
   "devDependencies": {
+    "@openzeppelin/docs-utils": "^0.1.0",
     "@typescript-eslint/eslint-plugin": "^3.6.1",
     "@typescript-eslint/parser": "^3.6.1",
     "eslint": "^7.4.0",
