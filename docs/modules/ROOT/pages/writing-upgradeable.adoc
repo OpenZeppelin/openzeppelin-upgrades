@@ -216,7 +216,7 @@ contract MyContract is Initializable {
 }
 ----
 
-The easiest way around this issue is to simply accept an instance of that contract as a parameter, and inject it after creating it:
+If you would like the `ERC20` instance to be upgradeable, the easiest way to achieve that is to simply accept an instance of that contract as a parameter, and inject it after creating it:
 
 [source,solidity]
 ----
