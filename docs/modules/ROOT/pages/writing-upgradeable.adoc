@@ -98,8 +98,8 @@ contract MyContract is BaseContract {
 }
 ----
 
-[[use-upgradeable-packages]]
-=== Using Upgradeable Packages
+[[use-upgradeable-libraries]]
+=== Using Upgradeable Smart Contract Libraries
 
 Keep in mind that this restriction affects not only your contracts, but also the contracts you import from a library. Consider for example https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.0.0/contracts/token/ERC20/ERC20.sol[`ERC20`] from OpenZeppelin Contracts: the contract initializes the token's name, symbol and decimals in its constructor.
 
@@ -155,7 +155,7 @@ contract ERC20UpgradeSafe is Initializable, ContextUpgradeSafe, IERC20 {
 }
 ----
 
-Whether using OpenZeppelin Contracts or another Ethereum Package, always make sure that the package is set up to handle upgradeable contracts.
+Whether using OpenZeppelin Contracts or another smart contract library, always make sure that the package is set up to handle upgradeable contracts.
 
 [[avoid-initial-values-in-field-declarations]]
 === Avoiding Initial Values in Field Declarations
