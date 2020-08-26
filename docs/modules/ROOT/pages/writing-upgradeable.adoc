@@ -182,7 +182,7 @@ contract MyContract is Initializable {
 }
 ----
 
-Note that it still is fine to set constants here, because the compiler https://solidity.readthedocs.io/en/latest/contracts.html#constant-state-variables[does not reserve a storage slot for these variables], and every occurrence is replaced by the respective constant expression. So the following still works with OpenZeppelin Upgrades:
+Note that it is still fine to define _constant_ state variables in this way, because the compiler https://solidity.readthedocs.io/en/latest/contracts.html#constant-state-variables[does not reserve a storage slot for these variables], and every occurrence is replaced by the respective constant expression. So the following still works with OpenZeppelin Upgrades:
 
 [source,solidity]
 ----
