@@ -1,0 +1,102 @@
+[[frequently-asked-questions]]
+= Frequently Asked Questions
+
+[[is-it-safe-to-upgrade-a-contract-compiled-with-a-version-of-solidity-to-another-compiled-with-a-different-version]]
+== Can I change Solidity compiler versions when upgrading?
+
+Yes. The Solidity team guarantess that the compiler will https://twitter.com/ethchris/status/1073692785176444928[preserve the storage layout across versions].
+
+[[why-am-i-getting-the-error-cannot-call-fallback-function-from-the-proxy-admin]]
+== Why am I getting the error "Cannot call fallback function from the proxy admin"?
+
+This is due to the xref:proxies.adoc#transparent-proxies-and-function-clashes[Transparent Proxy Pattern]. You shouldn't get this error when using the OpenZeppelin Upgrades Plugins, since it uses the `ProxyAdmin` contract for managing your proxies.
+
+However, if you are using OpenZeppelin Contracts proxies programmatically you could potentially run into such error. The solution is to always interact with your proxies from an account that is not the admin of the proxy, unless you want to specifically call the functions of the proxy itself.
+
+[[what-does-it-mean-for-a-contract-to-be-upgrade-safe]]
+== What does it mean for a contract to be upgrade safe?
+
+When deploying a proxy for a contract, there are some limitations to the contract code. In particular, the contract cannot have a constructor, and should not use the `selfdestruct` or `delegatecall` operations for security reasons.
+
+As a replacement for the constructor, it is common to set up an `initialize` function to take care of the contract's initialization. You can use the xref:writing-upgradeable.adoc#initializers[`Initializable`] base contract to have access to an `initializer` modifier that ensures the function is only called once.
+
+[source,solidity]
+----
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+// Alternatively, if you are using @openzeppelin/contracts-ethereum-package:
+// import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
+
+contract MyContract is Initializable {
+  uint256 value;
+  function initialize(uint256 initialValue) public initializer {
+    value = initialValue;
+  }
+}
+----
+
+Both plugins will validate that the contract you are trying to deploy complies with these rules. You can read more about how to write upgrade safe contracts [here](https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable).
+
+[[what-does-it-mean-for-an-implementation-to-be-compatible]]
+== What does it mean for an implementation to be compatible?
+
+When upgrading a proxy from one implementation to another, the _storage layout_ of both implementations must be compatible. This means that, even though you can completely change the code of the implementation, you cannot modify the existing contract state variables. The only operation allowed is to append new state variables after the ones already declared.
+
+Both plugins will validate that the new implementation contract is compatible with the previous one. However, the plugins currently do not support validating custom types (enums or structs). To force a deployment where custom types are involved, set the `unsafeAllowCustomTypes` flag to true in the `deployProxy` or `upgradeProxy` call.
+
+You can read more about how to make storage-compatible changes to an implementation contract [here](https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable#modifying-your-contracts).
+
+[[what-is-a-proxy-admin]]
+== What is a proxy admin?
+
+A [`ProxyAdmin`](packages/core/contracts/proxy/ProxyAdmin.sol) is a contract that acts as the owner of all your proxies. Only one per network gets deployed. When you start your project, the `ProxyAdmin` is owned by the deployer address, but you can transfer ownership of it by calling [`transferOwnership`](https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-transferOwnership-address-).
+
+You can read more about this contract [here](https://docs.openzeppelin.com/cli/2.8/contracts-architecture#proxyadmin.sol).
+
+[[what-is-an-implementation-contract]]
+== What is an implementation contract?
+
+Upgradeable deployments require at least two contracts: a proxy and an implementation. The proxy contract is the instance you and your users will interact with, and the implementation is the contract that holds the code. If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
+
+When you upgrade a proxy to a new version, a new implementation contract is deployed if needed, and the proxy is set to use the new implementation contract. You can read more about the proxy upgrade pattern [here](https://docs.openzeppelin.com/upgrades/2.8/proxies).
+
+[[what-is-a-proxy]]
+== What is a proxy?
+
+A proxy is a contract that delegates all of its calls to a second contract, named an implementation contract. All state and funds are held in the proxy, but the code actually executed is that of the implementation. A proxy can be _upgraded_ by its admin to use a different implementation contract.
+
+You can read more about the proxy upgrade pattern [here](https://docs.openzeppelin.com/upgrades/2.8/proxies).
+
+[[why-cant-i-use-immutable-variables]]
+== Why can't I use `immutable` variables?
+
+Solidity 0.6.5 [introduced the `immutable` keyword]([https://github.com/ethereum/solidity/releases/tag/v0.6.5](https://github.com/ethereum/solidity/releases/tag/v0.6.5)) to declare a variable that can be assigned only once during construction and can be read only after construction. It does so by calculating its value during contract creation and storing its value directly into the bytecode. 
+
+Notice that this behavior is incompatible with the way upgradeable contracts work for two reasons:
+
+1. Upgradeable contracts have no constructors but initializers, therefore they can't handle immutable variables.
+2. Since the immutable variable value is stored in the bytecode its value would be shared among all proxies pointing to a given contract instead of each proxy's storage.
+
+[[why-cant-i-use-external-libraries]]
+== Why can't I use external libraries?
+
+At the moment the plugins do not support upgradeable contracts linked to external libraries. This is because it's not known at compile time what implementation is going to be linked thus making very difficult to guarantee the safety of the upgrade operation.
+
+There are plans to add this functionality in the near future with certain constraints that make the issue easier to address like assuming that the external library's source code is either present in the codebase or that it's been deployed and mined so it can be fetched from the blockchain for analysis.
+
+You can follow or contribute to [this issue in Github](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52).
+
+[[why-cant-i-use-custom-types]]
+== Why can't I use custom types like structs and enums?
+
+At the moment the plugins do not support upgradeable contracts that implement or make use of custom types like structs or enums in their code or linked libraries. This is because of the additional complexity of checking for storage layout incompatibilities during an upgrade. (See ["What does it mean for an implementation to be compatible?"](#what-does-it-mean-for-an-implementation-to-be-compatible).)
+
+In the mean time, we encourage users to either avoid using these kind of types or to manually check for [storage incompatibilities](https://docs.openzeppelin.com/upgrades/2.8/writing-upgradeable#modifying-your-contracts) and make use of the `unsafeAllowCustomTypes` flag available for the `deployProxy`, `upgradeProxy` and `prepareUpgrade` functions. If you're unsure about how to do this manual check, we'll be happy to help out with your situation if you [post in the forum](https://forum.openzeppelin.com).
+
+You can follow or contribute to [this issue in Github](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/95).
+
+[[why-do-i-have-to-recompile-all-contracts-for-truffle]]
+== Why do I have to recompile all contracts for Truffle?
+
+Truffle artifacts (the JSON files in `build/contracts`) contain the AST (abstract syntax tree) for each of your contracts. Our plugin uses this information to validate that your contracts are [upgrade safe](#what-does-it-mean-for-a-contract-to-be-upgrade-safe).
+
+Truffle sometimes partially recompiles only the contracts that have changed. We will ask you to trigger a full recompilation either using `truffle compile --all` or deleting the `build/contracts` directory when this happens. The technical reason is that since Solidity does not produce deterministic ASTs, the plugins are unable to resolve references correctly if they are not from the same compiler run.
