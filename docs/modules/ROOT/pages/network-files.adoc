@@ -52,7 +52,7 @@ The naming of the file will be `<network_name>.json`, but note that `<network_na
 
 Public network files like `mainnet.json` or `ropsten.json` should be tracked in version control. These contain valuable information about your project's status in the corresponding network; the addresses of the contract implementations that have been deployed, the addresses of the proxies that have been deployed, etc. Such files should be identical for all the contributors of a project.
 
-However, local network files like `unknown-<network_id>.json` only represent a project's deployment in a temporary local network such as `ganache-cli` that are only relevant to a single contributor of the project and should not be tracked in version control.
+However, local network files like `unknown-<chain_id>.json` only represent a project's deployment in a temporary local network such as `ganache-cli` that are only relevant to a single contributor of the project and should not be tracked in version control.
 
 An example `.gitignore` file could contain the following entries:
 
