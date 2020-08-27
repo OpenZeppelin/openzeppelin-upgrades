@@ -1,0 +1,80 @@
+{
+  "contracts": {
+    "OldBox": {
+      "address": "0xf4e77E5Da47AC3125140c470c71cBca77B5c638c",
+      "constructorCode": "608060405234801561001057600080fd5b50610173806100206000396000f3fe",
+      "bodyBytecodeHash": "becb910fba12a389cebe02de14a89b21c0032e856335092db60dc76e43268f16",
+      "localBytecodeHash": "7498a123776a9d2d19454cdf3b264796507c5ad18aa992e8018ae961262d0b26",
+      "deployedBytecodeHash": "7498a123776a9d2d19454cdf3b264796507c5ad18aa992e8018ae961262d0b26",
+      "types": {
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        }
+      },
+      "storage": [
+        {
+          "contract": "OldBox",
+          "path": "contracts/BoxV2.sol",
+          "label": "value",
+          "astId": 34,
+          "type": "t_uint256",
+          "src": "101:21:1"
+        },
+        {
+          "contract": "OldBox",
+          "path": "contracts/BoxV2.sol",
+          "label": "flag",
+          "astId": 36,
+          "type": "t_bool",
+          "src": "128:17:1"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [],
+        "storageDiff": [
+          {
+            "action": "append",
+            "updated": {
+              "index": 1,
+              "contract": "OldBox",
+              "path": "contracts/BoxV2.sol",
+              "label": "flag",
+              "astId": 36,
+              "type": "t_bool",
+              "src": "128:17:1"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "solidityLibs": {},
+  "proxies": {
+    "sdk-plugins-migration-test/OldBox": [
+      {
+        "address": "0x0078371BDeDE8aAc7DeBfFf451B74c5EDB385Af7",
+        "version": "1.0.0",
+        "implementation": "0xf4e77E5Da47AC3125140c470c71cBca77B5c638c",
+        "admin": "0x8858eeB3DfffA017D4BCE9801D340D36Cf895CCf",
+        "kind": "Upgradeable"
+      }
+    ]
+  },
+  "manifestVersion": "2.2",
+  "version": "1.0.0",
+  "proxyAdmin": {
+    "address": "0x8858eeB3DfffA017D4BCE9801D340D36Cf895CCf"
+  }
+}

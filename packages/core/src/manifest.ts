@@ -117,10 +117,14 @@ function validateManifestVersion(data: ManifestData) {
 
 const tNullable = <C extends t.Mixed>(codec: C) => t.union([codec, t.undefined]);
 
-const DeploymentCodec = t.strict({
-  address: t.string,
-  txHash: t.string,
-});
+const DeploymentCodec = t.intersection([
+  t.strict({
+    address: t.string,
+  }),
+  t.partial({
+    txHash: t.string,
+  }),
+]);
 
 const ManifestDataCodec = t.intersection([
   t.strict({

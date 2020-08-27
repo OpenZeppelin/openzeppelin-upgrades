@@ -7,6 +7,9 @@
   "files": [
     "/dist"
   ],
+  "bin": {
+    "migrate-manifest": "dist/scripts/migrate-manifest.js"
+  },
   "scripts": {
     "prepublish": "rimraf dist *.tsbuildinfo",
     "prepare": "tsc -b",

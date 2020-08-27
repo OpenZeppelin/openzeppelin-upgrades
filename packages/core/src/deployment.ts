@@ -7,7 +7,7 @@ const sleep = promisify(setTimeout);
 
 export interface Deployment {
   address: string;
-  txHash: string;
+  txHash?: string;
 }
 
 export async function resumeOrDeploy<T extends Deployment>(
