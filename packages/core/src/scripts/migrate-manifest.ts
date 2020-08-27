@@ -85,7 +85,7 @@ function updateManifest(oldManifest: LegacyManifest): ManifestData {
   }
 
   return {
-    manifestVersion: '3.0',
+    manifestVersion: '3.1',
     impls: transformImplementations(oldManifest.contracts),
     admin: {
       address: proxyAdmin,
