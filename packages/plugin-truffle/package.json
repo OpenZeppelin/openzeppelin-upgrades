@@ -8,7 +8,7 @@
     "/dist"
   ],
   "bin": {
-    "migrate-manifest": "dist/scripts/migrate-legacy-project.js"
+    "migrate-legacy-project": "dist/scripts/migrate-legacy-project.js"
   },
   "scripts": {
     "prepublish": "rimraf dist *.tsbuildinfo",
