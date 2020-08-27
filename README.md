@@ -75,9 +75,6 @@ it('works before and after upgrading', async function () {
 });
 ```
 
-## Usage
-
-
 ## How do the plugins work?
 
 Both plugins provide two main functions, `deployProxy` and `upgradeProxy`, which take care of managing upgradeable deployments of your contracts. In the case of `deployProxy`, this means:
