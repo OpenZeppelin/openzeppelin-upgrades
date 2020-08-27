@@ -1,6 +1,6 @@
 = Network Files
 
-OpenZeppelin Upgrades keep track of all the implementation contracts you have deployed in an `.openzeppelin` folder in the project root, as well as the proxy admin. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
+OpenZeppelin Upgrades keep track of all the contract versions you have deployed in an `.openzeppelin` folder in the project root, as well as the proxy admin. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
 
 > Note: the format of the files within the `.openzeppelin` folder is not compatible with those of the xref:cli::index.adoc[OpenZeppelin CLI]. If you want to use these plugins for an existing OpenZeppelin CLI project, we will be sharing soon a guide on how to migrate.
 
@@ -52,7 +52,7 @@ There is a limited set of public chains; Chains not on the list such as Ethereum
 [[configuration-files-in-version-control]]
 == Configuration Files in Version Control
 
-Public network files like `mainnet.json` or `ropsten.json` should be tracked in version control. These contain valuable information about your project's status in the corresponding network, like the addresses of the contract implementations that have been deployed. Such files should be identical for all the contributors of a project.
+Public network files like `mainnet.json` or `ropsten.json` should be tracked in version control. These contain valuable information about your project's status in the corresponding network, like the addresses of the contract versions that have been deployed. Such files should be identical for all the contributors of a project.
 
 However, local network files like `unknown-<chain_id>.json` only represent a project's deployment in a temporary local network such as `ganache-cli` that are only relevant to a single contributor of the project and should not be tracked in version control.
 
