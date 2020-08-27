@@ -6,31 +6,45 @@ import type { StorageItem, StorageLayout, TypeItem } from '../storage';
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
 const MIGRATION_FILE_LOCATION = 'openzeppelin-cli-migration.json';
 
-export async function migrateManifestFiles(): Promise<void> {
-  const migrationData: Record<string, unknown> = {};
+export async function migrateLegacyProject(): Promise<void> {
+  const manifestList = await findManifests();
+  const { migrations, migrationData } = await migrateManifestFiles(manifestList);
 
-  for (const manifestFile of await findManifests()) {
+  for (const manifestFile in migrations) {
+    const newManifest = migrations[manifestFile];
+    await writeJSONFile(getNewManifestLocation(manifestFile), newManifest);
+  }
+
+  await writeJSONFile(MIGRATION_FILE_LOCATION, migrationData);
+}
+
+async function migrateManifestFiles(manifestList: string[]): Promise<MigrationOutput> {
+  const migrationData: Record<string, unknown> = {};
+  const migrations: Record<string, ManifestData> = {};
+
+  for (const manifestFile of manifestList) {
     const oldManifest = JSON.parse(await fs.readFile(manifestFile, 'utf8'));
-    const { manifestVersion, proxies } = oldManifest;
+    const { manifestVersion } = oldManifest;
 
     if (manifestVersion === undefined) {
       continue;
     }
 
-    const [major] = manifestVersion?.split('.');
+    const [major] = manifestVersion.split('.');
 
     if (major !== '2') {
       continue;
     }
 
     const network = getNetworkName(manifestFile);
-    migrationData[network] = transformProxies(proxies);
-
-    const newManifest = updateManifest(oldManifest);
-    await writeFile(getNewManifestLocation(manifestFile), newManifest);
+    migrationData[network] = transformProxies(oldManifest.proxies);
+    migrations[manifestFile] = updateManifest(oldManifest);
   }
 
-  await writeFile(MIGRATION_FILE_LOCATION, migrationData);
+  return {
+    migrations,
+    migrationData,
+  };
 }
 
 async function findManifests(): Promise<string[]> {
@@ -63,7 +77,7 @@ function getNewManifestLocation(oldName: string): string {
   return isDevnet(oldName) ? oldName.replace('dev', 'unknown') : oldName;
 }
 
-async function writeFile(location: string, data: unknown): Promise<void> {
+async function writeJSONFile(location: string, data: unknown): Promise<void> {
   await fs.writeFile(location, JSON.stringify(data, null, 2));
 }
 
@@ -82,6 +96,10 @@ function updateManifest(oldManifest: LegacyManifest): ManifestData {
 
   if (proxyAdmin === undefined) {
     throw new Error('Legacy manifest does not have admin address');
+  }
+
+  if (Object.keys(oldManifest.solidityLibs).length === 0) {
+    throw new Error('Legacy manifest uses external Solidity libraries');
   }
 
   return {
@@ -138,6 +156,11 @@ function transformTypes(oldTypes: LegacyTypes): Record<string, TypeItem> {
     };
   }
   return newTypes;
+}
+
+interface MigrationOutput {
+  migrations: Record<string, ManifestData>;
+  migrationData: unknown;
 }
 
 interface AddressWrapper {
