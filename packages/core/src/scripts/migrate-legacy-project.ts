@@ -70,7 +70,7 @@ function getNetworkName(fileName: string): string {
 }
 
 function isDevelopmentNetwork(network: string) {
-  return network.includes('dev');
+  return /^dev-\d+$/.test(network);
 }
 
 function isPublicNetwork(network: string) {
