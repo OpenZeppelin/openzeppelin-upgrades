@@ -36,3 +36,7 @@ testFile('happy-path-with-structs');
 testFile('happy-path-with-enums');
 testFile('change-admin-happy-path');
 testFile('transfer-admin-ownership-happy-path');
+testFile('deploy-validation');
+testFile('upgrade-validation');
+testFile('upgrade-storage');
+testFile('admin-validation');
