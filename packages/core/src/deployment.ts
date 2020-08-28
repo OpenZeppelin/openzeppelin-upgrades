@@ -17,7 +17,7 @@ export async function resumeOrDeploy<T extends Deployment>(
 ): Promise<T> {
   // If there is a deployment stored, we look its transaction up. If the
   // transaction is found, the deployment is reused.
-  if (cached !== undefined) {
+  if (cached?.txHash !== undefined) {
     debug('found previous deployment', cached.txHash);
     const tx = await getTransactionByHash(provider, cached.txHash);
     if (tx !== null) {
@@ -39,25 +39,30 @@ export async function resumeOrDeploy<T extends Deployment>(
 
 export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
   const startTime = Date.now();
+  const { txHash, address } = deployment;
+
+  if (txHash === undefined) {
+    throw new Error('Invalid deployment');
+  }
 
   // Poll for 60 seconds with a 5 second poll interval.
   // TODO: Make these parameters configurable.
   while (Date.now() - startTime < 60e3) {
-    debug('verifying deployment tx mined', deployment.txHash);
-    const tx = await getTransactionByHash(provider, deployment.txHash);
+    debug('verifying deployment tx mined', txHash);
+    const tx = await getTransactionByHash(provider, txHash);
     if (tx === null) {
       throw new InvalidDeployment(deployment);
     }
     if (tx.blockHash !== null) {
-      debug('verifying deployment tx succeeded', deployment.txHash);
-      const code = await getCode(provider, deployment.address);
+      debug('verifying deployment tx succeeded', txHash);
+      const code = await getCode(provider, address);
       if (code === '0x') {
         throw new InvalidDeployment(deployment);
       } else {
         return;
       }
     }
-    debug('waiting for deployment tx mined', deployment.txHash);
+    debug('waiting for deployment tx mined', txHash);
     await sleep(5e3);
   }
 
