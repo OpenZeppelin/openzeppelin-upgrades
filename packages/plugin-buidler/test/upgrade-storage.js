@@ -6,9 +6,9 @@ async function main() {
   console.log('Attempting to deploy Greeter contract...');
   const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!']);
 
-  console.log('Attempting upgrade to InvalidGreeter...');
-  const InvalidGreeter = await ethers.getContractFactory('InvalidGreeter');
-  await upgrades.upgradeProxy(greeter.address, InvalidGreeter);
+  console.log('Attempting upgrade to GreeterStorageConflict...');
+  const GreeterStorageConflict = await ethers.getContractFactory('GreeterStorageConflict');
+  await upgrades.upgradeProxy(greeter.address, GreeterStorageConflict);
 }
 
 expectError(main, 'New storage layout is incompatible due to the following changes');

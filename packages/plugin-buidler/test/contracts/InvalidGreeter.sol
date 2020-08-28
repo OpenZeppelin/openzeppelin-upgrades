@@ -2,7 +2,7 @@ pragma solidity ^0.5.1;
 
 import "@nomiclabs/buidler/console.sol";
 
-contract InvalidGreeter {
+contract GreeterStorageConflict {
 
     uint greets;
     string greeting;
