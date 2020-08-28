@@ -75,6 +75,40 @@ it('works before and after upgrading', async function () {
 });
 ```
 
+## How do the plugins work?
+
+Both plugins provide two main functions, `deployProxy` and `upgradeProxy`, which take care of managing upgradeable deployments of your contracts. In the case of `deployProxy`, this means:
+
+1. Validate that the implementation is upgrade safe
+
+2. Deploy a proxy admin for your project
+
+3. Deploy the implementation contract
+
+4. Create and initialize the proxy contract
+
+And when you call `upgradeProxy`:
+
+1. Validate that the new implementation is upgrade safe and is compatible with the previous one
+
+2. Check if there is an implementation contract deployed with the same bytecode, and deploy one if not
+
+3. Upgrade the proxy to use the new implementation contract
+
+The plugins will keep track of all the implementation contracts you have deployed in an `.openzeppelin` folder in the project root, as well as the proxy admin. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
+
+> Note: the format of the files within the `.openzeppelin` folder is not compatible with those of the [OpenZeppelin CLI](https://docs.openzeppelin.com/cli/2.8/). If you want to use these plugins for an existing OpenZeppelin CLI project, we will be sharing soon a guide on how to migrate.
+
+## Managing ownership
+
+All proxies define an _admin_ address which has the rights to upgrade them. By default, the admin is a proxy admin contract deployed behind the scenes. You can change the admin of a proxy by calling the `admin.changeAdminForProxy` function in the plugin. Keep in mind that the _admin_ of a proxy can only upgrade it, but not interact with the implementation contract. Read [here](https://docs.openzeppelin.com/upgrades/2.8/proxies#transparent-proxies-and-function-clashes) for more info on this restriction.
+
+The proxy admin contract also defines an _owner_ address which has the rights to operate it. By default, this address is the externally owned account used during deployment. You can change the proxy admin owner by calling the `admin.transferProxyAdminOwnership` function in the plugin. Note that changing the proxy admin owner effectively transfers the power to upgrade any proxy in your whole project to the new owner, so use with care.
+
+Once you have transferred the rights to upgrade a proxy to another address, you can still use your local setup to validate and deploy the implementation contract. The plugins include a `prepareUpgrade` function that will validate that the new implementation is upgrade-safe and compatible with the previous one, and deploy it using your local Ethereum account. You can then execute the upgrade itself from the admin address.
+
+Refer to each plugin documentation for more details on the `admin` functions.
+
 ## Community
 
 Join the [OpenZeppelin forum](https://forum.openzeppelin.com/) to ask questions or discuss about these plugins, smart contracts upgrades, or anything related to Ethereum development!
