@@ -1,0 +1,5 @@
+name: upgrades-plugins
+title: Upgrades
+version: 1.x
+nav:
+  - modules/ROOT/nav.adoc

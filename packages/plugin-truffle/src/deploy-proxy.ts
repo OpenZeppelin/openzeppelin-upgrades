@@ -45,7 +45,10 @@ export async function deployProxy(
   const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data);
 
   Contract.address = proxy.address;
-  return new Contract(proxy.address);
+
+  const contract = new Contract(proxy.address);
+  contract.transactionHash = proxy.transactionHash;
+  return contract;
 }
 
 function getInitializerData(Contract: ContractClass, args: unknown[], initializer?: string): string {

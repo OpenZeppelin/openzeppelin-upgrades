@@ -6,5 +6,8 @@
     ":maintainLockFilesWeekly",
     "group:allNonMajor",
     "schedule:weekly"
-  ]
+  ],
+  "lockFileMaintenance": {
+    "commitMessageAction": "Update lockfile"
+  }
 }
