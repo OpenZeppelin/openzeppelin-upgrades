@@ -66,7 +66,7 @@ function getNetworkName(fileName: string): string {
 }
 
 function isDevnet(network: string) {
-  return network.includes('dev');
+  return /^dev-\d+$/.test(network);
 }
 
 function isTestnet(network: string) {
