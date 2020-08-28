@@ -4,50 +4,54 @@ import type { ManifestData, ImplDeployment } from '../manifest';
 import type { StorageItem, StorageLayout, TypeItem } from '../storage';
 
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
-const MIGRATION_FILE_LOCATION = 'openzeppelin-cli-migration.json';
+const MIGRATION_FILE_LOCATION = 'openzeppelin-cli-export.json';
 
 export async function migrateLegacyProject(): Promise<void> {
-  const manifestList = await findManifests();
-  const { migrations, migrationData } = await migrateManifestFiles(manifestList);
+  const oldManifests = await getManifests();
+  const { newManifests, exportData } = await migrateManifestFiles(oldManifests);
 
-  for (const manifestFile in migrations) {
-    const newManifest = migrations[manifestFile];
+  for (const manifestFile in newManifests) {
+    const newManifest = newManifests[manifestFile];
     await writeJSONFile(getNewManifestLocation(manifestFile), newManifest);
   }
 
-  await writeJSONFile(MIGRATION_FILE_LOCATION, migrationData);
+  await writeJSONFile(MIGRATION_FILE_LOCATION, exportData);
 }
 
-async function migrateManifestFiles(manifestList: string[]): Promise<MigrationOutput> {
-  const migrationData: Record<string, unknown> = {};
-  const migrations: Record<string, ManifestData> = {};
+async function migrateManifestFiles(oldManifests: string[]): Promise<MigrationOutput> {
+  const exportData: Record<string, unknown> = {};
+  const newManifests: Record<string, ManifestData> = {};
 
-  for (const manifestFile of manifestList) {
+  for (const manifestFile of oldManifests) {
     const oldManifest = JSON.parse(await fs.readFile(manifestFile, 'utf8'));
-    const { manifestVersion } = oldManifest;
 
-    if (manifestVersion === undefined) {
+    if (oldManifest.manifestVersion === undefined) {
+      throw new Error('Migration failed: manifest version too old');
+    }
+
+    const [major, minor] = oldManifest.manifestVersion.split('.');
+
+    if (major === '3') {
       continue;
     }
 
-    const [major] = manifestVersion.split('.');
-
-    if (major !== '2') {
-      continue;
+    // 2.2 latest version
+    if (major !== '2' || minor !== '2') {
+      throw new Error(`Migration failed: expected manifest version 2.2, got ${major}.${minor} instead`);
     }
 
     const network = getNetworkName(manifestFile);
-    migrationData[network] = transformProxies(oldManifest.proxies);
-    migrations[manifestFile] = updateManifest(oldManifest);
+    exportData[network] = transformProxies(oldManifest.proxies);
+    newManifests[manifestFile] = updateManifest(oldManifest);
   }
 
   return {
-    migrations,
-    migrationData,
+    newManifests,
+    exportData,
   };
 }
 
-async function findManifests(): Promise<string[]> {
+async function getManifests(): Promise<string[]> {
   const files = await fs.readdir(OPEN_ZEPPELIN_FOLDER);
   return files.filter(isManifestFile).map(preppendPath);
 }
@@ -58,23 +62,23 @@ function preppendPath(location: string): string {
 
 function isManifestFile(fileName: string): boolean {
   const network = getNetworkName(fileName);
-  return isTestnet(network) || isDevnet(network);
+  return isPublicNetwork(network) || isDevelopmentNetwork(network);
 }
 
 function getNetworkName(fileName: string): string {
   return path.basename(fileName, '.json');
 }
 
-function isDevnet(network: string) {
+function isDevelopmentNetwork(network: string) {
   return network.includes('dev');
 }
 
-function isTestnet(network: string) {
+function isPublicNetwork(network: string) {
   return ['mainnet', 'rinkeby', 'ropsten', 'kovan', 'goerli'].includes(network);
 }
 
 function getNewManifestLocation(oldName: string): string {
-  return isDevnet(oldName) ? oldName.replace('dev', 'unknown') : oldName;
+  return isDevelopmentNetwork(oldName) ? oldName.replace('dev', 'unknown') : oldName;
 }
 
 async function writeJSONFile(location: string, data: unknown): Promise<void> {
@@ -98,8 +102,8 @@ function updateManifest(oldManifest: LegacyManifest): ManifestData {
     throw new Error('Legacy manifest does not have admin address');
   }
 
-  if (Object.keys(oldManifest.solidityLibs).length === 0) {
-    throw new Error('Legacy manifest uses external Solidity libraries');
+  if (Object.keys(oldManifest.solidityLibs).length > 0) {
+    throw new Error('Legacy manifest links to external libraries which is not yet supported');
   }
 
   return {
@@ -125,8 +129,12 @@ function transformImplementations(contracts: LegacyContracts): Record<string, Im
 }
 
 function transformImplementationItem(contract: LegacyContract): ImplDeployment {
+  if (contract.address === undefined) {
+    throw new Error('Could not find implementation address');
+  }
+
   return {
-    address: contract.address || 'NO_ADDRESS_FOUND',
+    address: contract.address,
     layout: transformLayout(contract),
   };
 }
@@ -159,8 +167,8 @@ function transformTypes(oldTypes: LegacyTypes): Record<string, TypeItem> {
 }
 
 interface MigrationOutput {
-  migrations: Record<string, ManifestData>;
-  migrationData: unknown;
+  newManifests: Record<string, ManifestData>;
+  exportData: unknown;
 }
 
 interface AddressWrapper {

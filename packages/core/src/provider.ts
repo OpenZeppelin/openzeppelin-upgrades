@@ -34,7 +34,7 @@ export async function getCode(provider: EthereumProvider, address: string, block
 
 export async function getTransactionByHash(
   provider: EthereumProvider,
-  txHash?: string,
+  txHash: string,
 ): Promise<EthereumTransaction | null> {
   if (txHash === undefined) {
     // TODO: better error message
