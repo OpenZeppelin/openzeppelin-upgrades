@@ -61,7 +61,6 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
       return ImplFactory.interface.encodeFunctionData(fragment, args);
     } catch (e: unknown) {
       if (e instanceof Error) {
-        console.log(e.message);
         if (allowNoInitialization && e.message.includes('no matching function')) {
           return '0x';
         }
