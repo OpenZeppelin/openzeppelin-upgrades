@@ -70,5 +70,5 @@ describe('upgrades', () => {
 ```
 
 ## Learn more
-* Refer to the [API documentation](https://docs.openzeppelin.com/upgrades-plugins/truffle-upgrades).
+* Refer to the [API documentation](https://docs.openzeppelin.com/upgrades-plugins/api-truffle-upgrades).
 * Also see the [main documentation](https://docs.openzeppelin.com/upgrades-plugins) for more info.
