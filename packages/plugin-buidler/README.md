@@ -77,5 +77,5 @@ describe("Box", function() {
 ```
 
 ## Learn more
-* Refer to the [API documentation](https://docs.openzeppelin.com/upgrades-plugins/buidler-upgrades).
+* Refer to the [API documentation](https://docs.openzeppelin.com/upgrades-plugins/api-buidler-upgrades).
 * Also see the [main documentation](https://docs.openzeppelin.com/upgrades-plugins) for more info.
