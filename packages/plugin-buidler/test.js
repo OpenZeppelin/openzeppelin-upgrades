@@ -40,3 +40,4 @@ testFile('deploy-validation');
 testFile('upgrade-validation');
 testFile('upgrade-storage');
 testFile('admin-validation');
+testFile('initializers');
