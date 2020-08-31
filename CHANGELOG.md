@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Include `src` directory in npm packages.
+- Include `src` directory in npm packages. ([#150](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/150))
 
 ## 1.0.1 (2020-08-20)
 
