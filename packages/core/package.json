@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/upgrades-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
