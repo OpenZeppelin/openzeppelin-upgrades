@@ -1,5 +1,4 @@
-= OpenZeppelin Upgrades plugins
-
+= Upgrades Plugins
 
 **Integrate upgrades into your existing workflow.** Plugins for https://buidler.dev[Buidler] and https://www.trufflesuite.com/truffle[Truffle] to deploy and manage upgradeable contracts on Ethereum.
 

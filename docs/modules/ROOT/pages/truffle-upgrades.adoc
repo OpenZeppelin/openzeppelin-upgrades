@@ -1,6 +1,6 @@
-= OpenZeppelin Truffle Upgrades
+= Using with Truffle
 
-**Truffle package for deploying and managing upgradeable contracts.** This package adds functions to your Truffle migrations and tests so you can deploy and upgrade proxies for your contracts.
+This package adds functions to your Truffle migrations and tests so you can deploy and upgrade proxies for your contracts.
 
 > Note: Usage from https://www.trufflesuite.com/docs/truffle/getting-started/writing-external-scripts[Truffle external scripts] is not yet supported.
 

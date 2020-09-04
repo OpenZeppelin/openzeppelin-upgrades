@@ -2,7 +2,7 @@
 * xref:truffle-upgrades.adoc[Using with Truffle]
 * xref:buidler-upgrades.adoc[Using with Buidler]
 * xref:writing-upgradeable.adoc[Writing Upgradeable Contracts]
-* xref:proxies.adoc[Proxies]
+* xref:proxies.adoc[Proxy Upgrade Pattern]
 * xref:network-files.adoc[Network Files]
 * xref:faq.adoc[Frequently Asked Questions]
 
