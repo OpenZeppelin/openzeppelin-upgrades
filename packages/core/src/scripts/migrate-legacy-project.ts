@@ -188,12 +188,12 @@ function transformType(typeKind: string, oldType: LegacyType): TypeItem {
 
 function transformTypeName(typeName: string): string {
   switch (getTypeKind(typeName)) {
-    case 'Mapping':
-      return transformMappingTypeName(typeName);
     case 'Struct':
       return transformStructTypeName(typeName);
     case 'Enum':
       return transformEnumTypeName(typeName);
+    case 'Mapping':
+      return transformMappingTypeName(typeName);
     case 'DynArray':
       return transformDynArrayTypeName(typeName);
     case 'StaticArray':
@@ -205,11 +205,6 @@ function transformTypeName(typeName: string): string {
   }
 }
 
-function transformMappingTypeName(typeName: string): string {
-  const valueType = transformTypeName(getValueType(typeName));
-  return `t_mapping(${valueType})`;
-}
-
 function transformStructTypeName(typeName: string): string {
   const valueType = stripContractName(getValueType(typeName));
   return `t_struct(${valueType})_storage`;
@@ -218,6 +213,11 @@ function transformStructTypeName(typeName: string): string {
 function transformEnumTypeName(typeName: string): string {
   const valueType = stripContractName(getValueType(typeName));
   return `t_enum(${valueType})`;
+}
+
+function transformMappingTypeName(typeName: string): string {
+  const valueType = transformTypeName(getValueType(typeName));
+  return `t_mapping(${valueType})`;
 }
 
 function transformDynArrayTypeName(typeName: string): string {
@@ -248,12 +248,12 @@ function optimisticMatch(s: string, rg: RegExp): string[] {
 }
 
 function getTypeKind(typeName: string): TypeKind {
-  if (/^t_mapping<.*>/.test(typeName)) {
-    return 'Mapping';
-  } else if (/^t_struct<.*>/.test(typeName)) {
+  if (/^t_struct<.*>/.test(typeName)) {
     return 'Struct';
   } else if (/^t_enum<.*>/.test(typeName)) {
     return 'Enum';
+  } else if (/^t_mapping<.*>/.test(typeName)) {
+    return 'Mapping';
   } else if (/^t_array:dyn<.*>/.test(typeName)) {
     return 'DynArray';
   } else if (/^t_array:\d*<.*>/.test(typeName)) {
