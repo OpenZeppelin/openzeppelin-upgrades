@@ -1,7 +1,7 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 import type { ManifestData, ImplDeployment } from '../manifest';
-import type { StorageItem, StorageLayout, TypeItem } from '../storage';
+import type { StorageItem, StorageLayout, TypeItem, TypeMembers, StructMember } from '../storage';
 
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
 const MIGRATION_FILE_LOCATION = 'openzeppelin-cli-export.json';
@@ -69,11 +69,11 @@ function getNetworkName(fileName: string): string {
   return path.basename(fileName, '.json');
 }
 
-function isDevelopmentNetwork(network: string) {
+function isDevelopmentNetwork(network: string): boolean {
   return /^dev-\d+$/.test(network);
 }
 
-function isPublicNetwork(network: string) {
+function isPublicNetwork(network: string): boolean {
   return ['mainnet', 'rinkeby', 'ropsten', 'kovan', 'goerli'].includes(network);
 }
 
@@ -150,7 +150,7 @@ function transformStorageItem(storageItem: LegacyStorageItem): StorageItem {
   return {
     contract: storageItem.contract,
     label: storageItem.label,
-    type: storageItem.type,
+    type: transformTypeName(storageItem.type),
     // TODO reconstruct path and line if sourcecode is available
     src: storageItem.path,
   };
@@ -158,13 +158,103 @@ function transformStorageItem(storageItem: LegacyStorageItem): StorageItem {
 
 function transformTypes(oldTypes: LegacyTypes): Record<string, TypeItem> {
   const newTypes: Record<string, TypeItem> = {};
-  for (const _type in oldTypes) {
-    newTypes[_type] = {
-      label: oldTypes[_type].label,
-    };
+  for (const typeName in oldTypes) {
+    newTypes[transformTypeName(typeName)] = transformType(getTypeKind(typeName), oldTypes[typeName]);
   }
   return newTypes;
 }
+
+function transformType(typeKind: string, oldType: LegacyType): TypeItem {
+  switch (typeKind) {
+    case 'Struct':
+      return {
+        label: stripContractName(oldType.label),
+        members: (oldType.members as StructMember[]).map(member => ({
+          label: member.label,
+          type: transformTypeName(member.type),
+        })),
+      };
+    case 'Enum':
+      return {
+        label: stripContractName(oldType.label),
+        members: oldType.members,
+      };
+    default:
+      return {
+        label: oldType.label,
+      };
+  }
+}
+
+function transformTypeName(typeName: string): string {
+  switch (getTypeKind(typeName)) {
+    case 'Struct':
+      return transformStructTypeName(typeName);
+    case 'Enum':
+      return transformEnumTypeName(typeName);
+    case 'DynArray':
+      return transformDynArrayTypeName(typeName);
+    case 'StaticArray':
+      return transformStaticArrayTypeName(typeName);
+    case 'Elementary':
+      return typeName;
+    default:
+      throw new Error(`Unknown type: ${typeName}`);
+  }
+}
+
+function transformStructTypeName(typeName: string): string {
+  const valueType = stripContractName(getValueType(typeName));
+  return `t_struct(${valueType})_storage`;
+}
+
+function transformEnumTypeName(typeName: string): string {
+  const valueType = stripContractName(getValueType(typeName));
+  return `t_enum(${valueType})`;
+}
+
+function transformDynArrayTypeName(typeName: string): string {
+  const valueType = getValueType(typeName);
+  return `t_array(${valueType})dyn_storage`;
+}
+
+function transformStaticArrayTypeName(typeName: string): string {
+  const size = optimisticMatch(typeName, /:(\d*)/)[1];
+  const valueType = getValueType(typeName);
+  return `t_array(${valueType})${size}_storage`;
+}
+
+function getValueType(typeName: string): string {
+  return optimisticMatch(typeName, /<(.*)>/)[1];
+}
+
+function stripContractName(s: string): string {
+  return optimisticMatch(s, /(.*)\.(.*)/)[2];
+}
+
+function optimisticMatch(s: string, rg: RegExp): string[] {
+  const matches = s.match(rg);
+  if (matches === null) {
+    throw new Error('Unreachable');
+  }
+  return matches;
+}
+
+function getTypeKind(typeName: string): TypeKind {
+  if (/^t_struct<.*>/.test(typeName)) {
+    return 'Struct';
+  } else if (/^t_enum<.*>/.test(typeName)) {
+    return 'Enum';
+  } else if (/^t_array:dyn<.*>/.test(typeName)) {
+    return 'DynArray';
+  } else if (/^t_array:\d*<.*>/.test(typeName)) {
+    return 'StaticArray';
+  } else {
+    return 'Elementary';
+  }
+}
+
+type TypeKind = 'Elementary' | 'Struct' | 'Enum' | 'DynArray' | 'StaticArray';
 
 interface MigrationOutput {
   newManifests: Record<string, ManifestData>;
@@ -239,6 +329,7 @@ interface LegacyType {
   id: string;
   kind: string;
   label: string;
+  members?: TypeMembers;
 }
 
 interface LegacyStorageItem extends StorageItem {
