@@ -170,7 +170,7 @@ function transformType(typeKind: string, oldType: LegacyType): TypeItem {
       return {
         label: stripContractName(oldType.label),
         members: (oldType.members as StructMember[]).map(member => ({
-          label: member.label,
+          label: stripContractName(member.label),
           type: transformTypeName(member.type),
         })),
       };
@@ -181,13 +181,15 @@ function transformType(typeKind: string, oldType: LegacyType): TypeItem {
       };
     default:
       return {
-        label: oldType.label,
+        label: stripContractName(oldType.label),
       };
   }
 }
 
 function transformTypeName(typeName: string): string {
   switch (getTypeKind(typeName)) {
+    case 'Mapping':
+      return transformMappingTypeName(typeName);
     case 'Struct':
       return transformStructTypeName(typeName);
     case 'Enum':
@@ -203,6 +205,11 @@ function transformTypeName(typeName: string): string {
   }
 }
 
+function transformMappingTypeName(typeName: string): string {
+  const valueType = transformTypeName(getValueType(typeName));
+  return `t_mapping(${valueType})`;
+}
+
 function transformStructTypeName(typeName: string): string {
   const valueType = stripContractName(getValueType(typeName));
   return `t_struct(${valueType})_storage`;
@@ -214,13 +221,13 @@ function transformEnumTypeName(typeName: string): string {
 }
 
 function transformDynArrayTypeName(typeName: string): string {
-  const valueType = getValueType(typeName);
+  const valueType = transformTypeName(getValueType(typeName));
   return `t_array(${valueType})dyn_storage`;
 }
 
 function transformStaticArrayTypeName(typeName: string): string {
   const size = optimisticMatch(typeName, /:(\d*)/)[1];
-  const valueType = getValueType(typeName);
+  const valueType = transformTypeName(getValueType(typeName));
   return `t_array(${valueType})${size}_storage`;
 }
 
@@ -235,13 +242,15 @@ function stripContractName(s: string): string {
 function optimisticMatch(s: string, rg: RegExp): string[] {
   const matches = s.match(rg);
   if (matches === null) {
-    throw new Error('Unreachable');
+    return [s];
   }
   return matches;
 }
 
 function getTypeKind(typeName: string): TypeKind {
-  if (/^t_struct<.*>/.test(typeName)) {
+  if (/^t_mapping<.*>/.test(typeName)) {
+    return 'Mapping';
+  } else if (/^t_struct<.*>/.test(typeName)) {
     return 'Struct';
   } else if (/^t_enum<.*>/.test(typeName)) {
     return 'Enum';
@@ -254,7 +263,7 @@ function getTypeKind(typeName: string): TypeKind {
   }
 }
 
-type TypeKind = 'Elementary' | 'Struct' | 'Enum' | 'DynArray' | 'StaticArray';
+type TypeKind = 'Elementary' | 'Mapping' | 'Struct' | 'Enum' | 'DynArray' | 'StaticArray';
 
 interface MigrationOutput {
   newManifests: Record<string, ManifestData>;
