@@ -84,7 +84,7 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of [ethers
 
 Creates a proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment. Options are:
 - `initializer`: sets a different initializer function to call
-- `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations](../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function deployProxy(
@@ -97,7 +97,7 @@ async function deployProxy(
 ### upgradeProxy
 
 Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface. Options are:
-- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations](../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function upgradeProxy(
@@ -110,7 +110,7 @@ async function upgradeProxy(
 ### prepareUpgrade
 
 Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Buidler. Options are:
-- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations](../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function prepareUpgrade(
