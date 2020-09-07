@@ -9,4 +9,4 @@ export * from './src-decoder';
 export * from './solc-api';
 export * from './deployment';
 
-export * from './scripts/migrate-legacy-project';
+export * from './scripts/migrate-oz-sdk-project';
