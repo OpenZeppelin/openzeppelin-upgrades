@@ -82,7 +82,7 @@ If `args` is set, will call an initializer function `initialize` with the suppli
 Options for this function are:
 - `initializer`: sets a different initializer function to call
 - `deployer`: set as the Truffle migration deployer during migrations
-- `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since [storage compatibility validations](../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible) do not handle custom types, so make sure the change you are introducing is safe)
 
 
 ```ts
@@ -99,7 +99,7 @@ Upgrades a proxy at a specified address to a new implementation contract, and re
 
 Options for this function are:
 - `deployer`: set as the Truffle migration deployer during migrations
-- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations](../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function upgradeProxy(
@@ -113,7 +113,7 @@ async function upgradeProxy(
 
 Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Truffle. Options are:
 - `deployer`: set as the Truffle migration deployer during migrations
-- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations]((../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible)) do not handle custom types, so make sure the change you are introducing is safe)
+- `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since [storage compatibility validations](../../README.md#what-does-it-mean-for-an-implementation-to-be-compatible) do not handle custom types, so make sure the change you are introducing is safe)
 
 ```ts
 async function prepareUpgrade(
