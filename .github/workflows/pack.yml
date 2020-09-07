@@ -2,7 +2,7 @@ name: Pack
 
 on:
   push:
-    branches: [master]
+    branches: [master, add-manifest-migration]
 
 jobs:
   pack:
