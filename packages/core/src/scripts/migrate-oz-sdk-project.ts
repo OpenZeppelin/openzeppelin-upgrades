@@ -41,7 +41,7 @@ async function migrateManifestFiles(oldManifests: string[]): Promise<MigrationOu
     }
 
     const network = getNetworkName(manifestFile);
-    exportData[network] = transformProxies(oldManifest.proxies);
+    exportData[network] = oldManifest.proxies;
     newManifests[manifestFile] = updateManifest(oldManifest);
   }
 
@@ -53,11 +53,7 @@ async function migrateManifestFiles(oldManifests: string[]): Promise<MigrationOu
 
 async function getManifests(): Promise<string[]> {
   const files = await fs.readdir(OPEN_ZEPPELIN_FOLDER);
-  return files.filter(isManifestFile).map(preppendPath);
-}
-
-function preppendPath(location: string): string {
-  return path.join(OPEN_ZEPPELIN_FOLDER, location);
+  return files.filter(isManifestFile).map(location => path.join(OPEN_ZEPPELIN_FOLDER, location));
 }
 
 function isManifestFile(fileName: string): boolean {
@@ -83,16 +79,6 @@ function getNewManifestLocation(oldName: string): string {
 
 async function writeJSONFile(location: string, data: unknown): Promise<void> {
   await fs.writeFile(location, JSON.stringify(data, null, 2));
-}
-
-function transformProxies(proxies: LegacyProxies) {
-  return Object.keys(proxies).map(proxyName => ({
-    [path.basename(proxyName)]: proxies[proxyName].map(proxy => ({
-      address: proxy.address,
-      implementation: proxy.implementation,
-      admin: proxy.admin,
-    })),
-  }));
 }
 
 function updateManifest(oldManifest: LegacyManifest): ManifestData {
@@ -226,25 +212,20 @@ function transformDynArrayTypeName(typeName: string): string {
 }
 
 function transformStaticArrayTypeName(typeName: string): string {
-  const size = optimisticMatch(typeName, /:(\d*)/)[1];
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const size = typeName.match(/:(\d+)/)![1];
   const valueType = transformTypeName(getValueType(typeName));
   return `t_array(${valueType})${size}_storage`;
 }
 
 function getValueType(typeName: string): string {
-  return optimisticMatch(typeName, /<(.*)>/)[1];
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return typeName.match(/<(.*)>/)![1];
 }
 
 function stripContractName(s: string): string {
-  return optimisticMatch(s, /(.*)\.(.*)/)[2];
-}
-
-function optimisticMatch(s: string, rg: RegExp): string[] {
-  const matches = s.match(rg);
-  if (matches === null) {
-    return [s];
-  }
-  return matches;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return s.match(/(.*)\.(.*)/)![2];
 }
 
 function getTypeKind(typeName: string): TypeKind {
