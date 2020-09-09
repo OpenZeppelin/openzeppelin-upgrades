@@ -41,8 +41,8 @@ async function migrateManifestFiles(oldManifests: string[]): Promise<MigrationOu
     }
 
     const network = getNetworkName(manifestFile);
-    exportData[network] = oldManifest.proxies;
     newManifests[manifestFile] = updateManifest(oldManifest);
+    exportData[network] = getExportData(oldManifest);
   }
 
   return {
@@ -81,6 +81,15 @@ async function writeJSONFile(location: string, data: unknown): Promise<void> {
   await fs.writeFile(location, JSON.stringify(data, null, 2));
 }
 
+function getExportData(oldManifest: LegacyManifest): ExportData {
+  // TODO fix typing
+  const exportData: any = Object.assign(oldManifest);
+  delete exportData.proxyAdmin;
+  delete exportData.contracts;
+  delete exportData.solidityLibs;
+  return exportData;
+}
+
 function updateManifest(oldManifest: LegacyManifest): ManifestData {
   const proxyAdmin = oldManifest.proxyAdmin.address;
 
@@ -89,7 +98,7 @@ function updateManifest(oldManifest: LegacyManifest): ManifestData {
   }
 
   if (Object.keys(oldManifest.solidityLibs).length > 0) {
-    throw new Error('Legacy manifest links to external libraries which is not yet supported');
+    throw new Error('Legacy manifest links to external libraries which are not yet supported');
   }
 
   return {
@@ -212,32 +221,37 @@ function transformDynArrayTypeName(typeName: string): string {
 }
 
 function transformStaticArrayTypeName(typeName: string): string {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const size = typeName.match(/:(\d+)/)![1];
+  const size = optimisticMatch(typeName, /:(\d+)/)[1];
   const valueType = transformTypeName(getValueType(typeName));
   return `t_array(${valueType})${size}_storage`;
 }
 
 function getValueType(typeName: string): string {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return typeName.match(/<(.*)>/)![1];
+  return optimisticMatch(typeName, /<(.+)>/)[1];
 }
 
 function stripContractName(s: string): string {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return s.match(/(.*)\.(.*)/)![2];
+  return optimisticMatch(s, /(.+)\.(.+)/)[2];
+}
+
+function optimisticMatch(s: string, rg: RegExp): string[] {
+  const matches = s.match(rg);
+  if (matches === null) {
+    return [s];
+  }
+  return matches;
 }
 
 function getTypeKind(typeName: string): TypeKind {
-  if (/^t_struct<.*>/.test(typeName)) {
+  if (/^t_struct<.+>/.test(typeName)) {
     return 'Struct';
-  } else if (/^t_enum<.*>/.test(typeName)) {
+  } else if (/^t_enum<.+>/.test(typeName)) {
     return 'Enum';
-  } else if (/^t_mapping<.*>/.test(typeName)) {
+  } else if (/^t_mapping<.+>/.test(typeName)) {
     return 'Mapping';
-  } else if (/^t_array:dyn<.*>/.test(typeName)) {
+  } else if (/^t_array:dyn<.+>/.test(typeName)) {
     return 'DynArray';
-  } else if (/^t_array:\d*<.*>/.test(typeName)) {
+  } else if (/^t_array:\d+<.+>/.test(typeName)) {
     return 'StaticArray';
   } else {
     return 'Elementary';
@@ -255,13 +269,10 @@ interface AddressWrapper {
   address?: string;
 }
 
-interface LegacyManifest {
-  contracts: { [name: string]: LegacyContract };
-  solidityLibs: { [name: string]: LegacySolidityLib };
+interface ExportData {
   proxies: { [contractName: string]: LegacyProxy[] };
   manifestVersion?: string;
   zosversion?: string;
-  proxyAdmin: AddressWrapper;
   proxyFactory: AddressWrapper;
   app: AddressWrapper;
   package: AddressWrapper;
@@ -269,6 +280,12 @@ interface LegacyManifest {
   version: string;
   frozen: boolean;
   dependencies: { [dependencyName: string]: DependencyInterface };
+}
+
+interface LegacyManifest extends ExportData {
+  contracts: { [name: string]: LegacyContract };
+  solidityLibs: { [name: string]: LegacySolidityLib };
+  proxyAdmin: AddressWrapper;
 }
 
 interface DependencyInterface {
