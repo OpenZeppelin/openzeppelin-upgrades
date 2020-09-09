@@ -8,7 +8,7 @@ const MIGRATION_FILE_LOCATION = 'openzeppelin-cli-export.json';
 
 export async function migrateLegacyProject(): Promise<void> {
   const oldManifests = await getManifests();
-  const { newManifests, exportData } = await migrateManifestFiles(oldManifests);
+  const { newManifests, manifestMigrationData } = await migrateManifestFiles(oldManifests);
 
   for (const manifestFile in newManifests) {
     const newManifest = newManifests[manifestFile];
@@ -16,13 +16,16 @@ export async function migrateLegacyProject(): Promise<void> {
   }
 
   const { compiler } = await getProjectFile();
-  Object.assign(exportData, { compiler });
+  const exportData = {
+    manifestFiles: manifestMigrationData,
+    compiler,
+  };
 
   await writeJSONFile(MIGRATION_FILE_LOCATION, exportData);
 }
 
 async function migrateManifestFiles(oldManifests: string[]): Promise<MigrationOutput> {
-  const exportData: Record<string, unknown> = {};
+  const manifestMigrationData: Record<string, unknown> = {};
   const newManifests: Record<string, ManifestData> = {};
 
   for (const manifestFile of oldManifests) {
@@ -45,12 +48,12 @@ async function migrateManifestFiles(oldManifests: string[]): Promise<MigrationOu
 
     const network = getNetworkName(manifestFile);
     newManifests[manifestFile] = updateManifest(oldManifest);
-    exportData[network] = getExportData(oldManifest);
+    manifestMigrationData[network] = getExportData(oldManifest);
   }
 
   return {
     newManifests,
-    exportData,
+    manifestMigrationData,
   };
 }
 
@@ -90,11 +93,11 @@ async function writeJSONFile(location: string, data: unknown): Promise<void> {
 
 function getExportData(oldManifest: LegacyManifest): ExportData {
   // TODO fix typing
-  const exportData: any = Object.assign(oldManifest);
-  delete exportData.proxyAdmin;
-  delete exportData.contracts;
-  delete exportData.solidityLibs;
-  return exportData;
+  const manifestMigrationData: any = Object.assign(oldManifest);
+  delete manifestMigrationData.proxyAdmin;
+  delete manifestMigrationData.contracts;
+  delete manifestMigrationData.solidityLibs;
+  return manifestMigrationData;
 }
 
 function updateManifest(oldManifest: LegacyManifest): ManifestData {
@@ -269,7 +272,7 @@ type TypeKind = 'Elementary' | 'Mapping' | 'Struct' | 'Enum' | 'DynArray' | 'Sta
 
 interface MigrationOutput {
   newManifests: Record<string, ManifestData>;
-  exportData: unknown;
+  manifestMigrationData: unknown;
 }
 
 interface AddressWrapper {
