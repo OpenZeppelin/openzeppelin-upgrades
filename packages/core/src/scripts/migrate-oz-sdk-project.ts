@@ -15,6 +15,9 @@ export async function migrateLegacyProject(): Promise<void> {
     await writeJSONFile(getNewManifestLocation(manifestFile), newManifest);
   }
 
+  const { compiler } = await getProjectFile();
+  Object.assign(exportData, { compiler });
+
   await writeJSONFile(MIGRATION_FILE_LOCATION, exportData);
 }
 
@@ -54,6 +57,10 @@ async function migrateManifestFiles(oldManifests: string[]): Promise<MigrationOu
 async function getManifests(): Promise<string[]> {
   const files = await fs.readdir(OPEN_ZEPPELIN_FOLDER);
   return files.filter(isManifestFile).map(location => path.join(OPEN_ZEPPELIN_FOLDER, location));
+}
+
+async function getProjectFile(): Promise<LegacyProjectFile> {
+  return JSON.parse(await fs.readFile(path.join(OPEN_ZEPPELIN_FOLDER, 'project.json'), 'utf8'));
 }
 
 function isManifestFile(fileName: string): boolean {
@@ -344,6 +351,36 @@ interface LegacyStorageItem extends StorageItem {
   astId: number;
 }
 
+interface ConfigFileCompilerOptions {
+  manager: string;
+  solcVersion: string;
+  contractsDir: string;
+  artifactsDir: string;
+  compilerSettings: {
+    evmVersion: string;
+    optimizer: {
+      enabled: boolean;
+      runs?: string;
+    };
+  };
+  typechain: {
+    enabled: boolean;
+    outDir?: string;
+    target?: string;
+  };
+}
+
+interface LegacyProjectFile {
+  name: string;
+  version: string;
+  manifestVersion?: string;
+  zosversion?: string;
+  dependencies: { [name: string]: string };
+  contracts: string[];
+  publish: boolean;
+  compiler: Partial<ConfigFileCompilerOptions>;
+  telemetryOptIn?: boolean;
+}
+
 type LegacyContracts = Record<string, LegacyContract>;
-type LegacyProxies = Record<string, LegacyProxy[]>;
 type LegacyTypes = Record<string, LegacyType>;
