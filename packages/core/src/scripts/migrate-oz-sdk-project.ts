@@ -17,7 +17,7 @@ export async function migrateLegacyProject(): Promise<void> {
 
   const { compiler } = await getProjectFile();
   const exportData = {
-    manifestFiles: manifestMigrationData,
+    networkFiles: manifestMigrationData,
     compiler,
   };
 
