@@ -1,0 +1,83 @@
+= OpenZeppelin Buidler Upgrades API
+
+Both `deployProxy` and `upgradeProxy` functions will return instances of https://docs.ethers.io/v5/api/contract/contract[ethers.js contracts], and require https://docs.ethers.io/v5/api/contract/contract-factory[ethers.js contract factories] as arguments. All functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
+
+[[deploy-proxy]]
+== deployProxy
+
+Creates a proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment. 
+
+Options are:
+
+* `initializer`: sets a different initializer function to call
+* `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
+
+[source,ts]
+----
+async function deployProxy(
+  Contract: ethers.ContractFactory,
+  args: unknown[] = [],
+  opts: { initializer: string, unsafeAllowCustomTypes: boolean } = {},
+): Promise<ethers.Contract>
+----
+
+[[upgrade-proxy]]
+== upgradeProxy
+
+Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface. 
+
+Options are:
+
+* `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
+
+[source,ts]
+----
+async function upgradeProxy(
+  proxyAddress: string,
+  Contract: ethers.ContractFactory,
+  opts: { unsafeAllowCustomTypes: boolean } = {},
+): Promise<ethers.Contract>
+----
+
+[[prepare-upgrade]]
+== prepareUpgrade
+
+Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Buidler. 
+
+Options are:
+
+* `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
+
+[source,ts]
+----
+async function prepareUpgrade(
+  proxyAddress: string,
+  Contract: ethers.ContractFactory,
+  opts: { unsafeAllowCustomTypes: boolean } = {},
+): Promise<string>
+----
+
+[[admin-change-admin-for-proxy]]
+== admin.changeAdminForProxy
+
+Changes the admin for a specific proxy. Receives the address of the proxy to change, and the new admin address.
+
+[source,ts]
+----
+async function changeAdminForProxy(
+  proxyAddress: string,
+  newAdmin: string,
+): Promise<void>
+----
+
+[[admin-transfer-proxy-admin-ownership]]
+== admin.transferProxyAdminOwnership
+
+Changes the owner of the proxy admin contract, which is the default admin for upgrade rights over all proxies. Receives the new admin address.
+
+[source,ts]
+----
+async function transferProxyAdminOwnership(
+  newAdmin: string,
+): Promise<void>
+----

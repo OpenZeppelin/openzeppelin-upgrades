@@ -1,1 +1,130 @@
-= Upgrades
+= Upgrades Plugins
+
+**Integrate upgrades into your existing workflow.** Plugins for https://buidler.dev[Buidler] and https://www.trufflesuite.com/truffle[Truffle] to deploy and manage upgradeable contracts on Ethereum.
+
+* Deploy upgradeable contracts.
+* Upgrade deployed contracts.
+* Manage proxy admin rights.
+* Easily use in tests.
+
+== Overview
+
+[[install]]
+=== Installation
+
+[[install-buidler]]
+==== Buidler install
+
+[source,console]
+----
+$ npm install --save-dev @openzeppelin/buidler-upgrades @nomiclabs/buidler-ethers ethers
+----
+
+This installs our Buidler plugin along with the necessary peer dependencies.
+
+[[install-truffle]]
+==== Truffle install
+
+[source,console]
+----
+$ npm install --save-dev @openzeppelin/truffle-upgrades
+----
+
+[[usage]]
+=== Usage
+
+See the documentation for using xref:truffle-upgrades.adoc[Truffle Upgrades] and xref:buidler-upgrades.adoc[Buidler Upgrades], or take a look at the sample code snippets below.
+
+[[buidler-usage]]
+==== Buidler usage
+
+Buidler users will be able to write https://buidler.dev/guides/scripts.html[scripts] that use the plugin to deploy or upgrade a contract, and manage proxy admin rights.
+
+[source,js]
+----
+const { ethers, upgrades } = require("@nomiclabs/buidler");
+
+async function main() {
+  // Deploying
+  const Box = await ethers.getContractFactory("Box");
+  const instance = await upgrades.deployProxy(Box, [42]);
+  await instance.deployed();
+
+  // Upgrading
+  const BoxV2 = await ethers.getContractFactory("BoxV2");
+  const upgraded = await upgrades.upgradeProxy(instance.address, BoxV2);
+}
+
+main();
+----
+
+[[truffle-usage]]
+==== Truffle usage
+
+Truffle users will be able to write https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations[migrations] that use the plugin to deploy or upgrade a contract, or manage proxy admin rights.
+
+[source,js]
+----
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
+
+const Box = artifacts.require('Box');
+const BoxV2 = artifacts.require('BoxV2');
+
+module.exports = async function (deployer) {
+  const instance = await deployProxy(Box, [42], { deployer });
+  const upgraded = await upgradeProxy(instance.address, BoxV2, { deployer });
+}
+----
+
+
+[[test-usage]]
+==== Test usage
+
+Whether you're using Buidler or Truffle, you can use the plugin in your tests to ensure everything works as expected.
+
+[source,js]
+----
+it('works before and after upgrading', async function () {
+  const instance = await upgrades.deployProxy(Box, [42]);
+  assert.strictEqual(await instance.retrieve(), 42);
+  
+  await upgrades.upgradeProxy(instance.address, BoxV2);
+  assert.strictEqual(await instance.retrieve(), 42);
+});
+----
+
+[[how-plugins-work]]
+== How the plugins work
+
+Both plugins provide two main functions, `deployProxy` and `upgradeProxy`, which take care of managing upgradeable deployments of your contracts. In the case of `deployProxy`, this means:
+
+1. Validate that the implementation is xref:faq.adoc#what-does-it-mean-for-a-contract-to-be-upgrade-safe[upgrade safe].
+
+2. Deploy a xref:faq.adoc#what-is-a-proxy-admin[proxy admin] for your project.
+
+3. Deploy the xref:faq.adoc#what-is-an-implementation-contract[implementation contract].
+
+4. Create and initialize the proxy contract.
+
+And when you call `upgradeProxy`:
+
+1. Validate that the new implementation is xref:faq.adoc#what-does-it-mean-for-a-contract-to-be-upgrade-safe[upgrade safe] and is xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[compatible] with the previous one.
+
+2. Check if there is an xref:faq.adoc#what-is-an-implementation-contract[implementation contract] deployed with the same bytecode, and deploy one if not.
+
+3. Upgrade the proxy to use the new implementation contract.
+
+The plugins will keep track of all the implementation contracts you have deployed in an `.openzeppelin` folder in the project root, as well as the proxy admin. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
+
+> Note: the format of the files within the `.openzeppelin` folder is not compatible with those of the xref:cli::index.adoc[OpenZeppelin CLI]. If you want to use these plugins for an existing OpenZeppelin CLI project, we will be sharing soon a guide on how to migrate.
+
+[[managing-ownership]]
+== Managing ownership
+
+All proxies define an _admin_ address which has the rights to upgrade them. By default, the admin is a xref:faq.adoc#what-is-a-proxy-admin[proxy admin contract] deployed behind the scenes. You can change the admin of a proxy by calling the `admin.changeAdminForProxy` function in the plugin. Keep in mind that the _admin_ of a proxy can only upgrade it, but not interact with the implementation contract. Read xref:proxies.adoc#transparent-proxies-and-function-clashes[Transparent Proxies and Function Clashes] for more info on this restriction.
+
+The proxy admin contract also defines an _owner_ address which has the rights to operate it. By default, this address is the externally owned account used during deployment. You can change the proxy admin owner by calling the `admin.transferProxyAdminOwnership` function in the plugin. Note that changing the proxy admin owner effectively transfers the power to upgrade any proxy in your whole project to the new owner, so use with care.
+
+Once you have transferred the rights to upgrade a proxy to another address, you can still use your local setup to validate and deploy the implementation contract. The plugins include a `prepareUpgrade` function that will validate that the new implementation is upgrade-safe and compatible with the previous one, and deploy it using your local Ethereum account. You can then execute the upgrade itself from the admin address.
+
+Refer to each plugin documentation for more details on the `admin` functions.
