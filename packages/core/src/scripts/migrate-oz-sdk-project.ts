@@ -13,9 +13,6 @@ export async function migrateLegacyProject(): Promise<void> {
   const manifestsMigrationData = await migrateManifestFiles();
 
   const { compiler } = await getProjectFile();
-  console.log("\nThese were your project's compiler options:\n");
-  console.log(compiler, '\n');
-
   const exportData = {
     networkFiles: manifestsMigrationData,
     compiler,
@@ -23,6 +20,9 @@ export async function migrateLegacyProject(): Promise<void> {
 
   await writeJSONFile(EXPORT_FILE, exportData);
   await deleteLegacyFiles();
+
+  console.log("\nThese were your project's compiler options:")
+  console.log(compiler);
 }
 
 async function migrateManifestFiles() {
@@ -222,7 +222,7 @@ function transformType(typeKind: string, oldType: LegacyType): TypeItem {
       };
     default:
       return {
-        label: stripContractName(oldType.label),
+        label: oldType.label,
       };
   }
 }
