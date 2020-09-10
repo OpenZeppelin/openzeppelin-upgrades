@@ -110,12 +110,20 @@ function validateOrUpdateManifestVersion(data: ManifestData): ManifestData {
   } else if (compareVersions(data.manifestVersion, '3.0', '<')) {
     throw new Error('Found a manifest file for OpenZeppelin CLI. An automated migration is not yet available.');
   } else if (compareVersions(data.manifestVersion, manifestVersion, '<')) {
-    data.manifestVersion = manifestVersion;
-    return data;
-  } else if (compareVersions(data.manifestVersion, manifestVersion, '=')) {
+    return migrateManifest(data);
+  } else if (data.manifestVersion === manifestVersion) {
     return data;
   } else {
     throw new Error(`Unknown value for manifest version (${data.manifestVersion})`);
+  }
+}
+
+function migrateManifest(data: ManifestData): ManifestData {
+  if (data.manifestVersion === '3.0') {
+    data.manifestVersion = manifestVersion;
+    return data;
+  } else {
+    throw new Error('Manifest migration not available');
   }
 }
 
