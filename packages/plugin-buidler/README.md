@@ -15,6 +15,14 @@ usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('@openzeppelin/buidler-upgrades');
 ```
 
+If you're using TypeScript, remember to add our [type extensions](https://buidler.dev/guides/typescript.html#plugin-type-extensions) in your `tsconfig.json`:
+
+```json
+"files": [
+  "./node_modules/@openzeppelin/buidler-upgrades/src/type-extensions.d.ts"
+]
+```
+
 ## Usage in scripts
 
 You can use this plugin in a [Buidler script](https://buidler.dev/guides/scripts.html) to deploy an upgradeable instance of one of your contracts via the `deployProxy` function:
