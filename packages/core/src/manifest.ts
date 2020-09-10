@@ -61,8 +61,7 @@ export class Manifest {
     const release = this.locked ? undefined : await this.lock();
     try {
       const data = JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
-      validateManifestVersion(data);
-      return data;
+      return validateOrUpdateManifestVersion(data);
     } catch (e) {
       if (e.code === 'ENOENT') {
         return defaultManifest();
@@ -105,12 +104,17 @@ export class Manifest {
   }
 }
 
-function validateManifestVersion(data: ManifestData) {
+function validateOrUpdateManifestVersion(data: ManifestData): ManifestData {
   if (typeof data.manifestVersion !== 'string') {
     throw new Error('Manifest version is missing');
   } else if (compareVersions(data.manifestVersion, '3.0', '<')) {
     throw new Error('Found a manifest file for OpenZeppelin CLI. An automated migration is not yet available.');
-  } else if (data.manifestVersion !== manifestVersion) {
+  } else if (compareVersions(data.manifestVersion, manifestVersion, '<')) {
+    data.manifestVersion = manifestVersion;
+    return data;
+  } else if (compareVersions(data.manifestVersion, manifestVersion, '=')) {
+    return data;
+  } else {
     throw new Error(`Unknown value for manifest version (${data.manifestVersion})`);
   }
 }
