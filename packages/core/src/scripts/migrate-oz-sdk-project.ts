@@ -19,6 +19,7 @@ export async function migrateLegacyProject(): Promise<void> {
   };
 
   await writeJSONFile(EXPORT_FILE, exportData);
+  console.log(SUCESS_CHECK + `Migration data exported to ${EXPORT_FILE}`);
   await deleteLegacyFiles();
 
   console.log("\nThese were your project's compiler options:");
