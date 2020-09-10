@@ -1,13 +1,12 @@
 import path from 'path';
+import chalk from 'chalk';
 import { promises as fs } from 'fs';
 import { ManifestData, ImplDeployment } from '../manifest';
 import type { StorageItem, StorageLayout, TypeItem, TypeMembers, StructMember } from '../storage';
-import chalk from 'chalk';
 
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
 const EXPORT_FILE = 'openzeppelin-cli-export.json';
 const PROJECT_FILE = path.join(OPEN_ZEPPELIN_FOLDER, 'project.json');
-
 const SUCESS_CHECK = chalk.keyword('green')('✔') + ' ';
 
 export async function migrateLegacyProject(): Promise<void> {
