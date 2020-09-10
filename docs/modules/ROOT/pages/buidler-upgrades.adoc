@@ -7,7 +7,8 @@ This package adds functions to your Buidler scripts so you can deploy and upgrad
 
 [source,console]
 ----
-$ npm install --save-dev @nomiclabs/buidler-ethers @openzeppelin/buidler-upgrades
+$ npm install --save-dev @openzeppelin/buidler-upgrades
+$ npm install --save-dev @nomiclabs/buidler-ethers ethers # peer dependencies
 ----
 
 And register the plugins in your https://buidler.dev/config[`buidler.config.js`]:

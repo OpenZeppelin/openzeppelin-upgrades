@@ -8,7 +8,8 @@
 ## Installation
 
 ```
-npm install --save-dev @nomiclabs/buidler-ethers @openzeppelin/buidler-upgrades
+npm install --save-dev @openzeppelin/buidler-upgrades
+npm install --save-dev @nomiclabs/buidler-ethers ethers # peer dependencies
 ```
 
 And register the plugins in your [`buidler.config.js`](https://buidler.dev/config/):

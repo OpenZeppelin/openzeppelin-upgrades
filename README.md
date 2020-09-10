@@ -12,10 +12,9 @@
 ### Buidler
 
 ```
-npm install --save-dev @openzeppelin/buidler-upgrades @nomiclabs/buidler-ethers ethers
+npm install --save-dev @openzeppelin/buidler-upgrades
+npm install --save-dev @nomiclabs/buidler-ethers ethers # peer dependencies
 ```
-
-This installs our Buidler plugin along with the necessary peer dependencies.
 
 ### Truffle
 
