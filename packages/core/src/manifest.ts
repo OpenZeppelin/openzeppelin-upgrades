@@ -8,7 +8,7 @@ import { compare as compareVersions } from 'compare-versions';
 import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
 
-const manifestVersion = '3.1';
+const currentManifestVersion = '3.1';
 
 export interface ManifestData {
   manifestVersion: string;
@@ -24,7 +24,7 @@ export interface ImplDeployment extends Deployment {
 
 function defaultManifest(): ManifestData {
   return {
-    manifestVersion,
+    manifestVersion: currentManifestVersion,
     impls: {},
   };
 }
