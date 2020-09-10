@@ -1,5 +1,8 @@
 # OpenZeppelin Buidler Upgrades
 
+[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins/buidler-upgrades)
+[![NPM Package](https://img.shields.io/npm/v/@openzeppelin/buidler-upgrades.svg)](https://www.npmjs.org/package/@openzeppelin/buidler-upgrades)
+
 **Buidler plugin for deploying and managing upgradeable contracts.** This package adds functions to your Buidler scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
 
 ## Installation

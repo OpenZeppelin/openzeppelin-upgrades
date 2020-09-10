@@ -1,5 +1,8 @@
 # OpenZeppelin Truffle Upgrades
 
+[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins/truffle-upgrades)
+[![NPM Package](https://img.shields.io/npm/v/@openzeppelin/truffle-upgrades.svg)](https://www.npmjs.org/package/@openzeppelin/truffle-upgrades)
+
 **Truffle package for deploying and managing upgradeable contracts.** This package adds functions to your Truffle migrations and tests so you can deploy and upgrade proxies for your contracts.
 
 > Note: Usage from [Truffle external scripts](https://www.trufflesuite.com/docs/truffle/getting-started/writing-external-scripts) is not yet supported.
