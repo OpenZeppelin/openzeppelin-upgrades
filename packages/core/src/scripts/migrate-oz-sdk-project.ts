@@ -1,31 +1,51 @@
 import path from 'path';
 import { promises as fs } from 'fs';
-import type { ManifestData, ImplDeployment } from '../manifest';
+import { ManifestData, ImplDeployment } from '../manifest';
 import type { StorageItem, StorageLayout, TypeItem, TypeMembers, StructMember } from '../storage';
 
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
-const MIGRATION_FILE_LOCATION = 'openzeppelin-cli-export.json';
+const EXPORT_FILE = 'openzeppelin-cli-export.json';
+const PROJECT_FILE = path.join(OPEN_ZEPPELIN_FOLDER, 'project.json');
 
 export async function migrateLegacyProject(): Promise<void> {
+  const manifestsMigrationData = await migrateManifestFiles();
+
+  const { compiler } = await getProjectFile();
+  const exportData = {
+    networkFiles: manifestsMigrationData,
+    compiler,
+  };
+
+  await writeJSONFile(EXPORT_FILE, exportData);
+  await deleteLegacyFiles();
+}
+
+async function migrateManifestFiles() {
   const oldManifests = await getManifests();
-  const { newManifests, manifestMigrationData } = await migrateManifestFiles(oldManifests);
+  const migratableManifests = oldManifests.filter(manifest => !isDevelopmentNetwork(getNetworkName(manifest)));
+  const { newManifests, manifestsMigrationData } = await migrateManifests(migratableManifests);
 
   for (const manifestFile in newManifests) {
     const newManifest = newManifests[manifestFile];
     await writeJSONFile(getNewManifestLocation(manifestFile), newManifest);
   }
 
-  const { compiler } = await getProjectFile();
-  const exportData = {
-    networkFiles: manifestMigrationData,
-    compiler,
-  };
-
-  await writeJSONFile(MIGRATION_FILE_LOCATION, exportData);
+  return manifestsMigrationData;
 }
 
-async function migrateManifestFiles(oldManifests: string[]): Promise<MigrationOutput> {
-  const manifestMigrationData: Record<string, unknown> = {};
+async function deleteLegacyFiles(): Promise<void> {
+  const oldManifests = await getManifests();
+  const developmentManifests = oldManifests.filter(manifestFile => isDevelopmentNetwork(getNetworkName(manifestFile)));
+
+  for (const manifestFile in developmentManifests) {
+    await fs.unlink(manifestFile);
+  }
+
+  await fs.unlink(PROJECT_FILE);
+}
+
+async function migrateManifests(oldManifests: string[]): Promise<MigrationOutput> {
+  const manifestsMigrationData: Record<string, unknown> = {};
   const newManifests: Record<string, ManifestData> = {};
 
   for (const manifestFile of oldManifests) {
@@ -48,12 +68,12 @@ async function migrateManifestFiles(oldManifests: string[]): Promise<MigrationOu
 
     const network = getNetworkName(manifestFile);
     newManifests[manifestFile] = updateManifest(oldManifest);
-    manifestMigrationData[network] = getExportData(oldManifest);
+    manifestsMigrationData[network] = getExportData(oldManifest);
   }
 
   return {
     newManifests,
-    manifestMigrationData,
+    manifestsMigrationData,
   };
 }
 
@@ -63,12 +83,12 @@ async function getManifests(): Promise<string[]> {
 }
 
 async function getProjectFile(): Promise<LegacyProjectFile> {
-  return JSON.parse(await fs.readFile(path.join(OPEN_ZEPPELIN_FOLDER, 'project.json'), 'utf8'));
+  return JSON.parse(await fs.readFile(PROJECT_FILE, 'utf8'));
 }
 
 function isManifestFile(fileName: string): boolean {
   const network = getNetworkName(fileName);
-  return isPublicNetwork(network) || isDevelopmentNetwork(network);
+  return isPublicNetwork(network) || isDevelopmentNetwork(network) || isUnknownNetwork(network);
 }
 
 function getNetworkName(fileName: string): string {
@@ -76,7 +96,14 @@ function getNetworkName(fileName: string): string {
 }
 
 function isDevelopmentNetwork(network: string): boolean {
-  return /^dev-\d+$/.test(network);
+  // 31337      => buidler evm
+  // 1337       => ganache
+  // 13+ digits => ganache also uses timestamps
+  return /^dev-(3?1337|\d{13,})$/.test(network);
+}
+
+function isUnknownNetwork(network: string): boolean {
+  return !isDevelopmentNetwork(network) && /^dev-\d+$/.test(network);
 }
 
 function isPublicNetwork(network: string): boolean {
@@ -84,7 +111,7 @@ function isPublicNetwork(network: string): boolean {
 }
 
 function getNewManifestLocation(oldName: string): string {
-  return isDevelopmentNetwork(oldName) ? oldName.replace('dev', 'unknown') : oldName;
+  return isUnknownNetwork(oldName) ? oldName.replace('dev', 'unknown') : oldName;
 }
 
 async function writeJSONFile(location: string, data: unknown): Promise<void> {
@@ -92,12 +119,12 @@ async function writeJSONFile(location: string, data: unknown): Promise<void> {
 }
 
 function getExportData(oldManifest: LegacyManifest): ExportData {
-  // TODO fix typing
-  const manifestMigrationData: any = Object.assign(oldManifest);
-  delete manifestMigrationData.proxyAdmin;
-  delete manifestMigrationData.contracts;
-  delete manifestMigrationData.solidityLibs;
-  return manifestMigrationData;
+  // we flexibilize the typing to allow required fields deletion
+  const manifestsMigrationData: Partial<LegacyManifest> = oldManifest;
+  delete manifestsMigrationData.proxyAdmin;
+  delete manifestsMigrationData.contracts;
+  delete manifestsMigrationData.solidityLibs;
+  return manifestsMigrationData as ExportData;
 }
 
 function updateManifest(oldManifest: LegacyManifest): ManifestData {
@@ -272,7 +299,7 @@ type TypeKind = 'Elementary' | 'Mapping' | 'Struct' | 'Enum' | 'DynArray' | 'Sta
 
 interface MigrationOutput {
   newManifests: Record<string, ManifestData>;
-  manifestMigrationData: unknown;
+  manifestsMigrationData: unknown;
 }
 
 interface AddressWrapper {
