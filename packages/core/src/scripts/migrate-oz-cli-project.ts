@@ -7,7 +7,7 @@ import type { StorageItem, StorageLayout, TypeItem, TypeMembers, StructMember } 
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
 const EXPORT_FILE = 'openzeppelin-cli-export.json';
 const PROJECT_FILE = path.join(OPEN_ZEPPELIN_FOLDER, 'project.json');
-const SUCESS_CHECK = chalk.keyword('green')('✔') + ' ';
+const SUCCESS_CHECK = chalk.keyword('green')('✔') + ' ';
 
 export async function migrateLegacyProject(): Promise<void> {
   const manifestsExportData = await migrateManifestFiles();
@@ -19,7 +19,7 @@ export async function migrateLegacyProject(): Promise<void> {
   };
 
   await writeJSONFile(EXPORT_FILE, exportData);
-  console.log(SUCESS_CHECK + `Migration data exported to ${EXPORT_FILE}`);
+  console.log(SUCCESS_CHECK + `Migration data exported to ${EXPORT_FILE}`);
   await deleteLegacyFiles();
 
   console.log("\nThese were your project's compiler options:");
@@ -42,7 +42,7 @@ async function migrateManifestFiles() {
     const newManifest = newManifests[manifestFile];
     const newFileName = getNewManifestLocation(manifestFile);
     await writeJSONFile(newFileName, newManifest);
-    console.log(SUCESS_CHECK + `Successfully migrated ${newFileName}`);
+    console.log(SUCCESS_CHECK + `Successfully migrated ${newFileName}`);
   }
 
   return manifestsExportData;
@@ -53,11 +53,11 @@ async function deleteLegacyFiles(): Promise<void> {
   const developmentManifests = oldManifests.filter(manifestFile => isDevelopmentNetwork(getNetworkName(manifestFile)));
 
   for (const manifestFile of developmentManifests) {
-    console.log(SUCESS_CHECK + `Deleting unused development manifest ${manifestFile}`);
+    console.log(SUCCESS_CHECK + `Deleting unused development manifest ${manifestFile}`);
     await fs.unlink(manifestFile);
   }
 
-  console.log(SUCESS_CHECK + `Deleting ${PROJECT_FILE}`);
+  console.log(SUCCESS_CHECK + `Deleting ${PROJECT_FILE}`);
   await fs.unlink(PROJECT_FILE);
 }
 
