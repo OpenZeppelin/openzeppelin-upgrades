@@ -1,8 +1,9 @@
 import path from 'path';
 import chalk from 'chalk';
 import { promises as fs } from 'fs';
+import { compare as compareVersions } from 'compare-versions';
 import { ManifestData, ImplDeployment } from '../manifest';
-import type { StorageItem, StorageLayout, TypeItem, TypeMembers, StructMember } from '../storage';
+import type { StorageItem, StorageLayout, TypeItem, TypeItemMembers, StructMember } from '../storage';
 
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
 const EXPORT_FILE = 'openzeppelin-cli-export.json';
@@ -10,25 +11,25 @@ const PROJECT_FILE = path.join(OPEN_ZEPPELIN_FOLDER, 'project.json');
 const SUCCESS_CHECK = chalk.keyword('green')('✔') + ' ';
 
 export async function migrateLegacyProject(): Promise<void> {
-  const manifestsExportData = await migrateManifestFiles();
+  const manifestFiles = await getManifestFiles();
+  const manifestsExportData = await migrateManifestFiles(manifestFiles);
 
   const { compiler } = await getProjectFile();
   const exportData = {
-    networkFiles: manifestsExportData,
+    networks: manifestsExportData,
     compiler,
   };
 
   await writeJSONFile(EXPORT_FILE, exportData);
   console.log(SUCCESS_CHECK + `Migration data exported to ${EXPORT_FILE}`);
-  await deleteLegacyFiles();
+  await deleteLegacyFiles(manifestFiles);
 
   console.log("\nThese were your project's compiler options:");
   console.log(JSON.stringify(compiler, null, 2));
 }
 
-async function migrateManifestFiles() {
-  const oldManifests = await getManifests();
-  const migratableManifestFiles = oldManifests.filter(manifest => !isDevelopmentNetwork(getNetworkName(manifest)));
+async function migrateManifestFiles(manifestFiles: string[]) {
+  const migratableManifestFiles = manifestFiles.filter(manifest => !isDevelopmentNetwork(getNetworkName(manifest)));
   const migratableManifestsData: Record<string, LegacyManifest> = {};
 
   for (const migratableFile in migratableManifestFiles) {
@@ -36,21 +37,21 @@ async function migrateManifestFiles() {
     migratableManifestsData[network] = JSON.parse(await fs.readFile(migratableFile, 'utf8'));
   }
 
-  const { newManifests, manifestsExportData } = await migrateManifestsData(migratableManifestsData);
+  // we run the entire data migration before writing anything to disk
+  const { newManifestsData, manifestsExportData } = await migrateManifestsData(migratableManifestsData);
 
-  for (const manifestFile in newManifests) {
-    const newManifest = newManifests[manifestFile];
-    const newFileName = getNewManifestLocation(manifestFile);
-    await writeJSONFile(newFileName, newManifest);
-    console.log(SUCCESS_CHECK + `Successfully migrated ${newFileName}`);
+  for (const network in newManifestsData) {
+    const newManifestData = newManifestsData[network];
+    const newFilename = getNewManifestFilename(network);
+    await writeJSONFile(newFilename, newManifestData);
+    console.log(SUCCESS_CHECK + `Successfully migrated ${newFilename}`);
   }
 
   return manifestsExportData;
 }
 
-async function deleteLegacyFiles(): Promise<void> {
-  const oldManifests = await getManifests();
-  const developmentManifests = oldManifests.filter(manifestFile => isDevelopmentNetwork(getNetworkName(manifestFile)));
+async function deleteLegacyFiles(manifestFiles: string[]): Promise<void> {
+  const developmentManifests = manifestFiles.filter(manifestFile => isDevelopmentNetwork(getNetworkName(manifestFile)));
 
   for (const manifestFile of developmentManifests) {
     console.log(SUCCESS_CHECK + `Deleting unused development manifest ${manifestFile}`);
@@ -61,36 +62,42 @@ async function deleteLegacyFiles(): Promise<void> {
   await fs.unlink(PROJECT_FILE);
 }
 
-async function migrateManifestsData(oldManifests: Record<string, LegacyManifest>): Promise<MigrationOutput> {
+async function migrateManifestsData(manifestsData: Record<string, LegacyManifest>): Promise<MigrationOutput> {
   const manifestsExportData: Record<string, ExportData> = {};
-  const newManifests: Record<string, ManifestData> = {};
+  const newManifestsData: Record<string, ManifestData> = {};
 
-  for (const network of Object.keys(oldManifests)) {
-    const oldManifest = oldManifests[network];
+  for (const network of Object.keys(manifestsData)) {
+    const oldManifestData = manifestsData[network];
+    const { manifestVersion } = oldManifestData;
 
-    if (oldManifest.manifestVersion === undefined) {
-      throw new Error('Migration failed: manifest version too old');
+    if (manifestVersion === undefined) {
+      throw new Error(
+        'Migration failed: manifest version too old. Bump your manifest version with the OpenZeppelin CLI.',
+      );
     }
 
-    const [major, minor] = oldManifest.manifestVersion.split('.');
-
-    if (major === '3') {
+    if (compareVersions(manifestVersion, '3.0', '>=')) {
+      // no need to migrate
       continue;
-    } else if (major !== '2' || minor !== '2') {
-      throw new Error(`Migration failed: expected manifest version 2.2, got ${major}.${minor} instead`);
     }
 
-    newManifests[network] = updateManifest(oldManifest);
-    manifestsExportData[network] = getExportData(oldManifest);
+    if (manifestVersion !== '2.2') {
+      throw new Error(
+        `Migration failed: expected manifest version 2.2, got ${manifestVersion} instead. Bump your manifest version with the OpenZeppelin CLI.`,
+      );
+    }
+
+    newManifestsData[network] = updateManifestData(oldManifestData);
+    manifestsExportData[network] = getExportData(oldManifestData);
   }
 
   return {
-    newManifests,
+    newManifestsData,
     manifestsExportData,
   };
 }
 
-async function getManifests(): Promise<string[]> {
+async function getManifestFiles(): Promise<string[]> {
   const files = await fs.readdir(OPEN_ZEPPELIN_FOLDER);
   return files.filter(isManifestFile).map(location => path.join(OPEN_ZEPPELIN_FOLDER, location));
 }
@@ -110,9 +117,8 @@ function getNetworkName(fileName: string): string {
 
 function isDevelopmentNetwork(network: string): boolean {
   // 31337      => buidler evm
-  // 1337       => ganache
   // 13+ digits => ganache also uses timestamps
-  return /^dev-(3?1337|\d{13,})$/.test(network);
+  return /^dev-(31337|\d{13,})$/.test(network);
 }
 
 function isUnknownNetwork(network: string): boolean {
@@ -123,7 +129,7 @@ function isPublicNetwork(network: string): boolean {
   return ['mainnet', 'rinkeby', 'ropsten', 'kovan', 'goerli'].includes(network);
 }
 
-function getNewManifestLocation(oldName: string): string {
+function getNewManifestFilename(oldName: string): string {
   return isUnknownNetwork(oldName) ? oldName.replace('dev', 'unknown') : oldName;
 }
 
@@ -131,29 +137,29 @@ async function writeJSONFile(location: string, data: unknown): Promise<void> {
   await fs.writeFile(location, JSON.stringify(data, null, 2));
 }
 
-function getExportData(oldManifest: LegacyManifest): ExportData {
+function getExportData(oldManifestData: LegacyManifest): ExportData {
   // we flexibilize the typing to allow required fields deletion
-  const manifestsExportData: Partial<LegacyManifest> = oldManifest;
+  const manifestsExportData: Partial<LegacyManifest> = oldManifestData;
   delete manifestsExportData.proxyAdmin;
   delete manifestsExportData.contracts;
   delete manifestsExportData.solidityLibs;
   return manifestsExportData as ExportData;
 }
 
-function updateManifest(oldManifest: LegacyManifest): ManifestData {
-  const proxyAdmin = oldManifest.proxyAdmin.address;
+function updateManifestData(oldManifestData: LegacyManifest): ManifestData {
+  const proxyAdmin = oldManifestData.proxyAdmin.address;
 
   if (proxyAdmin === undefined) {
     throw new Error('Legacy manifest does not have admin address');
   }
 
-  if (Object.keys(oldManifest.solidityLibs).length > 0) {
+  if (Object.keys(oldManifestData.solidityLibs).length > 0) {
     throw new Error('Legacy manifest links to external libraries which are not yet supported');
   }
 
   return {
     manifestVersion: '3.1',
-    impls: transformImplementations(oldManifest.contracts),
+    impls: transformImplementations(oldManifestData.contracts),
     admin: {
       address: proxyAdmin,
     },
@@ -271,25 +277,23 @@ function transformDynArrayTypeName(typeName: string): string {
 }
 
 function transformStaticArrayTypeName(typeName: string): string {
-  const size = optimisticMatch(typeName, /:(\d+)/)[1];
+  // here we assume the regex has been already validated
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const size = typeName.match(/:(\d+)/)![1];
   const valueType = transformTypeName(getArgument(typeName));
   return `t_array(${valueType})${size}_storage`;
 }
 
 function getArgument(typeName: string): string {
-  return optimisticMatch(typeName, /<(.+)>/)[1];
+  // here we assume the regex has been already validated
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return typeName.match(/<(.+)>/)![1];
 }
 
 function stripContractName(s: string): string {
-  return optimisticMatch(s, /(.+)\.(.+)/)[2];
-}
-
-function optimisticMatch(s: string, rg: RegExp): string[] {
-  const matches = s.match(rg);
-  if (matches === null) {
-    return [s];
-  }
-  return matches;
+  const match = s.match(/(.+)\.(.+)/);
+  // input might not contain a contract name, so we fallback to it
+  return match ? match[2] : s;
 }
 
 function getTypeKind(typeName: string): TypeKind {
@@ -311,7 +315,7 @@ function getTypeKind(typeName: string): TypeKind {
 type TypeKind = 'Elementary' | 'Mapping' | 'Struct' | 'Enum' | 'DynArray' | 'StaticArray';
 
 interface MigrationOutput {
-  newManifests: Record<string, ManifestData>;
+  newManifestsData: Record<string, ManifestData>;
   manifestsExportData: Record<string, ExportData>;
 }
 
@@ -386,7 +390,7 @@ interface LegacyType {
   id: string;
   kind: string;
   label: string;
-  members?: TypeMembers;
+  members?: TypeItemMembers;
 }
 
 interface LegacyStorageItem extends StorageItem {
