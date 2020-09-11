@@ -10,11 +10,11 @@ const PROJECT_FILE = path.join(OPEN_ZEPPELIN_FOLDER, 'project.json');
 const SUCESS_CHECK = chalk.keyword('green')('✔') + ' ';
 
 export async function migrateLegacyProject(): Promise<void> {
-  const manifestsMigrationData = await migrateManifestFiles();
+  const manifestsExportData = await migrateManifestFiles();
 
   const { compiler } = await getProjectFile();
   const exportData = {
-    networkFiles: manifestsMigrationData,
+    networkFiles: manifestsExportData,
     compiler,
   };
 
@@ -23,13 +23,20 @@ export async function migrateLegacyProject(): Promise<void> {
   await deleteLegacyFiles();
 
   console.log("\nThese were your project's compiler options:");
-  console.log(compiler);
+  console.log(JSON.stringify(compiler, null, 2));
 }
 
 async function migrateManifestFiles() {
   const oldManifests = await getManifests();
-  const migratableManifests = oldManifests.filter(manifest => !isDevelopmentNetwork(getNetworkName(manifest)));
-  const { newManifests, manifestsMigrationData } = await migrateManifests(migratableManifests);
+  const migratableManifestFiles = oldManifests.filter(manifest => !isDevelopmentNetwork(getNetworkName(manifest)));
+  const migratableManifestsData: Record<string, LegacyManifest> = {};
+
+  for (const migratableFile in migratableManifestFiles) {
+    const network = getNetworkName(migratableFile);
+    migratableManifestsData[network] = JSON.parse(await fs.readFile(migratableFile, 'utf8'));
+  }
+
+  const { newManifests, manifestsExportData } = await migrateManifestsData(migratableManifestsData);
 
   for (const manifestFile in newManifests) {
     const newManifest = newManifests[manifestFile];
@@ -38,7 +45,7 @@ async function migrateManifestFiles() {
     console.log(SUCESS_CHECK + `Successfully migrated ${newFileName}`);
   }
 
-  return manifestsMigrationData;
+  return manifestsExportData;
 }
 
 async function deleteLegacyFiles(): Promise<void> {
@@ -54,12 +61,12 @@ async function deleteLegacyFiles(): Promise<void> {
   await fs.unlink(PROJECT_FILE);
 }
 
-async function migrateManifests(oldManifests: string[]): Promise<MigrationOutput> {
-  const manifestsMigrationData: Record<string, unknown> = {};
+async function migrateManifestsData(oldManifests: Record<string, LegacyManifest>): Promise<MigrationOutput> {
+  const manifestsExportData: Record<string, unknown> = {};
   const newManifests: Record<string, ManifestData> = {};
 
-  for (const manifestFile of oldManifests) {
-    const oldManifest = JSON.parse(await fs.readFile(manifestFile, 'utf8'));
+  for (const network of Object.keys(oldManifests)) {
+    const oldManifest = oldManifests[network];
 
     if (oldManifest.manifestVersion === undefined) {
       throw new Error('Migration failed: manifest version too old');
@@ -69,21 +76,17 @@ async function migrateManifests(oldManifests: string[]): Promise<MigrationOutput
 
     if (major === '3') {
       continue;
-    }
-
-    // 2.2 latest version
-    if (major !== '2' || minor !== '2') {
+    } else if (major !== '2' || minor !== '2') {
       throw new Error(`Migration failed: expected manifest version 2.2, got ${major}.${minor} instead`);
     }
 
-    const network = getNetworkName(manifestFile);
-    newManifests[manifestFile] = updateManifest(oldManifest);
-    manifestsMigrationData[network] = getExportData(oldManifest);
+    newManifests[network] = updateManifest(oldManifest);
+    manifestsExportData[network] = getExportData(oldManifest);
   }
 
   return {
     newManifests,
-    manifestsMigrationData,
+    manifestsExportData,
   };
 }
 
@@ -130,11 +133,11 @@ async function writeJSONFile(location: string, data: unknown): Promise<void> {
 
 function getExportData(oldManifest: LegacyManifest): ExportData {
   // we flexibilize the typing to allow required fields deletion
-  const manifestsMigrationData: Partial<LegacyManifest> = oldManifest;
-  delete manifestsMigrationData.proxyAdmin;
-  delete manifestsMigrationData.contracts;
-  delete manifestsMigrationData.solidityLibs;
-  return manifestsMigrationData as ExportData;
+  const manifestsExportData: Partial<LegacyManifest> = oldManifest;
+  delete manifestsExportData.proxyAdmin;
+  delete manifestsExportData.contracts;
+  delete manifestsExportData.solidityLibs;
+  return manifestsExportData as ExportData;
 }
 
 function updateManifest(oldManifest: LegacyManifest): ManifestData {
@@ -309,7 +312,7 @@ type TypeKind = 'Elementary' | 'Mapping' | 'Struct' | 'Enum' | 'DynArray' | 'Sta
 
 interface MigrationOutput {
   newManifests: Record<string, ManifestData>;
-  manifestsMigrationData: unknown;
+  manifestsExportData: unknown;
 }
 
 interface AddressWrapper {
