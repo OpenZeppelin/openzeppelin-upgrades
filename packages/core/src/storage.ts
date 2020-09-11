@@ -21,10 +21,10 @@ export interface StorageLayout {
 
 export interface TypeItem {
   label: string;
-  members?: TypeMembers;
+  members?: TypeItemMembers;
 }
 
-export type TypeMembers = StructMember[] | EnumMember[];
+export type TypeItemMembers = StructMember[] | EnumMember[];
 
 export interface StructMember {
   label: string;

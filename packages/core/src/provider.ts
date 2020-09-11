@@ -36,10 +36,6 @@ export async function getTransactionByHash(
   provider: EthereumProvider,
   txHash: string,
 ): Promise<EthereumTransaction | null> {
-  if (txHash === undefined) {
-    // TODO: better error message
-    throw new Error('No txHash found');
-  }
   return provider.send('eth_getTransactionByHash', [txHash]);
 }
 

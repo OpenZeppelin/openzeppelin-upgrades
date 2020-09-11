@@ -209,7 +209,7 @@ function transformTypes(oldTypes: LegacyTypes): Record<string, TypeItem> {
   return newTypes;
 }
 
-function transformType(typeKind: string, oldType: LegacyType): TypeItem {
+function transformType(typeKind: TypeKind, oldType: LegacyType): TypeItem {
   switch (typeKind) {
     case 'Struct':
       return {
@@ -251,32 +251,32 @@ function transformTypeName(typeName: string): string {
 }
 
 function transformStructTypeName(typeName: string): string {
-  const valueType = stripContractName(getValueType(typeName));
-  return `t_struct(${valueType})_storage`;
+  const name = stripContractName(getArgument(typeName));
+  return `t_struct(${name})_storage`;
 }
 
 function transformEnumTypeName(typeName: string): string {
-  const valueType = stripContractName(getValueType(typeName));
-  return `t_enum(${valueType})`;
+  const name = stripContractName(getArgument(typeName));
+  return `t_enum(${name})`;
 }
 
 function transformMappingTypeName(typeName: string): string {
-  const valueType = transformTypeName(getValueType(typeName));
-  return `t_mapping(${valueType})`;
+  const valueType = transformTypeName(getArgument(typeName));
+  return `t_mapping(unknown,${valueType})`;
 }
 
 function transformDynArrayTypeName(typeName: string): string {
-  const valueType = transformTypeName(getValueType(typeName));
+  const valueType = transformTypeName(getArgument(typeName));
   return `t_array(${valueType})dyn_storage`;
 }
 
 function transformStaticArrayTypeName(typeName: string): string {
   const size = optimisticMatch(typeName, /:(\d+)/)[1];
-  const valueType = transformTypeName(getValueType(typeName));
+  const valueType = transformTypeName(getArgument(typeName));
   return `t_array(${valueType})${size}_storage`;
 }
 
-function getValueType(typeName: string): string {
+function getArgument(typeName: string): string {
   return optimisticMatch(typeName, /<(.+)>/)[1];
 }
 
