@@ -62,7 +62,7 @@ async function deleteLegacyFiles(): Promise<void> {
 }
 
 async function migrateManifestsData(oldManifests: Record<string, LegacyManifest>): Promise<MigrationOutput> {
-  const manifestsExportData: Record<string, unknown> = {};
+  const manifestsExportData: Record<string, ExportData> = {};
   const newManifests: Record<string, ManifestData> = {};
 
   for (const network of Object.keys(oldManifests)) {
@@ -312,7 +312,7 @@ type TypeKind = 'Elementary' | 'Mapping' | 'Struct' | 'Enum' | 'DynArray' | 'Sta
 
 interface MigrationOutput {
   newManifests: Record<string, ManifestData>;
-  manifestsExportData: unknown;
+  manifestsExportData: Record<string, ExportData>;
 }
 
 interface AddressWrapper {
