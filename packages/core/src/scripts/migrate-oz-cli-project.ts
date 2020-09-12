@@ -12,11 +12,11 @@ const SUCCESS_CHECK = chalk.keyword('green')('✔') + ' ';
 
 export async function migrateLegacyProject(): Promise<void> {
   const manifestFiles = await getManifestFiles();
-  const manifestsExportData = await migrateManifestFiles(manifestFiles);
+  const networksExportData = await migrateManifestFiles(manifestFiles);
 
   const { compiler } = await getProjectFile();
   const exportData = {
-    networks: manifestsExportData,
+    networks: networksExportData,
     compiler,
   };
 
@@ -30,7 +30,7 @@ export async function migrateLegacyProject(): Promise<void> {
 
 async function migrateManifestFiles(manifestFiles: string[]) {
   const migratableManifestFiles = manifestFiles.filter(manifest => !isDevelopmentNetwork(getNetworkName(manifest)));
-  const migratableManifestsData: Record<string, LegacyManifest> = {};
+  const migratableManifestsData: Record<string, NetworkFileData> = {};
 
   for (const migratableFile in migratableManifestFiles) {
     const network = getNetworkName(migratableFile);
@@ -38,7 +38,7 @@ async function migrateManifestFiles(manifestFiles: string[]) {
   }
 
   // we run the entire data migration before writing anything to disk
-  const { newManifestsData, manifestsExportData } = await migrateManifestsData(migratableManifestsData);
+  const { newManifestsData, networksExportData } = await migrateManifestsData(migratableManifestsData);
 
   for (const network in newManifestsData) {
     const newManifestData = newManifestsData[network];
@@ -47,7 +47,7 @@ async function migrateManifestFiles(manifestFiles: string[]) {
     console.log(SUCCESS_CHECK + `Successfully migrated ${newFilename}`);
   }
 
-  return manifestsExportData;
+  return networksExportData;
 }
 
 async function deleteLegacyFiles(manifestFiles: string[]): Promise<void> {
@@ -62,8 +62,8 @@ async function deleteLegacyFiles(manifestFiles: string[]): Promise<void> {
   await fs.unlink(PROJECT_FILE);
 }
 
-async function migrateManifestsData(manifestsData: Record<string, LegacyManifest>): Promise<MigrationOutput> {
-  const manifestsExportData: Record<string, ExportData> = {};
+async function migrateManifestsData(manifestsData: Record<string, NetworkFileData>): Promise<MigrationOutput> {
+  const networksExportData: Record<string, NetworkExportData> = {};
   const newManifestsData: Record<string, ManifestData> = {};
 
   for (const network of Object.keys(manifestsData)) {
@@ -71,9 +71,7 @@ async function migrateManifestsData(manifestsData: Record<string, LegacyManifest
     const { manifestVersion } = oldManifestData;
 
     if (manifestVersion === undefined) {
-      throw new Error(
-        'Migration failed: manifest version too old. Bump your manifest version with the OpenZeppelin CLI.',
-      );
+      throw new Error('Migration failed: manifest version too old. Update your OpenZeppelin CLI version.');
     }
 
     if (compareVersions(manifestVersion, '3.0', '>=')) {
@@ -83,17 +81,17 @@ async function migrateManifestsData(manifestsData: Record<string, LegacyManifest
 
     if (manifestVersion !== '2.2') {
       throw new Error(
-        `Migration failed: expected manifest version 2.2, got ${manifestVersion} instead. Bump your manifest version with the OpenZeppelin CLI.`,
+        `Migration failed: expected manifest version 2.2, got ${manifestVersion} instead. Update your OpenZeppelin CLI version.`,
       );
     }
 
     newManifestsData[network] = updateManifestData(oldManifestData);
-    manifestsExportData[network] = getExportData(oldManifestData);
+    networksExportData[network] = getExportData(oldManifestData);
   }
 
   return {
     newManifestsData,
-    manifestsExportData,
+    networksExportData,
   };
 }
 
@@ -102,7 +100,7 @@ async function getManifestFiles(): Promise<string[]> {
   return files.filter(isManifestFile).map(location => path.join(OPEN_ZEPPELIN_FOLDER, location));
 }
 
-async function getProjectFile(): Promise<LegacyProjectFile> {
+async function getProjectFile(): Promise<ProjectFileData> {
   return JSON.parse(await fs.readFile(PROJECT_FILE, 'utf8'));
 }
 
@@ -116,9 +114,9 @@ function getNetworkName(fileName: string): string {
 }
 
 function isDevelopmentNetwork(network: string): boolean {
-  // 31337      => buidler evm
-  // 13+ digits => ganache also uses timestamps
-  return /^dev-(31337|\d{13,})$/.test(network);
+  // 142 + 10 digits => ganache timestamp (some time since 2015)
+  // 31337           => buidler evm
+  return /^dev-(31337|142\d{10})$/.test(network);
 }
 
 function isUnknownNetwork(network: string): boolean {
@@ -137,16 +135,19 @@ async function writeJSONFile(location: string, data: unknown): Promise<void> {
   await fs.writeFile(location, JSON.stringify(data, null, 2));
 }
 
-function getExportData(oldManifestData: LegacyManifest): ExportData {
-  // we flexibilize the typing to allow required fields deletion
-  const manifestsExportData: Partial<LegacyManifest> = oldManifestData;
-  delete manifestsExportData.proxyAdmin;
-  delete manifestsExportData.contracts;
-  delete manifestsExportData.solidityLibs;
-  return manifestsExportData as ExportData;
+function getExportData(oldManifestData: NetworkFileData): NetworkExportData {
+  const networksExportData: NetworkExportData & Partial<NetworkFileData> = Object.assign({}, oldManifestData);
+  delete networksExportData.proxyAdmin;
+  delete networksExportData.contracts;
+  delete networksExportData.solidityLibs;
+  delete networksExportData.manifestVersion;
+  delete networksExportData.zosversion;
+  delete networksExportData.version;
+  delete networksExportData.frozen;
+  return networksExportData;
 }
 
-function updateManifestData(oldManifestData: LegacyManifest): ManifestData {
+function updateManifestData(oldManifestData: NetworkFileData): ManifestData {
   const proxyAdmin = oldManifestData.proxyAdmin.address;
 
   if (proxyAdmin === undefined) {
@@ -179,7 +180,7 @@ function transformImplementations(contracts: LegacyContracts): Record<string, Im
   return impls;
 }
 
-function transformImplementationItem(contract: LegacyContract): ImplDeployment {
+function transformImplementationItem(contract: ContractInterface): ImplDeployment {
   if (contract.address === undefined) {
     throw new Error('Could not find implementation address');
   }
@@ -190,7 +191,7 @@ function transformImplementationItem(contract: LegacyContract): ImplDeployment {
   };
 }
 
-function transformLayout(contract: LegacyContract): StorageLayout {
+function transformLayout(contract: ContractInterface): StorageLayout {
   return {
     storage: contract.storage?.map(transformStorageItem) || [],
     types: transformTypes(contract.types || {}),
@@ -313,55 +314,42 @@ function getTypeKind(typeName: string): TypeKind {
 }
 
 type TypeKind = 'Elementary' | 'Mapping' | 'Struct' | 'Enum' | 'DynArray' | 'StaticArray';
+type LegacyContracts = Record<string, ContractInterface>;
+type LegacyTypes = Record<string, LegacyType>;
+type NetworkExportData = Pick<NetworkFileData, 'proxies' | 'proxyFactory' | 'app' | 'package' | 'provider'>;
 
 interface MigrationOutput {
   newManifestsData: Record<string, ManifestData>;
-  manifestsExportData: Record<string, ExportData>;
+  networksExportData: Record<string, NetworkExportData>;
 }
 
-interface AddressWrapper {
-  address?: string;
+interface LegacyType {
+  id: string;
+  kind: string;
+  label: string;
+  members?: TypeItemMembers;
 }
 
-interface ExportData {
-  proxies: { [contractName: string]: LegacyProxy[] };
-  manifestVersion?: string;
-  zosversion?: string;
-  proxyFactory: AddressWrapper;
-  app: AddressWrapper;
-  package: AddressWrapper;
-  provider: AddressWrapper;
-  version: string;
-  frozen: boolean;
-  dependencies: { [dependencyName: string]: DependencyInterface };
+interface LegacyStorageItem extends StorageItem {
+  path: string;
+  astId: number;
 }
 
-interface LegacyManifest extends ExportData {
-  contracts: { [name: string]: LegacyContract };
-  solidityLibs: { [name: string]: LegacySolidityLib };
-  proxyAdmin: AddressWrapper;
-}
+// All of the following types are taken from OpenZeppelin CLI verbatim
 
-interface DependencyInterface {
-  name?: string;
-  package?: string;
-  version?: string;
-  customDeploy?: boolean;
-}
-
-interface LegacyContract {
+interface ContractInterface {
   address?: string;
   constructorCode?: string;
   localBytecodeHash?: string;
   deployedBytecodeHash?: string;
   bodyBytecodeHash?: string;
-  types?: LegacyTypes;
-  storage?: LegacyStorageItem[];
-  warnings?: unknown;
-  [id: string]: unknown;
+  types?: any;
+  storage?: any;
+  warnings?: any;
+  [id: string]: any;
 }
 
-interface LegacySolidityLib {
+interface SolidityLibInterface {
   address: string;
   constructorCode: string;
   bodyBytecodeHash: string;
@@ -375,7 +363,7 @@ enum ProxyType {
   NonProxy = 'NonProxy',
 }
 
-interface LegacyProxy {
+interface ProxyInterface {
   contractName?: string;
   package?: string;
   address?: string;
@@ -386,16 +374,31 @@ interface LegacyProxy {
   bytecodeHash?: string; // Only used for non-proxies from regulear deploys.
 }
 
-interface LegacyType {
-  id: string;
-  kind: string;
-  label: string;
-  members?: TypeItemMembers;
+interface DependencyInterface {
+  name?: string;
+  package?: string;
+  version?: string;
+  customDeploy?: boolean;
 }
 
-interface LegacyStorageItem extends StorageItem {
-  path: string;
-  astId: number;
+interface AddressWrapper {
+  address?: string;
+}
+
+interface NetworkFileData {
+  contracts: { [name: string]: ContractInterface };
+  solidityLibs: { [name: string]: SolidityLibInterface };
+  proxies: { [contractName: string]: ProxyInterface[] };
+  manifestVersion?: string;
+  zosversion?: string;
+  proxyAdmin: AddressWrapper;
+  proxyFactory: AddressWrapper;
+  app: AddressWrapper;
+  package: AddressWrapper;
+  provider: AddressWrapper;
+  version: string;
+  frozen: boolean;
+  dependencies: { [dependencyName: string]: DependencyInterface };
 }
 
 interface ConfigFileCompilerOptions {
@@ -417,7 +420,7 @@ interface ConfigFileCompilerOptions {
   };
 }
 
-interface LegacyProjectFile {
+interface ProjectFileData {
   name: string;
   version: string;
   manifestVersion?: string;
@@ -428,6 +431,3 @@ interface LegacyProjectFile {
   compiler: Partial<ConfigFileCompilerOptions>;
   telemetryOptIn?: boolean;
 }
-
-type LegacyContracts = Record<string, LegacyContract>;
-type LegacyTypes = Record<string, LegacyType>;
