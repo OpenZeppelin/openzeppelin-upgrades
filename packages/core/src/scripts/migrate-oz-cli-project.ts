@@ -32,7 +32,7 @@ async function migrateManifestFiles(manifestFiles: string[]) {
   const migratableManifestFiles = manifestFiles.filter(manifest => !isDevelopmentNetwork(getNetworkName(manifest)));
   const migratableManifestsData: Record<string, NetworkFileData> = {};
 
-  for (const migratableFile in migratableManifestFiles) {
+  for (const migratableFile of migratableManifestFiles) {
     const network = getNetworkName(migratableFile);
     migratableManifestsData[network] = JSON.parse(await fs.readFile(migratableFile, 'utf8'));
   }
