@@ -42,7 +42,7 @@ async function migrateManifestFiles(manifestFiles: string[]) {
 
   for (const network in newManifestsData) {
     const newManifestData = newManifestsData[network];
-    const newFilename = getNewManifestFilename(network);
+    const newFilename = getNewManifestLocation(network);
     await writeJSONFile(newFilename, newManifestData);
     console.log(SUCCESS_CHECK + `Successfully migrated ${newFilename}`);
   }
@@ -104,13 +104,13 @@ async function getProjectFile(): Promise<ProjectFileData> {
   return JSON.parse(await fs.readFile(PROJECT_FILE, 'utf8'));
 }
 
-function isManifestFile(fileName: string): boolean {
-  const network = getNetworkName(fileName);
+function isManifestFile(filename: string): boolean {
+  const network = getNetworkName(filename);
   return isPublicNetwork(network) || isDevelopmentNetwork(network) || isUnknownNetwork(network);
 }
 
-function getNetworkName(fileName: string): string {
-  return path.basename(fileName, '.json');
+function getNetworkName(filename: string): string {
+  return path.basename(filename, '.json');
 }
 
 function isDevelopmentNetwork(network: string): boolean {
@@ -127,8 +127,9 @@ function isPublicNetwork(network: string): boolean {
   return ['mainnet', 'rinkeby', 'ropsten', 'kovan', 'goerli'].includes(network);
 }
 
-function getNewManifestFilename(oldName: string): string {
-  return isUnknownNetwork(oldName) ? oldName.replace('dev', 'unknown') : oldName;
+function getNewManifestLocation(oldName: string): string {
+  const filename = isUnknownNetwork(oldName) ? oldName.replace('dev', 'unknown') : oldName;
+  return path.join(OPEN_ZEPPELIN_FOLDER, `${filename}.json`);
 }
 
 async function writeJSONFile(location: string, data: unknown): Promise<void> {
