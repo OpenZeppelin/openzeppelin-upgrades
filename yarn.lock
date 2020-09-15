@@ -9951,10 +9951,10 @@ solc@0.6.8:
     semver "^5.5.0"
     tmp "0.0.33"
 
-solidity-ast@^0.4.1:
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.3.tgz#543b63f2d5037e14b387f02aed711f64f10012e8"
-  integrity sha512-eg8F+IXqgz+IiRD3A0VJAXsfJ0BlHWbIoVvAg5vp4yKvxDy/kN+597hMwalZGx1LO9s9Wm/5Wzqf9fcuZCgslA==
+solidity-ast@^0.4.4:
+  version "0.4.4"
+  resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.4.tgz#50bfcf493d4dc1cb00d0c3414d0caa6da99c6f00"
+  integrity sha512-mSU95VtoTWicTlh39YAW2dLfGwYWjJ2acf5bZhE38SmnhENXrrGrxJfsc1fbul+puYqfQ4Pih9YBj+zwp9OeFg==
 
 sort-keys-length@^1.0.0:
   version "1.0.1"
@@ -11531,7 +11531,6 @@ websocket@^1.0.31:
 
 "websocket@github:web3-js/WebSocket-Node#polyfill/globalThis":
   version "1.0.29"
-  uid ef5ea2f41daf4a2113b80c9223df884b4d56c400
   resolved "https://codeload.github.com/web3-js/WebSocket-Node/tar.gz/ef5ea2f41daf4a2113b80c9223df884b4d56c400"
   dependencies:
     debug "^2.2.0"
