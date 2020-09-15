@@ -1,5 +1,8 @@
 # <img src="assets/banner.svg" alt="OpenZeppelin Upgrades" height="40px">
 
+[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins)
+[![Coverage Status](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades/graph/badge.svg)](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades)
+
 **Integrate upgrades into your existing workflow.** Plugins for [Buidler](https://buidler.dev/) and [Truffle](https://www.trufflesuite.com/truffle) to deploy and manage upgradeable contracts on Ethereum.
 
 - Deploy upgradeable contracts.
