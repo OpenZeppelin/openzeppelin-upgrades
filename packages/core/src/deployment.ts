@@ -16,30 +16,25 @@ export async function resumeOrDeploy<T extends Deployment>(
   deploy: () => Promise<T>,
 ): Promise<T> {
   if (cached !== undefined) {
-    const { txHash, address } = cached;
+    const { txHash } = cached;
     if (txHash === undefined) {
-      // Deployments can have address but no txHash if they were migrated from OpenZeppelin CLI
-      if (await hasCode(provider, address)) {
-        debug('found previous deployment in address', address);
-        return cached;
-      } else {
-        throw new InvalidDeployment(cached);
-      }
+      // Nothing to do here without a txHash.
+      // This is the case for deployments migrated from OpenZeppelin CLI.
+      return cached;
+    }
+    // If there is a deployment with txHash stored, we look its transaction up. If the
+    // transaction is found, the deployment is reused.
+    debug('found previous deployment', txHash);
+    const tx = await getTransactionByHash(provider, txHash);
+    if (tx !== null) {
+      debug('resuming previous deployment', txHash);
+      return cached;
+    } else if (!(await isDevelopmentNetwork(provider))) {
+      // If the transaction is not found we throw an error, except if we're in
+      // a development network then we simply silently redeploy.
+      throw new InvalidDeployment(cached);
     } else {
-      // If there is a deployment with txHash stored, we look its transaction up. If the
-      // transaction is found, the deployment is reused.
-      debug('found previous deployment', txHash);
-      const tx = await getTransactionByHash(provider, txHash);
-      if (tx !== null) {
-        debug('resuming previous deployment', txHash);
-        return cached;
-      } else if (!(await isDevelopmentNetwork(provider))) {
-        // If the transaction is not found we throw an error, except if we're in
-        // a development network then we simply silently redeploy.
-        throw new InvalidDeployment(cached);
-      } else {
-        debug('ignoring invalid deployment in development network', txHash);
-      }
+      debug('ignoring invalid deployment in development network', txHash);
     }
   }
 
