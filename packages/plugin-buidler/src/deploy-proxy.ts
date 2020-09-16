@@ -56,14 +56,16 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const allowNoInitialization = initializer === undefined && args.length === 0;
     initializer = initializer ?? 'initialize';
 
-    const initializers = ImplFactory.interface.fragments.filter(f => f.name === initializer);
-
-    if (initializers.length > 0) {
-      return ImplFactory.interface.encodeFunctionData(initializer, args);
-    } else if (allowNoInitialization) {
-      return '0x';
-    } else {
-      throw new Error(`Contract does not have a function \`${initializer}\``);
+    try {
+      const fragment = ImplFactory.interface.getFunction(initializer);
+      return ImplFactory.interface.encodeFunctionData(fragment, args);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        if (allowNoInitialization && e.message.includes('no matching function')) {
+          return '0x';
+        }
+      }
+      throw e;
     }
   }
 }

@@ -7,6 +7,7 @@ import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
 import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
+import { isNullish } from './utils/is-nullish';
 
 export type Validation = Record<string, ValidationResult>;
 
@@ -274,7 +275,7 @@ function* getStateVariableErrors(
 ): Generator<ValidationErrorWithName> {
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
-      if (!varDecl.constant && varDecl.value !== null) {
+      if (!varDecl.constant && !isNullish(varDecl.value)) {
         yield {
           kind: 'state-variable-assignment',
           name: varDecl.name,
@@ -300,7 +301,7 @@ function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
   const explicitUsage = [...findAll('Identifier', contractDef)]
     .filter(identifier => identifier.typeDescriptions.typeString?.match(/^type\(library/))
     .map(identifier => {
-      if (identifier.referencedDeclaration === null) {
+      if (isNullish(identifier.referencedDeclaration)) {
         throw new Error('Broken invariant: Identifier.referencedDeclaration should not be null');
       }
       return identifier.referencedDeclaration;

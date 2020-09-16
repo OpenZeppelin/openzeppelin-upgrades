@@ -1,11 +1,12 @@
 {
   "name": "@openzeppelin/truffle-upgrades",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
-    "/dist"
+    "/dist",
+    "/src"
   ],
   "bin": {
     "migrate-oz-cli-project": "dist/scripts/migrate-oz-cli-project.js"
@@ -13,16 +14,17 @@
   "scripts": {
     "prepublish": "rimraf dist *.tsbuildinfo",
     "prepare": "tsc -b",
-    "test": "tsc -b && bash test.sh"
+    "test": "tsc -b && bash test.sh",
+    "version": "node ../../scripts/bump-changelog.js"
   },
   "devDependencies": {
     "bn.js": "^5.1.2",
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^1.0.0",
+    "@openzeppelin/upgrades-core": "^1.0.1",
     "@truffle/contract": "^4.2.12",
-    "solidity-ast": "^0.4.1"
+    "solidity-ast": "^0.4.4"
   },
   "peerDependencies": {
     "truffle": "^5.1.35"
