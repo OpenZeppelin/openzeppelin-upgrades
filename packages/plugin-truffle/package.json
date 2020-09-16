@@ -11,7 +11,8 @@
   "scripts": {
     "prepublish": "rimraf dist *.tsbuildinfo",
     "prepare": "tsc -b",
-    "test": "tsc -b && bash test.sh"
+    "test": "tsc -b && bash test.sh",
+    "version": "node ../../scripts/bump-changelog.js"
   },
   "devDependencies": {
     "bn.js": "^5.1.2",

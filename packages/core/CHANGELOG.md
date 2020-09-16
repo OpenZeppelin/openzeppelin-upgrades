@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.2 (unreleased)
+## Unreleased
 
 - Fix false positive variable initialization check in Solidity 0.7.1. ([#171](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/171))
 
