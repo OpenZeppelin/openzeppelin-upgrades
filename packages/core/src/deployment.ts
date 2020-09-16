@@ -1,7 +1,7 @@
 import { promisify } from 'util';
 
 import debug from './utils/debug';
-import { EthereumProvider, getTransactionByHash, getCode, isDevelopmentNetwork } from './provider';
+import { EthereumProvider, getTransactionByHash, hasCode, isDevelopmentNetwork } from './provider';
 
 const sleep = promisify(setTimeout);
 
@@ -15,20 +15,31 @@ export async function resumeOrDeploy<T extends Deployment>(
   cached: T | undefined,
   deploy: () => Promise<T>,
 ): Promise<T> {
-  // If there is a deployment stored, we look its transaction up. If the
-  // transaction is found, the deployment is reused.
-  if (cached?.txHash !== undefined) {
-    debug('found previous deployment', cached.txHash);
-    const tx = await getTransactionByHash(provider, cached.txHash);
-    if (tx !== null) {
-      debug('resuming previous deployment', cached.txHash);
-      return cached;
-    } else if (!(await isDevelopmentNetwork(provider))) {
-      // If the transaction is not found we throw an error, except if we're in
-      // a development network then we simply silently redeploy.
-      throw new InvalidDeployment(cached);
+  if (cached !== undefined) {
+    const { txHash, address } = cached;
+    if (txHash === undefined) {
+      // Deployments can have address but no txHash if they were migrated from OpenZeppelin CLI
+      if (await hasCode(provider, address)) {
+        debug('found previous deployment in address', address);
+        return cached;
+      } else {
+        throw new InvalidDeployment(cached);
+      }
     } else {
-      debug('ignoring invalid deployment in development network', cached.txHash);
+      // If there is a deployment with txHash stored, we look its transaction up. If the
+      // transaction is found, the deployment is reused.
+      debug('found previous deployment', txHash);
+      const tx = await getTransactionByHash(provider, txHash);
+      if (tx !== null) {
+        debug('resuming previous deployment', txHash);
+        return cached;
+      } else if (!(await isDevelopmentNetwork(provider))) {
+        // If the transaction is not found we throw an error, except if we're in
+        // a development network then we simply silently redeploy.
+        throw new InvalidDeployment(cached);
+      } else {
+        debug('ignoring invalid deployment in development network', txHash);
+      }
     }
   }
 
@@ -38,36 +49,42 @@ export async function resumeOrDeploy<T extends Deployment>(
 }
 
 export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
-  const startTime = Date.now();
   const { txHash, address } = deployment;
+  const startTime = Date.now();
 
-  if (txHash === undefined) {
-    throw new Error('Invalid deployment');
-  }
+  if (txHash !== undefined) {
+    // Poll for 60 seconds with a 5 second poll interval.
+    // TODO: Make these parameters configurable.
+    const pollTimeout = 60e3;
+    const pollInterval = 5e3;
 
-  // Poll for 60 seconds with a 5 second poll interval.
-  // TODO: Make these parameters configurable.
-  while (Date.now() - startTime < 60e3) {
-    debug('verifying deployment tx mined', txHash);
-    const tx = await getTransactionByHash(provider, txHash);
-    if (tx === null) {
-      throw new InvalidDeployment(deployment);
-    }
-    if (tx.blockHash !== null) {
-      debug('verifying deployment tx succeeded', txHash);
-      const code = await getCode(provider, address);
-      if (code === '0x') {
-        throw new InvalidDeployment(deployment);
-      } else {
-        return;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime >= pollTimeout) {
+        // A timeout is NOT an InvalidDeployment
+        throw new TransactionMinedTimeout(deployment);
       }
+      debug('verifying deployment tx mined', txHash);
+      const tx = await getTransactionByHash(provider, txHash);
+      if (tx === null) {
+        throw new InvalidDeployment(deployment);
+      }
+      if (tx.blockHash !== null) {
+        debug('verifying deployment tx mined succeeded', txHash);
+        break;
+      }
+      debug('waiting for deployment tx mined', txHash);
+      await sleep(pollInterval);
     }
-    debug('waiting for deployment tx mined', txHash);
-    await sleep(5e3);
   }
 
-  // A timeout is NOT an InvalidDeployment
-  throw new TransactionMinedTimeout(deployment);
+  if (await hasCode(provider, address)) {
+    debug('verifying deployment succeeded', txHash);
+    return;
+  }
+
+  throw new InvalidDeployment(deployment);
 }
 
 export class TransactionMinedTimeout extends Error {
@@ -78,6 +95,6 @@ export class TransactionMinedTimeout extends Error {
 
 export class InvalidDeployment extends Error {
   constructor(readonly deployment: Deployment) {
-    super(`Invalid deployment ${deployment.txHash}`);
+    super(`Invalid deployment with address ${deployment.address} and txHash ${deployment.txHash}`);
   }
 }
