@@ -193,9 +193,15 @@ function transformImplementationItem(contract: ContractInterface): ImplDeploymen
 }
 
 function transformLayout(contract: ContractInterface): StorageLayout {
+  const { types, storage } = contract;
+
+  if (types === undefined || storage === undefined) {
+    throw new Error("Storage layout can't be undefined");
+  }
+
   return {
-    storage: contract.storage?.map(transformStorageItem) || [],
-    types: transformTypes(contract.types || {}),
+    storage: contract.storage.map(transformStorageItem),
+    types: transformTypes(contract.types),
   };
 }
 
