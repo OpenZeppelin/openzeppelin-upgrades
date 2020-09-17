@@ -252,7 +252,7 @@ function transformType(typeKind: TypeKind, oldType: LegacyType, getAstId: AstIdG
       };
     default:
       return {
-        label: oldType.label,
+        label: stripContractName(oldType.label),
       };
   }
 }
