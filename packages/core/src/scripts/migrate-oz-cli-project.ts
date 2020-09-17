@@ -199,8 +199,9 @@ function transformLayout(contract: ContractInterface): StorageLayout {
   }
 
   // We need to associate a made up astId to some types since the OpenZeppelin CLI used to drop them
+  const astIds = Object.keys(types);
   const getAstId = (typeName: string): number => {
-    const astId = Object.keys(types).indexOf(typeName);
+    const astId = astIds.indexOf(typeName);
     if (astId === -1) {
       throw new Error(`Could not find type ${typeName}`);
     }
