@@ -114,9 +114,9 @@ function getNetworkName(filename: string): string {
 }
 
 function isDevelopmentNetwork(network: string): boolean {
-  // 142 + 10 digits => ganache timestamp (some time since 2015)
+  // 13+ digits      => ganache timestamp
   // 31337           => buidler evm
-  return /^dev-(31337|142\d{10})$/.test(network);
+  return /^dev-(31337|\d{13,})$/.test(network);
 }
 
 function isUnknownNetwork(network: string): boolean {
@@ -293,9 +293,9 @@ function getArgument(typeName: string): string {
 }
 
 function stripContractName(s: string): string {
-  const match = s.match(/(.+)\.(.+)/);
-  // input might not contain a contract name, so we fallback to it
-  return match ? match[2] : s;
+  // regex always matches
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return s.match(/(.+\.)?(.+)/)![2];
 }
 
 function getTypeKind(typeName: string): TypeKind {

@@ -66,7 +66,7 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
         throw new InvalidDeployment(deployment);
       }
       if (tx.blockHash !== null) {
-        debug('verifying deployment tx mined succeeded', txHash);
+        debug('succeeded verifying deployment tx mined', txHash);
         break;
       }
       debug('waiting for deployment tx mined', txHash);
@@ -74,8 +74,8 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
     }
   }
 
+  debug('succeeded verifying deployment', txHash);
   if (await hasCode(provider, address)) {
-    debug('verifying deployment succeeded', txHash);
     return;
   }
 
@@ -90,6 +90,6 @@ export class TransactionMinedTimeout extends Error {
 
 export class InvalidDeployment extends Error {
   constructor(readonly deployment: Deployment) {
-    super(`Invalid deployment with address ${deployment.address} and txHash ${deployment.txHash}`);
+    super(`Invalid deployment with address ${deployment.address} and txHash ${deployment.txHash ?? 'unknown'}`);
   }
 }
