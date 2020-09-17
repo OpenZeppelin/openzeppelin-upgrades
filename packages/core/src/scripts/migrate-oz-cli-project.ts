@@ -194,43 +194,55 @@ function transformImplementationItem(contract: ContractInterface): ImplDeploymen
 
 function transformLayout(contract: ContractInterface): StorageLayout {
   const { types, storage } = contract;
-
   if (types === undefined || storage === undefined) {
     throw new Error("Storage layout can't be undefined");
   }
 
+  // We need to associate a made up astId to some types since the OpenZeppelin CLI used to drop them
+  const getAstId = (typeName: string): number => {
+    const astId = Object.keys(types).indexOf(typeName);
+    if (astId === -1) {
+      throw new Error(`Could not find type ${typeName}`);
+    }
+    return astId;
+  };
+
   return {
-    storage: contract.storage.map(transformStorageItem),
-    types: transformTypes(contract.types),
+    storage: storage.map((storageItem: LegacyStorageItem) => transformStorageItem(storageItem, getAstId)),
+    types: transformTypes(types, getAstId),
   };
 }
 
-function transformStorageItem(storageItem: LegacyStorageItem): StorageItem {
+function transformStorageItem(storageItem: LegacyStorageItem, getAstId: AstIdGetter): StorageItem {
   return {
     contract: storageItem.contract,
     label: storageItem.label,
-    type: transformTypeName(storageItem.type),
+    type: transformTypeName(storageItem.type, getAstId),
     // TODO reconstruct path and line if sourcecode is available
     src: storageItem.path,
   };
 }
 
-function transformTypes(oldTypes: LegacyTypes): Record<string, TypeItem> {
+function transformTypes(oldTypes: LegacyTypes, getAstId: AstIdGetter): Record<string, TypeItem> {
   const newTypes: Record<string, TypeItem> = {};
   for (const typeName in oldTypes) {
-    newTypes[transformTypeName(typeName)] = transformType(getTypeKind(typeName), oldTypes[typeName]);
+    newTypes[transformTypeName(typeName, getAstId)] = transformType(
+      getTypeKind(typeName),
+      oldTypes[typeName],
+      getAstId,
+    );
   }
   return newTypes;
 }
 
-function transformType(typeKind: TypeKind, oldType: LegacyType): TypeItem {
+function transformType(typeKind: TypeKind, oldType: LegacyType, getAstId: AstIdGetter): TypeItem {
   switch (typeKind) {
     case 'Struct':
       return {
         label: stripContractName(oldType.label),
         members: (oldType.members as StructMember[]).map(member => ({
           label: stripContractName(member.label),
-          type: transformTypeName(member.type),
+          type: transformTypeName(member.type, getAstId),
         })),
       };
     case 'Enum':
@@ -245,18 +257,18 @@ function transformType(typeKind: TypeKind, oldType: LegacyType): TypeItem {
   }
 }
 
-function transformTypeName(typeName: string): string {
+function transformTypeName(typeName: string, getAstId: AstIdGetter): string {
   switch (getTypeKind(typeName)) {
     case 'Struct':
-      return transformStructTypeName(typeName);
+      return transformStructTypeName(typeName, getAstId);
     case 'Enum':
-      return transformEnumTypeName(typeName);
+      return transformEnumTypeName(typeName, getAstId);
     case 'Mapping':
-      return transformMappingTypeName(typeName);
+      return transformMappingTypeName(typeName, getAstId);
     case 'DynArray':
-      return transformDynArrayTypeName(typeName);
+      return transformDynArrayTypeName(typeName, getAstId);
     case 'StaticArray':
-      return transformStaticArrayTypeName(typeName);
+      return transformStaticArrayTypeName(typeName, getAstId);
     case 'Elementary':
       return typeName;
     default:
@@ -264,31 +276,33 @@ function transformTypeName(typeName: string): string {
   }
 }
 
-function transformStructTypeName(typeName: string): string {
+function transformStructTypeName(typeName: string, getAstId: AstIdGetter): string {
   const name = stripContractName(getArgument(typeName));
-  return `t_struct(${name})_storage`;
+  const astId = getAstId(typeName);
+  return `t_struct(${name})${astId}_storage`;
 }
 
-function transformEnumTypeName(typeName: string): string {
+function transformEnumTypeName(typeName: string, getAstId: AstIdGetter): string {
   const name = stripContractName(getArgument(typeName));
-  return `t_enum(${name})`;
+  const astId = getAstId(typeName);
+  return `t_enum(${name})${astId}`;
 }
 
-function transformMappingTypeName(typeName: string): string {
-  const valueType = transformTypeName(getArgument(typeName));
+function transformMappingTypeName(typeName: string, getAstId: AstIdGetter): string {
+  const valueType = transformTypeName(getArgument(typeName), getAstId);
   return `t_mapping(unknown,${valueType})`;
 }
 
-function transformDynArrayTypeName(typeName: string): string {
-  const valueType = transformTypeName(getArgument(typeName));
+function transformDynArrayTypeName(typeName: string, getAstId: AstIdGetter): string {
+  const valueType = transformTypeName(getArgument(typeName), getAstId);
   return `t_array(${valueType})dyn_storage`;
 }
 
-function transformStaticArrayTypeName(typeName: string): string {
+function transformStaticArrayTypeName(typeName: string, getAstId: AstIdGetter): string {
   // here we assume the regex has been already validated
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const size = typeName.match(/:(\d+)/)![1];
-  const valueType = transformTypeName(getArgument(typeName));
+  const valueType = transformTypeName(getArgument(typeName), getAstId);
   return `t_array(${valueType})${size}_storage`;
 }
 
@@ -322,6 +336,7 @@ function getTypeKind(typeName: string): TypeKind {
 
 type TypeKind = 'Elementary' | 'Mapping' | 'Struct' | 'Enum' | 'DynArray' | 'StaticArray';
 type LegacyContracts = Record<string, ContractInterface>;
+type AstIdGetter = (typeName: string) => number;
 type LegacyTypes = Record<string, LegacyType>;
 type NetworkExportData = Pick<NetworkFileData, 'proxies' | 'proxyFactory' | 'app' | 'package' | 'provider'>;
 
