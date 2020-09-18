@@ -8,6 +8,9 @@
     "/dist",
     "/src"
   ],
+  "bin": {
+    "migrate-oz-cli-project": "dist/scripts/migrate-oz-cli-project.js"
+  },
   "scripts": {
     "prepublish": "rimraf dist *.tsbuildinfo",
     "prepare": "tsc -b",

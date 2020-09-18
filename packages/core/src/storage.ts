@@ -14,14 +14,24 @@ export interface StorageItem {
   src: string;
 }
 
-export interface TypeItem {
-  label: string;
-}
-
 export interface StorageLayout {
   storage: StorageItem[];
   types: Record<string, TypeItem>;
 }
+
+export interface TypeItem {
+  label: string;
+  members?: TypeItemMembers;
+}
+
+export type TypeItemMembers = StructMember[] | EnumMember[];
+
+export interface StructMember {
+  label: string;
+  type: string;
+}
+
+type EnumMember = string;
 
 export function extractStorageLayout(contractDef: ContractDefinition, decodeSrc: SrcDecoder): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {} };

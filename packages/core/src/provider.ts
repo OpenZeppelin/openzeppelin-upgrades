@@ -32,6 +32,11 @@ export async function getCode(provider: EthereumProvider, address: string, block
   return provider.send('eth_getCode', [address, block]);
 }
 
+export async function hasCode(provider: EthereumProvider, address: string, block?: string): Promise<boolean> {
+  const code = await getCode(provider, address, block);
+  return code !== '0x';
+}
+
 export async function getTransactionByHash(
   provider: EthereumProvider,
   txHash: string,

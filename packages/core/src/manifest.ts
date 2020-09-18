@@ -8,7 +8,7 @@ import { compare as compareVersions } from 'compare-versions';
 import type { Deployment } from './deployment';
 import { StorageLayout } from './storage';
 
-const manifestVersion = '3.0';
+const currentManifestVersion = '3.1';
 
 export interface ManifestData {
   manifestVersion: string;
@@ -24,7 +24,7 @@ export interface ImplDeployment extends Deployment {
 
 function defaultManifest(): ManifestData {
   return {
-    manifestVersion,
+    manifestVersion: currentManifestVersion,
     impls: {},
   };
 }
@@ -61,8 +61,7 @@ export class Manifest {
     const release = this.locked ? undefined : await this.lock();
     try {
       const data = JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
-      validateManifestVersion(data);
-      return data;
+      return validateOrUpdateManifestVersion(data);
     } catch (e) {
       if (e.code === 'ENOENT') {
         return defaultManifest();
@@ -105,22 +104,39 @@ export class Manifest {
   }
 }
 
-function validateManifestVersion(data: ManifestData) {
+function validateOrUpdateManifestVersion(data: ManifestData): ManifestData {
   if (typeof data.manifestVersion !== 'string') {
     throw new Error('Manifest version is missing');
   } else if (compareVersions(data.manifestVersion, '3.0', '<')) {
     throw new Error('Found a manifest file for OpenZeppelin CLI. An automated migration is not yet available.');
-  } else if (data.manifestVersion !== manifestVersion) {
+  } else if (compareVersions(data.manifestVersion, currentManifestVersion, '<')) {
+    return migrateManifest(data);
+  } else if (data.manifestVersion === currentManifestVersion) {
+    return data;
+  } else {
     throw new Error(`Unknown value for manifest version (${data.manifestVersion})`);
+  }
+}
+
+export function migrateManifest(data: ManifestData): ManifestData {
+  if (data.manifestVersion === '3.0') {
+    data.manifestVersion = currentManifestVersion;
+    return data;
+  } else {
+    throw new Error('Manifest migration not available');
   }
 }
 
 const tNullable = <C extends t.Mixed>(codec: C) => t.union([codec, t.undefined]);
 
-const DeploymentCodec = t.strict({
-  address: t.string,
-  txHash: t.string,
-});
+const DeploymentCodec = t.intersection([
+  t.strict({
+    address: t.string,
+  }),
+  t.partial({
+    txHash: t.string,
+  }),
+]);
 
 const ManifestDataCodec = t.intersection([
   t.strict({

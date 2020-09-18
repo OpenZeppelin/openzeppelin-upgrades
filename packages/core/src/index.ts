@@ -8,3 +8,5 @@ export * from './provider';
 export * from './src-decoder';
 export * from './solc-api';
 export * from './deployment';
+
+export * from './scripts/migrate-oz-cli-project';

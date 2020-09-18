@@ -13,9 +13,18 @@ test('deploys new contract', async t => {
   t.is(provider.deployCount, 1);
 });
 
-test('resumes existing deployment', async t => {
+test('resumes existing deployment with txHash', async t => {
   const provider = stubProvider();
   const first = await resumeOrDeploy(provider, undefined, provider.deployPending);
+  const second = await resumeOrDeploy(provider, first, provider.deployPending);
+  t.is(first, second);
+  t.is(provider.deployCount, 1);
+});
+
+test('resumes existing deployment without txHash', async t => {
+  const provider = stubProvider();
+  const first = await provider.deploy();
+  delete first.txHash;
   const second = await resumeOrDeploy(provider, first, provider.deployPending);
   t.is(first, second);
   t.is(provider.deployCount, 1);
@@ -41,11 +50,21 @@ test('redeploys if tx is not found on dev network', async t => {
   t.is(provider.deployCount, 1);
 });
 
-test('validates a mined deployment', async t => {
+test('validates a mined deployment with txHash', async t => {
   const provider = stubProvider();
   const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
   await waitAndValidateDeployment(provider, deployment);
   t.is(provider.getMethodCount('eth_getTransactionByHash'), 1);
+  t.is(provider.getMethodCount('eth_getCode'), 1);
+});
+
+test('validates a mined deployment without txHash', async t => {
+  const provider = stubProvider();
+  const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
+  delete deployment.txHash;
+  await waitAndValidateDeployment(provider, deployment);
+  t.is(provider.getMethodCount('eth_getTransactionByHash'), 0);
+  t.is(provider.getMethodCount('eth_getCode'), 1);
 });
 
 test('waits for a deployment to mine', async t => {
