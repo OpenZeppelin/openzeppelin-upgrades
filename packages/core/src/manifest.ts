@@ -118,7 +118,7 @@ function validateOrUpdateManifestVersion(data: ManifestData): ManifestData {
   }
 }
 
-function migrateManifest(data: ManifestData): ManifestData {
+export function migrateManifest(data: ManifestData): ManifestData {
   if (data.manifestVersion === '3.0') {
     data.manifestVersion = currentManifestVersion;
     return data;
