@@ -366,10 +366,12 @@ interface ContractInterface {
   localBytecodeHash?: string;
   deployedBytecodeHash?: string;
   bodyBytecodeHash?: string;
+  /* eslint-disable */
   types?: any;
   storage?: any;
   warnings?: any;
   [id: string]: any;
+  /* eslint-enable */
 }
 
 interface SolidityLibInterface {
