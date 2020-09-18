@@ -1,0 +1,26 @@
+{
+  "manifestVersion": "3.1",
+  "impls": {
+    "7684ac2352a16d4c7e9ad1151f813ac83ebd85b34a69c846c4814521747d1f72": {
+      "address": "0x78Aeff0658Fa67735fBF99Ce7CDB01Fe5D520259",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Box",
+            "label": "value",
+            "type": "t_uint256",
+            "src": "contracts/Box.sol"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          }
+        }
+      }
+    }
+  },
+  "admin": {
+    "address": "0x0C6c3C47A1f650809B0D1048FDf9603e09473D7E"
+  }
+}

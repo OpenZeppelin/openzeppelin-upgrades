@@ -1,0 +1,32 @@
+{
+  "networks": {
+    "rinkeby": {
+      "proxies": {
+        "my-project/Box": [
+          {
+            "address": "0x06bA8d8af0dF898D0712DffFb0f862cC51AF45c2",
+            "version": "1.0.0",
+            "implementation": "0x78Aeff0658Fa67735fBF99Ce7CDB01Fe5D520259",
+            "admin": "0x0C6c3C47A1f650809B0D1048FDf9603e09473D7E",
+            "kind": "Upgradeable"
+          }
+        ]
+      }
+    }
+  },
+  "compiler": {
+    "compilerSettings": {
+      "optimizer": {
+        "enabled": false,
+        "runs": "200"
+      }
+    },
+    "typechain": {
+      "enabled": false
+    },
+    "manager": "openzeppelin",
+    "solcVersion": "0.6.12",
+    "artifactsDir": "build/contracts",
+    "contractsDir": "contracts"
+  }
+}

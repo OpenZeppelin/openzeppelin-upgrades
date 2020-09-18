@@ -62,7 +62,7 @@ async function deleteLegacyFiles(manifestFiles: string[]): Promise<void> {
   await fs.unlink(PROJECT_FILE);
 }
 
-function migrateManifestsData(manifestsData: Record<string, NetworkFileData>): MigrationOutput {
+export function migrateManifestsData(manifestsData: Record<string, NetworkFileData>): MigrationOutput {
   const networksExportData: Record<string, NetworkExportData> = {};
   const newManifestsData: Record<string, ManifestData> = {};
 

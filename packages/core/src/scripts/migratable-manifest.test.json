@@ -1,0 +1,52 @@
+{
+  "contracts": {
+    "Box": {
+      "address": "0x78Aeff0658Fa67735fBF99Ce7CDB01Fe5D520259",
+      "constructorCode": "608060405234801561001057600080fd5b5060fe8061001f6000396000f3fe",
+      "bodyBytecodeHash": "51d4856e637de55520a2b521579378c173d8547fd6d0c948cf821f8eb7db2920",
+      "localBytecodeHash": "7684ac2352a16d4c7e9ad1151f813ac83ebd85b34a69c846c4814521747d1f72",
+      "deployedBytecodeHash": "7684ac2352a16d4c7e9ad1151f813ac83ebd85b34a69c846c4814521747d1f72",
+      "types": {
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Box",
+          "path": "contracts/Box.sol",
+          "label": "value",
+          "astId": 3,
+          "type": "t_uint256",
+          "src": "98:21:0"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
+    }
+  },
+  "solidityLibs": {},
+  "proxies": {
+    "my-project/Box": [
+      {
+        "address": "0x06bA8d8af0dF898D0712DffFb0f862cC51AF45c2",
+        "version": "1.0.0",
+        "implementation": "0x78Aeff0658Fa67735fBF99Ce7CDB01Fe5D520259",
+        "admin": "0x0C6c3C47A1f650809B0D1048FDf9603e09473D7E",
+        "kind": "Upgradeable"
+      }
+    ]
+  },
+  "manifestVersion": "2.2",
+  "version": "1.0.0",
+  "proxyAdmin": {
+    "address": "0x0C6c3C47A1f650809B0D1048FDf9603e09473D7E"
+  }
+}
