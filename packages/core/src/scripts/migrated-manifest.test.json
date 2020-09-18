@@ -1,8 +1,8 @@
 {
   "manifestVersion": "3.1",
   "impls": {
-    "7684ac2352a16d4c7e9ad1151f813ac83ebd85b34a69c846c4814521747d1f72": {
-      "address": "0x78Aeff0658Fa67735fBF99Ce7CDB01Fe5D520259",
+    "08100f44a71d905a66088b4c5d72f12417a580d454357e06dcc5ad12b3fa2cbc": {
+      "address": "0xb682dEEf4f8e298d86bFc3e21f50c675151FB974",
       "layout": {
         "storage": [
           {
@@ -10,17 +10,99 @@
             "label": "value",
             "type": "t_uint256",
             "src": "contracts/Box.sol"
+          },
+          {
+            "contract": "Box",
+            "label": "flag",
+            "type": "t_bool",
+            "src": "contracts/Box.sol"
+          },
+          {
+            "contract": "Box",
+            "label": "map",
+            "type": "t_mapping(unknown,t_bool)",
+            "src": "contracts/Box.sol"
+          },
+          {
+            "contract": "Box",
+            "label": "foo",
+            "type": "t_struct(MyStruct)3_storage",
+            "src": "contracts/Box.sol"
+          },
+          {
+            "contract": "Box",
+            "label": "myEnum",
+            "type": "t_enum(MyEnum)4",
+            "src": "contracts/Box.sol"
+          },
+          {
+            "contract": "Box",
+            "label": "dynArray",
+            "type": "t_array(t_uint256)dyn_storage",
+            "src": "contracts/Box.sol"
+          },
+          {
+            "contract": "Box",
+            "label": "staticArray",
+            "type": "t_array(t_uint256)10_storage",
+            "src": "contracts/Box.sol"
+          },
+          {
+            "contract": "Box",
+            "label": "enumArray",
+            "type": "t_array(t_enum(MyEnum)4)dyn_storage",
+            "src": "contracts/Box.sol"
+          },
+          {
+            "contract": "Box",
+            "label": "byteArray",
+            "type": "t_bytes8",
+            "src": "contracts/Box.sol"
           }
         ],
         "types": {
           "t_uint256": {
             "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(unknown,t_bool)": {
+            "label": "mapping(key => bool)"
+          },
+          "t_struct(MyStruct)3_storage": {
+            "label": "MyStruct",
+            "members": [
+              {
+                "label": "x",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_enum(MyEnum)4": {
+            "label": "MyEnum",
+            "members": [
+              "UP",
+              "DOWN"
+            ]
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_array(t_uint256)10_storage": {
+            "label": "uint256[10]"
+          },
+          "t_array(t_enum(MyEnum)4)dyn_storage": {
+            "label": "MyEnum[]"
+          },
+          "t_bytes8": {
+            "label": "bytes8"
           }
         }
       }
     }
   },
   "admin": {
-    "address": "0x0C6c3C47A1f650809B0D1048FDf9603e09473D7E"
+    "address": "0x1750499D05Ed1674d822430FB960d5F6731fDf64"
   }
 }

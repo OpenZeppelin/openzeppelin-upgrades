@@ -4,10 +4,10 @@
       "proxies": {
         "my-project/Box": [
           {
-            "address": "0x06bA8d8af0dF898D0712DffFb0f862cC51AF45c2",
+            "address": "0xE4C10Db67595aF2Cb4166c8C274e0140f7E43059",
             "version": "1.0.0",
-            "implementation": "0x78Aeff0658Fa67735fBF99Ce7CDB01Fe5D520259",
-            "admin": "0x0C6c3C47A1f650809B0D1048FDf9603e09473D7E",
+            "implementation": "0xb682dEEf4f8e298d86bFc3e21f50c675151FB974",
+            "admin": "0x1750499D05Ed1674d822430FB960d5F6731fDf64",
             "kind": "Upgradeable"
           }
         ]
