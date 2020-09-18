@@ -5,7 +5,6 @@ import util from 'util';
 import rimrafAsync from 'rimraf';
 import { promises as fs } from 'fs';
 import {
-  migrateManifestFiles,
   migrateManifestsData,
   NetworkFileData,
   ProjectFileData,
