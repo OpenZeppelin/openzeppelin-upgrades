@@ -28,7 +28,7 @@ export async function migrateLegacyProject(): Promise<void> {
   console.log(JSON.stringify(compiler, null, 2));
 }
 
-async function migrateManifestFiles(manifestFiles: string[]) {
+export async function migrateManifestFiles(manifestFiles: string[]): Promise<Record<string, NetworkExportData>> {
   const migratableManifestFiles = manifestFiles.filter(manifest => !isDevelopmentNetwork(getNetworkName(manifest)));
   const migratableManifestsData: Record<string, NetworkFileData> = {};
 
@@ -50,7 +50,7 @@ async function migrateManifestFiles(manifestFiles: string[]) {
   return networksExportData;
 }
 
-async function deleteLegacyFiles(manifestFiles: string[]): Promise<void> {
+export async function deleteLegacyFiles(manifestFiles: string[]): Promise<void> {
   const developmentManifests = manifestFiles.filter(manifestFile => isDevelopmentNetwork(getNetworkName(manifestFile)));
 
   for (const manifestFile of developmentManifests) {
@@ -341,7 +341,7 @@ type AstIdGetter = (typeName: string) => number;
 type LegacyTypes = Record<string, LegacyType>;
 type NetworkExportData = Pick<NetworkFileData, 'proxies' | 'proxyFactory' | 'app' | 'package' | 'provider'>;
 
-interface MigrationOutput {
+export interface MigrationOutput {
   newManifestsData: Record<string, ManifestData>;
   networksExportData: Record<string, NetworkExportData>;
 }
@@ -408,7 +408,7 @@ interface AddressWrapper {
   address?: string;
 }
 
-interface NetworkFileData {
+export interface NetworkFileData {
   contracts: { [name: string]: ContractInterface };
   solidityLibs: { [name: string]: SolidityLibInterface };
   proxies: { [contractName: string]: ProxyInterface[] };
@@ -443,7 +443,7 @@ interface ConfigFileCompilerOptions {
   };
 }
 
-interface ProjectFileData {
+export interface ProjectFileData {
   name: string;
   version: string;
   manifestVersion?: string;
