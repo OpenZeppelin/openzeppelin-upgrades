@@ -38,7 +38,7 @@ async function migrateManifestFiles(manifestFiles: string[]) {
   }
 
   // we run the entire data migration before writing anything to disk
-  const { newManifestsData, networksExportData } = await migrateManifestsData(migratableManifestsData);
+  const { newManifestsData, networksExportData } = migrateManifestsData(migratableManifestsData);
 
   for (const network in newManifestsData) {
     const newManifestData = newManifestsData[network];
@@ -62,7 +62,7 @@ async function deleteLegacyFiles(manifestFiles: string[]): Promise<void> {
   await fs.unlink(PROJECT_FILE);
 }
 
-async function migrateManifestsData(manifestsData: Record<string, NetworkFileData>): Promise<MigrationOutput> {
+function migrateManifestsData(manifestsData: Record<string, NetworkFileData>): MigrationOutput {
   const networksExportData: Record<string, NetworkExportData> = {};
   const newManifestsData: Record<string, ManifestData> = {};
 
