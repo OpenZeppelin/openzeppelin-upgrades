@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add a script to migrate from OpenZeppelin CLI. ([#143](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/143))
+
 ## 1.0.2 (2020-09-01)
 
 - Include `src` directory in npm packages. ([#150](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/150))
