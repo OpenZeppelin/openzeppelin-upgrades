@@ -1,7 +1,15 @@
 import _test, { TestInterface } from 'ava';
 import { promises as fs } from 'fs';
 
-import { validate, isUpgradeSafe, getStorageLayout, getContractVersion, Validation, assertUpgradeSafe, ValidationOptions } from './validate';
+import {
+  validate,
+  isUpgradeSafe,
+  getStorageLayout,
+  getContractVersion,
+  Validation,
+  assertUpgradeSafe,
+  ValidationOptions,
+} from './validate';
 import { solcInputOutputDecoder } from './src-decoder';
 
 interface Context {
@@ -25,7 +33,7 @@ function testValid(name: string, valid: boolean) {
 }
 
 function testOverride(name: string, opts: ValidationOptions, valid: boolean) {
-  const testName = name.concat( valid ? '_Allowed' : '_NotAllowed' );
+  const testName = name.concat(valid ? '_Allowed' : '_NotAllowed');
   test(testName, t => {
     const version = getContractVersion(t.context.validation, name);
     const assertUpgSafe = () => assertUpgradeSafe(t.context.validation, version, opts);
@@ -80,12 +88,12 @@ test('inherited storage', t => {
   }
 });
 
-testOverride('HasStruct', { unsafeAllowCustomTypes: true } , true);
+testOverride('HasStruct', { unsafeAllowCustomTypes: true }, true);
 testOverride('ParentHasStruct', { unsafeAllowCustomTypes: true }, true);
-testOverride('UsesLibraryWithStruct', { unsafeAllowCustomTypes: true } , true);
-testOverride('HasEnum', { unsafeAllowCustomTypes: true },  true);
-testOverride('ParentHasEnum', { unsafeAllowCustomTypes: true },  true);
-testOverride('UsesLibraryWithEnum', { unsafeAllowCustomTypes: true },  true);
+testOverride('UsesLibraryWithStruct', { unsafeAllowCustomTypes: true }, true);
+testOverride('HasEnum', { unsafeAllowCustomTypes: true }, true);
+testOverride('ParentHasEnum', { unsafeAllowCustomTypes: true }, true);
+testOverride('UsesLibraryWithEnum', { unsafeAllowCustomTypes: true }, true);
 
 testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);
 testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);
