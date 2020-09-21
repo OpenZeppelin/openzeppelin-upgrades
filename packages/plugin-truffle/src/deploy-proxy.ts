@@ -3,7 +3,8 @@ import {
   getStorageLayout,
   fetchOrDeploy,
   fetchOrDeployAdmin,
-  getVersion,
+  getValidVersion,
+  withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
 
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
@@ -22,13 +23,13 @@ export async function deployProxy(
   args: unknown[] = [],
   opts: Options & InitializerOptions = {},
 ): Promise<ContractInstance> {
-  const { deployer, unsafeAllowCustomTypes } = withDefaults(opts);
+  const { deployer } = withDefaults(opts);
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
-  const version = getVersion(Contract.bytecode);
-  assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
+  const version = getValidVersion(validations, Contract.bytecode);
+  assertUpgradeSafe(validations, version, withValidationDefaults(opts));
 
   const provider = wrapProvider(deployer.provider);
   const impl = await fetchOrDeploy(version, provider, async () => {

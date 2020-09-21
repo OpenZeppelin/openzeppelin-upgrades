@@ -6,7 +6,9 @@ import {
   getStorageLayout,
   fetchOrDeploy,
   fetchOrDeployAdmin,
-  getVersion,
+  getValidVersion,
+  ValidationOptions,
+  withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
@@ -19,9 +21,8 @@ export type DeployFunction = (
   opts?: DeployOptions,
 ) => Promise<Contract>;
 
-export interface DeployOptions {
+export interface DeployOptions extends ValidationOptions {
   initializer?: string;
-  unsafeAllowCustomTypes?: boolean;
 }
 
 export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction {
@@ -29,8 +30,8 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const { provider } = bre.network;
     const validations = await readValidations(bre);
 
-    const version = getVersion(ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
+    const version = getValidVersion(validations, ImplFactory.bytecode);
+    assertUpgradeSafe(validations, version, withValidationDefaults(opts));
 
     const impl = await fetchOrDeploy(version, provider, async () => {
       const deployment = await deploy(ImplFactory);

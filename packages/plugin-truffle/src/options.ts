@@ -1,14 +1,16 @@
 import { Deployer, ContractClass, ContractInstance, getTruffleConfig } from './truffle';
+import { ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
 
-export interface Options {
+export interface Options extends ValidationOptions {
   deployer?: Deployer;
-  unsafeAllowCustomTypes?: boolean;
 }
 
 export function withDefaults(opts: Options): Required<Options> {
+  const { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries } = withValidationDefaults(opts);
   return {
     deployer: opts.deployer ?? defaultDeployer,
-    unsafeAllowCustomTypes: opts.unsafeAllowCustomTypes ?? false,
+    unsafeAllowCustomTypes,
+    unsafeAllowLinkedLibraries,
   };
 }
 

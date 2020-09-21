@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
+import { extractLinkReferences, replaceLinkReferences, LinkReference } from './link-refs';
 import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
 import { isNullish } from './utils/is-nullish';
@@ -15,6 +16,7 @@ export interface ValidationResult {
   version?: Version;
   inherit: string[];
   libraries: string[];
+  linkReferences: LinkReference[];
   errors: ValidationError[];
   layout: StorageLayout;
 }
@@ -44,6 +46,18 @@ interface ValidationErrorOpcode extends ValidationErrorBase {
   kind: 'delegatecall' | 'selfdestruct';
 }
 
+export interface ValidationOptions {
+  unsafeAllowCustomTypes?: boolean;
+  unsafeAllowLinkedLibraries?: boolean;
+}
+
+export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
+  return {
+    unsafeAllowCustomTypes: opts.unsafeAllowCustomTypes ?? false,
+    unsafeAllowLinkedLibraries: opts.unsafeAllowLinkedLibraries ?? false,
+  };
+}
+
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validation {
   const validation: Validation = {};
   const fromId: Record<number, string> = {};
@@ -52,12 +66,15 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
-      const bytecode = solcOutput.contracts[source][contractName].evm.bytecode.object;
-      const version = bytecode === '' ? undefined : getVersion(bytecode);
+      const bytecode = solcOutput.contracts[source][contractName].evm.bytecode;
+      const version = bytecode.object === '' ? undefined : getVersion(bytecode.object);
+      const linkReferences = extractLinkReferences(bytecode);
+
       validation[contractName] = {
         version,
         inherit: [],
         libraries: [],
+        linkReferences,
         errors: [],
         layout: {
           storage: [],
@@ -111,10 +128,25 @@ export function getContractVersion(validation: Validation, contractName: string)
   return version;
 }
 
+function findContractByVersion(validation: Validation, version: Version): string | undefined {
+  return Object.keys(validation).find(name => validation[name].version?.withMetadata === version.withMetadata);
+}
+
+function isValidVersion(validation: Validation, version: Version): boolean {
+  return findContractByVersion(validation, version) !== undefined;
+}
+
+export function getValidVersion(validation: Validation, bytecode: string): Version {
+  let version: Version = getVersion(bytecode);
+  if (!isValidVersion(validation, version)) {
+    const unlinkedBytecode: string = getUnlinkedBytecode(validation, bytecode);
+    version = getVersion(unlinkedBytecode);
+  }
+  return version;
+}
+
 function getContractName(validation: Validation, version: Version): string {
-  const contractName = Object.keys(validation).find(
-    name => validation[name].version?.withMetadata === version.withMetadata,
-  );
+  const contractName = findContractByVersion(validation, version);
 
   if (contractName === undefined) {
     throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
@@ -134,15 +166,51 @@ export function getStorageLayout(validation: Validation, version: Version): Stor
   return layout;
 }
 
-export function assertUpgradeSafe(validation: Validation, version: Version, unsafeAllowCustomTypes = false): void {
+function getUnlinkedBytecode(validation: Validation, bytecode: string): string {
+  let unlinkedBytecode: string = bytecode;
+  Object.keys(validation)
+    .filter(name => validation[name].linkReferences.length > 0)
+    .find(name => {
+      const linkReferences: LinkReference[] = getLinkReferences(validation, name);
+      unlinkedBytecode = replaceLinkReferences(bytecode, linkReferences);
+      const version = getVersion(unlinkedBytecode);
+      validation[name].version?.withMetadata === version.withMetadata;
+    });
+  return unlinkedBytecode;
+}
+
+function getLinkReferences(validation: Validation, contractName: string): LinkReference[] {
+  const c = validation[contractName];
+
+  return c.linkReferences
+    .concat(...c.inherit.map(name => validation[name].linkReferences))
+    .concat(...c.libraries.map(name => validation[name].linkReferences));
+}
+
+export function assertUpgradeSafe(validation: Validation, version: Version, opts: ValidationOptions): void {
   const contractName = getContractName(validation, version);
   let errors = getErrors(validation, version);
   let thereAreExceptions = false;
+  let exceptionMessage = '';
 
-  if (unsafeAllowCustomTypes) {
+  if (opts.unsafeAllowCustomTypes) {
     errors = errors.filter(error => {
       const isException = ['enum-definition', 'struct-definition'].includes(error.kind);
       thereAreExceptions = thereAreExceptions || isException;
+      exceptionMessage +=
+        `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
+        `    Make sure you have manually checked the storage layout for incompatibilities.\n`;
+      return !isException;
+    });
+  }
+
+  if (opts.unsafeAllowLinkedLibraries) {
+    errors = errors.filter(error => {
+      const isException = ['external-library-linking'].includes(error.kind);
+      thereAreExceptions = thereAreExceptions || isException;
+      exceptionMessage +=
+        `    You are using the \`unsafeAllowLinkedLibraries\` flag to include external libraries.\n` +
+        `    Make sure you have manually checked that the linked libraries are upgrade safe.\n`;
       return !isException;
     });
   }
@@ -152,8 +220,7 @@ export function assertUpgradeSafe(validation: Validation, version: Version, unsa
       '\n' +
         chalk.keyword('orange').bold('Warning: ') +
         `Potentially unsafe deployment of ${contractName}\n\n` +
-        `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
-        `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
+        exceptionMessage,
     );
   }
 
@@ -196,7 +263,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   },
   'external-library-linking': {
     msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
-    hint: `Stick to libraries with internal functions only`,
+    hint: `If you have manually checked that the libraries are upgrade safe, you can skip this check with the \`unsafeAllowLinkedLibraries\` flag`,
     link: 'https://zpl.in/upgrades/error-006',
   },
   'struct-definition': {
@@ -293,7 +360,7 @@ function* getStateVariableErrors(
   }
 }
 
-function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
+export function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
   const implicitUsage = [...findAll('UsingForDirective', contractDef)].map(
     usingForDirective => usingForDirective.libraryName.referencedDeclaration,
   );

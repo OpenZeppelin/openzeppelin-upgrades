@@ -3,7 +3,8 @@ import {
   assertStorageUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
-  getVersion,
+  getValidVersion,
+  withValidationDefaults,
   Manifest,
   getImplementationAddress,
   getAdminAddress,
@@ -24,13 +25,13 @@ async function prepareUpgradeImpl(
   Contract: ContractClass,
   opts: Required<Options>,
 ): Promise<string> {
-  const { deployer, unsafeAllowCustomTypes } = opts;
+  const { deployer, unsafeAllowCustomTypes } = withDefaults(opts);
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
-  const version = getVersion(Contract.bytecode);
-  assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
+  const version = getValidVersion(validations, Contract.bytecode);
+  assertUpgradeSafe(validations, version, withValidationDefaults(opts));
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
