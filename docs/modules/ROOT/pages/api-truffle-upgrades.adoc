@@ -14,13 +14,14 @@ Options for this function are:
 * `initializer`: sets a different initializer function to call
 * `deployer`: set as the Truffle migration deployer during migrations
 * `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
+* `unsafeAllowLinkedLibraries`: allows a deployment with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
 
 [source,ts]
 ----
 async function deployProxy(
   Contract: ContractClass,
   args: unknown[] = [],
-  opts: { deployer: Deployer, initializer: string, unsafeAllowCustomTypes: boolean } = {},
+  opts: { deployer: Deployer, initializer: string, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean } = {},
 ): Promise<ContractInstance>
 ----
 
@@ -33,13 +34,14 @@ Options for this function are:
 
 * `deployer`: set as the Truffle migration deployer during migrations
 * `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
+* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
 
 [source,ts]
 ----
 async function upgradeProxy(
   proxyAddress: string,
   Contract: ContractClass,
-  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean } = {},
+  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean } = {},
 ): Promise<ContractInstance>
 ----
 
@@ -52,13 +54,14 @@ Options are:
 
 * `deployer`: set as the Truffle migration deployer during migrations
 * `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
+* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
 
 [source,ts]
 ----
 async function prepareUpgrade(
   proxyAddress: string,
   Contract: ContractClass,
-  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean } = {},
+  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean } = {},
 ): Promise<string>
 ----
 
