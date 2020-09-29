@@ -1,6 +1,5 @@
 pragma solidity ^0.5.1;
 
-import "@nomiclabs/buidler/console.sol";
 import "./Token.sol";
 
 contract TokenV3 is Token {

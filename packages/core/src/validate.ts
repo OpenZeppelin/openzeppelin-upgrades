@@ -344,7 +344,7 @@ function* getStateVariableErrors(
   }
 }
 
-export function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
+function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
   const implicitUsage = [...findAll('UsingForDirective', contractDef)].map(
     usingForDirective => usingForDirective.libraryName.referencedDeclaration,
   );
