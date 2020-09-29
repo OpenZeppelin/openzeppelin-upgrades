@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
-import { extractLinkReferences, replaceLinkReferences, LinkReference } from './link-refs';
+import { extractLinkReferences, unlinkBytecode, LinkReference } from './link-refs';
 import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
 import { isNullish } from './utils/is-nullish';
@@ -128,25 +128,10 @@ export function getContractVersion(validation: Validation, contractName: string)
   return version;
 }
 
-function findContractByVersion(validation: Validation, version: Version): string | undefined {
-  return Object.keys(validation).find(name => validation[name].version?.withMetadata === version.withMetadata);
-}
-
-function isValidVersion(validation: Validation, version: Version): boolean {
-  return findContractByVersion(validation, version) !== undefined;
-}
-
-export function getValidVersion(validation: Validation, bytecode: string): Version {
-  let version: Version = getVersion(bytecode);
-  if (!isValidVersion(validation, version)) {
-    const unlinkedBytecode: string = getUnlinkedBytecode(validation, bytecode);
-    version = getVersion(unlinkedBytecode);
-  }
-  return version;
-}
-
 function getContractName(validation: Validation, version: Version): string {
-  const contractName = findContractByVersion(validation, version);
+  const contractName = Object.keys(validation).find(
+    name => validation[name].version?.withMetadata === version.withMetadata,
+  );
 
   if (contractName === undefined) {
     throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
@@ -166,67 +151,66 @@ export function getStorageLayout(validation: Validation, version: Version): Stor
   return layout;
 }
 
-function getUnlinkedBytecode(validation: Validation, bytecode: string): string {
-  let unlinkedBytecode: string = bytecode;
-  Object.keys(validation)
-    .filter(name => validation[name].linkReferences.length > 0)
-    .find(name => {
-      const linkReferences: LinkReference[] = getLinkReferences(validation, name);
-      unlinkedBytecode = replaceLinkReferences(bytecode, linkReferences);
-      const version = getVersion(unlinkedBytecode);
-      validation[name].version?.withMetadata === version.withMetadata;
-    });
-  return unlinkedBytecode;
-}
+export function getUnlinkedBytecode(validation: Validation, bytecode: string): string {
+  const linkedContracts = Object.keys(validation).filter(name => validation[name].linkReferences.length > 0);
 
-function getLinkReferences(validation: Validation, contractName: string): LinkReference[] {
-  const c = validation[contractName];
+  for (const name of linkedContracts) {
+    const linkReferences = validation[name].linkReferences;
+    const unlinkedBytecode = unlinkBytecode(bytecode, linkReferences);
+    const version = getVersion(unlinkedBytecode);
 
-  return c.linkReferences
-    .concat(...c.inherit.map(name => validation[name].linkReferences))
-    .concat(...c.libraries.map(name => validation[name].linkReferences));
+    if (validation[name].version?.withMetadata === version.withMetadata) {
+      return unlinkedBytecode;
+    }
+  }
+
+  return bytecode;
 }
 
 export function assertUpgradeSafe(validation: Validation, version: Version, opts: ValidationOptions): void {
   const contractName = getContractName(validation, version);
   let errors = getErrors(validation, version);
-  let thereAreExceptions = false;
-  let exceptionMessage = '';
 
   if (opts.unsafeAllowCustomTypes) {
-    errors = errors.filter(error => {
-      const isException = ['enum-definition', 'struct-definition'].includes(error.kind);
-      thereAreExceptions = thereAreExceptions || isException;
-      exceptionMessage +=
+    errors = processExceptions(
+      errors,
+      ['enum-definition', 'struct-definition'],
+      `Potentially unsafe deployment of ${contractName}\n\n` +
         `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
-        `    Make sure you have manually checked the storage layout for incompatibilities.\n`;
-      return !isException;
-    });
+        `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
+    );
   }
 
   if (opts.unsafeAllowLinkedLibraries) {
-    errors = errors.filter(error => {
-      const isException = ['external-library-linking'].includes(error.kind);
-      thereAreExceptions = thereAreExceptions || isException;
-      exceptionMessage +=
+    errors = processExceptions(
+      errors,
+      ['external-library-linking'],
+      `Potentially unsafe deployment of ${contractName}\n\n` +
         `    You are using the \`unsafeAllowLinkedLibraries\` flag to include external libraries.\n` +
-        `    Make sure you have manually checked that the linked libraries are upgrade safe.\n`;
-      return !isException;
-    });
-  }
-
-  if (thereAreExceptions) {
-    console.error(
-      '\n' +
-        chalk.keyword('orange').bold('Warning: ') +
-        `Potentially unsafe deployment of ${contractName}\n\n` +
-        exceptionMessage,
+        `    Make sure you have manually checked that the linked libraries are upgrade safe.\n`,
     );
   }
 
   if (errors.length > 0) {
     throw new ValidationErrors(contractName, errors);
   }
+}
+
+function processExceptions(
+  errors: ValidationError[],
+  exceptions: string[],
+  exceptionMessage: string,
+): ValidationError[] {
+  let thereAreExceptions = false;
+  errors = errors.filter(error => {
+    const isException = exceptions.includes(error.kind);
+    thereAreExceptions = thereAreExceptions || isException;
+    return !isException;
+  });
+  if (thereAreExceptions) {
+    console.error('\n' + chalk.keyword('orange').bold('Warning: ') + exceptionMessage);
+  }
+  return errors;
 }
 
 export class ValidationErrors extends UpgradesError {
@@ -263,7 +247,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   },
   'external-library-linking': {
     msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
-    hint: `If you have manually checked that the libraries are upgrade safe, you can skip this check with the \`unsafeAllowLinkedLibraries\` flag`,
+    hint: `Use libraries with internal functions only, or skip this check with the \`unsafeAllowLinkedLibraries\` flag if you have manually checked that the libraries are upgrade safe`,
     link: 'https://zpl.in/upgrades/error-006',
   },
   'struct-definition': {

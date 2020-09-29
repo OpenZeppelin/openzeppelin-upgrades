@@ -1,6 +1,6 @@
 import test from 'ava';
 import { SolcBytecode } from './solc-api';
-import { extractLinkReferences, replaceLinkReferences, LinkReference } from './link-refs';
+import { extractLinkReferences, unlinkBytecode, LinkReference } from './link-refs';
 
 const bytecodeSolc =
   '0123456789__lib1____abcdef0123__lib2____4567890abcdef0123456__lib3______________789abcdef0123456789';
@@ -29,40 +29,40 @@ test('extractLinkReferences', t => {
     name: 'lib1',
     length: 5,
     start: 5,
-    placeHolder: '__lib1____',
+    placeholder: '__lib1____',
   });
   t.is(linkReferences[1].length, 5);
   t.is(linkReferences[1].start, 15);
   t.is(linkReferences[1].name, 'lib2');
   t.is(linkReferences[2].src, 'b.sol');
-  t.is(linkReferences[2].placeHolder, '__lib3______________');
+  t.is(linkReferences[2].placeholder, '__lib3______________');
 });
 
-test('replaceLinkReferences', t => {
+test('unlinkBytecode', t => {
   const linkReferences: LinkReference[] = [
     {
       src: 'a.sol',
       name: 'lib1',
       length: 5,
       start: 5,
-      placeHolder: '__lib1____',
+      placeholder: '__lib1____',
     },
     {
       src: 'a.sol',
       name: 'lib2',
       length: 5,
       start: 15,
-      placeHolder: '__lib2____',
+      placeholder: '__lib2____',
     },
     {
       src: 'b.sol',
       name: 'lib3',
       length: 10,
       start: 30,
-      placeHolder: '__lib3______________',
+      placeholder: '__lib3______________',
     },
   ];
-  const unlinkedBytecode: string = replaceLinkReferences(bytecodeLink, linkReferences);
+  const unlinkedBytecode: string = unlinkBytecode(bytecodeLink, linkReferences);
   t.is(unlinkedBytecode.length, bytecodeArtifact.length);
   t.is(unlinkedBytecode, bytecodeArtifact);
 });

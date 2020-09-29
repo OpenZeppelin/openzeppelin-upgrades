@@ -6,7 +6,8 @@ import {
   getStorageLayout,
   fetchOrDeploy,
   fetchOrDeployAdmin,
-  getValidVersion,
+  getVersion,
+  getUnlinkedBytecode,
   ValidationOptions,
   withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
@@ -30,7 +31,8 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     const { provider } = bre.network;
     const validations = await readValidations(bre);
 
-    const version = getValidVersion(validations, ImplFactory.bytecode);
+    const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
+    const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
     assertUpgradeSafe(validations, version, withValidationDefaults(opts));
 
     const impl = await fetchOrDeploy(version, provider, async () => {

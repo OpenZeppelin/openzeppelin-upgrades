@@ -5,7 +5,7 @@ export interface LinkReference {
   name: string;
   length: number;
   start: number;
-  placeHolder: string;
+  placeholder: string;
 }
 
 export function extractLinkReferences(bytecode: SolcBytecode): LinkReference[] {
@@ -14,25 +14,25 @@ export function extractLinkReferences(bytecode: SolcBytecode): LinkReference[] {
   for (const source of Object.keys(linkReferences)) {
     for (const name of Object.keys(linkReferences[source])) {
       const { length, start } = linkReferences[source][name][0];
-      const placeHolder = bytecode.object.substr(start * 2, length * 2);
+      const placeholder = bytecode.object.substr(start * 2, length * 2);
       linkRefs.push({
         src: source,
         name,
         length,
         start,
-        placeHolder,
+        placeholder,
       });
     }
   }
   return linkRefs;
 }
 
-export function replaceLinkReferences(bytecode: string, linkReferences: LinkReference[]): string {
-  let unlinkedBytecode: string = bytecode;
+export function unlinkBytecode(bytecode: string, linkReferences: LinkReference[]): string {
+  let unlinkedBytecode: string = bytecode.replace(/^0x/, '');
   for (const linkRef of linkReferences) {
-    const { length, start, placeHolder } = linkRef;
+    const { length, start, placeholder } = linkRef;
     unlinkedBytecode =
-      unlinkedBytecode.substr(0, 2 + start * 2) + placeHolder + unlinkedBytecode.substr(2 + (start + length) * 2);
+      unlinkedBytecode.substr(0, start * 2) + placeholder + unlinkedBytecode.substr((start + length) * 2);
   }
-  return unlinkedBytecode;
+  return '0x' + unlinkedBytecode;
 }

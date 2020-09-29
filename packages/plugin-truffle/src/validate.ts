@@ -1,10 +1,16 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 import { findAll } from 'solidity-ast/utils';
-import { validate, solcInputOutputDecoder, ValidationResult } from '@openzeppelin/upgrades-core';
+import {
+  validate,
+  solcInputOutputDecoder,
+  ValidationResult,
+  EthereumProvider,
+  getNetworkId,
+} from '@openzeppelin/upgrades-core';
 import { SolcInput, SolcOutput, SolcLinkReferences } from '@openzeppelin/upgrades-core/dist/solc-api';
 
-import { TruffleArtifact } from './truffle';
+import { TruffleArtifact, ContractClass, NetworkObject } from './truffle';
 
 export async function validateArtifacts(
   artifactsPath: string,
@@ -96,4 +102,21 @@ function reconstructLinkReferences(bytecode: string): SolcLinkReferences {
   }
 
   return linkReferences;
+}
+
+export async function getLinkedBytecode(Contract: ContractClass, provider: EthereumProvider): Promise<string> {
+  const networkId = await getNetworkId(provider);
+  const networkInfo: NetworkObject | undefined = Contract.networks?.[networkId];
+
+  if (networkInfo?.links !== undefined) {
+    let linkedBytecode: string = Contract.bytecode;
+    Object.keys(networkInfo.links).forEach((name: string) => {
+      const address = networkInfo.links[name].replace(/^0x/, '');
+      const regex = new RegExp(`__${name}_+`, 'g');
+      linkedBytecode = linkedBytecode.replace(regex, address);
+    });
+    return linkedBytecode;
+  } else {
+    return Contract.bytecode;
+  }
 }

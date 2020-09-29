@@ -6,7 +6,8 @@ import {
   assertStorageUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
-  getValidVersion,
+  getVersion,
+  getUnlinkedBytecode,
   Manifest,
   getImplementationAddress,
   getAdminAddress,
@@ -40,7 +41,8 @@ async function prepareUpgradeImpl(
   const { provider } = bre.network;
   const validations = await readValidations(bre);
 
-  const version = getValidVersion(validations, ImplFactory.bytecode);
+  const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
+  const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
   assertUpgradeSafe(validations, version, withValidationDefaults(opts));
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
