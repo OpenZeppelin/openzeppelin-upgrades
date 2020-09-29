@@ -96,7 +96,8 @@ function reconstructLinkReferences(bytecode: string): SolcLinkReferences {
     const placeHolder = bytecode.substr(pos, length);
     const libName = placeHolder.substr(2, placeHolder.indexOf(delimiter, 2) - 2);
     linkReferences['*'] = linkReferences['*'] ?? {};
-    linkReferences['*'][libName] = [{ length, start: pos / 2 }];
+    linkReferences['*'][libName] = linkReferences['*'][libName] ?? [];
+    linkReferences['*'][libName].push({ length, start: pos / 2 });
 
     index += pos + length * 2;
   }

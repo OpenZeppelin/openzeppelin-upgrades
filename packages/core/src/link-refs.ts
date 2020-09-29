@@ -13,15 +13,16 @@ export function extractLinkReferences(bytecode: SolcBytecode): LinkReference[] {
   const { linkReferences } = bytecode;
   for (const source of Object.keys(linkReferences)) {
     for (const name of Object.keys(linkReferences[source])) {
-      const { length, start } = linkReferences[source][name][0];
-      const placeholder = bytecode.object.substr(start * 2, length * 2);
-      linkRefs.push({
-        src: source,
-        name,
-        length,
-        start,
-        placeholder,
-      });
+      for (const { length, start } of linkReferences[source][name]) {
+        const placeholder = bytecode.object.substr(start * 2, length * 2);
+        linkRefs.push({
+          src: source,
+          name,
+          length,
+          start,
+          placeholder,
+        });
+      }
     }
   }
   return linkRefs;
