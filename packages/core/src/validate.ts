@@ -152,10 +152,10 @@ export function getStorageLayout(validation: Validation, version: Version): Stor
 }
 
 export function getUnlinkedBytecode(validation: Validation, bytecode: string): string {
-  const linkedContracts = Object.keys(validation).filter(name => validation[name].linkReferences.length > 0);
+  const linkableContracts = Object.keys(validation).filter(name => validation[name].linkReferences.length > 0);
 
-  for (const name of linkedContracts) {
-    const linkReferences = validation[name].linkReferences;
+  for (const name of linkableContracts) {
+    const { linkReferences } = validation[name];
     const unlinkedBytecode = unlinkBytecode(bytecode, linkReferences);
     const version = getVersion(unlinkedBytecode);
 
@@ -247,7 +247,9 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   },
   'external-library-linking': {
     msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
-    hint: `Use libraries with internal functions only, or skip this check with the \`unsafeAllowLinkedLibraries\` flag if you have manually checked that the libraries are upgrade safe`,
+    hint:
+      `Use libraries with internal functions only, or skip this check with the \`unsafeAllowLinkedLibraries\` flag \n` +
+      `    if you have manually checked that the libraries are upgrade safe`,
     link: 'https://zpl.in/upgrades/error-006',
   },
   'struct-definition': {
