@@ -28,12 +28,10 @@ export interface SolcInput {
 
 export type SolcLinkReferences = {
   [file in string]: {
-    [library in string]: [
-      {
-        length: number;
-        start: number;
-      },
-    ];
+    [library in string]: {
+      length: number;
+      start: number;
+    }[];
   };
 };
 

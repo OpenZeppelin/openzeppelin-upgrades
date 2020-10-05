@@ -90,13 +90,13 @@ function reconstructLinkReferences(bytecode: string): SolcLinkReferences {
   for (let index = 0; index < bytecode.length; ) {
     const pos = bytecode.indexOf(delimiter, index);
     if (pos === -1) {
-      return linkReferences;
+      break;
     }
     // Process link reference
     const placeHolder = bytecode.substr(pos, length);
     const libName = placeHolder.substr(2, placeHolder.indexOf(delimiter, 2) - 2);
-    linkReferences['*'] = linkReferences['*'] ?? {};
-    linkReferences['*'][libName] = linkReferences['*'][libName] ?? [];
+    linkReferences['*'] ??= {};
+    linkReferences['*'][libName] ??= [];
     linkReferences['*'][libName].push({ length, start: pos / 2 });
 
     index += pos + length * 2;
@@ -109,15 +109,11 @@ export async function getLinkedBytecode(Contract: ContractClass, provider: Ether
   const networkId = await getNetworkId(provider);
   const networkInfo: NetworkObject | undefined = Contract.networks?.[networkId];
 
-  if (networkInfo?.links !== undefined) {
-    let linkedBytecode: string = Contract.bytecode;
-    Object.keys(networkInfo.links).forEach((name: string) => {
-      const address = networkInfo.links[name].replace(/^0x/, '');
-      const regex = new RegExp(`__${name}_+`, 'g');
-      linkedBytecode = linkedBytecode.replace(regex, address);
-    });
-    return linkedBytecode;
-  } else {
-    return Contract.bytecode;
+  let linkedBytecode = Contract.bytecode;
+  for (const name in networkInfo?.links) {
+    const address = networkInfo?.links[name].replace(/^0x/, '') || '';
+    const regex = new RegExp(`__${name}_+`, 'g');
+    linkedBytecode = linkedBytecode.replace(regex, address);
   }
+  return linkedBytecode;
 }
