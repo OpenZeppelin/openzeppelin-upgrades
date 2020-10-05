@@ -8,7 +8,6 @@ import {
   getImplementationAddress,
   getAdminAddress,
   EthereumProvider,
-  withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
 
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
@@ -25,14 +24,14 @@ async function prepareUpgradeImpl(
   Contract: ContractClass,
   opts: Required<Options>,
 ): Promise<string> {
-  const { deployer, unsafeAllowCustomTypes } = withDefaults(opts);
+  const { deployer, unsafeAllowCustomTypes } = opts;
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
   const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
   const version = getVersion(Contract.bytecode, linkedBytecode);
-  assertUpgradeSafe(validations, version, withValidationDefaults(opts));
+  assertUpgradeSafe(validations, version, opts);
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);

@@ -12,7 +12,6 @@ import {
   getImplementationAddress,
   getAdminAddress,
   ValidationOptions,
-  withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyAdminFactory } from './proxy-factory';
@@ -43,7 +42,7 @@ async function prepareUpgradeImpl(
 
   const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
   const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
-  assertUpgradeSafe(validations, version, withValidationDefaults(opts));
+  assertUpgradeSafe(validations, version, opts);
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);

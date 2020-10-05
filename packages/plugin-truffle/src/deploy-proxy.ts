@@ -4,7 +4,6 @@ import {
   fetchOrDeploy,
   fetchOrDeployAdmin,
   getVersion,
-  withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
 
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
@@ -12,7 +11,7 @@ import { validateArtifacts, getLinkedBytecode } from './validate';
 import { deploy } from './utils/deploy';
 import { getProxyFactory, getProxyAdminFactory } from './factories';
 import { wrapProvider } from './wrap-provider';
-import { Options, withDefaults } from './options';
+import { Options, withDeployDefaults } from './options';
 
 interface InitializerOptions {
   initializer?: string;
@@ -23,7 +22,7 @@ export async function deployProxy(
   args: unknown[] = [],
   opts: Options & InitializerOptions = {},
 ): Promise<ContractInstance> {
-  const { deployer } = withDefaults(opts);
+  const { deployer } = withDeployDefaults(opts);
   const provider = wrapProvider(deployer.provider);
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
@@ -31,7 +30,7 @@ export async function deployProxy(
 
   const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
   const version = getVersion(Contract.bytecode, linkedBytecode);
-  assertUpgradeSafe(validations, version, withValidationDefaults(opts));
+  assertUpgradeSafe(validations, version, opts);
 
   const impl = await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(Contract, deployer);

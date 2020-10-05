@@ -9,7 +9,6 @@ import {
   getVersion,
   getUnlinkedBytecode,
   ValidationOptions,
-  withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
@@ -33,7 +32,7 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
 
     const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
     const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version, withValidationDefaults(opts));
+    assertUpgradeSafe(validations, version, opts);
 
     const impl = await fetchOrDeploy(version, provider, async () => {
       const deployment = await deploy(ImplFactory);

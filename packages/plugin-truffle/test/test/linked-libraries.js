@@ -28,13 +28,12 @@ contract('Token with flag', function (accounts) {
   });
 
   it('Redeploy Proxy again with different Library', async function () {
-    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllowLinkedLibraries: true });
+    await deployProxy(Token, ['TKN', 10000], { unsafeAllowLinkedLibraries: true });
 
     const safeMathLib2 = await SafeMathV2.deployed();
     Token.link('SafeMath', safeMathLib2.address);
     const tokenNew = await deployProxy(Token, ['TKN', 5000], { unsafeAllowLinkedLibraries: true });
 
-    assert.notEqual(token.address, tokenNew.address);
     assert.strictEqual('5000', (await tokenNew.totalSupply()).toString());
     assert.strictEqual('V2', await tokenNew.getLibraryVersion());
   });
