@@ -31,11 +31,20 @@ test('extractLinkReferences', t => {
     start: 5,
     placeholder: '__lib1____',
   });
-  t.is(linkReferences[1].length, 5);
-  t.is(linkReferences[1].start, 15);
-  t.is(linkReferences[1].name, 'lib2');
-  t.is(linkReferences[2].src, 'b.sol');
-  t.is(linkReferences[2].placeholder, '__lib3______________');
+  t.deepEqual(linkReferences[1], {
+    src: 'a.sol',
+    name: 'lib2',
+    length: 5,
+    start: 15,
+    placeholder: '__lib2____',
+  });
+  t.deepEqual(linkReferences[2], {
+    src: 'b.sol',
+    name: 'lib3',
+    length: 10,
+    start: 30,
+    placeholder: '__lib3______________',
+  });
 });
 
 test('unlinkBytecode', t => {
