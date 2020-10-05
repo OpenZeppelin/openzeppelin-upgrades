@@ -19,7 +19,7 @@ usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('@openzeppelin/buidler-upgrades');
 ----
 
-If you're using TypeScript, remember to add our [type extensions](https://buidler.dev/guides/typescript.html#plugin-type-extensions) in your `tsconfig.json`:
+If you're using TypeScript, remember to add our https://buidler.dev/guides/typescript.html#plugin-type-extensions[type extensions] in your `tsconfig.json`:
 
 [source,json]
 ----
