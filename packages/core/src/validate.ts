@@ -169,27 +169,9 @@ export function getUnlinkedBytecode(validation: Validation, bytecode: string): s
 
 export function assertUpgradeSafe(validation: Validation, version: Version, opts: ValidationOptions): void {
   const contractName = getContractName(validation, version);
+
   let errors = getErrors(validation, version);
-
-  if (opts.unsafeAllowCustomTypes) {
-    errors = processExceptions(
-      errors,
-      ['enum-definition', 'struct-definition'],
-      `Potentially unsafe deployment of ${contractName}\n\n` +
-        `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
-        `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
-    );
-  }
-
-  if (opts.unsafeAllowLinkedLibraries) {
-    errors = processExceptions(
-      errors,
-      ['external-library-linking'],
-      `Potentially unsafe deployment of ${contractName}\n\n` +
-        `    You are using the \`unsafeAllowLinkedLibraries\` flag to include external libraries.\n` +
-        `    Make sure you have manually checked that the linked libraries are upgrade safe.\n`,
-    );
-  }
+  errors = processExceptions(contractName, errors, opts);
 
   if (errors.length > 0) {
     throw new ValidationErrors(contractName, errors);
@@ -197,19 +179,62 @@ export function assertUpgradeSafe(validation: Validation, version: Version, opts
 }
 
 function processExceptions(
-  errors: ValidationError[],
-  exceptions: string[],
-  exceptionMessage: string,
+  contractName: string,
+  errorsToProcess: ValidationError[],
+  opts: ValidationOptions,
 ): ValidationError[] {
-  let thereAreExceptions = false;
+  const { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries } = withValidationDefaults(opts);
+  let errors: ValidationError[] = errorsToProcess;
+
+  // Process `unsafeAllowCustomTypes` flag
+  if (unsafeAllowCustomTypes) {
+    errors = processOverride(
+      contractName,
+      errors,
+      ['enum-definition', 'struct-definition'],
+      `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
+        `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
+    );
+  }
+
+  // Process `unsafeAllowLinkedLibraries` flag
+  if (unsafeAllowLinkedLibraries) {
+    errors = processOverride(
+      contractName,
+      errors,
+      ['external-library-linking'],
+      `    You are using the \`unsafeAllowLinkedLibraries\` flag to include external libraries.\n` +
+        `    Make sure you have manually checked that the linked libraries are upgrade safe.\n`,
+    );
+  }
+
+  return errors;
+}
+
+function processOverride(
+  contractName: string,
+  errorsToProcess: ValidationError[],
+  overrides: string[],
+  message: string,
+): ValidationError[] {
+  let errors: ValidationError[] = errorsToProcess;
+  let exceptionsFound = false;
+
   errors = errors.filter(error => {
-    const isException = exceptions.includes(error.kind);
-    thereAreExceptions = thereAreExceptions || isException;
+    const isException = overrides.includes(error.kind);
+    exceptionsFound = exceptionsFound || isException;
     return !isException;
   });
-  if (thereAreExceptions) {
-    console.error('\n' + chalk.keyword('orange').bold('Warning: ') + exceptionMessage);
+
+  if (exceptionsFound) {
+    console.error(
+      '\n' +
+        chalk.keyword('orange').bold('Warning: ') +
+        `Potentially unsafe deployment of ${contractName}\n\n` +
+        message,
+    );
   }
+
   return errors;
 }
 
