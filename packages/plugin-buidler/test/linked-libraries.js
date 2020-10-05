@@ -36,7 +36,6 @@ async function withFlag() {
   const TokenNew = await getLinkedContractFactory('Token', { SafeMath: safeMathLib2.address });
   const tokenNew = await upgrades.deployProxy(TokenNew, ['TKN', 5000], { unsafeAllowLinkedLibraries: true });
 
-  assert.notEqual(token.address, tokenNew.address);
   assert.strictEqual('5000', (await tokenNew.totalSupply()).toString());
   assert.strictEqual('V2', await tokenNew.getLibraryVersion());
 
@@ -75,6 +74,8 @@ async function withFlag() {
 }
 
 // linkBytecode: performs linking by replacing placeholders with deployed addresses
+// Recommended workaround from Buidler team until linking feature is implemented
+// https://github.com/nomiclabs/buidler/issues/611#issuecomment-638891597
 function linkBytecode(artifact, libraries) {
   let bytecode = artifact.bytecode;
   for (const [, fileReferences] of Object.entries(artifact.linkReferences)) {
