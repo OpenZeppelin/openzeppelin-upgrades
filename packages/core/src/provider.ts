@@ -14,8 +14,7 @@ interface EthereumTransaction {
 }
 
 export async function getNetworkId(provider: EthereumProvider): Promise<string> {
-  const networkId = await provider.send('net_version', []);
-  return networkId;
+  return provider.send('net_version', []);
 }
 
 export async function getChainId(provider: EthereumProvider): Promise<number> {
