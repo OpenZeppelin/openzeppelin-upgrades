@@ -16,6 +16,17 @@ export interface ContractClass {
   class_defaults: ContractClassDefaults;
   contractName: string;
   address?: string;
+  networks?: {
+    [id: string]: NetworkObject;
+  };
+}
+
+export interface NetworkObject {
+  address?: string;
+  transactionHash?: string;
+  links: {
+    [libName: string]: string;
+  };
 }
 
 export interface ContractClassDefaults {

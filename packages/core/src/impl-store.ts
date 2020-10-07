@@ -65,7 +65,7 @@ export async function fetchOrDeploy(
   provider: EthereumProvider,
   deploy: () => Promise<ImplDeployment>,
 ): Promise<string> {
-  return fetchOrDeployGeneric(implLens(version.withoutMetadata), provider, deploy);
+  return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy);
 }
 
 export async function fetchOrDeployAdmin(

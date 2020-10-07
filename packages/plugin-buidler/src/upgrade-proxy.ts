@@ -7,9 +7,11 @@ import {
   getStorageLayout,
   fetchOrDeploy,
   getVersion,
+  getUnlinkedBytecode,
   Manifest,
   getImplementationAddress,
   getAdminAddress,
+  ValidationOptions,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyAdminFactory } from './proxy-factory';
@@ -19,31 +21,28 @@ import { deploy } from './utils/deploy';
 export type PrepareUpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts?: UpgradeOptions,
+  opts?: ValidationOptions,
 ) => Promise<string>;
 
 export type UpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts?: UpgradeOptions,
+  opts?: ValidationOptions,
 ) => Promise<Contract>;
-
-export interface UpgradeOptions {
-  unsafeAllowCustomTypes?: boolean;
-}
 
 async function prepareUpgradeImpl(
   bre: BuidlerRuntimeEnvironment,
   manifest: Manifest,
   proxyAddress: string,
-  implFactory: ContractFactory,
-  opts: UpgradeOptions,
+  ImplFactory: ContractFactory,
+  opts: ValidationOptions,
 ): Promise<string> {
   const { provider } = bre.network;
   const validations = await readValidations(bre);
 
-  const version = getVersion(implFactory.bytecode);
-  assertUpgradeSafe(validations, version, opts.unsafeAllowCustomTypes);
+  const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
+  const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
+  assertUpgradeSafe(validations, version, opts);
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
@@ -52,7 +51,7 @@ async function prepareUpgradeImpl(
   assertStorageUpgradeSafe(deployment.layout, layout, opts.unsafeAllowCustomTypes);
 
   return await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(implFactory);
+    const deployment = await deploy(ImplFactory);
     return { ...deployment, layout };
   });
 }

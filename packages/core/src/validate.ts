@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
 import { extractStorageLayout, StorageLayout } from './storage';
+import { extractLinkReferences, unlinkBytecode, LinkReference } from './link-refs';
 import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
 import { isNullish } from './utils/is-nullish';
@@ -15,6 +16,7 @@ export interface ValidationResult {
   version?: Version;
   inherit: string[];
   libraries: string[];
+  linkReferences: LinkReference[];
   errors: ValidationError[];
   layout: StorageLayout;
 }
@@ -44,6 +46,18 @@ interface ValidationErrorOpcode extends ValidationErrorBase {
   kind: 'delegatecall' | 'selfdestruct';
 }
 
+export interface ValidationOptions {
+  unsafeAllowCustomTypes?: boolean;
+  unsafeAllowLinkedLibraries?: boolean;
+}
+
+export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
+  return {
+    unsafeAllowCustomTypes: opts.unsafeAllowCustomTypes ?? false,
+    unsafeAllowLinkedLibraries: opts.unsafeAllowLinkedLibraries ?? false,
+  };
+}
+
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validation {
   const validation: Validation = {};
   const fromId: Record<number, string> = {};
@@ -52,12 +66,15 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
-      const bytecode = solcOutput.contracts[source][contractName].evm.bytecode.object;
-      const version = bytecode === '' ? undefined : getVersion(bytecode);
+      const bytecode = solcOutput.contracts[source][contractName].evm.bytecode;
+      const version = bytecode.object === '' ? undefined : getVersion(bytecode.object);
+      const linkReferences = extractLinkReferences(bytecode);
+
       validation[contractName] = {
         version,
         inherit: [],
         libraries: [],
+        linkReferences,
         errors: [],
         layout: {
           storage: [],
@@ -134,32 +151,91 @@ export function getStorageLayout(validation: Validation, version: Version): Stor
   return layout;
 }
 
-export function assertUpgradeSafe(validation: Validation, version: Version, unsafeAllowCustomTypes = false): void {
+export function getUnlinkedBytecode(validation: Validation, bytecode: string): string {
+  const linkableContracts = Object.keys(validation).filter(name => validation[name].linkReferences.length > 0);
+
+  for (const name of linkableContracts) {
+    const { linkReferences } = validation[name];
+    const unlinkedBytecode = unlinkBytecode(bytecode, linkReferences);
+    const version = getVersion(unlinkedBytecode);
+
+    if (validation[name].version?.withMetadata === version.withMetadata) {
+      return unlinkedBytecode;
+    }
+  }
+
+  return bytecode;
+}
+
+export function assertUpgradeSafe(validation: Validation, version: Version, opts: ValidationOptions): void {
   const contractName = getContractName(validation, version);
+
   let errors = getErrors(validation, version);
-  let thereAreExceptions = false;
-
-  if (unsafeAllowCustomTypes) {
-    errors = errors.filter(error => {
-      const isException = ['enum-definition', 'struct-definition'].includes(error.kind);
-      thereAreExceptions = thereAreExceptions || isException;
-      return !isException;
-    });
-  }
-
-  if (thereAreExceptions) {
-    console.error(
-      '\n' +
-        chalk.keyword('orange').bold('Warning: ') +
-        `Potentially unsafe deployment of ${contractName}\n\n` +
-        `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
-        `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
-    );
-  }
+  errors = processExceptions(contractName, errors, opts);
 
   if (errors.length > 0) {
     throw new ValidationErrors(contractName, errors);
   }
+}
+
+function processExceptions(
+  contractName: string,
+  errorsToProcess: ValidationError[],
+  opts: ValidationOptions,
+): ValidationError[] {
+  const { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries } = withValidationDefaults(opts);
+  let errors: ValidationError[] = errorsToProcess;
+
+  // Process `unsafeAllowCustomTypes` flag
+  if (unsafeAllowCustomTypes) {
+    errors = processOverride(
+      contractName,
+      errors,
+      ['enum-definition', 'struct-definition'],
+      `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
+        `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
+    );
+  }
+
+  // Process `unsafeAllowLinkedLibraries` flag
+  if (unsafeAllowLinkedLibraries) {
+    errors = processOverride(
+      contractName,
+      errors,
+      ['external-library-linking'],
+      `    You are using the \`unsafeAllowLinkedLibraries\` flag to include external libraries.\n` +
+        `    Make sure you have manually checked that the linked libraries are upgrade safe.\n`,
+    );
+  }
+
+  return errors;
+}
+
+function processOverride(
+  contractName: string,
+  errorsToProcess: ValidationError[],
+  overrides: string[],
+  message: string,
+): ValidationError[] {
+  let errors: ValidationError[] = errorsToProcess;
+  let exceptionsFound = false;
+
+  errors = errors.filter(error => {
+    const isException = overrides.includes(error.kind);
+    exceptionsFound = exceptionsFound || isException;
+    return !isException;
+  });
+
+  if (exceptionsFound) {
+    console.error(
+      '\n' +
+        chalk.keyword('orange').bold('Warning: ') +
+        `Potentially unsafe deployment of ${contractName}\n\n` +
+        message,
+    );
+  }
+
+  return errors;
 }
 
 export class ValidationErrors extends UpgradesError {
@@ -196,7 +272,9 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   },
   'external-library-linking': {
     msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
-    hint: `Stick to libraries with internal functions only`,
+    hint:
+      `Use libraries with internal functions only, or skip this check with the \`unsafeAllowLinkedLibraries\` flag \n` +
+      `    if you have manually checked that the libraries are upgrade safe`,
     link: 'https://zpl.in/upgrades/error-006',
   },
   'struct-definition': {

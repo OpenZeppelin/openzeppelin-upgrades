@@ -11,7 +11,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
-import { validateArtifacts } from './validate';
+import { validateArtifacts, getLinkedBytecode } from './validate';
 import { deploy } from './utils/deploy';
 import { getProxyAdminFactory } from './factories';
 import { wrapProvider } from './wrap-provider';
@@ -29,8 +29,9 @@ async function prepareUpgradeImpl(
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
-  const version = getVersion(Contract.bytecode);
-  assertUpgradeSafe(validations, version, unsafeAllowCustomTypes);
+  const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
+  const version = getVersion(Contract.bytecode, linkedBytecode);
+  assertUpgradeSafe(validations, version, opts);
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);

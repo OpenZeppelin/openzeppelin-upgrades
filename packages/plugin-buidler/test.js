@@ -34,6 +34,7 @@ testFile('happy-path');
 testFile('happy-path-with-library');
 testFile('happy-path-with-structs');
 testFile('happy-path-with-enums');
+testFile('linked-libraries');
 testFile('change-admin-happy-path');
 testFile('transfer-admin-ownership-happy-path');
 testFile('deploy-validation');

@@ -2,6 +2,7 @@ import BN from 'bn.js';
 
 export interface EthereumProvider {
   send(method: 'eth_chainId', params: []): Promise<string>;
+  send(method: 'net_version', params: []): Promise<string>;
   send(method: 'eth_getCode', params: [string, string]): Promise<string>;
   send(method: 'eth_getStorageAt', params: [string, string, string]): Promise<string>;
   send(method: 'eth_getTransactionByHash', params: [string]): Promise<null | EthereumTransaction>;
@@ -10,6 +11,10 @@ export interface EthereumProvider {
 
 interface EthereumTransaction {
   blockHash: string | null;
+}
+
+export async function getNetworkId(provider: EthereumProvider): Promise<string> {
+  return provider.send('net_version', []);
 }
 
 export async function getChainId(provider: EthereumProvider): Promise<number> {

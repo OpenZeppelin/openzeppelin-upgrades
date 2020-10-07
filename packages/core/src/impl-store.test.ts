@@ -21,7 +21,7 @@ test.after(async () => {
 });
 
 const version1 = getVersion('01');
-const version2 = getVersion('02');
+const version2 = getVersion('02', '02');
 
 test('deploys on cache miss', async t => {
   const provider = stubProvider();

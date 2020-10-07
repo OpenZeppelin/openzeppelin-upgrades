@@ -4,13 +4,15 @@ import cbor from 'cbor';
 export interface Version {
   withMetadata: string;
   withoutMetadata: string;
+  linkedWithoutMetadata: string;
 }
 
-export function getVersion(bytecode: string): Version {
+export function getVersion(bytecode: string, linkedBytecode?: string): Version {
   if (bytecode !== '') {
     return {
       withMetadata: hashBytecode(bytecode),
       withoutMetadata: hashBytecodeWithoutMetadata(bytecode),
+      linkedWithoutMetadata: hashBytecodeWithoutMetadata(linkedBytecode ?? bytecode),
     };
   } else {
     throw new Error('Abstract contract not allowed here');

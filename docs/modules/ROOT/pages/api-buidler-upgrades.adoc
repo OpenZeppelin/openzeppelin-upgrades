@@ -11,13 +11,14 @@ Options are:
 
 * `initializer`: sets a different initializer function to call
 * `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
+* `unsafeAllowLinkedLibraries`: allows a deployment with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
 
 [source,ts]
 ----
 async function deployProxy(
   Contract: ethers.ContractFactory,
   args: unknown[] = [],
-  opts: { initializer: string, unsafeAllowCustomTypes: boolean } = {},
+  opts: { initializer: string, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean } = {},
 ): Promise<ethers.Contract>
 ----
 
@@ -29,13 +30,14 @@ Upgrades a proxy at a specified address to a new implementation contract, and re
 Options are:
 
 * `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
+* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
 
 [source,ts]
 ----
 async function upgradeProxy(
   proxyAddress: string,
   Contract: ethers.ContractFactory,
-  opts: { unsafeAllowCustomTypes: boolean } = {},
+  opts: { unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean } = {},
 ): Promise<ethers.Contract>
 ----
 
@@ -47,13 +49,14 @@ Validates and deploys a new implementation contract, and returns its address. Us
 Options are:
 
 * `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
+* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
 
 [source,ts]
 ----
 async function prepareUpgrade(
   proxyAddress: string,
   Contract: ethers.ContractFactory,
-  opts: { unsafeAllowCustomTypes: boolean } = {},
+  opts: { unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean } = {},
 ): Promise<string>
 ----
 

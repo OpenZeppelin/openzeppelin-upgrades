@@ -26,11 +26,16 @@ export interface SolcInput {
   };
 }
 
-export interface SolcBytecode {
-  linkReferences: {
-    [file in string]: {
-      [library in string]: unknown;
-    };
+export type SolcLinkReferences = {
+  [file in string]: {
+    [library in string]: {
+      length: number;
+      start: number;
+    }[];
   };
+};
+
+export interface SolcBytecode {
+  linkReferences: SolcLinkReferences;
   object: string;
 }
