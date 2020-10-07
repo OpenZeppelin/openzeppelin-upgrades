@@ -2,6 +2,7 @@
   "name": "@openzeppelin/buidler-upgrades",
   "version": "1.1.0",
   "description": "",
+  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-buidler",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
