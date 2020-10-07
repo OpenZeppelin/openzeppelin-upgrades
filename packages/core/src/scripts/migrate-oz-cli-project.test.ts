@@ -62,7 +62,7 @@ test('export file contains networks and compiler data', async t => {
   t.deepEqual(actual, expected);
 });
 
-test('zosversion', async t => {
+test('zosversion', t => {
   const migratableDataZosVersion = { zosversion: '2.2', ...migratableData };
   delete migratableDataZosVersion.manifestVersion;
   const output = migrateManifestsData({ rinkeby: migratableDataZosVersion });
