@@ -68,20 +68,22 @@ export function migrateManifestsData(manifestsData: Record<string, NetworkFileDa
 
   for (const network of Object.keys(manifestsData)) {
     const oldManifestData = manifestsData[network];
-    const { manifestVersion } = oldManifestData;
+    const { manifestVersion, zosversion } = oldManifestData;
 
-    if (manifestVersion === undefined) {
+    const currentVersion = manifestVersion ?? zosversion;
+
+    if (currentVersion === undefined) {
       throw new Error('Migration failed: manifest version too old. Update your OpenZeppelin CLI version.');
     }
 
-    if (compareVersions(manifestVersion, '3.0', '>=')) {
+    if (compareVersions(currentVersion, '3.0', '>=')) {
       // no need to migrate
       continue;
     }
 
-    if (manifestVersion !== '2.2') {
+    if (currentVersion !== '2.2') {
       throw new Error(
-        `Migration failed: expected manifest version 2.2, got ${manifestVersion} instead. Update your OpenZeppelin CLI version.`,
+        `Migration failed: expected manifest version 2.2, got ${currentVersion} instead. Update your OpenZeppelin CLI version.`,
       );
     }
 

@@ -4,6 +4,7 @@ import path from 'path';
 import util from 'util';
 import rimrafAsync from 'rimraf';
 import { promises as fs } from 'fs';
+import { compare as compareVersions } from 'compare-versions';
 import {
   migrateManifestsData,
   NetworkFileData,
@@ -59,4 +60,11 @@ test('export file contains networks and compiler data', async t => {
     compiler: projectData.compiler,
   };
   t.deepEqual(actual, expected);
+});
+
+test('zosversion', t => {
+  const migratableDataZosVersion = { zosversion: '2.2', ...migratableData };
+  delete migratableDataZosVersion.manifestVersion;
+  const output = migrateManifestsData({ rinkeby: migratableDataZosVersion });
+  t.true(compareVersions(output.newManifestsData.rinkeby.manifestVersion, '3.0', '>='));
 });
