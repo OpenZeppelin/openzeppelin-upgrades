@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add prepareUpgrade to Buidler type extensions. ([#184](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/184))
+
 ## 1.1.0 (2020-09-18)
 
 - Add a script to migrate from OpenZeppelin CLI. ([#143](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/143))

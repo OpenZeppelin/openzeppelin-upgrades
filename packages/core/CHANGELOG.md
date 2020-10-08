@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix OpenZeppelin CLI migration for projects that were initialized with ZeppelinOS. ([#193](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/193))
+
 ## 1.1.0 (2020-09-18)
 
 - Add ability to migrate from OpenZeppelin CLI. ([#143](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/143))
