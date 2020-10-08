@@ -2,7 +2,7 @@
 
 ## 1.1.1 (2020-10-08)
 
-- Add prepareUpgrade to Buidler type extensions. ([#184](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/184))
+- Fix OpenZeppelin CLI migration for projects that were initialized with ZeppelinOS. ([#193](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/193))
 
 ## 1.1.0 (2020-09-18)
 
