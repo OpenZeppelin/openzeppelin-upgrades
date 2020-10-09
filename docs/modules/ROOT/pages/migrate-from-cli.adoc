@@ -2,6 +2,8 @@
 
 This guide will walk through migrating a project from the OpenZeppelin CLI to OpenZeppelin Upgrades Plugins for either Truffle or Buidler.
 
+include::partial$buidler-truffle-toggle.adoc[]
+
 TIP: For a sample OpenZeppelin CLI project, you can clone https://github.com/martriay/openzeppelin-upgrades-plugins-migration-example[this repo] (read the instructions in the readme!).
 
 == What's the difference?
@@ -14,8 +16,8 @@ Keeping that aside, everything else remains the same since both the CLI and plug
 
 == Installation
 
-=== Buidler
-
+[.buidler]
+--
 https://buidler.dev/tutorial/creating-a-new-buidler-project.html[Install Buidler] and when initializing it, select the `Create an empty buidler.config.js` option.
 
 ```bash
@@ -41,15 +43,17 @@ module.exports = {
 	// ...
 };1
 ```
+--
 
-=== Truffle
-
+[.truffle]
+--
 Initialize your project and don't overwrite contracts or test directories. By not overwriting contracts directory, you won't get an https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations#initial-migration[initial migration (`Migrations.sol`)]. Make sure you create one.
 
 ```json
 $ npm install --save-dev truffle @openzeppelin/truffle-upgrades
 $ npx truffle init
 ```
+--
 
 == Migrating the CLI project
 
@@ -88,8 +92,8 @@ This script was installed along with the plugins and what it does is to delete t
 
 The migration script will also export a `openzeppelin-cli-export.json` file into your working directory containing all the data that the CLI used to manage for you and now you're free to use however you think it's best. This is including your compiler settings, which are also printed at the end of the migration for convenience. Let's add them to our new project config:
 
-=== Buidler
-
+[.buidler]
+--
 Copy compiler settings into the https://buidler.dev/config/#available-config-options[`solc` field] in the Buidler config file
 
 ```json
@@ -108,9 +112,10 @@ module.exports = {
 	}
 }
 ```
+--
 
-=== Truffle
-
+[.truffle]
+--
 Copy compiler settings into the https://www.trufflesuite.com/docs/truffle/reference/configuration#compiler-configuration[`compilers` field] of our Truffle config file
 
 ```json
@@ -131,8 +136,9 @@ module.exports = {
 	}
 }
 ```
+--
 
-Notice the solc configuration format differences  in `truffle-config.js` and `buidler.config.js` files
+NOTE: The solc configuration format is different  in `truffle-config.js` and `buidler.config.js` files
 
 And that's it, you have successfully migrated your CLI project. Let's now try your new setup upgrading one of your migrated contracts.
 
@@ -174,8 +180,8 @@ And this is how it would look like if we decided to upgrade our `Box` contract t
 
 These scripts are just examples of how to use the exported data. We make no suggestions on whether to keep that file as it is or how to handle its data. This is up to the user now.
 
-=== Buidler
-
+[.buidler]
+--
 With Buidler, we would write a script (*you can read more about Buidler scripts https://buidler.dev/guides/scripts.html[here] and about using the `buidler-upgrades` plugin https://docs.openzeppelin.com/upgrades-plugins/1.x/buidler-upgrades[here]*):
 
 ```jsx
@@ -196,8 +202,10 @@ main();
 ```bash
 $ npx buidler run scripts/upgradeBoxToV2.js --network rinkeby
 ```
+--
 
-=== Truffle
+[.truffle]
+--
 
 With Truffle, we would write a migration (*you can read more about Truffle migrations https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations[here] and about using the `truffle-upgrades` plugin https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades[here]*):
 
@@ -219,5 +227,6 @@ module.exports = async function (deployer) {
 ```bash
 $ npx truffle migrate --network rinkeby
 ```
+--
 
 And that's it! You have migrated your OpenZeppelin CLI project to Truffle or Buidler and performed an upgrade using the plugins.
