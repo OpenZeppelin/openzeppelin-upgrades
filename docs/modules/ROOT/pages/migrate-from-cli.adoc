@@ -1,12 +1,12 @@
-# OpenZeppelin Upgrades plugins: CLI migration guide
+= Migrate from OpenZeppelin CLI
 
-As you may already know, we recently [released two plugins to upgrade smart contracts](https://blog.openzeppelin.com/upgrades-plugins-for-buidler-and-truffle/) in your Buidler or Truffle projects. You can kickstart your upgradeable project by just following [the documentation](https://docs.openzeppelin.com/upgrades-plugins/1.x/), but if it is already built with the OpenZeppelin CLI and you'd like to make the switch to use Buidler or Truffle, this is your guide.
+As you may already know, we recently https://blog.openzeppelin.com/upgrades-plugins-for-buidler-and-truffle/[released two plugins to upgrade smart contracts] in your Buidler or Truffle projects. You can kickstart your upgradeable project by just following https://docs.openzeppelin.com/upgrades-plugins/1.x/[the documentation], but if it is already built with the OpenZeppelin CLI and you'd like to make the switch to use Buidler or Truffle, this is your guide.
 
-This walkthrough assumes you already have a project set up using the OpenZeppelin CLI, but if you don't and you'd like to follow along you can clone [this repo](https://github.com/martriay/openzeppelin-upgrades-plugins-migration-example) (read the readme!) and it will be just as good as a starting point.
+This walkthrough assumes you already have a project set up using the OpenZeppelin CLI, but if you don't and you'd like to follow along you can clone https://github.com/martriay/openzeppelin-upgrades-plugins-migration-example[this repo] (read the readme!) and it will be just as good as a starting point.
 
 But first, some context. 
 
-## 0. What's the difference?
+== What's the difference?
 
 The main difference between the CLI and the plugins is that the former used to keep track of your upgradeable (and non-upgradeable) deployments for you. This was handy in some contexts since you didn't need to worry too much about proxies, implementations or addresses and you could just focus on operations like upgrading or sending transactions to your contracts just by their name.
 
@@ -14,11 +14,11 @@ But having the CLI keep track of your deployments came at the expense of limitin
 
 Keeping that aside, everything else remains the same since both the CLI and plugins make use of the same known `Proxy` and `ProxyAdmin` contracts under the hood, making up two different interfaces to manage them. This means that migrating your project won't touch **anything** on chain, everything is safe and local.
 
-## 1. Installation
+== Installation
 
-### Buidler
+=== Buidler
 
-[Install Buidler](https://buidler.dev/tutorial/creating-a-new-buidler-project.html) and when initializing it, select the `Create an empty buidler.config.js` option.
+https://buidler.dev/tutorial/creating-a-new-buidler-project.html[Install Buidler] and when initializing it, select the `Create an empty buidler.config.js` option.
 
 ```bash
 $ npm install --save-dev @nomiclabs/buidler
@@ -44,18 +44,18 @@ module.exports = {
 };1
 ```
 
-### Truffle
+=== Truffle
 
-Initialize your project and don't overwrite contracts or test directories. By not overwriting contracts directory, you won't get an [initial migration (`Migrations.sol`)](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations#initial-migration). Make sure you create one.
+Initialize your project and don't overwrite contracts or test directories. By not overwriting contracts directory, you won't get an https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations#initial-migration[initial migration (`Migrations.sol`)]. Make sure you create one.
 
 ```json
 $ npm install --save-dev truffle @openzeppelin/truffle-upgrades
 $ npx truffle init
 ```
 
-## 2. Migrating the CLI project
+== Migrating the CLI project
 
-**Warning:** this is a one way process. Make sure you keep backups or version control copies of your `.openzeppelin/` folder.
+WARNING: This is a one way process. Make sure you keep backups or version control copies of your `.openzeppelin/` folder.
 
 Now, let's migrate our project by running:
 
@@ -90,9 +90,9 @@ This script was installed along with the plugins and what it does is to delete t
 
 The migration script will also export a `openzeppelin-cli-export.json` file into your working directory containing all the data that the CLI used to manage for you and now you're free to use however you think it's best. This is including your compiler settings, which are also printed at the end of the migration for convenience. Let's add them to our new project config:
 
-### Buidler
+=== Buidler
 
-Copy compiler settings into the `[solc` field](https://buidler.dev/config/#available-config-options) in the Buidler config file
+Copy compiler settings into the https://buidler.dev/config/#available-config-options[`solc` field] in the Buidler config file
 
 ```json
 // buidler.config.js
@@ -111,9 +111,9 @@ module.exports = {
 }
 ```
 
-### Truffle
+=== Truffle
 
-Copy compiler settings into the `[compilers` field](https://www.trufflesuite.com/docs/truffle/reference/configuration#compiler-configuration) of our Truffle config file
+Copy compiler settings into the https://www.trufflesuite.com/docs/truffle/reference/configuration#compiler-configuration[`compilers` field] of our Truffle config file
 
 ```json
 // truffle-config.js
@@ -138,7 +138,7 @@ Notice the solc configuration format differences  in `truffle-config.js` and `bu
 
 And that's it, you have successfully migrated your CLI project. Let's now try your new setup upgrading one of your migrated contracts.
 
-## 3. Deploying a new version
+== Deploying a new version
 
 Let's say we had a `Box` contract in our CLI project, deployed to the Rinkeby network. Then if we open our export file, we'll see something like this:
 
@@ -176,9 +176,9 @@ And this is how it would look like if we decided to upgrade our `Box` contract t
 
 These scripts are just examples of how to use the exported data. We make no suggestions on whether to keep that file as it is or how to handle its data. This is up to the user now.
 
-### Buidler
+=== Buidler
 
-With Buidler, we would write a script (*you can read more about Buidler scripts [here](https://buidler.dev/guides/scripts.html) and about using the `buidler-upgrades` plugin [here](https://docs.openzeppelin.com/upgrades-plugins/1.x/buidler-upgrades)*):
+With Buidler, we would write a script (*you can read more about Buidler scripts https://buidler.dev/guides/scripts.html[here] and about using the `buidler-upgrades` plugin https://docs.openzeppelin.com/upgrades-plugins/1.x/buidler-upgrades[here]*):
 
 ```jsx
 // scripts/upgradeBoxToV2.js
@@ -199,9 +199,9 @@ main();
 $ npx buidler run scripts/upgradeBoxToV2.js --network rinkeby
 ```
 
-### Truffle
+=== Truffle
 
-With Truffle, we would write a migration (*you can read more about Truffle migrations [here](https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations) and about using the `truffle-upgrades` plugin [here](https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades)*):
+With Truffle, we would write a migration (*you can read more about Truffle migrations https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations[here] and about using the `truffle-upgrades` plugin https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades[here]*):
 
 ```jsx
 // migrations/2_upgrade_box_contract.js
