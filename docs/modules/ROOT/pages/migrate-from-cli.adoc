@@ -49,9 +49,7 @@ module.exports = {
 --
 Install Truffle, and initialize your project.  
 
-WARNING: Don't overwrite contracts or test directories. 
-
-NOTE: By not overwriting contracts directory, you won't get an https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations#initial-migration[initial migration (`Migrations.sol`)]. Make sure you create one.
+WARNING: Choose not to overwrite contracts or test directories when Truffle asks. By not overwriting, you won't get an https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations#initial-migration[initial migration]. Make sure you create `Migrations.sol` and the initial migration.
 
 ```json
 $ npm install --save-dev truffle
