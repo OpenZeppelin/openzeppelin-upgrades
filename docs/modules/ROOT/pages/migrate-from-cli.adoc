@@ -4,7 +4,7 @@ This guide will walk through migrating a project from the OpenZeppelin CLI to Op
 
 include::learn::partial$buidler-truffle-toggle.adoc[]
 
-TIP: For a sample OpenZeppelin CLI project, you can clone https://github.com/martriay/openzeppelin-upgrades-plugins-migration-example[this repo] (read the instructions in the readme!).
+TIP: If you'd like to try out the instructions on a sample OpenZeppelin CLI project, you can clone https://github.com/OpenZeppelin/openzeppelin-upgrades-migration-example[OpenZeppelin/openzeppelin-upgrades-migration-example] and follow the setup instructions in the readme before continuing.
 
 == Differences
 
