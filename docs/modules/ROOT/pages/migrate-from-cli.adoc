@@ -1,10 +1,8 @@
 = Migrate from OpenZeppelin CLI
 
-As you may already know, we recently https://blog.openzeppelin.com/upgrades-plugins-for-buidler-and-truffle/[released two plugins to upgrade smart contracts] in your Buidler or Truffle projects. You can kickstart your upgradeable project by just following https://docs.openzeppelin.com/upgrades-plugins/1.x/[the documentation], but if it is already built with the OpenZeppelin CLI and you'd like to make the switch to use Buidler or Truffle, this is your guide.
+This guide will walk through migrating a project from the OpenZeppelin CLI to OpenZeppelin Upgrades Plugins for either Truffle or Buidler.
 
-This walkthrough assumes you already have a project set up using the OpenZeppelin CLI, but if you don't and you'd like to follow along you can clone https://github.com/martriay/openzeppelin-upgrades-plugins-migration-example[this repo] (read the readme!) and it will be just as good as a starting point.
-
-But first, some context. 
+TIP: For a sample OpenZeppelin CLI project, you can clone https://github.com/martriay/openzeppelin-upgrades-plugins-migration-example[this repo] (read the instructions in the readme!).
 
 == What's the difference?
 
