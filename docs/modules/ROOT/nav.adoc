@@ -4,6 +4,7 @@
 * xref:writing-upgradeable.adoc[Writing Upgradeable Contracts]
 * xref:proxies.adoc[Proxy Upgrade Pattern]
 * xref:network-files.adoc[Network Files]
+* xref:migrate-from-cli.adoc[Migrate from CLI]
 * xref:faq.adoc[Frequently Asked Questions]
 
 .API Reference

@@ -1,0 +1,242 @@
+= Migrate from OpenZeppelin CLI
+
+This guide will walk through migrating a project from the OpenZeppelin CLI to OpenZeppelin Upgrades Plugins for either Truffle or Buidler.
+
+include::learn::partial$buidler-truffle-toggle.adoc[]
+
+TIP: For a sample OpenZeppelin CLI project, you can clone https://github.com/martriay/openzeppelin-upgrades-plugins-migration-example[this repo] (read the instructions in the readme!).
+
+== Differences
+
+The main difference between the CLI and the plugins is that the former used to keep track of your upgradeable (and non-upgradeable) deployments for you. This was handy in some contexts since you didn't need to worry too much about proxies, implementations or addresses and you could just focus on operations like upgrading or sending transactions to your contracts just by their name.
+
+But having the CLI keep track of your deployments came at the expense of limiting your freedom to integrate with different tools and workflows. And since the plugins were designed to work independently of the CLI, we lifted that restriction so now you have the flexibility to keep track of your proxies the way you think it's best.
+
+Keeping that aside, everything else remains the same since both the CLI and plugins make use of the same known `Proxy` and `ProxyAdmin` contracts under the hood, making up two different interfaces to manage them. This means that migrating your project won't touch **anything** on chain, everything is safe and local.
+
+== Installation
+
+[.buidler]
+--
+https://buidler.dev/tutorial/creating-a-new-buidler-project.html[Install Buidler] and when initializing it, select the `Create an empty buidler.config.js` option.
+
+```bash
+$ npm install --save-dev @nomiclabs/buidler
+$ npx buidler
+```
+
+Then install the Upgrades plugin:
+
+```bash
+$ npm install --save-dev @openzeppelin/buidler-upgrades
+$ npm install --save-dev @nomiclabs/buidler-ethers ethers # peer dependencies
+```
+
+Once it is done, register the plugin in the Buidler config file by adding these lines:
+
+```jsx
+// buidler.config.js
+usePlugin('@nomiclabs/buidler-ethers');
+usePlugin('@openzeppelin/buidler-upgrades');
+
+module.exports = {
+	// ...
+};1
+```
+--
+
+[.truffle]
+--
+Install Truffle, and initialize your project.  
+
+WARNING: Don't overwrite contracts or test directories. 
+
+NOTE: By not overwriting contracts directory, you won't get an https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations#initial-migration[initial migration (`Migrations.sol`)]. Make sure you create one.
+
+```json
+$ npm install --save-dev truffle
+$ npx truffle init
+```
+
+Then install the Upgrades plugin:
+
+```bash
+$ npm install --save-dev @openzeppelin/truffle-upgrades
+```
+--
+
+== Migrating the CLI project
+
+WARNING: This is a one way process. Make sure you keep backups or version control copies of your `.openzeppelin/` folder.
+
+Now, let's migrate our project by running:
+
+```bash
+$ npx migrate-oz-cli-project
+```
+
+```bash
+✔ Successfully migrated .openzeppelin/rinkeby.json
+✔ Migration data exported to openzeppelin-cli-export.json
+✔ Deleting .openzeppelin/project.json
+
+These were your project's compiler options:
+{
+  "compilerSettings": {
+    "optimizer": {
+      "enabled": false,
+      "runs": "200"
+    }
+  },
+  "typechain": {
+    "enabled": false
+  },
+  "manager": "openzeppelin",
+  "solcVersion": "0.6.12",
+  "artifactsDir": "build/contracts",
+  "contractsDir": "contracts"
+}
+```
+
+This script was installed along with the plugins and what it does is to delete the CLI project file and turn your old network files (all of which live under the `.openzeppelin` directory) into their Upgrades plugin equivalent. Again, nothing on chain is changed, only local files. Notice also that once you've run this you can no longer use the CLI to manage this project's contracts unless you revert the changes through backups or version control.
+
+The migration script will also export a `openzeppelin-cli-export.json` file into your working directory containing all the data that the CLI used to manage for you and now you're free to use however you think it's best. This is including your compiler settings, which are also printed at the end of the migration for convenience. Let's add them to our new project config:
+
+[.buidler]
+--
+Copy compiler settings into the https://buidler.dev/config/#available-config-options[`solc` field] in the Buidler config file
+
+```json
+// buidler.config.js
+
+// ...
+
+module.exports = {
+	// ...
+  solc: {
+	  version: "0.6.12",
+	  optimizer: {
+	    enabled: false,
+	    runs: 200
+	  }
+	}
+}
+```
+--
+
+[.truffle]
+--
+Copy compiler settings into the https://www.trufflesuite.com/docs/truffle/reference/configuration#compiler-configuration[`compilers` field] of our Truffle config file
+
+```json
+// truffle-config.js
+
+module.exports = {
+  // ...
+  compilers: {
+    solc: {
+	  version: "0.6.12",
+      settings: {
+	    optimizer: {
+          enabled: false,
+          runs: 200
+        }
+      }
+    }
+  }
+}
+```
+--
+
+NOTE: The solc configuration format is different  in `truffle-config.js` and `buidler.config.js` files
+
+And that's it, you have successfully migrated your CLI project. Let's now try your new setup upgrading one of your migrated contracts.
+
+== Upgrade to a new version
+
+Let's say we had a `Box` contract in our CLI project, deployed to the Rinkeby network. Then if we open our export file, we'll see something like this:
+
+```json
+// openzeppelin-cli-export.json
+{
+  "networks": {
+    "rinkeby": {
+      "proxies": {
+        "openzeppelin-upgrades-migration-example/Box": [
+          {
+            "address": "0x500D1d6A4c7D8Ae28240b47c8FCde034D827fD5e",
+            "version": "1.0.0",
+            "implementation": "0x038B86d9d8FAFdd0a02ebd1A476432877b0107C8",
+            "admin": "0x1A1FEe7EeD918BD762173e4dc5EfDB8a78C924A8",
+            "kind": "Upgradeable"
+          }
+        ]
+      }
+    }
+  },
+  "compiler": {
+    // we'll ignore compiler settings for this
+  }
+}
+```
+
+What we're seeing in here is the JSON representation of our upgradeable contract in terms of addresses:
+
+- `address`: the proxy address (the proxy contract contains your upgradeable contract state)
+- `implementation`: the implementation address (your upgradeable contract logic)
+- `admin`: the address of the proxy admin, which will probably belong to a `ProxyAdmin` contract unless you set up otherwise
+
+And this is how it would look like if we decided to upgrade our `Box` contract to a `BoxV2` contract using the plugins and this export file:
+
+These scripts are just examples of how to use the exported data. We make no suggestions on whether to keep that file as it is or how to handle its data. This is up to the user now.
+
+[.buidler]
+--
+With Buidler, we would write a script (*you can read more about Buidler scripts https://buidler.dev/guides/scripts.html[here] and about using the `buidler-upgrades` plugin https://docs.openzeppelin.com/upgrades-plugins/1.x/buidler-upgrades[here]*):
+
+```jsx
+// scripts/upgradeBoxToV2.js
+
+const { ethers, upgrades } = require("@nomiclabs/buidler");
+const OZ_SDK_EXPORT = require("../openzeppelin-cli-export.json");
+
+async function main() {
+  const [ Box ] = OZ_SDK_EXPORT.networks.rinkeby.proxies["openzeppelin-upgrades-migration-example/Box"];
+  const BoxV2 = await ethers.getContractFactory("BoxV2");
+  await upgrades.upgradeProxy(Box.address, BoxV2);
+}
+
+main();
+```
+
+```bash
+$ npx buidler run scripts/upgradeBoxToV2.js --network rinkeby
+```
+--
+
+[.truffle]
+--
+
+With Truffle, we would write a migration (*you can read more about Truffle migrations https://www.trufflesuite.com/docs/truffle/getting-started/running-migrations[here] and about using the `truffle-upgrades` plugin https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades[here]*):
+
+```jsx
+// migrations/2_upgrade_box_contract.js
+
+const { upgradeProxy } = require('@openzeppelin/truffle-upgrades');
+const OZ_SDK_EXPORT = require("../openzeppelin-cli-export.json");
+
+const BoxV2 = artifacts.require('BoxV2');
+
+module.exports = async function (deployer) {
+  const [ Box ] = OZ_SDK_EXPORT.networks.rinkeby.proxies["openzeppelin-upgrades-migration-example/Box"];
+  const instance = await upgradeProxy(Box.address, BoxV2, { deployer });
+  console.log("Upgraded", instance.address);
+};
+```
+
+```bash
+$ npx truffle migrate --network rinkeby
+```
+--
+
+And that's it! You have migrated your OpenZeppelin CLI project to Truffle or Buidler and performed an upgrade using the plugins.
