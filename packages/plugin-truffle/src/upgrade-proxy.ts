@@ -79,5 +79,6 @@ export async function upgradeProxy(
   const nextImpl = await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts);
   await admin.upgrade(proxyAddress, nextImpl);
 
+  Contract.address = proxyAddress;
   return new Contract(proxyAddress);
 }
