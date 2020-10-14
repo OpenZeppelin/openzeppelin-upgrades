@@ -2,6 +2,9 @@
 
 This package adds functions to your Buidler scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
 
+
+TIP: Check out the https://forum.openzeppelin.com/t/openzeppelin-buidler-upgrades-step-by-step-tutorial/3580[step by step tutorial], showing from creating, testing and deploying, all the way through to upgrading with Gnosis Safe.
+
 [[install]]
 == Installation
 
