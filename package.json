@@ -8,7 +8,7 @@
     "prepare": "lerna run prepare:contracts && tsc -b",
     "lint": "yarn lint:path .",
     "lint:path": "eslint --ignore-path .gitignore",
-    "test": "tsc -b && bash test.sh",
+    "test": "tsc -b && wsrun -ms test",
     "coverage": "nyc yarn test"
   },
   "devDependencies": {
@@ -22,7 +22,8 @@
     "node-gyp-cache": "^0.2.1",
     "nyc": "^15.1.0",
     "prettier": "^2.0.5",
-    "typescript": "^4.0.0"
+    "typescript": "^4.0.0",
+    "wsrun": "^5.2.4"
   },
   "workspaces": [
     "packages/*",
