@@ -2,7 +2,9 @@
 
 This package adds functions to your Truffle migrations and tests so you can deploy and upgrade proxies for your contracts.
 
-> Note: Usage from https://www.trufflesuite.com/docs/truffle/getting-started/writing-external-scripts[Truffle external scripts] is not yet supported.
+NOTE: Usage from https://www.trufflesuite.com/docs/truffle/getting-started/writing-external-scripts[Truffle external scripts] is not yet supported.
+
+TIP: Check out the https://forum.openzeppelin.com/t/openzeppelin-truffle-upgrades-step-by-step-tutorial/3579[step by step tutorial], showing from creating, testing and deploying, all the way through to upgrading with Gnosis Safe.
 
 [[install]]
 == Installation
