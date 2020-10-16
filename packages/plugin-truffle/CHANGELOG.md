@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add new flag `unsafeAllowLinkedLibraries` to allow deployment of contracts with linked libraries. ([#182](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/182))
 - Store address of upgraded proxy in artifact for use with `ContractV2.deployed()`.
 
 ## 1.1.1 (2020-10-08)
