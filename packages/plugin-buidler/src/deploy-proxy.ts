@@ -22,7 +22,7 @@ export type DeployFunction = (
 ) => Promise<Contract>;
 
 export interface DeployOptions extends ValidationOptions {
-  initializer?: string;
+  initializer?: string | false;
 }
 
 export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction {
@@ -54,7 +54,11 @@ export function makeDeployProxy(bre: BuidlerRuntimeEnvironment): DeployFunction 
     return inst;
   };
 
-  function getInitializerData(ImplFactory: ContractFactory, args: unknown[], initializer?: string): string {
+  function getInitializerData(ImplFactory: ContractFactory, args: unknown[], initializer?: string | false): string {
+    if (initializer === false) {
+      return '0x';
+    }
+
     const allowNoInitialization = initializer === undefined && args.length === 0;
     initializer = initializer ?? 'initialize';
 

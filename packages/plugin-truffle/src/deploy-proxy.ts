@@ -14,7 +14,7 @@ import { wrapProvider } from './wrap-provider';
 import { Options, withDeployDefaults } from './options';
 
 interface InitializerOptions {
-  initializer?: string;
+  initializer?: string | false;
 }
 
 export async function deployProxy(
@@ -52,7 +52,11 @@ export async function deployProxy(
   return contract;
 }
 
-function getInitializerData(Contract: ContractClass, args: unknown[], initializer?: string): string {
+function getInitializerData(Contract: ContractClass, args: unknown[], initializer?: string | false): string {
+  if (initializer === false) {
+    return '0x';
+  }
+
   const allowNoInitialization = initializer === undefined && args.length === 0;
   initializer = initializer ?? 'initialize';
 
