@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1 (2020-10-21)
+
+- Add ability to disable proxy initialization by specifying `initializer: false`. ([#204](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/204))
+
 ## 1.2.0 (2020-10-16)
 
 - Add new flag `unsafeAllowLinkedLibraries` to allow deployment of contracts with linked libraries. ([#182](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/182))
