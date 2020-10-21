@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/buidler-upgrades",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-buidler",
   "license": "MIT",
