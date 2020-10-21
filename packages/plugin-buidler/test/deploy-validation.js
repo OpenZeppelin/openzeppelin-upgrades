@@ -1,10 +1,12 @@
+const test = require('ava');
+
 const { ethers, upgrades } = require('@nomiclabs/buidler');
-const expectError = require('./expectError');
 
-async function main() {
-  const Invalid = await ethers.getContractFactory('Invalid');
-  console.log('Attempting to deploy Invalid contract...');
-  await upgrades.deployProxy(Invalid);
-}
+test.before(async t => {
+  t.context.Invalid = await ethers.getContractFactory('Invalid');
+});
 
-expectError(main, 'Contract `Invalid` is not upgrade safe');
+test('invalid deployment', async t => {
+  const { Invalid } = t.context;
+  await t.throwsAsync(() => upgrades.deployProxy(Invalid), undefined, 'Contract `Invalid` is not upgrade safe');
+});

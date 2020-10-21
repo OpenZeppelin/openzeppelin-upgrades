@@ -1,44 +1,32 @@
+const test = require('ava');
+
 const { ethers, upgrades } = require('@nomiclabs/buidler');
 
-async function withoutFlag() {
-  const Portfolio = await ethers.getContractFactory('Portfolio');
-  const portfolio = await upgrades.deployProxy(Portfolio);
+test.before(async t => {
+  t.context.Portfolio = await ethers.getContractFactory('Portfolio');
+  t.context.PortfolioV2 = await ethers.getContractFactory('PortfolioV2');
+});
 
-  console.log('Attempting upgrade to PortfolioV2...');
-  const PortfolioV2 = await ethers.getContractFactory('PortfolioV2');
-  const portfolio2 = await upgrades.upgradeProxy(portfolio.address, PortfolioV2);
+test('deployProxy without flag', async t => {
+  const { Portfolio } = t.context;
+  await t.throwsAsync(() => upgrades.deployProxy(Portfolio));
+});
 
-  console.log('Enabling...');
-  await portfolio2.enable('ETH');
-}
-
-async function withFlag() {
-  const Portfolio = await ethers.getContractFactory('Portfolio');
+test('deployProxy with flag', async t => {
+  const { Portfolio } = t.context;
   const portfolio = await upgrades.deployProxy(Portfolio, [], { unsafeAllowCustomTypes: true });
+  await portfolio.enable('ETH');
+});
 
-  console.log('Attempting upgrade to PortfolioV2...');
-  const PortfolioV2 = await ethers.getContractFactory('PortfolioV2');
+test('upgradeProxy without flag', async t => {
+  const { Portfolio, PortfolioV2 } = t.context;
+  const portfolio = await upgrades.deployProxy(Portfolio, [], { unsafeAllowCustomTypes: true });
+  await t.throwsAsync(() => upgrades.upgradeProxy(portfolio.address, PortfolioV2));
+});
+
+test('upgradeProxy with flag', async t => {
+  const { Portfolio, PortfolioV2 } = t.context;
+  const portfolio = await upgrades.deployProxy(Portfolio, [], { unsafeAllowCustomTypes: true });
   const portfolio2 = await upgrades.upgradeProxy(portfolio.address, PortfolioV2, { unsafeAllowCustomTypes: true });
-
-  console.log('Enabling...');
   await portfolio2.enable('ETH');
-}
-
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-withoutFlag()
-  .then(() => {
-    // this should not happen
-    console.error('Expected failure did not happen');
-    process.exit(1);
-  })
-  .catch(error => {
-    console.error(error);
-    return withFlag();
-  })
-  .then(() => process.exit(0))
-  .catch(error => {
-    // this should not happen
-    console.error(error);
-    process.exit(1);
-  });
+});
