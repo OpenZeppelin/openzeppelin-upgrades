@@ -1,33 +1,33 @@
-const assert = require('assert');
+const test = require('ava');
+
 const { ethers, upgrades } = require('@nomiclabs/buidler');
 
-async function main() {
-  const InitializerOverloaded = await ethers.getContractFactory('InitializerOverloaded');
+test.before(async t => {
+  t.context.InitializerOverloaded = await ethers.getContractFactory('InitializerOverloaded');
+  t.context.InitializerMissing = await ethers.getContractFactory('InitializerMissing');
+});
 
-  try {
-    await upgrades.deployProxy(InitializerOverloaded, [42]);
-    assert.fail('did not fail with overloaded initialize function');
-  } catch (e) {
-    assert(e.message.includes('multiple matching functions'));
-  }
+test('multiple matching functions', async t => {
+  const { InitializerOverloaded } = t.context;
+  await t.throwsAsync(
+    () => upgrades.deployProxy(InitializerOverloaded, [42]),
+    undefined,
+    'multiple matching functions',
+  );
+});
 
+test('unique function selector', async t => {
+  const { InitializerOverloaded } = t.context;
   const instance = await upgrades.deployProxy(InitializerOverloaded, [42], { initializer: 'initialize(uint256)' });
-  assert.strictEqual('42', (await instance.x()).toString());
+  t.is((await instance.x()).toString(), '42');
+});
 
-  const InitializerMissing = await ethers.getContractFactory('InitializerMissing');
+test('no initialize function and no args', async t => {
+  const { InitializerMissing } = t.context;
   await upgrades.deployProxy(InitializerMissing);
+});
 
-  try {
-    await upgrades.deployProxy(InitializerMissing, [42]);
-    assert.fail('did not fail with missing initialize function');
-  } catch (e) {
-    assert(e.message.includes('no matching function'));
-  }
-}
-
-main()
-  .then(() => process.exit(0))
-  .catch(error => {
-    console.error(error);
-    process.exit(1);
-  });
+test('no initialize function and explicit args', async t => {
+  const { InitializerMissing } = t.context;
+  await t.throwsAsync(() => upgrades.deployProxy(InitializerMissing, [42]), undefined, 'no matching function');
+});
