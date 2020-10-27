@@ -1,13 +1,5 @@
 {
-  "rangeStrategy": "update-lockfile",
   "extends": [
-    "config:base",
-    ":disablePeerDependencies",
-    ":maintainLockFilesWeekly",
-    "group:allNonMajor",
-    "schedule:weekly"
-  ],
-  "lockFileMaintenance": {
-    "commitMessageAction": "Update lockfile"
-  }
+    "github>OpenZeppelin/code-style"
+  ]
 }
