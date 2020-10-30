@@ -8,7 +8,8 @@ module.exports = {
     node: true,
   },
   rules: {
-    curly: 'error',
+    curly: 'warn',
+    'prettier/prettier': 'warn',
   },
   overrides: [
     {
