@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `jsonrpc: '2.0'` field when using Truffle provider. ([#210](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/210))
+
 ## 1.2.1 (2020-10-21)
 
 - Add ability to disable proxy initialization by specifying `initializer: false`. ([#204](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/204))
