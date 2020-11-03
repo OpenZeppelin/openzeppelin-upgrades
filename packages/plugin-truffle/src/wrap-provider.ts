@@ -10,7 +10,7 @@ export function wrapProvider(provider: TruffleProvider): EthereumProvider {
   return {
     async send(method: string, params: unknown[]) {
       const id = crypto.randomBytes(4).toString('hex');
-      const { result, error } = await web3Send({ method, params, id });
+      const { result, error } = await web3Send({ jsonrpc: '2.0', method, params, id });
       if (error) {
         throw new Error(error.message);
       } else {
