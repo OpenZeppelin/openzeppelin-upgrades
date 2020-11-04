@@ -41,7 +41,7 @@ export class Manifest {
 
   constructor(chainId: number) {
     const networkName = process.env.NETWORK || networkNames[chainId] || 'unknown';
-    const name =  `${networkName}-${chainId}`;
+    const name = `${networkName}-${chainId}`;
     this.file = path.join(manifestDir, `${name}.json`);
   }
 
