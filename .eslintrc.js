@@ -19,7 +19,7 @@ module.exports = {
       extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
     },
     {
-      files: ['buidler.config.js'],
+      files: ['hardhat.config.js'],
       globals: {
         usePlugin: 'readonly',
       },

@@ -1,0 +1,40 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+
+import { subtask, extendEnvironment } from 'hardhat/config';
+import { TASK_COMPILE_RUN_COMPILER } from 'hardhat/builtin-tasks/task-names';
+import { lazyObject } from 'hardhat/plugins';
+import { validate, solcInputOutputDecoder, SolcInput } from '@openzeppelin/upgrades-core';
+import { writeValidations } from './validations';
+
+interface RunCompilerArgs {
+  input: SolcInput;
+}
+
+export default function (): void {
+  subtask(TASK_COMPILE_RUN_COMPILER, async (args: RunCompilerArgs, hre, runSuper) => {
+    // TODO: patch input
+    const output = await runSuper();
+    const decodeSrc = solcInputOutputDecoder(args.input, output);
+    const validations = validate(output, decodeSrc);
+    await writeValidations(hre, validations);
+    return output;
+  });
+
+  extendEnvironment(hre => {
+    hre.upgrades = lazyObject(() => {
+      const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership } = require('./admin');
+      const { makeDeployProxy } = require('./deploy-proxy');
+      const { makeUpgradeProxy, makePrepareUpgrade } = require('./upgrade-proxy');
+
+      return {
+        deployProxy: makeDeployProxy(hre),
+        upgradeProxy: makeUpgradeProxy(hre),
+        prepareUpgrade: makePrepareUpgrade(hre),
+        admin: {
+          changeProxyAdmin: makeChangeProxyAdmin(hre),
+          transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre),
+        },
+      };
+    });
+  });
+}

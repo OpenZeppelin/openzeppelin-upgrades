@@ -1,7 +1,7 @@
 {
   "references": [
     { "path": "packages/core" },
-    { "path": "packages/plugin-buidler" },
+    { "path": "packages/plugin-hardhat" },
     { "path": "packages/plugin-truffle" }
   ],
   "files": []

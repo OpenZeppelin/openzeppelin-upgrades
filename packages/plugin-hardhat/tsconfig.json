@@ -6,9 +6,6 @@
     "rootDir": "src",
     "resolveJsonModule": true
   },
-  "files": [
-    "../../node_modules/@nomiclabs/hardhat-ethers/src/type-extensions.d.ts"
-  ],
   "include": [
     "src/**/*"
   ],

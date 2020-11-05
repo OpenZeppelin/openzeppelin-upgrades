@@ -14,10 +14,10 @@ library SafeAdd {
 contract AdderV2 {
     using SafeAdd for uint;
 
-    uint public n;
+    uint n;
 
-    function initialize(uint _n) public {
-        n = _n;
+    function initialize() public view {
+        console.log("Deploying AdderV2");
     }
 
     function add(uint x) public returns (uint) {

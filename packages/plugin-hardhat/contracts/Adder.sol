@@ -3,10 +3,10 @@ pragma solidity ^0.5.1;
 import "hardhat/console.sol";
 
 contract Adder {
-    uint public n;
+    uint n;
 
-    function initialize(uint _n) public {
-        n = _n;
+    function initialize() public view {
+        console.log("Deploying Adder");
     }
 
     function add(uint x) public returns (uint) {
