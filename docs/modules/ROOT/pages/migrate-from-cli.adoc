@@ -2,7 +2,7 @@
 
 This guide will walk through migrating a project from the OpenZeppelin CLI to OpenZeppelin Upgrades Plugins for either Truffle or Buidler.
 
-include::learn::partial$buidler-truffle-toggle.adoc[]
+include::learn::partial$hardhat-truffle-toggle.adoc[]
 
 TIP: If you'd like to try out the instructions on a sample OpenZeppelin CLI project, you can clone https://github.com/OpenZeppelin/openzeppelin-upgrades-migration-example[OpenZeppelin/openzeppelin-upgrades-migration-example] and follow the setup instructions in the readme before continuing.
 
@@ -16,7 +16,7 @@ Keeping that aside, everything else remains the same since both the CLI and plug
 
 == Installation
 
-[.buidler]
+[.hardhat]
 --
 https://buidler.dev/tutorial/creating-a-new-buidler-project.html[Install Buidler] and when initializing it, select the `Create an empty buidler.config.js` option.
 
@@ -100,7 +100,7 @@ This script was installed along with the plugins and what it does is to delete t
 
 The migration script will also export a `openzeppelin-cli-export.json` file into your working directory containing all the data that the CLI used to manage for you and now you're free to use however you think it's best. This is including your compiler settings, which are also printed at the end of the migration for convenience. Let's add them to our new project config:
 
-[.buidler]
+[.hardhat]
 --
 Copy compiler settings into the https://buidler.dev/config/#available-config-options[`solc` field] in the Buidler config file
 
@@ -188,7 +188,7 @@ And this is how it would look like if we decided to upgrade our `Box` contract t
 
 These scripts are just examples of how to use the exported data. We make no suggestions on whether to keep that file as it is or how to handle its data. This is up to the user now.
 
-[.buidler]
+[.hardhat]
 --
 With Buidler, we would write a script (*you can read more about Buidler scripts https://buidler.dev/guides/scripts.html[here] and about using the `buidler-upgrades` plugin https://docs.openzeppelin.com/upgrades-plugins/1.x/buidler-upgrades[here]*):
 
