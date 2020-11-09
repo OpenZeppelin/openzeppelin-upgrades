@@ -6,7 +6,7 @@ import '@openzeppelin/hardhat-upgrades';
 // defaultNetwork, networks, solc, and paths.
 module.exports = {
   // This is a sample solc configuration that specifies which version of solc to use
-  solc: {
+  solidity: {
     version: '0.5.15',
   },
 };

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
+import '@nomiclabs/hardhat-ethers';
 import { subtask, extendEnvironment } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
