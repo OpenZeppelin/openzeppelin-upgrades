@@ -7,6 +7,8 @@
 * Manage proxy admin rights.
 * Easily use in tests.
 
+TIP: New to upgrades? Start by reading our xref:learn::upgrading-smart-contracts[Upgrading smart contracts] guide.
+
 == Overview
 
 [[install]]
