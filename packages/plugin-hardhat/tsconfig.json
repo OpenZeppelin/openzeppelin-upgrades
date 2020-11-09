@@ -9,9 +9,6 @@
   "include": [
     "src/**/*"
   ],
-  "files": [
-    "hardhat.config.ts"
-  ],
   "references": [
     { "path": "../core" }
   ]
