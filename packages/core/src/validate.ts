@@ -10,7 +10,8 @@ import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
 import { isNullish } from './utils/is-nullish';
 
-export type Validation = Record<string, ValidationResult>;
+export type Validations = Array<ValidationSet>;
+export type ValidationSet = Record<string, ValidationResult>;
 
 export interface ValidationResult {
   version?: Version;
@@ -58,8 +59,8 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   };
 }
 
-export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validation {
-  const validation: Validation = {};
+export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationSet {
+  const validation: ValidationSet = {};
   const fromId: Record<number, string> = {};
   const inheritIds: Record<string, number[]> = {};
   const libraryIds: Record<string, number[]> = {};
@@ -120,46 +121,64 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
   return validation;
 }
 
-export function getContractVersion(validation: Validation, contractName: string): Version {
-  const { version } = validation[contractName];
+export function getContractVersion(validations: Validations, contractName: string, compilationRun: number): Version {
+  const { version } = validations[compilationRun][contractName];
   if (version === undefined) {
     throw new Error(`Contract ${contractName} is abstract`);
   }
   return version;
 }
 
-function getContractName(validation: Validation, version: Version): string {
-  const contractName = Object.keys(validation).find(
-    name => validation[name].version?.withMetadata === version.withMetadata,
-  );
+function getContractNameAndCompilerRun(validations: Validations, version: Version): [string, number] {
+  let compilerRun = 0;
+  let contractName;
+
+  for (const [index, validation] of validations.entries()) {
+    contractName = Object.keys(validation).find(
+      name => validation[name].version?.withMetadata === version.withMetadata,
+    );
+    if (contractName !== undefined) {
+      compilerRun = index;
+      break;
+    }
+  }
 
   if (contractName === undefined) {
     throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
   }
 
-  return contractName;
+  return [contractName, compilerRun];
 }
 
-export function getStorageLayout(validation: Validation, version: Version): StorageLayout {
-  const contractName = getContractName(validation, version);
-  const c = validation[contractName];
+export function getStorageLayout(validations: Validations, version: Version): StorageLayout {
+  const [contractName, compilerRun] = getContractNameAndCompilerRun(validations, version);
+  const c = validations[compilerRun][contractName];
   const layout: StorageLayout = { storage: [], types: {} };
   for (const name of [contractName].concat(c.inherit)) {
-    layout.storage.unshift(...validation[name].layout.storage);
-    Object.assign(layout.types, validation[name].layout.types);
+    layout.storage.unshift(...validations[compilerRun][name].layout.storage);
+    Object.assign(layout.types, validations[compilerRun][name].layout.types);
   }
   return layout;
 }
 
-export function getUnlinkedBytecode(validation: Validation, bytecode: string): string {
-  const linkableContracts = Object.keys(validation).filter(name => validation[name].linkReferences.length > 0);
+export function getUnlinkedBytecode(validations: Validations, bytecode: string): string {
+  let compilerRun = 0;
+  let linkableContracts: string[] = [];
+
+  for (const [index, validation] of validations.entries()) {
+    linkableContracts = Object.keys(validation).filter(name => validation[name].linkReferences.length > 0);
+    if (linkableContracts !== undefined) {
+      compilerRun = index;
+      break;
+    }
+  }
 
   for (const name of linkableContracts) {
-    const { linkReferences } = validation[name];
+    const { linkReferences } = validations[compilerRun][name];
     const unlinkedBytecode = unlinkBytecode(bytecode, linkReferences);
     const version = getVersion(unlinkedBytecode);
 
-    if (validation[name].version?.withMetadata === version.withMetadata) {
+    if (validations[compilerRun][name].version?.withMetadata === version.withMetadata) {
       return unlinkedBytecode;
     }
   }
@@ -167,10 +186,10 @@ export function getUnlinkedBytecode(validation: Validation, bytecode: string): s
   return bytecode;
 }
 
-export function assertUpgradeSafe(validation: Validation, version: Version, opts: ValidationOptions): void {
-  const contractName = getContractName(validation, version);
+export function assertUpgradeSafe(validations: Validations, version: Version, opts: ValidationOptions): void {
+  const [contractName] = getContractNameAndCompilerRun(validations, version);
 
-  let errors = getErrors(validation, version);
+  let errors = getErrors(validations, version);
   errors = processExceptions(contractName, errors, opts);
 
   if (errors.length > 0) {
@@ -302,16 +321,16 @@ function describeError(e: ValidationError): string {
   return log.join('\n    ');
 }
 
-export function getErrors(validation: Validation, version: Version): ValidationError[] {
-  const contractName = getContractName(validation, version);
-  const c = validation[contractName];
+export function getErrors(validations: Validations, version: Version): ValidationError[] {
+  const [contractName, compilerRun] = getContractNameAndCompilerRun(validations, version);
+  const c = validations[compilerRun][contractName];
   return c.errors
-    .concat(...c.inherit.map(name => validation[name].errors))
-    .concat(...c.libraries.map(name => validation[name].errors));
+    .concat(...c.inherit.map(name => validations[compilerRun][name].errors))
+    .concat(...c.libraries.map(name => validations[compilerRun][name].errors));
 }
 
-export function isUpgradeSafe(validation: Validation, version: Version): boolean {
-  return getErrors(validation, version).length == 0;
+export function isUpgradeSafe(validations: Validations, version: Version): boolean {
+  return getErrors(validations, version).length == 0;
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {

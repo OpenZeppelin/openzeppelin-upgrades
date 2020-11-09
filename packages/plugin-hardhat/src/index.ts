@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 import { subtask, extendEnvironment } from 'hardhat/config';
-import { TASK_COMPILE_RUN_COMPILER } from 'hardhat/builtin-tasks/task-names';
+import { TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
 import { validate, solcInputOutputDecoder, SolcInput } from '@openzeppelin/upgrades-core';
 import { writeValidations } from './validations';
@@ -11,7 +11,7 @@ interface RunCompilerArgs {
 }
 
 export default function (): void {
-  subtask(TASK_COMPILE_RUN_COMPILER, async (args: RunCompilerArgs, hre, runSuper) => {
+  subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
     // TODO: patch input
     const output = await runSuper();
     const decodeSrc = solcInputOutputDecoder(args.input, output);
