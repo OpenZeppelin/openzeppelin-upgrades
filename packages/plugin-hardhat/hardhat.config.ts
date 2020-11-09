@@ -1,5 +1,5 @@
-require('@nomiclabs/buidler-ethers');
-require('@openzeppelin/buidler-upgrades');
+import '@nomiclabs/hardhat-ethers';
+import '@openzeppelin/hardhat-upgrades';
 
 // You have to export an object to set up your config
 // This object can have the following optional entries:
