@@ -19,7 +19,7 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const buildInfo = await artifacts.getBuildInfo('contracts/test/ValidationLog.sol:HasStruct');
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasStruct');
   if (buildInfo === undefined) {
     throw new Error('Build info not found');
   }
