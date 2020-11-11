@@ -12,6 +12,7 @@ import { deploy } from './utils/deploy';
 import { getProxyFactory, getProxyAdminFactory } from './factories';
 import { wrapProvider } from './wrap-provider';
 import { Options, withDeployDefaults } from './options';
+import type { DeployerOptions } from './utils/deploy';
 
 interface InitializerOptions {
   initializer?: string | false;
@@ -21,6 +22,7 @@ export async function deployProxy(
   Contract: ContractClass,
   args: unknown[] = [],
   opts: Options & InitializerOptions = {},
+  deployerOpts: DeployerOptions = {},
 ): Promise<ContractInstance> {
   const { deployer } = withDeployDefaults(opts);
   const provider = wrapProvider(deployer.provider);
@@ -33,17 +35,17 @@ export async function deployProxy(
   assertUpgradeSafe(validations, version, opts);
 
   const impl = await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(Contract, deployer);
+    const deployment = await deploy(Contract, deployer, deployerOpts);
     const layout = getStorageLayout(validations, version);
     return { ...deployment, layout };
   });
 
   const AdminFactory = getProxyAdminFactory(Contract);
-  const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, deployer));
+  const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, deployer, deployerOpts));
 
   const data = getInitializerData(Contract, args, opts.initializer);
   const AdminUpgradeabilityProxy = getProxyFactory(Contract);
-  const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data);
+  const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data, deployerOpts);
 
   Contract.address = proxy.address;
 

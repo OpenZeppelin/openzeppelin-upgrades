@@ -16,6 +16,7 @@ import { deploy } from './utils/deploy';
 import { getProxyAdminFactory } from './factories';
 import { wrapProvider } from './wrap-provider';
 import { Options, withDefaults } from './options';
+import type { DeployerOptions } from './utils/deploy';
 
 async function prepareUpgradeImpl(
   provider: EthereumProvider,
@@ -23,6 +24,7 @@ async function prepareUpgradeImpl(
   proxyAddress: string,
   Contract: ContractClass,
   opts: Required<Options>,
+  deployerOptions: DeployerOptions,
 ): Promise<string> {
   const { deployer, unsafeAllowCustomTypes } = opts;
 
@@ -40,7 +42,7 @@ async function prepareUpgradeImpl(
   assertStorageUpgradeSafe(deployment.layout, layout, unsafeAllowCustomTypes);
 
   return await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(Contract, deployer);
+    const deployment = await deploy(Contract, deployer, deployerOptions);
     return { ...deployment, layout };
   });
 }
@@ -49,19 +51,21 @@ export async function prepareUpgrade(
   proxyAddress: string,
   Contract: ContractClass,
   opts: Options = {},
+  deployerOptions: DeployerOptions,
 ): Promise<string> {
   const requiredOpts = withDefaults(opts);
   const { deployer } = requiredOpts;
   const provider = wrapProvider(deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
 
-  return await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts);
+  return await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts, deployerOptions);
 }
 
 export async function upgradeProxy(
   proxyAddress: string,
   Contract: ContractClass,
   opts: Options = {},
+  deployerOptions: DeployerOptions,
 ): Promise<ContractInstance> {
   const requiredOpts = withDefaults(opts);
   const { deployer } = requiredOpts;
@@ -76,8 +80,8 @@ export async function upgradeProxy(
     throw new Error('Proxy admin is not the one registered in the network manifest');
   }
 
-  const nextImpl = await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts);
-  await admin.upgrade(proxyAddress, nextImpl);
+  const nextImpl = await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts, deployerOptions);
+  await admin.upgrade(proxyAddress, nextImpl, deployerOptions);
 
   Contract.address = proxyAddress;
   return new Contract(proxyAddress);
