@@ -10,7 +10,7 @@ import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
 import { isNullish } from './utils/is-nullish';
 
-export type ValidationLog = Array<RunValidation>;
+export type ValidationLog = RunValidation[];
 export type RunValidation = Record<string, ContractValidation>;
 
 export interface ContractValidation {
@@ -129,57 +129,50 @@ export function getContractVersion(validations: ValidationLog, contractName: str
   return version;
 }
 
-function getContractNameAndCompilerRun(validations: ValidationLog, version: Version): [string, number] {
-  let compilerRun = 0;
+function getContractNameAndRunValidation(validations: ValidationLog, version: Version): [string, RunValidation] {
+  let runValidation;
   let contractName;
 
-  for (const [index, validation] of validations.entries()) {
+  for (const validation of validations) {
     contractName = Object.keys(validation).find(
       name => validation[name].version?.withMetadata === version.withMetadata,
     );
     if (contractName !== undefined) {
-      compilerRun = index;
+      runValidation = validation;
       break;
     }
   }
 
-  if (contractName === undefined) {
+  if (contractName === undefined || runValidation === undefined) {
     throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
   }
 
-  return [contractName, compilerRun];
+  return [contractName, runValidation];
 }
 
 export function getStorageLayout(validations: ValidationLog, version: Version): StorageLayout {
-  const [contractName, compilerRun] = getContractNameAndCompilerRun(validations, version);
-  const c = validations[compilerRun][contractName];
+  const [contractName, runValidation] = getContractNameAndRunValidation(validations, version);
+  const c = runValidation[contractName];
   const layout: StorageLayout = { storage: [], types: {} };
   for (const name of [contractName].concat(c.inherit)) {
-    layout.storage.unshift(...validations[compilerRun][name].layout.storage);
-    Object.assign(layout.types, validations[compilerRun][name].layout.types);
+    layout.storage.unshift(...runValidation[name].layout.storage);
+    Object.assign(layout.types, runValidation[name].layout.types);
   }
   return layout;
 }
 
 export function getUnlinkedBytecode(validations: ValidationLog, bytecode: string): string {
-  let compilerRun = 0;
-  let linkableContracts: string[] = [];
+  for (const validation of validations) {
+    const linkableContracts = Object.keys(validation).filter(name => validation[name].linkReferences.length > 0);
 
-  for (const [index, validation] of validations.entries()) {
-    linkableContracts = Object.keys(validation).filter(name => validation[name].linkReferences.length > 0);
-    if (linkableContracts !== undefined) {
-      compilerRun = index;
-      break;
-    }
-  }
+    for (const name of linkableContracts) {
+      const { linkReferences } = validation[name];
+      const unlinkedBytecode = unlinkBytecode(bytecode, linkReferences);
+      const version = getVersion(unlinkedBytecode);
 
-  for (const name of linkableContracts) {
-    const { linkReferences } = validations[compilerRun][name];
-    const unlinkedBytecode = unlinkBytecode(bytecode, linkReferences);
-    const version = getVersion(unlinkedBytecode);
-
-    if (validations[compilerRun][name].version?.withMetadata === version.withMetadata) {
-      return unlinkedBytecode;
+      if (validation[name].version?.withMetadata === version.withMetadata) {
+        return unlinkedBytecode;
+      }
     }
   }
 
@@ -187,7 +180,7 @@ export function getUnlinkedBytecode(validations: ValidationLog, bytecode: string
 }
 
 export function assertUpgradeSafe(validations: ValidationLog, version: Version, opts: ValidationOptions): void {
-  const [contractName] = getContractNameAndCompilerRun(validations, version);
+  const [contractName] = getContractNameAndRunValidation(validations, version);
 
   let errors = getErrors(validations, version);
   errors = processExceptions(contractName, errors, opts);
@@ -322,11 +315,11 @@ function describeError(e: ValidationError): string {
 }
 
 export function getErrors(validations: ValidationLog, version: Version): ValidationError[] {
-  const [contractName, compilerRun] = getContractNameAndCompilerRun(validations, version);
-  const c = validations[compilerRun][contractName];
+  const [contractName, runValidation] = getContractNameAndRunValidation(validations, version);
+  const c = runValidation[contractName];
   return c.errors
-    .concat(...c.inherit.map(name => validations[compilerRun][name].errors))
-    .concat(...c.libraries.map(name => validations[compilerRun][name].errors));
+    .concat(...c.inherit.map(name => runValidation[name].errors))
+    .concat(...c.libraries.map(name => runValidation[name].errors));
 }
 
 export function isUpgradeSafe(validations: ValidationLog, version: Version): boolean {

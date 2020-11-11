@@ -27,7 +27,7 @@ export async function readValidations(hre: HardhatRuntimeEnvironment): Promise<V
     return JSON.parse(await fs.readFile(getValidationsCachePath(hre), 'utf8'));
   } catch (e) {
     if (e.code === 'ENOENT') {
-      throw new Error('ValidationLog cache not found. Recompile with `hardhat compile --force`');
+      throw new Error('Validations log not found. Recompile with `hardhat compile --force`');
     } else {
       throw e;
     }
