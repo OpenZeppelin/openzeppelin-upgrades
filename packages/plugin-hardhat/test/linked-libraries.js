@@ -1,6 +1,6 @@
 const test = require('ava');
 
-const { ethers, upgrades, config, artifacts } = require('hardhat');
+const { ethers, upgrades, artifacts } = require('hardhat');
 
 const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 
