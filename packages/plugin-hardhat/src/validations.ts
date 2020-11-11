@@ -7,7 +7,9 @@ import type { Validations, ValidationSet } from '@openzeppelin/upgrades-core';
 export async function writeValidations(hre: HardhatRuntimeEnvironment, _validations: ValidationSet): Promise<void> {
   let validations = [_validations];
   try {
-    const previousValidations = JSON.parse(await fs.readFile(getValidationsCachePath(hre), 'utf8'));
+    const previousValidations: ValidationSet | ValidationSet[] = JSON.parse(
+      await fs.readFile(getValidationsCachePath(hre), 'utf8'),
+    );
     if (previousValidations !== undefined) {
       validations = validations.concat(previousValidations);
     }
