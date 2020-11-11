@@ -1,5 +1,5 @@
-import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/AdminUpgradeabilityProxy.json';
-import ProxyAdminArtifact from '@openzeppelin/upgrades-core/artifacts/ProxyAdmin.json';
+import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/contracts/proxy/AdminUpgradeabilityProxy.sol/AdminUpgradeabilityProxy.json';
+import ProxyAdminArtifact from '@openzeppelin/upgrades-core/artifacts/contracts/proxy/ProxyAdmin.sol/ProxyAdmin.json';
 
 import { TruffleContract, ContractClass, getTruffleDefaults, getTruffleProvider } from './truffle';
 

@@ -31,12 +31,12 @@ async function prepareUpgradeImpl(
 
   const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
   const version = getVersion(Contract.bytecode, linkedBytecode);
-  assertUpgradeSafe(validations, version, opts);
+  assertUpgradeSafe([validations], version, opts);
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
-  const layout = getStorageLayout(validations, version);
+  const layout = getStorageLayout([validations], version);
   assertStorageUpgradeSafe(deployment.layout, layout, unsafeAllowCustomTypes);
 
   return await fetchOrDeploy(version, provider, async () => {
