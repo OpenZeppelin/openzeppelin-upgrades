@@ -6,13 +6,13 @@ import {
   solcInputOutputDecoder,
   EthereumProvider,
   getNetworkId,
-  ValidationSet,
+  RunValidation,
 } from '@openzeppelin/upgrades-core';
 import { SolcInput, SolcOutput, SolcLinkReferences } from '@openzeppelin/upgrades-core/dist/solc-api';
 
 import { TruffleArtifact, ContractClass, NetworkObject } from './truffle';
 
-export async function validateArtifacts(artifactsPath: string, sourcesPath: string): Promise<ValidationSet> {
+export async function validateArtifacts(artifactsPath: string, sourcesPath: string): Promise<RunValidation> {
   const artifacts = await readArtifacts(artifactsPath);
   const { input, output } = reconstructSolcInputOutput(artifacts);
   const srcDecoder = solcInputOutputDecoder(input, output, sourcesPath);

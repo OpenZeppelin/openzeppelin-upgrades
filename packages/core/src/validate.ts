@@ -10,10 +10,10 @@ import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
 import { isNullish } from './utils/is-nullish';
 
-export type Validations = Array<ValidationSet>;
-export type ValidationSet = Record<string, ValidationResult>;
+export type ValidationLog = Array<RunValidation>;
+export type RunValidation = Record<string, ContractValidation>;
 
-export interface ValidationResult {
+export interface ContractValidation {
   version?: Version;
   inherit: string[];
   libraries: string[];
@@ -59,8 +59,8 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   };
 }
 
-export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationSet {
-  const validation: ValidationSet = {};
+export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): RunValidation {
+  const validation: RunValidation = {};
   const fromId: Record<number, string> = {};
   const inheritIds: Record<string, number[]> = {};
   const libraryIds: Record<string, number[]> = {};
@@ -121,7 +121,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
   return validation;
 }
 
-export function getContractVersion(validations: Validations, contractName: string, compilationRun: number): Version {
+export function getContractVersion(validations: ValidationLog, contractName: string, compilationRun: number): Version {
   const { version } = validations[compilationRun][contractName];
   if (version === undefined) {
     throw new Error(`Contract ${contractName} is abstract`);
@@ -129,7 +129,7 @@ export function getContractVersion(validations: Validations, contractName: strin
   return version;
 }
 
-function getContractNameAndCompilerRun(validations: Validations, version: Version): [string, number] {
+function getContractNameAndCompilerRun(validations: ValidationLog, version: Version): [string, number] {
   let compilerRun = 0;
   let contractName;
 
@@ -150,7 +150,7 @@ function getContractNameAndCompilerRun(validations: Validations, version: Versio
   return [contractName, compilerRun];
 }
 
-export function getStorageLayout(validations: Validations, version: Version): StorageLayout {
+export function getStorageLayout(validations: ValidationLog, version: Version): StorageLayout {
   const [contractName, compilerRun] = getContractNameAndCompilerRun(validations, version);
   const c = validations[compilerRun][contractName];
   const layout: StorageLayout = { storage: [], types: {} };
@@ -161,7 +161,7 @@ export function getStorageLayout(validations: Validations, version: Version): St
   return layout;
 }
 
-export function getUnlinkedBytecode(validations: Validations, bytecode: string): string {
+export function getUnlinkedBytecode(validations: ValidationLog, bytecode: string): string {
   let compilerRun = 0;
   let linkableContracts: string[] = [];
 
@@ -186,7 +186,7 @@ export function getUnlinkedBytecode(validations: Validations, bytecode: string):
   return bytecode;
 }
 
-export function assertUpgradeSafe(validations: Validations, version: Version, opts: ValidationOptions): void {
+export function assertUpgradeSafe(validations: ValidationLog, version: Version, opts: ValidationOptions): void {
   const [contractName] = getContractNameAndCompilerRun(validations, version);
 
   let errors = getErrors(validations, version);
@@ -321,7 +321,7 @@ function describeError(e: ValidationError): string {
   return log.join('\n    ');
 }
 
-export function getErrors(validations: Validations, version: Version): ValidationError[] {
+export function getErrors(validations: ValidationLog, version: Version): ValidationError[] {
   const [contractName, compilerRun] = getContractNameAndCompilerRun(validations, version);
   const c = validations[compilerRun][contractName];
   return c.errors
@@ -329,7 +329,7 @@ export function getErrors(validations: Validations, version: Version): Validatio
     .concat(...c.libraries.map(name => validations[compilerRun][name].errors));
 }
 
-export function isUpgradeSafe(validations: Validations, version: Version): boolean {
+export function isUpgradeSafe(validations: ValidationLog, version: Version): boolean {
   return getErrors(validations, version).length == 0;
 }
 

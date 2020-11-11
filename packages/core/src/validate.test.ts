@@ -8,18 +8,18 @@ import {
   getContractVersion,
   assertUpgradeSafe,
   ValidationOptions,
-  Validations,
+  ValidationLog,
 } from './validate';
 import { solcInputOutputDecoder } from './src-decoder';
 
 interface Context {
-  validations: Validations;
+  validations: ValidationLog;
 }
 
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasStruct');
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/ValidationLog.sol:HasStruct');
   if (buildInfo === undefined) {
     throw new Error('Build info not found');
   }

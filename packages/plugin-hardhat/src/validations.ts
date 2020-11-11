@@ -2,12 +2,12 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { Validations, ValidationSet } from '@openzeppelin/upgrades-core';
+import type { ValidationLog, RunValidation } from '@openzeppelin/upgrades-core';
 
-export async function writeValidations(hre: HardhatRuntimeEnvironment, _validations: ValidationSet): Promise<void> {
+export async function writeValidations(hre: HardhatRuntimeEnvironment, _validations: RunValidation): Promise<void> {
   let validations = [_validations];
   try {
-    const previousValidations: ValidationSet | ValidationSet[] = JSON.parse(
+    const previousValidations: RunValidation | RunValidation[] = JSON.parse(
       await fs.readFile(getValidationsCachePath(hre), 'utf8'),
     );
     if (previousValidations !== undefined) {
@@ -22,12 +22,12 @@ export async function writeValidations(hre: HardhatRuntimeEnvironment, _validati
   await fs.writeFile(getValidationsCachePath(hre), JSON.stringify(validations, null, 2));
 }
 
-export async function readValidations(hre: HardhatRuntimeEnvironment): Promise<Validations> {
+export async function readValidations(hre: HardhatRuntimeEnvironment): Promise<ValidationLog> {
   try {
     return JSON.parse(await fs.readFile(getValidationsCachePath(hre), 'utf8'));
   } catch (e) {
     if (e.code === 'ENOENT') {
-      throw new Error('Validations cache not found. Recompile with `hardhat compile --force`');
+      throw new Error('ValidationLog cache not found. Recompile with `hardhat compile --force`');
     } else {
       throw e;
     }
