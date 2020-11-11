@@ -12,13 +12,25 @@ npm install --save-dev @openzeppelin/hardhat-upgrades
 npm install --save-dev @nomiclabs/hardhat-ethers ethers # peer dependencies
 ```
 
+And register the plugins in your [`hardhat.config.js`](https://hardhat.org/config/):
+
+```js
+// Javascript
+require('@nomiclabs/hardhat-ethers');
+require('@openzeppelin/hardhat-upgrades');
+
+// Typescript
+import '@nomiclabs/hardhat-ethers';
+import '@openzeppelin/hardhat-upgrades';
+```
+
 ## Usage in scripts
 
 You can use this plugin in a [Hardhat script](https://hardhat.org/guides/scripts.html) to deploy an upgradeable instance of one of your contracts via the `deployProxy` function:
 
 ```js
 // scripts/create-box.js
-const { ethers, upgrades } = require("@nomiclabs/hardhat");
+const { ethers, upgrades } = require("hardhat");
 
 async function main() {
   const Box = await ethers.getContractFactory("Box");
@@ -36,7 +48,7 @@ Then, in another script, you can use the `upgradeProxy` function to upgrade the 
 
 ```js
 // scripts/upgrade-box.js
-const { ethers, upgrades } = require("@nomiclabs/hardhat");
+const { ethers, upgrades } = require("hardhat");
 
 async function main() {
   const BoxV2 = await ethers.getContractFactory("BoxV2");
