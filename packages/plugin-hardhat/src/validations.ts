@@ -4,10 +4,20 @@ import path from 'path';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { Validations, ValidationSet } from '@openzeppelin/upgrades-core';
 
-export async function writeValidations(hre: HardhatRuntimeEnvironment, validations: ValidationSet): Promise<void> {
-  const previousValidations = await readValidations(hre);
+export async function writeValidations(hre: HardhatRuntimeEnvironment, _validations: ValidationSet): Promise<void> {
+  let validations = [_validations];
+  try {
+    const previousValidations = JSON.parse(await fs.readFile(getValidationsCachePath(hre), 'utf8'));
+    if (previousValidations !== undefined) {
+      validations = validations.concat(previousValidations);
+    }
+  } catch (e) {
+    if (e.code !== 'ENOENT') {
+      throw e;
+    }
+  }
   await fs.mkdir(hre.config.paths.cache, { recursive: true });
-  await fs.writeFile(getValidationsCachePath(hre), JSON.stringify([validations].concat(previousValidations), null, 2));
+  await fs.writeFile(getValidationsCachePath(hre), JSON.stringify(validations, null, 2));
 }
 
 export async function readValidations(hre: HardhatRuntimeEnvironment): Promise<Validations> {
