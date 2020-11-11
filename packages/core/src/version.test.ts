@@ -1,12 +1,16 @@
 import test from 'ava';
-import { promises as fs } from 'fs';
+import { artifacts } from 'hardhat';
 import { hashBytecodeWithoutMetadata, hashBytecode } from './version';
 
 const contractBytecode = '01234567890abcdef';
 
 test('same code different formatting produces different metadata', async t => {
   async function getBytecodeByContractName(contractName: string): Promise<string> {
-    const solcOutput = JSON.parse(await fs.readFile('cache/solc-output.json', 'utf8'));
+    const buildInfo = await artifacts.getBuildInfo('contracts/test/Version.sol:Greeter');
+    if (buildInfo === undefined) {
+      throw new Error('Build info not found');
+    }
+    const solcOutput = buildInfo.output;
     return solcOutput.contracts['contracts/test/Version.sol'][contractName].evm.bytecode.object;
   }
 

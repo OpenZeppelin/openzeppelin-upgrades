@@ -104,7 +104,7 @@ async function deployLibrary(libraryName) {
 }
 
 async function getLinkedContractFactory(contractName, libraries) {
-  const cArtifact = await artifacts.readArtifact(config.paths.artifacts, contractName);
+  const cArtifact = await artifacts.readArtifact(contractName);
   const linkedBytecode = linkBytecode(cArtifact, libraries);
   const ContractFactory = await ethers.getContractFactory(cArtifact.abi, linkedBytecode);
   return ContractFactory;

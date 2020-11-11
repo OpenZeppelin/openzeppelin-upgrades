@@ -2,9 +2,7 @@ const test = require('ava');
 
 const hre = require('hardhat');
 const { getManifestAdmin } = require('@openzeppelin/hardhat-upgrades/dist/admin.js');
-
 const { ethers, upgrades } = hre;
-
 const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 
 test.before(async t => {

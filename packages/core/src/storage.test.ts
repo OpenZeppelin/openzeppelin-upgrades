@@ -1,7 +1,7 @@
 import _test, { TestInterface } from 'ava';
-import { promises as fs } from 'fs';
 import { ContractDefinition } from 'solidity-ast';
 import { findAll } from 'solidity-ast/utils';
+import { artifacts } from 'hardhat';
 
 import { SolcOutput } from './solc-api';
 import { extractStorageLayout, getStorageUpgradeErrors, stabilizeTypeIdentifier, StorageLayout } from './storage';
@@ -13,7 +13,11 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const solcOutput: SolcOutput = JSON.parse(await fs.readFile('cache/solc-output.json', 'utf8'));
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/Storage.sol:Storage1');
+  if (buildInfo === undefined) {
+    throw new Error('Build info not found');
+  }
+  const solcOutput: SolcOutput = buildInfo.output;
   t.context.contracts = {};
   for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/Storage.sol'].ast)) {
     t.context.contracts[def.name] = def;

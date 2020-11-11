@@ -3,5 +3,5 @@
 set -euo pipefail
 
 rimraf .openzeppelin
-hardhat compile
+npx hardhat compile
 ava "$@"

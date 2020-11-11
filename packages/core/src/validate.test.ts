@@ -1,5 +1,5 @@
 import _test, { TestInterface } from 'ava';
-import { promises as fs } from 'fs';
+import { artifacts } from 'hardhat';
 
 import {
   validate,
@@ -19,8 +19,12 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const solcInput = JSON.parse(await fs.readFile('cache/solc-input.json', 'utf8'));
-  const solcOutput = JSON.parse(await fs.readFile('cache/solc-output.json', 'utf8'));
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasStruct');
+  if (buildInfo === undefined) {
+    throw new Error('Build info not found');
+  }
+  const solcOutput = buildInfo.output;
+  const solcInput = buildInfo.input;
   const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
   t.context.validations = [validate(solcOutput, decodeSrc)];
 });
