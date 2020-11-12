@@ -29,7 +29,7 @@ npm install --save-dev @openzeppelin/truffle-upgrades
 
 See the documentation for each plugin, or take a look at the sample code snippets below.
 
-| [<img src="assets/hardhat.png" height="20px" width="30px" alt="">Hardhat](./packages/plugin-hardhat/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
+| [<img src="assets/hardhat.svg" height="20px" width="30px" alt="">Hardhat](./packages/plugin-hardhat/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
 |-|-|
 
 Hardhat users will be able to write [scripts](https:/hardhat.org/guides/scripts.html) that use the plugin to deploy or upgrade a contract, and manage proxy admin rights.
