@@ -1,6 +1,6 @@
 = Upgrades Plugins
 
-**Integrate upgrades into your existing workflow.** Plugins for https://buidler.dev[Buidler] and https://www.trufflesuite.com/truffle[Truffle] to deploy and manage upgradeable contracts on Ethereum.
+**Integrate upgrades into your existing workflow.** Plugins for https://hardhat.org[Hardhat] and https://www.trufflesuite.com/truffle[Truffle] to deploy and manage upgradeable contracts on Ethereum.
 
 * Deploy upgradeable contracts.
 * Upgrade deployed contracts.
@@ -14,15 +14,15 @@ TIP: New to upgrades? Start by reading our xref:learn::upgrading-smart-contracts
 [[install]]
 === Installation
 
-[[install-buidler]]
-==== Buidler install
+[[install-hardhat]]
+==== Hardhat install
 
 [source,console]
 ----
-$ npm install --save-dev @openzeppelin/buidler-upgrades @nomiclabs/buidler-ethers ethers
+$ npm install --save-dev @openzeppelin/hardhat-upgrades @nomiclabs/hardhat-ethers ethers
 ----
 
-This installs our Buidler plugin along with the necessary peer dependencies.
+This installs our Hardhat plugin along with the necessary peer dependencies.
 
 [[install-truffle]]
 ==== Truffle install
@@ -35,16 +35,16 @@ $ npm install --save-dev @openzeppelin/truffle-upgrades
 [[usage]]
 === Usage
 
-See the documentation for using xref:truffle-upgrades.adoc[Truffle Upgrades] and xref:buidler-upgrades.adoc[Buidler Upgrades], or take a look at the sample code snippets below.
+See the documentation for using xref:truffle-upgrades.adoc[Truffle Upgrades] and xref:hardhat-upgrades.adoc[Hardhat Upgrades], or take a look at the sample code snippets below.
 
-[[buidler-usage]]
-==== Buidler usage
+[[hardhat-usage]]
+==== Hardhat usage
 
-Buidler users will be able to write https://buidler.dev/guides/scripts.html[scripts] that use the plugin to deploy or upgrade a contract, and manage proxy admin rights.
+Hardhat users will be able to write https://hardhat.org/guides/scripts.html[scripts] that use the plugin to deploy or upgrade a contract, and manage proxy admin rights.
 
 [source,js]
 ----
-const { ethers, upgrades } = require("@nomiclabs/buidler");
+const { ethers, upgrades } = require("hardhat");
 
 async function main() {
   // Deploying
@@ -82,7 +82,7 @@ module.exports = async function (deployer) {
 [[test-usage]]
 ==== Test usage
 
-Whether you're using Buidler or Truffle, you can use the plugin in your tests to ensure everything works as expected.
+Whether you're using Hardhat or Truffle, you can use the plugin in your tests to ensure everything works as expected.
 
 [source,js]
 ----
