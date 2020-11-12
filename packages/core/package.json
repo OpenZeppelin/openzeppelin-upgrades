@@ -15,14 +15,13 @@
   "scripts": {
     "prepublish": "rimraf artifacts cache dist *.tsbuildinfo",
     "prepare": "tsc -b && yarn prepare:contracts",
-    "prepare:contracts": "buidler compile",
-    "test": "tsc -b && buidler compile --force && ava",
-    "test:watch": "buidler compile --force && fgbg 'ava --watch' 'tsc -b --watch'",
+    "prepare:contracts": "hardhat compile",
+    "test": "tsc -b && hardhat compile --force && ava",
+    "test:watch": "hardhat compile --force && fgbg 'ava --watch' 'tsc -b --watch'",
     "version": "node ../../scripts/bump-changelog.js"
   },
   "devDependencies": {
     "@ava/typescript": "^1.1.1",
-    "@nomiclabs/buidler": "^1.3.6",
     "@openzeppelin/contracts": "^3.1.0",
     "@types/bn.js": "^4.11.6",
     "@types/cbor": "^5.0.0",
@@ -33,7 +32,9 @@
     "@types/rimraf": "^3.0.0",
     "ava": "^3.9.0",
     "fgbg": "^0.1.4",
+    "hardhat": "^2.0.2",
     "rimraf": "^3.0.2",
+    "ts-node": "^9.0.0",
     "typescript": "^4.0.0"
   },
   "dependencies": {

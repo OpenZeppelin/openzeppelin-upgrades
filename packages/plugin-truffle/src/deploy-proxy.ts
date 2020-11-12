@@ -30,11 +30,11 @@ export async function deployProxy(
 
   const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
   const version = getVersion(Contract.bytecode, linkedBytecode);
-  assertUpgradeSafe(validations, version, opts);
+  assertUpgradeSafe([validations], version, opts);
 
   const impl = await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(Contract, deployer);
-    const layout = getStorageLayout(validations, version);
+    const layout = getStorageLayout([validations], version);
     return { ...deployment, layout };
   });
 

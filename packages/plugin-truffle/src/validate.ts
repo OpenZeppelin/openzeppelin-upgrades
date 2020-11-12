@@ -4,18 +4,15 @@ import { findAll } from 'solidity-ast/utils';
 import {
   validate,
   solcInputOutputDecoder,
-  ValidationResult,
   EthereumProvider,
   getNetworkId,
+  RunValidation,
 } from '@openzeppelin/upgrades-core';
 import { SolcInput, SolcOutput, SolcLinkReferences } from '@openzeppelin/upgrades-core/dist/solc-api';
 
 import { TruffleArtifact, ContractClass, NetworkObject } from './truffle';
 
-export async function validateArtifacts(
-  artifactsPath: string,
-  sourcesPath: string,
-): Promise<Record<string, ValidationResult>> {
+export async function validateArtifacts(artifactsPath: string, sourcesPath: string): Promise<RunValidation> {
   const artifacts = await readArtifacts(artifactsPath);
   const { input, output } = reconstructSolcInputOutput(artifacts);
   const srcDecoder = solcInputOutputDecoder(input, output, sourcesPath);

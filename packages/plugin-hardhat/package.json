@@ -1,0 +1,40 @@
+{
+  "name": "@openzeppelin/hardhat-upgrades",
+  "version": "1.2.1",
+  "description": "",
+  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "files": [
+    "/dist",
+    "/src"
+  ],
+  "bin": {
+    "migrate-oz-cli-project": "dist/scripts/migrate-oz-cli-project.js"
+  },
+  "scripts": {
+    "prepublish": "rimraf dist *.tsbuildinfo",
+    "prepare": "tsc -b",
+    "test": "tsc -b && bash scripts/test.sh",
+    "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch'",
+    "version": "node ../../scripts/bump-changelog.js"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.0",
+    "@types/mocha": "^7.0.2",
+    "ava": "^3.9.0",
+    "ethers": "^5.0.5",
+    "fgbg": "^0.1.4",
+    "hardhat": "^2.0.2",
+    "promisified": "^0.5.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^9.0.0"
+  },
+  "dependencies": {
+    "@openzeppelin/upgrades-core": "^1.2.0"
+  },
+  "peerDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.0",
+    "hardhat": "^2.0.2"
+  }
+}

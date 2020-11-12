@@ -11,7 +11,7 @@ jobs:
       matrix:
         package:
           - core
-          - plugin-buidler
+          - plugin-hardhat
           - plugin-truffle
 
     runs-on: ubuntu-latest

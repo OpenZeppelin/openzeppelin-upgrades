@@ -1,42 +1,46 @@
 import _test, { TestInterface } from 'ava';
-import { promises as fs } from 'fs';
+import { artifacts } from 'hardhat';
 
 import {
   validate,
   isUpgradeSafe,
   getStorageLayout,
   getContractVersion,
-  Validation,
   assertUpgradeSafe,
   ValidationOptions,
+  ValidationLog,
 } from './validate';
 import { solcInputOutputDecoder } from './src-decoder';
 
 interface Context {
-  validation: Validation;
+  validations: ValidationLog;
 }
 
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const solcInput = JSON.parse(await fs.readFile('cache/solc-input.json', 'utf8'));
-  const solcOutput = JSON.parse(await fs.readFile('cache/solc-output.json', 'utf8'));
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasStruct');
+  if (buildInfo === undefined) {
+    throw new Error('Build info not found');
+  }
+  const solcOutput = buildInfo.output;
+  const solcInput = buildInfo.input;
   const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
-  t.context.validation = validate(solcOutput, decodeSrc);
+  t.context.validations = [validate(solcOutput, decodeSrc)];
 });
 
 function testValid(name: string, valid: boolean) {
   test(name, t => {
-    const version = getContractVersion(t.context.validation, name);
-    t.is(isUpgradeSafe(t.context.validation, version), valid);
+    const version = getContractVersion(t.context.validations, name, 0);
+    t.is(isUpgradeSafe(t.context.validations, version), valid);
   });
 }
 
 function testOverride(name: string, opts: ValidationOptions, valid: boolean) {
   const testName = name.concat(valid ? '_Allowed' : '_NotAllowed');
   test(testName, t => {
-    const version = getContractVersion(t.context.validation, name);
-    const assertUpgSafe = () => assertUpgradeSafe(t.context.validation, version, opts);
+    const version = getContractVersion(t.context.validations, name, 0);
+    const assertUpgSafe = () => assertUpgradeSafe(t.context.validations, version, opts);
     if (valid) {
       t.notThrows(assertUpgSafe);
     } else {
@@ -79,8 +83,8 @@ testValid('ParentHasEnum', false);
 testValid('UsesLibraryWithEnum', false);
 
 test('inherited storage', t => {
-  const version = getContractVersion(t.context.validation, 'StorageInheritChild');
-  const layout = getStorageLayout(t.context.validation, version);
+  const version = getContractVersion(t.context.validations, 'StorageInheritChild', 0);
+  const layout = getStorageLayout(t.context.validations, version);
   t.is(layout.storage.length, 8);
   for (let i = 0; i < layout.storage.length; i++) {
     t.is(layout.storage[i].label, `v${i}`);

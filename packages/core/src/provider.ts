@@ -61,6 +61,6 @@ export const networkNames: { [chainId in number]?: string } = Object.freeze({
 export async function isDevelopmentNetwork(provider: EthereumProvider): Promise<boolean> {
   const chainId = await getChainId(provider);
   //  1337 => ganache and geth --dev
-  // 31337 => buidler evm
+  // 31337 => hardhat network
   return chainId === 1337 || chainId === 31337;
 }

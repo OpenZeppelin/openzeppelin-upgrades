@@ -3,7 +3,7 @@
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins)
 [![Coverage Status](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades/graph/badge.svg)](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades)
 
-**Integrate upgrades into your existing workflow.** Plugins for [Buidler](https://buidler.dev/) and [Truffle](https://www.trufflesuite.com/truffle) to deploy and manage upgradeable contracts on Ethereum.
+**Integrate upgrades into your existing workflow.** Plugins for [Hardhat](https://hardhat.org/) and [Truffle](https://www.trufflesuite.com/truffle) to deploy and manage upgradeable contracts on Ethereum.
 
 - Deploy upgradeable contracts.
 - Upgrade deployed contracts.
@@ -12,11 +12,11 @@
 
 ## Installation
 
-### Buidler
+### Hardhat
 
 ```
-npm install --save-dev @openzeppelin/buidler-upgrades
-npm install --save-dev @nomiclabs/buidler-ethers ethers # peer dependencies
+npm install --save-dev @openzeppelin/hardhat-upgrades
+npm install --save-dev @nomiclabs/hardhat-ethers ethers # peer dependencies
 ```
 
 ### Truffle
@@ -29,13 +29,13 @@ npm install --save-dev @openzeppelin/truffle-upgrades
 
 See the documentation for each plugin, or take a look at the sample code snippets below.
 
-| [<img src="assets/buidler.svg" height="20px" width="30px" alt="">Buidler](./packages/plugin-buidler/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
+| [<img src="assets/hardhat.png" height="20px" width="30px" alt="">Hardhat](./packages/plugin-hardhat/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
 |-|-|
 
-Buidler users will be able to write [scripts](https://buidler.dev/guides/scripts.html) that use the plugin to deploy or upgrade a contract, and manage proxy admin rights.
+Hardhat users will be able to write [scripts](https:/hardhat.org/guides/scripts.html) that use the plugin to deploy or upgrade a contract, and manage proxy admin rights.
 
 ```js
-const { ethers, upgrades } = require("@nomiclabs/buidler");
+const { ethers, upgrades } = require("hardhat");
 
 async function main() {
   // Deploying
@@ -65,7 +65,7 @@ module.exports = async function (deployer) {
 }
 ```
 
-Whether you're using Buidler or Truffle, you can use the plugin in your tests to ensure everything works as expected.
+Whether you're using Hardhat or Truffle, you can use the plugin in your tests to ensure everything works as expected.
 
 ```js
 it('works before and after upgrading', async function () {

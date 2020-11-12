@@ -1,6 +1,6 @@
 pragma solidity ^0.5.1;
 
-import "@nomiclabs/buidler/console.sol";
+import "hardhat/console.sol";
 
 contract Adder {
     uint public n;

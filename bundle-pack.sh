@@ -8,7 +8,7 @@ yarn prepare
 
 mv packages/core/node_modules core-node_modules
 
-for t in buidler truffle; do
+for t in hardhat truffle; do
   mkdir -p "packages/plugin-$t/node_modules/@openzeppelin"
   ln -srf packages/core "packages/plugin-$t/node_modules/@openzeppelin/upgrades-core"
   cd "packages/plugin-$t"

@@ -1,6 +1,6 @@
 pragma solidity ^0.5.1;
 
-import "@nomiclabs/buidler/console.sol";
+import "hardhat/console.sol";
 
 library SafeAdd {
     function add(uint256 a, uint256 b) internal pure returns (uint256) {

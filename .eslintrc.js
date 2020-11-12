@@ -19,12 +19,6 @@ module.exports = {
       extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
     },
     {
-      files: ['buidler.config.js'],
-      globals: {
-        usePlugin: 'readonly',
-      },
-    },
-    {
       files: ['ava.config.js'],
       parserOptions: {
         sourceType: 'module',

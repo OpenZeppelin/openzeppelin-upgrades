@@ -117,7 +117,7 @@ function getNetworkName(filename: string): string {
 
 function isDevelopmentNetwork(network: string): boolean {
   // 13+ digits      => ganache timestamp
-  // 31337           => buidler evm
+  // 31337           => hardhat network
   return /^dev-(31337|\d{13,})$/.test(network);
 }
 
