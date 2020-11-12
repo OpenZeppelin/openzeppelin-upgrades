@@ -12,9 +12,9 @@ test.before(async t => {
 });
 
 test('multiple compiler runs', async t => {
-  const { validations } = t.context;
-  const GreeterVersion = getVersion(t.context.Greeter.bytecode);
-  const GreeterMultiVersion = getVersion(t.context.GreeterMulti.bytecode);
+  const { validations, Greeter, GreeterMulti } = t.context;
+  const GreeterVersion = getVersion(Greeter.bytecode);
+  const GreeterMultiVersion = getVersion(GreeterMulti.bytecode);
 
   const [, GreeterRunValidation] = getContractNameAndRunValidation(validations, GreeterVersion);
   const [, GreeterMultiRunValidation] = getContractNameAndRunValidation(validations, GreeterMultiVersion);
