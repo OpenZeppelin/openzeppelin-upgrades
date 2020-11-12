@@ -129,7 +129,7 @@ export function getContractVersion(validations: ValidationLog, contractName: str
   return version;
 }
 
-function getContractNameAndRunValidation(validations: ValidationLog, version: Version): [string, RunValidation] {
+export function getContractNameAndRunValidation(validations: ValidationLog, version: Version): [string, RunValidation] {
   let runValidation;
   let contractName;
 

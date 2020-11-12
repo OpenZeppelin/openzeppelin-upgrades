@@ -16,11 +16,9 @@ And register the plugins in your [`hardhat.config.js`](https://hardhat.org/confi
 
 ```js
 // Javascript
-require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 
 // Typescript
-import '@nomiclabs/hardhat-ethers';
 import '@openzeppelin/hardhat-upgrades';
 ```
 
