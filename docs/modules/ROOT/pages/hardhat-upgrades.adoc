@@ -1,6 +1,6 @@
-= Using with Buidler
+= Using with Hardhat
 
-This package adds functions to your Buidler scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
+This package adds functions to your Hardhat scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
 
 
 TIP: Check out the https://forum.openzeppelin.com/t/openzeppelin-buidler-upgrades-step-by-step-tutorial/3580[step by step tutorial], showing from creating, testing and deploying, all the way through to upgrading with Gnosis Safe.
@@ -10,36 +10,26 @@ TIP: Check out the https://forum.openzeppelin.com/t/openzeppelin-buidler-upgrade
 
 [source,console]
 ----
-$ npm install --save-dev @openzeppelin/buidler-upgrades
-$ npm install --save-dev @nomiclabs/buidler-ethers ethers # peer dependencies
+$ npm install --save-dev @openzeppelin/hardhat-upgrades
+$ npm install --save-dev @nomiclabs/hardhat-ethers ethers # peer dependencies
 ----
 
-And register the plugins in your https://buidler.dev/config[`buidler.config.js`]:
+And register the plugin in your https://hardhat.org/config[`hardhat.config.js`]:
 
 [source,js]
 ----
-usePlugin('@nomiclabs/buidler-ethers');
-usePlugin('@openzeppelin/buidler-upgrades');
-----
-
-If you're using TypeScript, remember to add our https://buidler.dev/guides/typescript.html#plugin-type-extensions[type extensions] in your `tsconfig.json`:
-
-[source,json]
-----
-"files": [
-  "./node_modules/@openzeppelin/buidler-upgrades/src/type-extensions.d.ts"
-]
+require('@openzeppelin/hardhat-upgrades');
 ----
 
 [[script-usage]]
 == Usage in scripts
 
-You can use this plugin in a https://buidler.dev/guides/scripts.html[Buidler script] to deploy an upgradeable instance of one of your contracts via the `deployProxy` function:
+You can use this plugin in a https://hardhat.org/guides/scripts.html[Hardhat script] to deploy an upgradeable instance of one of your contracts via the `deployProxy` function:
 
 [source,js]
 ----
 // scripts/create-box.js
-const { ethers, upgrades } = require("@nomiclabs/buidler");
+const { ethers, upgrades } = require("hardhat");
 
 async function main() {
   const Box = await ethers.getContractFactory("Box");
@@ -58,7 +48,7 @@ Then, in another script, you can use the `upgradeProxy` function to upgrade the 
 [source,js]
 ----
 // scripts/upgrade-box.js
-const { ethers, upgrades } = require("@nomiclabs/buidler");
+const { ethers, upgrades } = require("hardhat");
 
 async function main() {
   const BoxV2 = await ethers.getContractFactory("BoxV2");
@@ -76,7 +66,7 @@ The plugin will take care of comparing `BoxV2` to the previous one to ensure the
 [[test-usage]]
 == Usage in tests
 
-You can also use the `deployProxy` and `upgradeProxy` functions from your Buidler tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in scripts.
+You can also use the `deployProxy` and `upgradeProxy` functions from your Hardhat tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in scripts.
 
 [source,js]
 ----

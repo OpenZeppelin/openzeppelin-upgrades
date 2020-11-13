@@ -1,6 +1,6 @@
 = Migrate from OpenZeppelin CLI
 
-This guide will walk through migrating a project from the OpenZeppelin CLI to OpenZeppelin Upgrades Plugins for either Truffle or Buidler.
+This guide will walk through migrating a project from the OpenZeppelin CLI to OpenZeppelin Upgrades Plugins for either Truffle or Hardhat.
 
 include::learn::partial$hardhat-truffle-toggle.adoc[]
 
@@ -18,26 +18,25 @@ Keeping that aside, everything else remains the same since both the CLI and plug
 
 [.hardhat]
 --
-https://buidler.dev/tutorial/creating-a-new-buidler-project.html[Install Buidler] and when initializing it, select the `Create an empty buidler.config.js` option.
+https://hardhat.org/tutorial/creating-a-new-hardhat-project.html[Install Hardhat] and when initializing it, select the `Create an empty hardhat.config.js` option.
 
 ```bash
-$ npm install --save-dev @nomiclabs/buidler
-$ npx buidler
+$ npm install --save-dev hardhat
+$ npx hardhat
 ```
 
 Then install the Upgrades plugin:
 
 ```bash
-$ npm install --save-dev @openzeppelin/buidler-upgrades
-$ npm install --save-dev @nomiclabs/buidler-ethers ethers # peer dependencies
+$ npm install --save-dev @openzeppelin/hardhat-upgrades
+$ npm install --save-dev @nomiclabs/hardhat-ethers ethers # peer dependencies
 ```
 
-Once it is done, register the plugin in the Buidler config file by adding these lines:
+Once it is done, register the plugin in the Hardhat config file by adding these lines:
 
 ```jsx
-// buidler.config.js
-usePlugin('@nomiclabs/buidler-ethers');
-usePlugin('@openzeppelin/buidler-upgrades');
+// hardhat.config.js
+require('@openzeppelin/hardhat-upgrades');
 
 module.exports = {
   // ...
@@ -102,10 +101,10 @@ The migration script will also export a `openzeppelin-cli-export.json` file into
 
 [.hardhat]
 --
-Copy compiler settings into the https://buidler.dev/config/#available-config-options[`solc` field] in the Buidler config file
+Copy compiler settings into the https://hardhat.org/config/#available-config-options[`solc` field] in the Hardhat config file
 
 ```json
-// buidler.config.js
+// hardhat.config.js
 
 // ...
 
@@ -146,7 +145,7 @@ module.exports = {
 ```
 --
 
-NOTE: The solc configuration format is different in `truffle-config.js` and `buidler.config.js` files
+NOTE: The solc configuration format is different in `truffle-config.js` and `hardhat.config.js` files
 
 And that's it, you have successfully migrated your CLI project. Let's now try your new setup upgrading one of your migrated contracts.
 
@@ -190,12 +189,12 @@ These scripts are just examples of how to use the exported data. We make no sugg
 
 [.hardhat]
 --
-With Buidler, we would write a script (*you can read more about Buidler scripts https://buidler.dev/guides/scripts.html[here] and about using the `buidler-upgrades` plugin https://docs.openzeppelin.com/upgrades-plugins/1.x/buidler-upgrades[here]*):
+With Hardhat, we would write a script (*you can read more about Hardhat scripts https://hardhat.org/guides/scripts.html[here] and about using the `hardhat-upgrades` plugin https://docs.openzeppelin.com/upgrades-plugins/1.x/hardhat-upgrades[here]*):
 
 ```jsx
 // scripts/upgradeBoxToV2.js
 
-const { ethers, upgrades } = require("@nomiclabs/buidler");
+const { ethers, upgrades } = require("hardhat");
 const OZ_SDK_EXPORT = require("../openzeppelin-cli-export.json");
 
 async function main() {
@@ -208,7 +207,7 @@ main();
 ```
 
 ```bash
-$ npx buidler run scripts/upgradeBoxToV2.js --network rinkeby
+$ npx hardhat run scripts/upgradeBoxToV2.js --network rinkeby
 ```
 --
 
@@ -237,4 +236,4 @@ $ npx truffle migrate --network rinkeby
 ```
 --
 
-And that's it! You have migrated your OpenZeppelin CLI project to Truffle or Buidler and performed an upgrade using the plugins.
+And that's it! You have migrated your OpenZeppelin CLI project to Truffle or Hardhat and performed an upgrade using the plugins.

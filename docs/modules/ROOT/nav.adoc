@@ -1,6 +1,6 @@
 * xref:index.adoc[Overview]
 * xref:truffle-upgrades.adoc[Using with Truffle]
-* xref:buidler-upgrades.adoc[Using with Buidler]
+* xref:hardhat-upgrades.adoc[Using with Hardhat]
 * xref:writing-upgradeable.adoc[Writing Upgradeable Contracts]
 * xref:proxies.adoc[Proxy Upgrade Pattern]
 * xref:network-files.adoc[Network Files]
@@ -9,4 +9,4 @@
 
 .API Reference
 * xref:api-truffle-upgrades.adoc[Truffle Upgrades]
-* xref:api-buidler-upgrades.adoc[Buidler Upgrades]
+* xref:api-hardhat-upgrades.adoc[Hardhat Upgrades]
