@@ -36,7 +36,8 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
       throw new Error('Artifact does not contain AST');
     }
 
-    const { contractName, sourcePath, ast } = artifact;
+    const { contractName, ast } = artifact;
+    const sourcePath = ast.absolutePath;
 
     if (input.sources[sourcePath] === undefined) {
       input.sources[sourcePath] = { content: artifact.source };
