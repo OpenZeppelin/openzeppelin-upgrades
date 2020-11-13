@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.3 (2020-11-13)
 
 - Fix spurious "Artifacts are from different compiler runs" error on Windows. ([#222](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/222))
 
