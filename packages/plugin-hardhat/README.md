@@ -12,7 +12,7 @@ npm install --save-dev @openzeppelin/hardhat-upgrades
 npm install --save-dev @nomiclabs/hardhat-ethers ethers # peer dependencies
 ```
 
-And register the plugins in your [`hardhat.config.js`](https://hardhat.org/config/):
+And register the plugin in your [`hardhat.config.js`](https://hardhat.org/config/):
 
 ```js
 // Javascript
