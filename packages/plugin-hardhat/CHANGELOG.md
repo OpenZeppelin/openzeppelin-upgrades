@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Migrate plugin to Hardhat. ([#214](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/214))
+
 ## 1.2.1 (2020-10-21)
 
 - Add ability to disable proxy initialization by specifying `initializer: false`. ([#204](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/204))
