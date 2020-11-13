@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add missing artifact files in the package.
+
 ## 1.3.0 (2020-11-13)
 
 - Support Hardhat. ([#214](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/214))

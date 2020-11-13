@@ -10,6 +10,8 @@
     "/src",
     "/artifacts/AdminUpgradeabilityProxy.json",
     "/artifacts/ProxyAdmin.json",
+    "/artifacts/contracts/proxy/AdminUpgradeabilityProxy.sol/AdminUpgradeabilityProxy.json",
+    "/artifacts/contracts/proxy/ProxyAdmin.sol/ProxyAdmin.json",
     "/contracts/Initializable.sol"
   ],
   "scripts": {
