@@ -8,12 +8,12 @@ import {
   getContractVersion,
   assertUpgradeSafe,
   ValidationOptions,
-  ValidationLog,
+  RunValidation,
 } from './validate';
 import { solcInputOutputDecoder } from './src-decoder';
 
 interface Context {
-  validations: ValidationLog;
+  validation: RunValidation;
 }
 
 const test = _test as TestInterface<Context>;
@@ -26,21 +26,21 @@ test.before(async t => {
   const solcOutput = buildInfo.output;
   const solcInput = buildInfo.input;
   const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
-  t.context.validations = [validate(solcOutput, decodeSrc)];
+  t.context.validation = validate(solcOutput, decodeSrc);
 });
 
 function testValid(name: string, valid: boolean) {
   test(name, t => {
-    const version = getContractVersion(t.context.validations, name, 0);
-    t.is(isUpgradeSafe(t.context.validations, version), valid);
+    const version = getContractVersion(t.context.validation, name);
+    t.is(isUpgradeSafe([t.context.validation], version), valid);
   });
 }
 
 function testOverride(name: string, opts: ValidationOptions, valid: boolean) {
   const testName = name.concat(valid ? '_Allowed' : '_NotAllowed');
   test(testName, t => {
-    const version = getContractVersion(t.context.validations, name, 0);
-    const assertUpgSafe = () => assertUpgradeSafe(t.context.validations, version, opts);
+    const version = getContractVersion(t.context.validation, name);
+    const assertUpgSafe = () => assertUpgradeSafe([t.context.validation], version, opts);
     if (valid) {
       t.notThrows(assertUpgSafe);
     } else {
@@ -83,8 +83,8 @@ testValid('ParentHasEnum', false);
 testValid('UsesLibraryWithEnum', false);
 
 test('inherited storage', t => {
-  const version = getContractVersion(t.context.validations, 'StorageInheritChild', 0);
-  const layout = getStorageLayout(t.context.validations, version);
+  const version = getContractVersion(t.context.validation, 'StorageInheritChild');
+  const layout = getStorageLayout([t.context.validation], version);
   t.is(layout.storage.length, 8);
   for (let i = 0; i < layout.storage.length; i++) {
     t.is(layout.storage[i].label, `v${i}`);

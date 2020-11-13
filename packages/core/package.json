@@ -16,6 +16,7 @@
     "prepublish": "rimraf artifacts cache dist *.tsbuildinfo",
     "prepare": "tsc -b && yarn prepare:contracts",
     "prepare:contracts": "hardhat compile",
+    "prepublishOnly": "bash scripts/copy-artifacts.sh",
     "test": "tsc -b && hardhat compile --force && ava",
     "test:watch": "hardhat compile --force && fgbg 'ava --watch' 'tsc -b --watch'",
     "version": "node ../../scripts/bump-changelog.js"
