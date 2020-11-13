@@ -129,8 +129,8 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): RunVali
   return validation;
 }
 
-export function getContractVersion(validations: ValidationLog, contractName: string, compilationRun: number): Version {
-  const { version } = validations[compilationRun][contractName];
+export function getContractVersion(validation: RunValidation, contractName: string): Version {
+  const { version } = validation[contractName];
   if (version === undefined) {
     throw new Error(`Contract ${contractName} is abstract`);
   }
