@@ -8,7 +8,6 @@ import {
   getContractVersion,
   assertUpgradeSafe,
   ValidationOptions,
-  ValidationLog,
   RunValidation,
 } from './validate';
 import { solcInputOutputDecoder } from './src-decoder';
