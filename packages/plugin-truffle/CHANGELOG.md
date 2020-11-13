@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix spurious "Artifacts are from different compiler runs" error on Windows. ([#222](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/222))
+
 ## 1.2.2 (2020-11-03)
 
 - Add `jsonrpc: '2.0'` field when using Truffle provider. ([#210](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/210))
