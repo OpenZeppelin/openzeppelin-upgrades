@@ -157,6 +157,8 @@ contract ERC20Upgradeable is Initializable, ContextUpgradeable, IERC20Upgradeabl
 
 Whether using OpenZeppelin Contracts or another smart contract library, always make sure that the package is set up to handle upgradeable contracts.
 
+Learn more about OpenZeppelin Contracts Upgradeable in xref:contracts::upgradeable.adoc[Contracts: Using with Upgrades].
+
 [[avoid-initial-values-in-field-declarations]]
 === Avoiding Initial Values in Field Declarations
 
