@@ -19,6 +19,11 @@ npm install --save-dev @openzeppelin/hardhat-upgrades
 npm install --save-dev @nomiclabs/hardhat-ethers ethers # peer dependencies
 ```
 
+```js
+// hardhat.config.js
+require('@openzeppelin/hardhat-upgrades');
+```
+
 ### Truffle
 
 ```
