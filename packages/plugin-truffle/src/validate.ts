@@ -67,6 +67,13 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
     };
   }
 
+  checkForDuplicateContractNames(output);
+  checkForImportIdConsistency(sourceUnitId, input, output);
+
+  return { input, output };
+}
+
+function checkForDuplicateContractNames(output: SolcOutput) {
   const contractIds: Record<string, Set<number>> = {};
   const addContractId = (name: string, id: number) => {
     const ids = (contractIds[name] ??= new Set());
@@ -81,11 +88,13 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
 
   for (const source in output.sources) {
     const { ast } = output.sources[source];
+
     for (const name in ast.exportedSymbols) {
       for (const id of ast.exportedSymbols[name]!) {
         addContractId(name, id);
       }
     }
+
     for (const typeName of findAll('UserDefinedTypeName', ast)) {
       const { typeIdentifier } = typeName.typeDescriptions;
       assert(typeof typeIdentifier === 'string');
@@ -97,7 +106,13 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
       }
     }
   }
+}
 
+function checkForImportIdConsistency(
+  sourceUnitId: Partial<Record<string, number>>,
+  input: SolcInput,
+  output: SolcOutput,
+) {
   const dependencies = fromEntries(Object.keys(output.sources).map(p => [p, [] as string[]]));
 
   for (const source in output.sources) {
@@ -138,8 +153,6 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
       }
     }
   }
-
-  return { input, output };
 }
 
 function reconstructLinkReferences(bytecode: string): SolcLinkReferences {
