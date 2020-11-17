@@ -1,5 +1,4 @@
 import path from 'path';
-import assert from 'assert';
 import { promises as fs } from 'fs';
 import { findAll } from 'solidity-ast/utils';
 import {
@@ -8,7 +7,6 @@ import {
   EthereumProvider,
   getNetworkId,
   RunValidation,
-  decodeTypeIdentifier,
 } from '@openzeppelin/upgrades-core';
 import type { SolcInput, SolcOutput, SolcLinkReferences } from '@openzeppelin/upgrades-core/dist/solc-api';
 
