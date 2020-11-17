@@ -65,15 +65,43 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
     };
   }
 
-  for (const { ast } of Object.values(output.sources)) {
+  const dependencies = fromEntries(Object.keys(output.sources).map(p => [p, [] as string[]]));
+
+  for (const source in output.sources) {
+    const { ast } = output.sources[source];
+
     for (const importDir of findAll('ImportDirective', ast)) {
       const importedUnitId = sourceUnitId[importDir.absolutePath];
-      if (importedUnitId !== importDir.sourceUnit) {
+      if (importedUnitId === undefined) {
+        // This can happen in two scenarios (I think):
+        //
+        // 1. There is more than one contract with the same name in different source files.
+        //    Truffle only generates a single artifact.
+        //    This scenario should have been detected before, and caused an error.
+        //
+        // 2. A contract was imported from a dependency using artifacts.require.
+        //    Truffle copies the artifact over, and its dependencies are not available.
+        //    We don't want to include this contract in the reconstructed solc output.
+        //    People should create a Solidity file importing the contract they want.
+        //
+        // The code below corresponds to scenario 2. We remove all transitive dependents
+        // on this file.
+        const queue = [ast.absolutePath];
+        for (const source of queue) {
+          delete output.contracts[source];
+          delete output.sources[source];
+          delete input.sources[source];
+          queue.push(...dependencies[source]);
+        }
+        break;
+      } else if (importedUnitId !== importDir.sourceUnit) {
         throw new Error(
           `Artifacts are from different compiler runs\n` +
             `    Run a full recompilation using \`truffle compile --all\`\n` +
             `    https://zpl.in/upgrades/truffle-recompile-all`,
         );
+      } else {
+        dependencies[importDir.absolutePath].push(ast.absolutePath);
       }
     }
   }
@@ -116,4 +144,12 @@ export async function getLinkedBytecode(Contract: ContractClass, provider: Ether
     linkedBytecode = linkedBytecode.replace(regex, address);
   }
   return linkedBytecode;
+}
+
+function fromEntries<K extends string | symbol | number, V>(entries: [K, V][]): Record<K, V> {
+  const res = {} as Record<K, V>;
+  for (const [key, value] of entries) {
+    res[key] = value;
+  }
+  return res;
 }
