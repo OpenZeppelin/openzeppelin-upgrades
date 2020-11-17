@@ -90,6 +90,7 @@ function checkForDuplicateContractNames(output: SolcOutput) {
     const { ast } = output.sources[source];
 
     for (const name in ast.exportedSymbols) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       for (const id of ast.exportedSymbols[name]!) {
         addContractId(name, id);
       }
@@ -101,6 +102,7 @@ function checkForDuplicateContractNames(output: SolcOutput) {
       const decodedTypeIdent = decodeTypeIdentifier(typeIdentifier);
       const re = /t_contract\(([^)]+)\)(\d+)/;
       for (const typeIdent of decodedTypeIdent.match(new RegExp(re, 'g')) ?? []) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const [, name, id] = typeIdent.match(re)!;
         addContractId(name, Number(id));
       }
