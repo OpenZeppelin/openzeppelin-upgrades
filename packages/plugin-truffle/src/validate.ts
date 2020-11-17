@@ -67,47 +67,9 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
     };
   }
 
-  checkForDuplicateContractNames(output);
   checkForImportIdConsistency(sourceUnitId, input, output);
 
   return { input, output };
-}
-
-function checkForDuplicateContractNames(output: SolcOutput) {
-  const contractIds: Record<string, Set<number>> = {};
-  const addContractId = (name: string, id: number) => {
-    const ids = (contractIds[name] ??= new Set());
-    ids.add(id);
-    if (ids.size > 1) {
-      throw new Error(
-        `There are multiple contracts with the same name.\n` +
-          `    Some of them may come from dependencies through artifacts.require.`,
-      );
-    }
-  };
-
-  for (const source in output.sources) {
-    const { ast } = output.sources[source];
-
-    for (const name in ast.exportedSymbols) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      for (const id of ast.exportedSymbols[name]!) {
-        addContractId(name, id);
-      }
-    }
-
-    for (const typeName of findAll('UserDefinedTypeName', ast)) {
-      const { typeIdentifier } = typeName.typeDescriptions;
-      assert(typeof typeIdentifier === 'string');
-      const decodedTypeIdent = decodeTypeIdentifier(typeIdentifier);
-      const re = /t_contract\(([^)]+)\)(\d+)/;
-      for (const typeIdent of decodedTypeIdent.match(new RegExp(re, 'g')) ?? []) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const [, name, id] = typeIdent.match(re)!;
-        addContractId(name, Number(id));
-      }
-    }
-  }
 }
 
 function checkForImportIdConsistency(
