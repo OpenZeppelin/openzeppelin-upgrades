@@ -1,4 +1,5 @@
 import path from 'path';
+import assert from 'assert';
 import { promises as fs } from 'fs';
 import { findAll } from 'solidity-ast/utils';
 import {
@@ -7,6 +8,7 @@ import {
   EthereumProvider,
   getNetworkId,
   RunValidation,
+  decodeTypeIdentifier,
 } from '@openzeppelin/upgrades-core';
 import type { SolcInput, SolcOutput, SolcLinkReferences } from '@openzeppelin/upgrades-core/dist/solc-api';
 
@@ -63,6 +65,37 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
         },
       },
     };
+  }
+
+  const contractIds: Record<string, Set<number>> = {};
+  const addContractId = (name: string, id: number) => {
+    const ids = (contractIds[name] ??= new Set());
+    ids.add(id);
+    if (ids.size > 1) {
+      throw new Error(
+        `There are multiple contracts with the same name.\n` +
+          `    Some of them may come from dependencies through artifacts.require.`,
+      );
+    }
+  };
+
+  for (const source in output.sources) {
+    const { ast } = output.sources[source];
+    for (const name in ast.exportedSymbols) {
+      for (const id of ast.exportedSymbols[name]!) {
+        addContractId(name, id);
+      }
+    }
+    for (const typeName of findAll('UserDefinedTypeName', ast)) {
+      const { typeIdentifier } = typeName.typeDescriptions;
+      assert(typeof typeIdentifier === 'string');
+      const decodedTypeIdent = decodeTypeIdentifier(typeIdentifier);
+      const re = /t_contract\(([^)]+)\)(\d+)/;
+      for (const typeIdent of decodedTypeIdent.match(new RegExp(re, 'g')) ?? []) {
+        const [, name, id] = typeIdent.match(re)!;
+        addContractId(name, Number(id));
+      }
+    }
   }
 
   const dependencies = fromEntries(Object.keys(output.sources).map(p => [p, [] as string[]]));
