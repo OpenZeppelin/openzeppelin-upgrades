@@ -33,7 +33,9 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
 
   for (const artifact of artifacts) {
     if (artifact.ast === undefined) {
-      throw new Error('Artifact does not contain AST');
+      // Artifact does not contain AST. It may be from a dependency.
+      // We ignore it. If the contract is needed by the user it will fail later.
+      continue;
     }
 
     const { contractName, ast } = artifact;
