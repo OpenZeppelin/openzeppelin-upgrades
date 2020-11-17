@@ -8,7 +8,7 @@ import {
   getNetworkId,
   RunValidation,
 } from '@openzeppelin/upgrades-core';
-import { SolcInput, SolcOutput, SolcLinkReferences } from '@openzeppelin/upgrades-core/dist/solc-api';
+import type { SolcInput, SolcOutput, SolcLinkReferences } from '@openzeppelin/upgrades-core/dist/solc-api';
 
 import { TruffleArtifact, ContractClass, NetworkObject } from './truffle';
 
