@@ -2,7 +2,7 @@
 
 ## 1.2.4 (2020-11-17)
 
-- Fix spurious "Artifacts are from different compiler runs" error when using dependencies through `artifacts.require`. ([#222](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/222))
+- Fix spurious "Artifacts are from different compiler runs" error when using dependencies through `artifacts.require`. ([#225](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/225))
 
 ## 1.2.3 (2020-11-13)
 
