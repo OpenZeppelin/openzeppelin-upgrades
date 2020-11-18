@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Allow ommitting `args` in `deployProxy` when it's an empty array.
+
 ## 1.2.4 (2020-11-17)
 
 - Fix spurious "Artifacts are from different compiler runs" error when using dependencies through `artifacts.require`. ([#225](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/225))

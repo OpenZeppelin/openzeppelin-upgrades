@@ -16,7 +16,7 @@
     "prepublish": "rimraf dist *.tsbuildinfo",
     "prepare": "tsc -b",
     "test": "tsc -b && bash scripts/test.sh",
-    "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch'",
+    "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --",
     "version": "node ../../scripts/bump-changelog.js"
   },
   "devDependencies": {

@@ -15,18 +15,26 @@ import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
-export type DeployFunction = (
-  ImplFactory: ContractFactory,
-  args?: unknown[],
-  opts?: DeployOptions,
-) => Promise<Contract>;
+export interface DeployFunction {
+  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
+  (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
+}
 
 export interface DeployOptions extends ValidationOptions {
   initializer?: string | false;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
-  return async function deployProxy(ImplFactory, args = [], opts = {}) {
+  return async function deployProxy(
+    ImplFactory: ContractFactory,
+    args: unknown[] | DeployOptions = [],
+    opts: DeployOptions = {},
+  ) {
+    if (!Array.isArray(args)) {
+      opts = args;
+      args = [];
+    }
+
     const { provider } = hre.network;
     const validations = await readValidations(hre);
 
