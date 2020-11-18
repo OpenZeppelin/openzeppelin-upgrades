@@ -4,6 +4,8 @@ const { ethers, upgrades, artifacts } = require('hardhat');
 
 const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 
+upgrades.silenceWarnings();
+
 test('without flag', async t => {
   // Deploying library
   const safeMathLib = await deployLibrary('SafeMath');

@@ -26,8 +26,10 @@ extendEnvironment(hre => {
     const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership } = require('./admin');
     const { makeDeployProxy } = require('./deploy-proxy');
     const { makeUpgradeProxy, makePrepareUpgrade } = require('./upgrade-proxy');
+    const { silenceWarnings } = require('@openzeppelin/upgrades-core');
 
     return {
+      silenceWarnings,
       deployProxy: makeDeployProxy(hre),
       upgradeProxy: makeUpgradeProxy(hre),
       prepareUpgrade: makePrepareUpgrade(hre),
