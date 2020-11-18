@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `silenceWarnings` to emit a single warning and silence all subsequent ones. ([#228](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/228))
+
 ## 1.3.1 (2020-11-13)
 
 - Add missing artifact files in the package.
