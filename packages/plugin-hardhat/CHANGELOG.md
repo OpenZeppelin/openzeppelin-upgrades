@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.1 (2020-11-18)
 
 - Allow ommitting `args` in `deployProxy` when it's an empty array.
 
