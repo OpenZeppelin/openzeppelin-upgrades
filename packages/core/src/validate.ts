@@ -454,7 +454,7 @@ export function silenceWarnings(): void {
   console.error(
     '\n' +
       chalk.keyword('orange').bold('Warning: ') +
-      `All subsequent warnings will be silenced.\n\n` +
+      `All subsequent Upgrades warnings will be silenced.\n\n` +
       `    Make sure you have manually checked all uses of unsafe flags.\n`,
   );
   silenced = true;
