@@ -19,9 +19,25 @@ interface InitializerOptions {
 
 export async function deployProxy(
   Contract: ContractClass,
-  args: unknown[] = [],
+  opts?: Options & InitializerOptions,
+): Promise<ContractInstance>;
+
+export async function deployProxy(
+  Contract: ContractClass,
+  args?: unknown[],
+  opts?: Options & InitializerOptions,
+): Promise<ContractInstance>;
+
+export async function deployProxy(
+  Contract: ContractClass,
+  args: unknown[] | (Options & InitializerOptions) = [],
   opts: Options & InitializerOptions = {},
 ): Promise<ContractInstance> {
+  if (!Array.isArray(args)) {
+    opts = args;
+    args = [];
+  }
+
   const { deployer } = withDeployDefaults(opts);
   const provider = wrapProvider(deployer.provider);
 
