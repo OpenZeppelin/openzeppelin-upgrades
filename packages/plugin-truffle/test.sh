@@ -4,4 +4,4 @@ set -euo pipefail
 
 rimraf test/.openzeppelin
 
-yarn --cwd test truffle test
+yarn --cwd test truffle test "$@"

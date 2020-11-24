@@ -250,7 +250,7 @@ function processOverride(
     return !isException;
   });
 
-  if (exceptionsFound) {
+  if (exceptionsFound && !silenced) {
     console.error(
       '\n' +
         chalk.keyword('orange').bold('Warning: ') +
@@ -445,5 +445,19 @@ function* getEnumErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder):
       name: enumDefinition.name,
       src: decodeSrc(enumDefinition),
     };
+  }
+}
+
+let silenced = false;
+
+export function silenceWarnings(): void {
+  if (!silenced) {
+    console.error(
+      '\n' +
+        chalk.keyword('orange').bold('Warning: ') +
+        `All subsequent Upgrades warnings will be silenced.\n\n` +
+        `    Make sure you have manually checked all uses of unsafe flags.\n`,
+    );
+    silenced = true;
   }
 }

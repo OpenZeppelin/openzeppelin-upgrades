@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `silenceWarnings` to emit a single warning and silence all subsequent ones. ([#228](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/228))
+
 ## 1.2.5 (2020-11-18)
 
 - Allow ommitting `args` in `deployProxy` when it's an empty array.

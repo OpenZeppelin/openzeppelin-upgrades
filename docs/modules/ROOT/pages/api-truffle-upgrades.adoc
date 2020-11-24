@@ -89,3 +89,14 @@ async function transferProxyAdminOwnership(
   newAdmin: string,
 ): Promise<void>
 ----
+
+== silenceWarnings
+
+Silences all subsequent warnings about the use of unsafe flags. Prints a last warning before doing so.
+
+NOTE: This function is useful for tests, but its use in production deployment scripts is discouraged.
+
+[source,ts]
+----
+function silenceWarnings()
+----

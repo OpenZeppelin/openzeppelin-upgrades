@@ -2,6 +2,8 @@ const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
 
+upgrades.silenceWarnings();
+
 test.before(async t => {
   t.context.Portfolio = await ethers.getContractFactory('Portfolio');
   t.context.PortfolioV2 = await ethers.getContractFactory('PortfolioV2');
