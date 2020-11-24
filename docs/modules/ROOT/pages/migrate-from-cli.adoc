@@ -101,7 +101,7 @@ The migration script will also export a `openzeppelin-cli-export.json` file into
 
 [.hardhat]
 --
-Copy compiler settings into the https://hardhat.org/config/#available-config-options[`solc` field] in the Hardhat config file
+Copy compiler settings into the https://hardhat.org/config/#available-config-options[`solidity` field] in the Hardhat config file
 
 ```json
 // hardhat.config.js
@@ -110,11 +110,13 @@ Copy compiler settings into the https://hardhat.org/config/#available-config-opt
 
 module.exports = {
   // ...
-  solc: {
+  solidity: {
     version: "0.6.12",
-    optimizer: {
-      enabled: false,
-      runs: 200
+    settings: {
+      optimizer: {
+        enabled: false,
+        runs: 200
+      }
     }
   }
 }
@@ -145,7 +147,7 @@ module.exports = {
 ```
 --
 
-NOTE: The solc configuration format is different in `truffle-config.js` and `hardhat.config.js` files
+NOTE: The solidity compiler configuration format is different in `truffle-config.js` and `hardhat.config.js` files
 
 And that's it, you have successfully migrated your CLI project. Let's now try your new setup upgrading one of your migrated contracts.
 

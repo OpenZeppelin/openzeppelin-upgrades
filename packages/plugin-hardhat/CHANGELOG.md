@@ -4,6 +4,10 @@
 
 - Add `silenceWarnings` to emit a single warning and silence all subsequent ones. ([#228](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/228))
 
+## 1.3.1 (2020-11-18)
+
+- Allow ommitting `args` in `deployProxy` when it's an empty array.
+
 ## 1.3.0 (2020-11-13)
 
 - Migrate plugin to Hardhat. ([#214](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/214))

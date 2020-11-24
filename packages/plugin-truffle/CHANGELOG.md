@@ -4,6 +4,10 @@
 
 - Add `silenceWarnings` to emit a single warning and silence all subsequent ones. ([#228](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/228))
 
+## 1.2.5 (2020-11-18)
+
+- Allow ommitting `args` in `deployProxy` when it's an empty array.
+
 ## 1.2.4 (2020-11-17)
 
 - Fix spurious "Artifacts are from different compiler runs" error when using dependencies through `artifacts.require`. ([#225](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/225))
