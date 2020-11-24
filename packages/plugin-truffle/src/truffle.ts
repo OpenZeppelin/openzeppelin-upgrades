@@ -66,7 +66,7 @@ type TruffleProviderResult = { result: any; error: { message: string } };
 export interface TruffleProvider {
   send(
     args: { method: string; params: unknown[]; id: string; jsonrpc: '2.0' },
-    callback: (err: unknown, value: TruffleProviderResult) => void,
+    callback: (err: Error | null, value: TruffleProviderResult) => void,
   ): void;
 }
 
