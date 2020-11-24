@@ -167,7 +167,7 @@ Solidity allows defining initial values for fields when declaring them in a cont
 [source,solidity]
 ----
 contract MyContract {
-    uint256 public constant hasInitialValue = 42;
+    uint256 public hasInitialValue = 42; // equivalent to setting in the constructor
 }
 ----
 
@@ -179,17 +179,17 @@ contract MyContract is Initializable {
     uint256 public hasInitialValue;
 
     function initialize() public initializer {
-        hasInitialValue = 42;
+        hasInitialValue = 42; // set initial value in initializer
     }
 }
 ----
 
-Note that it is still fine to define _constant_ state variables in this way, because the compiler https://solidity.readthedocs.io/en/latest/contracts.html#constant-state-variables[does not reserve a storage slot for these variables], and every occurrence is replaced by the respective constant expression. So the following still works with OpenZeppelin Upgrades:
+NOTE: It is still ok to define _constant_ state variables, because the compiler https://solidity.readthedocs.io/en/latest/contracts.html#constant-state-variables[does not reserve a storage slot for these variables], and every occurrence is replaced by the respective constant expression. So the following still works with OpenZeppelin Upgrades:
 
 [source,solidity]
 ----
 contract MyContract {
-    uint256 public constant hasInitialValue = 42;
+    uint256 public constant hasInitialValue = 42; // define as constant
 }
 ----
 
