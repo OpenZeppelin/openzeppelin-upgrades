@@ -8,6 +8,22 @@ import { lazyObject } from 'hardhat/plugins';
 import { validate, solcInputOutputDecoder, SolcInput } from '@openzeppelin/upgrades-core';
 import { writeValidations } from './validations';
 
+import type { silenceWarnings } from '@openzeppelin/upgrades-core';
+import type { DeployFunction } from './deploy-proxy';
+import type { UpgradeFunction, PrepareUpgradeFunction } from './upgrade-proxy';
+import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction } from './admin';
+
+export interface HardhatUpgrades {
+  deployProxy: DeployFunction;
+  upgradeProxy: UpgradeFunction;
+  prepareUpgrade: PrepareUpgradeFunction;
+  silenceWarnings: typeof silenceWarnings;
+  admin: {
+    changeProxyAdmin: ChangeAdminFunction;
+    transferProxyAdminOwnership: TransferProxyAdminOwnershipFunction;
+  };
+}
+
 interface RunCompilerArgs {
   input: SolcInput;
 }
@@ -22,21 +38,23 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 });
 
 extendEnvironment(hre => {
-  hre.upgrades = lazyObject(() => {
-    const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership } = require('./admin');
-    const { makeDeployProxy } = require('./deploy-proxy');
-    const { makeUpgradeProxy, makePrepareUpgrade } = require('./upgrade-proxy');
-    const { silenceWarnings } = require('@openzeppelin/upgrades-core');
+  hre.upgrades = lazyObject(
+    (): HardhatUpgrades => {
+      const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership } = require('./admin');
+      const { makeDeployProxy } = require('./deploy-proxy');
+      const { makeUpgradeProxy, makePrepareUpgrade } = require('./upgrade-proxy');
+      const { silenceWarnings } = require('@openzeppelin/upgrades-core');
 
-    return {
-      silenceWarnings,
-      deployProxy: makeDeployProxy(hre),
-      upgradeProxy: makeUpgradeProxy(hre),
-      prepareUpgrade: makePrepareUpgrade(hre),
-      admin: {
-        changeProxyAdmin: makeChangeProxyAdmin(hre),
-        transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre),
-      },
-    };
-  });
+      return {
+        silenceWarnings,
+        deployProxy: makeDeployProxy(hre),
+        upgradeProxy: makeUpgradeProxy(hre),
+        prepareUpgrade: makePrepareUpgrade(hre),
+        admin: {
+          changeProxyAdmin: makeChangeProxyAdmin(hre),
+          transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre),
+        },
+      };
+    },
+  );
 });

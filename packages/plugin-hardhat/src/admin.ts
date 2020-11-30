@@ -3,8 +3,8 @@ import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract } from 'ethers';
 import { getProxyAdminFactory } from './proxy-factory';
 
-type ChangeAdminFunction = (proxyAddress: string, newAdmin: string) => Promise<void>;
-type TransferProxyAdminOwnershipFunction = (newOwner: string) => Promise<void>;
+export type ChangeAdminFunction = (proxyAddress: string, newAdmin: string) => Promise<void>;
+export type TransferProxyAdminOwnershipFunction = (newOwner: string) => Promise<void>;
 
 export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment): ChangeAdminFunction {
   return async function changeProxyAdmin(proxyAddress, newAdmin) {
