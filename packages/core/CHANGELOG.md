@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.1 (2020-11-30)
 
 - Fix a problem in deployment logic when used with Hyperledger Besu. ([#244](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/244))
 
