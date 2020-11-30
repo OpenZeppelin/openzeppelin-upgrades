@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.1 (2020-11-30)
 
 - Add `admin` to the TypeScript type for `hre.upgrades`.
 
