@@ -1,6 +1,6 @@
-import '@openzeppelin/hardhat-upgrades';
+require('@openzeppelin/hardhat-upgrades');
 
-export default {
+module.exports = {
   solidity: {
     compilers: [
       {
