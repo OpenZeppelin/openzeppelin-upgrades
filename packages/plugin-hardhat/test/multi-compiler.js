@@ -2,7 +2,7 @@ const { getVersion, getContractNameAndRunValidation } = require('@openzeppelin/u
 const test = require('ava');
 
 const hre = require('hardhat');
-const { readValidations } = require('../src/validations');
+const { readValidations } = require('../dist/validations');
 
 test.before(async t => {
   const { ethers } = hre;
