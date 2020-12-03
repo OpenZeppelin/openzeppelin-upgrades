@@ -37,7 +37,6 @@
     "fgbg": "^0.1.4",
     "hardhat": "^2.0.2",
     "rimraf": "^3.0.2",
-    "ts-node": "^9.0.0",
     "typescript": "^4.0.0"
   },
   "dependencies": {

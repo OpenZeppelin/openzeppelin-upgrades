@@ -4,5 +4,4 @@ export default {
   verbose: true,
   serial: true,
   failWithoutAssertions: false,
-  require: 'ts-node/register',
 };
