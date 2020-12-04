@@ -8,3 +8,4 @@ build
 *.tgz
 .nyc_output
 coverage
+.env
