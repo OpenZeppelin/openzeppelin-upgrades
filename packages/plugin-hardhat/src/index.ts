@@ -31,9 +31,14 @@ interface RunCompilerArgs {
 subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
   // TODO: patch input
   const { output, solcBuild } = await runSuper();
-  const decodeSrc = solcInputOutputDecoder(args.input, output);
-  const validations = validate(output, decodeSrc);
-  await writeValidations(hre, validations);
+
+  const { isFullSolcOutput } = await import('./utils/is-full-solc-output');
+  if (isFullSolcOutput(output)) {
+    const decodeSrc = solcInputOutputDecoder(args.input, output);
+    const validations = validate(output, decodeSrc);
+    await writeValidations(hre, validations);
+  }
+
   return { output, solcBuild };
 });
 
