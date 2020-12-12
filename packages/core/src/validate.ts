@@ -8,6 +8,7 @@ import { extractStorageLayout, StorageLayout } from './storage';
 import { extractLinkReferences, unlinkBytecode, LinkReference } from './link-refs';
 import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
+import { astDereferencer } from './ast-dereferencer';
 import { isNullish } from './utils/is-nullish';
 
 export type ValidationLog = RunValidation[];
@@ -73,6 +74,8 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): RunVali
   const inheritIds: Record<string, number[]> = {};
   const libraryIds: Record<string, number[]> = {};
 
+  const deref = astDereferencer(solcOutput);
+
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.bytecode;
@@ -113,7 +116,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): RunVali
           ...getLinkingErrors(contractDef, bytecode),
         ];
 
-        validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc);
+        validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc, deref);
       }
     }
   }

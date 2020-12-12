@@ -1,8 +1,9 @@
 import assert from 'assert';
 import chalk from 'chalk';
-import { isNodeType } from 'solidity-ast/utils';
-import { ContractDefinition } from 'solidity-ast';
+import { isNodeType, findAll } from 'solidity-ast/utils';
+import { ContractDefinition, StructDefinition, EnumDefinition } from 'solidity-ast';
 
+import { ASTDereferencer } from './ast-dereferencer';
 import { SrcDecoder } from './src-decoder';
 import { levenshtein, Operation } from './levenshtein';
 import { UpgradesError, ErrorDescriptions } from './error';
@@ -33,8 +34,22 @@ export interface StructMember {
 
 type EnumMember = string;
 
-export function extractStorageLayout(contractDef: ContractDefinition, decodeSrc: SrcDecoder): StorageLayout {
+const findTypeNames = findAll([
+  'ArrayTypeName',
+  'ElementaryTypeName',
+  'FunctionTypeName',
+  'Mapping',
+  'UserDefinedTypeName',
+]);
+
+export function extractStorageLayout(
+  contractDef: ContractDefinition,
+  decodeSrc: SrcDecoder,
+  deref: ASTDereferencer,
+): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {} };
+
+  const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition']);
 
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
@@ -42,16 +57,39 @@ export function extractStorageLayout(contractDef: ContractDefinition, decodeSrc:
         const { typeIdentifier, typeString } = varDecl.typeDescriptions;
         assert(typeof typeIdentifier === 'string');
         assert(typeof typeString === 'string');
-        const type = decodeTypeIdentifier(typeIdentifier);
+
+        const type = normalizeTypeIdentifier(typeIdentifier);
         layout.storage.push({
           contract: contractDef.name,
           label: varDecl.name,
           type,
           src: decodeSrc(varDecl),
         });
-        layout.types[type] = {
-          label: typeString,
-        };
+
+        assert(varDecl.typeName != null);
+
+        for (const typeName of findTypeNames(varDecl.typeName)) {
+          const { typeIdentifier, typeString } = typeName.typeDescriptions;
+          assert(typeIdentifier != null);
+          assert(typeString != null);
+
+          const type = normalizeTypeIdentifier(typeIdentifier);
+
+          if (type in layout.types) {
+            continue;
+          }
+
+          let members: TypeItemMembers | undefined;
+
+          if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
+            const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
+            members = getTypeMembers(typeDef);
+          }
+
+          const label = typeString;
+
+          layout.types[type] = { label, members };
+        }
       }
     }
   }
@@ -158,6 +196,13 @@ export function getStorageUpgradeErrors(original: StorageLayout, updated: Storag
   return ops.filter(o => o.kind !== 'append');
 }
 
+// Some Type Identifiers contain a _storage_ptr suffix, but the _ptr part
+// appears in some places and not others. We remove it to get consistent type
+// ids from the different places in the AST.
+export function normalizeTypeIdentifier(typeIdentifier: string): string {
+  return decodeTypeIdentifier(typeIdentifier).replace(/_storage_ptr\b/g, '_storage');
+}
+
 // Type Identifiers in the AST are for some reason encoded so that they don't
 // contain parentheses or commas, which have been substituted as follows:
 //    (  ->  $_
@@ -205,4 +250,18 @@ export function stabilizeTypeIdentifier(typeIdentifier: string): string {
     decoded = decoded.replace(re2, '');
   }
   return decoded;
+}
+
+function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['members'] {
+  if (typeDef.nodeType === 'StructDefinition') {
+    return typeDef.members.map(m => {
+      assert(typeof m.typeDescriptions.typeIdentifier === 'string');
+      return {
+        label: m.name,
+        type: normalizeTypeIdentifier(m.typeDescriptions.typeIdentifier),
+      };
+    });
+  } else {
+    return typeDef.members.map(m => m.name);
+  }
 }
