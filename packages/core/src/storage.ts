@@ -7,6 +7,7 @@ import { ASTDereferencer } from './ast-dereferencer';
 import { SrcDecoder } from './src-decoder';
 import { levenshtein, Operation } from './levenshtein';
 import { UpgradesError, ErrorDescriptions } from './error';
+import { parseTypeId, ParsedTypeId } from './utils/parse-type-id';
 
 export interface StorageItem {
   contract: string;
@@ -111,7 +112,7 @@ export function assertStorageUpgradeSafe(
         const { original, updated } = error;
         if (original && updated) {
           // Skip storage errors if the only difference seems to be the AST id number
-          return stabilizeTypeIdentifier(original?.type) !== stabilizeTypeIdentifier(updated?.type);
+          return stabilizeTypeIdentifier(original?.type.id) !== stabilizeTypeIdentifier(updated?.type.id);
         }
         return error;
       });
@@ -172,28 +173,59 @@ export function describeError(e: StorageOperation): string {
   return log.join('\n    ');
 }
 
-type StorageOperation = Operation<StorageItem, 'typechange' | 'rename' | 'replace'>;
+interface StorageItemDetailed {
+  contract: string;
+  label: string;
+  src: string;
+  type: ParsedTypeDetailed;
+}
+
+interface ParsedTypeDetailed extends ParsedTypeId {
+  item: TypeItem;
+  args?: ParsedTypeDetailed[];
+  rets?: ParsedTypeDetailed[];
+}
+
+type StorageOperation = Operation<StorageItemDetailed, 'typechange' | 'rename' | 'replace'>;
 
 export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout): StorageOperation[] {
-  function matchStorageItem(o: StorageItem, u: StorageItem) {
-    const nameMatches = o.label === u.label;
+  const originalDetailed = getDetailedLayout(original);
+  const updatedDetailed = getDetailedLayout(updated);
+  const ops = levenshtein(originalDetailed, updatedDetailed, matchStorageItemDetailed);
+  return ops.filter(o => o.kind !== 'append');
+}
 
-    // TODO: type matching should compare struct members, etc.
-    const typeMatches = original.types[o.type].label === updated.types[u.type].label;
-
-    if (typeMatches && nameMatches) {
-      return 'equal';
-    } else if (typeMatches) {
-      return 'rename';
-    } else if (nameMatches) {
-      return 'typechange';
-    } else {
-      return 'replace';
-    }
+function getDetailedLayout(layout: StorageLayout): StorageItemDetailed[] {
+  function addTypeDetails(parsed: ParsedTypeId): ParsedTypeDetailed {
+    return {
+      ...parsed,
+      item: layout.types[parsed.id],
+      args: parsed.args?.map(addTypeDetails),
+      rets: parsed.args?.map(addTypeDetails),
+    };
   }
 
-  const ops = levenshtein(original.storage, updated.storage, matchStorageItem);
-  return ops.filter(o => o.kind !== 'append');
+  return layout.storage.map(i => ({
+    ...i,
+    type: addTypeDetails(parseTypeId(i.type)),
+  }));
+}
+
+function matchStorageItemDetailed(o: StorageItemDetailed, u: StorageItemDetailed) {
+  const nameMatches = o.label === u.label;
+
+  // TODO: type matching should compare struct members, etc.
+  const typeMatches = o.type.item.label === u.type.item.label;
+
+  if (typeMatches && nameMatches) {
+    return 'equal';
+  } else if (typeMatches) {
+    return 'rename';
+  } else if (nameMatches) {
+    return 'typechange';
+  } else {
+    return 'replace';
+  }
 }
 
 // Some Type Identifiers contain a _storage_ptr suffix, but the _ptr part

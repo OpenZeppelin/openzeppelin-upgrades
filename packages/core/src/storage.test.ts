@@ -61,17 +61,20 @@ test('storage upgrade delete', t => {
   const v1 = extractStorageLayout(t.context.contracts['StorageUpgrade_Delete_V1'], dummyDecodeSrc, t.context.deref);
   const v2 = extractStorageLayout(t.context.contracts['StorageUpgrade_Delete_V2'], dummyDecodeSrc, t.context.deref);
   const comparison = getStorageUpgradeErrors(v1, v2);
-  t.deepEqual(comparison, [
-    {
+  t.like(comparison, {
+    length: 1,
+    0: {
       kind: 'delete',
       original: {
         contract: 'StorageUpgrade_Delete_V1',
         label: 'x1',
-        type: 't_uint256',
+        type: {
+          id: 't_uint256',
+        },
         src: 'file.sol:1',
       },
     },
-  ]);
+  });
 });
 
 function stabilizeStorageLayout(layout: StorageLayout) {
