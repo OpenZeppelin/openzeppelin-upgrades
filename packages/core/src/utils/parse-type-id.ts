@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 export interface ParsedTypeId {
   id: string;
   head: string;
@@ -56,6 +58,7 @@ export function parseTypeId(id: string): ParsedTypeId {
     if (!openRet) {
       tail = id.slice(startTail) || undefined;
     } else {
+      assert(id.slice(startTail, openRet.index) === 'returns', `Malformed type id ${id}`);
       rets = parseList();
     }
   }
