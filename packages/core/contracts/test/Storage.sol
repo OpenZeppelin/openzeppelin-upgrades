@@ -154,3 +154,30 @@ contract StorageUpgrade_Struct_V2_Bad {
     }
     StructRenamed data;
 }
+
+contract StorageUpgrade_Enum_V1 {
+    enum Enum {
+        A,
+        B
+    }
+    Enum data;
+}
+
+contract StorageUpgrade_Enum_V2_Ok {
+    enum Enum {
+        A,
+        B,
+        C
+    }
+    Enum data;
+}
+
+contract StorageUpgrade_Enum_V2_Bad {
+    enum Enum {
+        A,
+        C,
+        B
+    }
+    Enum data;
+}
+

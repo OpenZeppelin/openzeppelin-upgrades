@@ -89,6 +89,23 @@ test('storage upgrade with structs', t => {
   });
 });
 
+test('storage upgrade with enums', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Enum_V1');
+
+  const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_Enum_V2_Ok');
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
+
+  const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_Enum_V2_Bad');
+  t.like(getStorageUpgradeErrors(v1, v2_Bad), {
+    length: 1,
+    0: {
+      kind: 'typechange',
+      original: { label: 'data' },
+      updated: { label: 'data' },
+    },
+  });
+});
+
 function stabilizeStorageLayout(layout: StorageLayout) {
   return {
     storage: layout.storage.map(s => ({ ...s, type: stabilizeTypeIdentifier(s.type) })),

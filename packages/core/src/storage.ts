@@ -207,9 +207,9 @@ function getStorageUpgradeErrorsGeneric<T extends StorageField>(
   updated: T[],
   { canGrow }: { canGrow: boolean },
 ): StorageOperation<T>[] {
-  const ops = levenshtein(original, updated, matchStorageField);
+  const ops = levenshtein(original, updated, (a, b) => matchStorageField(a, b, { canGrow: false }));
   if (canGrow) {
-    // appending is not an error
+    // appending is not an error in this case
     return ops.filter(o => o.kind !== 'append');
   } else {
     return ops;
@@ -241,29 +241,17 @@ function getDetailedLayout(layout: StorageLayout): StorageItemDetailed[] {
   return layout.storage.map(parseWithDetails);
 }
 
+function isEnumMembers<T>(members: TypeItemMembers<T>): members is EnumMember[] {
+  return members.length === 0 || typeof members[0] === 'string';
+}
+
 function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMember<T>[] {
   return members.length === 0 || typeof members[0] === 'object';
 }
 
-function matchStorageField(o: StorageField, u: StorageField) {
-  const nameMatches = o.label === u.label;
-
-  const typeHeadMatches = o.type.head === u.type.head;
-  let typeMembersMatch = o.type.args === undefined;
-
-  if (typeHeadMatches) {
-    const { head } = o.type;
-    if (head === 't_struct') {
-      const originalMembers = o.type.item.members;
-      const updatedMembers = u.type.item.members;
-      assert(originalMembers && isStructMembers(originalMembers));
-      assert(updatedMembers && isStructMembers(updatedMembers));
-      const errors = getStorageUpgradeErrorsGeneric(originalMembers, updatedMembers, { canGrow: false });
-      typeMembersMatch = errors.length === 0;
-    }
-  }
-
-  const typeMatches = typeHeadMatches && typeMembersMatch;
+function matchStorageField(original: StorageField, updated: StorageField, { canGrow }: { canGrow: boolean }) {
+  const nameMatches = original.label === updated.label;
+  const typeMatches = compatibleTypes(original.type, updated.type, { canGrow });
 
   if (typeMatches && nameMatches) {
     return 'equal';
@@ -274,6 +262,74 @@ function matchStorageField(o: StorageField, u: StorageField) {
   } else {
     return 'replace';
   }
+}
+
+function compatibleTypes(
+  original: ParsedTypeDetailed,
+  updated: ParsedTypeDetailed,
+  { canGrow }: { canGrow: boolean },
+): boolean {
+  if (original.head !== updated.head) {
+    return false;
+  }
+
+  if (original.args === undefined || updated.args === undefined) {
+    // both should be undefined at the same time
+    assert(original.args === updated.args);
+    return true;
+  }
+
+  const { head } = original;
+
+  if (head === 't_contract') {
+    // no storage layout errors can be introduced here since it is just an address
+    return true;
+  }
+
+  if (head === 't_struct') {
+    const originalMembers = original.item.members;
+    const updatedMembers = updated.item.members;
+    assert(originalMembers && isStructMembers(originalMembers));
+    assert(updatedMembers && isStructMembers(updatedMembers));
+    const errors = getStorageUpgradeErrorsGeneric(originalMembers, updatedMembers, { canGrow });
+    return errors.length === 0;
+  }
+
+  if (head === 't_enum') {
+    const originalMembers = original.item.members;
+    const updatedMembers = updated.item.members;
+    assert(originalMembers && isEnumMembers(originalMembers));
+    assert(updatedMembers && isEnumMembers(updatedMembers));
+    const ops = levenshtein(originalMembers, updatedMembers, (a, b) => (a === b ? 'equal' : 'replace'));
+    // it is only allowed to append new enum members
+    return ops.every(o => o.kind === 'append');
+  }
+
+  if (head === 't_mapping') {
+    const [originalKey, originalValue] = original.args;
+    const [updatedKey, updatedValue] = updated.args;
+    // network files migrated from the OZ CLI have an unknown key type
+    // we allow it to match with any other key type, carrying over the semantics of OZ CLI
+    const keyMatches = originalKey.head === 'unknown' || originalKey.head === updatedKey.head;
+    // validate an invariant we assume from solidity: key types are always simple value types
+    assert(originalKey.args === undefined && updatedKey.args === undefined);
+    // mapping value types are allowed to grow
+    return keyMatches && compatibleTypes(originalValue, updatedValue, { canGrow: true });
+  }
+
+  if (head === 't_array') {
+    const originalLength = original.tail?.match(/^\d+|dyn/)?.[0];
+    const updatedLength = updated.tail?.match(/^\d+|dyn/)?.[0];
+    assert(originalLength !== undefined && updatedLength !== undefined);
+    if (!canGrow || originalLength === 'dyn' || updatedLength === 'dyn') {
+      return originalLength === updatedLength;
+    } else {
+      return parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
+    }
+  }
+
+  // in any other case, conservatively assume not compatible
+  return false;
 }
 
 // Some Type Identifiers contain a _storage_ptr suffix, but the _ptr part
