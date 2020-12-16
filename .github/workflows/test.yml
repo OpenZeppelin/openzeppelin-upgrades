@@ -2,7 +2,9 @@ name: Test
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
+      - buidler
   pull_request: {}
 
 jobs:
