@@ -9,10 +9,10 @@ import { levenshtein, Operation } from './levenshtein';
 import { UpgradesError, ErrorDescriptions } from './error';
 import { parseTypeId, ParsedTypeId } from './utils/parse-type-id';
 
-export interface StorageItem {
+export interface StorageItem<T = string> {
   contract: string;
   label: string;
-  type: string;
+  type: T;
   src: string;
 }
 
@@ -21,16 +21,16 @@ export interface StorageLayout {
   types: Record<string, TypeItem>;
 }
 
-export interface TypeItem {
+export interface TypeItem<T = string> {
   label: string;
-  members?: TypeItemMembers;
+  members?: TypeItemMembers<T>;
 }
 
-export type TypeItemMembers = StructMember[] | EnumMember[];
+export type TypeItemMembers<T = string> = StructMember<T>[] | EnumMember[];
 
-export interface StructMember {
+export interface StructMember<T = string> {
   label: string;
-  type: string;
+  type: T;
 }
 
 type EnumMember = string;
@@ -80,7 +80,7 @@ export function extractStorageLayout(
             continue;
           }
 
-          let members: TypeItemMembers | undefined;
+          let members;
 
           if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
             const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
@@ -181,41 +181,71 @@ interface StorageItemDetailed {
 }
 
 interface ParsedTypeDetailed extends ParsedTypeId {
-  item: TypeItem;
+  item: TypeItem<ParsedTypeDetailed>;
   args?: ParsedTypeDetailed[];
   rets?: ParsedTypeDetailed[];
 }
 
-type StorageOperation = Operation<StorageItemDetailed, 'typechange' | 'rename' | 'replace'>;
+type StorageOperation<T = StorageItemDetailed> = Operation<T, 'typechange' | 'rename' | 'replace'>;
 
 export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout): StorageOperation[] {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
-  const ops = levenshtein(originalDetailed, updatedDetailed, matchStorageItemDetailed);
-  return ops.filter(o => o.kind !== 'append');
+  return getStorageUpgradeErrorsGeneric(originalDetailed, updatedDetailed, { canGrow: true });
 }
 
+interface StorageField {
+  label: string;
+  type: ParsedTypeDetailed;
+}
+
+function getStorageUpgradeErrorsGeneric<T extends StorageField>(
+  original: T[],
+  updated: T[],
+  { canGrow }: { canGrow: boolean },
+): StorageOperation<T>[] {
+  const ops = levenshtein(original, updated, matchStorageField);
+  if (canGrow) {
+    // appending is not an error
+    return ops.filter(o => o.kind !== 'append');
+  } else {
+    return ops;
+  }
+}
+
+type Replace<T, K extends string, V> = Omit<T, K> & Record<K, V>;
+
 function getDetailedLayout(layout: StorageLayout): StorageItemDetailed[] {
-  function addTypeDetails(parsed: ParsedTypeId): ParsedTypeDetailed {
+  function parseWithDetails<I extends { type: string }>(item: I): Replace<I, 'type', ParsedTypeDetailed> {
     return {
-      ...parsed,
-      item: layout.types[parsed.id],
-      args: parsed.args?.map(addTypeDetails),
-      rets: parsed.args?.map(addTypeDetails),
+      ...item,
+      type: addDetailsToParsedType(parseTypeId(item.type)),
     };
   }
 
-  return layout.storage.map(i => ({
-    ...i,
-    type: addTypeDetails(parseTypeId(i.type)),
-  }));
+  function addDetailsToParsedType(parsed: ParsedTypeId): ParsedTypeDetailed {
+    const item = layout.types[parsed.id];
+    const members = (item.members as (string | StructMember)[] | undefined)?.map(m =>
+      typeof m === 'string' ? m : parseWithDetails(m),
+    ) as string[] | StructMember<ParsedTypeDetailed>[];
+    return {
+      ...parsed,
+      args: parsed.args?.map(addDetailsToParsedType),
+      rets: parsed.args?.map(addDetailsToParsedType),
+      item: { ...item, members },
+    };
+  }
+
+  return layout.storage.map(parseWithDetails);
 }
 
-function matchStorageItemDetailed(o: StorageItemDetailed, u: StorageItemDetailed) {
+function matchStorageField(o: StorageField, u: StorageField) {
   const nameMatches = o.label === u.label;
 
-  // TODO: type matching should compare struct members, etc.
-  const typeMatches = o.type.item.label === u.type.item.label;
+  const typeHeadMatches = o.type.head === u.type.head;
+  let typeMembersMatch = o.type.item.label === u.type.item.label;
+
+  const typeMatches = typeHeadMatches && typeMembersMatch;
 
   if (typeMatches && nameMatches) {
     return 'equal';
