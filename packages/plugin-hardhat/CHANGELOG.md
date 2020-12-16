@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fix an error in the `unsafeAllowCustomTypes` flag that would cause other storage layout incompatibilities to be ignored. ([#259](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/259))
+
+Users of this flag are advised to update to this version.
+
 ## 1.4.2 (2020-12-04)
 
 - Fix a bug that prevented some solc errors from reaching the console. ([#253](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/253))

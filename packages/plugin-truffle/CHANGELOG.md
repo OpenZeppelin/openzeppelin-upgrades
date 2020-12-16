@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fix an error in the `unsafeAllowCustomTypes` flag that would cause other storage layout incompatibilities to be ignored. ([#259](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/259))
+
+Users of this flag are advised to update to this version.
+
 ## 1.3.0 (2020-11-24)
 
 - Add `silenceWarnings` to emit a single warning and silence all subsequent ones. ([#228](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/228))
