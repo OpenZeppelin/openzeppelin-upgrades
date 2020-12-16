@@ -67,21 +67,23 @@ export function assertStorageUpgradeSafe(
   let errors = getStorageUpgradeErrors(original, updated);
 
   if (unsafeAllowCustomTypes) {
-    errors = errors
-      .filter(error => error.kind === 'typechange')
-      .filter(error => {
-        const { original, updated } = error;
-        if (original && updated) {
-          // Skip storage errors if the only difference seems to be the AST id number
-          return stabilizeTypeIdentifier(original?.type) !== stabilizeTypeIdentifier(updated?.type);
-        }
-        return error;
-      });
+    // Types with the same name are assumed compatible
+    errors = errors.filter(error => !isTypechange(error) || typechangePreservesNames(error));
   }
 
   if (errors.length > 0) {
     throw new StorageUpgradeErrors(errors);
   }
+}
+
+function isTypechange(error: StorageOperation): error is StorageOperation & { kind: 'typechange' } {
+  return error.kind === 'typechange';
+}
+
+function typechangePreservesNames(error: StorageOperation & { kind: 'typechange' }): boolean {
+  assert(error.updated !== undefined);
+  assert(error.original !== undefined);
+  return stabilizeTypeIdentifier(error.original.type) !== stabilizeTypeIdentifier(error.updated.type);
 }
 
 class StorageUpgradeErrors extends UpgradesError {

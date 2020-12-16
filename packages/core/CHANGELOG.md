@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fix an error in the `unsafeAllowCustomTypes` flag that would cause other storage layout incompatibilities to be ignored. ([#259](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/259))
+
+Users of this flag are advised to update to this version.
+
 ## 1.4.1 (2020-11-30)
 
 - Fix a problem in deployment logic when used with Hyperledger Besu. ([#244](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/244))
