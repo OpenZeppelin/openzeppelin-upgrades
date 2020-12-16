@@ -9,10 +9,15 @@ import { levenshtein, Operation } from './levenshtein';
 import { UpgradesError, ErrorDescriptions } from './error';
 import { parseTypeId, ParsedTypeId } from './utils/parse-type-id';
 
-export interface StorageItem<T = string> {
+// The interfaces below are generic in the way types are represented (through the parameter `Type`). When stored in
+// disk, the type is represented by a string: the type id. When loaded onto memory to run the storage layout comparisons
+// found in this module, the type id is replaced by its parsed structure together with the corersponding TypeItem, e.g.
+// the struct members if it is a struct type.
+
+export interface StorageItem<Type = string> {
   contract: string;
   label: string;
-  type: T;
+  type: Type;
   src: string;
 }
 
@@ -21,16 +26,16 @@ export interface StorageLayout {
   types: Record<string, TypeItem>;
 }
 
-export interface TypeItem<T = string> {
+export interface TypeItem<Type = string> {
   label: string;
-  members?: TypeItemMembers<T>;
+  members?: TypeItemMembers<Type>;
 }
 
-export type TypeItemMembers<T = string> = StructMember<T>[] | EnumMember[];
+export type TypeItemMembers<Type = string> = StructMember<Type>[] | EnumMember[];
 
-export interface StructMember<T = string> {
+export interface StructMember<Type = string> {
   label: string;
-  type: T;
+  type: Type;
 }
 
 type EnumMember = string;
