@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.2 (2020-12-16)
+
+- Fix an error in the `unsafeAllowCustomTypes` flag that would cause other storage layout incompatibilities to be ignored. ([#259](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/259))
+
+Users of this flag are advised to update to this version.
+
 ## 1.2.1 (2020-10-21)
 
 - Add ability to disable proxy initialization by specifying `initializer: false`. ([#204](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/204))
