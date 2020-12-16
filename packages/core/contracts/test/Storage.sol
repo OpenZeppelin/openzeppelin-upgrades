@@ -128,3 +128,29 @@ contract StorageUpgrade_Delete_V1 {
 contract StorageUpgrade_Delete_V2 {
   address x2;
 }
+
+contract StorageUpgrade_Struct_V1 {
+    struct Struct {
+        uint x;
+        string s1;
+        string s2;
+    }
+    Struct data;
+}
+
+contract StorageUpgrade_Struct_V2_Ok {
+    struct StructRenamed {
+        uint x;
+        string s1;
+        string s2;
+    }
+    StructRenamed data;
+}
+
+contract StorageUpgrade_Struct_V2_Bad {
+    struct StructRenamed {
+        uint x;
+        string s2;
+    }
+    StructRenamed data;
+}

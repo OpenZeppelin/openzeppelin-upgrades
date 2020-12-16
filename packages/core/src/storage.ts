@@ -1,7 +1,7 @@
 import assert from 'assert';
 import chalk from 'chalk';
 import { isNodeType, findAll } from 'solidity-ast/utils';
-import { ContractDefinition, StructDefinition, EnumDefinition } from 'solidity-ast';
+import { ContractDefinition, StructDefinition, EnumDefinition, TypeDescriptions } from 'solidity-ast';
 
 import { ASTDereferencer } from './ast-dereferencer';
 import { SrcDecoder } from './src-decoder';
@@ -55,11 +55,8 @@ export function extractStorageLayout(
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
       if (!varDecl.constant && varDecl.mutability !== 'immutable') {
-        const { typeIdentifier, typeString } = varDecl.typeDescriptions;
-        assert(typeof typeIdentifier === 'string');
-        assert(typeof typeString === 'string');
+        const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
 
-        const type = normalizeTypeIdentifier(typeIdentifier);
         layout.storage.push({
           contract: contractDef.name,
           label: varDecl.name,
@@ -69,10 +66,12 @@ export function extractStorageLayout(
 
         assert(varDecl.typeName != null);
 
-        for (const typeName of findTypeNames(varDecl.typeName)) {
-          const { typeIdentifier, typeString } = typeName.typeDescriptions;
-          assert(typeIdentifier != null);
-          assert(typeString != null);
+        const typeNames = new Map(
+          [...findTypeNames(varDecl.typeName)].map(n => [typeDescriptions(n).typeIdentifier, n]),
+        );
+
+        for (const typeName of typeNames.values()) {
+          const { typeIdentifier, typeString: label } = typeDescriptions(typeName);
 
           const type = normalizeTypeIdentifier(typeIdentifier);
 
@@ -85,9 +84,13 @@ export function extractStorageLayout(
           if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
             const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
             members = getTypeMembers(typeDef);
+            for (const typeName of findTypeNames(typeDef)) {
+              const { typeIdentifier } = typeDescriptions(typeName);
+              if (!typeNames.has(typeIdentifier)) {
+                typeNames.set(typeIdentifier, typeName);
+              }
+            }
           }
-
-          const label = typeString;
 
           layout.types[type] = { label, members };
         }
@@ -225,9 +228,8 @@ function getDetailedLayout(layout: StorageLayout): StorageItemDetailed[] {
 
   function addDetailsToParsedType(parsed: ParsedTypeId): ParsedTypeDetailed {
     const item = layout.types[parsed.id];
-    const members = (item.members as (string | StructMember)[] | undefined)?.map(m =>
-      typeof m === 'string' ? m : parseWithDetails(m),
-    ) as string[] | StructMember<ParsedTypeDetailed>[];
+    const members =
+      item?.members && (isStructMembers(item?.members) ? item.members.map(parseWithDetails) : item?.members);
     return {
       ...parsed,
       args: parsed.args?.map(addDetailsToParsedType),
@@ -239,11 +241,27 @@ function getDetailedLayout(layout: StorageLayout): StorageItemDetailed[] {
   return layout.storage.map(parseWithDetails);
 }
 
+function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMember<T>[] {
+  return members.length === 0 || typeof members[0] === 'object';
+}
+
 function matchStorageField(o: StorageField, u: StorageField) {
   const nameMatches = o.label === u.label;
 
   const typeHeadMatches = o.type.head === u.type.head;
-  let typeMembersMatch = o.type.item.label === u.type.item.label;
+  let typeMembersMatch = o.type.args === undefined;
+
+  if (typeHeadMatches) {
+    const { head } = o.type;
+    if (head === 't_struct') {
+      const originalMembers = o.type.item.members;
+      const updatedMembers = u.type.item.members;
+      assert(originalMembers && isStructMembers(originalMembers));
+      assert(updatedMembers && isStructMembers(updatedMembers));
+      const errors = getStorageUpgradeErrorsGeneric(originalMembers, updatedMembers, { canGrow: false });
+      typeMembersMatch = errors.length === 0;
+    }
+  }
 
   const typeMatches = typeHeadMatches && typeMembersMatch;
 
@@ -326,4 +344,15 @@ function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['m
   } else {
     return typeDef.members.map(m => m.name);
   }
+}
+
+interface RequiredTypeDescriptions {
+  typeIdentifier: string;
+  typeString: string;
+}
+
+function typeDescriptions(x: { typeDescriptions: TypeDescriptions }): RequiredTypeDescriptions {
+  assert(typeof x.typeDescriptions.typeIdentifier === 'string');
+  assert(typeof x.typeDescriptions.typeString === 'string');
+  return x.typeDescriptions as RequiredTypeDescriptions;
 }
