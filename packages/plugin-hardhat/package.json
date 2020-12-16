@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-upgrades",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
@@ -30,7 +30,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^1.4.0"
+    "@openzeppelin/upgrades-core": "^1.4.2"
   },
   "peerDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
