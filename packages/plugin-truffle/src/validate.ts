@@ -147,9 +147,11 @@ export async function getLinkedBytecode(Contract: ContractClass, provider: Ether
 
   let linkedBytecode = Contract.bytecode;
   for (const name in networkInfo?.links) {
-    const address = networkInfo?.links[name].replace(/^0x/, '') || '';
-    const regex = new RegExp(`__${name}_+`, 'g');
-    linkedBytecode = linkedBytecode.replace(regex, address);
+    const address = networkInfo?.links[name]?.replace(/^0x/, '');
+    if (address !== undefined) {
+      const regex = new RegExp(`__${name}_+`, 'g');
+      linkedBytecode = linkedBytecode.replace(regex, address);
+    }
   }
   return linkedBytecode;
 }
