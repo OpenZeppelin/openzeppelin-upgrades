@@ -40,5 +40,5 @@ test('upgradeProxy with flag but incompatible layout', async t => {
   const error = await t.throwsAsync(() =>
     upgrades.upgradeProxy(portfolio.address, PortfolioV2Bad, { unsafeAllowCustomTypes: true }),
   );
-  t.true(error.message.includes('Variable `assets` was replaced with `insert`'));
+  t.true(error.message.includes('Inserted variable `insert`'));
 });
