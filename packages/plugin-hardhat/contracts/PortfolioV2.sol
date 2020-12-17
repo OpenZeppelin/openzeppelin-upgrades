@@ -24,3 +24,27 @@ contract PortfolioV2 {
     }
 
 }
+
+contract PortfolioV2Bad {
+    struct Asset {
+        bool enabled;
+        uint amount;
+    }
+
+    uint insert;
+    mapping (string => Asset) assets;
+
+    function initialize() public view {
+        console.log("Deploying PortfolioV2");
+    }
+
+    function enable(string memory name) public returns (bool) {
+        if (assets[name].enabled) {
+            return false;
+        } else {
+            assets[name] = Asset(true, 10);
+            return true;
+        }
+    }
+
+}
