@@ -194,6 +194,8 @@ interface StorageField {
   type: ParsedTypeDetailed;
 }
 
+// This function is generic because it can compare top level storage layout as well as struct members
+// which are like a sub layout.
 function getStorageUpgradeErrorsGeneric<T extends StorageField>(
   original: T[],
   updated: T[],
