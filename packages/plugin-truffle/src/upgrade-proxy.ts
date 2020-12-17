@@ -24,7 +24,7 @@ async function prepareUpgradeImpl(
   Contract: ContractClass,
   opts: Required<Options>,
 ): Promise<string> {
-  const { deployer, unsafeAllowCustomTypes } = opts;
+  const { deployer } = opts;
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
@@ -37,7 +37,7 @@ async function prepareUpgradeImpl(
   const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
 
   const layout = getStorageLayout([validations], version);
-  assertStorageUpgradeSafe(deployment.layout, layout, unsafeAllowCustomTypes);
+  assertStorageUpgradeSafe(deployment.layout, layout);
 
   return await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(Contract, deployer);

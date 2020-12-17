@@ -111,26 +111,8 @@ export function extractStorageLayout(
   return layout;
 }
 
-export function assertStorageUpgradeSafe(
-  original: StorageLayout,
-  updated: StorageLayout,
-  unsafeAllowCustomTypes = false,
-): void {
-  let errors = getStorageUpgradeErrors(original, updated);
-
-  if (unsafeAllowCustomTypes) {
-    errors = errors
-      .filter(error => error.kind === 'typechange')
-      .filter(error => {
-        const { original, updated } = error;
-        if (original && updated) {
-          // Skip storage errors if the only difference seems to be the AST id number
-          return stabilizeTypeIdentifier(original?.type.id) !== stabilizeTypeIdentifier(updated?.type.id);
-        }
-        return error;
-      });
-  }
-
+export function assertStorageUpgradeSafe(original: StorageLayout, updated: StorageLayout): void {
+  const errors = getStorageUpgradeErrors(original, updated);
   if (errors.length > 0) {
     throw new StorageUpgradeErrors(errors);
   }
