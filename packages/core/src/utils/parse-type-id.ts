@@ -1,5 +1,7 @@
 import assert from 'assert';
 
+// This module parses type identifiers.
+
 export interface ParsedTypeId {
   id: string;
   head: string;
@@ -7,6 +9,25 @@ export interface ParsedTypeId {
   tail?: string;
   rets?: ParsedTypeId[];
 }
+
+// The examples below illustrate the meaning of these properties.
+
+// 1) id = t_struct(MyStruct)storage
+//         └──────┘ └──────┘ └─────┘
+//           head    args[0]   tail
+//    rets = undefined
+
+// 2) id = t_function_internal_nonpayable(t_uint256,t_uint256)returns(t_address)
+//         └────────────────────────────┘ └───────┘ └───────┘         └───────┘
+//                      head               args[0]   args[1]           rets[0]
+//    tail = undefined
+
+// 3) id = t_uint256
+//         └───────┘
+//           head
+//    args = undefined
+//    tail = undefined
+//    rets = undefined
 
 export function parseTypeId(id: string): ParsedTypeId {
   const matcher = new StatefulGlobalMatcher(id);
