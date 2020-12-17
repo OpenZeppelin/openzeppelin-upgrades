@@ -9,7 +9,7 @@ import { levenshtein, Operation } from './levenshtein';
 import { UpgradesError, ErrorDescriptions } from './error';
 import { parseTypeId, ParsedTypeId } from './utils/parse-type-id';
 
-// The interfaces below are generic in the way types are represented (through the parameter `Type`). When stored in
+// The interfaces below are generic in the way types are represented (through the parameter `Type`). When stored on
 // disk, the type is represented by a string: the type id. When loaded onto memory to run the storage layout comparisons
 // found in this module, the type id is replaced by its parsed structure together with the corresponding TypeItem, e.g.
 // the struct members if it is a struct type.
