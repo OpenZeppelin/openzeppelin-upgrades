@@ -55,6 +55,7 @@ export function extractStorageLayout(
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {} };
 
+  // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
   const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition']);
 
   for (const varDecl of contractDef.nodes) {
