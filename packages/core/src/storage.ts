@@ -297,8 +297,8 @@ function compatibleTypes(
     assert(originalMembers && isEnumMembers(originalMembers));
     assert(updatedMembers && isEnumMembers(updatedMembers));
     const ops = levenshtein(originalMembers, updatedMembers, (a, b) => (a === b ? 'equal' : 'replace'));
-    // it is only allowed to append new enum members
-    return ops.every(o => o.kind === 'append');
+    // it is only allowed to append new enum members, and there can be no more than 256 as in solidity 0.8
+    return ops.every(o => o.kind === 'append') && updatedMembers.length <= 256;
   }
 
   if (head === 't_mapping') {

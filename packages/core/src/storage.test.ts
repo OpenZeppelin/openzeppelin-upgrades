@@ -104,6 +104,16 @@ test('storage upgrade with enums', t => {
       updated: { label: 'data' },
     },
   });
+
+  const v2_TooLarge = t.context.extractStorageLayout('StorageUpgrade_Enum_V2_TooLarge');
+  t.like(getStorageUpgradeErrors(v1, v2_TooLarge), {
+    length: 1,
+    0: {
+      kind: 'typechange',
+      original: { label: 'data' },
+      updated: { label: 'data' },
+    },
+  });
 });
 
 function stabilizeStorageLayout(layout: StorageLayout) {
