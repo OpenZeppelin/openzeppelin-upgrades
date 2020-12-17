@@ -72,6 +72,9 @@ export function extractStorageLayout(
 
         assert(varDecl.typeName != null);
 
+        // We will recursively look for all types involved in this variable declaration in order to store their type
+        // information. We iterate over a Map that is indexed by typeIdentifier to ensure we visit each type only once.
+        // Note that there can be recursive types.
         const typeNames = new Map(
           [...findTypeNames(varDecl.typeName)].map(n => [typeDescriptions(n).typeIdentifier, n]),
         );
@@ -90,6 +93,7 @@ export function extractStorageLayout(
           if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
             const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
             members = getTypeMembers(typeDef);
+            // Recursively look for the types referenced in this definition and add them to the queue.
             for (const typeName of findTypeNames(typeDef)) {
               const { typeIdentifier } = typeDescriptions(typeName);
               if (!typeNames.has(typeIdentifier)) {
@@ -269,6 +273,9 @@ function matchStorageField(original: StorageField, updated: StorageField, { canG
     return 'replace';
   }
 }
+
+// TODO: Avoid getting stuck with recursive types.
+// struct S { mapping (uint => S) s; }
 
 function compatibleTypes(
   original: ParsedTypeDetailed,
