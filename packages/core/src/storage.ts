@@ -200,7 +200,7 @@ function getStorageUpgradeErrorsGeneric<T extends StorageField>(
   updated: T[],
   { canGrow }: { canGrow: boolean },
 ): StorageOperation<T>[] {
-  const ops = levenshtein(original, updated, (a, b) => matchStorageField(a, b, { canGrow: false }));
+  const ops = levenshtein(original, updated, matchStorageField);
   if (canGrow) {
     // appending is not an error in this case
     return ops.filter(o => o.kind !== 'append');
@@ -242,9 +242,9 @@ function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMembe
   return members.length === 0 || typeof members[0] === 'object';
 }
 
-function matchStorageField(original: StorageField, updated: StorageField, { canGrow }: { canGrow: boolean }) {
+function matchStorageField(original: StorageField, updated: StorageField) {
   const nameMatches = original.label === updated.label;
-  const typeMatches = compatibleTypes(original.type, updated.type, { canGrow });
+  const typeMatches = compatibleTypes(original.type, updated.type, { canGrow: false });
 
   if (typeMatches && nameMatches) {
     return 'equal';
