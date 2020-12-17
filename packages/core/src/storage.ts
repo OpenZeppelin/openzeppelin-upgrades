@@ -186,7 +186,7 @@ type StorageOperation<T = StorageItemDetailed> = Operation<T, 'typechange' | 're
 export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout): StorageOperation[] {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
-  return getStorageUpgradeErrorsGeneric(originalDetailed, updatedDetailed, { canGrow: true });
+  return getStorageUpgradeErrorsGeneric(originalDetailed, updatedDetailed, { allowAppend: true });
 }
 
 interface StorageField {
@@ -198,10 +198,10 @@ interface StorageField {
 function getStorageUpgradeErrorsGeneric<T extends StorageField>(
   original: T[],
   updated: T[],
-  { canGrow }: { canGrow: boolean },
+  { allowAppend }: { allowAppend: boolean },
 ): StorageOperation<T>[] {
   const ops = levenshtein(original, updated, matchStorageField);
-  if (canGrow) {
+  if (allowAppend) {
     // appending is not an error in this case
     return ops.filter(o => o.kind !== 'append');
   } else {
@@ -244,7 +244,7 @@ function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMembe
 
 function matchStorageField(original: StorageField, updated: StorageField) {
   const nameMatches = original.label === updated.label;
-  const typeMatches = compatibleTypes(original.type, updated.type, { canGrow: false });
+  const typeMatches = compatibleTypes(original.type, updated.type, { allowAppend: false });
 
   if (typeMatches && nameMatches) {
     return 'equal';
@@ -263,7 +263,7 @@ function matchStorageField(original: StorageField, updated: StorageField) {
 function compatibleTypes(
   original: ParsedTypeDetailed,
   updated: ParsedTypeDetailed,
-  { canGrow }: { canGrow: boolean },
+  { allowAppend }: { allowAppend: boolean },
 ): boolean {
   if (original.head !== updated.head) {
     return false;
@@ -287,7 +287,7 @@ function compatibleTypes(
     const updatedMembers = updated.item.members;
     assert(originalMembers && isStructMembers(originalMembers));
     assert(updatedMembers && isStructMembers(updatedMembers));
-    const errors = getStorageUpgradeErrorsGeneric(originalMembers, updatedMembers, { canGrow });
+    const errors = getStorageUpgradeErrorsGeneric(originalMembers, updatedMembers, { allowAppend });
     return errors.length === 0;
   }
 
@@ -310,14 +310,14 @@ function compatibleTypes(
     // validate an invariant we assume from solidity: key types are always simple value types
     assert(originalKey.args === undefined && updatedKey.args === undefined);
     // mapping value types are allowed to grow
-    return keyMatches && compatibleTypes(originalValue, updatedValue, { canGrow: true });
+    return keyMatches && compatibleTypes(originalValue, updatedValue, { allowAppend: true });
   }
 
   if (head === 't_array') {
     const originalLength = original.tail?.match(/^\d+|dyn/)?.[0];
     const updatedLength = updated.tail?.match(/^\d+|dyn/)?.[0];
     assert(originalLength !== undefined && updatedLength !== undefined);
-    if (!canGrow || originalLength === 'dyn' || updatedLength === 'dyn') {
+    if (!allowAppend || originalLength === 'dyn' || updatedLength === 'dyn') {
       return originalLength === updatedLength;
     } else {
       return parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
