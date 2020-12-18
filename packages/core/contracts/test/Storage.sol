@@ -190,3 +190,17 @@ contract StorageUpgrade_Enum_V2_TooLarge {
     }
     Enum data;
 }
+
+contract StorageUpgrade_Recursive_V1 {
+    struct Recursive {
+        mapping (uint => Recursive) s;
+    }
+    Recursive data;
+}
+
+contract StorageUpgrade_Recursive_V2 {
+    struct Recursive {
+        mapping (uint => Recursive) s;
+    }
+    Recursive data;
+}

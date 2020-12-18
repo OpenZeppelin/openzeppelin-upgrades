@@ -15,7 +15,7 @@ function noDetails() {
   return '';
 }
 
-export abstract class UpgradesError extends Error {
+export class UpgradesError extends Error {
   constructor(message: string, details = noDetails) {
     super(message + '\n\n' + details());
   }

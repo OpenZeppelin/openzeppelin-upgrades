@@ -186,7 +186,7 @@ type StorageOperation<T = StorageItemDetailed> = Operation<T, 'typechange' | 're
 export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout): StorageOperation[] {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
-  return getStorageUpgradeErrorsGeneric(originalDetailed, updatedDetailed, { allowAppend: true });
+  return new StorageLayoutComparator().getUpgradeErrors(originalDetailed, updatedDetailed, { allowAppend: true });
 }
 
 interface StorageField {
@@ -194,41 +194,44 @@ interface StorageField {
   type: ParsedTypeDetailed;
 }
 
-// This function is generic because it can compare top level storage layout as well as struct layout.
-function getStorageUpgradeErrorsGeneric<T extends StorageField>(
-  original: T[],
-  updated: T[],
-  { allowAppend }: { allowAppend: boolean },
-): StorageOperation<T>[] {
-  const ops = levenshtein(original, updated, matchStorageField);
-  if (allowAppend) {
-    // appending is not an error in this case
-    return ops.filter(o => o.kind !== 'append');
-  } else {
-    return ops;
-  }
-}
-
 type Replace<T, K extends string, V> = Omit<T, K> & Record<K, V>;
 
 function getDetailedLayout(layout: StorageLayout): StorageItemDetailed[] {
+  const cache: Record<string, ParsedTypeDetailed> = {};
+
   function parseWithDetails<I extends { type: string }>(item: I): Replace<I, 'type', ParsedTypeDetailed> {
-    return {
+    const parsed = {
       ...item,
       type: addDetailsToParsedType(parseTypeId(item.type)),
     };
+    return parsed;
   }
 
   function addDetailsToParsedType(parsed: ParsedTypeId): ParsedTypeDetailed {
-    const item = layout.types[parsed.id];
-    const members =
-      item?.members && (isStructMembers(item?.members) ? item.members.map(parseWithDetails) : item?.members);
-    return {
-      ...parsed,
-      args: parsed.args?.map(addDetailsToParsedType),
-      rets: parsed.args?.map(addDetailsToParsedType),
-      item: { ...item, members },
-    };
+    if (parsed.id in cache) {
+      return cache[parsed.id];
+    } else {
+      const item = layout.types[parsed.id];
+      const detailed: ParsedTypeDetailed = {
+        ...parsed,
+        args: undefined,
+        rets: undefined,
+        item: {
+          ...item,
+          members: undefined,
+        },
+      };
+
+      // store in cache before recursion below
+      cache[parsed.id] = detailed;
+
+      detailed.args = parsed.args?.map(addDetailsToParsedType);
+      detailed.rets = parsed.args?.map(addDetailsToParsedType);
+      detailed.item.members =
+        item?.members && (isStructMembers(item?.members) ? item.members.map(parseWithDetails) : item?.members);
+
+      return detailed;
+    }
   }
 
   return layout.storage.map(parseWithDetails);
@@ -242,90 +245,119 @@ function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMembe
   return members.length === 0 || typeof members[0] === 'object';
 }
 
-function matchStorageField(original: StorageField, updated: StorageField) {
-  const nameMatches = original.label === updated.label;
-  const typeMatches = compatibleTypes(original.type, updated.type, { allowAppend: false });
+class StorageLayoutComparator {
+  // Holds a stack of type comparisons to detect recursion
+  stack = new Set<string>();
 
-  if (typeMatches && nameMatches) {
-    return 'equal';
-  } else if (typeMatches) {
-    return 'rename';
-  } else if (nameMatches) {
-    return 'typechange';
-  } else {
-    return 'replace';
-  }
-}
-
-// TODO: Avoid getting stuck with recursive types.
-// struct S { mapping (uint => S) s; }
-
-function compatibleTypes(
-  original: ParsedTypeDetailed,
-  updated: ParsedTypeDetailed,
-  { allowAppend }: { allowAppend: boolean },
-): boolean {
-  if (original.head !== updated.head) {
-    return false;
-  }
-
-  if (original.args === undefined || updated.args === undefined) {
-    // both should be undefined at the same time
-    assert(original.args === updated.args);
-    return true;
-  }
-
-  const { head } = original;
-
-  if (head === 't_contract') {
-    // no storage layout errors can be introduced here since it is just an address
-    return true;
-  }
-
-  if (head === 't_struct') {
-    const originalMembers = original.item.members;
-    const updatedMembers = updated.item.members;
-    assert(originalMembers && isStructMembers(originalMembers));
-    assert(updatedMembers && isStructMembers(updatedMembers));
-    const errors = getStorageUpgradeErrorsGeneric(originalMembers, updatedMembers, { allowAppend });
-    return errors.length === 0;
-  }
-
-  if (head === 't_enum') {
-    const originalMembers = original.item.members;
-    const updatedMembers = updated.item.members;
-    assert(originalMembers && isEnumMembers(originalMembers));
-    assert(updatedMembers && isEnumMembers(updatedMembers));
-    const ops = levenshtein(originalMembers, updatedMembers, (a, b) => (a === b ? 'equal' : 'replace'));
-    // it is only allowed to append new enum members, and there can be no more than 256 as in solidity 0.8
-    return ops.every(o => o.kind === 'append') && updatedMembers.length <= 256;
-  }
-
-  if (head === 't_mapping') {
-    const [originalKey, originalValue] = original.args;
-    const [updatedKey, updatedValue] = updated.args;
-    // network files migrated from the OZ CLI have an unknown key type
-    // we allow it to match with any other key type, carrying over the semantics of OZ CLI
-    const keyMatches = originalKey.head === 'unknown' || originalKey.head === updatedKey.head;
-    // validate an invariant we assume from solidity: key types are always simple value types
-    assert(originalKey.args === undefined && updatedKey.args === undefined);
-    // mapping value types are allowed to grow
-    return keyMatches && compatibleTypes(originalValue, updatedValue, { allowAppend: true });
-  }
-
-  if (head === 't_array') {
-    const originalLength = original.tail?.match(/^\d+|dyn/)?.[0];
-    const updatedLength = updated.tail?.match(/^\d+|dyn/)?.[0];
-    assert(originalLength !== undefined && updatedLength !== undefined);
-    if (!allowAppend || originalLength === 'dyn' || updatedLength === 'dyn') {
-      return originalLength === updatedLength;
+  // This function is generic because it can compare top level storage layout as well as struct layout.
+  getUpgradeErrors<T extends StorageField>(
+    original: T[],
+    updated: T[],
+    { allowAppend }: { allowAppend: boolean },
+  ): StorageOperation<T>[] {
+    const ops = levenshtein(original, updated, (a, b) => this.matchStorageField(a, b));
+    if (allowAppend) {
+      // appending is not an error in this case
+      return ops.filter(o => o.kind !== 'append');
     } else {
-      return parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
+      return ops;
     }
   }
 
-  // in any other case, conservatively assume not compatible
-  return false;
+  matchStorageField(original: StorageField, updated: StorageField) {
+    const nameMatches = original.label === updated.label;
+    const typeMatches = this.compatibleTypes(original.type, updated.type, { allowAppend: false });
+
+    if (typeMatches && nameMatches) {
+      return 'equal';
+    } else if (typeMatches) {
+      return 'rename';
+    } else if (nameMatches) {
+      return 'typechange';
+    } else {
+      return 'replace';
+    }
+  }
+
+  compatibleTypes(
+    original: ParsedTypeDetailed,
+    updated: ParsedTypeDetailed,
+    { allowAppend }: { allowAppend: boolean },
+  ): boolean {
+    const stackKey = JSON.stringify({ original: original.id, updated: updated.id, allowAppend });
+
+    if (this.stack.has(stackKey)) {
+      throw new UpgradesError(`Recursive types are not supported`, () => `Recursion found in ${updated.item.label}\n`);
+    }
+
+    this.stack.add(stackKey);
+
+    try {
+      if (original.head !== updated.head) {
+        return false;
+      }
+
+      if (original.args === undefined || updated.args === undefined) {
+        // both should be undefined at the same time
+        assert(original.args === updated.args);
+        return true;
+      }
+
+      const { head } = original;
+
+      if (head === 't_contract') {
+        // no storage layout errors can be introduced here since it is just an address
+        return true;
+      }
+
+      if (head === 't_struct') {
+        const originalMembers = original.item.members;
+        const updatedMembers = updated.item.members;
+        assert(originalMembers && isStructMembers(originalMembers));
+        assert(updatedMembers && isStructMembers(updatedMembers));
+        const errors = this.getUpgradeErrors(originalMembers, updatedMembers, { allowAppend });
+        return errors.length === 0;
+      }
+
+      if (head === 't_enum') {
+        const originalMembers = original.item.members;
+        const updatedMembers = updated.item.members;
+        assert(originalMembers && isEnumMembers(originalMembers));
+        assert(updatedMembers && isEnumMembers(updatedMembers));
+        const ops = levenshtein(originalMembers, updatedMembers, (a, b) => (a === b ? 'equal' : 'replace'));
+        // it is only allowed to append new enum members, and there can be no more than 256 as in solidity 0.8
+        return ops.every(o => o.kind === 'append') && updatedMembers.length <= 256;
+      }
+
+      if (head === 't_mapping') {
+        const [originalKey, originalValue] = original.args;
+        const [updatedKey, updatedValue] = updated.args;
+        // network files migrated from the OZ CLI have an unknown key type
+        // we allow it to match with any other key type, carrying over the semantics of OZ CLI
+        const keyMatches = originalKey.head === 'unknown' || originalKey.head === updatedKey.head;
+        // validate an invariant we assume from solidity: key types are always simple value types
+        assert(originalKey.args === undefined && updatedKey.args === undefined);
+        // mapping value types are allowed to grow
+        return keyMatches && this.compatibleTypes(originalValue, updatedValue, { allowAppend: true });
+      }
+
+      if (head === 't_array') {
+        const originalLength = original.tail?.match(/^\d+|dyn/)?.[0];
+        const updatedLength = updated.tail?.match(/^\d+|dyn/)?.[0];
+        assert(originalLength !== undefined && updatedLength !== undefined);
+        if (!allowAppend || originalLength === 'dyn' || updatedLength === 'dyn') {
+          return originalLength === updatedLength;
+        } else {
+          return parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
+        }
+      }
+
+      // in any other case, conservatively assume not compatible
+      return false;
+    } finally {
+      this.stack.delete(stackKey);
+    }
+  }
 }
 
 // Some Type Identifiers contain a _storage_ptr suffix, but the _ptr part
