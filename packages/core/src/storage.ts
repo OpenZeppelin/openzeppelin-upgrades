@@ -345,11 +345,11 @@ class StorageLayoutComparator {
         const originalLength = original.tail?.match(/^\d+|dyn/)?.[0];
         const updatedLength = updated.tail?.match(/^\d+|dyn/)?.[0];
         assert(originalLength !== undefined && updatedLength !== undefined);
-        if (!allowAppend || originalLength === 'dyn' || updatedLength === 'dyn') {
-          return originalLength === updatedLength;
-        } else {
-          return parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
-        }
+        const compatibleLengths =
+          !allowAppend || originalLength === 'dyn' || updatedLength === 'dyn'
+            ? originalLength === updatedLength
+            : parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
+        return compatibleLengths && this.compatibleTypes(original.args[0], updated.args[0], { allowAppend: false });
       }
 
       // in any other case, conservatively assume not compatible
