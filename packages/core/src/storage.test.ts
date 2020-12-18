@@ -72,6 +72,58 @@ test('storage upgrade delete', t => {
   });
 });
 
+test('storage upgrade replace', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Replace_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_Replace_V2');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.like(comparison, {
+    length: 1,
+    0: {
+      kind: 'replace',
+      original: {
+        contract: 'StorageUpgrade_Replace_V1',
+        label: 'x2',
+        type: {
+          id: 't_uint256',
+        },
+      },
+      updated: {
+        contract: 'StorageUpgrade_Replace_V2',
+        label: 'renamed',
+        type: {
+          id: 't_string_storage',
+        },
+      },
+    },
+  });
+});
+
+test('storage upgrade rename', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Rename_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_Rename_V2');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.like(comparison, {
+    length: 1,
+    0: {
+      kind: 'rename',
+      original: {
+        contract: 'StorageUpgrade_Rename_V1',
+        label: 'x2',
+        type: {
+          id: 't_uint256',
+        },
+      },
+      updated: {
+        contract: 'StorageUpgrade_Rename_V2',
+        label: 'renamed',
+        type: {
+          id: 't_uint256',
+        },
+      },
+    },
+  });
+});
+
 test('storage upgrade with structs', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Struct_V1');
 
@@ -80,11 +132,31 @@ test('storage upgrade with structs', t => {
 
   const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_Struct_V2_Bad');
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
-    length: 1,
+    length: 5,
     0: {
       kind: 'typechange',
-      original: { label: 'data' },
-      updated: { label: 'data' },
+      original: { label: 'data1' },
+      updated: { label: 'data1' },
+    },
+    1: {
+      kind: 'typechange',
+      original: { label: 'data2' },
+      updated: { label: 'data2' },
+    },
+    2: {
+      kind: 'typechange',
+      original: { label: 'm' },
+      updated: { label: 'm' },
+    },
+    3: {
+      kind: 'typechange',
+      original: { label: 'a1' },
+      updated: { label: 'a1' },
+    },
+    4: {
+      kind: 'typechange',
+      original: { label: 'a2' },
+      updated: { label: 'a2' },
     },
   });
 });
@@ -121,6 +193,39 @@ test('storage upgrade with recursive type', t => {
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Recursive_V2');
   const e = t.throws(() => getStorageUpgradeErrors(v1, v2));
   t.true(e.message.includes('Recursion found'));
+});
+
+test('storage upgrade with contract type', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Contract_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_Contract_V2');
+  t.deepEqual(getStorageUpgradeErrors(v1, v2), []);
+});
+
+test('storage upgrade with arrays', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Array_V1');
+
+  const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_Array_V2_Ok');
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
+
+  const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_Array_V2_Bad');
+  t.like(getStorageUpgradeErrors(v1, v2_Bad), {
+    length: 3,
+    0: {
+      kind: 'typechange',
+      original: { label: 'x1' },
+      updated: { label: 'x1' },
+    },
+    1: {
+      kind: 'typechange',
+      original: { label: 'x2' },
+      updated: { label: 'x2' },
+    },
+    2: {
+      kind: 'typechange',
+      original: { label: 'm' },
+      updated: { label: 'm' },
+    },
+  });
 });
 
 function stabilizeStorageLayout(layout: StorageLayout) {

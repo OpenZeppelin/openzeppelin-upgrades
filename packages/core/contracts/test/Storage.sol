@@ -130,29 +130,53 @@ contract StorageUpgrade_Delete_V2 {
 }
 
 contract StorageUpgrade_Struct_V1 {
-    struct Struct {
+    struct Struct1 {
         uint x;
         string s1;
         string s2;
     }
-    Struct data;
+    Struct1 data1;
+    Struct1 data2;
+    mapping (uint => Struct1) m;
+    Struct1[10] a1;
+    Struct1[10] a2;
 }
 
 contract StorageUpgrade_Struct_V2_Ok {
-    struct StructRenamed {
+    struct Struct2 {
         uint x;
         string s1;
         string s2;
     }
-    StructRenamed data;
+    struct Struct2Plus {
+        uint x;
+        string s1;
+        string s2;
+        uint z;
+    }
+    Struct2 data1;
+    Struct2 data2;
+    mapping (uint => Struct2Plus) m;
+    Struct2[10] a1;
+    Struct2[10] a2;
 }
 
 contract StorageUpgrade_Struct_V2_Bad {
-    struct StructRenamed {
+    struct Struct2Minus {
         uint x;
         string s2;
     }
-    StructRenamed data;
+    struct Struct2Plus {
+        uint x;
+        string s1;
+        string s2;
+        uint z;
+    }
+    Struct2Minus data1;
+    Struct2Plus data2;
+    mapping (uint => Struct2Minus) m;
+    Struct2Minus[10] a1;
+    Struct2Plus[10] a2;
 }
 
 contract StorageUpgrade_Enum_V1 {
@@ -204,3 +228,54 @@ contract StorageUpgrade_Recursive_V2 {
     }
     Recursive data;
 }
+
+contract StorageUpgrade_Rename_V1 {
+    uint x1;
+    uint x2;
+    uint x3;
+}
+
+contract StorageUpgrade_Rename_V2 {
+    uint x1;
+    uint renamed;
+    uint x3;
+}
+
+contract StorageUpgrade_Replace_V1 {
+    uint x1;
+    uint x2;
+    uint x3;
+}
+
+contract StorageUpgrade_Replace_V2 {
+    uint x1;
+    string renamed;
+    uint x3;
+}
+
+contract StorageUpgrade_Contract_V1 {
+    StorageUpgrade_Contract_V1 data;
+}
+
+contract StorageUpgrade_Contract_V2 {
+    StorageUpgrade_Contract_V2 data;
+}
+
+contract StorageUpgrade_Array_V1 {
+    uint[20] x1;
+    uint[20] x2;
+    mapping (uint => uint[20]) m;
+}
+
+contract StorageUpgrade_Array_V2_Ok {
+    uint[20] x1;
+    uint[20] x2;
+    mapping (uint => uint[25]) m;
+}
+
+contract StorageUpgrade_Array_V2_Bad {
+    uint[15] x1;
+    uint[25] x2;
+    mapping (uint => uint[15]) m;
+}
+
