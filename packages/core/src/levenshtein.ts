@@ -1,5 +1,13 @@
-export function levenshtein<T, K>(a: T[], b: T[], match: Match<T, K>): Operation<T, K>[] {
-  const matrix = buildMatrix(a, b, (a, b) => match(a, b) === 'equal');
+import assert from 'assert';
+
+type Match<T, R extends MatchResult> = (a: T, b: T) => R;
+
+interface MatchResult {
+  isEqual(): boolean;
+}
+
+export function levenshtein<T, R extends MatchResult>(a: T[], b: T[], match: Match<T, R>): Operation<T, R>[] {
+  const matrix = buildMatrix(a, b, (a, b) => match(a, b).isEqual());
   return walkMatrix(matrix, a, b, match);
 }
 
@@ -43,20 +51,35 @@ function buildMatrix<T>(a: T[], b: T[], eq: Equal<T>): number[][] {
   return matrix;
 }
 
-type Match<T, K> = (a: T, b: T) => K | 'equal';
-
-export interface Operation<T, K> {
-  kind: K | 'append' | 'insert' | 'delete';
-  original?: T;
-  updated?: T;
-}
+export type Operation<T, R extends MatchResult> =
+  | {
+      kind: 'custom';
+      match: R;
+      original: T;
+      updated: T;
+    }
+  | {
+      kind: 'append' | 'insert';
+      original?: undefined;
+      updated: T;
+    }
+  | {
+      kind: 'delete';
+      original: T;
+      updated?: undefined;
+    };
 
 // Walks an edit distance matrix, returning the sequence of operations performed
-function walkMatrix<T, K>(matrix: number[][], a: T[], b: T[], match: Match<T, K>): Operation<T, K>[] {
+function walkMatrix<T, R extends MatchResult>(
+  matrix: number[][],
+  a: T[],
+  b: T[],
+  match: Match<T, R>,
+): Operation<T, R>[] {
   let i = matrix.length - 1;
   let j = matrix[0].length - 1;
 
-  const operations: Operation<T, K>[] = [];
+  const operations: Operation<T, R>[] = [];
 
   while (i > 0 || j > 0) {
     const cost = matrix[i][j];
@@ -65,22 +88,24 @@ function walkMatrix<T, K>(matrix: number[][], a: T[], b: T[], match: Match<T, K>
     const insertionCost = isAppend ? 0 : INSERTION_COST;
 
     const matchResult = i > 0 && j > 0 ? match(a[i - 1], b[j - 1]) : undefined;
-    const substitutionCost = matchResult === 'equal' ? 0 : SUBSTITUTION_COST;
+    const substitutionCost = matchResult?.isEqual() ? 0 : SUBSTITUTION_COST;
 
     const original = i > 0 ? a[i - 1] : undefined;
     const updated = j > 0 ? b[j - 1] : undefined;
 
     if (i > 0 && j > 0 && cost === matrix[i - 1][j - 1] + substitutionCost) {
-      if (matchResult !== 'equal') {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        operations.unshift({ kind: matchResult!, updated, original });
+      assert(matchResult !== undefined && original !== undefined && updated !== undefined);
+      if (!matchResult?.isEqual()) {
+        operations.unshift({ kind: 'custom', match: matchResult, updated, original });
       }
       i--;
       j--;
     } else if (j > 0 && cost === matrix[i][j - 1] + insertionCost) {
+      assert(updated !== undefined);
       operations.unshift({ kind: isAppend ? 'append' : 'insert', updated });
       j--;
     } else if (i > 0 && cost === matrix[i - 1][j] + DELETION_COST) {
+      assert(original !== undefined);
       operations.unshift({ kind: 'delete', original });
       i--;
     } else {

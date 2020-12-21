@@ -2,17 +2,19 @@ import test from 'ava';
 
 import { levenshtein } from './levenshtein';
 
+const match = <T>(a: T, b: T) => ({ isEqual: () => a === b });
+
 test('equal', t => {
   const a = [...'abc'];
   const b = [...'abc'];
-  const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
+  const ops = levenshtein(a, b, match);
   t.deepEqual(ops, []);
 });
 
 test('append', t => {
   const a = [...'abc'];
   const b = [...'abcd'];
-  const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
+  const ops = levenshtein(a, b, match);
   t.deepEqual(ops, [
     {
       kind: 'append',
@@ -24,7 +26,7 @@ test('append', t => {
 test('delete from end', t => {
   const a = [...'abcd'];
   const b = [...'abc'];
-  const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
+  const ops = levenshtein(a, b, match);
   t.deepEqual(ops, [
     {
       kind: 'delete',
@@ -36,7 +38,7 @@ test('delete from end', t => {
 test('delete from middle', t => {
   const a = [...'abc'];
   const b = [...'ac'];
-  const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
+  const ops = levenshtein(a, b, match);
   t.deepEqual(ops, [
     {
       kind: 'delete',
@@ -48,7 +50,7 @@ test('delete from middle', t => {
 test('insert', t => {
   const a = [...'abc'];
   const b = [...'azbc'];
-  const ops = levenshtein(a, b, (a, b) => (a === b ? 'equal' : 'different'));
+  const ops = levenshtein(a, b, match);
   t.deepEqual(ops, [
     {
       kind: 'insert',

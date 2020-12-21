@@ -131,14 +131,8 @@ function label(variable?: { label: string }): string {
 }
 
 const errorInfo: ErrorDescriptions<StorageOperation> = {
-  typechange: {
-    msg: o => `Type of variable ${label(o.updated)} was changed`,
-  },
-  rename: {
-    msg: o => `Variable ${label(o.original)} was renamed`,
-  },
-  replace: {
-    msg: o => `Variable ${label(o.original)} was replaced with ${label(o.updated)}`,
+  custom: {
+    msg: o => o.match.message(o),
   },
   insert: {
     msg: o => `Inserted variable ${label(o.updated)}`,
@@ -181,7 +175,7 @@ interface ParsedTypeDetailed extends ParsedTypeId {
   rets?: ParsedTypeDetailed[];
 }
 
-type StorageOperation<T = StorageItemDetailed> = Operation<T, 'typechange' | 'rename' | 'replace'>;
+type StorageOperation<T extends StorageField = StorageItemDetailed> = Operation<T, StorageMatchResult<T>>;
 
 export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout): StorageOperation[] {
   const originalDetailed = getDetailedLayout(original);
@@ -245,6 +239,29 @@ function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMembe
   return members.length === 0 || typeof members[0] === 'object';
 }
 
+type StorageMatchErrorKind = 'typechange' | 'rename' | 'replace';
+
+class StorageMatchResult<T extends StorageField> {
+  constructor(readonly errorKind?: StorageMatchErrorKind) {}
+
+  isEqual() {
+    return this.errorKind === undefined;
+  }
+
+  message(o: Operation<T, this> & { kind: 'custom' }) {
+    switch (this.errorKind) {
+      case 'typechange':
+        return `Type of variable ${label(o.updated)} was changed`;
+      case 'rename':
+        return `Variable ${label(o.original)} was renamed`;
+      case 'replace':
+        return `Variable ${label(o.original)} was replaced with ${label(o.updated)}`;
+      case undefined:
+        throw new Error('Internal error');
+    }
+  }
+}
+
 class StorageLayoutComparator {
   // Holds a stack of type comparisons to detect recursion
   stack = new Set<string>();
@@ -269,13 +286,13 @@ class StorageLayoutComparator {
     const typeMatches = this.compatibleTypes(original.type, updated.type, { allowAppend: false });
 
     if (typeMatches && nameMatches) {
-      return 'equal';
+      return new StorageMatchResult();
     } else if (typeMatches) {
-      return 'rename';
+      return new StorageMatchResult('rename');
     } else if (nameMatches) {
-      return 'typechange';
+      return new StorageMatchResult('typechange');
     } else {
-      return 'replace';
+      return new StorageMatchResult('replace');
     }
   }
 
@@ -324,7 +341,7 @@ class StorageLayoutComparator {
         const updatedMembers = updated.item.members;
         assert(originalMembers && isEnumMembers(originalMembers));
         assert(updatedMembers && isEnumMembers(updatedMembers));
-        const ops = levenshtein(originalMembers, updatedMembers, (a, b) => (a === b ? 'equal' : 'replace'));
+        const ops = levenshtein(originalMembers, updatedMembers, (a, b) => ({ isEqual: () => a === b }));
         // it is only allowed to append new enum members, and there can be no more than 256 as in solidity 0.8
         return ops.every(o => o.kind === 'append') && updatedMembers.length <= 256;
       }
