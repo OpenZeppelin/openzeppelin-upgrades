@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.3 (2020-12-21)
 
 - Fix a type error caused by duplicate contract names in Truffle.
 
