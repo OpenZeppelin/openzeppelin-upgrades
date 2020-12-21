@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix a type error caused by duplicate contract names in Truffle.
+
 ## 1.4.2 (2020-12-16)
 
 - Fix an error in the `unsafeAllowCustomTypes` flag that would cause other storage layout incompatibilities to be ignored. ([#259](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/259))
