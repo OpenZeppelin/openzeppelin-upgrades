@@ -265,6 +265,7 @@ class StorageMatchResult<T extends StorageField> {
 class StorageLayoutComparator {
   // Holds a stack of type comparisons to detect recursion
   stack = new Set<string>();
+  cache = new Map<string, boolean>();
 
   // This function is generic because it can compare top level storage layout as well as struct layout.
   getUpgradeErrors<T extends StorageField>(
@@ -301,79 +302,93 @@ class StorageLayoutComparator {
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
   ): boolean {
-    const stackKey = JSON.stringify({ original: original.id, updated: updated.id, allowAppend });
+    const key = JSON.stringify({ original: original.id, updated: updated.id, allowAppend });
 
-    if (this.stack.has(stackKey)) {
+    const cached = this.cache.get(key);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    if (this.stack.has(key)) {
       throw new UpgradesError(`Recursive types are not supported`, () => `Recursion found in ${updated.item.label}\n`);
     }
 
-    this.stack.add(stackKey);
-
     try {
-      if (original.head !== updated.head) {
-        return false;
-      }
-
-      if (original.args === undefined || updated.args === undefined) {
-        // both should be undefined at the same time
-        assert(original.args === updated.args);
-        return true;
-      }
-
-      const { head } = original;
-
-      if (head === 't_contract') {
-        // no storage layout errors can be introduced here since it is just an address
-        return true;
-      }
-
-      if (head === 't_struct') {
-        const originalMembers = original.item.members;
-        const updatedMembers = updated.item.members;
-        assert(originalMembers && isStructMembers(originalMembers));
-        assert(updatedMembers && isStructMembers(updatedMembers));
-        const errors = this.getUpgradeErrors(originalMembers, updatedMembers, { allowAppend });
-        return errors.length === 0;
-      }
-
-      if (head === 't_enum') {
-        const originalMembers = original.item.members;
-        const updatedMembers = updated.item.members;
-        assert(originalMembers && isEnumMembers(originalMembers));
-        assert(updatedMembers && isEnumMembers(updatedMembers));
-        const ops = levenshtein(originalMembers, updatedMembers, (a, b) => ({ isEqual: () => a === b }));
-        // it is only allowed to append new enum members, and there can be no more than 256 as in solidity 0.8
-        return ops.every(o => o.kind === 'append') && updatedMembers.length <= 256;
-      }
-
-      if (head === 't_mapping') {
-        const [originalKey, originalValue] = original.args;
-        const [updatedKey, updatedValue] = updated.args;
-        // network files migrated from the OZ CLI have an unknown key type
-        // we allow it to match with any other key type, carrying over the semantics of OZ CLI
-        const keyMatches = originalKey.head === 'unknown' || originalKey.head === updatedKey.head;
-        // validate an invariant we assume from solidity: key types are always simple value types
-        assert(originalKey.args === undefined && updatedKey.args === undefined);
-        // mapping value types are allowed to grow
-        return keyMatches && this.compatibleTypes(originalValue, updatedValue, { allowAppend: true });
-      }
-
-      if (head === 't_array') {
-        const originalLength = original.tail?.match(/^\d+|dyn/)?.[0];
-        const updatedLength = updated.tail?.match(/^\d+|dyn/)?.[0];
-        assert(originalLength !== undefined && updatedLength !== undefined);
-        const compatibleLengths =
-          !allowAppend || originalLength === 'dyn' || updatedLength === 'dyn'
-            ? originalLength === updatedLength
-            : parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
-        return compatibleLengths && this.compatibleTypes(original.args[0], updated.args[0], { allowAppend: false });
-      }
-
-      // in any other case, conservatively assume not compatible
-      return false;
+      this.stack.add(key);
+      const result = this.uncachedCompatibleTypes(original, updated, { allowAppend });
+      this.cache.set(key, result);
+      return result;
     } finally {
-      this.stack.delete(stackKey);
+      this.stack.delete(key);
     }
+  }
+
+  private uncachedCompatibleTypes(
+    original: ParsedTypeDetailed,
+    updated: ParsedTypeDetailed,
+    { allowAppend }: { allowAppend: boolean },
+  ): boolean {
+    if (original.head !== updated.head) {
+      return false;
+    }
+
+    if (original.args === undefined || updated.args === undefined) {
+      // both should be undefined at the same time
+      assert(original.args === updated.args);
+      return true;
+    }
+
+    const { head } = original;
+
+    if (head === 't_contract') {
+      // no storage layout errors can be introduced here since it is just an address
+      return true;
+    }
+
+    if (head === 't_struct') {
+      const originalMembers = original.item.members;
+      const updatedMembers = updated.item.members;
+      assert(originalMembers && isStructMembers(originalMembers));
+      assert(updatedMembers && isStructMembers(updatedMembers));
+      const errors = this.getUpgradeErrors(originalMembers, updatedMembers, { allowAppend });
+      return errors.length === 0;
+    }
+
+    if (head === 't_enum') {
+      const originalMembers = original.item.members;
+      const updatedMembers = updated.item.members;
+      assert(originalMembers && isEnumMembers(originalMembers));
+      assert(updatedMembers && isEnumMembers(updatedMembers));
+      const ops = levenshtein(originalMembers, updatedMembers, (a, b) => ({ isEqual: () => a === b }));
+      // it is only allowed to append new enum members, and there can be no more than 256 as in solidity 0.8
+      return ops.every(o => o.kind === 'append') && updatedMembers.length <= 256;
+    }
+
+    if (head === 't_mapping') {
+      const [originalKey, originalValue] = original.args;
+      const [updatedKey, updatedValue] = updated.args;
+      // network files migrated from the OZ CLI have an unknown key type
+      // we allow it to match with any other key type, carrying over the semantics of OZ CLI
+      const keyMatches = originalKey.head === 'unknown' || originalKey.head === updatedKey.head;
+      // validate an invariant we assume from solidity: key types are always simple value types
+      assert(originalKey.args === undefined && updatedKey.args === undefined);
+      // mapping value types are allowed to grow
+      return keyMatches && this.compatibleTypes(originalValue, updatedValue, { allowAppend: true });
+    }
+
+    if (head === 't_array') {
+      const originalLength = original.tail?.match(/^\d+|dyn/)?.[0];
+      const updatedLength = updated.tail?.match(/^\d+|dyn/)?.[0];
+      assert(originalLength !== undefined && updatedLength !== undefined);
+      const compatibleLengths =
+        !allowAppend || originalLength === 'dyn' || updatedLength === 'dyn'
+          ? originalLength === updatedLength
+          : parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
+      return compatibleLengths && this.compatibleTypes(original.args[0], updated.args[0], { allowAppend: false });
+    }
+
+    // in any other case, conservatively assume not compatible
+    return false;
   }
 }
 
