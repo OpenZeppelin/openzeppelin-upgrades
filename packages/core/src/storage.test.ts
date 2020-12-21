@@ -169,21 +169,26 @@ test('storage upgrade with enums', t => {
 
   const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_Enum_V2_Bad');
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
-    length: 1,
+    length: 4,
     0: {
       kind: 'typechange',
-      original: { label: 'data' },
-      updated: { label: 'data' },
+      original: { label: 'data1' },
+      updated: { label: 'data1' },
     },
-  });
-
-  const v2_TooLarge = t.context.extractStorageLayout('StorageUpgrade_Enum_V2_TooLarge');
-  t.like(getStorageUpgradeErrors(v1, v2_TooLarge), {
-    length: 1,
-    0: {
+    1: {
       kind: 'typechange',
-      original: { label: 'data' },
-      updated: { label: 'data' },
+      original: { label: 'data2' },
+      updated: { label: 'data2' },
+    },
+    2: {
+      kind: 'typechange',
+      original: { label: 'data3' },
+      updated: { label: 'data3' },
+    },
+    3: {
+      kind: 'typechange',
+      original: { label: 'data4' },
+      updated: { label: 'data4' },
     },
   });
 });
@@ -224,6 +229,28 @@ test('storage upgrade with arrays', t => {
       kind: 'typechange',
       original: { label: 'm' },
       updated: { label: 'm' },
+    },
+  });
+});
+
+test('storage upgrade with mappings', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Mapping_V1');
+
+  const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_Mapping_V2_Ok');
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
+
+  const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_Mapping_V2_Bad');
+  t.like(getStorageUpgradeErrors(v1, v2_Bad), {
+    length: 2,
+    0: {
+      kind: 'typechange',
+      original: { label: 'm1' },
+      updated: { label: 'm1' },
+    },
+    1: {
+      kind: 'typechange',
+      original: { label: 'm2' },
+      updated: { label: 'm2' },
     },
   });
 });
