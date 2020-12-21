@@ -175,7 +175,7 @@ interface ParsedTypeDetailed extends ParsedTypeId {
   rets?: ParsedTypeDetailed[];
 }
 
-type StorageOperation<T extends StorageField = StorageItemDetailed> = Operation<T, StorageMatchResult<T>>;
+type StorageOperation<T = StorageItemDetailed> = Operation<T, StorageMatchResult>;
 
 export function getStorageUpgradeErrors(original: StorageLayout, updated: StorageLayout): StorageOperation[] {
   const originalDetailed = getDetailedLayout(original);
@@ -239,16 +239,38 @@ function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMembe
   return members.length === 0 || typeof members[0] === 'object';
 }
 
-type StorageMatchErrorKind = 'typechange' | 'rename' | 'replace';
+abstract class StorageMatchResult {
+  abstract isEqual(): boolean;
+  abstract message(o: Operation<StorageField, this> & { kind: 'custom' }): string;
 
-class StorageMatchResult<T extends StorageField> {
-  constructor(readonly errorKind?: StorageMatchErrorKind) {}
+  private static _equal?: StorageMatchEqual;
+  static get equal(): StorageMatchEqual {
+    return this._equal ?? (this._equal = new StorageMatchEqual());
+  }
+}
 
-  isEqual() {
-    return this.errorKind === undefined;
+class StorageMatchEqual extends StorageMatchResult {
+  isEqual(): true {
+    return true;
   }
 
-  message(o: Operation<T, this> & { kind: 'custom' }) {
+  message(): string {
+    throw new Error('No storage match error here');
+  }
+}
+
+type StorageMatchErrorKind = 'typechange' | 'rename' | 'replace';
+
+class StorageMatchError extends StorageMatchResult {
+  constructor(readonly errorKind: StorageMatchErrorKind) {
+    super();
+  }
+
+  isEqual(): false {
+    return false;
+  }
+
+  message(o: Operation<StorageField, this> & { kind: 'custom' }) {
     switch (this.errorKind) {
       case 'typechange':
         return `Type of variable ${label(o.updated)} was changed`;
@@ -256,8 +278,6 @@ class StorageMatchResult<T extends StorageField> {
         return `Variable ${label(o.original)} was renamed`;
       case 'replace':
         return `Variable ${label(o.original)} was replaced with ${label(o.updated)}`;
-      case undefined:
-        throw new Error('Internal error');
     }
   }
 }
@@ -265,7 +285,7 @@ class StorageMatchResult<T extends StorageField> {
 class StorageLayoutComparator {
   // Holds a stack of type comparisons to detect recursion
   stack = new Set<string>();
-  cache = new Map<string, boolean>();
+  cache = new Map<string, StorageMatchResult>();
 
   // This function is generic because it can compare top level storage layout as well as struct layout.
   getUpgradeErrors<T extends StorageField>(
@@ -284,16 +304,17 @@ class StorageLayoutComparator {
 
   matchStorageField(original: StorageField, updated: StorageField) {
     const nameMatches = original.label === updated.label;
-    const typeMatches = this.compatibleTypes(original.type, updated.type, { allowAppend: false });
+    const typeMatchResult = this.compatibleTypes(original.type, updated.type, { allowAppend: false });
+    const typeMatches = typeMatchResult.isEqual();
 
     if (typeMatches && nameMatches) {
-      return new StorageMatchResult();
+      return StorageMatchResult.equal;
     } else if (typeMatches) {
-      return new StorageMatchResult('rename');
+      return new StorageMatchError('rename');
     } else if (nameMatches) {
-      return new StorageMatchResult('typechange');
+      return typeMatchResult;
     } else {
-      return new StorageMatchResult('replace');
+      return new StorageMatchError('replace');
     }
   }
 
@@ -301,7 +322,7 @@ class StorageLayoutComparator {
     original: ParsedTypeDetailed,
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
-  ): boolean {
+  ): StorageMatchResult {
     const key = JSON.stringify({ original: original.id, updated: updated.id, allowAppend });
 
     const cached = this.cache.get(key);
@@ -327,22 +348,22 @@ class StorageLayoutComparator {
     original: ParsedTypeDetailed,
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
-  ): boolean {
+  ): StorageMatchResult {
     if (original.head !== updated.head) {
-      return false;
+      return new StorageMatchError('typechange');
     }
 
     if (original.args === undefined || updated.args === undefined) {
       // both should be undefined at the same time
       assert(original.args === updated.args);
-      return true;
+      return StorageMatchResult.equal;
     }
 
     const { head } = original;
 
     if (head === 't_contract') {
       // no storage layout errors can be introduced here since it is just an address
-      return true;
+      return StorageMatchResult.equal;
     }
 
     if (head === 't_struct') {
@@ -351,7 +372,11 @@ class StorageLayoutComparator {
       assert(originalMembers && isStructMembers(originalMembers));
       assert(updatedMembers && isStructMembers(updatedMembers));
       const errors = this.getUpgradeErrors(originalMembers, updatedMembers, { allowAppend });
-      return errors.length === 0;
+      if (errors.length === 0) {
+        return StorageMatchResult.equal;
+      } else {
+        return new StorageMatchError('typechange');
+      }
     }
 
     if (head === 't_enum') {
@@ -361,7 +386,13 @@ class StorageLayoutComparator {
       assert(updatedMembers && isEnumMembers(updatedMembers));
       const ops = levenshtein(originalMembers, updatedMembers, (a, b) => ({ isEqual: () => a === b }));
       // it is only allowed to append new enum members, and there can be no more than 256 as in solidity 0.8
-      return ops.every(o => o.kind === 'append') && updatedMembers.length <= 256;
+      if (!ops.every(o => o.kind === 'append')) {
+        return new StorageMatchError('typechange');
+      } else if (updatedMembers.length > 256) {
+        return new StorageMatchError('typechange');
+      } else {
+        return StorageMatchResult.equal;
+      }
     }
 
     if (head === 't_mapping') {
@@ -373,7 +404,11 @@ class StorageLayoutComparator {
       // validate an invariant we assume from solidity: key types are always simple value types
       assert(originalKey.args === undefined && updatedKey.args === undefined);
       // mapping value types are allowed to grow
-      return keyMatches && this.compatibleTypes(originalValue, updatedValue, { allowAppend: true });
+      if (!keyMatches) {
+        return new StorageMatchError('typechange');
+      } else {
+        return this.compatibleTypes(originalValue, updatedValue, { allowAppend: true });
+      }
     }
 
     if (head === 't_array') {
@@ -384,11 +419,15 @@ class StorageLayoutComparator {
         !allowAppend || originalLength === 'dyn' || updatedLength === 'dyn'
           ? originalLength === updatedLength
           : parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
-      return compatibleLengths && this.compatibleTypes(original.args[0], updated.args[0], { allowAppend: false });
+      if (!compatibleLengths) {
+        return new StorageMatchError('typechange');
+      } else {
+        return this.compatibleTypes(original.args[0], updated.args[0], { allowAppend: false });
+      }
     }
 
     // in any other case, conservatively assume not compatible
-    return false;
+    return new StorageMatchError('typechange');
   }
 }
 
