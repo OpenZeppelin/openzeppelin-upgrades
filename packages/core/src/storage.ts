@@ -126,8 +126,8 @@ class StorageUpgradeErrors extends UpgradesError {
   }
 }
 
-function label(variable?: { label: string }): string {
-  return variable?.label ? '`' + variable.label + '`' : '<unknown>';
+function label(variable: { label: string }): string {
+  return '`' + variable.label + '`';
 }
 
 const errorInfo: ErrorDescriptions<StorageOperation> = {
