@@ -132,7 +132,7 @@ function label(variable?: { label: string }): string {
 
 const errorInfo: ErrorDescriptions<StorageOperation> = {
   custom: {
-    msg: o => o.match.message(o),
+    msg: o => o.match.errorMessage(o),
   },
   insert: {
     msg: o => `Inserted variable ${label(o.updated)}`,
@@ -241,7 +241,7 @@ function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMembe
 
 abstract class StorageMatchResult {
   abstract isEqual(): boolean;
-  abstract message(o: Operation<StorageField, this> & { kind: 'custom' }): string;
+  abstract errorMessage(o: Operation<StorageField, this> & { kind: 'custom' }): string;
 
   private static _equal?: StorageMatchEqual;
   static get equal(): StorageMatchEqual {
@@ -254,7 +254,7 @@ class StorageMatchEqual extends StorageMatchResult {
     return true;
   }
 
-  message(): string {
+  errorMessage(): never {
     throw new Error('No storage match error here');
   }
 }
@@ -270,7 +270,7 @@ class StorageMatchError extends StorageMatchResult {
     return false;
   }
 
-  message(o: Operation<StorageField, this> & { kind: 'custom' }) {
+  errorMessage(o: Operation<StorageField, this> & { kind: 'custom' }) {
     switch (this.errorKind) {
       case 'typechange':
         return `Type of variable ${label(o.updated)} was changed`;
