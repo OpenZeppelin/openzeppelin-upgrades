@@ -276,7 +276,7 @@ export class ValidationErrors extends UpgradesError {
 const errorInfo: ErrorDescriptions<ValidationError> = {
   constructor: {
     msg: e => `Contract \`${e.contract}\` has a constructor`,
-    hint: 'Define an initializer instead',
+    hint: () => 'Define an initializer instead',
     link: 'https://zpl.in/upgrades/error-001',
   },
   delegatecall: {
@@ -289,29 +289,31 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   },
   'state-variable-assignment': {
     msg: e => `Variable \`${e.name}\` is assigned an initial value`,
-    hint: 'Move the assignment to the initializer',
+    hint: () => 'Move the assignment to the initializer',
     link: 'https://zpl.in/upgrades/error-004',
   },
   'state-variable-immutable': {
     msg: e => `Variable \`${e.name}\` is immutable`,
-    hint: `Use a constant or mutable variable instead`,
+    hint: () => `Use a constant or mutable variable instead`,
     link: 'https://zpl.in/upgrades/error-005',
   },
   'external-library-linking': {
     msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
-    hint:
+    hint: () =>
       `Use libraries with internal functions only, or skip this check with the \`unsafeAllowLinkedLibraries\` flag \n` +
       `    if you have manually checked that the libraries are upgrade safe`,
     link: 'https://zpl.in/upgrades/error-006',
   },
   'struct-definition': {
     msg: e => `Defining structs like \`${e.name}\` is not yet supported`,
-    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
+    hint: () =>
+      `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
     link: 'https://zpl.in/upgrades/error-007',
   },
   'enum-definition': {
     msg: e => `Defining enums like \`${e.name}\` is not yet supported`,
-    hint: `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
+    hint: () =>
+      `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
     link: 'https://zpl.in/upgrades/error-007',
   },
 };
@@ -320,8 +322,10 @@ function describeError(e: ValidationError): string {
   const info = errorInfo[e.kind];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const log = [chalk.bold(e.src) + ': ' + info.msg(e as any)];
-  if (info.hint) {
-    log.push(info.hint);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hint = info.hint?.(e as any);
+  if (hint) {
+    log.push(hint);
   }
   if (info.link) {
     log.push(chalk.dim(info.link));

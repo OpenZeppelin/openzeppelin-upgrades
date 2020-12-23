@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 interface ErrorDescriptor<E> {
   msg: (e: E) => string;
-  hint?: string;
+  hint?: (e: E) => string | undefined;
   link?: string;
 }
 

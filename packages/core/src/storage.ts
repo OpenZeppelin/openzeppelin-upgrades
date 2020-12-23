@@ -133,14 +133,15 @@ function label(variable?: { label: string }): string {
 const errorInfo: ErrorDescriptions<StorageOperation> = {
   custom: {
     msg: o => o.match.errorMessage(o),
+    hint: o => o.match.hint(),
   },
   insert: {
     msg: o => `Inserted variable ${label(o.updated)}`,
-    hint: 'Only insert variables at the end of the most derived contract',
+    hint: () => 'Only insert variables at the end of the most derived contract',
   },
   delete: {
     msg: o => `Deleted variable ${label(o.original)}`,
-    hint: 'Keep the variable even if unused',
+    hint: () => 'Keep the variable even if unused',
   },
   append: {
     // this would not be shown to the user but TypeScript needs append here
@@ -153,8 +154,10 @@ export function describeError(e: StorageOperation): string {
   const src = e.updated?.src ?? e.original?.contract ?? 'unknown';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const log = [chalk.bold(src) + ': ' + info.msg(e as any)];
-  if (info.hint) {
-    log.push(info.hint);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hint = info.hint?.(e as any);
+  if (hint) {
+    log.push(hint);
   }
   if (info.link) {
     log.push(chalk.dim(info.link));
@@ -242,6 +245,10 @@ function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMembe
 abstract class StorageMatchResult {
   abstract isEqual(): boolean;
   abstract errorMessage(o: Operation<StorageField, this> & { kind: 'custom' }): string;
+
+  hint(): string | undefined {
+    return undefined;
+  }
 
   private static _equal?: StorageMatchEqual;
   static get equal(): StorageMatchEqual {
