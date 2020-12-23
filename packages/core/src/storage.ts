@@ -151,7 +151,7 @@ const errorInfo: ErrorDescriptions<StorageOperation> = {
 
 export function describeError(e: StorageOperation): string {
   const info = errorInfo[e.kind];
-  const src = e.updated?.src ?? e.original?.contract ?? 'unknown';
+  const src = e.updated ? e.updated.src : e.original.contract;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const log = [chalk.bold(src) + ': ' + info.msg(e as any)];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
