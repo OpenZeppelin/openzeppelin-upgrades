@@ -412,8 +412,8 @@ class StorageLayoutComparator {
     }
 
     if (head === 't_array') {
-      const originalLength = original.tail?.match(/^\d+|dyn/)?.[0];
-      const updatedLength = updated.tail?.match(/^\d+|dyn/)?.[0];
+      const originalLength = original.tail?.match(/^(\d+|dyn)/)?.[0];
+      const updatedLength = updated.tail?.match(/^(\d+|dyn)/)?.[0];
       assert(originalLength !== undefined && updatedLength !== undefined);
       const compatibleLengths =
         !allowAppend || originalLength === 'dyn' || updatedLength === 'dyn'
