@@ -11,13 +11,13 @@ test('equal', t => {
   t.deepEqual(ops, []);
 });
 
-test('append', t => {
+test('appended', t => {
   const a = [...'abc'];
   const b = [...'abcd'];
   const ops = levenshtein(a, b, match);
   t.deepEqual(ops, [
     {
-      kind: 'append',
+      kind: 'appended',
       updated: 'd',
     },
   ]);
@@ -29,7 +29,7 @@ test('delete from end', t => {
   const ops = levenshtein(a, b, match);
   t.deepEqual(ops, [
     {
-      kind: 'delete',
+      kind: 'deleted',
       original: 'd',
     },
   ]);
@@ -41,19 +41,19 @@ test('delete from middle', t => {
   const ops = levenshtein(a, b, match);
   t.deepEqual(ops, [
     {
-      kind: 'delete',
+      kind: 'deleted',
       original: 'b',
     },
   ]);
 });
 
-test('insert', t => {
+test('inserted', t => {
   const a = [...'abc'];
   const b = [...'azbc'];
   const ops = levenshtein(a, b, match);
   t.deepEqual(ops, [
     {
-      kind: 'insert',
+      kind: 'inserted',
       updated: 'z',
     },
   ]);

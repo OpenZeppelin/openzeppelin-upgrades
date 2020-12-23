@@ -60,7 +60,7 @@ test('storage upgrade delete', t => {
   t.like(comparison, {
     length: 1,
     0: {
-      kind: 'delete',
+      kind: 'deleted',
       original: {
         contract: 'StorageUpgrade_Delete_V1',
         label: 'x1',
@@ -79,7 +79,7 @@ test('storage upgrade replace', t => {
   t.like(comparison, {
     length: 1,
     0: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'replace',
       },
@@ -108,7 +108,7 @@ test('storage upgrade rename', t => {
   t.like(comparison, {
     length: 1,
     0: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'rename',
       },
@@ -140,7 +140,7 @@ test('storage upgrade with structs', t => {
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
     length: 5,
     0: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -148,7 +148,7 @@ test('storage upgrade with structs', t => {
       updated: { label: 'data1' },
     },
     1: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -156,7 +156,7 @@ test('storage upgrade with structs', t => {
       updated: { label: 'data2' },
     },
     2: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -164,7 +164,7 @@ test('storage upgrade with structs', t => {
       updated: { label: 'm' },
     },
     3: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -172,7 +172,7 @@ test('storage upgrade with structs', t => {
       updated: { label: 'a1' },
     },
     4: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -192,7 +192,7 @@ test('storage upgrade with enums', t => {
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
     length: 4,
     0: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -200,7 +200,7 @@ test('storage upgrade with enums', t => {
       updated: { label: 'data1' },
     },
     1: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -208,7 +208,7 @@ test('storage upgrade with enums', t => {
       updated: { label: 'data2' },
     },
     2: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -216,7 +216,7 @@ test('storage upgrade with enums', t => {
       updated: { label: 'data3' },
     },
     3: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -249,7 +249,7 @@ test('storage upgrade with arrays', t => {
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
     length: 3,
     0: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -257,7 +257,7 @@ test('storage upgrade with arrays', t => {
       updated: { label: 'x1' },
     },
     1: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -265,7 +265,7 @@ test('storage upgrade with arrays', t => {
       updated: { label: 'x2' },
     },
     2: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -285,7 +285,7 @@ test('storage upgrade with mappings', t => {
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
     length: 2,
     0: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },
@@ -293,7 +293,7 @@ test('storage upgrade with mappings', t => {
       updated: { label: 'm1' },
     },
     1: {
-      kind: 'custom',
+      kind: 'replaced',
       match: {
         errorKind: 'typechange',
       },

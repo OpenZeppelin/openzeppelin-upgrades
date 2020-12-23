@@ -131,19 +131,19 @@ function label(variable?: { label: string }): string {
 }
 
 const errorInfo: ErrorDescriptions<StorageOperation> = {
-  custom: {
+  replaced: {
     msg: o => o.match.errorMessage(o),
     hint: o => o.match.hint(),
   },
-  insert: {
+  inserted: {
     msg: o => `Inserted variable ${label(o.updated)}`,
     hint: () => 'Only insert variables at the end of the most derived contract',
   },
-  delete: {
+  deleted: {
     msg: o => `Deleted variable ${label(o.original)}`,
     hint: () => 'Keep the variable even if unused',
   },
-  append: {
+  appended: {
     // this would not be shown to the user but TypeScript needs append here
     msg: () => 'Appended a variable but it is not an error',
   },
@@ -244,7 +244,7 @@ function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMembe
 
 abstract class StorageMatchResult {
   abstract isEqual(): boolean;
-  abstract errorMessage(o: Operation<StorageField, this> & { kind: 'custom' }): string;
+  abstract errorMessage(o: Operation<StorageField, this> & { kind: 'replaced' }): string;
 
   hint(): string | undefined {
     return undefined;
@@ -277,7 +277,7 @@ class StorageMatchError extends StorageMatchResult {
     return false;
   }
 
-  errorMessage(o: Operation<StorageField, this> & { kind: 'custom' }) {
+  errorMessage(o: Operation<StorageField, this> & { kind: 'replaced' }) {
     switch (this.errorKind) {
       case 'typechange':
         return `Type of variable ${label(o.updated)} was changed`;
@@ -303,7 +303,7 @@ class StorageLayoutComparator {
     const ops = levenshtein(original, updated, (a, b) => this.matchStorageField(a, b));
     if (allowAppend) {
       // appending is not an error in this case
-      return ops.filter(o => o.kind !== 'append');
+      return ops.filter(o => o.kind !== 'appended');
     } else {
       return ops;
     }
@@ -393,7 +393,7 @@ class StorageLayoutComparator {
       assert(updatedMembers && isEnumMembers(updatedMembers));
       const ops = levenshtein(originalMembers, updatedMembers, (a, b) => ({ isEqual: () => a === b }));
       // it is only allowed to append new enum members, and there can be no more than 256 as in solidity 0.8
-      if (!ops.every(o => o.kind === 'append')) {
+      if (!ops.every(o => o.kind === 'appended')) {
         return new StorageMatchError('typechange');
       } else if (updatedMembers.length > 256) {
         return new StorageMatchError('typechange');

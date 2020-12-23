@@ -53,18 +53,18 @@ function buildMatrix<T>(a: T[], b: T[], eq: Equal<T>): number[][] {
 
 export type Operation<T, R extends MatchResult> =
   | {
-      kind: 'custom';
+      kind: 'replaced';
       match: R;
       original: T;
       updated: T;
     }
   | {
-      kind: 'append' | 'insert';
+      kind: 'appended' | 'inserted';
       original?: undefined;
       updated: T;
     }
   | {
-      kind: 'delete';
+      kind: 'deleted';
       original: T;
       updated?: undefined;
     };
@@ -96,17 +96,17 @@ function walkMatrix<T, R extends MatchResult>(
     if (i > 0 && j > 0 && cost === matrix[i - 1][j - 1] + substitutionCost) {
       assert(matchResult !== undefined && original !== undefined && updated !== undefined);
       if (!matchResult?.isEqual()) {
-        operations.unshift({ kind: 'custom', match: matchResult, updated, original });
+        operations.unshift({ kind: 'replaced', match: matchResult, updated, original });
       }
       i--;
       j--;
     } else if (j > 0 && cost === matrix[i][j - 1] + insertionCost) {
       assert(updated !== undefined);
-      operations.unshift({ kind: isAppend ? 'append' : 'insert', updated });
+      operations.unshift({ kind: isAppend ? 'appended' : 'inserted', updated });
       j--;
     } else if (i > 0 && cost === matrix[i - 1][j] + DELETION_COST) {
       assert(original !== undefined);
-      operations.unshift({ kind: 'delete', original });
+      operations.unshift({ kind: 'deleted', original });
       i--;
     } else {
       throw Error(`Could not walk matrix at position ${i},${j}`);
