@@ -120,7 +120,7 @@ export function assertStorageUpgradeSafe(original: StorageLayout, updated: Stora
 
 class StorageUpgradeErrors extends UpgradesError {
   constructor(readonly errors: StorageOperation[]) {
-    super(`New storage layout is incompatible due to the following changes`, () => {
+    super(`New storage layout is incompatible`, () => {
       return errors.map(describeError).join('\n\n');
     });
   }
