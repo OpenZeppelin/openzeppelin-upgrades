@@ -266,7 +266,7 @@ class StorageMatchEqual extends StorageMatchResult {
   }
 }
 
-type StorageMatchErrorKind = 'typechange' | 'rename' | 'replace';
+type StorageMatchErrorKind = 'typechange' | 'rename' | 'replace' | 'enum resize';
 
 class StorageMatchError extends StorageMatchResult {
   constructor(readonly errorKind: StorageMatchErrorKind) {
@@ -285,7 +285,48 @@ class StorageMatchError extends StorageMatchResult {
         return `Variable ${label(o.original)} was renamed`;
       case 'replace':
         return `Variable ${label(o.original)} was replaced with ${label(o.updated)}`;
+      case 'enum resize':
+        return `Type of variable ${label(o.updated)} change its size`;
     }
+  }
+
+  hint() {
+    switch (this.errorKind) {
+      case 'enum resize':
+        return `Enums must remain representable in the same integer size`;
+      default:
+        return undefined;
+    }
+  }
+}
+
+class StorageMatchEnumVariants extends StorageMatchResult {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(readonly ops: Operation<string, any>[]) {
+    super();
+  }
+
+  isEqual(): boolean {
+    return this.ops.length === 0;
+  }
+
+  errorMessage(o: Operation<StorageField, this> & { kind: 'replaced' }) {
+    return [
+      `Members of ${o.updated.type.item.label} were reordered`,
+      this.ops
+        .map(q => {
+          if (q.kind === 'replaced') {
+            return `    - ${q.original} was replaced with ${q.updated}`;
+          } else {
+            return `    - ${q.updated ?? q.original} was ${q.kind}`;
+          }
+        })
+        .join('\n'),
+    ].join('\n');
+  }
+
+  hint() {
+    return 'Only add new members after the existing ones';
   }
 }
 
@@ -391,14 +432,12 @@ class StorageLayoutComparator {
       const updatedMembers = updated.item.members;
       assert(originalMembers && isEnumMembers(originalMembers));
       assert(updatedMembers && isEnumMembers(updatedMembers));
-      const ops = levenshtein(originalMembers, updatedMembers, (a, b) => ({ isEqual: () => a === b }));
-      // it is only allowed to append new enum members, and there can be no more than 256 as in solidity 0.8
-      if (!ops.every(o => o.kind === 'appended')) {
-        return new StorageMatchError('typechange');
-      } else if (updatedMembers.length > 256) {
-        return new StorageMatchError('typechange');
+      if (enumSize(originalMembers.length) !== enumSize(updatedMembers.length)) {
+        return new StorageMatchError('enum resize');
       } else {
-        return StorageMatchResult.equal;
+        const ops = levenshtein(originalMembers, updatedMembers, (a, b) => ({ isEqual: () => a === b }));
+        const errors = ops.filter(o => o.kind !== 'appended');
+        return new StorageMatchEnumVariants(errors);
       }
     }
 
@@ -517,4 +556,8 @@ function typeDescriptions(x: { typeDescriptions: TypeDescriptions }): RequiredTy
   assert(typeof x.typeDescriptions.typeIdentifier === 'string');
   assert(typeof x.typeDescriptions.typeString === 'string');
   return x.typeDescriptions as RequiredTypeDescriptions;
+}
+
+function enumSize(memberCount: number): number {
+  return Math.ceil(Math.log2(Math.max(2, memberCount)) / 8);
 }
