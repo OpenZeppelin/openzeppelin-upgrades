@@ -5,7 +5,10 @@ import { artifacts } from 'hardhat';
 
 import { SolcOutput } from './solc-api';
 import { astDereferencer } from './ast-dereferencer';
-import { extractStorageLayout, getStorageUpgradeErrors, stabilizeTypeIdentifier, StorageLayout } from './storage';
+import { getStorageUpgradeErrors } from './storage';
+import { StorageLayout } from './storage/layout';
+import { extractStorageLayout } from './storage/extract';
+import { stabilizeTypeIdentifier } from './utils/type-id';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;

@@ -4,7 +4,8 @@ import chalk from 'chalk';
 
 import { SolcOutput, SolcBytecode } from './solc-api';
 import { Version, getVersion } from './version';
-import { extractStorageLayout, StorageLayout } from './storage';
+import { extractStorageLayout } from './storage/extract';
+import { StorageLayout } from './storage/layout';
 import { extractLinkReferences, unlinkBytecode, LinkReference } from './link-refs';
 import { UpgradesError, ErrorDescriptions } from './error';
 import { SrcDecoder } from './src-decoder';
