@@ -71,6 +71,8 @@ class StorageMatchError extends StorageMatchResult {
 }
 
 class StorageMatchEnumVariants extends StorageMatchResult {
+  errorKind = 'enum variants changed';
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(readonly ops: Operation<string, any>[]) {
     super();
