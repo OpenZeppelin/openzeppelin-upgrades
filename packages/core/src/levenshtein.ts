@@ -1,60 +1,7 @@
-import assert from 'assert';
-
-type Match<T, R extends MatchResult> = (a: T, b: T) => R;
-
-interface MatchResult {
-  isEqual(): boolean;
-}
-
-export function levenshtein<T, R extends MatchResult>(a: T[], b: T[], match: Match<T, R>): Operation<T, R>[] {
-  const matrix = buildMatrix(a, b, (a, b) => match(a, b).isEqual());
-  return walkMatrix(matrix, a, b, match);
-}
-
-type Equal<T> = (a: T, b: T) => boolean;
-
-const SUBSTITUTION_COST = 3;
-const INSERTION_COST = 2;
-const DELETION_COST = 2;
-
-// Adapted from https://gist.github.com/andrei-m/982927 by Andrei Mackenzie
-function buildMatrix<T>(a: T[], b: T[], eq: Equal<T>): number[][] {
-  const matrix: number[][] = new Array(a.length + 1);
-
-  type CostFunction = (i: number, j: number) => number;
-  const insertionCost: CostFunction = (i, j) => (j > a.length ? 0 : INSERTION_COST);
-  const substitutionCost: CostFunction = (i, j) => (eq(a[i - 1], b[j - 1]) ? 0 : SUBSTITUTION_COST);
-  const deletionCost: CostFunction = () => DELETION_COST;
-
-  // increment along the first column of each row
-  for (let i = 0; i <= a.length; i++) {
-    matrix[i] = new Array(b.length + 1);
-    matrix[i][0] = i * deletionCost(i, 0);
-  }
-
-  // increment each column in the first row
-  for (let j = 1; j <= b.length; j++) {
-    matrix[0][j] = matrix[0][j - 1] + insertionCost(0, j);
-  }
-
-  // fill in the rest of the matrix
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j - 1] + substitutionCost(i, j),
-        matrix[i][j - 1] + insertionCost(i, j),
-        matrix[i - 1][j] + deletionCost(i, j),
-      );
-    }
-  }
-
-  return matrix;
-}
-
-export type Operation<T, R extends MatchResult> =
+export type Operation<T, R> =
   | {
       kind: 'replaced';
-      match: R;
+      result: R;
       original: T;
       updated: T;
     }
@@ -69,49 +16,103 @@ export type Operation<T, R extends MatchResult> =
       updated?: undefined;
     };
 
-// Walks an edit distance matrix, returning the sequence of operations performed
-function walkMatrix<T, R extends MatchResult>(
-  matrix: number[][],
+type Match<T, R> = (a: T, b: T) => R;
+
+export function levenshtein<T, R>(
   a: T[],
   b: T[],
   match: Match<T, R>,
+  isEqualMatch: (result: R) => boolean,
 ): Operation<T, R>[] {
-  let i = matrix.length - 1;
-  let j = matrix[0].length - 1;
+  const matrix = buildMatrix(a, b, match, isEqualMatch);
+  return buildOps(matrix, a, b);
+}
 
-  const operations: Operation<T, R>[] = [];
+const SUBSTITUTION_COST = 3;
+const INSERTION_COST = 2;
+const DELETION_COST = 2;
 
-  while (i > 0 || j > 0) {
-    const cost = matrix[i][j];
+type MatrixEntry<T, R> = (Operation<T, R> | { kind: 'nop' }) & { totalCost: number; predecessor?: MatrixEntry<T, R> };
 
-    const isAppend = j >= matrix.length;
-    const insertionCost = isAppend ? 0 : INSERTION_COST;
+function buildMatrix<T, R>(
+  a: T[],
+  b: T[],
+  match: Match<T, R>,
+  isEqualMatch: (result: R) => boolean,
+): MatrixEntry<T, R>[][] {
+  // matrix[i][j] will contain the last operation that takes a.slice(0, i) to b.slice(0, j)
+  // The list of operations can be recovered following the predecessors as in buildOps
 
-    const matchResult = i > 0 && j > 0 ? match(a[i - 1], b[j - 1]) : undefined;
-    const substitutionCost = matchResult?.isEqual() ? 0 : SUBSTITUTION_COST;
+  const matrix: MatrixEntry<T, R>[][] = new Array(a.length + 1);
 
-    const original = i > 0 ? a[i - 1] : undefined;
-    const updated = j > 0 ? b[j - 1] : undefined;
+  matrix[0] = new Array(b.length + 1);
+  matrix[0][0] = { kind: 'nop', totalCost: 0 };
 
-    if (i > 0 && j > 0 && cost === matrix[i - 1][j - 1] + substitutionCost) {
-      assert(matchResult !== undefined && original !== undefined && updated !== undefined);
-      if (!matchResult?.isEqual()) {
-        operations.unshift({ kind: 'replaced', match: matchResult, updated, original });
-      }
-      i--;
-      j--;
-    } else if (j > 0 && cost === matrix[i][j - 1] + insertionCost) {
-      assert(updated !== undefined);
-      operations.unshift({ kind: isAppend ? 'appended' : 'inserted', updated });
-      j--;
-    } else if (i > 0 && cost === matrix[i - 1][j] + DELETION_COST) {
-      assert(original !== undefined);
-      operations.unshift({ kind: 'deleted', original });
-      i--;
-    } else {
-      throw Error(`Could not walk matrix at position ${i},${j}`);
+  // Populate first row
+  for (let j = 1; j <= b.length; j++) {
+    matrix[0][j] = insertion(0, j);
+  }
+
+  // Fill in the rest of the matrix
+  for (let i = 1; i <= a.length; i++) {
+    matrix[i] = new Array(b.length + 1);
+    matrix[i][0] = deletion(i, 0);
+    for (let j = 1; j <= b.length; j++) {
+      matrix[i][j] = minBy([substitution(i, j), insertion(i, j), deletion(i, j)], e => e.totalCost);
     }
   }
 
-  return operations;
+  return matrix;
+
+  // The different kinds of matrix entries are built by these helpers
+
+  function insertion(i: number, j: number): MatrixEntry<T, R> {
+    const updated = b[j - 1];
+    const predecessor = matrix[i][j - 1];
+    const predCost = predecessor.totalCost;
+    if (j > a.length) {
+      return { kind: 'appended', totalCost: predCost, predecessor, updated };
+    } else {
+      return { kind: 'inserted', totalCost: predCost + INSERTION_COST, predecessor, updated };
+    }
+  }
+
+  function deletion(i: number, j: number): MatrixEntry<T, R> {
+    const original = a[i - 1];
+    const predecessor = matrix[i - 1][j];
+    const predCost = predecessor.totalCost;
+    return { kind: 'deleted', totalCost: predCost + DELETION_COST, predecessor, original };
+  }
+
+  function substitution(i: number, j: number): MatrixEntry<T, R> {
+    const original = a[i - 1];
+    const updated = b[j - 1];
+    const predecessor = matrix[i - 1][j - 1];
+    const predCost = predecessor.totalCost;
+    const result = match(original, updated);
+    if (isEqualMatch(result)) {
+      return { kind: 'nop', totalCost: predCost, predecessor };
+    } else {
+      return { kind: 'replaced', totalCost: predCost + SUBSTITUTION_COST, predecessor, result, original, updated };
+    }
+  }
+}
+
+function minBy<T>(arr: [T, ...T[]], value: (item: T) => number): T {
+  return arr.reduce((min, item) => (value(item) < value(min) ? item : min));
+}
+
+function buildOps<T, R>(matrix: MatrixEntry<T, R>[][], a: T[], b: T[]): Operation<T, R>[] {
+  const ops: Operation<T, R>[] = [];
+
+  let entry: MatrixEntry<T, R> | undefined = matrix[a.length][b.length];
+
+  while (entry !== undefined) {
+    if (entry.kind !== 'nop') {
+      ops.unshift(entry);
+    }
+    entry = entry.predecessor;
+  }
+
+  return ops;
 }

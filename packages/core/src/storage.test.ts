@@ -83,7 +83,7 @@ test('storage upgrade replace', t => {
     length: 1,
     0: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'replace',
       },
       original: {
@@ -112,7 +112,7 @@ test('storage upgrade rename', t => {
     length: 1,
     0: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'rename',
       },
       original: {
@@ -144,7 +144,7 @@ test('storage upgrade with structs', t => {
     length: 5,
     0: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'data1' },
@@ -152,7 +152,7 @@ test('storage upgrade with structs', t => {
     },
     1: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'data2' },
@@ -160,7 +160,7 @@ test('storage upgrade with structs', t => {
     },
     2: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'm' },
@@ -168,7 +168,7 @@ test('storage upgrade with structs', t => {
     },
     3: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'a1' },
@@ -176,7 +176,7 @@ test('storage upgrade with structs', t => {
     },
     4: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'a2' },
@@ -196,7 +196,7 @@ test('storage upgrade with enums', t => {
     length: 4,
     0: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'enum variants changed',
       },
       original: { label: 'data1' },
@@ -204,7 +204,7 @@ test('storage upgrade with enums', t => {
     },
     1: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'enum variants changed',
       },
       original: { label: 'data2' },
@@ -212,7 +212,7 @@ test('storage upgrade with enums', t => {
     },
     2: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'enum variants changed',
       },
       original: { label: 'data3' },
@@ -220,7 +220,7 @@ test('storage upgrade with enums', t => {
     },
     3: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'enum resize',
       },
       original: { label: 'data4' },
@@ -253,7 +253,7 @@ test('storage upgrade with arrays', t => {
     length: 3,
     0: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'x1' },
@@ -261,7 +261,7 @@ test('storage upgrade with arrays', t => {
     },
     1: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'x2' },
@@ -269,7 +269,7 @@ test('storage upgrade with arrays', t => {
     },
     2: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'm' },
@@ -289,7 +289,7 @@ test('storage upgrade with mappings', t => {
     length: 2,
     0: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'm1' },
@@ -297,7 +297,7 @@ test('storage upgrade with mappings', t => {
     },
     1: {
       kind: 'replaced',
-      match: {
+      result: {
         errorKind: 'typechange',
       },
       original: { label: 'm2' },

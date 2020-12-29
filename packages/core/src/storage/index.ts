@@ -31,8 +31,8 @@ function label(variable: { label: string }): string {
 
 const errorInfo: ErrorDescriptions<StorageOperation> = {
   replaced: {
-    msg: o => o.match.errorMessage(o),
-    hint: o => o.match.hint(),
+    msg: o => o.result.errorMessage(o),
+    hint: o => o.result.hint(),
   },
   inserted: {
     msg: o => `Inserted variable ${label(o.updated)}`,

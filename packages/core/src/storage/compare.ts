@@ -113,7 +113,12 @@ export class StorageLayoutComparator {
     updated: T[],
     { allowAppend }: { allowAppend: boolean },
   ): StorageOperation<T>[] {
-    const ops = levenshtein(original, updated, (a, b) => this.matchStorageField(a, b));
+    const ops = levenshtein(
+      original,
+      updated,
+      (a, b) => this.matchStorageField(a, b),
+      r => r.isEqual(),
+    );
     if (allowAppend) {
       // appending is not an error in this case
       return ops.filter(o => o.kind !== 'appended');
@@ -207,7 +212,7 @@ export class StorageLayoutComparator {
       if (enumSize(originalMembers.length) !== enumSize(updatedMembers.length)) {
         return new StorageMatchError('enum resize');
       } else {
-        const ops = levenshtein(originalMembers, updatedMembers, (a, b) => ({ isEqual: () => a === b }));
+        const ops = levenshtein(originalMembers, updatedMembers, (a, b) => a === b, Boolean);
         const errors = ops.filter(o => o.kind !== 'appended');
         return new StorageMatchEnumVariants(errors);
       }
