@@ -39,9 +39,29 @@ export class Manifest {
     return new Manifest(await getChainId(provider));
   }
 
-  constructor(chainId: number) {
-    const name = networkNames[chainId] ?? `unknown-${chainId}`;
-    this.file = path.join(manifestDir, `${name}.json`);
+  static async loadAll(): Promise<Manifest[]> {
+    try {
+      const files = await fs.readdir(manifestDir);
+      return files
+        .filter(f => f !== 'project.json') // Ignore project file from OpenZeppelin CLI
+        .map(f => new Manifest(f));
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        return [];
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  constructor(fileOrChainId: string | number) {
+    if (typeof fileOrChainId === 'string') {
+      this.file = fileOrChainId;
+    } else {
+      const chainId = fileOrChainId;
+      const name = networkNames[chainId] ?? `unknown-${chainId}`;
+      this.file = path.join(manifestDir, `${name}.json`);
+    }
   }
 
   async getAdmin(): Promise<Deployment | undefined> {
