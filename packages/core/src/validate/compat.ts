@@ -1,7 +1,8 @@
 // Legacy interface for backwards compatibility
 
-import { ContractValidation, RunValidation } from './run';
+import { ContractValidation, ValidationRunData } from './run';
 
+export type RunValidation = ValidationRunData;
 export type ValidationLog = RunValidation[];
 export type Validation = RunValidation;
 

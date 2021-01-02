@@ -10,7 +10,7 @@ import { extractLinkReferences, LinkReference } from '../link-refs';
 import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 
-export type RunValidation = Record<string, ContractValidation>;
+export type ValidationRunData = Record<string, ContractValidation>;
 
 export interface ContractValidation {
   version?: Version;
@@ -46,8 +46,8 @@ interface ValidationErrorOpcode extends ValidationErrorBase {
   kind: 'delegatecall' | 'selfdestruct';
 }
 
-export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): RunValidation {
-  const validation: RunValidation = {};
+export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationRunData {
+  const validation: ValidationRunData = {};
   const fromId: Record<number, string> = {};
   const inheritIds: Record<string, number[]> = {};
   const libraryIds: Record<string, number[]> = {};

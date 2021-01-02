@@ -1,13 +1,13 @@
 import { Version, getVersion } from '../version';
-import { RunValidation, ValidationError } from './run';
+import { ValidationRunData, ValidationError } from './run';
 import { StorageLayout } from '../storage/layout';
 import { unlinkBytecode } from '../link-refs';
 import { ValidationOptions, processExceptions } from './overrides';
 import { ValidationErrors } from './error';
 
-export type ValidationDataV1 = RunValidation;
+export type ValidationDataV1 = ValidationRunData;
 
-export type ValidationDataV2 = RunValidation[];
+export type ValidationDataV2 = ValidationRunData[];
 
 export type ValidationData = ValidationDataV1 | ValidationDataV2;
 
@@ -32,7 +32,7 @@ export function assertUpgradeSafe(validations: ValidationData, version: Version,
   }
 }
 
-export function getContractVersion(validation: RunValidation, contractName: string): Version {
+export function getContractVersion(validation: ValidationRunData, contractName: string): Version {
   const { version } = validation[contractName];
   if (version === undefined) {
     throw new Error(`Contract ${contractName} is abstract`);
@@ -40,7 +40,7 @@ export function getContractVersion(validation: RunValidation, contractName: stri
   return version;
 }
 
-export function getContractNameAndRunValidation(validations: ValidationData, version: Version): [string, RunValidation] {
+export function getContractNameAndRunValidation(validations: ValidationData, version: Version): [string, ValidationRunData] {
   const validationLog = normalizeValidationData(validations);
 
   let runValidation;
