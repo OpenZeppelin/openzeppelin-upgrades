@@ -4,27 +4,13 @@ import { StorageLayout } from '../storage/layout';
 import { unlinkBytecode } from '../link-refs';
 import { ValidationOptions, processExceptions } from './overrides';
 import { ValidationErrors } from './error';
+import { ValidationData, normalizeValidationData } from './data';
 
-export type ValidationDataV1 = ValidationRunData;
+export function assertUpgradeSafe(data: ValidationData, version: Version, opts: ValidationOptions): void {
+  const dataV3 = normalizeValidationData(data);
+  const [contractName] = getContractNameAndRunValidation(dataV3, version);
 
-export type ValidationDataV2 = ValidationRunData[];
-
-export type ValidationData = ValidationDataV1 | ValidationDataV2;
-
-export function normalizeValidationData(data: ValidationData): ValidationDataV2 {
-  if (Array.isArray(data)) {
-    return data;
-  } else if (!('version' in data)) {
-    return [data];
-  } else {
-    throw new Error('Unknown version or malformed validation data');
-  }
-}
-
-export function assertUpgradeSafe(validations: ValidationData, version: Version, opts: ValidationOptions): void {
-  const [contractName] = getContractNameAndRunValidation(validations, version);
-
-  let errors = getErrors(validations, version);
+  let errors = getErrors(dataV3, version);
   errors = processExceptions(contractName, errors, opts);
 
   if (errors.length > 0) {
@@ -32,21 +18,21 @@ export function assertUpgradeSafe(validations: ValidationData, version: Version,
   }
 }
 
-export function getContractVersion(validation: ValidationRunData, contractName: string): Version {
-  const { version } = validation[contractName];
+export function getContractVersion(runData: ValidationRunData, contractName: string): Version {
+  const { version } = runData[contractName];
   if (version === undefined) {
     throw new Error(`Contract ${contractName} is abstract`);
   }
   return version;
 }
 
-export function getContractNameAndRunValidation(validations: ValidationData, version: Version): [string, ValidationRunData] {
-  const validationLog = normalizeValidationData(validations);
+export function getContractNameAndRunValidation(data: ValidationData, version: Version): [string, ValidationRunData] {
+  const dataV3 = normalizeValidationData(data);
 
   let runValidation;
   let contractName;
 
-  for (const validation of validationLog) {
+  for (const validation of dataV3.log) {
     contractName = Object.keys(validation).find(
       name => validation[name].version?.withMetadata === version.withMetadata,
     );
@@ -63,8 +49,9 @@ export function getContractNameAndRunValidation(validations: ValidationData, ver
   return [contractName, runValidation];
 }
 
-export function getStorageLayout(validations: ValidationData, version: Version): StorageLayout {
-  const [contractName, runValidation] = getContractNameAndRunValidation(validations, version);
+export function getStorageLayout(data: ValidationData, version: Version): StorageLayout {
+  const dataV3 = normalizeValidationData(data);
+  const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
   const layout: StorageLayout = { storage: [], types: {} };
   for (const name of [contractName].concat(c.inherit)) {
@@ -74,10 +61,10 @@ export function getStorageLayout(validations: ValidationData, version: Version):
   return layout;
 }
 
-export function getUnlinkedBytecode(validations: ValidationData, bytecode: string): string {
-  const validationLog = Array.isArray(validations) ? validations : [validations];
+export function getUnlinkedBytecode(data: ValidationData, bytecode: string): string {
+  const dataV3 = normalizeValidationData(data);
 
-  for (const validation of validationLog) {
+  for (const validation of dataV3.log) {
     const linkableContracts = Object.keys(validation).filter(name => validation[name].linkReferences.length > 0);
 
     for (const name of linkableContracts) {
@@ -94,14 +81,16 @@ export function getUnlinkedBytecode(validations: ValidationData, bytecode: strin
   return bytecode;
 }
 
-export function getErrors(validations: ValidationData, version: Version): ValidationError[] {
-  const [contractName, runValidation] = getContractNameAndRunValidation(validations, version);
+export function getErrors(data: ValidationData, version: Version): ValidationError[] {
+  const dataV3 = normalizeValidationData(data);
+  const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
   return c.errors
     .concat(...c.inherit.map(name => runValidation[name].errors))
     .concat(...c.libraries.map(name => runValidation[name].errors));
 }
 
-export function isUpgradeSafe(validations: ValidationData, version: Version): boolean {
-  return getErrors(validations, version).length == 0;
+export function isUpgradeSafe(data: ValidationData, version: Version): boolean {
+  const dataV3 = normalizeValidationData(data);
+  return getErrors(dataV3, version).length == 0;
 }
