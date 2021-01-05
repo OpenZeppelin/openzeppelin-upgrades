@@ -72,11 +72,10 @@ export function* findVersionWithoutMetadataMatches(
   const dataV3 = normalizeValidationData(data);
 
   for (const validation of dataV3.log) {
-    const contractName = Object.keys(validation).find(
-      name => validation[name].version?.withoutMetadata === versionWithoutMetadata,
-    );
-    if (contractName !== undefined) {
-      yield [contractName, validation];
+    for (const contractName in validation) {
+      if (validation[contractName].version?.withoutMetadata === versionWithoutMetadata) {
+        yield [contractName, validation];
+      }
     }
   }
 }
