@@ -13,10 +13,11 @@ export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunDat
   let storedData: ValidationDataCurrent | undefined;
 
   try {
-    storedData = await readValidationData(hre);
+    storedData = await readValidations(hre);
   } catch (e) {
-    // ENOENT means there is no previous data to append to. We move on and write the file from scratch.
-    if (e.code !== 'ENOENT') {
+    // If there is no previous data to append to, we ignore the error and write
+    // the file from scratch.
+    if (!(e instanceof ValidationsCacheNotFound)) {
       throw e;
     }
   }
@@ -28,28 +29,30 @@ export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunDat
 }
 
 export async function readValidations(hre: HardhatRuntimeEnvironment): Promise<ValidationDataCurrent> {
+  const cachePath = getValidationsCachePath(hre);
   try {
-    return await readValidationData(hre);
+    const data = JSON.parse(await fs.readFile(cachePath, 'utf8'));
+    if (!isCurrentValidationData(data)) {
+      await fs.unlink(cachePath);
+      throw new ValidationsCacheOutdated();
+    }
+    return data;
   } catch (e) {
     if (e.code === 'ENOENT') {
-      throw new Error('Validations log not found. Recompile with `hardhat compile --force`');
+      throw new ValidationsCacheNotFound();
     } else {
       throw e;
     }
   }
 }
 
-async function readValidationData(hre: HardhatRuntimeEnvironment): Promise<ValidationDataCurrent> {
-  const cachePath = getValidationsCachePath(hre);
-  const data = JSON.parse(await fs.readFile(cachePath, 'utf8'));
-  if (!isCurrentValidationData(data)) {
-    await fs.unlink(cachePath);
-    throw new ValidationCacheOutdatedError();
+export class ValidationsCacheNotFound extends Error {
+  constructor() {
+    super('Validations cache not found. Recompile with `hardhat compile --force`');
   }
-  return data;
 }
 
-export class ValidationCacheOutdatedError extends Error {
+export class ValidationsCacheOutdated extends Error {
   constructor() {
     super('Validations cache is outdated. Recompile with `hardhat compile --force`');
   }

@@ -27,16 +27,14 @@ interface RunCompilerArgs {
 }
 
 subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) => {
-  const { readValidations, ValidationCacheOutdatedError } = await import('./validations');
+  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import('./validations');
 
   try {
     await readValidations(hre);
   } catch (e) {
-    if (e instanceof ValidationCacheOutdatedError) {
-      // If the cache is outdated, force full recompilation.
+    if (e instanceof ValidationsCacheOutdated || e instanceof ValidationsCacheNotFound) {
       args = { ...args, force: true };
-    } else if (e.code !== 'ENOENT') {
-      // If the cache is not found, ignore the error.
+    } else {
       throw e;
     }
   }
