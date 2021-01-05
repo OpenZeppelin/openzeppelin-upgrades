@@ -2,7 +2,7 @@ export { validate, ValidationRunData, ContractValidation } from './run';
 export { ValidationOptions, withValidationDefaults, silenceWarnings } from './overrides';
 export { ValidationErrors } from './error';
 export { RunValidation, ValidationLog, Validation, ValidationResult } from './compat';
-export { ValidationData, ValidationDataCurrent, normalizeValidationData, concatRunData } from './data';
+export { ValidationData, ValidationDataCurrent, isCurrentValidationData, concatRunData } from './data';
 export {
   getContractVersion,
   getContractNameAndRunValidation,
