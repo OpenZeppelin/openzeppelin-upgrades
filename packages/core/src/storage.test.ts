@@ -6,7 +6,7 @@ import { artifacts } from 'hardhat';
 import { SolcOutput } from './solc-api';
 import { astDereferencer } from './ast-dereferencer';
 import { getStorageUpgradeErrors } from './storage';
-import { StorageLayout } from './storage/layout';
+import { StorageLayout, isEnumMembers } from './storage/layout';
 import { extractStorageLayout } from './storage/extract';
 import { stabilizeTypeIdentifier } from './utils/type-id';
 
@@ -309,6 +309,13 @@ test('storage upgrade with mappings', t => {
 function stabilizeStorageLayout(layout: StorageLayout) {
   return {
     storage: layout.storage.map(s => ({ ...s, type: stabilizeTypeIdentifier(s.type) })),
-    types: Object.entries(layout.types).map(([type, item]) => [stabilizeTypeIdentifier(type), item]),
+    types: Object.entries(layout.types).map(([type, item]) => {
+      const members =
+        item.members &&
+        (isEnumMembers(item.members)
+          ? item.members
+          : item.members.map(m => ({ ...m, type: stabilizeTypeIdentifier(m.type) })));
+      return [stabilizeTypeIdentifier(type), { ...item, members }];
+    }),
   };
 }
