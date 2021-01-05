@@ -44,7 +44,7 @@ export class Manifest {
       const files = await fs.readdir(manifestDir);
       return files
         .filter(f => f !== 'project.json') // Ignore project file from OpenZeppelin CLI
-        .map(f => new Manifest(f));
+        .map(f => new Manifest(path.join(manifestDir, f)));
     } catch (err) {
       if (err.code === 'ENOENT') {
         return [];
