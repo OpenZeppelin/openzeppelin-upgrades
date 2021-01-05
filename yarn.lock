@@ -8788,7 +8788,7 @@ promise-retry@^1.1.1:
     err-code "^1.0.0"
     retry "^0.10.0"
 
-promise.allsettled@1.0.2:
+promise.allsettled@1.0.2, promise.allsettled@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/promise.allsettled/-/promise.allsettled-1.0.2.tgz#d66f78fbb600e83e863d893e98b3d4376a9c47c9"
   integrity sha512-UpcYW5S1RaNKT6pd+s9jp9K9rlQge1UXKskec0j6Mmuq7UJCvlS2J2/s/yuPN8ehftf9HXMxWlKiPbGGUzpoRg==
@@ -9774,12 +9774,7 @@ solc@0.7.3:
     semver "^5.5.0"
     tmp "0.0.33"
 
-solidity-ast@^0.4.15:
-  version "0.4.15"
-  resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.15.tgz#d9f12760c1c8a69f2b0d72a56972fcc79f3b82d6"
-  integrity sha512-VFedJMLf5yTLKpJZ2bZBYnnrVYaxUTTvv7mpdWz9k9SuV2N/1kcHX/nBokdkI4lf3z05/3us+Q1pLP02EjJxqQ==
-
-solidity-ast@^0.4.4:
+solidity-ast@^0.4.15, solidity-ast@^0.4.4:
   version "0.4.15"
   resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.15.tgz#d9f12760c1c8a69f2b0d72a56972fcc79f3b82d6"
   integrity sha512-VFedJMLf5yTLKpJZ2bZBYnnrVYaxUTTvv7mpdWz9k9SuV2N/1kcHX/nBokdkI4lf3z05/3us+Q1pLP02EjJxqQ==

@@ -8,7 +8,7 @@ import { compare as compareVersions } from 'compare-versions';
 import type { Deployment } from './deployment';
 import type { StorageLayout } from './storage/layout';
 
-const currentManifestVersion = '3.1';
+export const currentManifestVersion = '3.2';
 
 export interface ManifestData {
   manifestVersion: string;
@@ -81,7 +81,8 @@ export class Manifest {
     const release = this.locked ? undefined : await this.lock();
     try {
       const data = JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
-      return validateOrUpdateManifestVersion(data);
+      validateManifestVersion(data);
+      return data;
     } catch (e) {
       if (e.code === 'ENOENT') {
         return defaultManifest();
@@ -124,26 +125,15 @@ export class Manifest {
   }
 }
 
-function validateOrUpdateManifestVersion(data: ManifestData): ManifestData {
+function validateManifestVersion(data: ManifestData) {
   if (typeof data.manifestVersion !== 'string') {
     throw new Error('Manifest version is missing');
   } else if (compareVersions(data.manifestVersion, '3.0', '<')) {
     throw new Error('Found a manifest file for OpenZeppelin CLI. An automated migration is not yet available.');
   } else if (compareVersions(data.manifestVersion, currentManifestVersion, '<')) {
-    return migrateManifest(data);
-  } else if (data.manifestVersion === currentManifestVersion) {
-    return data;
-  } else {
+    throw new Error('Found an older manifest version that should have been migrated.');
+  } else if (data.manifestVersion !== currentManifestVersion) {
     throw new Error(`Unknown value for manifest version (${data.manifestVersion})`);
-  }
-}
-
-export function migrateManifest(data: ManifestData): ManifestData {
-  if (data.manifestVersion === '3.0') {
-    data.manifestVersion = currentManifestVersion;
-    return data;
-  } else {
-    throw new Error('Manifest migration not available');
   }
 }
 

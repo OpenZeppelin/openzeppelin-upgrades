@@ -8,6 +8,7 @@ import {
   getImplementationAddress,
   getAdminAddress,
   EthereumProvider,
+  migrateAllManifests,
 } from '@openzeppelin/upgrades-core';
 
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
@@ -28,6 +29,8 @@ async function prepareUpgradeImpl(
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
+
+  await migrateAllManifests(validations);
 
   const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
   const version = getVersion(Contract.bytecode, linkedBytecode);

@@ -50,6 +50,7 @@
     "ethereumjs-util": "^7.0.3",
     "fp-ts": "^2.7.1",
     "io-ts": "^2.2.9",
+    "promise.allsettled": "^1.0.2",
     "proper-lockfile": "^4.1.1",
     "solidity-ast": "^0.4.15"
   }

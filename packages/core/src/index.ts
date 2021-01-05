@@ -10,4 +10,6 @@ export * from './solc-api';
 export * from './deployment';
 export * from './link-refs';
 
+export { migrateAllManifests } from './manifest-migrate';
+
 export * from './scripts/migrate-oz-cli-project';

@@ -52,13 +52,33 @@ export function getContractNameAndRunValidation(data: ValidationData, version: V
 export function getStorageLayout(data: ValidationData, version: Version): StorageLayout {
   const dataV3 = normalizeValidationData(data);
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
-  const c = runValidation[contractName];
+  return unfoldStorageLayout(runValidation, contractName);
+}
+
+export function unfoldStorageLayout(runData: ValidationRunData, contractName: string): StorageLayout {
+  const c = runData[contractName];
   const layout: StorageLayout = { storage: [], types: {} };
   for (const name of [contractName].concat(c.inherit)) {
-    layout.storage.unshift(...runValidation[name].layout.storage);
-    Object.assign(layout.types, runValidation[name].layout.types);
+    layout.storage.unshift(...runData[name].layout.storage);
+    Object.assign(layout.types, runData[name].layout.types);
   }
   return layout;
+}
+
+export function* findVersionWithoutMetadataMatches(
+  data: ValidationData,
+  versionWithoutMetadata: string,
+): Generator<[string, ValidationRunData]> {
+  const dataV3 = normalizeValidationData(data);
+
+  for (const validation of dataV3.log) {
+    const contractName = Object.keys(validation).find(
+      name => validation[name].version?.withoutMetadata === versionWithoutMetadata,
+    );
+    if (contractName !== undefined) {
+      yield [contractName, validation];
+    }
+  }
 }
 
 export function getUnlinkedBytecode(data: ValidationData, bytecode: string): string {

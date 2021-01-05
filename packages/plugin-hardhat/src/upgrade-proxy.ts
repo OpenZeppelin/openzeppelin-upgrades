@@ -12,6 +12,7 @@ import {
   getImplementationAddress,
   getAdminAddress,
   ValidationOptions,
+  migrateAllManifests,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyAdminFactory } from './proxy-factory';
@@ -39,6 +40,8 @@ async function prepareUpgradeImpl(
 ): Promise<string> {
   const { provider } = hre.network;
   const validations = await readValidations(hre);
+
+  await migrateAllManifests(validations);
 
   const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
   const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
