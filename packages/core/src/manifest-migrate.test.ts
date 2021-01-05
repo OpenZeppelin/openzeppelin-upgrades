@@ -77,6 +77,7 @@ test('getUpdatedLayout - multiple unambiguous layout matches', async t => {
   const { version: version2 } = t.context.validationRun['ManifestMigrateUnambiguous2'];
   assert(version1 !== undefined && version2 !== undefined);
   t.is(version1.withoutMetadata, version2.withoutMetadata, 'version is meant to be ambiguous');
+  t.not(version1.withMetadata, version2.withMetadata, 'version with metadata should be different');
   const targetLayout = getStorageLayout(t.context.validationData, version1);
   const outdatedLayout = removeStorageLayoutMembers(targetLayout);
   const updatedLayout = getUpdatedStorageLayout(t.context.validationData, version1.withoutMetadata, outdatedLayout);
@@ -88,6 +89,7 @@ test('getUpdatedLayout - multiple ambiguous layout matches', async t => {
   const { version: version2 } = t.context.validationRun['ManifestMigrateAmbiguous2'];
   assert(version1 !== undefined && version2 !== undefined);
   t.is(version1.withoutMetadata, version2.withoutMetadata, 'version is meant to be ambiguous');
+  t.not(version1.withMetadata, version2.withMetadata, 'version with metadata should be different');
   const targetLayout = getStorageLayout(t.context.validationData, version1);
   const outdatedLayout = removeStorageLayoutMembers(targetLayout);
   const updatedLayout = getUpdatedStorageLayout(t.context.validationData, version1.withoutMetadata, outdatedLayout);

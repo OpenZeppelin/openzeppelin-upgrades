@@ -51,21 +51,23 @@ contract ManifestMigrateUnambiguous0 is ManifestMigrateLayout {
 contract ManifestMigrateUnambiguous1 is ManifestMigrateUnambiguous0 { }
 contract ManifestMigrateUnambiguous2 is ManifestMigrateUnambiguous0 { }
 
-contract ManifestMigrateAmbiguous0 is ManifestMigrateLayout {
-    function useAll() external {
-        x1 = 15;
-        t1 = T({ b: false });
-        s1 = S({ x: 7, s: "s", t: t1 });
-        s2 = "s2";
-        b1 = false;
-        e1 = E.E2;
+// These two are expected to have the same bytecode modulo metadata and similar
+// layout, but different types (see struct D members);
+contract ManifestMigrateAmbiguous1 is ManifestMigrateUnique {
+    struct D {
+        uint w;
+    }
+    D d1;
+    function test() external {
+        d1.w += 1;
     }
 }
-
-// These two are expected to have the same bytecode modulo metadata, but different layout.
-contract ManifestMigrateAmbiguous1 is ManifestMigrateAmbiguous0 {
-    uint z1;
-}
-contract ManifestMigrateAmbiguous2 is ManifestMigrateAmbiguous0 {
-    bool z2;
+contract ManifestMigrateAmbiguous2 is ManifestMigrateUnique {
+    struct D {
+        uint z;
+    }
+    D d1;
+    function test() external {
+        d1.z += 1;
+    }
 }
