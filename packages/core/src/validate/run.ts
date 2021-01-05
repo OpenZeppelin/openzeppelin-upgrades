@@ -76,8 +76,10 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
     for (const contractDef of findAll('ContractDefinition', solcOutput.sources[source].ast)) {
       fromId[contractDef.id] = contractDef.name;
 
-      if (contractDef.name in validation) {
-        const { bytecode } = solcOutput.contracts[source][contractDef.name].evm;
+      // May be undefined in case of duplicate contract names in Truffle
+      const bytecode = solcOutput.contracts[source][contractDef.name]?.evm.bytecode;
+
+      if (contractDef.name in validation && bytecode !== undefined) {
         inheritIds[contractDef.name] = contractDef.linearizedBaseContracts.slice(1);
         libraryIds[contractDef.name] = getReferencedLibraryIds(contractDef);
 
