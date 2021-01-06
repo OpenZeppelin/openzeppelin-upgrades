@@ -1,8 +1,18 @@
+import type { ContractFactory, ContractTransaction } from 'ethers';
 import type { Deployment } from '@openzeppelin/upgrades-core';
-import type { ContractFactory } from 'ethers';
+export interface DeploymentExecutor {
+  (factory: ContractFactory): Promise<HardhatDeployment>;
+}
 
-export async function deploy(factory: ContractFactory): Promise<Deployment> {
-  const { address, deployTransaction } = await factory.deploy();
-  const txHash = deployTransaction.hash;
-  return { address, txHash };
+export interface HardhatDeployment {
+  address: string;
+  deployTransaction: ContractTransaction;
+}
+
+export function defaultDeploy(factory: ContractFactory, args: unknown[]): Promise<HardhatDeployment> {
+  return factory.deploy(...args);
+}
+
+export function intoCoreDeployment({ address, deployTransaction }: HardhatDeployment): Deployment {
+  return { address, txHash: deployTransaction.hash };
 }
