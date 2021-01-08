@@ -118,7 +118,7 @@ And when you call `upgradeProxy`:
 
 The plugins will keep track of all the implementation contracts you have deployed in an `.openzeppelin` folder in the project root, as well as the proxy admin. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
 
-> Note: the format of the files within the `.openzeppelin` folder is not compatible with those of the xref:cli::index.adoc[OpenZeppelin CLI]. If you want to use these plugins for an existing OpenZeppelin CLI project, we will be sharing soon a guide on how to migrate.
+> Note: the format of the files within the `.openzeppelin` folder is not compatible with those of the xref:cli::index.adoc[OpenZeppelin CLI]. If you want to use the Upgrades Plugins for an existing OpenZeppelin CLI project, you can xref:migrate-from-cli.adoc[migrate using the guide].
 
 [[managing-ownership]]
 == Managing ownership
