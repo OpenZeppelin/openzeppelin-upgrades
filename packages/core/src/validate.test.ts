@@ -19,7 +19,7 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasStruct');
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasEmptyConstructor');
   if (buildInfo === undefined) {
     throw new Error('Build info not found');
   }
@@ -72,15 +72,6 @@ testValid('UsesExplicitUnsafeExternalLibrary', false);
 // see: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
 testValid('UsesImplicitSafeExternalLibrary', false);
 testValid('UsesExplicitSafeExternalLibrary', false);
-
-// Custom types (structs and enums) are not yet supported
-// see: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/3
-testValid('HasStruct', false);
-testValid('ParentHasStruct', false);
-testValid('UsesLibraryWithStruct', false);
-testValid('HasEnum', false);
-testValid('ParentHasEnum', false);
-testValid('UsesLibraryWithEnum', false);
 
 test('inherited storage', t => {
   const version = getContractVersion(t.context.validation, 'StorageInheritChild');
