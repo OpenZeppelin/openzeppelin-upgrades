@@ -65,7 +65,7 @@ function explainStorageOperation(op: StorageOperation<StorageField>): string {
 
 function explainTypeChange(ch: TypeChange): string {
   switch (ch.kind) {
-    case 'different kinds':
+    case 'obvious mismatch':
     case 'struct members':
     case 'enum members':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}`;
@@ -129,7 +129,7 @@ function getAllTypeChanges(root: TypeChange): TypeChange[] {
       }
 
       // We mention all other kinds explicitly to review any future new kinds
-      case 'different kinds':
+      case 'obvious mismatch':
       case 'enum members':
       case 'enum resize':
       case 'mapping key':

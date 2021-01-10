@@ -25,7 +25,7 @@ type StorageFieldChange<F extends StorageField> = (
 export type TypeChange = (
   | {
       kind:
-        | 'different kinds'
+        | 'obvious mismatch'
         | 'unknown'
         | 'array grow'
         | 'array shrink'
@@ -126,7 +126,7 @@ export class StorageLayoutComparator {
     { allowAppend }: { allowAppend: boolean },
   ): TypeChange | undefined {
     if (original.head !== updated.head) {
-      return { kind: 'different kinds', original, updated };
+      return { kind: 'obvious mismatch', original, updated };
     }
 
     if (original.args === undefined || updated.args === undefined) {
