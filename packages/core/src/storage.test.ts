@@ -162,7 +162,7 @@ test('storage upgrade with structs', t => {
 
   const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_Struct_V2_Bad');
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
-    length: 5,
+    length: 6,
     0: {
       kind: 'typechange',
       change: { kind: 'struct members' },
@@ -201,6 +201,14 @@ test('storage upgrade with structs', t => {
       },
       original: { label: 'a2' },
       updated: { label: 'a2' },
+    },
+    5: {
+      kind: 'typechange',
+      change: {
+        kind: 'struct members',
+      },
+      original: { label: 'data3' },
+      updated: { label: 'data3' },
     },
   });
 });

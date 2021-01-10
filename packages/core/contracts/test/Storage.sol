@@ -130,28 +130,38 @@ contract StorageUpgrade_Delete_V2 {
 }
 
 contract StorageUpgrade_Struct_V1 {
+    struct StructInner {
+        uint y;
+    }
     struct Struct1 {
         uint x;
         string s1;
         string s2;
+        StructInner inner;
     }
     Struct1 data1;
     Struct1 data2;
     mapping (uint => Struct1) m;
     Struct1[10] a1;
     Struct1[10] a2;
+    Struct1 data3;
 }
 
 contract StorageUpgrade_Struct_V2_Ok {
+    struct StructInner {
+        uint y;
+    }
     struct Struct2 {
         uint x;
         string s1;
         string s2;
+        StructInner inner;
     }
     struct Struct2Plus {
         uint x;
         string s1;
         string s2;
+        StructInner inner;
         uint z;
     }
     Struct2 data1;
@@ -159,9 +169,17 @@ contract StorageUpgrade_Struct_V2_Ok {
     mapping (uint => Struct2Plus) m;
     Struct2[10] a1;
     Struct2[10] a2;
+    Struct2 data3;
 }
 
 contract StorageUpgrade_Struct_V2_Bad {
+    struct StructInner {
+        uint y;
+    }
+    struct StructInnerPlus {
+        uint y;
+        uint z;
+    }
     struct Struct2Minus {
         uint x;
         string s2;
@@ -170,6 +188,14 @@ contract StorageUpgrade_Struct_V2_Bad {
         uint x;
         string s1;
         string s2;
+        StructInner inner;
+        uint z;
+    }
+    struct Struct2Changed {
+        string x;
+        uint s1;
+        string s2;
+        StructInnerPlus inner;
         uint z;
     }
     Struct2Minus data1;
@@ -177,6 +203,7 @@ contract StorageUpgrade_Struct_V2_Bad {
     mapping (uint => Struct2Minus) m;
     Struct2Minus[10] a1;
     Struct2Plus[10] a2;
+    Struct2Changed data3;
 }
 
 contract StorageUpgrade_Enum_V1 {
