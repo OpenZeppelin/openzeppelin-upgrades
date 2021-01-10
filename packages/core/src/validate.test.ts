@@ -92,12 +92,5 @@ test('inherited storage', t => {
   }
 });
 
-testOverride('HasStruct', { unsafeAllowCustomTypes: true }, true);
-testOverride('ParentHasStruct', { unsafeAllowCustomTypes: true }, true);
-testOverride('UsesLibraryWithStruct', { unsafeAllowCustomTypes: true }, true);
-testOverride('HasEnum', { unsafeAllowCustomTypes: true }, true);
-testOverride('ParentHasEnum', { unsafeAllowCustomTypes: true }, true);
-testOverride('UsesLibraryWithEnum', { unsafeAllowCustomTypes: true }, true);
-
 testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);
 testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);
