@@ -15,7 +15,7 @@ export async function migrateAllManifests(validations: ValidationData): Promise<
     await Promise.allSettled(
       manifests.map(m =>
         m.lockedRun(async () => {
-          const data = await m.read();
+          const data = await m.read(false);
           migrateManifestData(data, validations);
           await m.write(data);
         }),

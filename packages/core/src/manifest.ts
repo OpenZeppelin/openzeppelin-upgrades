@@ -77,11 +77,13 @@ export class Manifest {
     return deployment;
   }
 
-  async read(): Promise<ManifestData> {
+  async read(validateVersion = true): Promise<ManifestData> {
     const release = this.locked ? undefined : await this.lock();
     try {
       const data = JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
-      validateManifestVersion(data);
+      if (validateVersion) {
+        validateManifestVersion(data);
+      }
       return data;
     } catch (e) {
       if (e.code === 'ENOENT') {
