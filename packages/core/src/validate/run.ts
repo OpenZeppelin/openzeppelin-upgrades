@@ -87,10 +87,6 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getDelegateCallErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
-          // TODO: add support for structs and enums
-          // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/3
-          ...getStructErrors(contractDef, decodeSrc),
-          ...getEnumErrors(contractDef, decodeSrc),
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
@@ -199,25 +195,5 @@ function* getLinkingErrors(
         src: source,
       };
     }
-  }
-}
-
-function* getStructErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorWithName> {
-  for (const structDefinition of findAll('StructDefinition', contractDef)) {
-    yield {
-      kind: 'struct-definition',
-      name: structDefinition.name,
-      src: decodeSrc(structDefinition),
-    };
-  }
-}
-
-function* getEnumErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorWithName> {
-  for (const enumDefinition of findAll('EnumDefinition', contractDef)) {
-    yield {
-      kind: 'enum-definition',
-      name: enumDefinition.name,
-      src: decodeSrc(enumDefinition),
-    };
   }
 }
