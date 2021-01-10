@@ -25,7 +25,7 @@ contract('PortfolioWithFlag', function () {
   it('upgradeProxy with flag but incompatible layout', async function () {
     const portfolio = await deployProxy(Portfolio, [], { unsafeAllowCustomTypes: true });
     await assert.rejects(upgradeProxy(portfolio.address, PortfolioV2Bad, { unsafeAllowCustomTypes: true }), error =>
-      error.message.includes('Inserted variable `insert`'),
+      error.message.includes('Inserted `insert`'),
     );
   });
 });

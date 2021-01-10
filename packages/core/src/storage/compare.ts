@@ -1,158 +1,100 @@
-import assert from 'assert';
-
 import { levenshtein, Operation } from '../levenshtein';
-import { ParsedTypeDetailed, StorageItem } from './layout';
+import { ParsedTypeDetailed, StorageItem as _StorageItem } from './layout';
 import { UpgradesError } from '../error';
-import { isEnumMembers, isStructMembers } from './layout';
+import { StructMember as _StructMember, isEnumMembers, isStructMembers } from './layout';
+import { LayoutCompatibilityReport } from './report';
+import { assert } from '../utils/assert';
 
-export type StorageOperation<T = StorageItem<ParsedTypeDetailed>> = Operation<T, StorageMatchResult>;
+export type StorageItem = _StorageItem<ParsedTypeDetailed>;
+type StructMember = _StructMember<ParsedTypeDetailed>;
 
-interface StorageField {
-  label: string;
-  type: ParsedTypeDetailed;
-}
+export type StorageField = StorageItem | StructMember;
+export type StorageOperation<F extends StorageField> = Operation<F, StorageFieldChange<F>>;
 
-abstract class StorageMatchResult {
-  abstract isEqual(): boolean;
-  abstract errorMessage(o: Operation<StorageField, this> & { kind: 'replaced' }): string;
+export type EnumOperation = Operation<string, { kind: 'replace'; original: string; updated: string }>;
 
-  hint(): string | undefined {
-    return undefined;
-  }
+type StorageFieldChange<F extends StorageField> = (
+  | { kind: 'replace' | 'rename' }
+  | { kind: 'typechange'; change: TypeChange }
+) & {
+  original: F;
+  updated: F;
+};
 
-  private static _equal?: StorageMatchEqual;
-  static get equal(): StorageMatchEqual {
-    return this._equal ?? (this._equal = new StorageMatchEqual());
-  }
-}
-
-class StorageMatchEqual extends StorageMatchResult {
-  isEqual(): true {
-    return true;
-  }
-
-  errorMessage(): never {
-    throw new Error('No storage match error here');
-  }
-}
-
-type StorageMatchErrorKind = 'typechange' | 'rename' | 'replace' | 'enum resize';
-
-class StorageMatchError extends StorageMatchResult {
-  constructor(readonly errorKind: StorageMatchErrorKind) {
-    super();
-  }
-
-  isEqual(): false {
-    return false;
-  }
-
-  errorMessage(o: Operation<StorageField, this> & { kind: 'replaced' }) {
-    switch (this.errorKind) {
-      case 'typechange':
-        return `Type of variable ${label(o.updated)} was changed`;
-      case 'rename':
-        return `Variable ${label(o.original)} was renamed`;
-      case 'replace':
-        return `Variable ${label(o.original)} was replaced with ${label(o.updated)}`;
-      case 'enum resize':
-        return `Type of variable ${label(o.updated)} change its size`;
+export type TypeChange = (
+  | {
+      kind:
+        | 'different kinds'
+        | 'unknown'
+        | 'array grow'
+        | 'array shrink'
+        | 'array dynamic'
+        | 'enum resize'
+        | 'missing members'
+        | 'mapping key';
     }
-  }
-
-  hint() {
-    switch (this.errorKind) {
-      case 'enum resize':
-        return `Enums must remain representable in the same integer size`;
-      default:
-        return undefined;
+  | {
+      kind: 'mapping value' | 'array value';
+      inner: TypeChange;
     }
-  }
-}
-
-class StorageMatchEnumVariants extends StorageMatchResult {
-  errorKind = 'enum variants changed';
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(readonly ops: Operation<string, any>[]) {
-    super();
-  }
-
-  isEqual(): boolean {
-    return this.ops.length === 0;
-  }
-
-  errorMessage(o: Operation<StorageField, this> & { kind: 'replaced' }) {
-    return [
-      `Members of ${o.updated.type.item.label} were reordered`,
-      this.ops
-        .map(q => {
-          if (q.kind === 'replaced') {
-            return `    - ${q.original} was replaced with ${q.updated}`;
-          } else {
-            return `    - ${q.updated ?? q.original} was ${q.kind}`;
-          }
-        })
-        .join('\n'),
-    ].join('\n');
-  }
-
-  hint() {
-    return 'Only add new members after the existing ones';
-  }
-}
+  | {
+      kind: 'enum members';
+      ops: EnumOperation[];
+    }
+  | {
+      kind: 'struct members';
+      ops: StorageOperation<StructMember>[];
+    }
+) & {
+  original: ParsedTypeDetailed;
+  updated: ParsedTypeDetailed;
+};
 
 export class StorageLayoutComparator {
   // Holds a stack of type comparisons to detect recursion
   stack = new Set<string>();
-  cache = new Map<string, StorageMatchResult>();
+  cache = new Map<string, TypeChange | undefined>();
 
-  // This function is generic because it can compare top level storage layout as well as struct layout.
-  getUpgradeErrors<T extends StorageField>(
-    original: T[],
-    updated: T[],
+  compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
+    return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
+  }
+
+  private layoutLevenshtein<F extends StorageField>(
+    original: F[],
+    updated: F[],
     { allowAppend }: { allowAppend: boolean },
-  ): StorageOperation<T>[] {
-    const ops = levenshtein(
-      original,
-      updated,
-      (a, b) => this.matchStorageField(a, b),
-      r => r.isEqual(),
-    );
+  ): StorageOperation<F>[] {
+    const ops = levenshtein(original, updated, (a, b) => this.getFieldChange(a, b));
+
     if (allowAppend) {
-      // appending is not an error in this case
-      return ops.filter(o => o.kind !== 'appended');
+      return ops.filter(o => o.kind !== 'append');
     } else {
       return ops;
     }
   }
 
-  matchStorageField(original: StorageField, updated: StorageField): StorageMatchResult {
+  getFieldChange<F extends StorageField>(original: F, updated: F): StorageFieldChange<F> | undefined {
     const nameMatches = original.label === updated.label;
-    const typeMatchResult = this.compatibleTypes(original.type, updated.type, { allowAppend: false });
-    const typeMatches = typeMatchResult.isEqual();
+    const typeChange = this.getTypeChange(original.type, updated.type, { allowAppend: false });
 
-    if (typeMatches && nameMatches) {
-      return StorageMatchResult.equal;
-    } else if (typeMatches) {
-      return new StorageMatchError('rename');
-    } else if (nameMatches) {
-      return typeMatchResult;
-    } else {
-      return new StorageMatchError('replace');
+    if (typeChange && !nameMatches) {
+      return { kind: 'replace', original, updated };
+    } else if (!nameMatches) {
+      return { kind: 'rename', original, updated };
+    } else if (typeChange) {
+      return { kind: 'typechange', change: typeChange, original, updated };
     }
   }
 
-  compatibleTypes(
+  getTypeChange(
     original: ParsedTypeDetailed,
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
-  ): StorageMatchResult {
+  ): TypeChange | undefined {
     const key = JSON.stringify({ original: original.id, updated: updated.id, allowAppend });
 
-    const cached = this.cache.get(key);
-    if (cached !== undefined) {
-      return cached;
+    if (this.cache.has(key)) {
+      return this.cache.get(key);
     }
 
     if (this.stack.has(key)) {
@@ -161,7 +103,7 @@ export class StorageLayoutComparator {
 
     try {
       this.stack.add(key);
-      const result = this.uncachedCompatibleTypes(original, updated, { allowAppend });
+      const result = this.uncachedGetTypeChange(original, updated, { allowAppend });
       this.cache.set(key, result);
       return result;
     } finally {
@@ -169,95 +111,118 @@ export class StorageLayoutComparator {
     }
   }
 
-  private uncachedCompatibleTypes(
+  private uncachedGetTypeChange(
     original: ParsedTypeDetailed,
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
-  ): StorageMatchResult {
+  ): TypeChange | undefined {
     if (original.head !== updated.head) {
-      return new StorageMatchError('typechange');
+      return { kind: 'different kinds', original, updated };
     }
 
     if (original.args === undefined || updated.args === undefined) {
       // both should be undefined at the same time
       assert(original.args === updated.args);
-      return StorageMatchResult.equal;
+      return undefined;
     }
 
-    const { head } = original;
+    switch (original.head) {
+      case 't_contract':
+        // no storage layout errors can be introduced here since it is just an address
+        return undefined;
 
-    if (head === 't_contract') {
-      // no storage layout errors can be introduced here since it is just an address
-      return StorageMatchResult.equal;
-    }
-
-    if (head === 't_struct') {
-      const originalMembers = original.item.members;
-      const updatedMembers = updated.item.members;
-      assert(originalMembers && isStructMembers(originalMembers));
-      assert(updatedMembers && isStructMembers(updatedMembers));
-      const errors = this.getUpgradeErrors(originalMembers, updatedMembers, { allowAppend });
-      if (errors.length === 0) {
-        return StorageMatchResult.equal;
-      } else {
-        return new StorageMatchError('typechange');
+      case 't_struct': {
+        const originalMembers = original.item.members;
+        const updatedMembers = updated.item.members;
+        if (originalMembers === undefined || updatedMembers === undefined) {
+          return { kind: 'missing members', original, updated };
+        }
+        assert(isStructMembers(originalMembers) && isStructMembers(updatedMembers));
+        const ops = this.layoutLevenshtein(originalMembers, updatedMembers, { allowAppend });
+        if (ops.length > 0) {
+          return { kind: 'struct members', ops, original, updated };
+        } else {
+          return undefined;
+        }
       }
-    }
 
-    if (head === 't_enum') {
-      const originalMembers = original.item.members;
-      const updatedMembers = updated.item.members;
-      assert(originalMembers && isEnumMembers(originalMembers));
-      assert(updatedMembers && isEnumMembers(updatedMembers));
-      if (enumSize(originalMembers.length) !== enumSize(updatedMembers.length)) {
-        return new StorageMatchError('enum resize');
-      } else {
-        const ops = levenshtein(originalMembers, updatedMembers, (a, b) => a === b, Boolean);
-        const errors = ops.filter(o => o.kind !== 'appended');
-        return new StorageMatchEnumVariants(errors);
+      case 't_enum': {
+        const originalMembers = original.item.members;
+        const updatedMembers = updated.item.members;
+        if (originalMembers === undefined || updatedMembers === undefined) {
+          return { kind: 'missing members', original, updated };
+        }
+        assert(isEnumMembers(originalMembers) && isEnumMembers(updatedMembers));
+        if (enumSize(originalMembers.length) !== enumSize(updatedMembers.length)) {
+          return { kind: 'enum resize', original, updated };
+        } else {
+          const ops = levenshtein(originalMembers, updatedMembers, (a, b) =>
+            a === b ? undefined : { kind: 'replace' as const, original: a, updated: b },
+          ).filter(o => o.kind !== 'append');
+          if (ops.length > 0) {
+            return { kind: 'enum members', ops, original, updated };
+          } else {
+            return undefined;
+          }
+        }
       }
-    }
 
-    if (head === 't_mapping') {
-      const [originalKey, originalValue] = original.args;
-      const [updatedKey, updatedValue] = updated.args;
-      // network files migrated from the OZ CLI have an unknown key type
-      // we allow it to match with any other key type, carrying over the semantics of OZ CLI
-      const keyMatches = originalKey.head === 'unknown' || originalKey.head === updatedKey.head;
-      // validate an invariant we assume from solidity: key types are always simple value types
-      assert(originalKey.args === undefined && updatedKey.args === undefined);
-      // mapping value types are allowed to grow
-      if (!keyMatches) {
-        return new StorageMatchError('typechange');
-      } else {
-        return this.compatibleTypes(originalValue, updatedValue, { allowAppend: true });
+      case 't_mapping': {
+        const [originalKey, originalValue] = original.args;
+        const [updatedKey, updatedValue] = updated.args;
+        // network files migrated from the OZ CLI have an unknown key type
+        // we allow it to match with any other key type, carrying over the semantics of OZ CLI
+        const keyMatches = originalKey.head === 'unknown' || originalKey.head === updatedKey.head;
+        // validate an invariant we assume from solidity: key types are always simple value types
+        assert(originalKey.args === undefined && updatedKey.args === undefined);
+        // mapping value types are allowed to grow
+        if (!keyMatches) {
+          return { kind: 'mapping key', original, updated };
+        } else {
+          const inner = this.getTypeChange(originalValue, updatedValue, { allowAppend: true });
+          if (inner) {
+            return { kind: 'mapping value', inner, original, updated };
+          } else {
+            return undefined;
+          }
+        }
       }
-    }
 
-    if (head === 't_array') {
-      const originalLength = original.tail?.match(/^(\d+|dyn)/)?.[0];
-      const updatedLength = updated.tail?.match(/^(\d+|dyn)/)?.[0];
-      assert(originalLength !== undefined && updatedLength !== undefined);
-      const compatibleLengths =
-        !allowAppend || originalLength === 'dyn' || updatedLength === 'dyn'
-          ? originalLength === updatedLength
-          : parseInt(updatedLength, 10) >= parseInt(originalLength, 10);
-      if (!compatibleLengths) {
-        return new StorageMatchError('typechange');
-      } else {
-        return this.compatibleTypes(original.args[0], updated.args[0], { allowAppend: false });
+      case 't_array': {
+        const originalLength = original.tail?.match(/^(\d+|dyn)/)?.[0];
+        const updatedLength = updated.tail?.match(/^(\d+|dyn)/)?.[0];
+        assert(originalLength !== undefined && updatedLength !== undefined);
+
+        if (originalLength === 'dyn' || updatedLength === 'dyn') {
+          if (originalLength !== updatedLength) {
+            return { kind: 'array dynamic', original, updated };
+          }
+        }
+
+        const originalLengthInt = parseInt(originalLength, 10);
+        const updatedLengthInt = parseInt(updatedLength, 10);
+
+        if (updatedLengthInt < originalLengthInt) {
+          return { kind: 'array shrink', original, updated };
+        } else if (!allowAppend && updatedLengthInt > originalLengthInt) {
+          return { kind: 'array grow', original, updated };
+        }
+
+        const inner = this.getTypeChange(original.args[0], updated.args[0], { allowAppend: false });
+
+        if (inner) {
+          return { kind: 'array value', inner, original, updated };
+        } else {
+          return undefined;
+        }
       }
-    }
 
-    // in any other case, conservatively assume not compatible
-    return new StorageMatchError('typechange');
+      default:
+        return { kind: 'unknown', original, updated };
+    }
   }
 }
 
 function enumSize(memberCount: number): number {
   return Math.ceil(Math.log2(Math.max(2, memberCount)) / 8);
-}
-
-function label(variable: { label: string }): string {
-  return '`' + variable.label + '`';
 }
