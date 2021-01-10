@@ -87,3 +87,7 @@ export function silenceWarnings(): void {
     silenced = true;
   }
 }
+
+export function isSilencingWarnings(): boolean {
+  return silenced;
+}

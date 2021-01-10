@@ -1,12 +1,27 @@
+import chalk from 'chalk';
+
 import { UpgradesError } from '../error';
 import { StorageLayout, getDetailedLayout } from './layout';
 import { StorageOperation, StorageItem, StorageLayoutComparator } from './compare';
 import { LayoutCompatibilityReport } from './report';
+import { isSilencingWarnings } from '../validate/overrides';
 
 export function assertStorageUpgradeSafe(original: StorageLayout, updated: StorageLayout): void {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
-  const report = new StorageLayoutComparator().compareLayouts(originalDetailed, updatedDetailed);
+  const comparator = new StorageLayoutComparator({});
+  const report = comparator.compareLayouts(originalDetailed, updatedDetailed);
+
+  if (comparator.hasAllowedUncheckedCustomTypes && !isSilencingWarnings()) {
+    console.error(
+      '\n' +
+        chalk.keyword('orange').bold('Warning: ') +
+        `Potentially unsafe deployment\n\n` +
+        `    You are using the \`unsafeAllowCustomTypes\` flag to force approve structs or enums with missing data.\n` +
+        `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
+    );
+  }
+
   if (!report.pass) {
     throw new StorageUpgradeErrors(report);
   }

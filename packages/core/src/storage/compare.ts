@@ -1,4 +1,5 @@
 import { levenshtein, Operation } from '../levenshtein';
+import { ValidationOptions, withValidationDefaults } from '../validate/overrides';
 import { ParsedTypeDetailed, StorageItem as _StorageItem } from './layout';
 import { UpgradesError } from '../error';
 import { StructMember as _StructMember, isEnumMembers, isStructMembers } from './layout';
@@ -51,9 +52,17 @@ export type TypeChange = (
 };
 
 export class StorageLayoutComparator {
+  readonly unsafeAllowCustomTypes: boolean;
+  hasAllowedUncheckedCustomTypes = false;
+
   // Holds a stack of type comparisons to detect recursion
   stack = new Set<string>();
   cache = new Map<string, TypeChange | undefined>();
+
+  constructor(opts: ValidationOptions) {
+    const { unsafeAllowCustomTypes } = withValidationDefaults(opts);
+    this.unsafeAllowCustomTypes = unsafeAllowCustomTypes;
+  }
 
   compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
     return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
@@ -135,7 +144,12 @@ export class StorageLayoutComparator {
         const originalMembers = original.item.members;
         const updatedMembers = updated.item.members;
         if (originalMembers === undefined || updatedMembers === undefined) {
-          return { kind: 'missing members', original, updated };
+          if (this.unsafeAllowCustomTypes) {
+            this.hasAllowedUncheckedCustomTypes = true;
+            return undefined;
+          } else {
+            return { kind: 'missing members', original, updated };
+          }
         }
         assert(isStructMembers(originalMembers) && isStructMembers(updatedMembers));
         const ops = this.layoutLevenshtein(originalMembers, updatedMembers, { allowAppend });
@@ -150,7 +164,12 @@ export class StorageLayoutComparator {
         const originalMembers = original.item.members;
         const updatedMembers = updated.item.members;
         if (originalMembers === undefined || updatedMembers === undefined) {
-          return { kind: 'missing members', original, updated };
+          if (this.unsafeAllowCustomTypes) {
+            this.hasAllowedUncheckedCustomTypes = true;
+            return undefined;
+          } else {
+            return { kind: 'missing members', original, updated };
+          }
         }
         assert(isEnumMembers(originalMembers) && isEnumMembers(updatedMembers));
         if (enumSize(originalMembers.length) !== enumSize(updatedMembers.length)) {
