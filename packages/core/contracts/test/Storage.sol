@@ -270,6 +270,22 @@ contract StorageUpgrade_Replace_V2 {
     uint x3;
 }
 
+contract StorageUpgrade_ObviousMismatch_V1 {
+    struct S {
+        uint m;
+    }
+
+    uint x1;
+    S s1;
+    uint[] a1;
+}
+
+contract StorageUpgrade_ObviousMismatch_V2_Bad {
+    string x1;
+    uint s1;
+    mapping (uint => uint) a1;
+}
+
 contract StorageUpgrade_Contract_V1 {
     StorageUpgrade_Contract_V1 data;
 }
@@ -281,18 +297,24 @@ contract StorageUpgrade_Contract_V2 {
 contract StorageUpgrade_Array_V1 {
     uint[20] x1;
     uint[20] x2;
+    uint[20] x3;
+    uint[] x4;
     mapping (uint => uint[20]) m;
 }
 
 contract StorageUpgrade_Array_V2_Ok {
     uint[20] x1;
     uint[20] x2;
+    uint[20] x3;
+    uint[] x4;
     mapping (uint => uint[25]) m;
 }
 
 contract StorageUpgrade_Array_V2_Bad {
     uint[15] x1;
     uint[25] x2;
+    uint[] x3;
+    uint[20] x4;
     mapping (uint => uint[15]) m;
 }
 

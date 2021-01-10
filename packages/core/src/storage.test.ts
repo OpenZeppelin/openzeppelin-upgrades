@@ -127,6 +127,33 @@ test('storage upgrade rename', t => {
   });
 });
 
+test('storage upgrade with obvious mismatch', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_ObviousMismatch_V1');
+
+  const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_ObviousMismatch_V2_Bad');
+  t.like(getStorageUpgradeErrors(v1, v2_Bad), {
+    length: 3,
+    0: {
+      kind: 'typechange',
+      change: { kind: 'obvious mismatch' },
+      original: { label: 'x1' },
+      updated: { label: 'x1' },
+    },
+    1: {
+      kind: 'typechange',
+      change: { kind: 'obvious mismatch' },
+      original: { label: 's1' },
+      updated: { label: 's1' },
+    },
+    2: {
+      kind: 'typechange',
+      change: { kind: 'obvious mismatch' },
+      original: { label: 'a1' },
+      updated: { label: 'a1' },
+    },
+  });
+});
+
 test('storage upgrade with structs', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Struct_V1');
 
@@ -235,7 +262,7 @@ test('storage upgrade with arrays', t => {
 
   const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_Array_V2_Bad');
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
-    length: 3,
+    length: 5,
     0: {
       kind: 'typechange',
       change: { kind: 'array shrink' },
@@ -249,6 +276,18 @@ test('storage upgrade with arrays', t => {
       updated: { label: 'x2' },
     },
     2: {
+      kind: 'typechange',
+      change: { kind: 'array dynamic' },
+      original: { label: 'x3' },
+      updated: { label: 'x3' },
+    },
+    3: {
+      kind: 'typechange',
+      change: { kind: 'array dynamic' },
+      original: { label: 'x4' },
+      updated: { label: 'x4' },
+    },
+    4: {
       kind: 'typechange',
       change: {
         kind: 'mapping value',
@@ -273,7 +312,7 @@ test('storage upgrade with mappings', t => {
       kind: 'typechange',
       change: {
         kind: 'mapping value',
-        inner: { kind: 'different kinds' },
+        inner: { kind: 'obvious mismatch' },
       },
       original: { label: 'm1' },
       updated: { label: 'm1' },
