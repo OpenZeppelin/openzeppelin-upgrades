@@ -21,7 +21,7 @@ export function assertStorageUpgradeSafe(
       '\n' +
         chalk.keyword('orange').bold('Warning: ') +
         `Potentially unsafe deployment\n\n` +
-        `    You are using the \`unsafeAllowCustomTypes\` flag to force approve structs or enums with missing data.\n` +
+        `    You are using \`unsafeAllowCustomTypes\` to force approve structs or enums with missing data.\n` +
         `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
     );
   }
