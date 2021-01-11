@@ -4,12 +4,16 @@ import { UpgradesError } from '../error';
 import { StorageLayout, getDetailedLayout } from './layout';
 import { StorageOperation, StorageItem, StorageLayoutComparator } from './compare';
 import { LayoutCompatibilityReport } from './report';
-import { isSilencingWarnings } from '../validate/overrides';
+import { ValidationOptions, isSilencingWarnings } from '../validate/overrides';
 
-export function assertStorageUpgradeSafe(original: StorageLayout, updated: StorageLayout): void {
+export function assertStorageUpgradeSafe(
+  original: StorageLayout,
+  updated: StorageLayout,
+  opts: ValidationOptions = {},
+): void {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
-  const comparator = new StorageLayoutComparator({});
+  const comparator = new StorageLayoutComparator(opts);
   const report = comparator.compareLayouts(originalDetailed, updatedDetailed);
 
   if (comparator.hasAllowedUncheckedCustomTypes && !isSilencingWarnings()) {
@@ -37,9 +41,10 @@ class StorageUpgradeErrors extends UpgradesError {
 export function getStorageUpgradeErrors(
   original: StorageLayout,
   updated: StorageLayout,
+  opts: ValidationOptions = {},
 ): StorageOperation<StorageItem>[] {
   try {
-    assertStorageUpgradeSafe(original, updated);
+    assertStorageUpgradeSafe(original, updated, opts);
   } catch (e) {
     if (e instanceof StorageUpgradeErrors) {
       return e.report.ops;

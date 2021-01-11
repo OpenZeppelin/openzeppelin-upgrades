@@ -213,6 +213,30 @@ test('storage upgrade with structs', t => {
   });
 });
 
+test('storage upgrade with missing struct members', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Struct_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_Struct_V2_Ok');
+
+  const t_struct = Object.keys(v1.types).find(t => stabilizeTypeIdentifier(t) === 't_struct(Struct1)storage');
+  if (t_struct === undefined) {
+    throw new Error('Struct type not found');
+  }
+
+  // Simulate missing struct members
+  v1.types[t_struct].members = undefined;
+
+  t.like(getStorageUpgradeErrors(v1, v2), {
+    0: {
+      kind: 'typechange',
+      change: { kind: 'missing members' },
+      original: { label: 'data1' },
+      updated: { label: 'data1' },
+    },
+  });
+
+  t.deepEqual(getStorageUpgradeErrors(v1, v2, { unsafeAllowCustomTypes: true }), []);
+});
+
 test('storage upgrade with enums', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Enum_V1');
 
@@ -247,6 +271,30 @@ test('storage upgrade with enums', t => {
       updated: { label: 'data4' },
     },
   });
+});
+
+test('storage upgrade with missing enum members', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Enum_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_Enum_V2_Ok');
+
+  const t_enum = Object.keys(v1.types).find(t => stabilizeTypeIdentifier(t) === 't_enum(Enum1)');
+  if (t_enum === undefined) {
+    throw new Error('Enum type not found');
+  }
+
+  // Simulate missing enum members
+  v1.types[t_enum].members = undefined;
+
+  t.like(getStorageUpgradeErrors(v1, v2), {
+    0: {
+      kind: 'typechange',
+      change: { kind: 'missing members' },
+      original: { label: 'data1' },
+      updated: { label: 'data1' },
+    },
+  });
+
+  t.deepEqual(getStorageUpgradeErrors(v1, v2, { unsafeAllowCustomTypes: true }), []);
 });
 
 test('storage upgrade with recursive type', t => {
