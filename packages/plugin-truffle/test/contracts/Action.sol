@@ -6,11 +6,13 @@ contract Action {
     enum ActionType { UP, DOWN }
     event ActionEvent(ActionType actionType);
 
+    ActionType action;
+
     function initialize() public view {
         console.log("Deploying Action");
     }
 
-    function log(ActionType action) public {
+    function log() public {
         emit ActionEvent(action);
     }
 

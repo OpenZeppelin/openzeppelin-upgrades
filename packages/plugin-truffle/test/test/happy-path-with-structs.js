@@ -6,16 +6,16 @@ const Portfolio = artifacts.require('Portfolio');
 const PortfolioV2 = artifacts.require('PortfolioV2');
 const PortfolioV2Bad = artifacts.require('PortfolioV2Bad');
 
-contract('PortfolioWithFlag', function () {
-  it('deployProxy', async function () {
+contract('Portfolio', function () {
+  it('compatible struct', async function () {
     const portfolio = await deployProxy(Portfolio, []);
     await upgradeProxy(portfolio.address, PortfolioV2);
   });
 
-  it('upgradeProxy with flag but incompatible layout', async function () {
+  it('incompatible struct', async function () {
     const portfolio = await deployProxy(Portfolio, []);
     await assert.rejects(upgradeProxy(portfolio.address, PortfolioV2Bad), error =>
-      error.message.includes('Inserted `insert`'),
+      error.message.includes('Upgraded `assets` to an incompatible type'),
     );
   });
 });
