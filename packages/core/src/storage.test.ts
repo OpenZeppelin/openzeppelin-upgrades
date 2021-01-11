@@ -165,13 +165,25 @@ test('storage upgrade with structs', t => {
     length: 6,
     0: {
       kind: 'typechange',
-      change: { kind: 'struct members' },
+      change: {
+        kind: 'struct members',
+        ops: {
+          length: 1,
+          0: { kind: 'delete' },
+        },
+      },
       original: { label: 'data1' },
       updated: { label: 'data1' },
     },
     1: {
       kind: 'typechange',
-      change: { kind: 'struct members' },
+      change: {
+        kind: 'struct members',
+        ops: {
+          length: 1,
+          0: { kind: 'append' },
+        },
+      },
       original: { label: 'data2' },
       updated: { label: 'data2' },
     },
@@ -206,6 +218,12 @@ test('storage upgrade with structs', t => {
       kind: 'typechange',
       change: {
         kind: 'struct members',
+        ops: {
+          length: 3,
+          0: { kind: 'typechange' },
+          1: { kind: 'typechange' },
+          2: { kind: 'typechange' },
+        },
       },
       original: { label: 'data3' },
       updated: { label: 'data3' },
@@ -248,19 +266,37 @@ test('storage upgrade with enums', t => {
     length: 4,
     0: {
       kind: 'typechange',
-      change: { kind: 'enum members' },
+      change: {
+        kind: 'enum members',
+        ops: {
+          length: 1,
+          0: { kind: 'delete' },
+        },
+      },
       original: { label: 'data1' },
       updated: { label: 'data1' },
     },
     1: {
       kind: 'typechange',
-      change: { kind: 'enum members' },
+      change: {
+        kind: 'enum members',
+        ops: {
+          length: 1,
+          0: { kind: 'replace', original: 'B', updated: 'X' },
+        },
+      },
       original: { label: 'data2' },
       updated: { label: 'data2' },
     },
     2: {
       kind: 'typechange',
-      change: { kind: 'enum members' },
+      change: {
+        kind: 'enum members',
+        ops: {
+          length: 1,
+          0: { kind: 'insert', updated: 'X' },
+        },
+      },
       original: { label: 'data3' },
       updated: { label: 'data3' },
     },

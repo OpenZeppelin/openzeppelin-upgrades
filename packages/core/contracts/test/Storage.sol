@@ -183,6 +183,7 @@ contract StorageUpgrade_Struct_V2_Bad {
     struct Struct2Minus {
         uint x;
         string s2;
+        StructInner inner;
     }
     struct Struct2Plus {
         uint x;
@@ -196,7 +197,6 @@ contract StorageUpgrade_Struct_V2_Bad {
         uint s1;
         string s2;
         StructInnerPlus inner;
-        uint z;
     }
     Struct2Minus data1;
     Struct2Plus data2;
