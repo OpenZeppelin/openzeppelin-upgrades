@@ -30,9 +30,9 @@ function explainStorageOperation(op: StorageOperation<StorageField>): string {
     case 'typechange': {
       const basic = explainTypeChange(op.change);
       const details = new Set(
-        ...getAllTypeChanges(op.change)
+        getAllTypeChanges(op.change)
           .map(explainTypeChangeDetails)
-          .filter(d => d !== undefined),
+          .filter((d?: string): d is string => d !== undefined),
       );
       return `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details);
     }
@@ -87,8 +87,8 @@ function explainTypeChange(ch: TypeChange): string {
     case 'array shrink':
     case 'array grow': {
       assert(ch.original.tail && ch.updated.tail);
-      const originalSize = ch.original.tail;
-      const updatedSize = ch.updated.tail;
+      const originalSize = parseInt(ch.original.tail, 10);
+      const updatedSize = parseInt(ch.updated.tail, 10);
       const note = ch.kind === 'array shrink' ? 'Size cannot decrease' : 'Size cannot increase here';
       return `Bad array resize from ${originalSize} to ${updatedSize}\n${note}`;
     }
@@ -148,10 +148,10 @@ function getAllTypeChanges(root: TypeChange): TypeChange[] {
 function explainTypeChangeDetails(ch: TypeChange): string | undefined {
   switch (ch.kind) {
     case 'struct members':
-      return itemize(...ch.ops.map(explainStorageOperation));
+      return `In ${ch.updated.item.label}\n` + itemize(...ch.ops.map(explainStorageOperation));
 
     case 'enum members':
-      return itemize(...ch.ops.map(explainEnumOperation));
+      return `In ${ch.updated.item.label}\n` + itemize(...ch.ops.map(explainEnumOperation));
   }
 }
 
