@@ -18,22 +18,24 @@ export class LayoutCompatibilityReport {
 
     for (const op of this.ops) {
       const src = 'updated' in op ? op.updated.src : op.original.contract;
-      res.push(chalk.bold(src) + ': ' + explainStorageOperation(op));
+      res.push(chalk.bold(src) + ': ' + explainStorageOperation(op, true));
     }
 
     return res.join('\n\n');
   }
 }
 
-function explainStorageOperation(op: StorageOperation<StorageField>): string {
+function explainStorageOperation(op: StorageOperation<StorageField>, withDetails: boolean): string {
   switch (op.kind) {
     case 'typechange': {
       const basic = explainTypeChange(op.change);
-      const details = new Set(
-        getAllTypeChanges(op.change)
-          .map(explainTypeChangeDetails)
-          .filter((d?: string): d is string => d !== undefined),
-      );
+      const details = withDetails
+        ? new Set(
+            getAllTypeChanges(op.change)
+              .map(explainTypeChangeDetails)
+              .filter((d?: string): d is string => d !== undefined),
+          )
+        : [];
       return `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details);
     }
 
@@ -148,7 +150,7 @@ function getAllTypeChanges(root: TypeChange): TypeChange[] {
 function explainTypeChangeDetails(ch: TypeChange): string | undefined {
   switch (ch.kind) {
     case 'struct members':
-      return `In ${ch.updated.item.label}\n` + itemize(...ch.ops.map(explainStorageOperation));
+      return `In ${ch.updated.item.label}\n` + itemize(...ch.ops.map(op => explainStorageOperation(op, false)));
 
     case 'enum members':
       return `In ${ch.updated.item.label}\n` + itemize(...ch.ops.map(explainEnumOperation));
