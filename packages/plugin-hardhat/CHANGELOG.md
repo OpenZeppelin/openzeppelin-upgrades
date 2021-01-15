@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.5.0 (2021-01-15)
 
 - Add `upgrades.admin.getInstance()` to retrieve the instance of `ProxyAdmin` that is in use. ([#274](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/274))
 
