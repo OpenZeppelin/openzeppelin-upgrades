@@ -13,10 +13,10 @@ contract('Admin', function () {
   const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 
   it('getInstance', async function () {
-    await upgrades.deployProxy(Greeter, ['Hello Truffle']);
-    const got = await upgrades.admin.getInstance();
-    const expected = await getManifestAdmin(provider);
-    assert.strictEqual(got.address, expected.address);
+    const greeter = await upgrades.deployProxy(Greeter, ['Hello Truffle']);
+    const adminInstance = await upgrades.admin.getInstance();
+    const adminAddress = await adminInstance.getProxyAdmin(greeter.address);
+    assert.strictEqual(adminInstance.address, adminAddress);
   });
 
   it('changeProxyAdmin', async function () {

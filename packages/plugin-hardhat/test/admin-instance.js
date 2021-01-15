@@ -7,10 +7,11 @@ test.before(async t => {
 });
 
 test('admin.getInstance', async t => {
-  await t.throwsAsync(() => upgrades.admin.getInstance(), undefined, 'No ProxyAdmin was found in the network manifest');
+  await t.throwsAsync(upgrades.admin.getInstance(), undefined, 'No ProxyAdmin was found in the network manifest');
 
   const { Greeter } = t.context;
-  await upgrades.deployProxy(Greeter, ['Hola admin!']);
-  const proxyAdmin = await upgrades.admin.getInstance();
-  t.assert(proxyAdmin);
+  const greeter = await upgrades.deployProxy(Greeter, ['Hola admin!']);
+  const adminInstance = await upgrades.admin.getInstance();
+  const adminAddress = await adminInstance.getProxyAdmin(greeter.address);
+  t.is(adminInstance.address, adminAddress);
 });
