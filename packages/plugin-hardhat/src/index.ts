@@ -11,7 +11,7 @@ import { writeValidations } from './validations';
 import type { silenceWarnings } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { UpgradeFunction, PrepareUpgradeFunction } from './upgrade-proxy';
-import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction, DeployedProxyAdminFunction } from './admin';
+import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction, GetInstanceFunction } from './admin';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -19,7 +19,7 @@ export interface HardhatUpgrades {
   prepareUpgrade: PrepareUpgradeFunction;
   silenceWarnings: typeof silenceWarnings;
   admin: {
-    deployedProxyAdmin: DeployedProxyAdminFunction;
+    getInstance: GetInstanceFunction;
     changeProxyAdmin: ChangeAdminFunction;
     transferProxyAdminOwnership: TransferProxyAdminOwnershipFunction;
   };
@@ -46,7 +46,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 extendEnvironment(hre => {
   hre.upgrades = lazyObject(
     (): HardhatUpgrades => {
-      const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeDeployedProxyAdmin } = require('./admin');
+      const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
       const { makeDeployProxy } = require('./deploy-proxy');
       const { makeUpgradeProxy, makePrepareUpgrade } = require('./upgrade-proxy');
       const { silenceWarnings } = require('@openzeppelin/upgrades-core');
@@ -57,7 +57,7 @@ extendEnvironment(hre => {
         upgradeProxy: makeUpgradeProxy(hre),
         prepareUpgrade: makePrepareUpgrade(hre),
         admin: {
-          deployedProxyAdmin: makeDeployedProxyAdmin(hre),
+          getInstance: makeGetInstanceFunction(hre),
           changeProxyAdmin: makeChangeProxyAdmin(hre),
           transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre),
         },

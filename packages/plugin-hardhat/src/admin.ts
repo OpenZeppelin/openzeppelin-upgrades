@@ -5,7 +5,7 @@ import { getProxyAdminFactory } from './proxy-factory';
 
 export type ChangeAdminFunction = (proxyAddress: string, newAdmin: string) => Promise<void>;
 export type TransferProxyAdminOwnershipFunction = (newOwner: string) => Promise<void>;
-export type DeployedProxyAdminFunction = () => Promise<Contract>;
+export type GetInstanceFunction = () => Promise<Contract>;
 
 export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment): ChangeAdminFunction {
   return async function changeProxyAdmin(proxyAddress, newAdmin) {
@@ -27,8 +27,8 @@ export function makeTransferProxyAdminOwnership(hre: HardhatRuntimeEnvironment):
   };
 }
 
-export function makeDeployedProxyAdmin(hre: HardhatRuntimeEnvironment): DeployedProxyAdminFunction {
-  return async function deployedProxyAdmin() {
+export function makeGetInstanceFunction(hre: HardhatRuntimeEnvironment): GetInstanceFunction {
+  return async function getInstance() {
     return await getManifestAdmin(hre);
   };
 }

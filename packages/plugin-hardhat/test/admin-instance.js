@@ -6,9 +6,11 @@ test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
 });
 
-test('admin.deployedProxyAdmin', async t => {
+test('admin.getInstance', async t => {
+  await t.throwsAsync(() => upgrades.admin.getInstance(), undefined, 'No ProxyAdmin was found in the network manifest');
+
   const { Greeter } = t.context;
   await upgrades.deployProxy(Greeter, ['Hola admin!']);
-  const proxyAdmin = await upgrades.admin.deployedProxyAdmin();
+  const proxyAdmin = await upgrades.admin.getInstance();
   t.assert(proxyAdmin);
 });
