@@ -3002,6 +3002,14 @@ cbor@^5.0.2, cbor@^5.1.0:
     bignumber.js "^9.0.1"
     nofilter "^1.0.4"
 
+cbor@^6.0.0:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/cbor/-/cbor-6.0.1.tgz#f559abb1b986f54fb9cb1a6855085847bcc1cd61"
+  integrity sha512-gVJ2e/DFInWOriOUqNyrZe5xN8RSK49X7G+pLalz32GwKs1xHNXtrkcbV5K4+Z2X7qJiv6f700PnUEaJoIEPGQ==
+  dependencies:
+    bignumber.js "^9.0.1"
+    nofilter "^1.0.4"
+
 chalk@^2.0.0, chalk@^2.3.0, chalk@^2.3.1, chalk@^2.3.2, chalk@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
