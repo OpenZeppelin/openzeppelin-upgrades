@@ -52,17 +52,13 @@ export type TypeChange = (
 };
 
 export class StorageLayoutComparator {
-  readonly unsafeAllowCustomTypes: boolean;
   hasAllowedUncheckedCustomTypes = false;
 
   // Holds a stack of type comparisons to detect recursion
   stack = new Set<string>();
   cache = new Map<string, TypeChange | undefined>();
 
-  constructor(opts: ValidationOptions) {
-    const { unsafeAllowCustomTypes } = withValidationDefaults(opts);
-    this.unsafeAllowCustomTypes = unsafeAllowCustomTypes;
-  }
+  constructor(readonly unsafeAllowCustomTypes = false) {}
 
   compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
     return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));

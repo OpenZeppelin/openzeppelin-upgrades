@@ -11,11 +11,11 @@ import { ValidationOptions, isSilencingWarnings } from '../validate/overrides';
 export function assertStorageUpgradeSafe(
   original: StorageLayout,
   updated: StorageLayout,
-  opts: ValidationOptions = {},
+  unsafeAllowCustomTypes = false,
 ): void {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
-  const comparator = new StorageLayoutComparator(opts);
+  const comparator = new StorageLayoutComparator(unsafeAllowCustomTypes);
   const report = comparator.compareLayouts(originalDetailed, updatedDetailed);
 
   if (comparator.hasAllowedUncheckedCustomTypes && !isSilencingWarnings()) {
@@ -46,7 +46,7 @@ export function getStorageUpgradeErrors(
   opts: ValidationOptions = {},
 ): StorageOperation<StorageItem>[] {
   try {
-    assertStorageUpgradeSafe(original, updated, opts);
+    assertStorageUpgradeSafe(original, updated, opts.unsafeAllowCustomTypes);
   } catch (e) {
     if (e instanceof StorageUpgradeErrors) {
       return e.report.ops;

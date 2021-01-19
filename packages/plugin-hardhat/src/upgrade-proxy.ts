@@ -49,7 +49,7 @@ async function prepareUpgradeImpl(
   const deploymentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
 
   const layout = getStorageLayout(validations, version);
-  assertStorageUpgradeSafe(deploymentLayout, layout, opts);
+  assertStorageUpgradeSafe(deploymentLayout, layout, opts.unsafeAllowCustomTypes);
 
   return await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(ImplFactory);

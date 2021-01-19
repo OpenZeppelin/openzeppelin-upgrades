@@ -34,7 +34,7 @@ test.before(async t => {
 function getReport(original: StorageLayout, updated: StorageLayout) {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
-  const comparator = new StorageLayoutComparator({});
+  const comparator = new StorageLayoutComparator();
   return comparator.compareLayouts(originalDetailed, updatedDetailed);
 }
 
