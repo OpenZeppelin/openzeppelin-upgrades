@@ -1,5 +1,7 @@
 import chalk from 'chalk';
 
+export * from './compat';
+
 import { UpgradesError } from '../error';
 import { StorageLayout, getDetailedLayout } from './layout';
 import { StorageOperation, StorageItem, StorageLayoutComparator } from './compare';
