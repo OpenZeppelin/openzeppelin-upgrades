@@ -13,7 +13,7 @@ import {
 
 import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
-import { defaultDeploy, DeploymentExecutor } from './utils/deploy';
+import { defaultDeploy, TxExecutor } from './utils/deploy';
 
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
@@ -22,7 +22,7 @@ export interface DeployFunction {
 
 export interface DeployOptions extends ValidationOptions {
   initializer?: string | false;
-  executor?: DeploymentExecutor;
+  executor?: TxExecutor;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {

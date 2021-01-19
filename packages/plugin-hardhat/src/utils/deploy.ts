@@ -1,6 +1,6 @@
 import type { ContractFactory } from 'ethers';
 import type { Deployment } from '@openzeppelin/upgrades-core';
-export interface DeploymentExecutor {
+export interface TxExecutor {
   (factory: ContractFactory, args: unknown[]): Promise<Deployment>;
 }
 
