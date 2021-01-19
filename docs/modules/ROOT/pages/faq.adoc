@@ -4,7 +4,7 @@
 [[is-it-safe-to-upgrade-a-contract-compiled-with-a-version-of-solidity-to-another-compiled-with-a-different-version]]
 == Can I change Solidity compiler versions when upgrading?
 
-Yes. The Solidity team guarantess that the compiler will https://twitter.com/ethchris/status/1073692785176444928[preserve the storage layout across versions].
+Yes. The Solidity team guarantees that the compiler will https://twitter.com/ethchris/status/1073692785176444928[preserve the storage layout across versions].
 
 [[why-am-i-getting-the-error-cannot-call-fallback-function-from-the-proxy-admin]]
 == Why am I getting the error "Cannot call fallback function from the proxy admin"?
@@ -22,9 +22,9 @@ As a replacement for the constructor, it is common to set up an `initialize` fun
 
 [source,solidity]
 ----
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
-// Alternatively, if you are using @openzeppelin/contracts-ethereum-package:
-// import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
+import "@openzeppelin/contracts/proxy/Initializable.sol";
+// Alternatively, if you are using @openzeppelin/contracts-upgradeable:
+// import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
 contract MyContract is Initializable {
   uint256 value;
@@ -49,8 +49,6 @@ You can read more about how to make storage-compatible changes to an implementat
 == What is a proxy admin?
 
 A `ProxyAdmin` is a contract that acts as the owner of all your proxies. Only one per network gets deployed. When you start your project, the `ProxyAdmin` is owned by the deployer address, but you can transfer ownership of it by calling xref:contracts:api:access.adoc#Ownable-transferOwnership-address-[`transferOwnership`].
-
-You can read more about this contract xref:cli::contracts-architecture.adoc#proxyadmin.sol[here].
 
 [[what-is-an-implementation-contract]]
 == What is an implementation contract?

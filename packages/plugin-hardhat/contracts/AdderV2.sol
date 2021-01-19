@@ -1,7 +1,5 @@
 pragma solidity ^0.5.1;
 
-import "hardhat/console.sol";
-
 library SafeAdd {
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
@@ -17,7 +15,6 @@ contract AdderV2 {
     uint n;
 
     function initialize() public view {
-        console.log("Deploying AdderV2");
     }
 
     function add(uint x) public returns (uint) {

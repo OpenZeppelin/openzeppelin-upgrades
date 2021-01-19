@@ -1,7 +1,5 @@
 pragma solidity ^0.5.1;
 
-import "hardhat/console.sol";
-
 contract Adder {
     uint public n;
 
