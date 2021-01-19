@@ -1,6 +1,7 @@
 import 'promise.allsettled/auto';
 
 import { Manifest, ManifestData, currentManifestVersion } from './manifest';
+import { isCurrentLayoutVersion } from './storage/extract';
 import { StorageLayout, isStructMembers } from './storage/layout';
 import { ValidationData } from './validate/data';
 import { findVersionWithoutMetadataMatches, unfoldStorageLayout } from './validate/query';
@@ -44,6 +45,38 @@ export function migrateManifestData(data: ManifestData, validations: ValidationD
 
   if (data.manifestVersion !== currentManifestVersion) {
     throw new Error('Manifest migration not available');
+  }
+}
+
+export async function getStorageLayoutForAddress(
+  manifest: Manifest,
+  validations: ValidationData,
+  implAddress: string,
+): Promise<StorageLayout> {
+  const data = await manifest.read();
+  const versionWithoutMetadata = Object.keys(data.impls).find(v => data.impls[v]?.address === implAddress);
+  if (versionWithoutMetadata === undefined) {
+    throw new Error(`Deployment at address ${implAddress} is not registered`);
+  }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const { layout } = data.impls[versionWithoutMetadata]!;
+
+  if (isCurrentLayoutVersion(layout)) {
+    return layout;
+  } else {
+    const updatedLayout = getUpdatedStorageLayout(validations, versionWithoutMetadata, layout);
+
+    if (updatedLayout === undefined) {
+      return layout;
+    } else {
+      await manifest.lockedRun(async () => {
+        const data = await manifest.read();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        data.impls[versionWithoutMetadata]!.layout = updatedLayout;
+        await manifest.write(data);
+      });
+      return updatedLayout;
+    }
   }
 }
 

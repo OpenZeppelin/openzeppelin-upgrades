@@ -6,6 +6,7 @@ import { parseTypeId, ParsedTypeId } from '../utils/parse-type-id';
 // the struct members if it is a struct type.
 
 export interface StorageLayout {
+  layoutVersion?: string;
   storage: StorageItem[];
   types: Record<string, TypeItem>;
 }

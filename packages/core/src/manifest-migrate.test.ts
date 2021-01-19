@@ -9,8 +9,8 @@ import { getStorageLayout } from './validate/query';
 import { normalizeValidationData, ValidationData } from './validate/data';
 import { StorageLayout } from './storage/layout';
 
-import { currentManifestVersion } from './manifest';
-import { migrateManifestData, getUpdatedStorageLayout } from './manifest-migrate';
+import { Manifest, ManifestData } from './manifest';
+import { getUpdatedStorageLayout, getStorageLayoutForAddress } from './manifest-migrate';
 
 interface Context {
   validationRun: ValidationRunData;
@@ -27,35 +27,28 @@ test.before(async t => {
   t.context.validationData = normalizeValidationData([t.context.validationRun]);
 });
 
-test('migrateManifestData - version bump', t => {
-  const manifestData = {
-    manifestVersion: '3.0',
-    impls: {},
-  };
-  migrateManifestData(manifestData, t.context.validationData);
-  t.is(manifestData.manifestVersion, currentManifestVersion);
-});
-
-test('migrateManifestData - udpate layout', t => {
+test('getStorageLayoutForAddress - update layout', async t => {
   const { version } = t.context.validationRun['ManifestMigrateUnique'];
   assert(version !== undefined);
   const updatedLayout = getStorageLayout(t.context.validationData, version);
   const outdatedLayout = removeStorageLayoutMembers(updatedLayout);
-  const manifestData = {
+  const address = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
+  const manifest = mockManifest({
     manifestVersion: '3.1',
     impls: {
       c0b708c73eb888fc608e606f94eccb59e8b14170d9167dc00d7c90ce39ad72ea: {
-        address: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
+        address,
         txHash: '0x6580b51f3edcacacf30d7b4140e4022b65d2a5ba7cbe7e4d91397f4c3b5e8a6b',
         layout: outdatedLayout,
       },
     },
-  };
-  migrateManifestData(manifestData, t.context.validationData);
-  t.like(manifestData, {
+  });
+  const layout = await getStorageLayoutForAddress(manifest, t.context.validationData, address);
+  t.deepEqual(layout, updatedLayout);
+  t.like(manifest.data, {
     impls: {
       c0b708c73eb888fc608e606f94eccb59e8b14170d9167dc00d7c90ce39ad72ea: {
-        address: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
+        address,
         txHash: '0x6580b51f3edcacacf30d7b4140e4022b65d2a5ba7cbe7e4d91397f4c3b5e8a6b',
         layout: updatedLayout,
       },
@@ -95,6 +88,23 @@ test('getUpdatedLayout - multiple ambiguous layout matches', async t => {
   const updatedLayout = getUpdatedStorageLayout(t.context.validationData, version1.withoutMetadata, outdatedLayout);
   t.is(updatedLayout, undefined);
 });
+
+function mockManifest(data: ManifestData) {
+  type Mocked = 'read' | 'write' | 'lockedRun';
+  const manifest: Pick<Manifest, Mocked> & { data: ManifestData } = {
+    data,
+    async read() {
+      return this.data;
+    },
+    async write(data: ManifestData) {
+      this.data = data;
+    },
+    async lockedRun<T>(cb: () => Promise<T>) {
+      return cb();
+    },
+  };
+  return manifest as Manifest & { data: ManifestData };
+}
 
 // Simulate a layout from a version without struct/enum members
 function removeStorageLayoutMembers(layout: StorageLayout): StorageLayout {

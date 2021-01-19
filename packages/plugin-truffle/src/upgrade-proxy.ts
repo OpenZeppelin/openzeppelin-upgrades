@@ -10,6 +10,7 @@ import {
   EthereumProvider,
   migrateAllManifests,
   ValidationRunData,
+  getStorageLayoutForAddress,
 } from '@openzeppelin/upgrades-core';
 
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
@@ -34,10 +35,10 @@ async function prepareUpgradeImpl(
   assertUpgradeSafe([validations], version, opts);
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-  const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
+  const deploymentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
 
   const layout = getStorageLayout([validations], version);
-  assertStorageUpgradeSafe(deployment.layout, layout, opts);
+  assertStorageUpgradeSafe(deploymentLayout, layout, opts);
 
   return await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(Contract, deployer);

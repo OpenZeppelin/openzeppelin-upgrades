@@ -7,12 +7,18 @@ import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
 import { ASTDereferencer } from '../ast-dereferencer';
 
+const currentLayoutVersion = '1.1';
+
+export function isCurrentLayoutVersion(layout: StorageLayout): boolean {
+  return layout?.layoutVersion === currentLayoutVersion;
+}
+
 export function extractStorageLayout(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
   deref: ASTDereferencer,
 ): StorageLayout {
-  const layout: StorageLayout = { storage: [], types: {} };
+  const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion };
 
   // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
   const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition']);
