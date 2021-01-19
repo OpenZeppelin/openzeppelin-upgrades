@@ -16,10 +16,10 @@ import {
 
 import { getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
-import { defaultDeploy, DeploymentExecutor } from './utils/deploy';
+import { defaultDeploy, TxExecutor } from './utils/deploy';
 
 export interface UpgradeOptions extends ValidationOptions {
-  executor?: DeploymentExecutor;
+  executor?: TxExecutor;
 }
 
 export type PrepareUpgradeFunction = (
