@@ -9,7 +9,6 @@ import {
   getVersion,
   getUnlinkedBytecode,
   ValidationOptions,
-  migrateAllManifests,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
@@ -38,8 +37,6 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
 
     const { provider } = hre.network;
     const validations = await readValidations(hre);
-
-    await migrateAllManifests(validations);
 
     const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
     const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);

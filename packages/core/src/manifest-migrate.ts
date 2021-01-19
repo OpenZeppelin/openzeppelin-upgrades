@@ -1,52 +1,10 @@
-import 'promise.allsettled/auto';
-
-import { Manifest, ManifestData, currentManifestVersion } from './manifest';
+import { Manifest } from './manifest';
 import { isCurrentLayoutVersion } from './storage/extract';
 import { StorageLayout, isStructMembers } from './storage/layout';
 import { ValidationData } from './validate/data';
 import { findVersionWithoutMetadataMatches, unfoldStorageLayout } from './validate/query';
 import { stabilizeTypeIdentifier } from './utils/type-id';
 import { DeepArray, deepEqual } from './utils/deep-array';
-
-let migrationPending = true;
-
-export async function migrateAllManifests(validations: ValidationData): Promise<void> {
-  if (migrationPending) {
-    const manifests = await Manifest.loadAll();
-    await Promise.allSettled(
-      manifests.map(m =>
-        m.lockedRun(async () => {
-          const data = await m.read(false);
-          migrateManifestData(data, validations);
-          await m.write(data);
-        }),
-      ),
-    );
-    migrationPending = false;
-  }
-}
-
-export function migrateManifestData(data: ManifestData, validations: ValidationData): void {
-  if (data.manifestVersion === '3.0') {
-    data.manifestVersion = '3.1';
-  }
-
-  if (data.manifestVersion === '3.1') {
-    data.manifestVersion = '3.2';
-    for (const versionWithoutMetadata in data.impls) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const implDeployment = data.impls[versionWithoutMetadata]!;
-      const updatedLayout = getUpdatedStorageLayout(validations, versionWithoutMetadata, implDeployment.layout);
-      if (updatedLayout !== undefined) {
-        implDeployment.layout = updatedLayout;
-      }
-    }
-  }
-
-  if (data.manifestVersion !== currentManifestVersion) {
-    throw new Error('Manifest migration not available');
-  }
-}
 
 export async function getStorageLayoutForAddress(
   manifest: Manifest,

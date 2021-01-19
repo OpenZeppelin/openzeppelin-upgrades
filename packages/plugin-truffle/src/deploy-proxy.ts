@@ -4,7 +4,6 @@ import {
   fetchOrDeploy,
   fetchOrDeployAdmin,
   getVersion,
-  migrateAllManifests,
 } from '@openzeppelin/upgrades-core';
 
 import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
@@ -44,8 +43,6 @@ export async function deployProxy(
 
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
-
-  await migrateAllManifests(validations);
 
   const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
   const version = getVersion(Contract.bytecode, linkedBytecode);

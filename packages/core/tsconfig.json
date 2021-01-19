@@ -3,8 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",
-    "rootDir": "src",
-    "lib": ["ES2020.Promise"]
+    "rootDir": "src"
   },
   "include": [
     "src/**/*"

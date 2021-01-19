@@ -8,8 +8,6 @@ import {
   getImplementationAddress,
   getAdminAddress,
   EthereumProvider,
-  migrateAllManifests,
-  ValidationRunData,
   getStorageLayoutForAddress,
 } from '@openzeppelin/upgrades-core';
 
@@ -23,12 +21,14 @@ import { Options, withDefaults } from './options';
 async function prepareUpgradeImpl(
   provider: EthereumProvider,
   manifest: Manifest,
-  validations: ValidationRunData,
   proxyAddress: string,
   Contract: ContractClass,
   opts: Required<Options>,
 ): Promise<string> {
   const { deployer } = opts;
+
+  const { contracts_build_directory, contracts_directory } = getTruffleConfig();
+  const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
 
   const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
   const version = getVersion(Contract.bytecode, linkedBytecode);
@@ -56,12 +56,7 @@ export async function prepareUpgrade(
   const provider = wrapProvider(deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
 
-  const { contracts_build_directory, contracts_directory } = getTruffleConfig();
-  const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
-
-  await migrateAllManifests(validations);
-
-  return await prepareUpgradeImpl(provider, manifest, validations, proxyAddress, Contract, requiredOpts);
+  return await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts);
 }
 
 export async function upgradeProxy(
@@ -74,11 +69,6 @@ export async function upgradeProxy(
   const provider = wrapProvider(deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
 
-  const { contracts_build_directory, contracts_directory } = getTruffleConfig();
-  const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
-
-  await migrateAllManifests(validations);
-
   const AdminFactory = getProxyAdminFactory(Contract);
   const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
   const manifestAdmin = await manifest.getAdmin();
@@ -87,7 +77,7 @@ export async function upgradeProxy(
     throw new Error('Proxy admin is not the one registered in the network manifest');
   }
 
-  const nextImpl = await prepareUpgradeImpl(provider, manifest, validations, proxyAddress, Contract, requiredOpts);
+  const nextImpl = await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts);
   await admin.upgrade(proxyAddress, nextImpl);
 
   Contract.address = proxyAddress;

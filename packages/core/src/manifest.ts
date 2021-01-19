@@ -6,9 +6,9 @@ import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
 
 import type { Deployment } from './deployment';
-import type { StorageLayout } from './storage/layout';
+import type { StorageLayout } from './storage';
 
-export const currentManifestVersion = '3.2';
+const currentManifestVersion = '3.1';
 
 export interface ManifestData {
   manifestVersion: string;
@@ -39,29 +39,9 @@ export class Manifest {
     return new Manifest(await getChainId(provider));
   }
 
-  static async loadAll(): Promise<Manifest[]> {
-    try {
-      const files = await fs.readdir(manifestDir);
-      return files
-        .filter(f => f !== 'project.json') // Ignore project file from OpenZeppelin CLI
-        .map(f => new Manifest(path.join(manifestDir, f)));
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        return [];
-      } else {
-        throw err;
-      }
-    }
-  }
-
-  constructor(fileOrChainId: string | number) {
-    if (typeof fileOrChainId === 'string') {
-      this.file = fileOrChainId;
-    } else {
-      const chainId = fileOrChainId;
-      const name = networkNames[chainId] ?? `unknown-${chainId}`;
-      this.file = path.join(manifestDir, `${name}.json`);
-    }
+  constructor(chainId: number) {
+    const name = networkNames[chainId] ?? `unknown-${chainId}`;
+    this.file = path.join(manifestDir, `${name}.json`);
   }
 
   async getAdmin(): Promise<Deployment | undefined> {
@@ -77,14 +57,11 @@ export class Manifest {
     return deployment;
   }
 
-  async read(validateVersion = true): Promise<ManifestData> {
+  async read(): Promise<ManifestData> {
     const release = this.locked ? undefined : await this.lock();
     try {
       const data = JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
-      if (validateVersion) {
-        validateManifestVersion(data);
-      }
-      return data;
+      return validateOrUpdateManifestVersion(data);
     } catch (e) {
       if (e.code === 'ENOENT') {
         return defaultManifest();
@@ -127,15 +104,26 @@ export class Manifest {
   }
 }
 
-function validateManifestVersion(data: ManifestData) {
+function validateOrUpdateManifestVersion(data: ManifestData): ManifestData {
   if (typeof data.manifestVersion !== 'string') {
     throw new Error('Manifest version is missing');
   } else if (compareVersions(data.manifestVersion, '3.0', '<')) {
     throw new Error('Found a manifest file for OpenZeppelin CLI. An automated migration is not yet available.');
   } else if (compareVersions(data.manifestVersion, currentManifestVersion, '<')) {
-    throw new Error('Found an older manifest version that should have been migrated.');
-  } else if (data.manifestVersion !== currentManifestVersion) {
+    return migrateManifest(data);
+  } else if (data.manifestVersion === currentManifestVersion) {
+    return data;
+  } else {
     throw new Error(`Unknown value for manifest version (${data.manifestVersion})`);
+  }
+}
+
+export function migrateManifest(data: ManifestData): ManifestData {
+  if (data.manifestVersion === '3.0') {
+    data.manifestVersion = currentManifestVersion;
+    return data;
+  } else {
+    throw new Error('Manifest migration not available');
   }
 }
 

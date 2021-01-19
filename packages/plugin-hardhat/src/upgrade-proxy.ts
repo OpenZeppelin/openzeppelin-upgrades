@@ -12,8 +12,6 @@ import {
   getImplementationAddress,
   getAdminAddress,
   ValidationOptions,
-  migrateAllManifests,
-  ValidationDataCurrent,
   getStorageLayoutForAddress,
 } from '@openzeppelin/upgrades-core';
 
@@ -36,12 +34,12 @@ export type UpgradeFunction = (
 async function prepareUpgradeImpl(
   hre: HardhatRuntimeEnvironment,
   manifest: Manifest,
-  validations: ValidationDataCurrent,
   proxyAddress: string,
   ImplFactory: ContractFactory,
   opts: ValidationOptions,
 ): Promise<string> {
   const { provider } = hre.network;
+  const validations = await readValidations(hre);
 
   const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
   const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
@@ -64,11 +62,7 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const validations = await readValidations(hre);
-
-    await migrateAllManifests(validations);
-
-    return await prepareUpgradeImpl(hre, manifest, validations, proxyAddress, ImplFactory, opts);
+    return await prepareUpgradeImpl(hre, manifest, proxyAddress, ImplFactory, opts);
   };
 }
 
@@ -76,10 +70,6 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
   return async function upgradeProxy(proxyAddress, ImplFactory, opts = {}) {
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
-
-    const validations = await readValidations(hre);
-
-    await migrateAllManifests(validations);
 
     const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
     const admin = AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
@@ -89,7 +79,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
       throw new Error('Proxy admin is not the one registered in the network manifest');
     }
 
-    const nextImpl = await prepareUpgradeImpl(hre, manifest, validations, proxyAddress, ImplFactory, opts);
+    const nextImpl = await prepareUpgradeImpl(hre, manifest, proxyAddress, ImplFactory, opts);
     await admin.upgrade(proxyAddress, nextImpl);
 
     return ImplFactory.attach(proxyAddress);
