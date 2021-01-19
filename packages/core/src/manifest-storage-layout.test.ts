@@ -10,7 +10,7 @@ import { normalizeValidationData, ValidationData } from './validate/data';
 import { StorageLayout } from './storage/layout';
 
 import { Manifest, ManifestData } from './manifest';
-import { getUpdatedStorageLayout, getStorageLayoutForAddress } from './manifest-migrate';
+import { getUpdatedStorageLayout, getStorageLayoutForAddress } from './manifest-storage-layout';
 
 interface Context {
   validationRun: ValidationRunData;
