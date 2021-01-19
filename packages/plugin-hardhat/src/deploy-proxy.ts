@@ -13,7 +13,7 @@ import {
 
 import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
-import { defaultDeploy, DeploymentExecutor, intoCoreDeployment } from './utils/deploy';
+import { defaultDeploy, DeploymentExecutor } from './utils/deploy';
 
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
@@ -45,15 +45,13 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     assertUpgradeSafe(validations, version, opts);
 
     const impl = await fetchOrDeploy(version, provider, async () => {
-      const deployment = intoCoreDeployment(await deploy(ImplFactory, []));
+      const deployment = await deploy(ImplFactory, []);
       const layout = getStorageLayout(validations, version);
       return { ...deployment, layout };
     });
 
     const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
-    const adminAddress = await fetchOrDeployAdmin(provider, async () =>
-      intoCoreDeployment(await deploy(AdminFactory, [])),
-    );
+    const adminAddress = await fetchOrDeployAdmin(provider, async () => await deploy(AdminFactory, []));
 
     const data = getInitializerData(ImplFactory, args, opts.initializer);
     const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);

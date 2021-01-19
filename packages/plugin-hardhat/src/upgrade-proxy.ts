@@ -16,7 +16,7 @@ import {
 
 import { getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
-import { defaultDeploy, DeploymentExecutor, intoCoreDeployment } from './utils/deploy';
+import { defaultDeploy, DeploymentExecutor } from './utils/deploy';
 
 export interface UpgradeOptions extends ValidationOptions {
   executor?: DeploymentExecutor;
@@ -56,7 +56,7 @@ async function prepareUpgradeImpl(
   assertStorageUpgradeSafe(deployment.layout, layout, opts.unsafeAllowCustomTypes);
 
   return await fetchOrDeploy(version, provider, async () => {
-    const deployment = intoCoreDeployment(await deploy(ImplFactory, []));
+    const deployment = await deploy(ImplFactory, []);
     return { ...deployment, layout };
   });
 }
