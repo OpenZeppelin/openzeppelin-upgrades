@@ -1,6 +1,5 @@
 pragma solidity ^0.5.1;
 
-import "hardhat/console.sol";
 import "./ExternalLibraries.sol";
 
 contract Token {
@@ -15,7 +14,6 @@ contract Token {
   mapping(address => uint256) balances;
 
   function initialize(string memory tokenSymbol, uint256 amount) public { 
-    console.log("Deploying Token");
     symbol = tokenSymbol;
     totalSupply = amount;
     balances[msg.sender] = amount;

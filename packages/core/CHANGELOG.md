@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.4 (2021-01-14)
+
+- Fix `InvalidDeployment` error on some networks. ([#282](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/282))
+
 ## 1.4.3 (2020-12-21)
 
 - Fix a type error caused by duplicate contract names in Truffle.

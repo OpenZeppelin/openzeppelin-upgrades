@@ -7,7 +7,7 @@ It's worth mentioning that these restrictions have their roots in how the Ethere
 [[initializers]]
 == Initializers
 
-You can use your Solidity contracts in the OpenZeppelin Upgrades without any modifications, except for their _constructors_. Due to a requirement of the proxy-based upgradeability system, no constructors can be used in upgradeable contracts. To learn about the reasons behind this restriction, head to xref:proxies.adoc#the-constructor-caveat[Proxies].
+You can use your Solidity contracts with OpenZeppelin Upgrades without any modifications, except for their _constructors_. Due to a requirement of the proxy-based upgradeability system, no constructors can be used in upgradeable contracts. To learn about the reasons behind this restriction, head to xref:proxies.adoc#the-constructor-caveat[Proxies].
 
 This means that, when using a contract with the OpenZeppelin Upgrades, you need to change its constructor into a regular function, typically named `initialize`, where you run all the setup logic:
 
@@ -16,7 +16,6 @@ This means that, when using a contract with the OpenZeppelin Upgrades, you need 
 // NOTE: Do not use this code snippet, it's incomplete and has a critical vulnerability!
 
 pragma solidity ^0.6.0;
-
 
 contract MyContract {
     uint256 public x;
@@ -35,7 +34,6 @@ However, while Solidity ensures that a `constructor` is called only once in the 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-
 contract MyContract {
     uint256 public x;
     bool private initialized;
@@ -48,7 +46,7 @@ contract MyContract {
 }
 ----
 
-Since this pattern is very common when writing upgradeable contracts, OpenZeppelin Upgrades provides an `Initializable` base contract that has an `initializer` modifier that takes care of this:
+Since this pattern is very common when writing upgradeable contracts, OpenZeppelin Contracts provides an `Initializable` base contract that has an `initializer` modifier that takes care of this:
 
 [source,solidity]
 ----
@@ -56,8 +54,7 @@ Since this pattern is very common when writing upgradeable contracts, OpenZeppel
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
-
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
 contract MyContract is Initializable {
     uint256 public x;
@@ -76,8 +73,7 @@ Another difference between a `constructor` and a regular function is that Solidi
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
-
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
 contract BaseContract is Initializable {
     uint256 public y;
@@ -86,7 +82,6 @@ contract BaseContract is Initializable {
         y = 42;
     }
 }
-
 
 contract MyContract is BaseContract {
     uint256 public x;
@@ -101,7 +96,7 @@ contract MyContract is BaseContract {
 [[use-upgradeable-libraries]]
 === Using Upgradeable Smart Contract Libraries
 
-Keep in mind that this restriction affects not only your contracts, but also the contracts you import from a library. Consider for example https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.2.0/contracts/token/ERC20/ERC20.sol[`ERC20`] from OpenZeppelin Contracts: the contract initializes the token's name, symbol and decimals in its constructor.
+Keep in mind that this restriction affects not only your contracts, but also the contracts you import from a library. Consider for example https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.3.0/contracts/token/ERC20/ERC20.sol[`ERC20`] from OpenZeppelin Contracts: the contract initializes the token's name, symbol and decimals in its constructor.
 
 [source,solidity]
 ----
@@ -128,7 +123,7 @@ contract ERC20 is Context, IERC20 {
 }
 ----
 
-This means you should not be using these contracts in your OpenZeppelin Upgrades project. Instead, make sure to use `@openzeppelin/contracts-upgradeable`, which is an official fork of OpenZeppelin Contracts that has been modified to use initializers instead of constructors. Take a look at what https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/v3.2.0/contracts/token/ERC20/ERC20Upgradeable.sol[ERC20Upgradeable] looks like in `@openzeppelin/contracts-upgradeable`:
+This means you should not be using these contracts in your OpenZeppelin Upgrades project. Instead, make sure to use `@openzeppelin/contracts-upgradeable`, which is an official fork of OpenZeppelin Contracts that has been modified to use initializers instead of constructors. Take a look at what https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/v3.3.0/contracts/token/ERC20/ERC20Upgradeable.sol[ERC20Upgradeable] looks like in `@openzeppelin/contracts-upgradeable`:
 
 [source,solidity]
 ----
@@ -206,7 +201,7 @@ For instance, in the following example, even if `MyContract` is deployed as upgr
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MyContract is Initializable {
@@ -226,11 +221,11 @@ If you would like the `ERC20` instance to be upgradeable, the easiest way to ach
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts-upgradeable/contracts/proxy/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 contract MyContract is Initializable {
-    IERC20 public token;
+    IERC20Upgradeable public token;
 
     function initialize(IERC20Upgradeable _token) public initializer {
         token = _token;
@@ -317,7 +312,7 @@ contract MyContract {
 }
 ----
 
-Keep in mind that if you rename a variable, then it will keep the same value as before after upgrading. This may be the desired behaviour if the new variable is semantically the same as the old one:
+Keep in mind that if you rename a variable, then it will keep the same value as before after upgrading. This may be the desired behavior if the new variable is semantically the same as the old one:
 
 [source,solidity]
 ----

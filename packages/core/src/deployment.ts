@@ -62,10 +62,7 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
       }
       debug('verifying deployment tx mined', txHash);
       const tx = await getTransactionByHash(provider, txHash);
-      if (tx === null) {
-        throw new InvalidDeployment(deployment);
-      }
-      if (tx.blockHash !== null && tx.blockHash !== undefined) {
+      if (tx?.blockHash !== null && tx?.blockHash !== undefined) {
         debug('succeeded verifying deployment tx mined', txHash);
         break;
       }

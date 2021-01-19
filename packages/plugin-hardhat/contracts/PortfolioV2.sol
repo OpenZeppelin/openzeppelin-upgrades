@@ -1,7 +1,5 @@
 pragma solidity ^0.5.1;
 
-import "hardhat/console.sol";
-
 contract PortfolioV2 {
     struct Asset {
         bool enabled;
@@ -11,7 +9,6 @@ contract PortfolioV2 {
     mapping (string => Asset) assets;
 
     function initialize() public view {
-        console.log("Deploying PortfolioV2");
     }
 
     function enable(string memory name) public returns (bool) {
@@ -35,7 +32,6 @@ contract PortfolioV2Bad {
     mapping (string => Asset) assets;
 
     function initialize() public view {
-        console.log("Deploying PortfolioV2");
     }
 
     function enable(string memory name) public returns (bool) {
