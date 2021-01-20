@@ -1,4 +1,4 @@
-import '@openzeppelin/hardhat-upgrades/src/type-extensions';
+import '@openzeppelin/hardhat-upgrades/dist/type-extensions';
 import { getChainId, ValidationOptions } from '@openzeppelin/upgrades-core';
 import { AdminClient, ProposalResponse } from 'defender-admin-client';
 import type { ContractFactory } from 'ethers';
