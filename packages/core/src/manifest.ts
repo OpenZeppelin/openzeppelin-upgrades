@@ -33,6 +33,7 @@ const manifestDir = '.openzeppelin';
 
 export class Manifest {
   readonly file: string;
+  readonly chainId: number;
   private locked = false;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
@@ -41,6 +42,7 @@ export class Manifest {
 
   constructor(chainId: number) {
     const name = networkNames[chainId] ?? `unknown-${chainId}`;
+    this.chainId = chainId;
     this.file = path.join(manifestDir, `${name}.json`);
   }
 
