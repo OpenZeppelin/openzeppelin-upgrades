@@ -29,7 +29,8 @@
   "workspaces": {
     "packages": [
       "packages/*",
-      "packages/plugin-truffle/test"
+      "packages/plugin-truffle/test",
+      "examples/*"
     ]
   }
 }

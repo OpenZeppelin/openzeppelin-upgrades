@@ -1,0 +1,19 @@
+{
+  "name": "example-propose-upgrade-on-defender",
+  "version": "1.4.3",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "main": "hardhat run index.js --network rinkeby"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.0",
+    "@openzeppelin/defender-upgrades": "^1.4.2",
+    "@openzeppelin/hardhat-upgrades": "^1.4.2",
+    "@openzeppelin/upgrades-core": "^1.4.2",
+    "ethers": "^5.0.5",
+    "hardhat": "^2.0.2"
+  }
+}
