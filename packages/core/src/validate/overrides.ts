@@ -64,10 +64,7 @@ function processOverride(
 
   if (exceptionsFound && !silenced) {
     console.error(
-      '\n' +
-        chalk.keyword('orange').bold('Warning: ') +
-        `Potentially unsafe deployment of ${contractName}\n\n` +
-        message,
+      chalk.keyword('orange').bold('Warning:') + ` Potentially unsafe deployment of ${contractName}\n\n` + message,
     );
   }
 
@@ -79,9 +76,8 @@ let silenced = false;
 export function silenceWarnings(): void {
   if (!silenced) {
     console.error(
-      '\n' +
-        chalk.keyword('orange').bold('Warning: ') +
-        `All subsequent Upgrades warnings will be silenced.\n\n` +
+      chalk.keyword('orange').bold('Warning:') +
+        ` All subsequent Upgrades warnings will be silenced.\n\n` +
         `    Make sure you have manually checked all uses of unsafe flags.\n`,
     );
     silenced = true;

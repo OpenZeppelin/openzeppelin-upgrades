@@ -21,17 +21,15 @@ export function assertStorageUpgradeSafe(
   if (!isSilencingWarnings()) {
     if (comparator.hasAllowedUncheckedCustomTypes) {
       console.error(
-        '\n' +
-          chalk.keyword('orange').bold('Warning: ') +
-          `Potentially unsafe deployment\n\n` +
+        chalk.keyword('orange').bold('Warning:') +
+          ` Potentially unsafe deployment\n\n` +
           `    You are using \`unsafeAllowCustomTypes\` to force approve structs or enums with missing data.\n` +
           `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
       );
     } else if (unsafeAllowCustomTypes) {
       console.error(
-        '\n' +
-          chalk.keyword('yellow').bold('Note: ') +
-          `\`unsafeAllowCustomTypes\` is no longer necessary. Structs are enums are automatically checked.\n`,
+        chalk.keyword('yellow').bold('Note:') +
+          ` \`unsafeAllowCustomTypes\` is no longer necessary. Structs are enums are automatically checked.\n`,
       );
     }
   }
