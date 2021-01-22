@@ -22,7 +22,6 @@ contract ActionV2Bad {
     ActionType action;
 
     function initialize() public view {
-        console.log("Deploying ActionV2");
     }
 
     function log() public {
