@@ -32,7 +32,7 @@ jobs:
       run: yarn --frozen-lockfile
 
     - name: Pack tarballs
-      run: bash bundle-pack.sh
+      run: bash scripts/bundle-pack.sh
 
     - name: Uplaod tarballs as artifacts
       uses: actions/upload-artifact@v2
