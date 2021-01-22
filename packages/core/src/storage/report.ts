@@ -50,7 +50,7 @@ function explainStorageOperation(op: StorageOperation<StorageField>, withDetails
 
       switch (op.kind) {
         case 'insert': {
-          lines.push('Only insert variables at the end of the last contract in the inheritance');
+          lines.push('Only appending is allowed');
           break;
         }
 
