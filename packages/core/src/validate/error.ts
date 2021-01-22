@@ -43,16 +43,12 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     link: 'https://zpl.in/upgrades/error-006',
   },
   'struct-definition': {
-    msg: e => `Defining structs like \`${e.name}\` is not yet supported`,
-    hint: () =>
-      `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
-    link: 'https://zpl.in/upgrades/error-007',
+    msg: e => `Structs like \`${e.name}\` are supported in the latest version of the plugin`,
+    hint: () => `Update your dependency and run again`,
   },
   'enum-definition': {
-    msg: e => `Defining enums like \`${e.name}\` is not yet supported`,
-    hint: () =>
-      `If you have manually checked for storage layout compatibility, you can skip this check with the \`unsafeAllowCustomTypes\` flag`,
-    link: 'https://zpl.in/upgrades/error-007',
+    msg: e => `Enums like \`${e.name}\` are supported in the latest version of the plugin`,
+    hint: () => `Update your dependency and run again`,
   },
 };
 

@@ -28,8 +28,8 @@ export function processExceptions(
       contractName,
       errors,
       ['enum-definition', 'struct-definition'],
-      `    You are using the \`unsafeAllowCustomTypes\` flag to skip storage checks for structs and enums.\n` +
-        `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
+      `    \`unsafeAllowCustomTypes\` may not be necessary.\n` +
+        `    Update your plugin for automated struct and enum checks.\n`,
     );
   }
 
