@@ -10,8 +10,13 @@ import { getProposalUrl } from './utils';
 export type ProposeUpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts?: ValidationOptions & { title?: string; description?: string },
+  opts?: ProposalOptions,
 ) => Promise<ProposalResponse & { url: string }>;
+
+export interface ProposalOptions extends ValidationOptions {
+  title?: string;
+  description?: string;
+}
 
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgradeFunction {
   return async function proposeUpgrade(proxyAddress, ImplFactory, opts = {}) {

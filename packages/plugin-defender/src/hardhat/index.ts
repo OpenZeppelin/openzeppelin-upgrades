@@ -17,9 +17,10 @@ export interface HardhatDefenderConfig {
 }
 
 extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
-  if (!userConfig.defender) {
+  if (!userConfig.defender || !userConfig.defender.apiKey || !userConfig.defender.apiSecret) {
+    const sampleConfig = JSON.stringify({ apiKey: 'YOUR_API_KEY', apiSecret: 'YOUR_API_SECRET' }, null, 2);
     console.warn(
-      `Defender API key and secret are not set. Please add the following to your hardhat.config.js exported configuration:\n\n{\n  defender: {\n    apiKey: 'YOUR_API_KEY',\n    apiSecret: 'YOUR_API_SECRET'\n  }\n}\n`,
+      `Defender API key and secret are not set. Add the following to your hardhat.config.js exported configuration:\n\n${sampleConfig}\n`,
     );
   }
   config.defender = userConfig.defender;
