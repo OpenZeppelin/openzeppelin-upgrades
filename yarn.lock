@@ -3901,20 +3901,20 @@ defaults@^1.0.3:
   dependencies:
     clone "^1.0.2"
 
-defender-admin-client@^1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/defender-admin-client/-/defender-admin-client-1.3.0.tgz#d02ca55372149cbe984a8e3e7e3647519fdf74fd"
-  integrity sha512-cNB0gUzw0NJoogQzKHzIBwsNHgNY9oyfGkloMLt/HK5NLCEJbIckRY0xDP1OILgngEbA7nXZpdZ1rjEN8WZDNg==
+defender-admin-client@^1.3.2:
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/defender-admin-client/-/defender-admin-client-1.3.2.tgz#4e175286aa01bff83f1afef7c1876d4bb45470e9"
+  integrity sha512-cGTB9Dsuf6B+tulcieOoVy1AWBJIkXd1iT+tVVKZR3UuwXpetG/iapmoLf+REHmD3Arq8h1wIKSm/Dt+Cn+/IQ==
   dependencies:
     axios "^0.19.2"
-    defender-base-client "1.3.0"
+    defender-base-client "1.3.1"
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-defender-base-client@1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/defender-base-client/-/defender-base-client-1.3.0.tgz#d4acde27093b794e4fa90d681005ef8806813022"
-  integrity sha512-Oi/n+BuBUnPPGbAaNnTkCKK7RwC2VdSHAUMHx9t7JF+suxdeNN0s67YFb04WMgTORmCpF60BByGQUuRAZ0Ys5Q==
+defender-base-client@1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/defender-base-client/-/defender-base-client-1.3.1.tgz#d247aed574ac99e5bb9393dada59cd93144862c5"
+  integrity sha512-qaTYogKFLxmkfSJIgoTRz+dUSyxRjPp8ie5y6k8fDnKInakhPneIHMyf3U6cnmJWjBwLDso/NJVhUpaIi3zAiQ==
   dependencies:
     amazon-cognito-identity-js "^4.3.3"
     axios "^0.19.2"

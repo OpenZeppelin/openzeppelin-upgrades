@@ -4,8 +4,7 @@ import { AdminClient, ProposalResponse } from 'defender-admin-client';
 import type { ContractFactory } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { fromChainId } from './network';
-import { getProposalUrl } from './utils';
+import { fromChainId } from 'defender-base-client';
 
 export type ProposeUpgradeFunction = (
   proxyAddress: string,
@@ -33,7 +32,6 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
 
     const nextImpl = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory);
     const contract = { address: proxyAddress, network, abi: ImplFactory.interface.format(FormatTypes.json) as string };
-    const proposal = await client.proposeUpgrade({ newImplementation: nextImpl, ...opts }, contract);
-    return { ...proposal, url: getProposalUrl(proposal) };
+    return client.proposeUpgrade({ newImplementation: nextImpl, ...opts }, contract);
   };
 }
