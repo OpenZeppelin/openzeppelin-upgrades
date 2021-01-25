@@ -10,6 +10,7 @@
     "src/**/*"
   ],
   "references": [
-    { "path": "../core" }
+    { "path": "../core" },
+    { "path": "../plugin-hardhat" }
   ]
 }

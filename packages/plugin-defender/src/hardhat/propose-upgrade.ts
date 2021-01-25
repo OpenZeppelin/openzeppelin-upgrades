@@ -22,7 +22,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
 
     const chainId = await getChainId(hre.network.provider);
     const network = fromChainId(chainId);
-    if (!network) {
+    if (network === undefined) {
       throw new Error(`Network ${chainId} is not supported in Defender Admin`);
     }
 
