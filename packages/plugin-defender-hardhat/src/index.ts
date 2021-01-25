@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 import '@nomiclabs/hardhat-ethers';
+import '@openzeppelin/hardhat-upgrades';
 import { extendConfig, extendEnvironment } from 'hardhat/config';
 import { lazyObject } from 'hardhat/plugins';
 import { HardhatConfig, HardhatUserConfig } from 'hardhat/types';
