@@ -27,7 +27,7 @@
     "@ava/typescript": "^1.1.1",
     "@nomiclabs/hardhat-etherscan": "^2.1.0",
     "@openzeppelin/contracts": "^3.1.0",
-    "@types/bn.js": "^4.11.6",
+    "@types/bn.js": "^5.0.0",
     "@types/cbor": "^5.0.0",
     "@types/debug": "^4.1.5",
     "@types/mocha": "^7.0.2",
