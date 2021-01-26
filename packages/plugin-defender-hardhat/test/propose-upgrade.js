@@ -9,33 +9,33 @@ const { AdminClient } = require('defender-admin-client');
 
 const proposalUrl = 'https://example.com';
 
-test.before(async t => {
-  const fakeClient = sinon.createStubInstance(AdminClient);
-  t.context.fakeClient = fakeClient;
+test.beforeEach(async t => {
+  t.context.fakeClient = sinon.createStubInstance(AdminClient);
+  t.context.fakeChainId = 'goerli';
   t.context.proposeUpgrade = proxyquire('../dist/propose-upgrade', {
     'defender-admin-client': {
       AdminClient: function () {
-        return fakeClient;
+        return t.context.fakeClient;
       },
-      '@global': true,
     },
-    'defender-base-client': { fromChainId: () => 'goerli', '@global': true },
-    '@global': true,
+    'defender-base-client': {
+      fromChainId: () => t.context.fakeChainId,
+    },
   }).makeProposeUpgrade(hardhat);
 
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
+  t.context.greeter = await upgrades.deployProxy(t.context.Greeter);
 });
 
-test.after(() => {
+test.afterEach(() => {
   sinon.restore();
 });
 
 test('proposes an upgrade', async t => {
-  const { proposeUpgrade, fakeClient, Greeter, GreeterV2 } = t.context;
+  const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
   fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
 
-  const greeter = await upgrades.deployProxy(Greeter);
   const proposal = await proposeUpgrade(greeter.address, GreeterV2);
 
   t.is(proposal.url, proposalUrl);
@@ -53,10 +53,9 @@ test('proposes an upgrade', async t => {
 });
 
 test('proposes an upgrade reusing prepared implementation', async t => {
-  const { proposeUpgrade, fakeClient, Greeter, GreeterV2 } = t.context;
+  const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
   fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
 
-  const greeter = await upgrades.deployProxy(Greeter);
   const greeterV2Impl = await upgrades.prepareUpgrade(greeter.address, GreeterV2);
   const proposal = await proposeUpgrade(greeter.address, GreeterV2);
 
@@ -72,4 +71,11 @@ test('proposes an upgrade reusing prepared implementation', async t => {
       abi: GreeterV2.interface.format(FormatTypes.json),
     },
   );
+});
+
+test('fails if chain id is not accepted', async t => {
+  const { proposeUpgrade, greeter, GreeterV2 } = t.context;
+  t.context.fakeChainId = undefined;
+
+  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), { message: /Network \d+ is not supported/ });
 });
