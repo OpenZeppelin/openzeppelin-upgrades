@@ -10,7 +10,7 @@ export type ProposeUpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
   opts?: ProposalOptions,
-) => Promise<ProposalResponse & { url: string }>;
+) => Promise<ProposalResponse>;
 
 export interface ProposalOptions extends ValidationOptions {
   title?: string;
