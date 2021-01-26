@@ -1,7 +1,6 @@
 require('dotenv').config();
 
-require('@openzeppelin/hardhat-upgrades');
-require('@openzeppelin/defender-upgrades/dist/hardhat');
+require('@openzeppelin/defender-hardhat');
 
 module.exports = {
   solidity: {
