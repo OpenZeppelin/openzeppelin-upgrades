@@ -79,3 +79,14 @@ test('fails if chain id is not accepted', async t => {
 
   await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), { message: /Network \d+ is not supported/ });
 });
+
+test('fails if defender config is missing', async t => {
+  const { proposeUpgrade, greeter, GreeterV2 } = t.context;
+  const { defender } = hardhat.config;
+  delete hardhat.config.defender;
+
+  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), {
+    message: 'Missing Defender API key and secret in hardhat config',
+  });
+  hardhat.config.defender = defender;
+});
