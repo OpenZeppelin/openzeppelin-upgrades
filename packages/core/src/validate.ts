@@ -58,12 +58,14 @@ interface ValidationErrorOpcode extends ValidationErrorBase {
 export interface ValidationOptions {
   unsafeAllowCustomTypes?: boolean;
   unsafeAllowLinkedLibraries?: boolean;
+  skipAll?: boolean;
 }
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
   return {
     unsafeAllowCustomTypes: opts.unsafeAllowCustomTypes ?? false,
     unsafeAllowLinkedLibraries: opts.unsafeAllowLinkedLibraries ?? false,
+    skipAll: opts.skipAll ?? false,
   };
 }
 
@@ -199,7 +201,7 @@ export function assertUpgradeSafe(validations: Validations, version: Version, op
   let errors = getErrors(validations, version);
   errors = processExceptions(contractName, errors, opts);
 
-  if (errors.length > 0) {
+  if (errors.length > 0 && !opts.skipAll) {
     throw new ValidationErrors(contractName, errors);
   }
 }

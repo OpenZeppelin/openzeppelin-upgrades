@@ -5,11 +5,12 @@ export type Options = DeployOptions & ValidationOptions;
 
 export function withDefaults(opts: Options): Required<Options> {
   const { deployer } = withDeployDefaults(opts);
-  const { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries } = withValidationDefaults(opts);
+  const { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, skipAll } = withValidationDefaults(opts);
   return {
     deployer,
     unsafeAllowCustomTypes,
     unsafeAllowLinkedLibraries,
+    skipAll,
   };
 }
 
