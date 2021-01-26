@@ -1,5 +1,5 @@
 require('@openzeppelin/hardhat-upgrades');
-require('@openzeppelin/defender-upgrades/dist/hardhat');
+require('@openzeppelin/hardhat-defender');
 
 module.exports = {
   solidity: {
