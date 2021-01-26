@@ -1,5 +1,5 @@
 {
-  "name": "@openzeppelin/defender-hardhat",
+  "name": "@openzeppelin/hardhat-defender",
   "version": "1.4.3",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-defender-hardhat",

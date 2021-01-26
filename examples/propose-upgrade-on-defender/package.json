@@ -10,7 +10,7 @@
   "license": "MIT",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
-    "@openzeppelin/defender-hardhat": "^1.4.2",
+    "@openzeppelin/hardhat-defender": "^1.4.2",
     "ethers": "^5.0.5",
     "hardhat": "^2.0.2"
   }
