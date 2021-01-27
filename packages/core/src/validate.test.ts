@@ -19,7 +19,7 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasStruct');
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasEmptyConstructor');
   if (buildInfo === undefined) {
     throw new Error('Build info not found');
   }
@@ -73,15 +73,6 @@ testValid('UsesExplicitUnsafeExternalLibrary', false);
 testValid('UsesImplicitSafeExternalLibrary', false);
 testValid('UsesExplicitSafeExternalLibrary', false);
 
-// Custom types (structs and enums) are not yet supported
-// see: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/3
-testValid('HasStruct', false);
-testValid('ParentHasStruct', false);
-testValid('UsesLibraryWithStruct', false);
-testValid('HasEnum', false);
-testValid('ParentHasEnum', false);
-testValid('UsesLibraryWithEnum', false);
-
 test('inherited storage', t => {
   const version = getContractVersion(t.context.validation, 'StorageInheritChild');
   const layout = getStorageLayout([t.context.validation], version);
@@ -91,13 +82,6 @@ test('inherited storage', t => {
     t.truthy(layout.types[layout.storage[i].type]);
   }
 });
-
-testOverride('HasStruct', { unsafeAllowCustomTypes: true }, true);
-testOverride('ParentHasStruct', { unsafeAllowCustomTypes: true }, true);
-testOverride('UsesLibraryWithStruct', { unsafeAllowCustomTypes: true }, true);
-testOverride('HasEnum', { unsafeAllowCustomTypes: true }, true);
-testOverride('ParentHasEnum', { unsafeAllowCustomTypes: true }, true);
-testOverride('UsesLibraryWithEnum', { unsafeAllowCustomTypes: true }, true);
 
 testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);
 testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);

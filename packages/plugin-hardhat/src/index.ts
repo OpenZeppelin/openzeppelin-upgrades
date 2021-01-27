@@ -3,12 +3,10 @@
 import '@nomiclabs/hardhat-ethers';
 import './type-extensions';
 import { subtask, extendEnvironment } from 'hardhat/config';
-import { TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
+import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
-import { validate, solcInputOutputDecoder, SolcInput } from '@openzeppelin/upgrades-core';
-import { writeValidations } from './validations';
 
-import type { silenceWarnings } from '@openzeppelin/upgrades-core';
+import type { silenceWarnings, SolcInput } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { UpgradeFunction, PrepareUpgradeFunction } from './upgrade-proxy';
 import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction, GetInstanceFunction } from './admin';
@@ -29,7 +27,26 @@ interface RunCompilerArgs {
   input: SolcInput;
 }
 
+subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) => {
+  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import('./validations');
+
+  try {
+    await readValidations(hre);
+  } catch (e) {
+    if (e instanceof ValidationsCacheOutdated || e instanceof ValidationsCacheNotFound) {
+      args = { ...args, force: true };
+    } else {
+      throw e;
+    }
+  }
+
+  return runSuper(args);
+});
+
 subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
+  const { validate, solcInputOutputDecoder } = await import('@openzeppelin/upgrades-core');
+  const { writeValidations } = await import('./validations');
+
   // TODO: patch input
   const { output, solcBuild } = await runSuper();
 

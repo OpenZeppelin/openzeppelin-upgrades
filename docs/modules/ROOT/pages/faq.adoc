@@ -41,7 +41,7 @@ Both plugins will validate that the contract you are trying to deploy complies w
 
 When upgrading a proxy from one implementation to another, the _storage layout_ of both implementations must be compatible. This means that, even though you can completely change the code of the implementation, you cannot modify the existing contract state variables. The only operation allowed is to append new state variables after the ones already declared.
 
-Both plugins will validate that the new implementation contract is compatible with the previous one. However, the plugins currently do not support validating custom types (enums or structs). To force a deployment where custom types are involved, set the `unsafeAllowCustomTypes` flag to true in the `deployProxy` or `upgradeProxy` calls.
+Both plugins will validate that the new implementation contract is compatible with the previous one.
 
 You can read more about how to make storage-compatible changes to an implementation contract xref:upgrades::writing-upgradeable.adoc#modifying-your-contracts.adoc[here].
 
@@ -86,13 +86,11 @@ In the meantime you can deploy upgradeable contracts linked to external librarie
 You can follow or contribute to https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52[this issue in Github].
 
 [[why-cant-i-use-custom-types]]
-== Why can't I use custom types like structs and enums?
+== Can I use custom types like structs and enums?
 
-At the moment the plugins do not support upgradeable contracts that implement or make use of custom types like structs or enums in their code or linked libraries. This is because of the additional complexity of checking for storage layout incompatibilities during an upgrade. (See <<what-does-it-mean-for-an-implementation-to-be-compatible,"What does it mean for an implementation to be compatible?">>.)
+Past versions of the plugins did not support upgradeable contracts that used custom types like structs or enums in their code or linked libraries. This is no longer the case for current versions of the plugins, and structs and enums will be automatically checked for compatibility when upgrading a contract.
 
-In the meantime, we encourage users to either avoid using these kind of types or to manually check for xref:upgrades::writing-upgradeable.adoc#modifying-your-contracts[storage incompatibilities] and make use of the `unsafeAllowCustomTypes` flag available for the `deployProxy`, `upgradeProxy` and `prepareUpgrade` functions. If you're unsure about how to do this manual check, we'll be happy to help out with your situation if you https://forum.openzeppelin.com[post in the forum].
-
-You can follow or contribute to https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/95[this issue in Github].
+Some users who have already deployed proxies with structs and/or enums and who need to upgrade those proxies may need to use the override flag `unsafeAllowCustomTypes` for their next upgrade, after which it will no longer be necessary. If the project contains the source code for the implementation currently in use by the proxy, the plugin will attempt to recover the metadata that it needs before the upgrade, falling back to the override flag if this is not possible.
 
 [[why-do-i-have-to-recompile-all-contracts-for-truffle]]
 == Why do I have to recompile all contracts for Truffle?

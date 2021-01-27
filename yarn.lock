@@ -9831,10 +9831,10 @@ solc@0.7.3:
     semver "^5.5.0"
     tmp "0.0.33"
 
-solidity-ast@^0.4.4:
-  version "0.4.17"
-  resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.17.tgz#e857b4f64466f3eb94da78fe961c0d256c84b228"
-  integrity sha512-5jkkabmjPdy9W9c2DMQBlKobVBz7KDnipxn+0zW191uD6BML3w7dQ+ihUvwA9XOm9ILDECrb5Y8z2vu47STqCg==
+solidity-ast@^0.4.15:
+  version "0.4.15"
+  resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.15.tgz#d9f12760c1c8a69f2b0d72a56972fcc79f3b82d6"
+  integrity sha512-VFedJMLf5yTLKpJZ2bZBYnnrVYaxUTTvv7mpdWz9k9SuV2N/1kcHX/nBokdkI4lf3z05/3us+Q1pLP02EjJxqQ==
 
 sort-keys@^2.0.0:
   version "2.0.0"

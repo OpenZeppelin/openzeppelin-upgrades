@@ -10,8 +10,8 @@ Creates a proxy given an ethers contract factory to use as implementation, and r
 Options are:
 
 * `initializer`: set a different initializer function to call, or specify `false` to disable initialization
-* `unsafeAllowCustomTypes`: allows a deployment where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
 * `unsafeAllowLinkedLibraries`: allows a deployment with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
+* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
 
 [source,ts]
 ----
@@ -29,8 +29,8 @@ Upgrades a proxy at a specified address to a new implementation contract, and re
 
 Options are:
 
-* `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
 * `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
+* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
 
 [source,ts]
 ----
@@ -48,8 +48,8 @@ Validates and deploys a new implementation contract, and returns its address. Us
 
 Options are:
 
-* `unsafeAllowCustomTypes`: allows an upgrade where structs or enums are used in the implementation contract (required since xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage compatibility validations] do not handle custom types, so make sure the change you are introducing is safe)
 * `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
+* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
 
 [source,ts]
 ----

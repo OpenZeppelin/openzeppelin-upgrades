@@ -10,4 +10,6 @@ export * from './solc-api';
 export * from './deployment';
 export * from './link-refs';
 
+export { getStorageLayoutForAddress } from './manifest-storage-layout';
+
 export * from './scripts/migrate-oz-cli-project';
