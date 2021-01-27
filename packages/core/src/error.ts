@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 interface ErrorDescriptor<E> {
   msg: (e: E) => string;
-  hint?: string;
+  hint?: (e: E) => string | undefined;
   link?: string;
 }
 
@@ -15,7 +15,7 @@ function noDetails() {
   return '';
 }
 
-export abstract class UpgradesError extends Error {
+export class UpgradesError extends Error {
   constructor(message: string, details = noDetails) {
     super(message + '\n\n' + details());
   }

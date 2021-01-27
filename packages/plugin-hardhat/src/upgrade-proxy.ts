@@ -12,6 +12,7 @@ import {
   getImplementationAddress,
   getAdminAddress,
   ValidationOptions,
+  getStorageLayoutForAddress,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyAdminFactory } from './proxy-factory';
@@ -45,10 +46,10 @@ async function prepareUpgradeImpl(
   assertUpgradeSafe(validations, version, opts);
 
   const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-  const deployment = await manifest.getDeploymentFromAddress(currentImplAddress);
+  const deploymentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
 
   const layout = getStorageLayout(validations, version);
-  assertStorageUpgradeSafe(deployment.layout, layout, opts.unsafeAllowCustomTypes);
+  assertStorageUpgradeSafe(deploymentLayout, layout, opts.unsafeAllowCustomTypes);
 
   return await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(ImplFactory);

@@ -6,7 +6,7 @@ import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
 
 import type { Deployment } from './deployment';
-import { StorageLayout } from './storage';
+import type { StorageLayout } from './storage';
 
 const currentManifestVersion = '3.1';
 

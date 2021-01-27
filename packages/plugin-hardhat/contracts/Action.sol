@@ -4,7 +4,9 @@ contract Action {
     enum ActionType { UP, DOWN }
     event ActionEvent(ActionType actionType);
 
-    function log(ActionType action) public {
+    ActionType action;
+
+    function log() public {
         emit ActionEvent(action);
     }
 

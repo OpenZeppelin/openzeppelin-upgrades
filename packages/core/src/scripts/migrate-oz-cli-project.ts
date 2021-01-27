@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { promises as fs } from 'fs';
 import { compare as compareVersions } from 'compare-versions';
 import { ManifestData, ImplDeployment } from '../manifest';
-import type { StorageItem, StorageLayout, TypeItem, TypeItemMembers, StructMember } from '../storage';
+import type { StorageItem, StorageLayout, TypeItem, TypeItemMembers, StructMember } from '../storage/layout';
 
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
 const EXPORT_FILE = 'openzeppelin-cli-export.json';

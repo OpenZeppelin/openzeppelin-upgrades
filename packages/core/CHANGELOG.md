@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 (2021-01-27)
+
+- Add support for structs and enums. ([#261](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/261))
+- Enable optimizations when compiling proxies.
+
 ## 1.4.4 (2021-01-14)
 
 - Fix `InvalidDeployment` error on some networks. ([#282](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/282))

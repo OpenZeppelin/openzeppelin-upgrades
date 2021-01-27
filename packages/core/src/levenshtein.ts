@@ -1,92 +1,105 @@
-export function levenshtein<T, K>(a: T[], b: T[], match: Match<T, K>): Operation<T, K>[] {
-  const matrix = buildMatrix(a, b, (a, b) => match(a, b) === 'equal');
-  return walkMatrix(matrix, a, b, match);
+export type BasicOperation<T> =
+  | {
+      kind: 'append' | 'insert';
+      updated: T;
+    }
+  | {
+      kind: 'delete';
+      original: T;
+    };
+
+export type Operation<T, C> = C | BasicOperation<T>;
+
+type GetChangeOp<T, C> = (a: T, b: T) => C | undefined;
+
+export function levenshtein<T, C>(a: T[], b: T[], getChangeOp: GetChangeOp<T, C>): Operation<T, C>[] {
+  const matrix = buildMatrix(a, b, getChangeOp);
+  return buildOps(matrix, a, b);
 }
 
-type Equal<T> = (a: T, b: T) => boolean;
-
-const SUBSTITUTION_COST = 3;
+const CHANGE_COST = 3;
 const INSERTION_COST = 2;
 const DELETION_COST = 2;
 
-// Adapted from https://gist.github.com/andrei-m/982927 by Andrei Mackenzie
-function buildMatrix<T>(a: T[], b: T[], eq: Equal<T>): number[][] {
-  const matrix: number[][] = new Array(a.length + 1);
+type MatrixOp<T, C> = BasicOperation<T> | { kind: 'change'; change: C } | { kind: 'nop' };
+type MatrixEntry<T, C> = MatrixOp<T, C> & { totalCost: number; predecessor?: MatrixEntry<T, C> };
 
-  type CostFunction = (i: number, j: number) => number;
-  const insertionCost: CostFunction = (i, j) => (j > a.length ? 0 : INSERTION_COST);
-  const substitutionCost: CostFunction = (i, j) => (eq(a[i - 1], b[j - 1]) ? 0 : SUBSTITUTION_COST);
-  const deletionCost: CostFunction = () => DELETION_COST;
+function buildMatrix<T, C>(a: T[], b: T[], getChangeOp: GetChangeOp<T, C>): MatrixEntry<T, C>[][] {
+  // matrix[i][j] will contain the last operation that takes a.slice(0, i) to b.slice(0, j)
+  // The list of operations can be recovered following the predecessors as in buildOps
 
-  // increment along the first column of each row
-  for (let i = 0; i <= a.length; i++) {
-    matrix[i] = new Array(b.length + 1);
-    matrix[i][0] = i * deletionCost(i, 0);
-  }
+  const matrix: MatrixEntry<T, C>[][] = new Array(a.length + 1);
 
-  // increment each column in the first row
+  matrix[0] = new Array(b.length + 1);
+  matrix[0][0] = { kind: 'nop', totalCost: 0 };
+
+  // Populate first row
   for (let j = 1; j <= b.length; j++) {
-    matrix[0][j] = matrix[0][j - 1] + insertionCost(0, j);
+    matrix[0][j] = insertion(0, j);
   }
 
-  // fill in the rest of the matrix
+  // Fill in the rest of the matrix
   for (let i = 1; i <= a.length; i++) {
+    matrix[i] = new Array(b.length + 1);
+    matrix[i][0] = deletion(i, 0);
     for (let j = 1; j <= b.length; j++) {
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j - 1] + substitutionCost(i, j),
-        matrix[i][j - 1] + insertionCost(i, j),
-        matrix[i - 1][j] + deletionCost(i, j),
-      );
+      matrix[i][j] = minBy([change(i, j), insertion(i, j), deletion(i, j)], e => e.totalCost);
     }
   }
 
   return matrix;
-}
 
-type Match<T, K> = (a: T, b: T) => K | 'equal';
+  // The different kinds of matrix entries are built by these helpers
 
-export interface Operation<T, K> {
-  kind: K | 'append' | 'insert' | 'delete';
-  original?: T;
-  updated?: T;
-}
-
-// Walks an edit distance matrix, returning the sequence of operations performed
-function walkMatrix<T, K>(matrix: number[][], a: T[], b: T[], match: Match<T, K>): Operation<T, K>[] {
-  let i = matrix.length - 1;
-  let j = matrix[0].length - 1;
-
-  const operations: Operation<T, K>[] = [];
-
-  while (i > 0 || j > 0) {
-    const cost = matrix[i][j];
-
-    const isAppend = j >= matrix.length;
-    const insertionCost = isAppend ? 0 : INSERTION_COST;
-
-    const matchResult = i > 0 && j > 0 ? match(a[i - 1], b[j - 1]) : undefined;
-    const substitutionCost = matchResult === 'equal' ? 0 : SUBSTITUTION_COST;
-
-    const original = i > 0 ? a[i - 1] : undefined;
-    const updated = j > 0 ? b[j - 1] : undefined;
-
-    if (i > 0 && j > 0 && cost === matrix[i - 1][j - 1] + substitutionCost) {
-      if (matchResult !== 'equal') {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        operations.unshift({ kind: matchResult!, updated, original });
-      }
-      i--;
-      j--;
-    } else if (j > 0 && cost === matrix[i][j - 1] + insertionCost) {
-      operations.unshift({ kind: isAppend ? 'append' : 'insert', updated });
-      j--;
-    } else if (i > 0 && cost === matrix[i - 1][j] + DELETION_COST) {
-      operations.unshift({ kind: 'delete', original });
-      i--;
+  function insertion(i: number, j: number): MatrixEntry<T, C> {
+    const updated = b[j - 1];
+    const predecessor = matrix[i][j - 1];
+    const predCost = predecessor.totalCost;
+    if (j > a.length) {
+      return { kind: 'append', totalCost: predCost, predecessor, updated };
     } else {
-      throw Error(`Could not walk matrix at position ${i},${j}`);
+      return { kind: 'insert', totalCost: predCost + INSERTION_COST, predecessor, updated };
     }
   }
 
-  return operations;
+  function deletion(i: number, j: number): MatrixEntry<T, C> {
+    const original = a[i - 1];
+    const predecessor = matrix[i - 1][j];
+    const predCost = predecessor.totalCost;
+    return { kind: 'delete', totalCost: predCost + DELETION_COST, predecessor, original };
+  }
+
+  function change(i: number, j: number): MatrixEntry<T, C> {
+    const original = a[i - 1];
+    const updated = b[j - 1];
+    const predecessor = matrix[i - 1][j - 1];
+    const predCost = predecessor.totalCost;
+    const change = getChangeOp(original, updated);
+    if (change !== undefined) {
+      return { kind: 'change', totalCost: predCost + CHANGE_COST, predecessor, change };
+    } else {
+      return { kind: 'nop', totalCost: predCost, predecessor };
+    }
+  }
+}
+
+function minBy<T>(arr: [T, ...T[]], value: (item: T) => number): T {
+  return arr.reduce((min, item) => (value(item) < value(min) ? item : min));
+}
+
+function buildOps<T, C>(matrix: MatrixEntry<T, C>[][], a: T[], b: T[]): Operation<T, C>[] {
+  const ops: Operation<T, C>[] = [];
+
+  let entry: MatrixEntry<T, C> | undefined = matrix[a.length][b.length];
+
+  while (entry !== undefined) {
+    if (entry.kind === 'change') {
+      ops.unshift(entry.change);
+    } else if (entry.kind !== 'nop') {
+      ops.unshift(entry);
+    }
+    entry = entry.predecessor;
+  }
+
+  return ops;
 }
