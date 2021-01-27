@@ -36,7 +36,7 @@ test('getStorageLayoutForAddress - update layout', async t => {
   const manifest = mockManifest({
     manifestVersion: '3.1',
     impls: {
-      c0b708c73eb888fc608e606f94eccb59e8b14170d9167dc00d7c90ce39ad72ea: {
+      [version.withoutMetadata]: {
         address,
         txHash: '0x6580b51f3edcacacf30d7b4140e4022b65d2a5ba7cbe7e4d91397f4c3b5e8a6b',
         layout: outdatedLayout,
@@ -47,7 +47,7 @@ test('getStorageLayoutForAddress - update layout', async t => {
   t.deepEqual(layout, updatedLayout);
   t.like(manifest.data, {
     impls: {
-      c0b708c73eb888fc608e606f94eccb59e8b14170d9167dc00d7c90ce39ad72ea: {
+      [version.withoutMetadata]: {
         address,
         txHash: '0x6580b51f3edcacacf30d7b4140e4022b65d2a5ba7cbe7e4d91397f4c3b5e8a6b',
         layout: updatedLayout,

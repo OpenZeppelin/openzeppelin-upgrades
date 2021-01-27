@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add support for structs and enums. ([#261](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/261))
+- Enable optimizations when compiling proxies.
 
 ## 1.4.4 (2021-01-14)
 

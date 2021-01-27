@@ -2,6 +2,9 @@
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
+// This helps the tests by hinting Hardhat to compile the two files together.
+import './Storage.sol';
+
 contract HasEmptyConstructor {
   constructor() public { }
 }
