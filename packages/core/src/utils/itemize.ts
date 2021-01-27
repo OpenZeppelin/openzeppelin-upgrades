@@ -5,6 +5,12 @@
 //   b
 // - c
 
+import { indent } from './indent';
+
 export function itemize(...items: string[]): string {
-  return items.map(item => item.replace(/^/gm, (_, i) => (i === 0 ? '- ' : '  '))).join('\n');
+  return itemizeWith('-', ...items);
+}
+
+export function itemizeWith(bullet: string, ...items: string[]): string {
+  return items.map(item => bullet + indent(item, 2, 1)).join('\n');
 }

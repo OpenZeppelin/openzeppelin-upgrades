@@ -3,7 +3,8 @@ import chalk from 'chalk';
 import type { BasicOperation } from '../levenshtein';
 import type { ParsedTypeDetailed } from './layout';
 import type { StorageOperation, StorageItem, StorageField, TypeChange, EnumOperation } from './compare';
-import { itemize } from '../utils/itemize';
+import { itemize, itemizeWith } from '../utils/itemize';
+import { indent } from '../utils/indent';
 import { assert } from '../utils/assert';
 
 export class LayoutCompatibilityReport {
@@ -18,24 +19,32 @@ export class LayoutCompatibilityReport {
 
     for (const op of this.ops) {
       const src = 'updated' in op ? op.updated.src : op.original.contract;
-      res.push(chalk.bold(src) + ': ' + explainStorageOperation(op, true));
+      res.push(
+        chalk.bold(src) + ':' + indent(explainStorageOperation(op, { kind: 'layout', allowAppend: true }), 2, 1),
+      );
     }
 
     return res.join('\n\n');
   }
 }
 
-function explainStorageOperation(op: StorageOperation<StorageField>, withDetails: boolean): string {
+interface StorageOperationContext {
+  kind: 'struct' | 'layout';
+  allowAppend: boolean;
+}
+
+function explainStorageOperation(op: StorageOperation<StorageField>, ctx: StorageOperationContext): string {
   switch (op.kind) {
     case 'typechange': {
       const basic = explainTypeChange(op.change);
-      const details = withDetails
-        ? new Set(
-            getAllTypeChanges(op.change)
-              .map(explainTypeChangeDetails)
-              .filter((d?: string): d is string => d !== undefined),
-          )
-        : [];
+      const details =
+        ctx.kind === 'layout' // explain details for layout only
+          ? new Set(
+              getAllTypeChanges(op.change)
+                .map(explainTypeChangeDetails)
+                .filter((d?: string): d is string => d !== undefined),
+            )
+          : [];
       return `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details);
     }
 
@@ -46,21 +55,30 @@ function explainStorageOperation(op: StorageOperation<StorageField>, withDetails
       return `Replaced ${label(op.original)} with ${label(op.updated)} of incompatible type`;
 
     default: {
-      const lines = [explainBasicOperation(op, t => t.label)];
+      const title = explainBasicOperation(op, t => t.label);
+      const hints = [];
 
       switch (op.kind) {
         case 'insert': {
-          lines.push('Only appending is allowed');
+          if (ctx.kind === 'struct') {
+            if (ctx.allowAppend) {
+              hints.push('New struct members should be placed after existing ones');
+            } else {
+              hints.push('New struct members are not allowed here. Define a new struct');
+            }
+          } else {
+            hints.push('New variables should be placed after all existing inherited variables');
+          }
           break;
         }
 
         case 'delete': {
-          lines.push('Keep the variable even if unused');
+          hints.push('Keep the variable even if unused');
           break;
         }
       }
 
-      return lines.join('\n');
+      return title + '\n' + itemizeWith('>', ...hints);
     }
   }
 }
@@ -149,8 +167,13 @@ function getAllTypeChanges(root: TypeChange): TypeChange[] {
 
 function explainTypeChangeDetails(ch: TypeChange): string | undefined {
   switch (ch.kind) {
-    case 'struct members':
-      return `In ${ch.updated.item.label}\n` + itemize(...ch.ops.map(op => explainStorageOperation(op, false)));
+    case 'struct members': {
+      const { allowAppend } = ch;
+      return (
+        `In ${ch.updated.item.label}\n` +
+        itemize(...ch.ops.map(op => explainStorageOperation(op, { kind: 'struct', allowAppend })))
+      );
+    }
 
     case 'enum members':
       return `In ${ch.updated.item.label}\n` + itemize(...ch.ops.map(explainEnumOperation));

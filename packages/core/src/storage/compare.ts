@@ -44,6 +44,7 @@ export type TypeChange = (
   | {
       kind: 'struct members';
       ops: StorageOperation<StructMember>[];
+      allowAppend: boolean;
     }
 ) & {
   original: ParsedTypeDetailed;
@@ -149,7 +150,7 @@ export class StorageLayoutComparator {
         assert(isStructMembers(originalMembers) && isStructMembers(updatedMembers));
         const ops = this.layoutLevenshtein(originalMembers, updatedMembers, { allowAppend });
         if (ops.length > 0) {
-          return { kind: 'struct members', ops, original, updated };
+          return { kind: 'struct members', ops, original, updated, allowAppend };
         } else {
           return undefined;
         }
