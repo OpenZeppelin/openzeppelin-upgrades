@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for structs and enums. ([#261](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/261))
+
 ## 1.4.4 (2021-01-14)
 
 - Fix `InvalidDeployment` error on some networks. ([#282](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/282))
