@@ -9,3 +9,4 @@ build
 .nyc_output
 coverage
 .env
+/examples
