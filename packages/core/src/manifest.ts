@@ -39,7 +39,7 @@ export class Manifest {
     return new Manifest(await getChainId(provider));
   }
 
-  constructor(chainId: number) {
+  constructor(readonly chainId: number) {
     const name = networkNames[chainId] ?? `unknown-${chainId}`;
     this.file = path.join(manifestDir, `${name}.json`);
   }

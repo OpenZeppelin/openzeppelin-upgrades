@@ -1,0 +1,37 @@
+{
+  "name": "@openzeppelin/hardhat-defender",
+  "version": "1.4.3",
+  "description": "Hardhat plugin to propose smart contract upgrades on OpenZeppelin Defender",
+  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-defender-hardhat",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "files": [
+    "/dist",
+    "/src"
+  ],
+  "scripts": {
+    "prepublish": "rimraf dist *.tsbuildinfo",
+    "prepare": "tsc -b",
+    "test": "tsc -b && bash scripts/test.sh",
+    "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --",
+    "version": "node ../../scripts/bump-changelog.js"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.0",
+    "@openzeppelin/upgrades-core": "^1.4.2",
+    "@types/mocha": "^7.0.2",
+    "ava": "^3.9.0",
+    "ethers": "^5.0.5",
+    "fgbg": "^0.1.4",
+    "hardhat": "^2.0.2",
+    "promisified": "^0.5.0",
+    "proxyquire": "^2.1.3",
+    "rimraf": "^3.0.2",
+    "sinon": "^9.2.4"
+  },
+  "dependencies": {
+    "@openzeppelin/hardhat-upgrades": "^1.4.2",
+    "defender-admin-client": "^1.3.2",
+    "defender-base-client": "^1.3.1"
+  }
+}

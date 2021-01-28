@@ -60,6 +60,32 @@ async function prepareUpgrade(
 ): Promise<string>
 ----
 
+[[defender-propose-upgrade]]
+== defender.proposeUpgrade
+
+NOTE: This method requires the https://www.npmjs.com/package/@openzeppelin/hardhat-defender[`@openzeppelin/hardhat-defender`] package, as well as configuring a Defender Team API Key.
+
+Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in https://docs.openzeppelin.com/defender/admin[Defender Admin], for review and approval by the upgrade administrators.
+
+Options are:
+
+* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
+* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
+* `title`: title of the upgrade proposal as seen in Defender Admin, defaults to `Upgrade to 0x12345678` (using the first 8 digits of the new implementation address)
+* `description`: description of the upgrade proposal as seen in Defender Admin, defaults to the full implementation address.
+
+[source,ts]
+----
+async function proposeUpgrade(
+  proxyAddress: string,
+  ImplFactory: ContractFactory,
+  opts: { 
+    unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, 
+    title: string, description: string 
+  } = {},
+): Promise<void>
+----
+
 [[admin-change-admin-for-proxy]]
 == admin.changeAdminForProxy
 
