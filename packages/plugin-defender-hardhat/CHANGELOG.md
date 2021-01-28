@@ -1,4 +1,4 @@
 # Changelog
 
-## Unpublished
+## Unreleased
 - Initial version with `proposeUpgrade` function.

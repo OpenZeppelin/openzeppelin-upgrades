@@ -28,7 +28,7 @@ test.beforeEach(async t => {
   t.context.greeter = await upgrades.deployProxy(t.context.Greeter);
 });
 
-test.afterEach(() => {
+test.afterEach.always(() => {
   sinon.restore();
 });
 
