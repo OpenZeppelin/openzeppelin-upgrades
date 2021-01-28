@@ -37,8 +37,8 @@ And add your Defender _Team API key_ to the exported configuration in [`hardhat.
 ```js
 module.exports = {
   defender: {
-    apiKey: 'YOUR_API_KEY',
-    apiSecret: 'YOUR_API_SECRET',
+    apiKey: process.env.API_KEY,
+    apiSecret: process.env.API_SECRET,
   }
 }
 ```

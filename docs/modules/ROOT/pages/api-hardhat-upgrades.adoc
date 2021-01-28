@@ -65,7 +65,7 @@ async function prepareUpgrade(
 
 NOTE: This method requires the https://www.npmjs.com/package/@openzeppelin/hardhat-defender[`@openzeppelin/hardhat-defender`] package, as well as configuring a Defender Team API Key.
 
-Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in Defender Admin, for review and approval by the upgrade administrators.
+Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in https://docs.openzeppelin.com/defender/admin[Defender Admin], for review and approval by the upgrade administrators.
 
 Options are:
 

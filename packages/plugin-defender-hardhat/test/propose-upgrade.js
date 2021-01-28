@@ -2,8 +2,8 @@ const test = require('ava');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 
-const hardhat = require('hardhat');
-const { ethers, upgrades } = hardhat;
+const hre = require('hardhat');
+const { ethers, upgrades } = hre;
 const { FormatTypes } = require('ethers/lib/utils');
 const { AdminClient } = require('defender-admin-client');
 
@@ -21,7 +21,7 @@ test.beforeEach(async t => {
     'defender-base-client': {
       fromChainId: () => t.context.fakeChainId,
     },
-  }).makeProposeUpgrade(hardhat);
+  }).makeProposeUpgrade(hre);
 
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
@@ -36,13 +36,17 @@ test('proposes an upgrade', async t => {
   const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
   fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
 
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2);
+  const title = 'My upgrade';
+  const description = 'My contract upgrade';
+  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { title, description });
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(
     fakeClient.proposeUpgrade,
     {
       newImplementation: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
+      title,
+      description,
     },
     {
       address: greeter.address,
@@ -64,6 +68,8 @@ test('proposes an upgrade reusing prepared implementation', async t => {
     fakeClient.proposeUpgrade,
     {
       newImplementation: greeterV2Impl,
+      title: undefined,
+      description: undefined,
     },
     {
       address: greeter.address,
@@ -82,11 +88,11 @@ test('fails if chain id is not accepted', async t => {
 
 test('fails if defender config is missing', async t => {
   const { proposeUpgrade, greeter, GreeterV2 } = t.context;
-  const { defender } = hardhat.config;
-  delete hardhat.config.defender;
+  const { defender } = hre.config;
+  delete hre.config.defender;
 
   await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), {
     message: 'Missing Defender API key and secret in hardhat config',
   });
-  hardhat.config.defender = defender;
+  hre.config.defender = defender;
 });
