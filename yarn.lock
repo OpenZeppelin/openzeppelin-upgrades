@@ -3065,6 +3065,13 @@ cbor@^5.0.2, cbor@^5.1.0:
     bignumber.js "^9.0.1"
     nofilter "^1.0.4"
 
+cbor@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/cbor/-/cbor-7.0.0.tgz#4917f5a9e054f1aa27434ff6897edd554689bba2"
+  integrity sha512-sb956Vgn7Lik7shtb4YYpXeGmDxq3xRH8ZvQLnoXoICMbQLJyw0kWtZd2VnCEWBhNHK6Qx0tdyLks99SAFPKmw==
+  dependencies:
+    nofilter "^2.0.0"
+
 chalk@^2.0.0, chalk@^2.3.0, chalk@^2.3.1, chalk@^2.3.2, chalk@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
@@ -8079,6 +8086,11 @@ nofilter@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-1.0.4.tgz#78d6f4b6a613e7ced8b015cec534625f7667006e"
   integrity sha512-N8lidFp+fCz+TD51+haYdbDGrcBWwuHX40F5+z0qkUjMJ5Tp+rdSuAkMJ9N9eoolDlEVTf6u5icM+cNKkKW2mA==
+
+nofilter@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-2.0.0.tgz#57a2d7c6fcd34dd396f490d6942c4f58640b5823"
+  integrity sha512-i3ck2PUWBa+trsGGBvwS3msnTowbFei5G++BgpOpT7y7VTrprXphMQP5svTdsMLdttKDZFo+5RqVWRqhmf+BwQ==
 
 nopt@^4.0.1:
   version "4.0.3"

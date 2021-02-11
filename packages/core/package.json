@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "bn.js": "^5.1.2",
-    "cbor": "^5.0.2",
+    "cbor": "^7.0.0",
     "chalk": "^4.1.0",
     "compare-versions": "^3.6.0",
     "debug": "^4.1.1",
