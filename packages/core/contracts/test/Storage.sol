@@ -359,3 +359,18 @@ contract StorageUpgrade_Mapping_V2_Bad {
     mapping (uint => uint) m1;
     mapping (bool => uint) m2;
 }
+
+enum E1 { A, B }
+enum E2 { X, Y }
+
+contract StorageUpgrade_MappingEnumKey_V1 {
+    mapping (E1 => uint) m1;
+}
+
+contract StorageUpgrade_MappingEnumKey_V2_Ok {
+    mapping (E1 => uint) m1;
+}
+
+contract StorageUpgrade_MappingEnumKey_V2_Bad {
+    mapping (E2 => uint) m1;
+}

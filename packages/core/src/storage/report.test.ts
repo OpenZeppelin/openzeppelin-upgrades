@@ -73,6 +73,13 @@ test('mapping', t => {
   t.snapshot(report.explain());
 });
 
+test('mapping enum key', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_MappingEnumKey_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_MappingEnumKey_V2_Bad');
+  const report = getReport(v1, v2);
+  t.snapshot(report.explain());
+});
+
 test('rename', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Rename_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Rename_V2');
