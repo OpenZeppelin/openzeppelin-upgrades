@@ -93,12 +93,8 @@ function explainTypeChange(ch: TypeChange): string {
     case 'enum resize':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent representation sizes`;
 
-    case 'mapping key': {
-      assert(ch.original.args && ch.updated.args);
-      const originalKey = ch.original.args[0];
-      const updatedKey = ch.updated.args[0];
-      return `In key of ${ch.updated.item.label}\n- Bad upgrade ${describeTransition(originalKey, updatedKey)}`;
-    }
+    case 'mapping key':
+      return `In key of ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner));
 
     case 'mapping value':
     case 'array value':
