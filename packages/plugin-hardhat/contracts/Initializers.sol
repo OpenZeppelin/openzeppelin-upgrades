@@ -12,3 +12,7 @@ contract InitializerOverloaded {
 
 contract InitializerMissing {
 }
+
+import "./utils/Proxiable.sol";
+contract InitializerOverloadedProxiable is InitializerOverloaded, Proxiable {}
+contract InitializerMissingProxiable is InitializerMissing, Proxiable {}

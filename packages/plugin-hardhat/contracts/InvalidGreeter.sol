@@ -19,3 +19,6 @@ contract GreeterStorageConflict {
     }
 
 }
+
+import "./utils/Proxiable.sol";
+contract GreeterStorageConflictProxiable is GreeterStorageConflict, Proxiable {}

@@ -38,3 +38,7 @@ contract PortfolioV2Bad {
     }
 
 }
+
+import "./utils/Proxiable.sol";
+contract PortfolioV2Proxiable is PortfolioV2, Proxiable {}
+contract PortfolioV2BadProxiable is PortfolioV2Bad, Proxiable {}

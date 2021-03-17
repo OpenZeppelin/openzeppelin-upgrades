@@ -8,12 +8,12 @@ contract Token {
 
   string public symbol;
   uint256 public totalSupply;
-  
+
   address public owner;
 
   mapping(address => uint256) balances;
 
-  function initialize(string memory tokenSymbol, uint256 amount) public { 
+  function initialize(string memory tokenSymbol, uint256 amount) public {
     symbol = tokenSymbol;
     totalSupply = amount;
     balances[msg.sender] = amount;
@@ -25,7 +25,7 @@ contract Token {
     balances[msg.sender] = balances[msg.sender].sub(amount);
     balances[to] = balances[to].add(amount);
   }
-   
+
   function balanceOf(address account) external view returns (uint256) {
     return balances[account];
   }
@@ -35,3 +35,6 @@ contract Token {
   }
 
 }
+
+import "./utils/Proxiable.sol";
+contract TokenProxiable is Token, Proxiable {}

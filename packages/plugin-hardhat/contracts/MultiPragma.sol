@@ -8,3 +8,6 @@ contract GreeterMultiPragma is Greeter {
       return greet();
     }
 }
+
+import "./utils/Proxiable.sol";
+contract GreeterMultiPragmaProxiable is GreeterMultiPragma, Proxiable {}

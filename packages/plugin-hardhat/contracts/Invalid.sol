@@ -10,3 +10,6 @@ contract Invalid {
     }
 
 }
+
+import "./utils/Proxiable.sol";
+contract InvalidProxiable is Invalid, Proxiable {}
