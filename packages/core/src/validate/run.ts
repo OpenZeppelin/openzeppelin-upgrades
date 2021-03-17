@@ -21,7 +21,11 @@ export interface ContractValidation {
   layout: StorageLayout;
 }
 
-export type ValidationError = ValidationErrorConstructor | ValidationErrorOpcode | ValidationErrorWithName;
+export type ValidationError =
+  | ValidationErrorConstructor
+  | ValidationErrorOpcode
+  | ValidationErrorWithName
+  | ValidationErrorUpgradeability;
 
 interface ValidationErrorBase {
   src: string;
@@ -44,6 +48,10 @@ interface ValidationErrorConstructor extends ValidationErrorBase {
 
 interface ValidationErrorOpcode extends ValidationErrorBase {
   kind: 'delegatecall' | 'selfdestruct';
+}
+
+interface ValidationErrorUpgradeability extends ValidationErrorBase {
+  kind: 'no-public-upgrade-fn';
 }
 
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationRunData {

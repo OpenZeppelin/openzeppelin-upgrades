@@ -83,5 +83,5 @@ test('inherited storage', t => {
   }
 });
 
-testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);
-testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);
+testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, true);
+testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, true);
