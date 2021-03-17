@@ -13,7 +13,7 @@ test('without flag', async t => {
   // Attempting to Deploy Token
   const Token = await getLinkedContractFactory('Token', { SafeMath: safeMathLib.address });
   await t.throwsAsync(
-    () => upgrades.deployProxy(Token, ['TKN', 10000]),
+    () => upgrades.deployProxy(Token, ['TKN', 10000], { kind: 'transparent' }),
     undefined,
     'Contract `Token` is not upgrade safe',
   );
@@ -30,21 +30,30 @@ test('with flag', async t => {
 
   // Deploying Token
   const Token = await getLinkedContractFactory('Token', { SafeMath: safeMathLib.address });
-  const token = await upgrades.deployProxy(Token, ['TKN', 10000], { unsafeAllowLinkedLibraries: true });
+  const token = await upgrades.deployProxy(Token, ['TKN', 10000], {
+    kind: 'transparent',
+    unsafeAllow: ['external-library-linking'],
+  });
 
   t.is('10000', (await token.totalSupply()).toString());
   t.is('V1', await token.getLibraryVersion());
 
   // Deploying Token with different Library
   const TokenNew = await getLinkedContractFactory('Token', { SafeMath: safeMathLib2.address });
-  const tokenNew = await upgrades.deployProxy(TokenNew, ['TKN', 5000], { unsafeAllowLinkedLibraries: true });
+  const tokenNew = await upgrades.deployProxy(TokenNew, ['TKN', 5000], {
+    kind: 'transparent',
+    unsafeAllow: ['external-library-linking'],
+  });
 
   t.is('5000', (await tokenNew.totalSupply()).toString());
   t.is('V2', await tokenNew.getLibraryVersion());
 
   // Attempting to upgrade to TokenV2 using same library
   const TokenV2 = await getLinkedContractFactory('TokenV2', { SafeMath: safeMathLib.address });
-  const token2 = await upgrades.upgradeProxy(token.address, TokenV2, { unsafeAllowLinkedLibraries: true });
+  const token2 = await upgrades.upgradeProxy(token.address, TokenV2, {
+    kind: 'transparent',
+    unsafeAllow: ['external-library-linking'],
+  });
 
   t.is(token.address, token2.address);
   t.is('10000', (await token2.totalSupply()).toString());
@@ -52,7 +61,10 @@ test('with flag', async t => {
 
   // Attempting to upgrade to same TokenV2 using different library
   const TokenV2New = await getLinkedContractFactory('TokenV2', { SafeMath: safeMathLib2.address });
-  const token2New = await upgrades.upgradeProxy(token.address, TokenV2New, { unsafeAllowLinkedLibraries: true });
+  const token2New = await upgrades.upgradeProxy(token.address, TokenV2New, {
+    kind: 'transparent',
+    unsafeAllow: ['external-library-linking'],
+  });
 
   t.is(token.address, token2New.address);
   t.is('10000', (await token2New.totalSupply()).toString());
@@ -63,7 +75,10 @@ test('with flag', async t => {
     SafeMath: safeMathLib.address,
     SafePercent: safePctLib.address,
   });
-  const token3 = await upgrades.upgradeProxy(token.address, TokenV3, { unsafeAllowLinkedLibraries: true });
+  const token3 = await upgrades.upgradeProxy(token.address, TokenV3, {
+    kind: 'transparent',
+    unsafeAllow: ['external-library-linking'],
+  });
 
   t.is(token.address, token3.address);
   t.is('10000', (await token3.totalSupply()).toString());

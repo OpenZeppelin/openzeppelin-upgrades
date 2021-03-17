@@ -11,12 +11,12 @@ test.before(async t => {
 test('happy path', async t => {
   const { Greeter, GreeterV2, GreeterV3 } = t.context;
 
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!']);
+  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
 
-  const greeter2 = await upgrades.upgradeProxy(greeter.address, GreeterV2);
+  const greeter2 = await upgrades.upgradeProxy(greeter.address, GreeterV2, { kind: 'transparent' });
   await greeter2.resetGreeting();
 
-  const greeter3ImplAddr = await upgrades.prepareUpgrade(greeter.address, GreeterV3);
+  const greeter3ImplAddr = await upgrades.prepareUpgrade(greeter.address, GreeterV3, { kind: 'transparent' });
   const greeter3 = GreeterV3.attach(greeter3ImplAddr);
   const version3 = await greeter3.version();
   t.is(version3, 'V3');

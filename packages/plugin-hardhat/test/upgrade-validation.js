@@ -10,9 +10,9 @@ test.before(async t => {
 test('invalid upgrade', async t => {
   const { Greeter, Invalid } = t.context;
 
-  const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!']);
+  const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!'], { kind: 'transparent' });
   await t.throwsAsync(
-    () => upgrades.upgradeProxy(greeter.address, Invalid),
+    () => upgrades.upgradeProxy(greeter.address, Invalid, { kind: 'transparent' }),
     undefined,
     'Contract `Invalid` is not upgrade safe',
   );

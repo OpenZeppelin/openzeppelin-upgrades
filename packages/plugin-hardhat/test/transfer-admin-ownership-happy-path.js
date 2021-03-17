@@ -12,7 +12,7 @@ test.before(async t => {
 test('transferProxyAdminOwnership', async t => {
   // we need to deploy a proxy so we have a Proxy Admin
   const { Greeter } = t.context;
-  await upgrades.deployProxy(Greeter, ['Hello, Hardhat!']);
+  await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
 
   const admin = await getManifestAdmin(hre);
   await upgrades.admin.transferProxyAdminOwnership(testAddress);

@@ -8,20 +8,20 @@ import {
   fetchOrDeployAdmin,
   getVersion,
   getUnlinkedBytecode,
-  ValidationOptions,
 } from '@openzeppelin/upgrades-core';
 
-import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
+import {
+  getProxyFactory,
+  getTransparentUpgradeableProxyFactory,
+  getProxyAdminFactory,
+} from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
+import { DeployOptions } from './types';
 
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
   (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
-}
-
-export interface DeployOptions extends ValidationOptions {
-  initializer?: string | false;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
@@ -33,6 +33,11 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     if (!Array.isArray(args)) {
       opts = args;
       args = [];
+    }
+
+    if (opts.kind === 'transparent') {
+      opts.unsafeAllow = opts.unsafeAllow || [];
+      opts.unsafeAllow.push('no-public-upgrade-fn');
     }
 
     const { provider } = hre.network;
@@ -48,12 +53,26 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       return { ...deployment, layout };
     });
 
-    const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
-    const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
-
     const data = getInitializerData(ImplFactory, args, opts.initializer);
-    const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
-    const proxy = await ProxyFactory.deploy(impl, adminAddress, data);
+
+    let proxy: Contract;
+    switch(opts.kind) {
+      case undefined:
+      case 'uups':
+        const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
+        proxy = await ProxyFactory.deploy(impl, data);
+        break;
+
+      case 'transparent':
+        const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
+        const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
+        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
+        proxy = await TransparentUpgradeableProxyFactory.deploy(impl, adminAddress, data);
+        break;
+
+      default:
+        throw new Error('unknown proxy kind');
+    }
 
     const inst = ImplFactory.attach(proxy.address);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment

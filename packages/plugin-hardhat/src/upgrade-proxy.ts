@@ -11,24 +11,24 @@ import {
   Manifest,
   getImplementationAddress,
   getAdminAddress,
-  ValidationOptions,
   getStorageLayoutForAddress,
 } from '@openzeppelin/upgrades-core';
 
 import { getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
+import { UpgradeOptions } from './types';
 
 export type PrepareUpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts?: ValidationOptions,
+  opts?: UpgradeOptions,
 ) => Promise<string>;
 
 export type UpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts?: ValidationOptions,
+  opts?: UpgradeOptions,
 ) => Promise<Contract>;
 
 async function prepareUpgradeImpl(
@@ -36,8 +36,14 @@ async function prepareUpgradeImpl(
   manifest: Manifest,
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts: ValidationOptions,
+  opts: UpgradeOptions,
 ): Promise<string> {
+
+  if (opts.kind === 'transparent') {
+    opts.unsafeAllow = opts.unsafeAllow || [];
+    opts.unsafeAllow.push('no-public-upgrade-fn');
+  }
+
   const { provider } = hre.network;
   const validations = await readValidations(hre);
 
@@ -49,7 +55,11 @@ async function prepareUpgradeImpl(
   const deploymentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
 
   const layout = getStorageLayout(validations, version);
-  assertStorageUpgradeSafe(deploymentLayout, layout, opts.unsafeAllowCustomTypes);
+  assertStorageUpgradeSafe(
+    deploymentLayout,
+    layout,
+    (opts.unsafeAllow || []).includes('struct-definition') || (opts.unsafeAllow || []).includes('enum-definition')
+  );
 
   return await fetchOrDeploy(version, provider, async () => {
     const deployment = await deploy(ImplFactory);

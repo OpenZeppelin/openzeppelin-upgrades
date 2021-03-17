@@ -7,6 +7,9 @@ test.before(async t => {
 });
 
 test('no args', async t => {
-  const c = await upgrades.deployProxy(t.context.DeployOverload, { initializer: 'customInitialize' });
+  const c = await upgrades.deployProxy(t.context.DeployOverload, {
+    kind: 'transparent',
+    initializer: 'customInitialize',
+  });
   t.is((await c.value()).toString(), '42');
 });
