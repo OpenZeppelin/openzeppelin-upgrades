@@ -160,3 +160,10 @@ contract UsesExplicitUnsafeExternalLibrary {
     UnsafeExternalLibrary.explode(x, y);
   }
 }
+
+contract HasUpgrateToFunction {
+    function upgradeTo(address) public {}
+}
+
+contract ParentHasUpgrateToFunction is HasUpgrateToFunction {
+}

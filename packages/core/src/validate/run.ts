@@ -16,6 +16,7 @@ export interface ContractValidation {
   version?: Version;
   inherit: string[];
   libraries: string[];
+  methods: string[];
   linkReferences: LinkReference[];
   errors: ValidationError[];
   layout: StorageLayout;
@@ -72,6 +73,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
         version,
         inherit: [],
         libraries: [],
+        methods: [],
         linkReferences,
         errors: [],
         layout: {
@@ -101,6 +103,9 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
         ];
 
         validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc, deref);
+        validation[contractDef.name].methods = [ ...findAll('FunctionDefinition', contractDef) ]
+          .filter(fnDef => fnDef.functionSelector !== undefined)
+          .map(fnDef => fnDef.functionSelector as string);
       }
     }
   }

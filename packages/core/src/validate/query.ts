@@ -104,6 +104,15 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
   const dataV3 = normalizeValidationData(data);
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
+
+  const isUUPSCompatible = [ c, ...c.inherit.map(name => runValidation[name]) ].some(({ methods }) => methods.includes('3659cfe6')); // upgradeTo(address)
+  if (!isUUPSCompatible) {
+    c.errors.push({
+      src: contractName,
+      kind: 'no-public-upgrade-fn',
+    });
+  }
+
   return c.errors
     .concat(...c.inherit.map(name => runValidation[name].errors))
     .concat(...c.libraries.map(name => runValidation[name].errors));

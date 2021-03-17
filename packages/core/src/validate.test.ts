@@ -49,29 +49,29 @@ function testOverride(name: string, opts: ValidationOptions, valid: boolean) {
   });
 }
 
-testValid('HasEmptyConstructor', true);
-testValid('HasConstantStateVariableAssignment', true);
-testValid('HasStateVariable', true);
-testValid('UsesImplicitSafeInternalLibrary', true);
-testValid('UsesExplicitSafeInternalLibrary', true);
+testOverride('HasEmptyConstructor', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasConstantStateVariableAssignment', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasStateVariable', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesImplicitSafeInternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesExplicitSafeInternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
 
-testValid('HasNonEmptyConstructor', false);
-testValid('ParentHasNonEmptyConstructor', false);
-testValid('AncestorHasNonEmptyConstructor', false);
-testValid('HasStateVariableAssignment', false);
-testValid('HasImmutableStateVariable', false);
-testValid('HasSelfDestruct', false);
-testValid('HasDelegateCall', false);
-testValid('ImportedParentHasStateVariableAssignment', false);
-testValid('UsesImplicitUnsafeInternalLibrary', false);
-testValid('UsesExplicitUnsafeInternalLibrary', false);
-testValid('UsesImplicitUnsafeExternalLibrary', false);
-testValid('UsesExplicitUnsafeExternalLibrary', false);
+testOverride('HasNonEmptyConstructor', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('ParentHasNonEmptyConstructor', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('AncestorHasNonEmptyConstructor', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('HasStateVariableAssignment', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('HasImmutableStateVariable', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('HasSelfDestruct', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('HasDelegateCall', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('ImportedParentHasStateVariableAssignment', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('UsesImplicitUnsafeInternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('UsesExplicitUnsafeInternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('UsesImplicitUnsafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('UsesExplicitUnsafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
 
 // Linked external libraries are not yet supported
 // see: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
-testValid('UsesImplicitSafeExternalLibrary', false);
-testValid('UsesExplicitSafeExternalLibrary', false);
+testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
+testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'] }, false);
 
 test('inherited storage', t => {
   const version = getContractVersion(t.context.validation, 'StorageInheritChild');
@@ -83,5 +83,9 @@ test('inherited storage', t => {
   }
 });
 
-testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, true);
-testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, true);
+testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking', 'no-public-upgrade-fn'] }, true);
+testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking', 'no-public-upgrade-fn'] }, true);
+
+testOverride('HasEmptyConstructor', { unsafeAllow: [] }, false);
+testOverride('HasUpgrateToFunction', { unsafeAllow: [] }, true);
+testOverride('ParentHasUpgrateToFunction', { unsafeAllow: [] }, true);
