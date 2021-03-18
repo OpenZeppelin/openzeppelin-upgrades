@@ -87,5 +87,6 @@ testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-librar
 testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking', 'no-public-upgrade-fn'] }, true);
 
 testOverride('HasEmptyConstructor', { unsafeAllow: [] }, false);
+testOverride('HasInternalUpgrateToFunction', { unsafeAllow: [] }, false);
 testOverride('HasUpgrateToFunction', { unsafeAllow: [] }, true);
 testOverride('ParentHasUpgrateToFunction', { unsafeAllow: [] }, true);

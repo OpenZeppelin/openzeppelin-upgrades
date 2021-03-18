@@ -104,7 +104,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
         validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc, deref);
         validation[contractDef.name].methods = [ ...findAll('FunctionDefinition', contractDef) ]
-          .filter(fnDef => fnDef.functionSelector !== undefined)
+          .filter(fnDef => fnDef.functionSelector !== undefined) // TODO: missing before 0.6
           .map(fnDef => fnDef.functionSelector as string);
       }
     }

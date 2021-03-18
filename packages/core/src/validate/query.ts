@@ -105,8 +105,9 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
 
-  const isUUPSCompatible = [ c, ...c.inherit.map(name => runValidation[name]) ].some(({ methods }) => methods.includes('3659cfe6')); // upgradeTo(address)
-  if (!isUUPSCompatible) {
+  const selfAndInheritedMethods = c.inherit.reduce((methods, name) => methods.concat(runValidation[name].methods), c.methods);
+
+  if (!selfAndInheritedMethods.includes('3659cfe6')) { // missing upgradeTo(address)
     c.errors.push({
       src: contractName,
       kind: 'no-public-upgrade-fn',
