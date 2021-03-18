@@ -14,7 +14,11 @@ import {
   getStorageLayoutForAddress,
 } from '@openzeppelin/upgrades-core';
 
-import { getProxyAdminFactory } from './proxy-factory';
+import {
+  getTransparentUpgradeableProxyFactory,
+  getProxyAdminFactory,
+} from './proxy-factory';
+
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 import { UpgradeOptions } from './types';
@@ -81,16 +85,34 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
-    const admin = AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
-    const manifestAdmin = await manifest.getAdmin();
+    // TODO: auto detect kind
+    switch(opts.kind) {
+      case undefined:
+      case 'uups':
+      {
+        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
+        const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);
+        const nextImpl = await prepareUpgradeImpl(hre, manifest, proxyAddress, ImplFactory, opts);
+        await proxy.upgradeTo(nextImpl);
+        break;
+      }
 
-    if (admin.address !== manifestAdmin?.address) {
-      throw new Error('Proxy admin is not the one registered in the network manifest');
+      case 'transparent':
+      {
+        const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
+        const admin = AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
+        const manifestAdmin = await manifest.getAdmin();
+        if (admin.address !== manifestAdmin?.address) {
+          throw new Error('Proxy admin is not the one registered in the network manifest');
+        }
+        const nextImpl = await prepareUpgradeImpl(hre, manifest, proxyAddress, ImplFactory, opts);
+        await admin.upgrade(proxyAddress, nextImpl);
+        break;
+      }
+
+      default:
+        throw new Error('unknown proxy kind');
     }
-
-    const nextImpl = await prepareUpgradeImpl(hre, manifest, proxyAddress, ImplFactory, opts);
-    await admin.upgrade(proxyAddress, nextImpl);
 
     return ImplFactory.attach(proxyAddress);
   };
