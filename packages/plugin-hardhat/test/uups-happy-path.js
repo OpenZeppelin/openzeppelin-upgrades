@@ -13,10 +13,10 @@ test('happy path', async t => {
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
 
-  const greeter2 = await upgrades.upgradeProxy(greeter.address, GreeterV2, { kind: 'uups' });
+  const greeter2 = await upgrades.upgradeProxy(greeter.address, GreeterV2);
   await greeter2.resetGreeting();
 
-  const greeter3ImplAddr = await upgrades.prepareUpgrade(greeter.address, GreeterV3, { kind: 'uups' });
+  const greeter3ImplAddr = await upgrades.prepareUpgrade(greeter.address, GreeterV3);
   const greeter3 = GreeterV3.attach(greeter3ImplAddr);
   const version3 = await greeter3.version();
   t.is(version3, 'V3');

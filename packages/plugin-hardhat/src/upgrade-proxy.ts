@@ -76,6 +76,12 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
+    // Autodetect proxy type
+    const adminAddress = await getAdminAddress(provider, proxyAddress);
+    if (opts.kind == undefined) {
+      opts.kind = adminAddress === '0x0000000000000000000000000000000000000000' ? 'uups' : 'transparent';
+    }
+
     return await prepareUpgradeImpl(hre, manifest, proxyAddress, ImplFactory, opts);
   };
 }
@@ -85,7 +91,12 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    // TODO: auto detect kind
+    // Autodetect proxy type
+    const adminAddress = await getAdminAddress(provider, proxyAddress);
+    if (opts.kind == undefined) {
+      opts.kind = adminAddress === '0x0000000000000000000000000000000000000000' ? 'uups' : 'transparent';
+    }
+
     switch(opts.kind) {
       case undefined:
       case 'uups':
@@ -100,7 +111,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
       case 'transparent':
       {
         const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
-        const admin = AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
+        const admin = AdminFactory.attach(adminAddress);
         const manifestAdmin = await manifest.getAdmin();
         if (admin.address !== manifestAdmin?.address) {
           throw new Error('Proxy admin is not the one registered in the network manifest');

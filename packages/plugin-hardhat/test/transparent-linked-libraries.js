@@ -51,7 +51,6 @@ test('with flag', async t => {
   // Attempting to upgrade to TokenV2 using same library
   const TokenV2 = await getLinkedContractFactory('TokenV2', { SafeMath: safeMathLib.address });
   const token2 = await upgrades.upgradeProxy(token.address, TokenV2, {
-    kind: 'transparent',
     unsafeAllow: ['external-library-linking'],
   });
 
@@ -62,7 +61,6 @@ test('with flag', async t => {
   // Attempting to upgrade to same TokenV2 using different library
   const TokenV2New = await getLinkedContractFactory('TokenV2', { SafeMath: safeMathLib2.address });
   const token2New = await upgrades.upgradeProxy(token.address, TokenV2New, {
-    kind: 'transparent',
     unsafeAllow: ['external-library-linking'],
   });
 
@@ -76,7 +74,6 @@ test('with flag', async t => {
     SafePercent: safePctLib.address,
   });
   const token3 = await upgrades.upgradeProxy(token.address, TokenV3, {
-    kind: 'transparent',
     unsafeAllow: ['external-library-linking'],
   });
 
