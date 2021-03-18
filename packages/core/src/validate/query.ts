@@ -107,7 +107,7 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
 
   const selfAndInheritedMethods = c.inherit.reduce((methods, name) => methods.concat(runValidation[name].methods), c.methods);
 
-  if (!selfAndInheritedMethods.includes('3659cfe6')) { // missing upgradeTo(address)
+  if (!selfAndInheritedMethods.includes('upgradeTo(address)')) { // missing upgradeTo(address)
     c.errors.push({
       src: contractName,
       kind: 'no-public-upgrade-fn',

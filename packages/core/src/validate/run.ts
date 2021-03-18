@@ -5,6 +5,7 @@ import { SolcOutput, SolcBytecode } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
 import { astDereferencer } from '../ast-dereferencer';
 import { isNullish } from '../utils/is-nullish';
+import { getFunctionSignature } from '../utils/function';
 import { Version, getVersion } from '../version';
 import { extractLinkReferences, LinkReference } from '../link-refs';
 import { extractStorageLayout } from '../storage/extract';
@@ -104,8 +105,8 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
         validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc, deref);
         validation[contractDef.name].methods = [ ...findAll('FunctionDefinition', contractDef) ]
-          .filter(fnDef => fnDef.functionSelector !== undefined) // TODO: missing before 0.6
-          .map(fnDef => fnDef.functionSelector as string);
+          .map(fnDef => getFunctionSignature(fnDef, deref))
+          .filter(Boolean) as string[];
       }
     }
   }
