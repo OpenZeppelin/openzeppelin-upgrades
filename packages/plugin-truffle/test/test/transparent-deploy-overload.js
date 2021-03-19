@@ -6,7 +6,7 @@ const DeployOverload = artifacts.require('DeployOverload');
 
 contract('DeployOverload', function () {
   it('deployProxy', async function () {
-    const c = await deployProxy(DeployOverload, { initializer: 'customInitialize' });
+    const c = await deployProxy(DeployOverload, { initializer: 'customInitialize', kind: 'transparent' });
     assert.strictEqual((await c.value()).toString(), '42');
   });
 });

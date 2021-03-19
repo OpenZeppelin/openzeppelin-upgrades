@@ -37,7 +37,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     const data = getInitializerData(ImplFactory, args, requiredOpts.initializer);
 
     let proxy: Contract;
-    switch(requiredOpts.kind) {
+    switch (requiredOpts.kind) {
       case 'auto':
       case 'uups':
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
@@ -50,9 +50,6 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
         proxy = await TransparentUpgradeableProxyFactory.deploy(impl, adminAddress, data);
         break;
-
-      default:
-        throw new Error('unknown proxy kind');
     }
 
     const inst = ImplFactory.attach(proxy.address);

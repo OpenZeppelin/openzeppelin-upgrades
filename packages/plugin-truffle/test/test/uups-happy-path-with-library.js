@@ -3,8 +3,8 @@ const BN = require('bn.js');
 
 const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
-const Adder = artifacts.require('Adder');
-const AdderV2 = artifacts.require('AdderV2');
+const Adder = artifacts.require('AdderProxiable');
+const AdderV2 = artifacts.require('AdderV2Proxiable');
 
 contract('Adder', function () {
   it('adds', async function () {
@@ -15,7 +15,7 @@ contract('Adder', function () {
   });
 
   it('deployProxy', async function () {
-    const adder = await deployProxy(Adder, [2]);
+    const adder = await deployProxy(Adder, [2], { kind: 'uups' });
     assert.strictEqual(new BN(await adder.n()).toNumber(), 2);
     await upgradeProxy(adder.address, AdderV2);
   });

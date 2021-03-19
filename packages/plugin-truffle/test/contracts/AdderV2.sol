@@ -24,3 +24,6 @@ contract AdderV2 {
     }
 
 }
+
+import "./utils/Proxiable.sol";
+contract AdderV2Proxiable is AdderV2, Proxiable {}

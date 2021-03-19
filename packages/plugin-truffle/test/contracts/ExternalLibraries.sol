@@ -1,4 +1,3 @@
-
 pragma solidity ^0.5.1;
 
 library SafeMath {
@@ -14,7 +13,7 @@ library SafeMath {
       uint256 c = a - b;
 
       return c;
-    } 
+    }
 
     function version() external pure returns (string memory) {
       return "V1";
@@ -34,7 +33,7 @@ library SafeMathV2 {
       uint256 c = a - b;
 
       return c;
-    } 
+    }
 
     function version() external pure returns (string memory) {
       return "V2";
@@ -44,7 +43,7 @@ library SafeMathV2 {
 library SafePercent {
     function getPercent(uint256 a, uint256 pct) external pure returns (uint256) {
         uint256 c = div(mul(a,pct),100);
-        
+
         return c;
     }
 
@@ -58,8 +57,7 @@ library SafePercent {
     function div(uint256 a, uint256 b) internal pure returns (uint256) {
         require(b > 0, "SafePercent: division by zero");
         uint256 c = a / b;
-       
+
         return c;
     }
 }
-

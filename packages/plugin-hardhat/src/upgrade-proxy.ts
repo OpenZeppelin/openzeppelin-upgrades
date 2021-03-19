@@ -56,9 +56,6 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
         await admin.upgrade(proxyAddress, nextImpl);
         break;
       }
-
-      default:
-        throw new Error('unknown proxy kind');
     }
 
     return ImplFactory.attach(proxyAddress);

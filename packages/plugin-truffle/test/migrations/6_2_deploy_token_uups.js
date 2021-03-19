@@ -1,6 +1,6 @@
-const Token = artifacts.require('Token');
-const TokenV2 = artifacts.require('TokenV2');
-const TokenV3 = artifacts.require('TokenV3');
+const Token = artifacts.require('TokenProxiable');
+const TokenV2 = artifacts.require('TokenV2Proxiable');
+const TokenV3 = artifacts.require('TokenV3Proxiable');
 const SafeMath = artifacts.require('SafeMath');
 const SafeMathV2 = artifacts.require('SafeMathV2');
 const SafePercent = artifacts.require('SafePercent');
@@ -13,12 +13,12 @@ module.exports = async function (deployer) {
   await deployer.deploy(SafePercent);
 
   await deployer.link(SafeMath, Token);
-  const t = await deployProxy(Token, ['TKN', 10000], { deployer, unsafeAllowLinkedLibraries: true });
+  const t = await deployProxy(Token, ['TKN', 10000], { deployer, unsafeAllow: ['external-library-linking'], kind: 'uups' });
 
   await deployer.link(SafeMath, TokenV2);
-  await upgradeProxy(t.address, TokenV2, { deployer, unsafeAllowLinkedLibraries: true });
+  await upgradeProxy(t.address, TokenV2, { deployer, unsafeAllow: ['external-library-linking'], kind: 'uups' });
 
   await deployer.link(SafeMath, TokenV3);
   await deployer.link(SafePercent, TokenV3);
-  await upgradeProxy(t.address, TokenV3, { deployer, unsafeAllowLinkedLibraries: true });
+  await upgradeProxy(t.address, TokenV3, { deployer, unsafeAllow: ['external-library-linking'], kind: 'uups' });
 };

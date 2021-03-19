@@ -1,14 +1,16 @@
 pragma solidity ^0.5.1;
 
-contract GreeterV2 {
+contract GreeterStorageConflict {
 
+    uint greets;
     string greeting;
 
     function initialize(string memory _greeting) public {
         greeting = _greeting;
     }
 
-    function greet() public view returns (string memory) {
+    function greet() public returns (string memory) {
+        greets = greets + 1;
         return greeting;
     }
 
@@ -16,11 +18,7 @@ contract GreeterV2 {
         greeting = _greeting;
     }
 
-    function resetGreeting() public {
-        greeting = "Hello World";
-    }
-
 }
 
 import "./utils/Proxiable.sol";
-contract GreeterV2Proxiable is GreeterV2, Proxiable {}
+contract GreeterStorageConflictProxiable is GreeterStorageConflict, Proxiable {}

@@ -8,10 +8,10 @@ const TokenV3 = artifacts.require('TokenV3');
 
 contract('Token without flag', function () {
   it('deployProxy', async function () {
-    await assert.rejects(deployProxy(Token, ['TKN', 10000]));
+    await assert.rejects(deployProxy(Token, ['TKN', 10000], { kind: 'transparent' }));
 
     // we need use the flag to deploy in order to have an address to upgrade
-    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllowLinkedLibraries: true });
+    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'transparent' });
     await assert.rejects(upgradeProxy(token.address, Token));
   });
 });
@@ -21,29 +21,29 @@ contract('Token with flag', function (accounts) {
   const ownerAddress = accounts[0];
 
   it('Deploy and Upgrade Proxy', async function () {
-    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllowLinkedLibraries: true });
-    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllowLinkedLibraries: true });
+    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'transparent' });
+    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
     assert.strictEqual('10000', (await token2.totalSupply()).toString());
     assert.strictEqual('V1', await token2.getLibraryVersion());
   });
 
   it('Redeploy Proxy again with different Library', async function () {
-    await deployProxy(Token, ['TKN', 10000], { unsafeAllowLinkedLibraries: true });
+    await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'transparent' });
 
     const safeMathLib2 = await SafeMathV2.deployed();
     Token.link('SafeMath', safeMathLib2.address);
-    const tokenNew = await deployProxy(Token, ['TKN', 5000], { unsafeAllowLinkedLibraries: true });
+    const tokenNew = await deployProxy(Token, ['TKN', 5000], { unsafeAllow: ['external-library-linking'], kind: 'transparent' });
 
     assert.strictEqual('5000', (await tokenNew.totalSupply()).toString());
     assert.strictEqual('V2', await tokenNew.getLibraryVersion());
   });
 
   it('Upgrade Proxy with different Library', async function () {
-    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllowLinkedLibraries: true });
+    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'transparent' });
 
     const safeMathLib2 = await SafeMathV2.deployed();
     TokenV2.link('SafeMath', safeMathLib2.address);
-    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllowLinkedLibraries: true });
+    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
 
     assert.strictEqual(token.address, token2.address);
     assert.strictEqual('10000', (await token2.totalSupply()).toString());
@@ -57,9 +57,9 @@ contract('Token with flag', function (accounts) {
   });
 
   it('Upgrade Proxy with multiple Libraries', async function () {
-    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllowLinkedLibraries: true });
-    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllowLinkedLibraries: true });
-    const token3 = await upgradeProxy(token2.address, TokenV3, { unsafeAllowLinkedLibraries: true });
+    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'transparent' });
+    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
+    const token3 = await upgradeProxy(token2.address, TokenV3, { unsafeAllow: ['external-library-linking'] });
 
     assert.strictEqual(token.address, token3.address);
     assert.strictEqual('10000', (await token3.totalSupply()).toString());

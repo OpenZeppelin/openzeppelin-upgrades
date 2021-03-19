@@ -13,14 +13,14 @@ contract('Admin', function () {
   const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 
   it('getInstance', async function () {
-    const greeter = await upgrades.deployProxy(Greeter, ['Hello Truffle']);
+    const greeter = await upgrades.deployProxy(Greeter, ['Hello Truffle'], { kind: 'transparent' });
     const adminInstance = await upgrades.admin.getInstance();
     const adminAddress = await adminInstance.getProxyAdmin(greeter.address);
     assert.strictEqual(adminInstance.address, adminAddress);
   });
 
   it('changeProxyAdmin', async function () {
-    const greeter = await upgrades.deployProxy(Greeter, ['Hello Truffle']);
+    const greeter = await upgrades.deployProxy(Greeter, ['Hello Truffle'], { kind: 'transparent' });
     await upgrades.admin.changeProxyAdmin(greeter.address, testAddress);
     const newAdmin = await getAdminAddress(provider, greeter.address);
     assert.strictEqual(newAdmin, testAddress);

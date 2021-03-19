@@ -21,11 +21,11 @@ contract ActionV2Bad {
 
     ActionType action;
 
-    function initialize() public view {
-    }
-
     function log() public {
         emit ActionEvent(action);
     }
-
 }
+
+import "./utils/Proxiable.sol";
+contract ActionV2Proxiable is ActionV2, Proxiable {}
+contract ActionV2BadProxiable is ActionV2Bad, Proxiable {}

@@ -13,7 +13,7 @@ contract('Greeter', function () {
   });
 
   it('deployProxy', async function () {
-    const greeter = await deployProxy(Greeter, ['Hello Truffle']);
+    const greeter = await deployProxy(Greeter, ['Hello Truffle'], { kind: 'transparent' });
 
     assert.ok(greeter.transactionHash, 'transaction hash is missing');
 

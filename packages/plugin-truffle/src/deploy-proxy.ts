@@ -1,86 +1,77 @@
 import {
-  assertUpgradeSafe,
-  getStorageLayout,
-  fetchOrDeploy,
   fetchOrDeployAdmin,
-  getVersion,
 } from '@openzeppelin/upgrades-core';
 
-import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
-import { validateArtifacts, getLinkedBytecode } from './validate';
-import { deploy } from './utils/deploy';
-import { getProxyFactory, getProxyAdminFactory } from './factories';
-import { wrapProvider } from './wrap-provider';
-import { Options, withDeployDefaults } from './options';
-
-interface InitializerOptions {
-  initializer?: string | false;
-}
+import {
+  ContractClass,
+  ContractInstance,
+  wrapProvider,
+  deploy,
+  deployImpl,
+  getProxyFactory,
+  getTransparentUpgradeableProxyFactory,
+  getProxyAdminFactory,
+  Options,
+  withDefaults,
+} from './utils';
 
 export async function deployProxy(
   Contract: ContractClass,
-  opts?: Options & InitializerOptions,
+  opts?: Options,
 ): Promise<ContractInstance>;
 
 export async function deployProxy(
   Contract: ContractClass,
   args?: unknown[],
-  opts?: Options & InitializerOptions,
+  opts?: Options,
 ): Promise<ContractInstance>;
 
 export async function deployProxy(
   Contract: ContractClass,
-  args: unknown[] | (Options & InitializerOptions) = [],
-  opts: Options & InitializerOptions = {},
+  args: unknown[] | (Options) = [],
+  opts: Options = {},
 ): Promise<ContractInstance> {
   if (!Array.isArray(args)) {
     opts = args;
     args = [];
   }
+  const requiredOpts: Required<Options> = withDefaults(opts);
 
-  const { deployer } = withDeployDefaults(opts);
-  const provider = wrapProvider(deployer.provider);
+  const provider = wrapProvider(requiredOpts.deployer.provider);
+  const impl = await deployImpl(Contract, requiredOpts);
+  const data = getInitializerData(Contract, args, requiredOpts.initializer);
 
-  const { contracts_build_directory, contracts_directory } = getTruffleConfig();
-  const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
+  let proxy: ContractInstance;
+  switch (requiredOpts.kind) {
+    case 'auto':
+    case 'uups':
+      const ProxyFactory = getProxyFactory(Contract);
+      proxy = await requiredOpts.deployer.deploy(ProxyFactory, impl, data);
+      break;
 
-  const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
-  const version = getVersion(Contract.bytecode, linkedBytecode);
-  assertUpgradeSafe([validations], version, opts);
-
-  const impl = await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(Contract, deployer);
-    const layout = getStorageLayout([validations], version);
-    return { ...deployment, layout };
-  });
-
-  const AdminFactory = getProxyAdminFactory(Contract);
-  const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, deployer));
-
-  const data = getInitializerData(Contract, args, opts.initializer);
-  const AdminUpgradeabilityProxy = getProxyFactory(Contract);
-  const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data);
+    case 'transparent':
+      const AdminFactory = getProxyAdminFactory(Contract);
+      const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, requiredOpts.deployer));
+      const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
+      proxy = await requiredOpts.deployer.deploy(TransparentUpgradeableProxyFactory, impl, adminAddress, data);
+      break;
+  }
 
   Contract.address = proxy.address;
-
   const contract = new Contract(proxy.address);
   contract.transactionHash = proxy.transactionHash;
   return contract;
 }
 
-function getInitializerData(Contract: ContractClass, args: unknown[], initializer?: string | false): string {
+function getInitializerData(Contract: ContractClass, args: unknown[], initializer: string | false): string {
   if (initializer === false) {
     return '0x';
   }
 
-  const allowNoInitialization = initializer === undefined && args.length === 0;
-  initializer = initializer ?? 'initialize';
-
   const stub = new Contract('');
-
   if (initializer in stub.contract.methods) {
     return stub.contract.methods[initializer](...args).encodeABI();
-  } else if (allowNoInitialization) {
+  } else if (initializer === 'initialize' && args.length === 0) {
     return '0x';
   } else {
     throw new Error(`Contract ${Contract.name} does not have a function \`${initializer}\``);

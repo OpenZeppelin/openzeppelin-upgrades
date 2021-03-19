@@ -23,4 +23,8 @@ contract GreeterV3 {
     function version() public pure returns (string memory) {
         return "V3";
     }
+
 }
+
+import "./utils/Proxiable.sol";
+contract GreeterV3Proxiable is GreeterV3, Proxiable {}
