@@ -1,16 +1,9 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import {
-  Manifest,
-  getAdminAddress,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 
-import {
-  deployImpl,
-  Options,
-  withDefaults,
-} from './utils';
+import { deployImpl, Options, withDefaults } from './utils';
 
 export type PrepareUpgradeFunction = (
   proxyAddress: string,

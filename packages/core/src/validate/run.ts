@@ -104,7 +104,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
         ];
 
         validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc, deref);
-        validation[contractDef.name].methods = [ ...findAll('FunctionDefinition', contractDef) ]
+        validation[contractDef.name].methods = [...findAll('FunctionDefinition', contractDef)]
           .map(fnDef => getFunctionSignature(fnDef, deref))
           .filter(Boolean) as string[];
       }

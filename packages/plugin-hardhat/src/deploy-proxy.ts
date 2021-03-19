@@ -1,9 +1,7 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import {
-  fetchOrDeployAdmin,
-} from '@openzeppelin/upgrades-core';
+import { fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
 
 import {
   deploy,
@@ -21,11 +19,7 @@ export interface DeployFunction {
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
-  return async function deployProxy(
-    ImplFactory: ContractFactory,
-    args: unknown[] | Options = [],
-    opts: Options = {},
-  ) {
+  return async function deployProxy(ImplFactory: ContractFactory, args: unknown[] | Options = [], opts: Options = {}) {
     if (!Array.isArray(args)) {
       opts = args;
       args = [];
@@ -39,17 +33,19 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     let proxy: Contract;
     switch (requiredOpts.kind) {
       case 'auto':
-      case 'uups':
+      case 'uups': {
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
         proxy = await ProxyFactory.deploy(impl, data);
         break;
+      }
 
-      case 'transparent':
+      case 'transparent': {
         const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
         const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
         proxy = await TransparentUpgradeableProxyFactory.deploy(impl, adminAddress, data);
         break;
+      }
     }
 
     const inst = ImplFactory.attach(proxy.address);

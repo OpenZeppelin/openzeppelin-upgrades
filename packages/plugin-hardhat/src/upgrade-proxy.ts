@@ -1,10 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import {
-  Manifest,
-  getAdminAddress,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 
 import {
   deployImpl,
@@ -14,11 +11,7 @@ import {
   withDefaults,
 } from './utils';
 
-export type UpgradeFunction = (
-  proxyAddress: string,
-  ImplFactory: ContractFactory,
-  opts?: Options,
-) => Promise<Contract>;
+export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory, opts?: Options) => Promise<Contract>;
 
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunction {
   return async function upgradeProxy(proxyAddress, ImplFactory, opts: Options = {}) {
@@ -33,9 +26,8 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
       requiredOpts.kind = adminAddress === '0x0000000000000000000000000000000000000000' ? 'uups' : 'transparent';
     }
 
-    switch(requiredOpts.kind) {
-      case 'uups':
-      {
+    switch (requiredOpts.kind) {
+      case 'uups': {
         // Use TransparentUpgradeableProxyFactory to get proxiable interface
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
         const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);
@@ -44,8 +36,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
         break;
       }
 
-      case 'transparent':
-      {
+      case 'transparent': {
         const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
         const admin = AdminFactory.attach(adminAddress);
         const manifestAdmin = await manifest.getAdmin();

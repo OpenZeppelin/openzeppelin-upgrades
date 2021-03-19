@@ -21,7 +21,7 @@ export async function deployImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   requiredOpts: Required<Options>,
-  checkStorageUpgrade?: { proxyAddress: string, manifest: Manifest }
+  checkStorageUpgrade?: { proxyAddress: string; manifest: Manifest },
 ): Promise<string> {
   if (requiredOpts.kind === 'transparent') {
     requiredOpts.unsafeAllow.push('no-public-upgrade-fn');
@@ -36,11 +36,15 @@ export async function deployImpl(
 
   if (checkStorageUpgrade) {
     const currentImplAddress = await getImplementationAddress(provider, checkStorageUpgrade.proxyAddress);
-    const deploymentLayout = await getStorageLayoutForAddress(checkStorageUpgrade.manifest, validations, currentImplAddress);
+    const deploymentLayout = await getStorageLayoutForAddress(
+      checkStorageUpgrade.manifest,
+      validations,
+      currentImplAddress,
+    );
     assertStorageUpgradeSafe(
       deploymentLayout,
       layout,
-      requiredOpts.unsafeAllow.includes('struct-definition') || requiredOpts.unsafeAllow.includes('enum-definition')
+      requiredOpts.unsafeAllow.includes('struct-definition') || requiredOpts.unsafeAllow.includes('enum-definition'),
     );
   }
 

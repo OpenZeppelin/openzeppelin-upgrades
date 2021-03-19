@@ -13,7 +13,11 @@ module.exports = async function (deployer) {
   await deployer.deploy(SafePercent);
 
   await deployer.link(SafeMath, Token);
-  const t = await deployProxy(Token, ['TKN', 10000], { deployer, unsafeAllow: ['external-library-linking'], kind: 'transparent' });
+  const t = await deployProxy(Token, ['TKN', 10000], {
+    deployer,
+    unsafeAllow: ['external-library-linking'],
+    kind: 'transparent',
+  });
 
   await deployer.link(SafeMath, TokenV2);
   await upgradeProxy(t.address, TokenV2, { deployer, unsafeAllow: ['external-library-linking'], kind: 'transparent' });

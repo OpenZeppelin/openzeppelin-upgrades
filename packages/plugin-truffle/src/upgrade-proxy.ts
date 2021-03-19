@@ -1,7 +1,4 @@
-import {
-  Manifest,
-  getAdminAddress,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
@@ -30,19 +27,17 @@ export async function upgradeProxy(
     requiredOpts.kind = adminAddress === '0x0000000000000000000000000000000000000000' ? 'uups' : 'transparent';
   }
 
-  switch(requiredOpts.kind) {
-    case 'uups':
-    {
+  switch (requiredOpts.kind) {
+    case 'uups': {
       // Use TransparentUpgradeableProxyFactory to get proxiable interface
       const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
       const proxy = new TransparentUpgradeableProxyFactory(proxyAddress);
-      const nextImpl = await deployImpl(Contract, requiredOpts, { proxyAddress, manifest});
+      const nextImpl = await deployImpl(Contract, requiredOpts, { proxyAddress, manifest });
       await proxy.upgradeTo(nextImpl);
       break;
     }
 
-    case 'transparent':
-    {
+    case 'transparent': {
       const AdminFactory = getProxyAdminFactory(Contract);
       const admin = new AdminFactory(adminAddress);
       const manifestAdmin = await manifest.getAdmin();
@@ -50,7 +45,7 @@ export async function upgradeProxy(
         throw new Error('Proxy admin is not the one registered in the network manifest');
       }
 
-      const nextImpl = await deployImpl(Contract, requiredOpts, { proxyAddress, manifest});
+      const nextImpl = await deployImpl(Contract, requiredOpts, { proxyAddress, manifest });
       await admin.upgrade(proxyAddress, nextImpl);
       break;
     }

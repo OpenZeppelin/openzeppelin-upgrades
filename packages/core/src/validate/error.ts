@@ -52,9 +52,10 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   },
   'no-public-upgrade-fn': {
     msg: () => `Implementation is missing a public \`upgradeTo(address)\` function`,
-    hint: () => `Have your implementation inherit from proxy/UUPS/Proxiable or use a transparent proxy by setting the \`kind: 'transparent'\` option`,
+    hint: () =>
+      `Have your implementation inherit from proxy/UUPS/Proxiable or use a transparent proxy by setting the \`kind: 'transparent'\` option`,
     // link: 'https://zpl.in/upgrades/error-007', // TODO
-  }
+  },
 };
 
 function describeError(e: ValidationError): string {

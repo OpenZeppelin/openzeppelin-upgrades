@@ -8,7 +8,10 @@ export async function getProxyFactory(hre: HardhatRuntimeEnvironment, signer?: S
   return hre.ethers.getContractFactory(ERC1967Proxy.abi, ERC1967Proxy.bytecode, signer);
 }
 
-export async function getTransparentUpgradeableProxyFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
+export async function getTransparentUpgradeableProxyFactory(
+  hre: HardhatRuntimeEnvironment,
+  signer?: Signer,
+): Promise<ContractFactory> {
   return hre.ethers.getContractFactory(TransparentUpgradeableProxy.abi, TransparentUpgradeableProxy.bytecode, signer);
 }
 

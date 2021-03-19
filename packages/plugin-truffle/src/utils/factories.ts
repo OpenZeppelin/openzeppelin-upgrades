@@ -10,7 +10,7 @@ function makeFactoryGetter(artifacts: unknown): (template?: ContractClass) => Co
     contract.setProvider(template?.currentProvider ?? getTruffleProvider());
     contract.defaults(template?.class_defaults ?? getTruffleDefaults());
     return contract;
-  }
+  };
 }
 
 export const getProxyFactory = makeFactoryGetter(ERC1967ProxyArtifact);

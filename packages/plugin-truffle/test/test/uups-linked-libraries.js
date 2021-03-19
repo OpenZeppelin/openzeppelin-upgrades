@@ -32,7 +32,10 @@ contract('Token with flag', function (accounts) {
 
     const safeMathLib2 = await SafeMathV2.deployed();
     Token.link('SafeMath', safeMathLib2.address);
-    const tokenNew = await deployProxy(Token, ['TKN', 5000], { unsafeAllow: ['external-library-linking'], kind: 'uups' });
+    const tokenNew = await deployProxy(Token, ['TKN', 5000], {
+      unsafeAllow: ['external-library-linking'],
+      kind: 'uups',
+    });
 
     assert.strictEqual('5000', (await tokenNew.totalSupply()).toString());
     assert.strictEqual('V2', await tokenNew.getLibraryVersion());

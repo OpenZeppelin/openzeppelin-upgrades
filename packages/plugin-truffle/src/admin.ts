@@ -1,12 +1,6 @@
 import { EthereumProvider, getAdminAddress, Manifest } from '@openzeppelin/upgrades-core';
 
-import {
-  ContractInstance,
-  getProxyAdminFactory,
-  wrapProvider,
-  Options,
-  withDefaults,
-} from './utils';
+import { ContractInstance, getProxyAdminFactory, wrapProvider, Options, withDefaults } from './utils';
 
 async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Options = {}): Promise<void> {
   const { deployer } = withDefaults(opts);

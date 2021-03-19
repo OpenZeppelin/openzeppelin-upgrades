@@ -18,9 +18,8 @@ function serialize(typename: TypeName | null | undefined, deref: ASTDereferencer
     case 'Mapping':
       throw new Error(`Unsuported TypeName node type: ${typename.nodeType}`);
 
-    case 'UserDefinedTypeName':
+    case 'UserDefinedTypeName': {
       const userDefinedType = deref(['StructDefinition', 'EnumDefinition'], typename.referencedDeclaration);
-
       switch (userDefinedType.nodeType) {
         case 'StructDefinition':
           return '(' + userDefinedType.members.map(member => serialize(member.typeName, deref)) + ')';
@@ -28,6 +27,7 @@ function serialize(typename: TypeName | null | undefined, deref: ASTDereferencer
         case 'EnumDefinition':
           return 'uint8';
       }
+    }
   }
 }
 
@@ -35,7 +35,12 @@ export function getFunctionSignature(fnDef: FunctionDefinition, deref: ASTDerefe
   switch (fnDef.visibility) {
     case 'external':
     case 'public':
-      return fnDef.name + '(' + fnDef.parameters.parameters.map(parameter => serialize(parameter.typeName, deref)).join() + ')';
+      return (
+        fnDef.name +
+        '(' +
+        fnDef.parameters.parameters.map(parameter => serialize(parameter.typeName, deref)).join() +
+        ')'
+      );
     case 'internal':
     case 'private':
       return undefined;

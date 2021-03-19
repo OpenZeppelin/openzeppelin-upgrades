@@ -83,10 +83,18 @@ test('inherited storage', t => {
   }
 });
 
-testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking', 'no-public-upgrade-fn'] }, true);
-testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking', 'no-public-upgrade-fn'] }, true);
+testOverride(
+  'UsesImplicitSafeExternalLibrary',
+  { unsafeAllow: ['external-library-linking', 'no-public-upgrade-fn'] },
+  true,
+);
+testOverride(
+  'UsesExplicitSafeExternalLibrary',
+  { unsafeAllow: ['external-library-linking', 'no-public-upgrade-fn'] },
+  true,
+);
 
-testOverride('HasEmptyConstructor', { unsafeAllow: [] }, false);
-testOverride('HasInternalUpgrateToFunction', { unsafeAllow: [] }, false);
-testOverride('HasUpgrateToFunction', { unsafeAllow: [] }, true);
-testOverride('ParentHasUpgrateToFunction', { unsafeAllow: [] }, true);
+testValid('HasEmptyConstructor', false);
+testValid('HasInternalUpgrateToFunction', false);
+testValid('HasUpgrateToFunction', true);
+testValid('ParentHasUpgrateToFunction', true);

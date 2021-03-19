@@ -1,15 +1,6 @@
-import {
-  Manifest,
-  getAdminAddress,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 
-import {
-  ContractClass,
-  wrapProvider,
-  deployImpl,
-  Options,
-  withDefaults,
-} from './utils';
+import { ContractClass, wrapProvider, deployImpl, Options, withDefaults } from './utils';
 
 export async function prepareUpgrade(
   proxyAddress: string,
@@ -27,5 +18,5 @@ export async function prepareUpgrade(
     requiredOpts.kind = adminAddress === '0x0000000000000000000000000000000000000000' ? 'uups' : 'transparent';
   }
 
-  return await deployImpl(Contract, requiredOpts, { proxyAddress, manifest});
+  return await deployImpl(Contract, requiredOpts, { proxyAddress, manifest });
 }

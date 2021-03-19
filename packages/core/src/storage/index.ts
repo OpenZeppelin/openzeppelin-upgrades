@@ -55,7 +55,7 @@ export function getStorageUpgradeErrors(
     assertStorageUpgradeSafe(
       original,
       updated,
-      (opts.unsafeAllow || []).includes('struct-definition') || (opts.unsafeAllow || []).includes('enum-definition')
+      (opts.unsafeAllow || []).includes('struct-definition') || (opts.unsafeAllow || []).includes('enum-definition'),
     );
   } catch (e) {
     if (e instanceof StorageUpgradeErrors) {

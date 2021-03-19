@@ -1,6 +1,4 @@
-import {
-  fetchOrDeployAdmin,
-} from '@openzeppelin/upgrades-core';
+import { fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
@@ -15,20 +13,13 @@ import {
   withDefaults,
 } from './utils';
 
-export async function deployProxy(
-  Contract: ContractClass,
-  opts?: Options,
-): Promise<ContractInstance>;
+export async function deployProxy(Contract: ContractClass, opts?: Options): Promise<ContractInstance>;
+
+export async function deployProxy(Contract: ContractClass, args?: unknown[], opts?: Options): Promise<ContractInstance>;
 
 export async function deployProxy(
   Contract: ContractClass,
-  args?: unknown[],
-  opts?: Options,
-): Promise<ContractInstance>;
-
-export async function deployProxy(
-  Contract: ContractClass,
-  args: unknown[] | (Options) = [],
+  args: unknown[] | Options = [],
   opts: Options = {},
 ): Promise<ContractInstance> {
   if (!Array.isArray(args)) {
@@ -44,17 +35,19 @@ export async function deployProxy(
   let proxy: ContractInstance;
   switch (requiredOpts.kind) {
     case 'auto':
-    case 'uups':
+    case 'uups': {
       const ProxyFactory = getProxyFactory(Contract);
       proxy = await requiredOpts.deployer.deploy(ProxyFactory, impl, data);
       break;
+    }
 
-    case 'transparent':
+    case 'transparent': {
       const AdminFactory = getProxyAdminFactory(Contract);
       const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, requiredOpts.deployer));
       const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
       proxy = await requiredOpts.deployer.deploy(TransparentUpgradeableProxyFactory, impl, adminAddress, data);
       break;
+    }
   }
 
   Contract.address = proxy.address;
