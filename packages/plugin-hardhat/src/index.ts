@@ -8,7 +8,8 @@ import { lazyObject } from 'hardhat/plugins';
 
 import type { silenceWarnings, SolcInput } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
-import type { UpgradeFunction, PrepareUpgradeFunction } from './upgrade-proxy';
+import type { PrepareUpgradeFunction } from './prepare-upgrade';
+import type { UpgradeFunction } from './upgrade-proxy';
 import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction, GetInstanceFunction } from './admin';
 
 export interface HardhatUpgrades {
@@ -28,7 +29,7 @@ interface RunCompilerArgs {
 }
 
 subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) => {
-  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import('./validations');
+  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import('./utils/validations');
 
   try {
     await readValidations(hre);
@@ -45,7 +46,7 @@ subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) =
 
 subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
   const { validate, solcInputOutputDecoder } = await import('@openzeppelin/upgrades-core');
-  const { writeValidations } = await import('./validations');
+  const { writeValidations } = await import('./utils/validations');
 
   // TODO: patch input
   const { output, solcBuild } = await runSuper();
@@ -63,10 +64,11 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 extendEnvironment(hre => {
   hre.upgrades = lazyObject(
     (): HardhatUpgrades => {
-      const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
-      const { makeDeployProxy } = require('./deploy-proxy');
-      const { makeUpgradeProxy, makePrepareUpgrade } = require('./upgrade-proxy');
       const { silenceWarnings } = require('@openzeppelin/upgrades-core');
+      const { makeDeployProxy } = require('./deploy-proxy');
+      const { makeUpgradeProxy } = require('./upgrade-proxy');
+      const { makePrepareUpgrade } = require('./prepare-upgrade');
+      const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
 
       return {
         silenceWarnings,

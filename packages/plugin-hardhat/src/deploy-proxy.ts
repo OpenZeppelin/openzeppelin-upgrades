@@ -2,63 +2,43 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
 import {
-  assertUpgradeSafe,
-  getStorageLayout,
-  fetchOrDeploy,
   fetchOrDeployAdmin,
-  getVersion,
-  getUnlinkedBytecode,
 } from '@openzeppelin/upgrades-core';
 
 import {
+  deploy,
+  deployImpl,
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
-} from './proxy-factory';
-
-import { readValidations } from './validations';
-import { deploy } from './utils/deploy';
-import { DeployOptions } from './types';
+  Options,
+  withDefaults,
+} from './utils';
 
 export interface DeployFunction {
-  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
-  (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
+  (ImplFactory: ContractFactory, args?: unknown[], opts?: Options): Promise<Contract>;
+  (ImplFactory: ContractFactory, opts?: Options): Promise<Contract>;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
   return async function deployProxy(
     ImplFactory: ContractFactory,
-    args: unknown[] | DeployOptions = [],
-    opts: DeployOptions = {},
+    args: unknown[] | Options = [],
+    opts: Options = {},
   ) {
     if (!Array.isArray(args)) {
       opts = args;
       args = [];
     }
-
-    if (opts.kind === 'transparent') {
-      opts.unsafeAllow = opts.unsafeAllow || [];
-      opts.unsafeAllow.push('no-public-upgrade-fn');
-    }
+    const requiredOpts: Required<Options> = withDefaults(opts);
 
     const { provider } = hre.network;
-    const validations = await readValidations(hre);
-
-    const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
-    const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
-    assertUpgradeSafe(validations, version, opts);
-
-    const impl = await fetchOrDeploy(version, provider, async () => {
-      const deployment = await deploy(ImplFactory);
-      const layout = getStorageLayout(validations, version);
-      return { ...deployment, layout };
-    });
-
-    const data = getInitializerData(ImplFactory, args, opts.initializer);
+    const impl = deployImpl(hre, ImplFactory, requiredOpts);
+    const data = getInitializerData(ImplFactory, args, requiredOpts.initializer);
 
     let proxy: Contract;
-    switch(opts.kind) {
-      case undefined:
+    switch(requiredOpts.kind) {
+      case 'auto':
       case 'uups':
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
         proxy = await ProxyFactory.deploy(impl, data);
@@ -82,20 +62,17 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     return inst;
   };
 
-  function getInitializerData(ImplFactory: ContractFactory, args: unknown[], initializer?: string | false): string {
+  function getInitializerData(ImplFactory: ContractFactory, args: unknown[], initializer: string | false): string {
     if (initializer === false) {
       return '0x';
     }
-
-    const allowNoInitialization = initializer === undefined && args.length === 0;
-    initializer = initializer ?? 'initialize';
 
     try {
       const fragment = ImplFactory.interface.getFunction(initializer);
       return ImplFactory.interface.encodeFunctionData(fragment, args);
     } catch (e: unknown) {
       if (e instanceof Error) {
-        if (allowNoInitialization && e.message.includes('no matching function')) {
+        if (initializer === 'initialize' && args.length === 0 && e.message.includes('no matching function')) {
           return '0x';
         }
       }
