@@ -23,9 +23,9 @@ test.beforeEach(async t => {
     },
   }).makeProposeUpgrade(hre);
 
-  t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
-  t.context.greeter = await upgrades.deployProxy(t.context.Greeter);
+  t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.greeter = await upgrades.deployProxy(t.context.Greeter, { kind: 'uups'});
 });
 
 test.afterEach.always(() => {

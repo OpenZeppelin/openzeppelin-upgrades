@@ -11,3 +11,7 @@ contract GreeterV2 {
       return 2;
     }
 }
+
+import "./utils/Proxiable.sol";
+contract GreeterProxiable is Greeter, Proxiable {}
+contract GreeterV2Proxiable is GreeterV2, Proxiable {}
