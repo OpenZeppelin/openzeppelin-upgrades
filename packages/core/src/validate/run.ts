@@ -56,6 +56,32 @@ interface ValidationErrorUpgradeability extends ValidationErrorBase {
   kind: 'no-public-upgrade-fn';
 }
 
+/**
+ * @dev Hardcoded skiplist. Usage:
+ *
+ * 'ERC1967Upgrade': { '*':     [ 'delegatecall'                                                         ] }, // disable delegatecall check for all functions in the ERC1967Upgrade contract
+ * 'ERC1967Upgrade': { 'func1': [ 'delegatecall'                                                         ] }, // disable delegatecall check for func1 in the ERC1967Upgrade contract
+ * '*':              { 'func2': [ 'delegatecall'                                                         ] }, // disable delegatecall check for func2 in all contracts
+ * 'MyContract':     { '*':     [ 'state-variable-assignment', 'state-variable-immutable', 'constructor' ] }, // disable state variable (assignment & immutable) and constructor checks in MyContract
+ * 'MyContract':     { 'lib1':  [ 'external-library-definition'                                          ] }, // disable library check for lib1 in MyContract
+ * 'MyContract':     { '*':     [ 'external-library-definition'                                          ] }, // disable library check all libraries in MyContract
+ */
+const SKIPLIST: Record<string, Record<string, ValidationError['kind'][]>> = {
+  ERC1967Upgrade: { functionDelegateCall: ['delegatecall'] },
+};
+
+function skipCheck(error: ValidationError['kind'], contract: string, name?: string): boolean {
+  const skipForAll = SKIPLIST['*'] || {};
+  const skipForContract = SKIPLIST[contract] || {};
+  return (
+    ('*' in skipForAll && skipForAll['*'].includes(error)) ||
+    ('*' in skipForContract && skipForContract['*'].includes(error)) ||
+    (name && name in skipForAll && skipForAll[name].includes(error)) ||
+    (name && name in skipForContract && skipForContract[name].includes(error)) ||
+    false
+  );
+}
+
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationRunData {
   const validation: ValidationRunData = {};
   const fromId: Record<number, string> = {};
@@ -123,13 +149,15 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
-  for (const fnDef of findAll('FunctionDefinition', contractDef)) {
-    if (fnDef.kind === 'constructor' && ((fnDef.body?.statements.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
-      yield {
-        kind: 'constructor',
-        contract: contractDef.name,
-        src: decodeSrc(fnDef),
-      };
+  if (!skipCheck('constructor', contractDef.name)) {
+    for (const fnDef of findAll('FunctionDefinition', contractDef)) {
+      if (fnDef.kind === 'constructor' && ((fnDef.body?.statements.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
+        yield {
+          kind: 'constructor',
+          contract: contractDef.name,
+          src: decodeSrc(fnDef),
+        };
+      }
     }
   }
 }
@@ -138,7 +166,11 @@ function* getDelegateCallErrors(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationErrorOpcode> {
-  for (const fnCall of findAll('FunctionCall', contractDef)) {
+  for (const fnCall of findAll(
+    'FunctionCall',
+    contractDef,
+    node => isNodeType('FunctionDefinition', node) && skipCheck('delegatecall', contractDef.name, node.name),
+  )) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_baredelegatecall_/)) {
       yield {
@@ -146,6 +178,13 @@ function* getDelegateCallErrors(
         src: decodeSrc(fnCall),
       };
     }
+  }
+  for (const fnCall of findAll(
+    'FunctionCall',
+    contractDef,
+    node => isNodeType('FunctionDefinition', node) && skipCheck('selfdestruct', contractDef.name, node.name),
+  )) {
+    const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_selfdestruct_/)) {
       yield {
         kind: 'selfdestruct',
@@ -162,18 +201,22 @@ function* getStateVariableErrors(
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
       if (!varDecl.constant && !isNullish(varDecl.value)) {
-        yield {
-          kind: 'state-variable-assignment',
-          name: varDecl.name,
-          src: decodeSrc(varDecl),
-        };
+        if (!skipCheck('state-variable-assignment', contractDef.name)) {
+          yield {
+            kind: 'state-variable-assignment',
+            name: varDecl.name,
+            src: decodeSrc(varDecl),
+          };
+        }
       }
       if (varDecl.mutability === 'immutable') {
-        yield {
-          kind: 'state-variable-immutable',
-          name: varDecl.name,
-          src: decodeSrc(varDecl),
-        };
+        if (!skipCheck('state-variable-immutable', contractDef.name)) {
+          yield {
+            kind: 'state-variable-immutable',
+            name: varDecl.name,
+            src: decodeSrc(varDecl),
+          };
+        }
       }
     }
   }
@@ -203,11 +246,13 @@ function* getLinkingErrors(
   const { linkReferences } = bytecode;
   for (const source of Object.keys(linkReferences)) {
     for (const libName of Object.keys(linkReferences[source])) {
-      yield {
-        kind: 'external-library-linking',
-        name: libName,
-        src: source,
-      };
+      if (!skipCheck('external-library-linking', contractDef.name, libName)) {
+        yield {
+          kind: 'external-library-linking',
+          name: libName,
+          src: source,
+        };
+      }
     }
   }
 }

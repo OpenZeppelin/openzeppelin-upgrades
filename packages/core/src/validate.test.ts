@@ -98,3 +98,4 @@ testValid('HasEmptyConstructor', false);
 testValid('HasInternalUpgrateToFunction', false);
 testValid('HasUpgrateToFunction', true);
 testValid('ParentHasUpgrateToFunction', true);
+testValid('ChildOfProxiable', true);
