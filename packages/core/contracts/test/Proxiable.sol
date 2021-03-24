@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.8;
+pragma solidity ^0.8.2;
 
 library StorageSlot {
     struct AddressSlot { address value; }
@@ -7,10 +7,10 @@ library StorageSlot {
     struct Bytes32Slot { bytes32 value; }
     struct Uint256Slot { uint256 value; }
 
-    function getAddressSlot(bytes32 slot) internal pure returns (AddressSlot storage r) { assembly { r_slot := slot } }
-    function getBooleanSlot(bytes32 slot) internal pure returns (BooleanSlot storage r) { assembly { r_slot := slot } }
-    function getBytes32Slot(bytes32 slot) internal pure returns (Bytes32Slot storage r) { assembly { r_slot := slot } }
-    function getUint256Slot(bytes32 slot) internal pure returns (Uint256Slot storage r) { assembly { r_slot := slot } }
+    function getAddressSlot(bytes32 slot) internal pure returns (AddressSlot storage r) { assembly { r.slot := slot } }
+    function getBooleanSlot(bytes32 slot) internal pure returns (BooleanSlot storage r) { assembly { r.slot := slot } }
+    function getBytes32Slot(bytes32 slot) internal pure returns (Bytes32Slot storage r) { assembly { r.slot := slot } }
+    function getUint256Slot(bytes32 slot) internal pure returns (Uint256Slot storage r) { assembly { r.slot := slot } }
 }
 
 abstract contract ERC1967Storage {
@@ -91,6 +91,7 @@ abstract contract ERC1967Upgrade is ERC1967Storage {
     function functionDelegateCall(address target, bytes memory data, string memory errorMessage) private returns (bytes memory) {
         require(isContract(target), "Address: delegate call to non-contract");
         // solhint-disable-next-line avoid-low-level-calls
+        /// @custom:openzeppelin-upgrade-allow delegate-call
         (bool success, bytes memory returndata) = target.delegatecall(data);
         return _verifyCallResult(success, returndata, errorMessage);
     }
@@ -124,4 +125,8 @@ abstract contract Proxiable is ERC1967Upgrade {
     }
 
     function _beforeUpgrade(address newImplementation) internal virtual;
+}
+
+contract ChildOfProxiable is Proxiable {
+    function _beforeUpgrade(address newImplementation) internal virtual override {}
 }

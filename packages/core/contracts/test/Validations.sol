@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 
 // This helps the tests by hinting Hardhat to compile the two files together.
 import './Storage.sol';
-import './Proxiable.sol';
 
 contract HasEmptyConstructor {
   constructor() public { }
@@ -171,8 +170,4 @@ contract HasUpgrateToFunction {
 }
 
 contract ParentHasUpgrateToFunction is HasUpgrateToFunction {
-}
-
-contract ChildOfProxiable is Proxiable {
-    function _beforeUpgrade(address newImplementation) internal virtual override {}
 }

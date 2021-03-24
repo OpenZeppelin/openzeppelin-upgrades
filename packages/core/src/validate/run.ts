@@ -1,5 +1,5 @@
 import { isNodeType, findAll } from 'solidity-ast/utils';
-import type { ContractDefinition } from 'solidity-ast';
+import type { ContractDefinition, StructuredDocumentation } from 'solidity-ast';
 
 import { SolcOutput, SolcBytecode } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
@@ -56,31 +56,27 @@ interface ValidationErrorUpgradeability extends ValidationErrorBase {
   kind: 'no-public-upgrade-fn';
 }
 
-/**
- * @dev Hardcoded skiplist. Usage:
- *
- * 'ERC1967Upgrade': { '*':     [ 'delegatecall'                                                         ] }, // disable delegatecall check for all functions in the ERC1967Upgrade contract
- * 'ERC1967Upgrade': { 'func1': [ 'delegatecall'                                                         ] }, // disable delegatecall check for func1 in the ERC1967Upgrade contract
- * '*':              { 'func2': [ 'delegatecall'                                                         ] }, // disable delegatecall check for func2 in all contracts
- * 'MyContract':     { '*':     [ 'state-variable-assignment', 'state-variable-immutable', 'constructor' ] }, // disable state variable (assignment & immutable) and constructor checks in MyContract
- * 'MyContract':     { 'lib1':  [ 'external-library-definition'                                          ] }, // disable library check for lib1 in MyContract
- * 'MyContract':     { '*':     [ 'external-library-definition'                                          ] }, // disable library check all libraries in MyContract
- */
-const SKIPLIST: Record<string, Record<string, ValidationError['kind'][]>> = {
-  ERC1967Upgrade: { functionDelegateCall: ['delegatecall'] },
-};
+function skipCheck<T>(error: string, node: T): boolean {
+  function isAllowed(error: string, documentation: undefined | string | StructuredDocumentation): boolean {
+    switch (typeof documentation) {
+      case 'undefined':
+      return false;
 
-function skipCheck(error: ValidationError['kind'], contract: string, name?: string): boolean {
-  const skipForAll = SKIPLIST['*'] || {};
-  const skipForContract = SKIPLIST[contract] || {};
-  return (
-    ('*' in skipForAll && skipForAll['*'].includes(error)) ||
-    ('*' in skipForContract && skipForContract['*'].includes(error)) ||
-    (name && name in skipForAll && skipForAll[name].includes(error)) ||
-    (name && name in skipForContract && skipForContract[name].includes(error)) ||
-    false
-  );
+      case 'string': {
+        const entries = documentation.split(' ')
+        return [
+          '@custom:openzeppelin-upgrade-allow',
+          error
+        ].every(requierement => entries.includes(requierement));
+      }
+
+      default:
+      return isAllowed(error, documentation.text);
+    }
+  }
+  return isAllowed(error, (node as any).documentation ?? undefined);
 }
+
 
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationRunData {
   const validation: ValidationRunData = {};
@@ -149,9 +145,9 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
-  if (!skipCheck('constructor', contractDef.name)) {
-    for (const fnDef of findAll('FunctionDefinition', contractDef)) {
-      if (fnDef.kind === 'constructor' && ((fnDef.body?.statements.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
+  for (const fnDef of findAll('FunctionDefinition', contractDef)) {
+    if (fnDef.kind === 'constructor' && ((fnDef.body?.statements.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
+      if (!skipCheck('constructor', contractDef) && !skipCheck('constructor', fnDef)) {
         yield {
           kind: 'constructor',
           contract: contractDef.name,
@@ -169,7 +165,7 @@ function* getDelegateCallErrors(
   for (const fnCall of findAll(
     'FunctionCall',
     contractDef,
-    node => isNodeType('FunctionDefinition', node) && skipCheck('delegatecall', contractDef.name, node.name),
+    node => skipCheck('delegate-call', node)
   )) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_baredelegatecall_/)) {
@@ -182,7 +178,7 @@ function* getDelegateCallErrors(
   for (const fnCall of findAll(
     'FunctionCall',
     contractDef,
-    node => isNodeType('FunctionDefinition', node) && skipCheck('selfdestruct', contractDef.name, node.name),
+    node => skipCheck('selfdestruct', node),
   )) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_selfdestruct_/)) {
@@ -201,7 +197,7 @@ function* getStateVariableErrors(
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
       if (!varDecl.constant && !isNullish(varDecl.value)) {
-        if (!skipCheck('state-variable-assignment', contractDef.name)) {
+        if (!skipCheck('state-variable-assignment', contractDef) && !skipCheck('state-variable-assignment', varDecl)) {
           yield {
             kind: 'state-variable-assignment',
             name: varDecl.name,
@@ -210,7 +206,7 @@ function* getStateVariableErrors(
         }
       }
       if (varDecl.mutability === 'immutable') {
-        if (!skipCheck('state-variable-immutable', contractDef.name)) {
+        if (!skipCheck('state-variable-immutable', contractDef) && !skipCheck('state-variable-immutable', varDecl)) { // TODO: fix
           yield {
             kind: 'state-variable-immutable',
             name: varDecl.name,
@@ -246,7 +242,7 @@ function* getLinkingErrors(
   const { linkReferences } = bytecode;
   for (const source of Object.keys(linkReferences)) {
     for (const libName of Object.keys(linkReferences[source])) {
-      if (!skipCheck('external-library-linking', contractDef.name, libName)) {
+      if (!skipCheck('external-library-linking', contractDef)) {
         yield {
           kind: 'external-library-linking',
           name: libName,

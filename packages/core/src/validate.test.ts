@@ -19,14 +19,20 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasEmptyConstructor');
-  if (buildInfo === undefined) {
-    throw new Error('Build info not found');
-  }
-  const solcOutput = buildInfo.output;
-  const solcInput = buildInfo.input;
-  const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
-  t.context.validation = validate(solcOutput, decodeSrc);
+  t.context.validation = await [
+    'contracts/test/Validations.sol:HasEmptyConstructor',
+    'contracts/test/ValidationsNatspec.sol:HasEmptyConstructorNatspec',
+    'contracts/test/Proxiable.sol:ChildOfProxiable',
+  ].reduce(async (validation, contract) => {
+    const buildInfo = await artifacts.getBuildInfo(contract);
+    if (buildInfo === undefined) {
+      throw new Error(`Build info not found for contract ${contract}`);
+    }
+    const solcOutput = buildInfo.output;
+    const solcInput = buildInfo.input;
+    const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
+    return Object.assign(await validation, validate(solcOutput, decodeSrc));
+  }, Promise.resolve({}));
 });
 
 function testValid(name: string, valid: boolean) {
@@ -98,4 +104,32 @@ testValid('HasEmptyConstructor', false);
 testValid('HasInternalUpgrateToFunction', false);
 testValid('HasUpgrateToFunction', true);
 testValid('ParentHasUpgrateToFunction', true);
+
+testOverride('HasNonEmptyConstructorNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasNonEmptyConstructorNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('ParentHasNonEmptyConstructorNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('ParentHasNonEmptyConstructorNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('AncestorHasNonEmptyConstructorNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('AncestorHasNonEmptyConstructorNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasStateVariableAssignmentNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasStateVariableAssignmentNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+// testOverride('HasImmutableStateVariableNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+// testOverride('HasImmutableStateVariableNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasSelfDestructNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasSelfDestructNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasSelfDestructNatspec3', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasDelegateCallNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasDelegateCallNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasDelegateCallNatspec3', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('ImportedParentHasStateVariableAssignmentNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('ImportedParentHasStateVariableAssignmentNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesImplicitSafeInternalLibraryNatspec', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesImplicitSafeExternalLibraryNatspec', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesImplicitUnsafeInternalLibraryNatspec', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesImplicitUnsafeExternalLibraryNatspec', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesExplicitSafeInternalLibraryNatspec', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesExplicitSafeExternalLibraryNatspec', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesExplicitUnsafeInternalLibraryNatspec', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('UsesExplicitUnsafeExternalLibraryNatspec', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+
 testValid('ChildOfProxiable', true);
