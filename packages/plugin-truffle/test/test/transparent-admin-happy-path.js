@@ -2,8 +2,8 @@ const assert = require('assert');
 const { getAdminAddress } = require('@openzeppelin/upgrades-core');
 const upgrades = require('@openzeppelin/truffle-upgrades');
 const { getManifestAdmin } = require('@openzeppelin/truffle-upgrades/dist/admin.js');
-const { wrapProvider } = require('@openzeppelin/truffle-upgrades/dist/wrap-provider.js');
-const { withDefaults } = require('@openzeppelin/truffle-upgrades/dist/options.js');
+const { wrapProvider } = require('@openzeppelin/truffle-upgrades/dist/utils/wrap-provider.js');
+const { withDefaults } = require('@openzeppelin/truffle-upgrades/dist/utils/options.js');
 
 const Greeter = artifacts.require('Greeter');
 
