@@ -30,13 +30,13 @@ contract HasStateVariableAssignmentNatspec2 {
   uint x = 1;
 }
 
-/// @custom:openzeppelin-upgrade-allow state-variable-immutable
+/// @custom:openzeppelin-upgrade-allow state-variable-immutable state-variable-assignment
 contract HasImmutableStateVariableNatspec1 {
   uint immutable x = 1;
 }
 
 contract HasImmutableStateVariableNatspec2 {
-  /// @custom:openzeppelin-upgrade-allow state-variable-immutable
+  /// @custom:openzeppelin-upgrade-allow state-variable-immutable state-variable-assignment
   uint immutable x = 1;
 }
 
@@ -129,80 +129,112 @@ library UnsafeExternalLibraryNatspec {
 
 contract UsesImplicitSafeInternalLibraryNatspec {
   using SafeInternalLibraryNatspec for uint;
-  bool constant public usesimplicitsafeinternallibrarynatspec = true;
   uint x;
 
   function foo(uint y) public view {
     x.add(y);
+  }
+
+  // function name() external pure returns(string memory) {
+  function name_UsesImplicitSafeInternalLibraryNatspec() external pure returns(string memory) {
+    return type(UsesImplicitSafeInternalLibraryNatspec).name;
   }
 }
 
 /// @custom:openzeppelin-upgrade-allow external-library-linking
 contract UsesImplicitSafeExternalLibraryNatspec {
   using SafeExternalLibraryNatspec for uint;
-  bool constant public usesimplicitsafeexternallibrarynatspec = true;
   uint x;
 
   function foo(uint y) public view {
     x.add(y);
   }
+
+  // function name() external pure returns(string memory) {
+  function name_UsesImplicitSafeExternalLibraryNatspec() external pure returns(string memory) {
+    return type(UsesImplicitSafeExternalLibraryNatspec).name;
+  }
 }
 
 contract UsesImplicitUnsafeInternalLibraryNatspec {
   using UnsafeInternalLibraryNatspec for uint;
-  bool constant public usesimplicitunsafeinternallibrarynatspec = true;
   uint x;
 
   function foo(uint y) public {
     x.explode(y);
+  }
+
+  // function name() external pure returns(string memory) {
+  function name_UsesImplicitUnsafeInternalLibraryNatspec() external pure returns(string memory) {
+    return type(UsesImplicitUnsafeInternalLibraryNatspec).name;
   }
 }
 
 /// @custom:openzeppelin-upgrade-allow external-library-linking
 contract UsesImplicitUnsafeExternalLibraryNatspec {
   using UnsafeExternalLibraryNatspec for uint;
-  bool constant public usesimplicitunsafeexternallibrarynatspec = true;
   uint x;
 
   function foo(uint y) public {
     x.explode(y);
   }
+
+  // function name() external pure returns(string memory) {
+  function name_UsesImplicitUnsafeExternalLibraryNatspec() external pure returns(string memory) {
+    return type(UsesImplicitUnsafeExternalLibraryNatspec).name;
+  }
 }
 
 contract UsesExplicitSafeInternalLibraryNatspec {
-  bool constant public usesexplicitsafeinternallibrarynatspec = true;
   uint x;
 
   function foo(uint y) public view {
     SafeInternalLibraryNatspec.add(x, y);
   }
+
+  // function name() external pure returns(string memory) {
+  function name_UsesExplicitSafeInternalLibraryNatspec() external pure returns(string memory) {
+    return type(UsesExplicitSafeInternalLibraryNatspec).name;
+  }
 }
 
 /// @custom:openzeppelin-upgrade-allow external-library-linking
 contract UsesExplicitSafeExternalLibraryNatspec {
-  bool constant public usesexplicitsafeexternallibrarynatspec = true;
   uint x;
 
   function foo(uint y) public view {
     SafeExternalLibraryNatspec.add(x, y);
   }
+
+  // function name() external pure returns(string memory) {
+  function name_UsesExplicitSafeExternalLibraryNatspec() external pure returns(string memory) {
+    return type(UsesExplicitSafeExternalLibraryNatspec).name;
+  }
 }
 
 contract UsesExplicitUnsafeInternalLibraryNatspec {
-  bool constant public usesexplicitunsafeinternallibrarynatspec = true;
   uint x;
 
   function foo(uint y) public {
     UnsafeInternalLibraryNatspec.explode(x, y);
   }
+
+  // function name() external pure returns(string memory) {
+  function name_UsesExplicitUnsafeInternalLibraryNatspec() external pure returns(string memory) {
+    return type(UsesExplicitUnsafeInternalLibraryNatspec).name;
+  }
 }
 
 /// @custom:openzeppelin-upgrade-allow external-library-linking
 contract UsesExplicitUnsafeExternalLibraryNatspec {
-  bool constant public usesexplicitunsafeexternallibrarynatspec = true;
   uint x;
 
   function foo(uint y) public {
     UnsafeExternalLibraryNatspec.explode(x, y);
+  }
+
+  // function name() external pure returns(string memory) {
+  function name_UsesExplicitUnsafeExternalLibraryNatspec() external pure returns(string memory) {
+    return type(UsesExplicitUnsafeExternalLibraryNatspec).name;
   }
 }

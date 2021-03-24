@@ -113,8 +113,8 @@ testOverride('AncestorHasNonEmptyConstructorNatspec1', { unsafeAllow: ['no-publi
 testOverride('AncestorHasNonEmptyConstructorNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
 testOverride('HasStateVariableAssignmentNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
 testOverride('HasStateVariableAssignmentNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
-// testOverride('HasImmutableStateVariableNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
-// testOverride('HasImmutableStateVariableNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasImmutableStateVariableNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
+testOverride('HasImmutableStateVariableNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
 testOverride('HasSelfDestructNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
 testOverride('HasSelfDestructNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
 testOverride('HasSelfDestructNatspec3', { unsafeAllow: ['no-public-upgrade-fn'] }, true);

@@ -206,7 +206,7 @@ function* getStateVariableErrors(
         }
       }
       if (varDecl.mutability === 'immutable') {
-        if (!skipCheck('state-variable-immutable', contractDef) && !skipCheck('state-variable-immutable', varDecl)) { // TODO: fix
+        if (!skipCheck('state-variable-immutable', contractDef) && !skipCheck('state-variable-immutable', varDecl)) {
           yield {
             kind: 'state-variable-immutable',
             name: varDecl.name,
