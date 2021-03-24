@@ -60,23 +60,20 @@ function skipCheck<T>(error: string, node: T): boolean {
   function isAllowed(error: string, documentation: undefined | string | StructuredDocumentation): boolean {
     switch (typeof documentation) {
       case 'undefined':
-      return false;
+        return false;
 
       case 'string': {
-        const entries = documentation.split(' ')
-        return [
-          '@custom:openzeppelin-upgrade-allow',
-          error
-        ].every(requierement => entries.includes(requierement));
+        const entries = documentation.split(' ');
+        return ['@custom:openzeppelin-upgrade-allow', error].every(requierement => entries.includes(requierement));
       }
 
       default:
-      return isAllowed(error, documentation.text);
+        return isAllowed(error, documentation.text);
     }
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return isAllowed(error, (node as any).documentation ?? undefined);
 }
-
 
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationRunData {
   const validation: ValidationRunData = {};
@@ -162,11 +159,7 @@ function* getDelegateCallErrors(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationErrorOpcode> {
-  for (const fnCall of findAll(
-    'FunctionCall',
-    contractDef,
-    node => skipCheck('delegate-call', node)
-  )) {
+  for (const fnCall of findAll('FunctionCall', contractDef, node => skipCheck('delegate-call', node))) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_baredelegatecall_/)) {
       yield {
@@ -175,11 +168,7 @@ function* getDelegateCallErrors(
       };
     }
   }
-  for (const fnCall of findAll(
-    'FunctionCall',
-    contractDef,
-    node => skipCheck('selfdestruct', node),
-  )) {
+  for (const fnCall of findAll('FunctionCall', contractDef, node => skipCheck('selfdestruct', node))) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_selfdestruct_/)) {
       yield {
