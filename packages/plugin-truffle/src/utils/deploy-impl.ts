@@ -40,11 +40,7 @@ export async function deployImpl(
       currentImplAddress,
     );
     const layout = getStorageLayout([validations], version);
-    assertStorageUpgradeSafe(
-      deploymentLayout,
-      layout,
-      requiredOpts.unsafeAllow.includes('struct-definition') || requiredOpts.unsafeAllow.includes('enum-definition'),
-    );
+    assertStorageUpgradeSafe(deploymentLayout, layout, requiredOpts.unsafeAllowCustomTypes);
   }
 
   return await fetchOrDeploy(version, provider, async () => {

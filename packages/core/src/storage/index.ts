@@ -52,11 +52,7 @@ export function getStorageUpgradeErrors(
   opts: ValidationOptions = {},
 ): StorageOperation<StorageItem>[] {
   try {
-    assertStorageUpgradeSafe(
-      original,
-      updated,
-      (opts.unsafeAllow || []).includes('struct-definition') || (opts.unsafeAllow || []).includes('enum-definition'),
-    );
+    assertStorageUpgradeSafe(original, updated, opts.unsafeAllowCustomTypes);
   } catch (e) {
     if (e instanceof StorageUpgradeErrors) {
       return e.report.ops;

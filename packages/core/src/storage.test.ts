@@ -252,7 +252,7 @@ test('storage upgrade with missing struct members', t => {
     },
   });
 
-  t.deepEqual(getStorageUpgradeErrors(v1, v2, { unsafeAllow: ['struct-definition'] }), []);
+  t.deepEqual(getStorageUpgradeErrors(v1, v2, { unsafeAllowCustomTypes: true }), []);
 });
 
 test('storage upgrade with enums', t => {
@@ -330,7 +330,7 @@ test('storage upgrade with missing enum members', t => {
     },
   });
 
-  t.deepEqual(getStorageUpgradeErrors(v1, v2, { unsafeAllow: ['enum-definition'] }), []);
+  t.deepEqual(getStorageUpgradeErrors(v1, v2, { unsafeAllowCustomTypes: true }), []);
 });
 
 test('storage upgrade with recursive type', t => {

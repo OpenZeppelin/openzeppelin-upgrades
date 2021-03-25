@@ -41,11 +41,7 @@ export async function deployImpl(
       validations,
       currentImplAddress,
     );
-    assertStorageUpgradeSafe(
-      deploymentLayout,
-      layout,
-      requiredOpts.unsafeAllow.includes('struct-definition') || requiredOpts.unsafeAllow.includes('enum-definition'),
-    );
+    assertStorageUpgradeSafe(deploymentLayout, layout, requiredOpts.unsafeAllowCustomTypes);
   }
 
   return await fetchOrDeploy(version, provider, async () => {
