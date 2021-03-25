@@ -57,13 +57,45 @@ interface ValidationErrorUpgradeability extends ValidationErrorBase {
   kind: 'no-public-upgrade-fn';
 }
 
+function* execall(re: RegExp, text: string) {
+  re = new RegExp(re, re.flags + (re.sticky ? '' : 'y'));
+  while (true) {
+    const match = re.exec(text);
+    if (match && match[0] !== '') {
+      yield match;
+    } else {
+      break;
+    }
+  }
+}
+
 function skipCheck(error: string, node: Node): boolean {
   function isAllowed(error: string, documentation: StructuredDocumentation | string): boolean {
     switch (typeof documentation) {
       case 'string': {
-        // TODO: use solidity doxgen, throw error on unrecognised argument
-        const entries = documentation.split(' ');
-        return ['@custom:openzeppelin-upgrade-allow', error].every(requierement => entries.includes(requierement));
+        for (const { groups } of execall(/^(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^@\w+ )[^])*)/m, documentation)) {
+          if (groups && groups.title === 'custom' && groups.tag === 'openzeppelin-upgrade-allow') {
+            for (const [, arg] of execall(/(?<arg>[a-z][a-z-]*)\s?/,groups.args)) {
+              if (arg === error) {
+                return true;
+              }
+              if (![
+                'state-variable-assignment',
+                'state-variable-immutable',
+                'external-library-linking',
+                'struct-definition',
+                'enum-definition',
+                'constructor',
+                'delegatecall',
+                'selfdestruct',
+                'no-public-upgrade-fn',
+              ].includes(arg)) {
+                throw new Error(`NatSpec: openzeppelin-upgrade-allow argument not recognized: ${arg}`);
+              }
+            }
+          }
+        }
+        return false;
       }
       default:
         return isAllowed(error, documentation.text);
@@ -160,7 +192,7 @@ function* getDelegateCallErrors(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationErrorOpcode> {
-  for (const fnCall of findAll('FunctionCall', contractDef, node => skipCheck('delegate-call', node))) {
+  for (const fnCall of findAll('FunctionCall', contractDef, node => skipCheck('delegatecall', node))) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_baredelegatecall_/)) {
       yield {

@@ -61,7 +61,7 @@ contract HasSelfDestructNatspec3 {
   }
 }
 
-/// @custom:openzeppelin-upgrade-allow delegate-call
+/// @custom:openzeppelin-upgrade-allow delegatecall
 contract HasDelegateCallNatspec1 {
   function d() public {
     (bool s, ) = msg.sender.delegatecall("");
@@ -70,7 +70,7 @@ contract HasDelegateCallNatspec1 {
 }
 
 contract HasDelegateCallNatspec2 {
-  /// @custom:openzeppelin-upgrade-allow delegate-call
+  /// @custom:openzeppelin-upgrade-allow delegatecall
   function d() public {
     (bool s, ) = msg.sender.delegatecall("");
     s;
@@ -79,7 +79,7 @@ contract HasDelegateCallNatspec2 {
 
 contract HasDelegateCallNatspec3 {
   function d() public {
-    /// @custom:openzeppelin-upgrade-allow delegate-call
+    /// @custom:openzeppelin-upgrade-allow delegatecall
     (bool s, ) = msg.sender.delegatecall("");
     s;
   }

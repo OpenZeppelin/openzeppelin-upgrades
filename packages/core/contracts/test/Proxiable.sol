@@ -91,7 +91,7 @@ abstract contract ERC1967Upgrade is ERC1967Storage {
     function functionDelegateCall(address target, bytes memory data, string memory errorMessage) private returns (bytes memory) {
         require(isContract(target), "Address: delegate call to non-contract");
         // solhint-disable-next-line avoid-low-level-calls
-        /// @custom:openzeppelin-upgrade-allow delegate-call
+        /// @custom:openzeppelin-upgrade-allow delegatecall
         (bool success, bytes memory returndata) = target.delegatecall(data);
         return _verifyCallResult(success, returndata, errorMessage);
     }
