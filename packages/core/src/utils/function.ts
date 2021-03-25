@@ -31,18 +31,6 @@ function serialize(typename: TypeName | null | undefined, deref: ASTDereferencer
   }
 }
 
-export function getFunctionSignature(fnDef: FunctionDefinition, deref: ASTDereferencer): string | undefined {
-  switch (fnDef.visibility) {
-    case 'external':
-    case 'public':
-      return (
-        fnDef.name +
-        '(' +
-        fnDef.parameters.parameters.map(parameter => serialize(parameter.typeName, deref)).join() +
-        ')'
-      );
-    case 'internal':
-    case 'private':
-      return undefined;
-  }
+export function getFunctionSignature(fnDef: FunctionDefinition, deref: ASTDereferencer): string {
+  return `${fnDef.name}(${fnDef.parameters.parameters.map(parameter => serialize(parameter.typeName, deref)).join()})`;
 }
