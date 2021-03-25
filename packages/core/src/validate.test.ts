@@ -101,9 +101,9 @@ testOverride(
 );
 
 testValid('HasEmptyConstructor', false);
-testValid('HasInternalUpgrateToFunction', false);
-testValid('HasUpgrateToFunction', true);
-testValid('ParentHasUpgrateToFunction', true);
+testValid('HasInternalUpgradeToFunction', false);
+testValid('HasUpgradeToFunction', true);
+testValid('ParentHasUpgradeToFunction', true);
 
 testOverride('HasNonEmptyConstructorNatspec1', { unsafeAllow: ['no-public-upgrade-fn'] }, true);
 testOverride('HasNonEmptyConstructorNatspec2', { unsafeAllow: ['no-public-upgrade-fn'] }, true);

@@ -20,15 +20,13 @@ export function getVersion(bytecode: string, linkedBytecode?: string): Version {
 }
 
 export function hashBytecode(bytecode: string): string {
-  bytecode = bytecode.replace(/__\$.{34}\$__/g, (placeholder) => {
-    const descriptor = placeholder.slice(3, -3);
-    const hexDescriptor = /^[0-9a-zA-Z]{34}$/.test(descriptor)
-      ? `000${descriptor}000`
-      : keccak256(Buffer.from(descriptor)).toString('hex', 0, 20);
-    return hexDescriptor;
-  });
+  bytecode = bytecode
+    .replace(/__\$[0-9a-fA-F]{34}\$__/g, (placeholder) => `000${placeholder.slice(3,-3)}000`)
+    .replace(/__\w{36}__/g, (placeholder) => keccak256(Buffer.from(placeholder)).toString('hex', 0, 20));
 
-  if (!/^(0x)?([0-9a-fA-F]{2})*$/.test(bytecode)) {
+  // WARNING: some bytecode (with metadata?) have odd length, so we cannot do ([0-9a-fA-F]{2})*
+  if (!/^(0x)?[0-9a-fA-F]*$/.test(bytecode)) {
+    console.log(bytecode)
     throw new Error('Bytecode is not a valid hex string');
   }
 

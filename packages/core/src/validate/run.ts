@@ -1,3 +1,4 @@
+import { Node } from 'solidity-ast/node';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition, StructuredDocumentation } from 'solidity-ast';
 
@@ -56,23 +57,23 @@ interface ValidationErrorUpgradeability extends ValidationErrorBase {
   kind: 'no-public-upgrade-fn';
 }
 
-function skipCheck<T>(error: string, node: T): boolean {
-  function isAllowed(error: string, documentation: undefined | string | StructuredDocumentation): boolean {
+function skipCheck(error: string, node: Node): boolean {
+  function isAllowed(error: string, documentation: StructuredDocumentation | string): boolean {
     switch (typeof documentation) {
-      case 'undefined':
-        return false;
-
       case 'string': {
+        // TODO: use solidity doxgen, throw error on unrecognised argument
         const entries = documentation.split(' ');
         return ['@custom:openzeppelin-upgrade-allow', error].every(requierement => entries.includes(requierement));
       }
-
       default:
         return isAllowed(error, documentation.text);
     }
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return isAllowed(error, (node as any).documentation ?? undefined);
+  if ('documentation' in node && node.documentation) {
+    return isAllowed(error, node.documentation);
+  } else {
+    return false;
+  }
 }
 
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationRunData {

@@ -161,13 +161,13 @@ contract UsesExplicitUnsafeExternalLibrary {
   }
 }
 
-contract HasInternalUpgrateToFunction {
+contract HasInternalUpgradeToFunction {
     function upgradeTo(address) internal {}
 }
 
-contract HasUpgrateToFunction {
+contract HasUpgradeToFunction {
     function upgradeTo(address) public {}
 }
 
-contract ParentHasUpgrateToFunction is HasUpgrateToFunction {
+contract ParentHasUpgradeToFunction is HasUpgradeToFunction {
 }
