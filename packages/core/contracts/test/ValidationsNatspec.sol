@@ -134,11 +134,6 @@ contract UsesImplicitSafeInternalLibraryNatspec {
   function foo(uint y) public view {
     x.add(y);
   }
-
-  // function name() external pure returns(string memory) {
-  function name_UsesImplicitSafeInternalLibraryNatspec() external pure returns(string memory) {
-    return type(UsesImplicitSafeInternalLibraryNatspec).name;
-  }
 }
 
 /// @custom:openzeppelin-upgrade-allow external-library-linking
@@ -149,11 +144,6 @@ contract UsesImplicitSafeExternalLibraryNatspec {
   function foo(uint y) public view {
     x.add(y);
   }
-
-  // function name() external pure returns(string memory) {
-  function name_UsesImplicitSafeExternalLibraryNatspec() external pure returns(string memory) {
-    return type(UsesImplicitSafeExternalLibraryNatspec).name;
-  }
 }
 
 contract UsesImplicitUnsafeInternalLibraryNatspec {
@@ -162,11 +152,6 @@ contract UsesImplicitUnsafeInternalLibraryNatspec {
 
   function foo(uint y) public {
     x.explode(y);
-  }
-
-  // function name() external pure returns(string memory) {
-  function name_UsesImplicitUnsafeInternalLibraryNatspec() external pure returns(string memory) {
-    return type(UsesImplicitUnsafeInternalLibraryNatspec).name;
   }
 }
 
@@ -178,11 +163,6 @@ contract UsesImplicitUnsafeExternalLibraryNatspec {
   function foo(uint y) public {
     x.explode(y);
   }
-
-  // function name() external pure returns(string memory) {
-  function name_UsesImplicitUnsafeExternalLibraryNatspec() external pure returns(string memory) {
-    return type(UsesImplicitUnsafeExternalLibraryNatspec).name;
-  }
 }
 
 contract UsesExplicitSafeInternalLibraryNatspec {
@@ -190,11 +170,6 @@ contract UsesExplicitSafeInternalLibraryNatspec {
 
   function foo(uint y) public view {
     SafeInternalLibraryNatspec.add(x, y);
-  }
-
-  // function name() external pure returns(string memory) {
-  function name_UsesExplicitSafeInternalLibraryNatspec() external pure returns(string memory) {
-    return type(UsesExplicitSafeInternalLibraryNatspec).name;
   }
 }
 
@@ -205,11 +180,6 @@ contract UsesExplicitSafeExternalLibraryNatspec {
   function foo(uint y) public view {
     SafeExternalLibraryNatspec.add(x, y);
   }
-
-  // function name() external pure returns(string memory) {
-  function name_UsesExplicitSafeExternalLibraryNatspec() external pure returns(string memory) {
-    return type(UsesExplicitSafeExternalLibraryNatspec).name;
-  }
 }
 
 contract UsesExplicitUnsafeInternalLibraryNatspec {
@@ -217,11 +187,6 @@ contract UsesExplicitUnsafeInternalLibraryNatspec {
 
   function foo(uint y) public {
     UnsafeInternalLibraryNatspec.explode(x, y);
-  }
-
-  // function name() external pure returns(string memory) {
-  function name_UsesExplicitUnsafeInternalLibraryNatspec() external pure returns(string memory) {
-    return type(UsesExplicitUnsafeInternalLibraryNatspec).name;
   }
 }
 
@@ -231,10 +196,5 @@ contract UsesExplicitUnsafeExternalLibraryNatspec {
 
   function foo(uint y) public {
     UnsafeExternalLibraryNatspec.explode(x, y);
-  }
-
-  // function name() external pure returns(string memory) {
-  function name_UsesExplicitUnsafeExternalLibraryNatspec() external pure returns(string memory) {
-    return type(UsesExplicitUnsafeExternalLibraryNatspec).name;
   }
 }
