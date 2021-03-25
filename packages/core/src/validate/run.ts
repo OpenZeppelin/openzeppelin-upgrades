@@ -124,8 +124,8 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
         validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc, deref);
         validation[contractDef.name].methods = [...findAll('FunctionDefinition', contractDef)]
-          .map(fnDef => getFunctionSignature(fnDef, deref))
-          .filter(Boolean) as string[];
+          .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
+          .map(fnDef => getFunctionSignature(fnDef, deref));
       }
     }
   }
