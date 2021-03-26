@@ -105,8 +105,7 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
 
-  const selfAndInheritedMethods = c.methods
-    .concat(...c.inherit.map(name => runValidation[name].methods));
+  const selfAndInheritedMethods = c.methods.concat(...c.inherit.map(name => runValidation[name].methods));
 
   const extraErrors: ValidationError[] = [];
   if (!selfAndInheritedMethods.includes('upgradeTo(address)')) {

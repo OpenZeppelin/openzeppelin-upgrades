@@ -1,6 +1,6 @@
 import { Node } from 'solidity-ast/node';
 import { isNodeType, findAll } from 'solidity-ast/utils';
-import type { ContractDefinition, StructuredDocumentation } from 'solidity-ast';
+import type { ContractDefinition } from 'solidity-ast';
 
 import { SolcOutput, SolcBytecode } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
@@ -71,30 +71,32 @@ function* execall(re: RegExp, text: string) {
 
 function getAllowed(node: Node): string[] {
   if ('documentation' in node) {
-
-    const doc = typeof node.documentation === 'string'
-      ? node.documentation
-      : node.documentation?.text ?? '';
+    const doc = typeof node.documentation === 'string' ? node.documentation : node.documentation?.text ?? '';
 
     const result: string[] = [];
-    for (const { groups } of execall(/^(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^@\w+ )[^])*)/m, doc)) {
+    for (const { groups } of execall(
+      /^(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^@\w+ )[^])*)/m,
+      doc,
+    )) {
       if (groups && groups.title === 'custom' && groups.tag === 'openzeppelin-upgrade-allow') {
         result.push(...groups.args.split(/\s+/));
       }
     }
 
     result.forEach(arg => {
-      if (![
-        'state-variable-assignment',
-        'state-variable-immutable',
-        'external-library-linking',
-        'struct-definition',
-        'enum-definition',
-        'constructor',
-        'delegatecall',
-        'selfdestruct',
-        'no-public-upgrade-fn',
-      ].includes(arg)) {
+      if (
+        ![
+          'state-variable-assignment',
+          'state-variable-immutable',
+          'external-library-linking',
+          'struct-definition',
+          'enum-definition',
+          'constructor',
+          'delegatecall',
+          'selfdestruct',
+          'no-public-upgrade-fn',
+        ].includes(arg)
+      ) {
         throw new Error(`NatSpec: openzeppelin-upgrade-allow argument not recognized: ${arg}`);
       }
     });
@@ -176,7 +178,6 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
-
   for (const fnDef of findAll('FunctionDefinition', contractDef, node => skipCheck('constructor', node))) {
     if (fnDef.kind === 'constructor' && ((fnDef.body?.statements.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
       yield {

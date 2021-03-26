@@ -22,6 +22,7 @@ function serialize(typename: TypeName | null | undefined, deref: ASTDereferencer
           assert(userDefinedType.members.length < 256);
           return 'uint8';
       }
+      break;
     }
 
     default:
