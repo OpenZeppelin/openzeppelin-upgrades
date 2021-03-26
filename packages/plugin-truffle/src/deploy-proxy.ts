@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { Manifest, fetchOrDeployProxy, fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
 
 import {
@@ -32,6 +33,10 @@ export async function deployProxy(
   const manifest = await Manifest.forNetwork(provider);
   const impl = await deployImpl(Contract, requiredOpts);
   const data = getInitializerData(Contract, args, requiredOpts.initializer);
+
+  if (requiredOpts.kind === 'uups' && await manifest.getAdmin()) {
+    console.log(chalk.keyword('orange')(`Warning: the manifest include records of an proxy admin. This is not nativelly compatible with UUPS proxies. Any further admin action will have no affect on this new proxy.`));
+  }
 
   let proxyAddress: string;
   switch (requiredOpts.kind) {
