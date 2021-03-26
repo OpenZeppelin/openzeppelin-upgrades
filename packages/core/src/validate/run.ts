@@ -69,43 +69,44 @@ function* execall(re: RegExp, text: string) {
   }
 }
 
-function skipCheck(error: string, node: Node): boolean {
-  function isAllowed(error: string, documentation: StructuredDocumentation | string): boolean {
-    switch (typeof documentation) {
-      case 'string': {
-        for (const { groups } of execall(/^(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^@\w+ )[^])*)/m, documentation)) {
-          if (groups && groups.title === 'custom' && groups.tag === 'openzeppelin-upgrade-allow') {
-            for (const [, arg] of execall(/(?<arg>[a-z][a-z-]*)\s?/,groups.args)) {
-              if (arg === error) {
-                return true;
-              }
-              if (![
-                'state-variable-assignment',
-                'state-variable-immutable',
-                'external-library-linking',
-                'struct-definition',
-                'enum-definition',
-                'constructor',
-                'delegatecall',
-                'selfdestruct',
-                'no-public-upgrade-fn',
-              ].includes(arg)) {
-                throw new Error(`NatSpec: openzeppelin-upgrade-allow argument not recognized: ${arg}`);
-              }
-            }
-          }
-        }
-        return false;
+function getAllowed(node: Node): string[] {
+  if ('documentation' in node) {
+
+    const doc = typeof node.documentation === 'string'
+      ? node.documentation
+      : node.documentation?.text ?? '';
+
+    const result: string[] = [];
+    for (const { groups } of execall(/^(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^@\w+ )[^])*)/m, doc)) {
+      if (groups && groups.title === 'custom' && groups.tag === 'openzeppelin-upgrade-allow') {
+        result.push(...groups.args.split(/\s+/));
       }
-      default:
-        return isAllowed(error, documentation.text);
     }
-  }
-  if ('documentation' in node && node.documentation) {
-    return isAllowed(error, node.documentation);
+
+    result.forEach(arg => {
+      if (![
+        'state-variable-assignment',
+        'state-variable-immutable',
+        'external-library-linking',
+        'struct-definition',
+        'enum-definition',
+        'constructor',
+        'delegatecall',
+        'selfdestruct',
+        'no-public-upgrade-fn',
+      ].includes(arg)) {
+        throw new Error(`NatSpec: openzeppelin-upgrade-allow argument not recognized: ${arg}`);
+      }
+    });
+
+    return result;
   } else {
-    return false;
+    return [];
   }
+}
+
+function skipCheck(error: string, node: Node): boolean {
+  return getAllowed(node).includes(error);
 }
 
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationRunData {
@@ -175,15 +176,14 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
-  for (const fnDef of findAll('FunctionDefinition', contractDef)) {
+
+  for (const fnDef of findAll('FunctionDefinition', contractDef, node => skipCheck('constructor', node))) {
     if (fnDef.kind === 'constructor' && ((fnDef.body?.statements.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
-      if (!skipCheck('constructor', contractDef) && !skipCheck('constructor', fnDef)) {
-        yield {
-          kind: 'constructor',
-          contract: contractDef.name,
-          src: decodeSrc(fnDef),
-        };
-      }
+      yield {
+        kind: 'constructor',
+        contract: contractDef.name,
+        src: decodeSrc(fnDef),
+      };
     }
   }
 }
