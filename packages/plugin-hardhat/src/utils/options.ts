@@ -1,8 +1,8 @@
-import { ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
+import { ProxyDeployment, ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
 
 export type Options = DeployOptions & ValidationOptions;
 
-export type ProxyKind = 'auto' | 'uups' | 'transparent';
+export type ProxyKind = 'auto' | ProxyDeployment['kind'];
 export type ProxyInitializer = string | false;
 
 export interface DeployOptions {

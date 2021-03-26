@@ -1,4 +1,4 @@
-import { fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
+import { Manifest, fetchOrDeployProxy, fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
@@ -29,30 +29,33 @@ export async function deployProxy(
   const requiredOpts: Required<Options> = withDefaults(opts);
 
   const provider = wrapProvider(requiredOpts.deployer.provider);
+  const manifest = await Manifest.forNetwork(provider);
   const impl = await deployImpl(Contract, requiredOpts);
   const data = getInitializerData(Contract, args, requiredOpts.initializer);
 
-  let proxy: ContractInstance;
+  let proxyAddress: string;
   switch (requiredOpts.kind) {
-    case 'auto':
     case 'uups': {
       const ProxyFactory = getProxyFactory(Contract);
-      proxy = await requiredOpts.deployer.deploy(ProxyFactory, impl, data);
+      proxyAddress = await fetchOrDeployProxy(provider, 'uups', () => deploy(requiredOpts.deployer, ProxyFactory, impl, data));
       break;
     }
 
+    case 'auto':
     case 'transparent': {
       const AdminFactory = getProxyAdminFactory(Contract);
-      const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, requiredOpts.deployer));
+      const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(requiredOpts.deployer, AdminFactory));
       const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
-      proxy = await requiredOpts.deployer.deploy(TransparentUpgradeableProxyFactory, impl, adminAddress, data);
+      proxyAddress = await fetchOrDeployProxy(provider, 'transparent', () => deploy(requiredOpts.deployer, TransparentUpgradeableProxyFactory, impl, adminAddress, data));
       break;
     }
   }
 
-  Contract.address = proxy.address;
-  const contract = new Contract(proxy.address);
-  contract.transactionHash = proxy.transactionHash;
+  const { txHash } = await manifest.getProxyFromAddress(proxyAddress);
+
+  Contract.address = proxyAddress;
+  const contract = new Contract(proxyAddress);
+  contract.transactionHash = txHash;
   return contract;
 }
 

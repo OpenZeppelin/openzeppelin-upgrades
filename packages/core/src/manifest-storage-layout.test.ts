@@ -34,7 +34,7 @@ test('getStorageLayoutForAddress - update layout', async t => {
   const outdatedLayout = removeStorageLayoutMembers(updatedLayout);
   const address = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
   const manifest = mockManifest({
-    manifestVersion: '3.1',
+    manifestVersion: '3.2',
     impls: {
       [version.withoutMetadata]: {
         address,
@@ -42,6 +42,7 @@ test('getStorageLayoutForAddress - update layout', async t => {
         layout: outdatedLayout,
       },
     },
+    proxies: [],
   });
   const layout = await getStorageLayoutForAddress(manifest, t.context.validationData, address);
   t.deepEqual(layout, updatedLayout);
@@ -53,6 +54,7 @@ test('getStorageLayoutForAddress - update layout', async t => {
         layout: updatedLayout,
       },
     },
+    proxies: [],
   });
 });
 

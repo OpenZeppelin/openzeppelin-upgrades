@@ -1,7 +1,7 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import { fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
+import { Manifest, fetchOrDeployProxy, fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
 
 import {
   deploy,
@@ -27,31 +27,34 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     const requiredOpts: Required<Options> = withDefaults(opts);
 
     const { provider } = hre.network;
-    const impl = deployImpl(hre, ImplFactory, requiredOpts);
+    const manifest = await Manifest.forNetwork(provider);
+    const impl = await deployImpl(hre, ImplFactory, requiredOpts);
     const data = getInitializerData(ImplFactory, args, requiredOpts.initializer);
 
-    let proxy: Contract;
+    let proxyAddress: string;
     switch (requiredOpts.kind) {
-      case 'auto':
       case 'uups': {
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
-        proxy = await ProxyFactory.deploy(impl, data);
+        proxyAddress = await fetchOrDeployProxy(provider, 'uups', () => deploy(ProxyFactory, impl, data));
         break;
       }
 
+      case 'auto':
       case 'transparent': {
         const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
         const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
-        proxy = await TransparentUpgradeableProxyFactory.deploy(impl, adminAddress, data);
+        proxyAddress = await fetchOrDeployProxy(provider, 'transparent', () => deploy(TransparentUpgradeableProxyFactory, impl, adminAddress, data));
         break;
       }
     }
 
-    const inst = ImplFactory.attach(proxy.address);
+    const { txHash } = await manifest.getProxyFromAddress(proxyAddress);
+
+    const inst = ImplFactory.attach(proxyAddress);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Won't be readonly because inst was created through attach.
-    inst.deployTransaction = proxy.deployTransaction;
+    inst.deployTransaction = await inst.provider.getTransaction(txHash);
     return inst;
   };
 

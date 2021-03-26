@@ -20,33 +20,38 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    // Autodetect proxy type
-    const adminAddress = await getAdminAddress(provider, proxyAddress);
     if (requiredOpts.kind === 'auto') {
-      requiredOpts.kind = adminAddress === '0x0000000000000000000000000000000000000000' ? 'uups' : 'transparent';
+      try {
+        const { kind } = await manifest.getProxyFromAddress(proxyAddress);
+        requiredOpts.kind = kind;
+      } catch (e) {
+        if (e instanceof Error) {
+          requiredOpts.kind = 'transparent';
+        } else {
+          throw e;
+        }
+      }
     }
 
-    switch (requiredOpts.kind) {
-      case 'uups': {
-        // Use TransparentUpgradeableProxyFactory to get proxiable interface
-        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
-        const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);
-        const nextImpl = await deployImpl(hre, ImplFactory, requiredOpts, { proxyAddress, manifest });
-        await proxy.upgradeTo(nextImpl);
-        break;
-      }
+    const adminAddress = await getAdminAddress(provider, proxyAddress);
+    const adminBytecode = await provider.send('eth_getCode', [adminAddress]);
 
-      case 'transparent': {
-        const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
-        const admin = AdminFactory.attach(adminAddress);
-        const manifestAdmin = await manifest.getAdmin();
-        if (admin.address !== manifestAdmin?.address) {
-          throw new Error('Proxy admin is not the one registered in the network manifest');
-        }
-        const nextImpl = await deployImpl(hre, ImplFactory, requiredOpts, { proxyAddress, manifest });
-        await admin.upgrade(proxyAddress, nextImpl);
-        break;
+    if (adminBytecode === '0x') {
+      // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
+      const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
+      const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);
+      const nextImpl = await deployImpl(hre, ImplFactory, requiredOpts, { proxyAddress, manifest });
+      await proxy.upgradeTo(nextImpl);
+    } else {
+      // Admin contract: redirect upgrade call through it
+      const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
+      const admin = AdminFactory.attach(adminAddress);
+      const manifestAdmin = await manifest.getAdmin();
+      if (admin.address !== manifestAdmin?.address) {
+        throw new Error('Proxy admin is not the one registered in the network manifest');
       }
+      const nextImpl = await deployImpl(hre, ImplFactory, requiredOpts, { proxyAddress, manifest });
+      await admin.upgrade(proxyAddress, nextImpl);
     }
 
     return ImplFactory.attach(proxyAddress);

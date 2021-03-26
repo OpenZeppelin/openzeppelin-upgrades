@@ -44,7 +44,7 @@ export async function deployImpl(
   }
 
   return await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(Contract, requiredOpts.deployer);
+    const deployment = await deploy(requiredOpts.deployer, Contract);
     return { ...deployment, layout };
   });
 }
