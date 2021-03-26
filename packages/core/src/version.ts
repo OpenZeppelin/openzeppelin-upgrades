@@ -21,7 +21,7 @@ export function getVersion(bytecode: string, linkedBytecode?: string): Version {
 
 export function hashBytecode(bytecode: string): string {
   bytecode = bytecode
-    .replace(/__\$[0-9a-fA-F]{34}\$__/g, placeholder => `000${placeholder.slice(3, -3)}000`)
+    .replace(/__\$([0-9a-fA-F]{34})\$__/g, (_, placeholder) => `000${placeholder}000`)
     .replace(/__\w{36}__/g, placeholder => keccak256(Buffer.from(placeholder)).toString('hex', 0, 20));
 
   // WARNING: some bytecode (with metadata?) have odd length, so we cannot do ([0-9a-fA-F]{2})*
