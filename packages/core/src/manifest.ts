@@ -136,8 +136,6 @@ function validateOrUpdateManifestVersion(data: ManifestData): ManifestData {
 export function migrateManifest(data: ManifestData): ManifestData {
   switch (data.manifestVersion) {
     case '3.0':
-      data.manifestVersion = currentManifestVersion;
-      return data;
     case '3.1':
       data.manifestVersion = currentManifestVersion;
       data.proxies = [];
