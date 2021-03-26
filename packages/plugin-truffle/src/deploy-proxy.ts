@@ -37,7 +37,9 @@ export async function deployProxy(
   switch (requiredOpts.kind) {
     case 'uups': {
       const ProxyFactory = getProxyFactory(Contract);
-      proxyAddress = await fetchOrDeployProxy(provider, 'uups', () => deploy(requiredOpts.deployer, ProxyFactory, impl, data));
+      proxyAddress = await fetchOrDeployProxy(provider, 'uups', () =>
+        deploy(requiredOpts.deployer, ProxyFactory, impl, data),
+      );
       break;
     }
 
@@ -46,7 +48,9 @@ export async function deployProxy(
       const AdminFactory = getProxyAdminFactory(Contract);
       const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(requiredOpts.deployer, AdminFactory));
       const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
-      proxyAddress = await fetchOrDeployProxy(provider, 'transparent', () => deploy(requiredOpts.deployer, TransparentUpgradeableProxyFactory, impl, adminAddress, data));
+      proxyAddress = await fetchOrDeployProxy(provider, 'transparent', () =>
+        deploy(requiredOpts.deployer, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
+      );
       break;
     }
   }

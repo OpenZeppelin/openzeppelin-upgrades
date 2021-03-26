@@ -69,10 +69,10 @@ export async function fetchOrDeploy(
 }
 
 const implLens = (versionWithoutMetadata: string) =>
-lens(`implementation ${versionWithoutMetadata}`, data => ({
-  get: () => data.impls[versionWithoutMetadata],
-  set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
-}));
+  lens(`implementation ${versionWithoutMetadata}`, data => ({
+    get: () => data.impls[versionWithoutMetadata],
+    set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
+  }));
 
 export async function fetchOrDeployProxy(
   provider: EthereumProvider,
@@ -83,10 +83,10 @@ export async function fetchOrDeployProxy(
 }
 
 const proxyLens = (kind: ProxyDeployment['kind']) =>
-lens('proxy', data => ({
-  get: () => undefined,
-  set: (value: Deployment) => value && data.proxies.push({ ...value, kind }),
-}))
+  lens('proxy', data => ({
+    get: () => undefined,
+    set: (value: Deployment) => value && data.proxies.push({ ...value, kind }),
+  }));
 
 export async function fetchOrDeployAdmin(
   provider: EthereumProvider,

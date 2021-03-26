@@ -44,7 +44,9 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
         const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
         const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
-        proxyAddress = await fetchOrDeployProxy(provider, 'transparent', () => deploy(TransparentUpgradeableProxyFactory, impl, adminAddress, data));
+        proxyAddress = await fetchOrDeployProxy(provider, 'transparent', () =>
+          deploy(TransparentUpgradeableProxyFactory, impl, adminAddress, data),
+        );
         break;
       }
     }

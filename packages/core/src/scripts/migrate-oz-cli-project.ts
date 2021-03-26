@@ -164,7 +164,7 @@ function updateManifestData(oldManifestData: NetworkFileData): ManifestData {
   return {
     manifestVersion: '3.2',
     impls: transformImplementations(oldManifestData.contracts),
-    proxies: [ ...transformProxies(oldManifestData.proxies) ],
+    proxies: [...transformProxies(oldManifestData.proxies)],
     admin: {
       address: proxyAdmin,
     },
@@ -177,10 +177,10 @@ function* transformProxies(proxies: LegacyProxies): Generator<ProxyDeployment> {
       switch (proxy.kind) {
         case 'Upgradeable':
           if (proxy.address) {
-            yield ({
+            yield {
               address: proxy.address,
               kind: 'transparent',
-            });
+            };
           }
           break;
 
