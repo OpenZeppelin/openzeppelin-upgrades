@@ -27,11 +27,18 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
-  return {
-    unsafeAllowCustomTypes: opts.unsafeAllowCustomTypes ?? false,
-    unsafeAllowLinkedLibraries: opts.unsafeAllowLinkedLibraries ?? false,
-    unsafeAllow: opts.unsafeAllow ?? [],
-  };
+  const unsafeAllowCustomTypes = opts.unsafeAllowCustomTypes ?? false;
+  const unsafeAllowLinkedLibraries = opts.unsafeAllowLinkedLibraries ?? false;
+  const unsafeAllow = opts.unsafeAllow ?? [];
+
+  if (unsafeAllowCustomTypes) {
+    unsafeAllow.push('enum-definition', 'struct-definition');
+  }
+  if (unsafeAllowLinkedLibraries) {
+    unsafeAllow.push('external-library-linking');
+  }
+
+  return { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, unsafeAllow };
 }
 
 export function processExceptions(
@@ -39,13 +46,7 @@ export function processExceptions(
   errors: ValidationError[],
   opts: ValidationOptions,
 ): ValidationError[] {
-  const { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, unsafeAllow } = withValidationDefaults(opts);
-  if (unsafeAllowCustomTypes) {
-    unsafeAllow.push('enum-definition', 'struct-definition');
-  }
-  if (unsafeAllowLinkedLibraries) {
-    unsafeAllow.push('external-library-linking');
-  }
+  const { unsafeAllow } = withValidationDefaults(opts);
 
   for (const [errorType, errorDescription] of Object.entries(ValidationErrorUnsafeMessages)) {
     if (unsafeAllow.includes(errorType as ValidationError['kind'])) {
