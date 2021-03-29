@@ -50,7 +50,7 @@ interface ValidationErrorConstructor extends ValidationErrorBase {
 }
 
 interface ValidationErrorOpcode extends ValidationErrorBase {
-  kind: 'delegatecall' | 'selfdestruct';
+  kind: 'delegatecall' | 'selfdestruct' | 'inline-assembly';
 }
 
 interface ValidationErrorUpgradeability extends ValidationErrorBase {
@@ -94,6 +94,7 @@ function getAllowed(node: Node): string[] {
           'constructor',
           'delegatecall',
           'selfdestruct',
+          'inline-assembly',
           'no-public-upgrade-fn',
         ].includes(arg)
       ) {
@@ -151,7 +152,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
         validation[contractDef.name].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
-          ...getDelegateCallErrors(contractDef, decodeSrc),
+          ...getOpcodeErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
@@ -189,7 +190,7 @@ function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDe
   }
 }
 
-function* getDelegateCallErrors(
+function* getOpcodeErrors(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationErrorOpcode> {
@@ -210,6 +211,12 @@ function* getDelegateCallErrors(
         src: decodeSrc(fnCall),
       };
     }
+  }
+  for (const node of findAll('InlineAssembly', contractDef, node => skipCheck('inline-assembly', node))) {
+    yield {
+      kind: 'inline-assembly',
+      src: decodeSrc(node),
+    };
   }
 }
 

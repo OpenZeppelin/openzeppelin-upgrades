@@ -12,16 +12,16 @@ export class ValidationErrors extends UpgradesError {
 }
 
 const errorInfo: ErrorDescriptions<ValidationError> = {
-  constructor: {
+  'constructor': {
     msg: e => `Contract \`${e.contract}\` has a constructor`,
     hint: () => 'Define an initializer instead',
     link: 'https://zpl.in/upgrades/error-001',
   },
-  delegatecall: {
+  'delegatecall': {
     msg: () => `Use of delegatecall is not allowed`,
     link: 'https://zpl.in/upgrades/error-002',
   },
-  selfdestruct: {
+  'selfdestruct': {
     msg: () => `Use of selfdestruct is not allowed`,
     link: 'https://zpl.in/upgrades/error-003',
   },
@@ -50,11 +50,15 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     msg: e => `Enums like \`${e.name}\` are supported in the latest version of the plugin`,
     hint: () => `Update your dependency and run again`,
   },
+  'inline-assembly': {
+    msg: () => `Use of inline assembly is not allowed`,
+    link: 'https://zpl.in/upgrades/error-007', // TODO: add documentation
+  },
   'no-public-upgrade-fn': {
     msg: () => `Implementation is missing a public \`upgradeTo(address)\` function`,
     hint: () =>
       `Have your implementation inherit from proxy/UUPS/Proxiable or use a transparent proxy by setting the \`kind: 'transparent'\` option`,
-    // link: 'https://zpl.in/upgrades/error-007', // TODO
+    link: 'https://zpl.in/upgrades/error-008', // TODO: add documentation
   },
 };
 
