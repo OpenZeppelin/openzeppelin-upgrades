@@ -12,16 +12,16 @@ export class ValidationErrors extends UpgradesError {
 }
 
 const errorInfo: ErrorDescriptions<ValidationError> = {
-  'constructor': {
+  constructor: {
     msg: e => `Contract \`${e.contract}\` has a constructor`,
     hint: () => 'Define an initializer instead',
     link: 'https://zpl.in/upgrades/error-001',
   },
-  'delegatecall': {
+  delegatecall: {
     msg: () => `Use of delegatecall is not allowed`,
     link: 'https://zpl.in/upgrades/error-002',
   },
-  'selfdestruct': {
+  selfdestruct: {
     msg: () => `Use of selfdestruct is not allowed`,
     link: 'https://zpl.in/upgrades/error-003',
   },

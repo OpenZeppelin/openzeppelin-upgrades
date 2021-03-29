@@ -9,10 +9,8 @@ export interface ValidationOptions {
 }
 
 export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], string | undefined> = {
-  'state-variable-assignment':
-    `    You are using the \`unsafeAllow.state-variable-assignment\` flag.\n`,
-  'state-variable-immutable':
-    `    You are using the \`unsafeAllow.state-variable-immutable\` flag.\n`,
+  'state-variable-assignment': `    You are using the \`unsafeAllow.state-variable-assignment\` flag.\n`,
+  'state-variable-immutable': `    You are using the \`unsafeAllow.state-variable-immutable\` flag.\n`,
   'external-library-linking':
     `    You are using the \`unsafeAllow.external-library-linking\` flag to include external libraries.\n` +
     `    Make sure you have manually checked that the linked libraries are upgrade safe.\n`,
@@ -22,16 +20,11 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
   'enum-definition':
     `    You are using the \`unsafeAllow.enum-definition\` flag to skip storage checks for enums.\n` +
     `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
-  'constructor':
-    `    You are using the \`unsafeAllow.constructor\` flag.\n`,
-  'delegatecall':
-    `    You are using the \`unsafeAllow.delegatecall\` flag.\n`,
-  'selfdestruct':
-    `    You are using the \`unsafeAllow.selfdestruct\` flag.\n`,
-  'inline-assembly':
-    `    You are using the \`unsafeAllow.inline-assembly\` flag.\n`,
-  'no-public-upgrade-fn':
-    `    You are using the \`unsafeAllow.no-public-upgrade-fn\` flag.\n`,
+  constructor: `    You are using the \`unsafeAllow.constructor\` flag.\n`,
+  delegatecall: `    You are using the \`unsafeAllow.delegatecall\` flag.\n`,
+  selfdestruct: `    You are using the \`unsafeAllow.selfdestruct\` flag.\n`,
+  'inline-assembly': `    You are using the \`unsafeAllow.inline-assembly\` flag.\n`,
+  'no-public-upgrade-fn': `    You are using the \`unsafeAllow.no-public-upgrade-fn\` flag.\n`,
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {

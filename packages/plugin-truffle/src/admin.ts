@@ -27,7 +27,7 @@ async function transferProxyAdminOwnership(newOwner: string, opts: Options = {})
   const manifest = await Manifest.forNetwork(provider);
   const { proxies } = await manifest.read();
   for (const { address, kind } of proxies) {
-    if (admin.address == await getAdminAddress(provider, address)) {
+    if (admin.address == (await getAdminAddress(provider, address))) {
       console.log(SUCCESS_CHECK + `${address} (${kind}) proxy ownership transfered through admin proxy`);
     } else {
       console.log(FAILURE_CROSS + `${address} (${kind}) proxy ownership not affected by admin proxy`);

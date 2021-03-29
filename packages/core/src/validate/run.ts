@@ -190,10 +190,7 @@ function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDe
   }
 }
 
-function* getOpcodeErrors(
-  contractDef: ContractDefinition,
-  decodeSrc: SrcDecoder,
-): Generator<ValidationErrorOpcode> {
+function* getOpcodeErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorOpcode> {
   for (const fnCall of findAll('FunctionCall', contractDef, node => skipCheck('delegatecall', node))) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_baredelegatecall_/)) {
