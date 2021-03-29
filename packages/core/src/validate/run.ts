@@ -78,7 +78,7 @@ function getAllowed(node: Node): string[] {
       /^(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^@\w+ )[^])*)/m,
       doc,
     )) {
-      if (groups && groups.title === 'custom' && groups.tag === 'openzeppelin-upgrade-allow') {
+      if (groups && groups.title === 'custom' && groups.tag === 'openzeppelin-upgrade-allow-unsafe') {
         result.push(...groups.args.split(/\s+/));
       }
     }
