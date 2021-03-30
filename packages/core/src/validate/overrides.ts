@@ -24,7 +24,7 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
   delegatecall: `    You are using the \`unsafeAllow.delegatecall\` flag.\n`,
   selfdestruct: `    You are using the \`unsafeAllow.selfdestruct\` flag.\n`,
   'inline-assembly': `    You are using the \`unsafeAllow.inline-assembly\` flag.\n`,
-  'no-public-upgrade-fn': `    You are using the \`unsafeAllow.no-public-upgrade-fn\` flag.\n`,
+  'no-public-upgrade-fn': undefined,
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {

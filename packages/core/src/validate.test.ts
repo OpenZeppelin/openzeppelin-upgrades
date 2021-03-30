@@ -109,8 +109,8 @@ testValid('HasInternalUpgradeToFunction', false);
 testValid('HasUpgradeToFunction', true);
 testValid('ParentHasUpgradeToFunction', true);
 
-testValidTransparent('HasInlineAssembly', false);
-testOverride('HasInlineAssembly', { unsafeAllow: ['inline-assembly', 'no-public-upgrade-fn'] }, true);
+// testValidTransparent('HasInlineAssembly', false);
+// testOverride('HasInlineAssembly', { unsafeAllow: ['inline-assembly', 'no-public-upgrade-fn'] }, true);
 
 testValidTransparent('HasNonEmptyConstructorNatspec1', true);
 testValidTransparent('HasNonEmptyConstructorNatspec2', true);
