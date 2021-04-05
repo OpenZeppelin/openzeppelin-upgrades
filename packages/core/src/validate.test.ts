@@ -19,14 +19,19 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  const buildInfo = await artifacts.getBuildInfo('contracts/test/Validations.sol:HasEmptyConstructor');
-  if (buildInfo === undefined) {
-    throw new Error('Build info not found');
-  }
-  const solcOutput = buildInfo.output;
-  const solcInput = buildInfo.input;
-  const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
-  t.context.validation = validate(solcOutput, decodeSrc);
+  t.context.validation = await [
+    'contracts/test/Validations.sol:HasEmptyConstructor',
+    'contracts/test/ValidationsNatspec.sol:HasEmptyConstructorNatspec',
+  ].reduce(async (validation, contract) => {
+    const buildInfo = await artifacts.getBuildInfo(contract);
+    if (buildInfo === undefined) {
+      throw new Error(`Build info not found for contract ${contract}`);
+    }
+    const solcOutput = buildInfo.output;
+    const solcInput = buildInfo.input;
+    const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
+    return Object.assign(await validation, validate(solcOutput, decodeSrc));
+  }, Promise.resolve({}));
 });
 
 function testValid(name: string, valid: boolean) {
@@ -83,5 +88,38 @@ test('inherited storage', t => {
   }
 });
 
-testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);
-testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, true);
+testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking' ] }, true);
+testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking' ] }, true);
+
+testValid('HasNonEmptyConstructorNatspec1', true);
+testValid('HasNonEmptyConstructorNatspec2', true);
+testValid('ParentHasNonEmptyConstructorNatspec1', true);
+testValid('ParentHasNonEmptyConstructorNatspec2', true);
+testValid('AncestorHasNonEmptyConstructorNatspec1', true);
+testValid('AncestorHasNonEmptyConstructorNatspec2', true);
+testValid('HasStateVariableAssignmentNatspec1', true);
+testValid('HasStateVariableAssignmentNatspec2', true);
+testValid('HasImmutableStateVariableNatspec1', true);
+testValid('HasImmutableStateVariableNatspec2', true);
+testValid('HasSelfDestructNatspec1', true);
+testValid('HasSelfDestructNatspec2', true);
+testValid('HasSelfDestructNatspec3', true);
+testValid('HasDelegateCallNatspec1', true);
+testValid('HasDelegateCallNatspec2', true);
+testValid('HasDelegateCallNatspec3', true);
+testValid('ImportedParentHasStateVariableAssignmentNatspec1', true);
+testValid('ImportedParentHasStateVariableAssignmentNatspec2', true);
+testValid('UsesImplicitSafeInternalLibraryNatspec', true);
+testValid('UsesImplicitSafeExternalLibraryNatspec', true);
+testValid('UsesImplicitUnsafeInternalLibraryNatspec', true);
+testValid('UsesImplicitUnsafeExternalLibraryNatspec', true);
+testValid('UsesExplicitSafeInternalLibraryNatspec', true);
+testValid('UsesExplicitSafeExternalLibraryNatspec', true);
+testValid('UsesExplicitUnsafeInternalLibraryNatspec', true);
+testValid('UsesExplicitUnsafeExternalLibraryNatspec', true);
+
+// testValid('HasInlineAssembly', false);
+// testOverride('HasInlineAssembly', { unsafeAllow: ['inline-assembly'] }, true);
+// testValid('HasInlineAssemblyNatspec1', true);
+// testValid('HasInlineAssemblyNatspec2', true);
+// testValid('HasInlineAssemblyNatspec3', true);

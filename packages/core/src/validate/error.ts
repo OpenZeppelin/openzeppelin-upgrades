@@ -50,6 +50,10 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     msg: e => `Enums like \`${e.name}\` are supported in the latest version of the plugin`,
     hint: () => `Update your dependency and run again`,
   },
+  'inline-assembly': {
+    msg: () => `Use of inline assembly is not allowed`,
+    link: 'https://zpl.in/upgrades/error-007', // TODO: add documentation
+  },
 };
 
 function describeError(e: ValidationError): string {
