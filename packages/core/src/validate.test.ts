@@ -34,8 +34,10 @@ test.before(async t => {
   }, Promise.resolve({}));
 });
 
+let testCount = 0;
+
 function testValid(name: string, valid: boolean) {
-  test(name, t => {
+  test(`#${++testCount} ` + name, t => {
     const version = getContractVersion(t.context.validation, name);
     t.is(isUpgradeSafe([t.context.validation], version), valid);
   });
@@ -43,7 +45,7 @@ function testValid(name: string, valid: boolean) {
 
 function testOverride(name: string, opts: ValidationOptions, valid: boolean) {
   const testName = name.concat(valid ? '_Allowed' : '_NotAllowed');
-  test(testName, t => {
+  test(`#${++testCount} ` + testName, t => {
     const version = getContractVersion(t.context.validation, name);
     const assertUpgSafe = () => assertUpgradeSafe([t.context.validation], version, opts);
     if (valid) {
