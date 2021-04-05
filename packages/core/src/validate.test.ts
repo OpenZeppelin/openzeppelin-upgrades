@@ -88,8 +88,8 @@ test('inherited storage', t => {
   }
 });
 
-testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking' ] }, true);
-testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking' ] }, true);
+testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, true);
+testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, true);
 
 testValid('HasNonEmptyConstructorNatspec1', true);
 testValid('HasNonEmptyConstructorNatspec2', true);
