@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-/// @custom:openzeppelin-upgrade-allow-unsafe constructor
+/// @custom:oz-upgrades-unsafe-allow constructor
 contract HasNonEmptyConstructorNatspec1 {
   constructor() { msg.sender; }
 }
 
 contract HasNonEmptyConstructorNatspec2 {
-  /// @custom:openzeppelin-upgrade-allow-unsafe constructor
+  /// @custom:oz-upgrades-unsafe-allow constructor
   constructor() { msg.sender; }
 }
 
@@ -16,39 +16,39 @@ contract ParentHasNonEmptyConstructorNatspec2 is HasNonEmptyConstructorNatspec2 
 contract AncestorHasNonEmptyConstructorNatspec1 is ParentHasNonEmptyConstructorNatspec1 {}
 contract AncestorHasNonEmptyConstructorNatspec2 is ParentHasNonEmptyConstructorNatspec2 {}
 
-/// @custom:openzeppelin-upgrade-allow-unsafe state-variable-assignment
+/// @custom:oz-upgrades-unsafe-allow state-variable-assignment
 contract HasStateVariableAssignmentNatspec1 {
   uint x = 1;
 }
 
 contract HasStateVariableAssignmentNatspec2 {
-  /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-assignment
+  /// @custom:oz-upgrades-unsafe-allow state-variable-assignment
   uint x = 1;
 }
 
 contract HasStateVariableAssignmentNatspec3 {
-  /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-assignment
+  /// @custom:oz-upgrades-unsafe-allow state-variable-assignment
   uint x = 1;
   uint y = 2;
 }
 
-/// @custom:openzeppelin-upgrade-allow-unsafe state-variable-immutable state-variable-assignment
+/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
 contract HasImmutableStateVariableNatspec1 {
   uint immutable x = 1;
 }
 
 contract HasImmutableStateVariableNatspec2 {
-  /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-immutable state-variable-assignment
+  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
   uint immutable x = 1;
 }
 
 contract HasImmutableStateVariableNatspec3 {
-  /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-immutable state-variable-assignment
+  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
   uint immutable x = 1;
   uint immutable y = 2;
 }
 
-/// @custom:openzeppelin-upgrade-allow-unsafe selfdestruct
+/// @custom:oz-upgrades-unsafe-allow selfdestruct
 contract HasSelfDestructNatspec1 {
   function d() public {
     selfdestruct(payable(msg.sender));
@@ -56,7 +56,7 @@ contract HasSelfDestructNatspec1 {
 }
 
 contract HasSelfDestructNatspec2 {
-  /// @custom:openzeppelin-upgrade-allow-unsafe selfdestruct
+  /// @custom:oz-upgrades-unsafe-allow selfdestruct
   function d() public {
     selfdestruct(payable(msg.sender));
   }
@@ -64,12 +64,12 @@ contract HasSelfDestructNatspec2 {
 
 contract HasSelfDestructNatspec3 {
   function d() public {
-    /// @custom:openzeppelin-upgrade-allow-unsafe selfdestruct
+    /// @custom:oz-upgrades-unsafe-allow selfdestruct
     selfdestruct(payable(msg.sender));
   }
 }
 
-/// @custom:openzeppelin-upgrade-allow-unsafe delegatecall
+/// @custom:oz-upgrades-unsafe-allow delegatecall
 contract HasDelegateCallNatspec1 {
   function d() public {
     (bool s, ) = msg.sender.delegatecall("");
@@ -78,7 +78,7 @@ contract HasDelegateCallNatspec1 {
 }
 
 contract HasDelegateCallNatspec2 {
-  /// @custom:openzeppelin-upgrade-allow-unsafe delegatecall
+  /// @custom:oz-upgrades-unsafe-allow delegatecall
   function d() public {
     (bool s, ) = msg.sender.delegatecall("");
     s;
@@ -87,7 +87,7 @@ contract HasDelegateCallNatspec2 {
 
 contract HasDelegateCallNatspec3 {
   function d() public {
-    /// @custom:openzeppelin-upgrade-allow-unsafe delegatecall
+    /// @custom:oz-upgrades-unsafe-allow delegatecall
     (bool s, ) = msg.sender.delegatecall("");
     s;
   }
@@ -120,7 +120,7 @@ library SafeExternalLibraryNatspec {
 library UnsafeInternalLibraryNatspec {
   function explode(uint x, uint y) internal {
     x + y;
-    /// @custom:openzeppelin-upgrade-allow-unsafe selfdestruct
+    /// @custom:oz-upgrades-unsafe-allow selfdestruct
     selfdestruct(payable(msg.sender));
   }
 }
@@ -128,7 +128,7 @@ library UnsafeInternalLibraryNatspec {
 library UnsafeExternalLibraryNatspec {
   function explode(uint x, uint y) public {
     x + y;
-    /// @custom:openzeppelin-upgrade-allow-unsafe selfdestruct
+    /// @custom:oz-upgrades-unsafe-allow selfdestruct
     selfdestruct(payable(msg.sender));
   }
 }
@@ -144,7 +144,7 @@ contract UsesImplicitSafeInternalLibraryNatspec {
   }
 }
 
-/// @custom:openzeppelin-upgrade-allow-unsafe external-library-linking
+/// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract UsesImplicitSafeExternalLibraryNatspec {
   using SafeExternalLibraryNatspec for uint;
   uint x;
@@ -163,7 +163,7 @@ contract UsesImplicitUnsafeInternalLibraryNatspec {
   }
 }
 
-/// @custom:openzeppelin-upgrade-allow-unsafe external-library-linking
+/// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract UsesImplicitUnsafeExternalLibraryNatspec {
   using UnsafeExternalLibraryNatspec for uint;
   uint x;
@@ -181,7 +181,7 @@ contract UsesExplicitSafeInternalLibraryNatspec {
   }
 }
 
-/// @custom:openzeppelin-upgrade-allow-unsafe external-library-linking
+/// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract UsesExplicitSafeExternalLibraryNatspec {
   uint x;
 
@@ -198,7 +198,7 @@ contract UsesExplicitUnsafeInternalLibraryNatspec {
   }
 }
 
-/// @custom:openzeppelin-upgrade-allow-unsafe external-library-linking
+/// @custom:oz-upgrades-unsafe-allow external-library-linking
 contract UsesExplicitUnsafeExternalLibraryNatspec {
   uint x;
 
