@@ -27,10 +27,11 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
   const unsafeAllow = opts.unsafeAllow ?? [];
-  const unsafeAllowCustomTypes = opts.unsafeAllowCustomTypes
-    ?? (unsafeAllow.includes('struct-definition') && unsafeAllow.includes('enum-definition'));
-  const unsafeAllowLinkedLibraries = opts.unsafeAllowLinkedLibraries
-    ?? unsafeAllow.includes('external-library-linking');
+  const unsafeAllowCustomTypes =
+    opts.unsafeAllowCustomTypes ??
+    (unsafeAllow.includes('struct-definition') && unsafeAllow.includes('enum-definition'));
+  const unsafeAllowLinkedLibraries =
+    opts.unsafeAllowLinkedLibraries ?? unsafeAllow.includes('external-library-linking');
 
   if (unsafeAllowCustomTypes) {
     unsafeAllow.push('enum-definition', 'struct-definition');
@@ -61,7 +62,7 @@ export function processExceptions(
 
       if (exceptionsFound && !silenced && errorDescription) {
         console.error(
-            chalk.keyword('orange').bold('Warning: ') +
+          chalk.keyword('orange').bold('Warning: ') +
             `Potentially unsafe deployment of ${contractName}\n\n` +
             errorDescription,
         );
