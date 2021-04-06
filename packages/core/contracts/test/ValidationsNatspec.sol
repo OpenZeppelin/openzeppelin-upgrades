@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-contract HasEmptyConstructorNatspec {
-  constructor() { }
-}
-
 /// @custom:openzeppelin-upgrade-allow-unsafe constructor
 contract HasNonEmptyConstructorNatspec1 {
   constructor() { msg.sender; }
@@ -30,6 +26,12 @@ contract HasStateVariableAssignmentNatspec2 {
   uint x = 1;
 }
 
+contract HasStateVariableAssignmentNatspec3 {
+  /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-assignment
+  uint x = 1;
+  uint y = 2;
+}
+
 /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-immutable state-variable-assignment
 contract HasImmutableStateVariableNatspec1 {
   uint immutable x = 1;
@@ -38,6 +40,12 @@ contract HasImmutableStateVariableNatspec1 {
 contract HasImmutableStateVariableNatspec2 {
   /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-immutable state-variable-assignment
   uint immutable x = 1;
+}
+
+contract HasImmutableStateVariableNatspec3 {
+  /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-immutable state-variable-assignment
+  uint immutable x = 1;
+  uint immutable y = 2;
 }
 
 /// @custom:openzeppelin-upgrade-allow-unsafe selfdestruct
@@ -196,32 +204,5 @@ contract UsesExplicitUnsafeExternalLibraryNatspec {
 
   function foo(uint y) public {
     UnsafeExternalLibraryNatspec.explode(x, y);
-  }
-}
-
-/// @custom:openzeppelin-upgrade-allow-unsafe inline-assembly
-contract HasInlineAssemblyNatspec1 {
-  function unsafe() public {
-    assembly {
-      // Anything could happen here (delegate call / selfdestruct)
-    }
-  }
-}
-
-contract HasInlineAssemblyNatspec2 {
-  /// @custom:openzeppelin-upgrade-allow-unsafe inline-assembly
-  function unsafe() public {
-    assembly {
-      // Anything could happen here (delegate call / selfdestruct)
-    }
-  }
-}
-
-contract HasInlineAssemblyNatspec3 {
-  function unsafe() public {
-    /// @custom:openzeppelin-upgrade-allow-unsafe inline-assembly
-    assembly {
-      // Anything could happen here (delegate call / selfdestruct)
-    }
   }
 }

@@ -21,7 +21,7 @@ const test = _test as TestInterface<Context>;
 test.before(async t => {
   t.context.validation = await [
     'contracts/test/Validations.sol:HasEmptyConstructor',
-    'contracts/test/ValidationsNatspec.sol:HasEmptyConstructorNatspec',
+    'contracts/test/ValidationsNatspec.sol:HasNonEmptyConstructorNatspec1',
   ].reduce(async (validation, contract) => {
     const buildInfo = await artifacts.getBuildInfo(contract);
     if (buildInfo === undefined) {
@@ -103,8 +103,10 @@ testValid('AncestorHasNonEmptyConstructorNatspec1', true);
 testValid('AncestorHasNonEmptyConstructorNatspec2', true);
 testValid('HasStateVariableAssignmentNatspec1', true);
 testValid('HasStateVariableAssignmentNatspec2', true);
+testValid('HasStateVariableAssignmentNatspec3', false);
 testValid('HasImmutableStateVariableNatspec1', true);
 testValid('HasImmutableStateVariableNatspec2', true);
+testValid('HasImmutableStateVariableNatspec3', false);
 testValid('HasSelfDestructNatspec1', true);
 testValid('HasSelfDestructNatspec2', true);
 testValid('HasSelfDestructNatspec3', true);
@@ -121,9 +123,3 @@ testValid('UsesExplicitSafeInternalLibraryNatspec', true);
 testValid('UsesExplicitSafeExternalLibraryNatspec', true);
 testValid('UsesExplicitUnsafeInternalLibraryNatspec', true);
 testValid('UsesExplicitUnsafeExternalLibraryNatspec', true);
-
-// testValid('HasInlineAssembly', false);
-// testOverride('HasInlineAssembly', { unsafeAllow: ['inline-assembly'] }, true);
-// testValid('HasInlineAssemblyNatspec1', true);
-// testValid('HasInlineAssemblyNatspec2', true);
-// testValid('HasInlineAssemblyNatspec3', true);

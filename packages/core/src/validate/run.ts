@@ -44,7 +44,7 @@ interface ValidationErrorConstructor extends ValidationErrorBase {
 }
 
 interface ValidationErrorOpcode extends ValidationErrorBase {
-  kind: 'delegatecall' | 'selfdestruct' | 'inline-assembly';
+  kind: 'delegatecall' | 'selfdestruct';
 }
 
 function* execall(re: RegExp, text: string) {
@@ -84,7 +84,6 @@ function getAllowed(node: Node): string[] {
           'constructor',
           'delegatecall',
           'selfdestruct',
-          'inline-assembly',
         ].includes(arg)
       ) {
         throw new Error(`NatSpec: openzeppelin-upgrade-allow argument not recognized: ${arg}`);
@@ -194,13 +193,6 @@ function* getOpcodeErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder
       };
     }
   }
-  /// TODO: uncomment to enable assembly check
-  // for (const node of findAll('InlineAssembly', contractDef, node => skipCheck('inline-assembly', node))) {
-  //   yield {
-  //     kind: 'inline-assembly',
-  //     src: decodeSrc(node),
-  //   };
-  // }
 }
 
 function* getStateVariableErrors(
