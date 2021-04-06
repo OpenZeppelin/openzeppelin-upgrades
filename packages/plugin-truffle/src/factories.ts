@@ -1,13 +1,13 @@
-import TransparentUpgradeableProxyArtifact from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
-import ProxyAdminArtifact from '@openzeppelin/upgrades-core/artifacts//@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
+import AdminUpgradeabilityProxyArtifact from '@openzeppelin/upgrades-core/artifacts/contracts/proxy/AdminUpgradeabilityProxy.sol/AdminUpgradeabilityProxy.json';
+import ProxyAdminArtifact from '@openzeppelin/upgrades-core/artifacts/contracts/proxy/ProxyAdmin.sol/ProxyAdmin.json';
 
 import { TruffleContract, ContractClass, getTruffleDefaults, getTruffleProvider } from './truffle';
 
 export function getProxyFactory(template: ContractClass): ContractClass {
-  const TransparentUpgradeableProxy = TruffleContract(TransparentUpgradeableProxyArtifact);
-  TransparentUpgradeableProxy.setProvider(template.currentProvider);
-  TransparentUpgradeableProxy.defaults(template.class_defaults);
-  return TransparentUpgradeableProxy;
+  const AdminUpgradeabilityProxy = TruffleContract(AdminUpgradeabilityProxyArtifact);
+  AdminUpgradeabilityProxy.setProvider(template.currentProvider);
+  AdminUpgradeabilityProxy.defaults(template.class_defaults);
+  return AdminUpgradeabilityProxy;
 }
 
 export function getProxyAdminFactory(template?: ContractClass): ContractClass {
