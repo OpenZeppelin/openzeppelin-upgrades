@@ -93,9 +93,9 @@ Past versions of the plugins did not support upgradeable contracts that used cus
 Some users who have already deployed proxies with structs and/or enums and who need to upgrade those proxies may need to use the override flag `unsafeAllowCustomTypes` for their next upgrade, after which it will no longer be necessary. If the project contains the source code for the implementation currently in use by the proxy, the plugin will attempt to recover the metadata that it needs before the upgrade, falling back to the override flag if this is not possible.
 
 [[how-can-i-disable-checks]]
-== How can I disable some checks
+== How can I disable some checks?
 
-Deployment and upgrade related function come with an optional `opts` object, which includes a an `unsafeAllow` option. This can be set to disable any check performed by the plugin. The list of errors is the following types that can individually be disabled is:
+Deployment and upgrade related functions come with an optional `opts` object, which includes an `unsafeAllow` option. This can be set to disable any check performed by the plugin. The list of that can individually be disabled is:
   * `state-variable-assignment`
   * `state-variable-immutable`
   * `external-library-linking`
@@ -112,7 +112,7 @@ For example, in order to upgrade to an implementation that contains a delegate c
 await upgradeProxy(proxyAddress, implementationFactory, { unsafeAllow: ['delegatecall'] });
 ----
 
-Additionnally, it is possible to preciselly disable checks directly from the solidity source code using natspec comments. This requiers solidity >=0.8.2.
+Additionally, it is possible to preciselly disable checks directly from the Solidity source code using natspec comments. This requires Solidity >=0.8.2.
 
 [source,solidity]
 ----
