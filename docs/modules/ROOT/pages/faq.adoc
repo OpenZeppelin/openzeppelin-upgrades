@@ -105,7 +105,9 @@ Deployment and upgrade related functions come with an optional `opts` object, wh
   * `delegatecall`
   * `selfdestruct`
 
-For example, in order to upgrade to an implementation that contains a delegate call, you call do
+This function is a more general alternative to `unsafeAllowCustomTypes` and `unsafeAllowLinkedLibraries`, which are now deprecated.
+
+For example, in order to upgrade to an implementation that contains a delegate call, you would call:
 
 [source,ts]
 ----
