@@ -78,7 +78,7 @@ function getAllowed(node: Node): string[] {
       /^(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^@\w+ )[^])*)/m,
       doc,
     )) {
-      if (groups && groups.title === 'custom' && groups.tag === 'openzeppelin-upgrade-allow-unsafe') {
+      if (groups && groups.title === 'custom' && groups.tag === 'oz-upgrades-unsafe-allow') {
         result.push(...groups.args.split(/\s+/));
       }
     }
@@ -97,7 +97,7 @@ function getAllowed(node: Node): string[] {
           'no-public-upgrade-fn',
         ].includes(arg)
       ) {
-        throw new Error(`NatSpec: openzeppelin-upgrade-allow argument not recognized: ${arg}`);
+        throw new Error(`NatSpec: openzeppelin-upgrade-allow-unsafe argument not recognized: ${arg}`);
       }
     });
 
