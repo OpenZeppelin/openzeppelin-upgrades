@@ -63,8 +63,7 @@ export function processExceptions(
 
       if (exceptionsFound && !silenced && errorDescription) {
         console.error(
-          '\n' +
-            chalk.keyword('orange').bold('Warning: ') +
+          chalk.keyword('orange').bold('Warning: ') +
             `Potentially unsafe deployment of ${contractName}\n\n` +
             errorDescription,
         );

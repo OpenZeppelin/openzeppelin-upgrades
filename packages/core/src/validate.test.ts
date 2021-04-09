@@ -99,10 +99,26 @@ testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: tr
 testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, false);
 testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, false);
 testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, false);
-testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'], unsafeAllowLinkedLibraries: true }, true);
-testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'], unsafeAllowLinkedLibraries: true }, true);
-testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn', 'external-library-linking'] }, true);
-testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn', 'external-library-linking'] }, true);
+testOverride(
+  'UsesImplicitSafeExternalLibrary',
+  { unsafeAllow: ['no-public-upgrade-fn'], unsafeAllowLinkedLibraries: true },
+  true,
+);
+testOverride(
+  'UsesExplicitSafeExternalLibrary',
+  { unsafeAllow: ['no-public-upgrade-fn'], unsafeAllowLinkedLibraries: true },
+  true,
+);
+testOverride(
+  'UsesImplicitSafeExternalLibrary',
+  { unsafeAllow: ['no-public-upgrade-fn', 'external-library-linking'] },
+  true,
+);
+testOverride(
+  'UsesExplicitSafeExternalLibrary',
+  { unsafeAllow: ['no-public-upgrade-fn', 'external-library-linking'] },
+  true,
+);
 
 testValid('HasEmptyConstructor', false);
 testValid('HasInternalUpgradeToFunction', false);
