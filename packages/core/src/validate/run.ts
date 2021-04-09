@@ -97,7 +97,7 @@ function getAllowed(node: Node): string[] {
           'no-public-upgrade-fn',
         ].includes(arg)
       ) {
-        throw new Error(`NatSpec: openzeppelin-upgrade-allow-unsafe argument not recognized: ${arg}`);
+        throw new Error(`NatSpec: oz-upgrades-unsafe-allow argument not recognized: ${arg}`);
       }
     });
 
