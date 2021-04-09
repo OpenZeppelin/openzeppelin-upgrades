@@ -105,7 +105,7 @@ Deployment and upgrade related functions come with an optional `opts` object, wh
   * `delegatecall`
   * `selfdestruct`
 
-This function is a more general alternative to `unsafeAllowCustomTypes` and `unsafeAllowLinkedLibraries`, which are now deprecated.
+This function is a generalized version of `unsafeAllowCustomTypes` and `unsafeAllowLinkedLibraries` allowing any check to be manually disabled.
 
 For example, in order to upgrade to an implementation that contains a delegate call, you would call:
 
