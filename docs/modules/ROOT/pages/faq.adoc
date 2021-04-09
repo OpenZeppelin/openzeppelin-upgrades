@@ -67,12 +67,14 @@ You can read more about the proxy upgrade pattern xref:upgrades::proxies.adoc[he
 [[why-cant-i-use-immutable-variables]]
 == Why can't I use `immutable` variables?
 
-Solidity 0.6.5 https://github.com/ethereum/solidity/releases/tag/v0.6.5[introduced the `immutable` keyword] to declare a variable that can be assigned only once during construction and can be read only after construction. It does so by calculating its value during contract creation and storing its value directly into the bytecode. 
+Solidity 0.6.5 https://github.com/ethereum/solidity/releases/tag/v0.6.5[introduced the `immutable` keyword] to declare a variable that can be assigned only once during construction and can be read only after construction. It does so by calculating its value during contract creation and storing its value directly into the bytecode.
 
 Notice that this behavior is incompatible with the way upgradeable contracts work for two reasons:
 
 1. Upgradeable contracts have no constructors but initializers, therefore they can't handle immutable variables.
 2. Since the immutable variable value is stored in the bytecode its value would be shared among all proxies pointing to a given contract instead of each proxy's storage.
+
+NOTE: In some cases immutable variables are upgrade safe. The plugins cannot currently detect these cases automatically so they will point it out as an error anyway. You can manually disable the check using the option `unsafeAllow: ['state-variable-immutable']`, or in Solidity >=0.8.2 placing the comment `/// @custom:oz-upgrades-unsafe-allow state-variable-immutable` before the variable declaration.
 
 [[why-cant-i-use-external-libraries]]
 == Why can't I use external libraries?
@@ -81,7 +83,7 @@ At the moment the plugins only have partial support for upgradeable contracts li
 
 There are plans to add this functionality in the near future with certain constraints that make the issue easier to address like assuming that the external library's source code is either present in the codebase or that it's been deployed and mined so it can be fetched from the blockchain for analysis.
 
-In the meantime you can deploy upgradeable contracts linked to external libraries by setting the `unsafeAllowLinkedLibraries` flag to true in the `deployProxy` or `upgradeProxy` calls. Keep in mind the plugins will not verify that the linked libraries are upgrade safe. This has to be done manually for now until the full support for external libraries is implemented.
+In the meantime you can deploy upgradeable contracts linked to external libraries by setting the `unsafeAllowLinkedLibraries` flag to true in the `deployProxy` or `upgradeProxy` calls, or including `'external-library-linking'` in the `unsafeAllow` array. Keep in mind the plugins will not verify that the linked libraries are upgrade safe. This has to be done manually for now until the full support for external libraries is implemented.
 
 You can follow or contribute to https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52[this issue in Github].
 
@@ -91,6 +93,60 @@ You can follow or contribute to https://github.com/OpenZeppelin/openzeppelin-upg
 Past versions of the plugins did not support upgradeable contracts that used custom types like structs or enums in their code or linked libraries. This is no longer the case for current versions of the plugins, and structs and enums will be automatically checked for compatibility when upgrading a contract.
 
 Some users who have already deployed proxies with structs and/or enums and who need to upgrade those proxies may need to use the override flag `unsafeAllowCustomTypes` for their next upgrade, after which it will no longer be necessary. If the project contains the source code for the implementation currently in use by the proxy, the plugin will attempt to recover the metadata that it needs before the upgrade, falling back to the override flag if this is not possible.
+
+[[how-can-i-disable-checks]]
+== How can I disable some checks?
+
+Deployment and upgrade related functions come with an optional `opts` object, which includes an `unsafeAllow` option. This can be set to disable any check performed by the plugin. The list of checks that can individually be disabled is:
+  * `state-variable-assignment`
+  * `state-variable-immutable`
+  * `external-library-linking`
+  * `struct-definition`
+  * `enum-definition`
+  * `constructor`
+  * `delegatecall`
+  * `selfdestruct`
+
+This function is a generalized version of `unsafeAllowCustomTypes` and `unsafeAllowLinkedLibraries` allowing any check to be manually disabled.
+
+For example, in order to upgrade to an implementation that contains a delegate call, you would call:
+
+[source,ts]
+----
+await upgradeProxy(proxyAddress, implementationFactory, { unsafeAllow: ['delegatecall'] });
+----
+
+Additionally, it is possible to preciselly disable checks directly from the Solidity source code using natspec comments. This requires Solidity >=0.8.2.
+
+[source,solidity]
+----
+contract SomeContract {
+  function some_dangerous_function() public {
+    ...
+    /// @custom:oz-upgrades-unsafe-allow delegatecall
+    (bool success, bytes memory returndata) = msg.sender.delegatecall("");
+    ...
+  }
+}
+----
+
+This syntax can be used will the following errors:
+  * `/// @custom:oz-upgrades-unsafe-allow state-variable-immutable`
+  * `/// @custom:oz-upgrades-unsafe-allow state-variable-assignment`
+  * `/// @custom:oz-upgrades-unsafe-allow external-library-linking`
+  * `/// @custom:oz-upgrades-unsafe-allow constructor`
+  * `/// @custom:oz-upgrades-unsafe-allow delegatecall`
+  * `/// @custom:oz-upgrades-unsafe-allow selfdestruct`
+
+In some cases you may want to allow multiple errors in a single line.
+
+[source,solidity]
+----
+contract SomeOtherContract {
+  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+  uint256 immutable x = 1;
+}
+----
 
 [[why-do-i-have-to-recompile-all-contracts-for-truffle]]
 == Why do I have to recompile all contracts for Truffle?

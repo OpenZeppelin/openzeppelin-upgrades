@@ -21,7 +21,7 @@ const test = _test as TestInterface<Context>;
 test.before(async t => {
   t.context.validation = await [
     'contracts/test/Validations.sol:HasEmptyConstructor',
-    'contracts/test/ValidationsNatspec.sol:HasEmptyConstructorNatspec',
+    'contracts/test/ValidationsNatspec.sol:HasNonEmptyConstructorNatspec1',
     'contracts/test/Proxiable.sol:ChildOfProxiable',
   ].reduce(async (validation, contract) => {
     const buildInfo = await artifacts.getBuildInfo(contract);
@@ -35,8 +35,10 @@ test.before(async t => {
   }, Promise.resolve({}));
 });
 
+let testCount = 0;
+
 function testValid(name: string, valid: boolean) {
-  test(name, t => {
+  test(`#${++testCount} ` + name, t => {
     const version = getContractVersion(t.context.validation, name);
     t.is(isUpgradeSafe([t.context.validation], version), valid);
   });
@@ -48,7 +50,7 @@ function testValidTransparent(name: string, valid: boolean) {
 
 function testOverride(name: string, opts: ValidationOptions, valid: boolean) {
   const testName = name.concat(valid ? '_Allowed' : '_NotAllowed');
-  test(testName, t => {
+  test(`#${++testCount} ` + testName, t => {
     const version = getContractVersion(t.context.validation, name);
     const assertUpgSafe = () => assertUpgradeSafe([t.context.validation], version, opts);
     if (valid) {
@@ -93,24 +95,19 @@ test('inherited storage', t => {
   }
 });
 
-testOverride(
-  'UsesImplicitSafeExternalLibrary',
-  { unsafeAllow: ['external-library-linking', 'no-public-upgrade-fn'] },
-  true,
-);
-testOverride(
-  'UsesExplicitSafeExternalLibrary',
-  { unsafeAllow: ['external-library-linking', 'no-public-upgrade-fn'] },
-  true,
-);
+testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, false);
+testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, false);
+testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, false);
+testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, false);
+testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'], unsafeAllowLinkedLibraries: true }, true);
+testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn'], unsafeAllowLinkedLibraries: true }, true);
+testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn', 'external-library-linking'] }, true);
+testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['no-public-upgrade-fn', 'external-library-linking'] }, true);
 
 testValid('HasEmptyConstructor', false);
 testValid('HasInternalUpgradeToFunction', false);
 testValid('HasUpgradeToFunction', true);
 testValid('ParentHasUpgradeToFunction', true);
-
-// testValidTransparent('HasInlineAssembly', false);
-// testOverride('HasInlineAssembly', { unsafeAllow: ['inline-assembly', 'no-public-upgrade-fn'] }, true);
 
 testValidTransparent('HasNonEmptyConstructorNatspec1', true);
 testValidTransparent('HasNonEmptyConstructorNatspec2', true);
@@ -120,8 +117,10 @@ testValidTransparent('AncestorHasNonEmptyConstructorNatspec1', true);
 testValidTransparent('AncestorHasNonEmptyConstructorNatspec2', true);
 testValidTransparent('HasStateVariableAssignmentNatspec1', true);
 testValidTransparent('HasStateVariableAssignmentNatspec2', true);
+testValidTransparent('HasStateVariableAssignmentNatspec3', false);
 testValidTransparent('HasImmutableStateVariableNatspec1', true);
 testValidTransparent('HasImmutableStateVariableNatspec2', true);
+testValidTransparent('HasImmutableStateVariableNatspec3', false);
 testValidTransparent('HasSelfDestructNatspec1', true);
 testValidTransparent('HasSelfDestructNatspec2', true);
 testValidTransparent('HasSelfDestructNatspec3', true);

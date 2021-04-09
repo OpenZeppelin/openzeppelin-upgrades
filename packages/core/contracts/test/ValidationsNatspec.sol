@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-contract HasEmptyConstructorNatspec {
-  constructor() { }
-}
-
 /// @custom:openzeppelin-upgrade-allow-unsafe constructor
 contract HasNonEmptyConstructorNatspec1 {
   constructor() { msg.sender; }
@@ -30,6 +26,12 @@ contract HasStateVariableAssignmentNatspec2 {
   uint x = 1;
 }
 
+contract HasStateVariableAssignmentNatspec3 {
+  /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-assignment
+  uint x = 1;
+  uint y = 2;
+}
+
 /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-immutable state-variable-assignment
 contract HasImmutableStateVariableNatspec1 {
   uint immutable x = 1;
@@ -38,6 +40,12 @@ contract HasImmutableStateVariableNatspec1 {
 contract HasImmutableStateVariableNatspec2 {
   /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-immutable state-variable-assignment
   uint immutable x = 1;
+}
+
+contract HasImmutableStateVariableNatspec3 {
+  /// @custom:openzeppelin-upgrade-allow-unsafe state-variable-immutable state-variable-assignment
+  uint immutable x = 1;
+  uint immutable y = 2;
 }
 
 /// @custom:openzeppelin-upgrade-allow-unsafe selfdestruct

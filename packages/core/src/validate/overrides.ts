@@ -28,9 +28,12 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
-  const unsafeAllowCustomTypes = opts.unsafeAllowCustomTypes ?? false;
-  const unsafeAllowLinkedLibraries = opts.unsafeAllowLinkedLibraries ?? false;
   const unsafeAllow = opts.unsafeAllow ?? [];
+  const unsafeAllowCustomTypes =
+    opts.unsafeAllowCustomTypes ??
+    (unsafeAllow.includes('struct-definition') && unsafeAllow.includes('enum-definition'));
+  const unsafeAllowLinkedLibraries =
+    opts.unsafeAllowLinkedLibraries ?? unsafeAllow.includes('external-library-linking');
 
   if (unsafeAllowCustomTypes) {
     unsafeAllow.push('enum-definition', 'struct-definition');

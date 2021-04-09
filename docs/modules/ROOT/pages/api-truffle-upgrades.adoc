@@ -7,7 +7,7 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of https:/
 
 Creates a proxy given a Truffle contract class to use as implementation, and returns a contract instance with the proxy address and the implementation interface. During a migration, the proxy address will be stored in the implementation contract's artifact, so you can use Truffle's https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions#-code-mycontract-deployed-code-[`deployed()`] function to load it.
 
-If `args` is set, will call an initializer function `initialize` with the supplied `args` during proxy deployment. 
+If `args` is set, will call an initializer function `initialize` with the supplied `args` during proxy deployment.
 
 Options for this function are:
 
@@ -15,53 +15,56 @@ Options for this function are:
 * `deployer`: set as the Truffle migration deployer during migrations
 * `unsafeAllowLinkedLibraries`: allows a deployment with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
 * `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
+* `unsafeAllow`: selectively disable one or multiple errors types.
 
 [source,ts]
 ----
 async function deployProxy(
   Contract: ContractClass,
   args: unknown[] = [],
-  opts: { deployer: Deployer, initializer: string | false, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean } = {},
+  opts: { deployer: Deployer, initializer: string | false, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[] } = {},
 ): Promise<ContractInstance>
 ----
 
 [[upgrade-proxy]]
 == upgradeProxy
 
-Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface. 
+Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
 
 Options for this function are:
 
 * `deployer`: set as the Truffle migration deployer during migrations
 * `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
 * `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
+* `unsafeAllow`: selectively disable one or multiple errors types.
 
 [source,ts]
 ----
 async function upgradeProxy(
   proxyAddress: string,
   Contract: ContractClass,
-  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean } = {},
+  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[] } = {},
 ): Promise<ContractInstance>
 ----
 
 [[prepare-upgrade]]
 == prepareUpgrade
 
-Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Truffle. 
+Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Truffle.
 
 Options are:
 
 * `deployer`: set as the Truffle migration deployer during migrations
 * `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
 * `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
+* `unsafeAllow`: selectively disable one or multiple errors types.
 
 [source,ts]
 ----
 async function prepareUpgrade(
   proxyAddress: string,
   Contract: ContractClass,
-  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean } = {},
+  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[] } = {},
 ): Promise<string>
 ----
 
