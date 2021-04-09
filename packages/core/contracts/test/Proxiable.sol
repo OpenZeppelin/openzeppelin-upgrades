@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-/// @custom:openzeppelin-upgrade-allow-unsafe inline-assembly
 library StorageSlot {
     struct AddressSlot { address value; }
     struct BooleanSlot { bool value; }
@@ -29,7 +28,6 @@ abstract contract ERC1967Storage {
     function isContract(address account) internal view returns (bool) {
         uint256 size;
         // solhint-disable-next-line no-inline-assembly
-        /// @custom:openzeppelin-upgrade-allow-unsafe inline-assembly
         assembly { size := extcodesize(account) }
         return size > 0;
     }
@@ -104,7 +102,6 @@ abstract contract ERC1967Upgrade is ERC1967Storage {
         } else {
             if (returndata.length > 0) {
                 // solhint-disable-next-line no-inline-assembly
-                /// @custom:openzeppelin-upgrade-allow-unsafe inline-assembly
                 assembly {
                     let returndata_size := mload(returndata)
                     revert(add(32, returndata), returndata_size)

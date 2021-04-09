@@ -50,15 +50,11 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     msg: e => `Enums like \`${e.name}\` are supported in the latest version of the plugin`,
     hint: () => `Update your dependency and run again`,
   },
-  'inline-assembly': {
-    msg: () => `Use of inline assembly is not allowed`,
-    link: 'https://zpl.in/upgrades/error-007', // TODO: add documentation
-  },
   'no-public-upgrade-fn': {
     msg: () => `Implementation is missing a public \`upgradeTo(address)\` function`,
     hint: () =>
       `Have your implementation inherit from proxy/UUPS/Proxiable or use a transparent proxy by setting the \`kind: 'transparent'\` option`,
-    link: 'https://zpl.in/upgrades/error-008', // TODO: add documentation
+    link: 'https://zpl.in/upgrades/error-007', // TODO: add documentation
   },
 };
 

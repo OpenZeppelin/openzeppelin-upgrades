@@ -108,6 +108,7 @@ testValid('HasEmptyConstructor', false);
 testValid('HasInternalUpgradeToFunction', false);
 testValid('HasUpgradeToFunction', true);
 testValid('ParentHasUpgradeToFunction', true);
+testValid('ChildOfProxiable', true);
 
 testValidTransparent('HasNonEmptyConstructorNatspec1', true);
 testValidTransparent('HasNonEmptyConstructorNatspec2', true);
@@ -137,8 +138,3 @@ testValidTransparent('UsesExplicitSafeInternalLibraryNatspec', true);
 testValidTransparent('UsesExplicitSafeExternalLibraryNatspec', true);
 testValidTransparent('UsesExplicitUnsafeInternalLibraryNatspec', true);
 testValidTransparent('UsesExplicitUnsafeExternalLibraryNatspec', true);
-testValidTransparent('HasInlineAssemblyNatspec1', true);
-testValidTransparent('HasInlineAssemblyNatspec2', true);
-testValidTransparent('HasInlineAssemblyNatspec3', true);
-
-testValid('ChildOfProxiable', true);

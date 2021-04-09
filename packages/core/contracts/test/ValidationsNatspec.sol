@@ -206,30 +206,3 @@ contract UsesExplicitUnsafeExternalLibraryNatspec {
     UnsafeExternalLibraryNatspec.explode(x, y);
   }
 }
-
-/// @custom:openzeppelin-upgrade-allow-unsafe inline-assembly
-contract HasInlineAssemblyNatspec1 {
-    function unsafe() public {
-        assembly {
-            // Anything could happen here (delegate call / selfdestruct)
-        }
-    }
-}
-
-contract HasInlineAssemblyNatspec2 {
-    /// @custom:openzeppelin-upgrade-allow-unsafe inline-assembly
-    function unsafe() public {
-        assembly {
-            // Anything could happen here (delegate call / selfdestruct)
-        }
-    }
-}
-
-contract HasInlineAssemblyNatspec3 {
-    function unsafe() public {
-        /// @custom:openzeppelin-upgrade-allow-unsafe inline-assembly
-        assembly {
-            // Anything could happen here (delegate call / selfdestruct)
-        }
-    }
-}

@@ -23,7 +23,6 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
   constructor: `    You are using the \`unsafeAllow.constructor\` flag.\n`,
   delegatecall: `    You are using the \`unsafeAllow.delegatecall\` flag.\n`,
   selfdestruct: `    You are using the \`unsafeAllow.selfdestruct\` flag.\n`,
-  'inline-assembly': `    You are using the \`unsafeAllow.inline-assembly\` flag.\n`,
   'no-public-upgrade-fn': undefined,
 };
 
