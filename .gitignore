@@ -10,3 +10,4 @@ build
 coverage
 .env
 /examples
+package-lock.json

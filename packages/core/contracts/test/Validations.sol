@@ -160,3 +160,11 @@ contract UsesExplicitUnsafeExternalLibrary {
     UnsafeExternalLibrary.explode(x, y);
   }
 }
+
+contract HasInlineAssembly {
+  function unsafe() public {
+    assembly {
+      // Anything could happen here (delegate call / selfdestruct)
+    }
+  }
+}

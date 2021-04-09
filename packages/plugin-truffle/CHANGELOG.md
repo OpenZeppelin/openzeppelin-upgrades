@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for new `unsafeAllow` option in `@openzeppelin/upgrades-core`.
+
 ## 1.5.0 (2021-01-27)
 
 - Add support for structs and enums. ([#261](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/261))
