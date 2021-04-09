@@ -74,6 +74,8 @@ Notice that this behavior is incompatible with the way upgradeable contracts wor
 1. Upgradeable contracts have no constructors but initializers, therefore they can't handle immutable variables.
 2. Since the immutable variable value is stored in the bytecode its value would be shared among all proxies pointing to a given contract instead of each proxy's storage.
 
+NOTE: In some cases immutable variables are upgrade safe. The plugins cannot currently detect these cases automatically so they will point it out as an error anyway. You can manually disable the check using the option `unsafeAllow: ['state-variable-immutable']`, or in Solidity >=0.8.2 placing the comment `/// @custom:oz-upgrades-unsafe-allow state-variable-immutable` before the variable declaration.
+
 [[why-cant-i-use-external-libraries]]
 == Why can't I use external libraries?
 
@@ -81,7 +83,7 @@ At the moment the plugins only have partial support for upgradeable contracts li
 
 There are plans to add this functionality in the near future with certain constraints that make the issue easier to address like assuming that the external library's source code is either present in the codebase or that it's been deployed and mined so it can be fetched from the blockchain for analysis.
 
-In the meantime you can deploy upgradeable contracts linked to external libraries by setting the `unsafeAllowLinkedLibraries` flag to true in the `deployProxy` or `upgradeProxy` calls. Keep in mind the plugins will not verify that the linked libraries are upgrade safe. This has to be done manually for now until the full support for external libraries is implemented.
+In the meantime you can deploy upgradeable contracts linked to external libraries by setting the `unsafeAllowLinkedLibraries` flag to true in the `deployProxy` or `upgradeProxy` calls, or including `'external-library-linking'` in the `unsafeAllow` array. Keep in mind the plugins will not verify that the linked libraries are upgrade safe. This has to be done manually for now until the full support for external libraries is implemented.
 
 You can follow or contribute to https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52[this issue in Github].
 
