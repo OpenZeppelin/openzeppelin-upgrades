@@ -162,20 +162,20 @@ contract UsesExplicitUnsafeExternalLibrary {
 }
 
 contract HasInternalUpgradeToFunction {
-    function upgradeTo(address) internal {}
+  function upgradeTo(address) internal {}
 }
 
 contract HasUpgradeToFunction {
-    function upgradeTo(address) public {}
+  function upgradeTo(address) public {}
 }
 
 contract ParentHasUpgradeToFunction is HasUpgradeToFunction {
 }
 
 contract HasInlineAssembly {
-    function unsafe() public {
-        assembly {
-            // Anything could happen here (delegate call / selfdestruct)
-        }
+  function unsafe() public {
+    assembly {
+      // Anything could happen here (delegate call / selfdestruct)
     }
+  }
 }
