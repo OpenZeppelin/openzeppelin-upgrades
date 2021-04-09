@@ -95,7 +95,7 @@ Some users who have already deployed proxies with structs and/or enums and who n
 [[how-can-i-disable-checks]]
 == How can I disable some checks?
 
-Deployment and upgrade related functions come with an optional `opts` object, which includes an `unsafeAllow` option. This can be set to disable any check performed by the plugin. The list of that can individually be disabled is:
+Deployment and upgrade related functions come with an optional `opts` object, which includes an `unsafeAllow` option. This can be set to disable any check performed by the plugin. The list of checks that can individually be disabled is:
   * `state-variable-assignment`
   * `state-variable-immutable`
   * `external-library-linking`
