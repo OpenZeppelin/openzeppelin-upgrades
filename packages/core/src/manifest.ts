@@ -156,11 +156,13 @@ const DeploymentCodec = t.intersection([
   }),
 ]);
 
+const ProxyKindCodec = t.union([t.literal('uups'), t.literal('transparent')]);
+
 const ManifestDataCodec = t.intersection([
   t.strict({
     manifestVersion: t.string,
     impls: t.record(t.string, tNullable(t.intersection([DeploymentCodec, t.strict({ layout: t.any })]))),
-    proxies: t.array(t.intersection([DeploymentCodec, t.strict({ kind: t.any })])),
+    proxies: t.array(t.intersection([DeploymentCodec, t.strict({ kind: ProxyKindCodec })])),
   }),
   t.partial({
     admin: tNullable(DeploymentCodec),
