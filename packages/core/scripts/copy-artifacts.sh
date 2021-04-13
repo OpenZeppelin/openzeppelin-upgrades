@@ -2,8 +2,12 @@
 
 set -euo pipefail
 
-# copies proxy artifacts to the location they were until 1.3.0 for backwards compatibility with truffle plugin
+# Copies proxy artifacts to their location in previous versions for backwards compatibility
 
-cp artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.json artifacts
+mkdir artifacts/contracts/proxy/{,AdminUpgradeabilityProxy.sol,ProxyAdmin.sol}
+
+cp artifacts/contracts/import.sol/AdminUpgradeabilityProxy.json artifacts
+cp artifacts/contracts/import.sol/AdminUpgradeabilityProxy.json artifacts/contracts/proxy/AdminUpgradeabilityProxy.sol
+
 cp artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json artifacts
-cp artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json artifacts
+cp artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json artifacts/contracts/proxy/ProxyAdmin.sol
