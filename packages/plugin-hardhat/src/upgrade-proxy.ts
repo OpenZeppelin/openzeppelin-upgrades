@@ -40,7 +40,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
       // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
       const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
       const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);
-      const nextImpl = await deployImpl(hre, ImplFactory, requiredOpts, { proxyAddress, manifest });
+      const nextImpl = await deployImpl(hre, ImplFactory, requiredOpts, proxyAddress);
       await proxy.upgradeTo(nextImpl);
     } else {
       // Admin contract: redirect upgrade call through it
@@ -50,7 +50,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
       if (admin.address !== manifestAdmin?.address) {
         throw new Error('Proxy admin is not the one registered in the network manifest');
       }
-      const nextImpl = await deployImpl(hre, ImplFactory, requiredOpts, { proxyAddress, manifest });
+      const nextImpl = await deployImpl(hre, ImplFactory, requiredOpts, proxyAddress);
       await admin.upgrade(proxyAddress, nextImpl);
     }
 

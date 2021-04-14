@@ -25,5 +25,5 @@ export async function prepareUpgrade(
     }
   }
 
-  return await deployImpl(Contract, requiredOpts, { proxyAddress, manifest });
+  return await deployImpl(Contract, requiredOpts, proxyAddress);
 }

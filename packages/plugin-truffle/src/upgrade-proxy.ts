@@ -41,7 +41,7 @@ export async function upgradeProxy(
     // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
     const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
     const proxy = new TransparentUpgradeableProxyFactory(proxyAddress);
-    const nextImpl = await deployImpl(Contract, requiredOpts, { proxyAddress, manifest });
+    const nextImpl = await deployImpl(Contract, requiredOpts, proxyAddress);
     await proxy.upgradeTo(nextImpl);
   } else {
     // Admin contract: redirect upgrade call through it
@@ -52,7 +52,7 @@ export async function upgradeProxy(
       throw new Error('Proxy admin is not the one registered in the network manifest');
     }
 
-    const nextImpl = await deployImpl(Contract, requiredOpts, { proxyAddress, manifest });
+    const nextImpl = await deployImpl(Contract, requiredOpts, proxyAddress);
     await admin.upgrade(proxyAddress, nextImpl);
   }
 

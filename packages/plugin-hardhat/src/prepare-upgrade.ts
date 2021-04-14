@@ -31,6 +31,6 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
       }
     }
 
-    return await deployImpl(hre, ImplFactory, requiredOpts, { proxyAddress, manifest });
+    return await deployImpl(hre, ImplFactory, requiredOpts, proxyAddress);
   };
 }
