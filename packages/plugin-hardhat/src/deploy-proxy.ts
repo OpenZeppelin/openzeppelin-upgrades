@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import { Manifest, fetchOrDeployProxy, fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
+import { Manifest, fetchOrDeployProxy, fetchOrDeployAdmin, logWarning } from '@openzeppelin/upgrades-core';
 
 import {
   deploy,
@@ -42,11 +42,10 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     const data = getInitializerData(ImplFactory, args, opts.initializer);
 
     if (requiredOpts.kind === 'uups' && (await manifest.getAdmin())) {
-      console.log(
-        chalk.keyword('orange')(
-          `Warning: the manifest include records of an proxy admin. This is not nativelly compatible with UUPS proxies. Any further admin action will have no affect on this new proxy.`,
-        ),
-      );
+      logWarning(`A proxy admin was previously deployed on this network`, [
+        `This is not natively used with the current kind of proxy ('uups').`,
+        `Changes to the admin will have no affect on this new proxy.`,
+      ]);
     }
 
     let proxyAddress: string;
