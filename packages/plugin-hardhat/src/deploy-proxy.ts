@@ -19,7 +19,7 @@ export interface DeployFunction {
   (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
 }
 
-interface DeployOptions extends Options {
+export interface DeployOptions extends Options {
   initializer?: string | false;
 }
 
