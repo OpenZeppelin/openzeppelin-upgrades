@@ -32,15 +32,27 @@ export async function deployProxy(
 
   const provider = wrapProvider(requiredOpts.deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
+
+  switch (requiredOpts.kind) {
+    case 'uups': {
+      if (await manifest.getAdmin()) {
+        logWarning(`A proxy admin was previously deployed on this network`, [
+          `This is not natively used with the current kind of proxy ('uups').`,
+          `Changes to the admin will have no affect on this new proxy.`,
+        ]);
+      }
+      break;
+    }
+    case 'auto':
+    case 'transparent': {
+      // default deploy type is transparent, deployImpl should check accordingly
+      requiredOpts.kind = 'transparent';
+      break;
+    }
+  }
+
   const impl = await deployImpl(Contract, requiredOpts);
   const data = getInitializerData(Contract, args, opts.initializer);
-
-  if (requiredOpts.kind === 'uups' && (await manifest.getAdmin())) {
-    logWarning(`A proxy admin was previously deployed on this network`, [
-      `This is not natively used with the current kind of proxy ('uups').`,
-      `Changes to the admin will have no affect on this new proxy.`,
-    ]);
-  }
 
   let proxyAddress: string;
   switch (requiredOpts.kind) {
@@ -52,7 +64,6 @@ export async function deployProxy(
       break;
     }
 
-    case 'auto':
     case 'transparent': {
       const AdminFactory = getProxyAdminFactory(Contract);
       const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(requiredOpts.deployer, AdminFactory));
