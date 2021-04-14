@@ -1,4 +1,4 @@
-import { Manifest } from '@openzeppelin/upgrades-core';
+import { Manifest, DeploymentNotFound } from '@openzeppelin/upgrades-core';
 
 import { ContractClass, wrapProvider, deployImpl, Options, withDefaults } from './utils';
 
@@ -17,7 +17,7 @@ export async function prepareUpgrade(
       const { kind } = await manifest.getProxyFromAddress(proxyAddress);
       requiredOpts.kind = kind;
     } catch (e) {
-      if (e instanceof Error) {
+      if (e instanceof DeploymentNotFound) {
         requiredOpts.kind = 'transparent';
       } else {
         throw e;

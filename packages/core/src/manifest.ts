@@ -58,7 +58,7 @@ export class Manifest {
     const data = await this.read();
     const deployment = Object.values(data.impls).find(d => d?.address === address);
     if (deployment === undefined) {
-      throw new Error(`Deployment at address ${address} is not registered`);
+      throw new DeploymentNotFound(`Deployment at address ${address} is not registered`);
     }
     return deployment;
   }
@@ -67,7 +67,7 @@ export class Manifest {
     const data = await this.read();
     const deployment = data.proxies.find(d => d?.address === address);
     if (deployment === undefined) {
-      throw new Error(`Deployment at address ${address} is not registered`);
+      throw new DeploymentNotFound(`Proxy at address ${address} is not registered`);
     }
     return deployment;
   }
@@ -144,6 +144,8 @@ export function migrateManifest(data: ManifestData): ManifestData {
       throw new Error('Manifest migration not available');
   }
 }
+
+export class DeploymentNotFound extends Error {}
 
 const tNullable = <C extends t.Mixed>(codec: C) => t.union([codec, t.undefined]);
 

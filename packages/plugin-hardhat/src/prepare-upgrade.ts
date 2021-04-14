@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import { Manifest } from '@openzeppelin/upgrades-core';
+import { Manifest, DeploymentNotFound } from '@openzeppelin/upgrades-core';
 
 import { deployImpl, Options, withDefaults } from './utils';
 
@@ -23,7 +23,7 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
         const { kind } = await manifest.getProxyFromAddress(proxyAddress);
         requiredOpts.kind = kind;
       } catch (e) {
-        if (e instanceof Error) {
+        if (e instanceof DeploymentNotFound) {
           requiredOpts.kind = 'transparent';
         } else {
           throw e;
