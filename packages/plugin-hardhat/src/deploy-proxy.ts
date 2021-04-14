@@ -15,22 +15,31 @@ import {
 } from './utils';
 
 export interface DeployFunction {
-  (ImplFactory: ContractFactory, args?: unknown[], opts?: Options): Promise<Contract>;
-  (ImplFactory: ContractFactory, opts?: Options): Promise<Contract>;
+  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
+  (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
+}
+
+interface DeployOptions extends Options {
+  initializer?: string | false;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
-  return async function deployProxy(ImplFactory: ContractFactory, args: unknown[] | Options = [], opts: Options = {}) {
+  return async function deployProxy(
+    ImplFactory: ContractFactory,
+    args: unknown[] | DeployOptions = [],
+    opts: DeployOptions = {},
+  ) {
     if (!Array.isArray(args)) {
       opts = args;
       args = [];
     }
-    const requiredOpts: Required<Options> = withDefaults(opts);
+
+    const requiredOpts = withDefaults(opts);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
     const impl = await deployImpl(hre, ImplFactory, requiredOpts);
-    const data = getInitializerData(ImplFactory, args, requiredOpts.initializer);
+    const data = getInitializerData(ImplFactory, args, opts.initializer);
 
     if (requiredOpts.kind === 'uups' && (await manifest.getAdmin())) {
       console.log(
@@ -69,17 +78,20 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     return inst;
   };
 
-  function getInitializerData(ImplFactory: ContractFactory, args: unknown[], initializer: string | false): string {
+  function getInitializerData(ImplFactory: ContractFactory, args: unknown[], initializer?: string | false): string {
     if (initializer === false) {
       return '0x';
     }
+
+    const allowNoInitialization = initializer === undefined && args.length === 0;
+    initializer = initializer ?? 'initialize';
 
     try {
       const fragment = ImplFactory.interface.getFunction(initializer);
       return ImplFactory.interface.encodeFunctionData(fragment, args);
     } catch (e: unknown) {
       if (e instanceof Error) {
-        if (initializer === 'initialize' && args.length === 0 && e.message.includes('no matching function')) {
+        if (allowNoInitialization && args.length === 0 && e.message.includes('no matching function')) {
           return '0x';
         }
       }

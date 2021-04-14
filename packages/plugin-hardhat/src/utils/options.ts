@@ -1,25 +1,14 @@
 import { ProxyDeployment, ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
 
-export type Options = DeployOptions & ValidationOptions;
-
 export type ProxyKind = 'auto' | ProxyDeployment['kind'];
-export type ProxyInitializer = string | false;
 
-export interface DeployOptions {
-  initializer?: ProxyInitializer;
+export interface Options extends ValidationOptions {
   kind?: ProxyKind;
-}
-
-export function withDeployDefaults(opts: DeployOptions): Required<DeployOptions> {
-  return {
-    initializer: opts.initializer ?? 'initialize',
-    kind: opts.kind ?? 'auto',
-  };
 }
 
 export function withDefaults(opts: Options): Required<Options> {
   return {
-    ...withDeployDefaults(opts),
+    kind: opts.kind ?? 'auto',
     ...withValidationDefaults(opts),
   };
 }

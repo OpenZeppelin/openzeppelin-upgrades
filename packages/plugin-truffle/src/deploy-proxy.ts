@@ -14,25 +14,27 @@ import {
   withDefaults,
 } from './utils';
 
+interface DeployOptions extends Options {
+  initializer?: string | false;
+}
+
 export async function deployProxy(Contract: ContractClass, opts?: Options): Promise<ContractInstance>;
-
 export async function deployProxy(Contract: ContractClass, args?: unknown[], opts?: Options): Promise<ContractInstance>;
-
 export async function deployProxy(
   Contract: ContractClass,
   args: unknown[] | Options = [],
-  opts: Options = {},
+  opts: DeployOptions = {},
 ): Promise<ContractInstance> {
   if (!Array.isArray(args)) {
     opts = args;
     args = [];
   }
-  const requiredOpts: Required<Options> = withDefaults(opts);
+  const requiredOpts = withDefaults(opts);
 
   const provider = wrapProvider(requiredOpts.deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
   const impl = await deployImpl(Contract, requiredOpts);
-  const data = getInitializerData(Contract, args, requiredOpts.initializer);
+  const data = getInitializerData(Contract, args, opts.initializer);
 
   if (requiredOpts.kind === 'uups' && (await manifest.getAdmin())) {
     console.log(
@@ -72,15 +74,18 @@ export async function deployProxy(
   return contract;
 }
 
-function getInitializerData(Contract: ContractClass, args: unknown[], initializer: string | false): string {
+function getInitializerData(Contract: ContractClass, args: unknown[], initializer?: string | false): string {
   if (initializer === false) {
     return '0x';
   }
 
+  const allowNoInitialization = initializer === undefined && args.length === 0;
+  initializer = initializer ?? 'initialize';
+
   const stub = new Contract('');
   if (initializer in stub.contract.methods) {
     return stub.contract.methods[initializer](...args).encodeABI();
-  } else if (initializer === 'initialize' && args.length === 0) {
+  } else if (allowNoInitialization) {
     return '0x';
   } else {
     throw new Error(`Contract ${Contract.name} does not have a function \`${initializer}\``);
