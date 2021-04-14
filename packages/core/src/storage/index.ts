@@ -7,6 +7,7 @@ import { StorageLayout, getDetailedLayout } from './layout';
 import { StorageOperation, StorageItem, StorageLayoutComparator } from './compare';
 import { LayoutCompatibilityReport } from './report';
 import { ValidationOptions, isSilencingWarnings } from '../validate/overrides';
+import { logWarning } from '../utils/log';
 
 export function assertStorageUpgradeSafe(
   original: StorageLayout,
@@ -20,12 +21,10 @@ export function assertStorageUpgradeSafe(
 
   if (!isSilencingWarnings()) {
     if (comparator.hasAllowedUncheckedCustomTypes) {
-      console.error(
-        chalk.keyword('orange').bold('Warning:') +
-          ` Potentially unsafe deployment\n\n` +
-          `    You are using \`unsafeAllowCustomTypes\` to force approve structs or enums with missing data.\n` +
-          `    Make sure you have manually checked the storage layout for incompatibilities.\n`,
-      );
+      logWarning(`Potentially unsafe deployment`, [
+        `You are using \`unsafeAllowCustomTypes\` to force approve structs or enums with missing data.`,
+        `Make sure you have manually checked the storage layout for incompatibilities.`,
+      ]);
     } else if (unsafeAllowCustomTypes) {
       console.error(
         chalk.keyword('yellow').bold('Note:') +
