@@ -1,10 +1,12 @@
 import { ValidationError } from './run';
+import { ProxyDeployment } from '../manifest';
 import { logWarning } from '../utils/log';
 
 export interface ValidationOptions {
   unsafeAllowCustomTypes?: boolean;
   unsafeAllowLinkedLibraries?: boolean;
   unsafeAllow?: ValidationError['kind'][];
+  kind?: ProxyDeployment['kind'];
 }
 
 export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], string[]> = {
@@ -25,7 +27,11 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
   constructor: [`You are using the \`unsafeAllow.constructor\` flag.`],
   delegatecall: [`You are using the \`unsafeAllow.delegatecall\` flag.`],
   selfdestruct: [`You are using the \`unsafeAllow.selfdestruct\` flag.`],
-  'no-public-upgrade-fn': [],
+  'no-public-upgrade-fn': [
+    `You are using the \`unsafeAllow.no-public-upgrade-fn\` flag with uups proxy.`,
+    `Not having a public upgradeTo function in your implementation can break upgradeability.`,
+    `Some implementation might check that onchain, and cause the upgrade to revert.`,
+  ],
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
@@ -42,8 +48,9 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   if (unsafeAllowLinkedLibraries) {
     unsafeAllow.push('external-library-linking');
   }
+  const kind = opts.kind ?? 'transparent';
 
-  return { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, unsafeAllow };
+  return { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, unsafeAllow, kind };
 }
 
 export function processExceptions(
@@ -52,6 +59,10 @@ export function processExceptions(
   opts: ValidationOptions,
 ): ValidationError[] {
   const { unsafeAllow } = withValidationDefaults(opts);
+
+  if (opts.kind === 'transparent') {
+    errors = errors.filter(error => error.kind !== 'no-public-upgrade-fn');
+  }
 
   for (const [errorType, errorDescription] of Object.entries(ValidationErrorUnsafeMessages)) {
     if (unsafeAllow.includes(errorType as ValidationError['kind'])) {

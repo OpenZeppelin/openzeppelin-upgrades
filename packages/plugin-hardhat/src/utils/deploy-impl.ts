@@ -2,31 +2,27 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
 import {
+  Manifest,
+  ValidationOptions,
   assertUpgradeSafe,
   assertStorageUpgradeSafe,
-  getStorageLayout,
   fetchOrDeploy,
-  getVersion,
-  getUnlinkedBytecode,
-  Manifest,
   getImplementationAddress,
+  getStorageLayout,
   getStorageLayoutForAddress,
+  getUnlinkedBytecode,
+  getVersion,
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
-import { Options } from './options';
 import { readValidations } from './validations';
 
 export async function deployImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  requiredOpts: Required<Options>,
+  requiredOpts: Required<ValidationOptions>,
   proxyAddress?: string,
 ): Promise<string> {
-  if (requiredOpts.kind === 'transparent') {
-    requiredOpts.unsafeAllow.push('no-public-upgrade-fn');
-  }
-
   const { provider } = hre.network;
   const validations = await readValidations(hre);
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);

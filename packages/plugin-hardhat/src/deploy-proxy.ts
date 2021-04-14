@@ -1,7 +1,14 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import { Manifest, fetchOrDeployProxy, fetchOrDeployAdmin, logWarning } from '@openzeppelin/upgrades-core';
+import {
+  Manifest,
+  ValidationOptions,
+  fetchOrDeployAdmin,
+  fetchOrDeployProxy,
+  logWarning,
+  withValidationDefaults,
+} from '@openzeppelin/upgrades-core';
 
 import {
   deploy,
@@ -9,8 +16,6 @@ import {
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
-  Options,
-  withDefaults,
 } from './utils';
 
 export interface DeployFunction {
@@ -18,7 +23,7 @@ export interface DeployFunction {
   (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
 }
 
-export interface DeployOptions extends Options {
+export interface DeployOptions extends ValidationOptions {
   initializer?: string | false;
 }
 
@@ -33,7 +38,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       args = [];
     }
 
-    const requiredOpts = withDefaults(opts);
+    const requiredOpts = withValidationDefaults(opts);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
@@ -48,7 +53,6 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
         }
         break;
       }
-      case 'auto':
       case 'transparent': {
         // default deploy type is transparent, deployImpl should check accordingly
         requiredOpts.kind = 'transparent';

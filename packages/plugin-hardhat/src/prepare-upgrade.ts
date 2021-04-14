@@ -1,36 +1,39 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import { Manifest, DeploymentNotFound } from '@openzeppelin/upgrades-core';
+import {
+  DeploymentNotFound,
+  Manifest,
+  ValidationOptions,
+  withValidationDefaults,
+} from '@openzeppelin/upgrades-core';
 
-import { deployImpl, Options, withDefaults } from './utils';
+import { deployImpl } from './utils';
 
 export type PrepareUpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts?: Options,
+  opts?: ValidationOptions,
 ) => Promise<string>;
 
 export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgradeFunction {
-  return async function prepareUpgrade(proxyAddress, ImplFactory, opts: Options = {}) {
-    const requiredOpts: Required<Options> = withDefaults(opts);
-
+  return async function prepareUpgrade(proxyAddress, ImplFactory, opts: ValidationOptions = {}) {
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    if (requiredOpts.kind === 'auto') {
+    if (opts.kind === undefined) {
       try {
         const { kind } = await manifest.getProxyFromAddress(proxyAddress);
-        requiredOpts.kind = kind;
+        opts.kind = kind;
       } catch (e) {
         if (e instanceof DeploymentNotFound) {
-          requiredOpts.kind = 'transparent';
+          opts.kind = 'transparent';
         } else {
           throw e;
         }
       }
     }
 
-    return await deployImpl(hre, ImplFactory, requiredOpts, proxyAddress);
+    return await deployImpl(hre, ImplFactory, withValidationDefaults(opts), proxyAddress);
   };
 }

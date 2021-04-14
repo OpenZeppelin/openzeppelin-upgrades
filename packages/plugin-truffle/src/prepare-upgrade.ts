@@ -12,7 +12,7 @@ export async function prepareUpgrade(
   const provider = wrapProvider(requiredOpts.deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
 
-  if (requiredOpts.kind === 'auto') {
+  if (opts.kind === undefined) {
     try {
       const { kind } = await manifest.getProxyFromAddress(proxyAddress);
       requiredOpts.kind = kind;

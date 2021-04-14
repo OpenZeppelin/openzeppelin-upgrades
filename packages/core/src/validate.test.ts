@@ -37,22 +37,15 @@ test.before(async t => {
 
 let testCount = 0;
 
-function testValid(name: string, valid: boolean) {
-  test(`#${++testCount} ` + name, t => {
-    const version = getContractVersion(t.context.validation, name);
-    t.is(isUpgradeSafe([t.context.validation], version), valid);
-  });
+function testValid(name: string, kind: ValidationOptions['kind'], valid: boolean) {
+  testOverride(name, kind, {}, valid);
 }
 
-function testValidTransparent(name: string, valid: boolean) {
-  testOverride(name, { unsafeAllow: ['no-public-upgrade-fn'] }, valid);
-}
-
-function testOverride(name: string, opts: ValidationOptions, valid: boolean) {
+function testOverride(name: string, kind: ValidationOptions['kind'], opts: ValidationOptions, valid: boolean) {
   const testName = name.concat(valid ? '_Allowed' : '_NotAllowed');
   test(`#${++testCount} ` + testName, t => {
     const version = getContractVersion(t.context.validation, name);
-    const assertUpgSafe = () => assertUpgradeSafe([t.context.validation], version, opts);
+    const assertUpgSafe = () => assertUpgradeSafe([t.context.validation], version, {kind, ...opts});
     if (valid) {
       t.notThrows(assertUpgSafe);
     } else {
@@ -61,29 +54,29 @@ function testOverride(name: string, opts: ValidationOptions, valid: boolean) {
   });
 }
 
-testValidTransparent('HasEmptyConstructor', true);
-testValidTransparent('HasConstantStateVariableAssignment', true);
-testValidTransparent('HasStateVariable', true);
-testValidTransparent('UsesImplicitSafeInternalLibrary', true);
-testValidTransparent('UsesExplicitSafeInternalLibrary', true);
+testValid('HasEmptyConstructor', 'transparent', true);
+testValid('HasConstantStateVariableAssignment', 'transparent', true);
+testValid('HasStateVariable', 'transparent', true);
+testValid('UsesImplicitSafeInternalLibrary', 'transparent', true);
+testValid('UsesExplicitSafeInternalLibrary', 'transparent', true);
 
-testValidTransparent('HasNonEmptyConstructor', false);
-testValidTransparent('ParentHasNonEmptyConstructor', false);
-testValidTransparent('AncestorHasNonEmptyConstructor', false);
-testValidTransparent('HasStateVariableAssignment', false);
-testValidTransparent('HasImmutableStateVariable', false);
-testValidTransparent('HasSelfDestruct', false);
-testValidTransparent('HasDelegateCall', false);
-testValidTransparent('ImportedParentHasStateVariableAssignment', false);
-testValidTransparent('UsesImplicitUnsafeInternalLibrary', false);
-testValidTransparent('UsesExplicitUnsafeInternalLibrary', false);
-testValidTransparent('UsesImplicitUnsafeExternalLibrary', false);
-testValidTransparent('UsesExplicitUnsafeExternalLibrary', false);
+testValid('HasNonEmptyConstructor', 'transparent', false);
+testValid('ParentHasNonEmptyConstructor', 'transparent', false);
+testValid('AncestorHasNonEmptyConstructor', 'transparent', false);
+testValid('HasStateVariableAssignment', 'transparent', false);
+testValid('HasImmutableStateVariable', 'transparent', false);
+testValid('HasSelfDestruct', 'transparent', false);
+testValid('HasDelegateCall', 'transparent', false);
+testValid('ImportedParentHasStateVariableAssignment', 'transparent', false);
+testValid('UsesImplicitUnsafeInternalLibrary', 'transparent', false);
+testValid('UsesExplicitUnsafeInternalLibrary', 'transparent', false);
+testValid('UsesImplicitUnsafeExternalLibrary', 'transparent', false);
+testValid('UsesExplicitUnsafeExternalLibrary', 'transparent', false);
 
 // Linked external libraries are not yet supported
 // see: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
-testValidTransparent('UsesImplicitSafeExternalLibrary', false);
-testValidTransparent('UsesExplicitSafeExternalLibrary', false);
+testValid('UsesImplicitSafeExternalLibrary', 'transparent', false);
+testValid('UsesExplicitSafeExternalLibrary', 'transparent', false);
 
 test('inherited storage', t => {
   const version = getContractVersion(t.context.validation, 'StorageInheritChild');
@@ -95,62 +88,62 @@ test('inherited storage', t => {
   }
 });
 
-testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, false);
-testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllowLinkedLibraries: true }, false);
-testOverride('UsesImplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, false);
-testOverride('UsesExplicitSafeExternalLibrary', { unsafeAllow: ['external-library-linking'] }, false);
 testOverride(
   'UsesImplicitSafeExternalLibrary',
-  { unsafeAllow: ['no-public-upgrade-fn'], unsafeAllowLinkedLibraries: true },
+  'transparent',
+  { unsafeAllowLinkedLibraries: true },
   true,
 );
 testOverride(
   'UsesExplicitSafeExternalLibrary',
-  { unsafeAllow: ['no-public-upgrade-fn'], unsafeAllowLinkedLibraries: true },
+  'transparent',
+  { unsafeAllowLinkedLibraries: true },
   true,
 );
 testOverride(
   'UsesImplicitSafeExternalLibrary',
-  { unsafeAllow: ['no-public-upgrade-fn', 'external-library-linking'] },
+  'transparent',
+  { unsafeAllow: ['external-library-linking'] },
   true,
 );
 testOverride(
   'UsesExplicitSafeExternalLibrary',
-  { unsafeAllow: ['no-public-upgrade-fn', 'external-library-linking'] },
+  'transparent',
+  { unsafeAllow: ['external-library-linking'] },
   true,
 );
 
-testValid('HasEmptyConstructor', false);
-testValid('HasInternalUpgradeToFunction', false);
-testValid('HasUpgradeToFunction', true);
-testValid('ParentHasUpgradeToFunction', true);
-testValid('ChildOfProxiable', true);
+testValid('HasEmptyConstructor', 'uups', false);
+testValid('HasInternalUpgradeToFunction', 'uups', false);
+testValid('HasUpgradeToFunction', 'uups', true);
+testValid('ParentHasUpgradeToFunction', 'uups', true);
+testValid('ChildOfProxiable', 'uups', true);
 
-testValidTransparent('HasNonEmptyConstructorNatspec1', true);
-testValidTransparent('HasNonEmptyConstructorNatspec2', true);
-testValidTransparent('ParentHasNonEmptyConstructorNatspec1', true);
-testValidTransparent('ParentHasNonEmptyConstructorNatspec2', true);
-testValidTransparent('AncestorHasNonEmptyConstructorNatspec1', true);
-testValidTransparent('AncestorHasNonEmptyConstructorNatspec2', true);
-testValidTransparent('HasStateVariableAssignmentNatspec1', true);
-testValidTransparent('HasStateVariableAssignmentNatspec2', true);
-testValidTransparent('HasStateVariableAssignmentNatspec3', false);
-testValidTransparent('HasImmutableStateVariableNatspec1', true);
-testValidTransparent('HasImmutableStateVariableNatspec2', true);
-testValidTransparent('HasImmutableStateVariableNatspec3', false);
-testValidTransparent('HasSelfDestructNatspec1', true);
-testValidTransparent('HasSelfDestructNatspec2', true);
-testValidTransparent('HasSelfDestructNatspec3', true);
-testValidTransparent('HasDelegateCallNatspec1', true);
-testValidTransparent('HasDelegateCallNatspec2', true);
-testValidTransparent('HasDelegateCallNatspec3', true);
-testValidTransparent('ImportedParentHasStateVariableAssignmentNatspec1', true);
-testValidTransparent('ImportedParentHasStateVariableAssignmentNatspec2', true);
-testValidTransparent('UsesImplicitSafeInternalLibraryNatspec', true);
-testValidTransparent('UsesImplicitSafeExternalLibraryNatspec', true);
-testValidTransparent('UsesImplicitUnsafeInternalLibraryNatspec', true);
-testValidTransparent('UsesImplicitUnsafeExternalLibraryNatspec', true);
-testValidTransparent('UsesExplicitSafeInternalLibraryNatspec', true);
-testValidTransparent('UsesExplicitSafeExternalLibraryNatspec', true);
-testValidTransparent('UsesExplicitUnsafeInternalLibraryNatspec', true);
-testValidTransparent('UsesExplicitUnsafeExternalLibraryNatspec', true);
+testValid('HasNonEmptyConstructorNatspec1', 'transparent', true);
+testValid('HasNonEmptyConstructorNatspec2', 'transparent', true);
+testValid('ParentHasNonEmptyConstructorNatspec1', 'transparent', true);
+testValid('ParentHasNonEmptyConstructorNatspec2', 'transparent', true);
+testValid('AncestorHasNonEmptyConstructorNatspec1', 'transparent', true);
+testValid('AncestorHasNonEmptyConstructorNatspec2', 'transparent', true);
+testValid('HasStateVariableAssignmentNatspec1', 'transparent', true);
+testValid('HasStateVariableAssignmentNatspec2', 'transparent', true);
+testValid('HasStateVariableAssignmentNatspec3', 'transparent', false);
+testValid('HasImmutableStateVariableNatspec1', 'transparent', true);
+testValid('HasImmutableStateVariableNatspec2', 'transparent', true);
+testValid('HasImmutableStateVariableNatspec3', 'transparent', false);
+testValid('HasSelfDestructNatspec1', 'transparent', true);
+testValid('HasSelfDestructNatspec2', 'transparent', true);
+testValid('HasSelfDestructNatspec3', 'transparent', true);
+testValid('HasDelegateCallNatspec1', 'transparent', true);
+testValid('HasDelegateCallNatspec2', 'transparent', true);
+testValid('HasDelegateCallNatspec3', 'transparent', true);
+testValid('ImportedParentHasStateVariableAssignmentNatspec1', 'transparent', true);
+testValid('ImportedParentHasStateVariableAssignmentNatspec2', 'transparent', true);
+testValid('UsesImplicitSafeInternalLibraryNatspec', 'transparent', true);
+testValid('UsesImplicitSafeExternalLibraryNatspec', 'transparent', true);
+testValid('UsesImplicitUnsafeInternalLibraryNatspec', 'transparent', true);
+testValid('UsesImplicitUnsafeExternalLibraryNatspec', 'transparent', true);
+testValid('UsesExplicitSafeInternalLibraryNatspec', 'transparent', true);
+testValid('UsesExplicitSafeExternalLibraryNatspec', 'transparent', true);
+testValid('UsesExplicitUnsafeInternalLibraryNatspec', 'transparent', true);
+testValid('UsesExplicitUnsafeExternalLibraryNatspec', 'transparent', true);

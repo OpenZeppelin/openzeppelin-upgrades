@@ -43,7 +43,6 @@ export async function deployProxy(
       }
       break;
     }
-    case 'auto':
     case 'transparent': {
       // default deploy type is transparent, deployImpl should check accordingly
       requiredOpts.kind = 'transparent';
