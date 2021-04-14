@@ -201,7 +201,7 @@ function* getStateVariableErrors(
 ): Generator<ValidationErrorWithName> {
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
-      if (!varDecl.constant && !isNullish(varDecl.value)) {
+      if (!varDecl.constant && varDecl.mutability !== 'immutable' && !isNullish(varDecl.value)) {
         if (!skipCheck('state-variable-assignment', contractDef) && !skipCheck('state-variable-assignment', varDecl)) {
           yield {
             kind: 'state-variable-assignment',

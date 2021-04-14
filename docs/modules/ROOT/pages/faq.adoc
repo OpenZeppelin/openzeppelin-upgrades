@@ -143,8 +143,10 @@ In some cases you may want to allow multiple errors in a single line.
 [source,solidity]
 ----
 contract SomeOtherContract {
-  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
-  uint256 immutable x = 1;
+  /// @custom:oz-upgrades-unsafe-allow delegatecall selfdestruct
+  function unsafe() public onlyInProxy {
+    ...
+  }
 }
 ----
 
