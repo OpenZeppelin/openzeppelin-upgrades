@@ -10,7 +10,10 @@ export interface ValidationOptions {
 }
 
 export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], string[]> = {
-  'state-variable-assignment': [`You are using the \`unsafeAllow.state-variable-assignment\` flag.`],
+  'state-variable-assignment': [
+    `You are using the \`unsafeAllow.state-variable-assignment\` flag.`,
+    `The value will be stored in the implementation and not the proxy.`,
+  ],
   'state-variable-immutable': [`You are using the \`unsafeAllow.state-variable-immutable\` flag.`],
   'external-library-linking': [
     `You are using the \`unsafeAllow.external-library-linking\` flag to include external libraries.`,
