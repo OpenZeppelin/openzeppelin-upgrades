@@ -1,11 +1,16 @@
+import versions from 'compare-versions';
+
 import { ValidationRunData } from './run';
 
 type ValidationDataV1 = ValidationRunData;
 
 type ValidationDataV2 = ValidationRunData[];
 
+const currentMajor = '3';
+const currentVersion = '3.1';
+
 interface ValidationDataV3 {
-  version: '3';
+  version: '3' | '3.1';
   log: ValidationRunData[];
 }
 
@@ -14,22 +19,26 @@ export type ValidationDataCurrent = ValidationDataV3;
 export type ValidationData = ValidationDataV1 | ValidationDataV2 | ValidationDataV3;
 
 export function normalizeValidationData(data: ValidationData): ValidationDataCurrent {
-  if (isCurrentValidationData(data)) {
+  if (isCurrentValidationData(data, false)) {
     return data;
   } else if (Array.isArray(data)) {
-    return { version: '3', log: data };
+    return { version: currentVersion, log: data };
   } else {
-    return { version: '3', log: [data] };
+    return { version: currentVersion, log: [data] };
   }
 }
 
-export function isCurrentValidationData(data: ValidationData): data is ValidationDataCurrent {
+export function isCurrentValidationData(data: ValidationData, exact = true): data is ValidationDataCurrent {
   if (Array.isArray(data)) {
     return false;
   } else if (!('version' in data)) {
     return false;
-  } else if (data.version === '3') {
-    return true;
+  } else if (typeof data.version === 'string' && versions.validate(data.version)) {
+    if (exact) {
+      return data.version === currentVersion;
+    } else {
+      return versions.compare(data.version, `${currentMajor}.*`, '=');
+    }
   } else {
     throw new Error('Unknown version or malformed validation data');
   }
@@ -40,7 +49,7 @@ export function concatRunData(
   previousData?: ValidationDataCurrent,
 ): ValidationDataCurrent {
   return {
-    version: '3',
+    version: currentVersion,
     log: [newRunData].concat(previousData?.log ?? []),
   };
 }
