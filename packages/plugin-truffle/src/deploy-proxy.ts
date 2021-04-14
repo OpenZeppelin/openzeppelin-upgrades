@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import { Manifest, fetchOrDeployProxy, fetchOrDeployAdmin, logWarning } from '@openzeppelin/upgrades-core';
 
 import {

@@ -1,5 +1,3 @@
-import chalk from 'chalk';
-
 import { ValidationError } from './run';
 import { logWarning } from '../utils/log';
 

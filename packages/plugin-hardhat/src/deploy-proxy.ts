@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
