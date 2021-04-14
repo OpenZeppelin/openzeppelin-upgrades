@@ -172,8 +172,8 @@ function updateManifestData(oldManifestData: NetworkFileData): ManifestData {
 }
 
 function* transformProxies(proxies: LegacyProxies): Generator<ProxyDeployment> {
-  for (const project in proxies) {
-    for (const proxy of proxies[project]) {
+  for (const contractName in proxies) {
+    for (const proxy of proxies[contractName]) {
       switch (proxy.kind) {
         case 'Upgradeable':
           if (proxy.address) {
