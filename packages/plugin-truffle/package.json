@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/truffle-upgrades",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-truffle",
   "license": "MIT",
