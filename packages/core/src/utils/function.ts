@@ -2,7 +2,7 @@ import type { FunctionDefinition, TypeName } from 'solidity-ast';
 import { ASTDereferencer } from '../ast-dereferencer';
 import { assert } from './assert';
 
-function serialize(typename: TypeName | null | undefined, deref: ASTDereferencer): string {
+function serializeTypeName(typename: TypeName | null | undefined, deref: ASTDereferencer): string {
   assert(!!typename);
 
   switch (typename.nodeType) {
@@ -16,7 +16,7 @@ function serialize(typename: TypeName | null | undefined, deref: ASTDereferencer
       const userDefinedType = deref(['StructDefinition', 'EnumDefinition'], typename.referencedDeclaration);
       switch (userDefinedType.nodeType) {
         case 'StructDefinition':
-          return '(' + userDefinedType.members.map(member => serialize(member.typeName, deref)) + ')';
+          return '(' + userDefinedType.members.map(member => serializeTypeName(member.typeName, deref)) + ')';
 
         case 'EnumDefinition':
           assert(userDefinedType.members.length < 256);
@@ -31,5 +31,5 @@ function serialize(typename: TypeName | null | undefined, deref: ASTDereferencer
 }
 
 export function getFunctionSignature(fnDef: FunctionDefinition, deref: ASTDereferencer): string {
-  return `${fnDef.name}(${fnDef.parameters.parameters.map(parameter => serialize(parameter.typeName, deref)).join()})`;
+  return `${fnDef.name}(${fnDef.parameters.parameters.map(parameter => serializeTypeName(parameter.typeName, deref)).join()})`;
 }
