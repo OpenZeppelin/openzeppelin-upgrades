@@ -16,8 +16,8 @@ import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
 export interface DeployFunction {
-  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
-  (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
+  <C extends Contract>(ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<C>;
+  <C extends Contract>(ImplFactory: ContractFactory, opts?: DeployOptions): Promise<C>;
 }
 
 export interface DeployOptions extends ValidationOptions {
