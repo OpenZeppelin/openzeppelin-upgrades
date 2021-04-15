@@ -25,7 +25,8 @@ test.before(async t => {
 
   const solcOutput: SolcOutput = buildInfo.output;
 
-  t.context.signatures = Object.keys(solcOutput.contracts[fileName][contractName].evm.methodIdentifiers);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  t.context.signatures = Object.keys(solcOutput.contracts[fileName][contractName].evm.methodIdentifiers!);
 
   t.context.functions = {};
   for (const def of findAll('FunctionDefinition', solcOutput.sources[fileName].ast)) {

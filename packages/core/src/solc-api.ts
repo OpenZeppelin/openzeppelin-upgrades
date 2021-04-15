@@ -6,7 +6,7 @@ export interface SolcOutput {
       [contract in string]: {
         evm: {
           bytecode: SolcBytecode;
-          methodIdentifiers: Record<string, string>;
+          methodIdentifiers?: Record<string, string>;
         };
       };
     };
