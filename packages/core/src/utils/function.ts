@@ -4,13 +4,13 @@ import { assert } from './assert';
 
 function serialize(typename: TypeName | null | undefined, deref: ASTDereferencer): string {
   assert(!!typename);
+
   switch (typename.nodeType) {
     case 'ArrayTypeName':
-      return serialize(typename.baseType, deref) + '[]';
-
-    case 'ElementaryTypeName':
+    case 'ElementaryTypeName': {
       assert(typeof typename.typeDescriptions.typeString === 'string');
       return typename.typeDescriptions.typeString;
+    }
 
     case 'UserDefinedTypeName': {
       const userDefinedType = deref(['StructDefinition', 'EnumDefinition'], typename.referencedDeclaration);
@@ -22,9 +22,9 @@ function serialize(typename: TypeName | null | undefined, deref: ASTDereferencer
           assert(userDefinedType.members.length < 256);
           return 'uint8';
       }
-      break;
     }
 
+    // eslint-disable-next-line no-fallthrough
     default:
       throw new Error(`Unsuported TypeName node type: ${typename.nodeType}`);
   }
