@@ -104,7 +104,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       return ImplFactory.interface.encodeFunctionData(fragment, args);
     } catch (e: unknown) {
       if (e instanceof Error) {
-        if (allowNoInitialization && args.length === 0 && e.message.includes('no matching function')) {
+        if (allowNoInitialization && e.message.includes('no matching function')) {
           return '0x';
         }
       }
