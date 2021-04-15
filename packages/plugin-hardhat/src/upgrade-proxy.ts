@@ -1,20 +1,15 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import {
-  Manifest,
-  ValidationOptions,
-  getAdminAddress,
-  withValidationDefaults,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, ValidationOptions, getAdminAddress, withValidationDefaults } from '@openzeppelin/upgrades-core';
 
-import {
-  deployImpl,
-  getTransparentUpgradeableProxyFactory,
-  getProxyAdminFactory,
-} from './utils';
+import { deployImpl, getTransparentUpgradeableProxyFactory, getProxyAdminFactory } from './utils';
 
-export type UpgradeFunction = (proxyAddress: string, ImplFactory: ContractFactory, opts?: ValidationOptions) => Promise<Contract>;
+export type UpgradeFunction = (
+  proxyAddress: string,
+  ImplFactory: ContractFactory,
+  opts?: ValidationOptions,
+) => Promise<Contract>;
 
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunction {
   return async function upgradeProxy(proxyAddress, ImplFactory, opts: ValidationOptions = {}) {

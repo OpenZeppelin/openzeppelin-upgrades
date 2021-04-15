@@ -3,7 +3,6 @@ import { artifacts } from 'hardhat';
 
 import {
   validate,
-  isUpgradeSafe,
   getStorageLayout,
   getContractVersion,
   assertUpgradeSafe,
@@ -45,7 +44,7 @@ function testOverride(name: string, kind: ValidationOptions['kind'], opts: Valid
   const testName = name.concat(valid ? '_Allowed' : '_NotAllowed');
   test(`#${++testCount} ` + testName, t => {
     const version = getContractVersion(t.context.validation, name);
-    const assertUpgSafe = () => assertUpgradeSafe([t.context.validation], version, {kind, ...opts});
+    const assertUpgSafe = () => assertUpgradeSafe([t.context.validation], version, { kind, ...opts });
     if (valid) {
       t.notThrows(assertUpgSafe);
     } else {
@@ -88,30 +87,10 @@ test('inherited storage', t => {
   }
 });
 
-testOverride(
-  'UsesImplicitSafeExternalLibrary',
-  'transparent',
-  { unsafeAllowLinkedLibraries: true },
-  true,
-);
-testOverride(
-  'UsesExplicitSafeExternalLibrary',
-  'transparent',
-  { unsafeAllowLinkedLibraries: true },
-  true,
-);
-testOverride(
-  'UsesImplicitSafeExternalLibrary',
-  'transparent',
-  { unsafeAllow: ['external-library-linking'] },
-  true,
-);
-testOverride(
-  'UsesExplicitSafeExternalLibrary',
-  'transparent',
-  { unsafeAllow: ['external-library-linking'] },
-  true,
-);
+testOverride('UsesImplicitSafeExternalLibrary', 'transparent', { unsafeAllowLinkedLibraries: true }, true);
+testOverride('UsesExplicitSafeExternalLibrary', 'transparent', { unsafeAllowLinkedLibraries: true }, true);
+testOverride('UsesImplicitSafeExternalLibrary', 'transparent', { unsafeAllow: ['external-library-linking'] }, true);
+testOverride('UsesExplicitSafeExternalLibrary', 'transparent', { unsafeAllow: ['external-library-linking'] }, true);
 
 testValid('HasEmptyConstructor', 'uups', false);
 testValid('HasInternalUpgradeToFunction', 'uups', false);

@@ -1,5 +1,5 @@
 import { Deployer, ContractClass, ContractInstance, getTruffleConfig } from './truffle';
-import { ProxyDeployment, ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
+import { ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
 
 export interface Options extends ValidationOptions {
   deployer?: Deployer;
