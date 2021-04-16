@@ -1,4 +1,4 @@
-import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress, setProxyKind } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
@@ -21,18 +21,7 @@ export async function upgradeProxy(
   const provider = wrapProvider(requiredOpts.deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
 
-  if (opts.kind === undefined) {
-    try {
-      const { kind } = await manifest.getProxyFromAddress(proxyAddress);
-      requiredOpts.kind = kind;
-    } catch (e) {
-      if (e instanceof Error) {
-        requiredOpts.kind = 'transparent';
-      } else {
-        throw e;
-      }
-    }
-  }
+  requiredOpts.kind = await setProxyKind(provider, proxyAddress, opts);
 
   const adminAddress = await getAdminAddress(provider, proxyAddress);
   const adminBytecode = await provider.send('eth_getCode', [adminAddress]);

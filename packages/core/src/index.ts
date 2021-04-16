@@ -15,3 +15,4 @@ export { getStorageLayoutForAddress } from './manifest-storage-layout';
 export * from './scripts/migrate-oz-cli-project';
 
 export { logWarning } from './utils/log';
+export { setProxyKind } from './set-proxy-kind';

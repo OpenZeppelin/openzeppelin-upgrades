@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import { Manifest, ValidationOptions, getAdminAddress, withValidationDefaults } from '@openzeppelin/upgrades-core';
+import { Manifest, ValidationOptions, getAdminAddress, withValidationDefaults, setProxyKind } from '@openzeppelin/upgrades-core';
 
 import { deployImpl, getTransparentUpgradeableProxyFactory, getProxyAdminFactory } from './utils';
 
@@ -16,18 +16,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    if (opts.kind === undefined) {
-      try {
-        const { kind } = await manifest.getProxyFromAddress(proxyAddress);
-        opts.kind = kind;
-      } catch (e) {
-        if (e instanceof Error) {
-          opts.kind = 'transparent';
-        } else {
-          throw e;
-        }
-      }
-    }
+    await setProxyKind(provider, proxyAddress, opts);
 
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     const adminBytecode = await provider.send('eth_getCode', [adminAddress]);
