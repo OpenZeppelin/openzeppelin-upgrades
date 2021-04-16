@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.5.1 (2021-04-14)
 
 - Add support for new `unsafeAllow` option in `@openzeppelin/upgrades-core`.
 
