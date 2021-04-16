@@ -24,6 +24,18 @@ export interface ContractValidation {
   layout: StorageLayout;
 }
 
+const errorKinds = [
+  'state-variable-assignment',
+  'state-variable-immutable',
+  'external-library-linking',
+  'struct-definition',
+  'enum-definition',
+  'constructor',
+  'delegatecall',
+  'selfdestruct',
+  'no-public-upgrade-fn',
+] as const;
+
 export type ValidationError =
   | ValidationErrorConstructor
   | ValidationErrorOpcode
@@ -32,6 +44,7 @@ export type ValidationError =
 
 interface ValidationErrorBase {
   src: string;
+  kind: typeof errorKinds[number];
 }
 
 interface ValidationErrorWithName extends ValidationErrorBase {
@@ -84,19 +97,7 @@ function getAllowed(node: Node): string[] {
     }
 
     result.forEach(arg => {
-      if (
-        ![
-          'state-variable-assignment',
-          'state-variable-immutable',
-          'external-library-linking',
-          'struct-definition',
-          'enum-definition',
-          'constructor',
-          'delegatecall',
-          'selfdestruct',
-          'no-public-upgrade-fn',
-        ].includes(arg)
-      ) {
+      if (!(errorKinds as readonly string[]).includes(arg)) {
         throw new Error(`NatSpec: oz-upgrades-unsafe-allow argument not recognized: ${arg}`);
       }
     });
