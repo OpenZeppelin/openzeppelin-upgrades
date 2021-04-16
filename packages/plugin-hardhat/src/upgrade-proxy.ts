@@ -1,7 +1,13 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import { Manifest, ValidationOptions, getAdminAddress, withValidationDefaults, setProxyKind } from '@openzeppelin/upgrades-core';
+import {
+  Manifest,
+  ValidationOptions,
+  getAdminAddress,
+  withValidationDefaults,
+  setProxyKind,
+} from '@openzeppelin/upgrades-core';
 
 import { deployImpl, getTransparentUpgradeableProxyFactory, getProxyAdminFactory } from './utils';
 

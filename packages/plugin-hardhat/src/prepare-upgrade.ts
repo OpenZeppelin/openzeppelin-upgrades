@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import { DeploymentNotFound, Manifest, ValidationOptions, withValidationDefaults, setProxyKind } from '@openzeppelin/upgrades-core';
+import { ValidationOptions, withValidationDefaults, setProxyKind } from '@openzeppelin/upgrades-core';
 
 import { deployImpl } from './utils';
 
