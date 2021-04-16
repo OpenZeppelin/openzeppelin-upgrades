@@ -105,20 +105,20 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
 
+  const errors = c.errors
+    .concat(...c.inherit.map(name => runValidation[name].errors))
+    .concat(...c.libraries.map(name => runValidation[name].errors));
+
   const selfAndInheritedMethods = (c.methods ?? []).concat(...c.inherit.map(name => runValidation[name].methods ?? []));
 
-  const extraErrors: ValidationError[] = [];
   if (!selfAndInheritedMethods.includes('upgradeTo(address)')) {
-    extraErrors.push({
+    errors.push({
       src: contractName,
       kind: 'no-public-upgrade-fn',
     });
   }
 
-  return c.errors
-    .concat(...c.inherit.map(name => runValidation[name].errors))
-    .concat(...c.libraries.map(name => runValidation[name].errors))
-    .concat(...extraErrors);
+  return errors;
 }
 
 export function isUpgradeSafe(data: ValidationData, version: Version): boolean {
