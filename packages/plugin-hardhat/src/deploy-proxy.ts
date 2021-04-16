@@ -1,5 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract } from 'ethers';
+import type { ContractFactory } from 'ethers';
 
 import {
   assertUpgradeSafe,
@@ -15,9 +15,11 @@ import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
 import { deploy } from './utils/deploy';
 
+type InstanceOf<F extends ContractFactory> = ReturnType<F['attach']>;
+
 export interface DeployFunction {
-  <C extends Contract>(ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<C>;
-  <C extends Contract>(ImplFactory: ContractFactory, opts?: DeployOptions): Promise<C>;
+  <F extends ContractFactory>(ImplFactory: F, args?: unknown[], opts?: DeployOptions): Promise<InstanceOf<F>>;
+  <F extends ContractFactory>(ImplFactory: F, opts?: DeployOptions): Promise<InstanceOf<F>>;
 }
 
 export interface DeployOptions extends ValidationOptions {
