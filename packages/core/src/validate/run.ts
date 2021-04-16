@@ -18,7 +18,7 @@ export interface ContractValidation {
   version?: Version;
   inherit: string[];
   libraries: string[];
-  methods?: string[];
+  methods: string[];
   linkReferences: LinkReference[];
   errors: ValidationError[];
   layout: StorageLayout;
