@@ -15754,10 +15754,10 @@ trim-right@^1.0.1:
   resolved "https://registry.yarnpkg.com/true-case-path/-/true-case-path-2.2.1.tgz#c5bf04a5bbec3fd118be4084461b3a27c4d796bf"
   integrity sha512-0z3j8R7MCjy10kc/g+qg7Ln3alJTodw9aDuVWZa3uiWqfuBMKeAeP2ocWcxoyM3D73yz3Jt/Pu4qPr4wHSdB/Q==
 
-truffle@^5.1.35:
-  version "5.3.1"
-  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.3.1.tgz#7e1c6abf8d4df08536f72426a19b2031d555a773"
-  integrity sha512-8C794bbN78NWERV0ogqhTy6+GZMcHo+O1joIiCciXnJjKnV4yvKIUcC9d/W7Hw//TFnq76/1Wl66nm4QHNobAA==
+truffle@^5.3.1:
+  version "5.3.2"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.3.2.tgz#275cbb2be2d05e321b05520535c1877dea577753"
+  integrity sha512-2fqx5x9eO71HB9VF7/XEqj+PwlJqYC4Z/3BtfL5gJmXqBXVfr3/zvpmgPcpmOlkqmA9ZmkVGnqSS93uUnSxq+g==
   dependencies:
     "@truffle/debugger" "^8.0.21"
     app-module-path "^2.2.0"
