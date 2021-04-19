@@ -31,7 +31,7 @@
     "@types/cbor": "^5.0.0",
     "@types/debug": "^4.1.5",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^10.17.26",
+    "@types/node": "^10.17.56",
     "@types/proper-lockfile": "^4.1.1",
     "@types/rimraf": "^3.0.0",
     "ava": "^3.9.0",
