@@ -109,7 +109,7 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
     .concat(...c.inherit.map(name => runValidation[name].errors))
     .concat(...c.libraries.map(name => runValidation[name].errors));
 
-  const selfAndInheritedMethods = (c.methods ?? []).concat(...c.inherit.map(name => runValidation[name].methods ?? []));
+  const selfAndInheritedMethods = c.methods.concat(...c.inherit.map(name => runValidation[name].methods));
 
   if (!selfAndInheritedMethods.includes('upgradeTo(address)')) {
     errors.push({
