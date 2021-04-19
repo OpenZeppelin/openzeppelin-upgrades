@@ -767,10 +767,10 @@
   dependencies:
     "@ethersproject/bignumber" "^5.1.0"
 
-"@ethersproject/contracts@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@ethersproject/contracts/-/contracts-5.1.0.tgz#f7c3451f1af77e029005733ccab3419d07d23f6b"
-  integrity sha512-dvTMs/4XGSc57cYOW0KjgX1NdTujUu7mNb6PQdJWg08m9ULzPyGZuBkFJnijBcp6vTOCQ59RwjboWgNWw393og==
+"@ethersproject/contracts@5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@ethersproject/contracts/-/contracts-5.1.1.tgz#c66cb6d618fcbd73e20a6b808e8f768b2b781d0b"
+  integrity sha512-6WwktLJ0DFWU8pDkgH4IGttQHhQN4SnwKFu9h+QYVe48VGWtbDu4W8/q/7QA1u/HWlWMrKxqawPiZUJj0UMvOw==
   dependencies:
     "@ethersproject/abi" "^5.1.0"
     "@ethersproject/abstract-provider" "^5.1.0"
@@ -7164,10 +7164,10 @@ ethers@^4.0.32:
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
 
-ethers@^5.0.5:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.1.1.tgz#863b28994383999a48a97a644a11ec31540e534e"
-  integrity sha512-u6m2xDOfKOCznlz3d2lmIyJea4lq9G4tDqU76Bk0As2C1bcx83veEiXgnedQvUhLzZbFryETN4gYls+bKT4ynA==
+ethers@^5.1.1:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.1.2.tgz#232bf78d7ccca3a05d7b15db6d33e9d693cf3c35"
+  integrity sha512-yM+2bINj7Li9jeKX+hGZ/rFTo6kXcCwZTcCBmAwS+J3bLfyGX/o21fcssuPb9kfR26suCV+98XTWIuTuGiDO5A==
   dependencies:
     "@ethersproject/abi" "5.1.0"
     "@ethersproject/abstract-provider" "5.1.0"
@@ -7178,7 +7178,7 @@ ethers@^5.0.5:
     "@ethersproject/bignumber" "5.1.0"
     "@ethersproject/bytes" "5.1.0"
     "@ethersproject/constants" "5.1.0"
-    "@ethersproject/contracts" "5.1.0"
+    "@ethersproject/contracts" "5.1.1"
     "@ethersproject/hash" "5.1.0"
     "@ethersproject/hdnode" "5.1.0"
     "@ethersproject/json-wallets" "5.1.0"
