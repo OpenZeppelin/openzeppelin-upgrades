@@ -1,5 +1,6 @@
 require('dotenv/config');
 
+require('@nomiclabs/hardhat-ethers');
 require('@nomiclabs/hardhat-etherscan');
 
 const settings = {
@@ -9,10 +10,31 @@ const settings = {
   },
 };
 
+/**
+ * @type import('hardhat/config').HardhatUserConfig
+ */
 module.exports = {
   networks: {
     mainnet: {
       url: 'https://cloudflare-eth.com',
+    },
+    kovan: {
+      url: process.env.KOVAN_URL,
+      accounts: [process.env.KOVAN_KEY],
+    },
+    rinkeby: {
+      url: process.env.RINKEBY_URL,
+      accounts: [process.env.RINKEBY_KEY],
+    },
+    ropsten: {
+      url: process.env.ROPSTEN_URL,
+      accounts: [process.env.ROPSTEN_KEY],
+    },
+    goerli: {
+      url: process.env.GOERLI_URL,
+      accounts: {
+        mnemonic: process.env.GOERLI_MNEMONIC,
+      },
     },
   },
   solidity: {
