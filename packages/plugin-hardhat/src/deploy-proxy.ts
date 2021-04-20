@@ -43,20 +43,12 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    switch (requiredOpts.kind) {
-      case 'uups': {
-        if (await manifest.getAdmin()) {
-          logWarning(`A proxy admin was previously deployed on this network`, [
-            `This is not natively used with the current kind of proxy ('uups').`,
-            `Changes to the admin will have no affect on this new proxy.`,
-          ]);
-        }
-        break;
-      }
-      case 'transparent': {
-        // default deploy type is transparent, deployImpl should check accordingly
-        requiredOpts.kind = 'transparent';
-        break;
+    if (requiredOpts.kind === 'uups') {
+      if (await manifest.getAdmin()) {
+        logWarning(`A proxy admin was previously deployed on this network`, [
+          `This is not natively used with the current kind of proxy ('uups').`,
+          `Changes to the admin will have no effect on this new proxy.`,
+        ]);
       }
     }
 
