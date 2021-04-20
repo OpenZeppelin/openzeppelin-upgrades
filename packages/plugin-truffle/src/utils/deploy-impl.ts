@@ -27,7 +27,7 @@ export async function deployImpl(
   const provider = wrapProvider(requiredOpts.deployer.provider);
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
-  const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
+  const linkedBytecode = await getLinkedBytecode(Contract, provider);
   const version = getVersion(Contract.bytecode, linkedBytecode);
   const layout = getStorageLayout([validations], version);
   assertUpgradeSafe([validations], version, requiredOpts);
@@ -36,7 +36,6 @@ export async function deployImpl(
     const manifest = await Manifest.forNetwork(provider);
     const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
     const deploymentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
-    const layout = getStorageLayout([validations], version);
     assertStorageUpgradeSafe(deploymentLayout, layout, requiredOpts.unsafeAllowCustomTypes);
   }
 
