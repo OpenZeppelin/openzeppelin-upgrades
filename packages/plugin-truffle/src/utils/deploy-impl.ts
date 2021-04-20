@@ -21,7 +21,7 @@ export async function deployImpl(
   proxyAddress?: string,
 ): Promise<string> {
   if (requiredOpts.kind === 'transparent') {
-    requiredOpts.unsafeAllow.push('no-public-upgrade-fn');
+    requiredOpts.unsafeAllow.push('missing-public-upgradeto');
   }
 
   const provider = wrapProvider(requiredOpts.deployer.provider);

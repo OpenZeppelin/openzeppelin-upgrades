@@ -33,7 +33,7 @@ const errorKinds = [
   'constructor',
   'delegatecall',
   'selfdestruct',
-  'no-public-upgrade-fn',
+  'missing-public-upgradeto',
 ] as const;
 
 export type ValidationError =
@@ -67,7 +67,7 @@ interface ValidationErrorOpcode extends ValidationErrorBase {
 }
 
 interface ValidationErrorUpgradeability extends ValidationErrorBase {
-  kind: 'no-public-upgrade-fn';
+  kind: 'missing-public-upgradeto';
 }
 
 function* execall(re: RegExp, text: string) {

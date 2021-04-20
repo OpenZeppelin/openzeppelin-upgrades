@@ -114,7 +114,7 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
   if (!selfAndInheritedMethods.includes('upgradeTo(address)')) {
     errors.push({
       src: contractName,
-      kind: 'no-public-upgrade-fn',
+      kind: 'missing-public-upgradeto',
     });
   }
 

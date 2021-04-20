@@ -30,8 +30,8 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
   constructor: [`You are using the \`unsafeAllow.constructor\` flag.`],
   delegatecall: [`You are using the \`unsafeAllow.delegatecall\` flag.`],
   selfdestruct: [`You are using the \`unsafeAllow.selfdestruct\` flag.`],
-  'no-public-upgrade-fn': [
-    `You are using the \`unsafeAllow.no-public-upgrade-fn\` flag with uups proxy.`,
+  'missing-public-upgradeto': [
+    `You are using the \`unsafeAllow.missing-public-upgradeto\` flag with uups proxy.`,
     `Not having a public upgradeTo function in your implementation can break upgradeability.`,
     `Some implementation might check that onchain, and cause the upgrade to revert.`,
   ],
@@ -64,7 +64,7 @@ export function processExceptions(
   const { unsafeAllow } = withValidationDefaults(opts);
 
   if (opts.kind === 'transparent') {
-    errors = errors.filter(error => error.kind !== 'no-public-upgrade-fn');
+    errors = errors.filter(error => error.kind !== 'missing-public-upgradeto');
   }
 
   for (const [errorType, errorDescription] of Object.entries(ValidationErrorUnsafeMessages)) {

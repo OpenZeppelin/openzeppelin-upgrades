@@ -50,7 +50,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     msg: e => `Enums like \`${e.name}\` are supported in the latest version of the plugin`,
     hint: () => `Update your dependency and run again`,
   },
-  'no-public-upgrade-fn': {
+  'missing-public-upgradeto': {
     msg: () => `Implementation is missing a public \`upgradeTo(address)\` function`,
     hint: () =>
       `Have your implementation inherit from proxy/UUPS/Proxiable or use a transparent proxy by setting the \`kind: 'transparent'\` option`,
