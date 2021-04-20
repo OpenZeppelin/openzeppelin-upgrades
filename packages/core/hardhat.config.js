@@ -18,24 +18,6 @@ module.exports = {
     mainnet: {
       url: 'https://cloudflare-eth.com',
     },
-    kovan: {
-      url: process.env.KOVAN_URL,
-      accounts: [process.env.KOVAN_KEY],
-    },
-    rinkeby: {
-      url: process.env.RINKEBY_URL,
-      accounts: [process.env.RINKEBY_KEY],
-    },
-    ropsten: {
-      url: process.env.ROPSTEN_URL,
-      accounts: [process.env.ROPSTEN_KEY],
-    },
-    goerli: {
-      url: process.env.GOERLI_URL,
-      accounts: {
-        mnemonic: process.env.GOERLI_MNEMONIC,
-      },
-    },
   },
   solidity: {
     compilers: [
