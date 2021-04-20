@@ -42,7 +42,7 @@ contract('Token with flag', function (accounts) {
   });
 
   it('Upgrade Proxy with different Library', async function () {
-    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'] });
+    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'uups' });
 
     const safeMathLib2 = await SafeMathV2.deployed();
     TokenV2.link('SafeMath', safeMathLib2.address);
@@ -60,7 +60,7 @@ contract('Token with flag', function (accounts) {
   });
 
   it('Upgrade Proxy with multiple Libraries', async function () {
-    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'] });
+    const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'uups' });
     const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
     const token3 = await upgradeProxy(token2.address, TokenV3, { unsafeAllow: ['external-library-linking'] });
 
