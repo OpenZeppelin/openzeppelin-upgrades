@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.5.2 (2021-04-20)
 
 - Support using Web3 ProviderEngine providers.
 
