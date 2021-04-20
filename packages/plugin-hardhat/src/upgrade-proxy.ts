@@ -7,6 +7,7 @@ import {
   getAdminAddress,
   withValidationDefaults,
   setProxyKind,
+  getCode,
 } from '@openzeppelin/upgrades-core';
 
 import { deployImpl, getTransparentUpgradeableProxyFactory, getProxyAdminFactory } from './utils';
@@ -25,7 +26,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     await setProxyKind(provider, proxyAddress, opts);
 
     const adminAddress = await getAdminAddress(provider, proxyAddress);
-    const adminBytecode = await provider.send('eth_getCode', [adminAddress]);
+    const adminBytecode = await getCode(provider, adminAddress);
 
     if (adminBytecode === '0x') {
       // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface

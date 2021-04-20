@@ -1,4 +1,4 @@
-import { Manifest, getAdminAddress, setProxyKind } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress, setProxyKind, getCode } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
@@ -24,7 +24,7 @@ export async function upgradeProxy(
   requiredOpts.kind = await setProxyKind(provider, proxyAddress, opts);
 
   const adminAddress = await getAdminAddress(provider, proxyAddress);
-  const adminBytecode = await provider.send('eth_getCode', [adminAddress]);
+  const adminBytecode = await getCode(provider, adminAddress);
 
   if (adminBytecode === '0x') {
     // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
