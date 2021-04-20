@@ -35,8 +35,8 @@ export async function deployImpl(
   if (proxyAddress !== undefined) {
     const manifest = await Manifest.forNetwork(provider);
     const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-    const deploymentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
-    assertStorageUpgradeSafe(deploymentLayout, layout, requiredOpts.unsafeAllowCustomTypes);
+    const currentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
+    assertStorageUpgradeSafe(currentLayout, layout, requiredOpts.unsafeAllowCustomTypes);
   }
 
   return await fetchOrDeploy(version, provider, async () => {
