@@ -30,11 +30,10 @@ export type TypeChange = (
         | 'array shrink'
         | 'array dynamic'
         | 'enum resize'
-        | 'missing members'
-        | 'mapping key';
+        | 'missing members';
     }
   | {
-      kind: 'mapping value' | 'array value';
+      kind: 'mapping key' | 'mapping value' | 'array value';
       inner: TypeChange;
     }
   | {
@@ -185,15 +184,21 @@ export class StorageLayoutComparator {
       case 't_mapping': {
         const [originalKey, originalValue] = original.args;
         const [updatedKey, updatedValue] = updated.args;
+
+        // validate an invariant we assume from solidity: key types are always simple value types
+        assert(originalKey.head === 't_enum' || (originalKey.args === undefined && updatedKey.args === undefined));
+
         // network files migrated from the OZ CLI have an unknown key type
         // we allow it to match with any other key type, carrying over the semantics of OZ CLI
-        const keyMatches = originalKey.head === 'unknown' || originalKey.head === updatedKey.head;
-        // validate an invariant we assume from solidity: key types are always simple value types
-        assert(originalKey.args === undefined && updatedKey.args === undefined);
-        // mapping value types are allowed to grow
-        if (!keyMatches) {
-          return { kind: 'mapping key', original, updated };
+        const keyChange =
+          originalKey.head === 'unknown'
+            ? undefined
+            : this.getTypeChange(originalKey, updatedKey, { allowAppend: false });
+
+        if (keyChange) {
+          return { kind: 'mapping key', inner: keyChange, original, updated };
         } else {
+          // mapping value types are allowed to grow
           const inner = this.getTypeChange(originalValue, updatedValue, { allowAppend: true });
           if (inner) {
             return { kind: 'mapping value', inner, original, updated };

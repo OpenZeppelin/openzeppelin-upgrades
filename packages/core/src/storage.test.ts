@@ -418,6 +418,27 @@ test('storage upgrade with mappings', t => {
   });
 });
 
+test('storage upgrade with enum key in mapping', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_MappingEnumKey_V1');
+
+  const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_MappingEnumKey_V2_Ok');
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
+
+  const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_MappingEnumKey_V2_Bad');
+  t.like(getStorageUpgradeErrors(v1, v2_Bad), {
+    length: 1,
+    0: {
+      kind: 'typechange',
+      change: {
+        kind: 'mapping key',
+        inner: { kind: 'enum members' },
+      },
+      original: { label: 'm1' },
+      updated: { label: 'm1' },
+    },
+  });
+});
+
 function stabilizeStorageLayout(layout: StorageLayout) {
   return {
     storage: layout.storage.map(s => ({ ...s, type: stabilizeTypeIdentifier(s.type) })),

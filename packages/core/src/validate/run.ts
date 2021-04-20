@@ -1,3 +1,4 @@
+import { Node } from 'solidity-ast/node';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import type { ContractDefinition } from 'solidity-ast';
 
@@ -46,6 +47,59 @@ interface ValidationErrorOpcode extends ValidationErrorBase {
   kind: 'delegatecall' | 'selfdestruct';
 }
 
+function* execall(re: RegExp, text: string) {
+  re = new RegExp(re, re.flags + (re.sticky ? '' : 'y'));
+  while (true) {
+    const match = re.exec(text);
+    if (match && match[0] !== '') {
+      yield match;
+    } else {
+      break;
+    }
+  }
+}
+
+function getAllowed(node: Node): string[] {
+  if ('documentation' in node) {
+    const doc = typeof node.documentation === 'string' ? node.documentation : node.documentation?.text ?? '';
+
+    const result: string[] = [];
+    for (const { groups } of execall(
+      /^(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^@\w+ )[^])*)/m,
+      doc,
+    )) {
+      if (groups && groups.title === 'custom' && groups.tag === 'oz-upgrades-unsafe-allow') {
+        result.push(...groups.args.split(/\s+/));
+      }
+    }
+
+    result.forEach(arg => {
+      if (
+        ![
+          'state-variable-assignment',
+          'state-variable-immutable',
+          'external-library-linking',
+          'struct-definition',
+          'enum-definition',
+          'constructor',
+          'delegatecall',
+          'selfdestruct',
+        ].includes(arg)
+      ) {
+        throw new Error(`NatSpec: openzeppelin-upgrade-allow argument not recognized: ${arg}`);
+      }
+    });
+
+    return result;
+  } else {
+    return [];
+  }
+}
+
+function skipCheck(error: string, node: Node): boolean {
+  return getAllowed(node).includes(error);
+}
+
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationRunData {
   const validation: ValidationRunData = {};
   const fromId: Record<number, string> = {};
@@ -85,7 +139,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
         validation[contractDef.name].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
-          ...getDelegateCallErrors(contractDef, decodeSrc),
+          ...getOpcodeErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
@@ -109,7 +163,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
-  for (const fnDef of findAll('FunctionDefinition', contractDef)) {
+  for (const fnDef of findAll('FunctionDefinition', contractDef, node => skipCheck('constructor', node))) {
     if (fnDef.kind === 'constructor' && ((fnDef.body?.statements.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
       yield {
         kind: 'constructor',
@@ -120,11 +174,8 @@ function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDe
   }
 }
 
-function* getDelegateCallErrors(
-  contractDef: ContractDefinition,
-  decodeSrc: SrcDecoder,
-): Generator<ValidationErrorOpcode> {
-  for (const fnCall of findAll('FunctionCall', contractDef)) {
+function* getOpcodeErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationErrorOpcode> {
+  for (const fnCall of findAll('FunctionCall', contractDef, node => skipCheck('delegatecall', node))) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_baredelegatecall_/)) {
       yield {
@@ -132,6 +183,9 @@ function* getDelegateCallErrors(
         src: decodeSrc(fnCall),
       };
     }
+  }
+  for (const fnCall of findAll('FunctionCall', contractDef, node => skipCheck('selfdestruct', node))) {
+    const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(/^t_function_selfdestruct_/)) {
       yield {
         kind: 'selfdestruct',
@@ -148,18 +202,22 @@ function* getStateVariableErrors(
   for (const varDecl of contractDef.nodes) {
     if (isNodeType('VariableDeclaration', varDecl)) {
       if (!varDecl.constant && !isNullish(varDecl.value)) {
-        yield {
-          kind: 'state-variable-assignment',
-          name: varDecl.name,
-          src: decodeSrc(varDecl),
-        };
+        if (!skipCheck('state-variable-assignment', contractDef) && !skipCheck('state-variable-assignment', varDecl)) {
+          yield {
+            kind: 'state-variable-assignment',
+            name: varDecl.name,
+            src: decodeSrc(varDecl),
+          };
+        }
       }
       if (varDecl.mutability === 'immutable') {
-        yield {
-          kind: 'state-variable-immutable',
-          name: varDecl.name,
-          src: decodeSrc(varDecl),
-        };
+        if (!skipCheck('state-variable-immutable', contractDef) && !skipCheck('state-variable-immutable', varDecl)) {
+          yield {
+            kind: 'state-variable-immutable',
+            name: varDecl.name,
+            src: decodeSrc(varDecl),
+          };
+        }
       }
     }
   }
@@ -189,11 +247,13 @@ function* getLinkingErrors(
   const { linkReferences } = bytecode;
   for (const source of Object.keys(linkReferences)) {
     for (const libName of Object.keys(linkReferences[source])) {
-      yield {
-        kind: 'external-library-linking',
-        name: libName,
-        src: source,
-      };
+      if (!skipCheck('external-library-linking', contractDef)) {
+        yield {
+          kind: 'external-library-linking',
+          name: libName,
+          src: source,
+        };
+      }
     }
   }
 }
