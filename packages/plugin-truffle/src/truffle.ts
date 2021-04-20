@@ -62,13 +62,12 @@ export interface TruffleArtifact {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TruffleProviderResult = { result: any; error: { message: string } };
+type TruffleProviderSend = (
+  args: { method: string; params: unknown[]; id: string; jsonrpc: '2.0' },
+  callback: (err: Error | null, value: TruffleProviderResult) => void,
+) => void;
 
-export interface TruffleProvider {
-  send(
-    args: { method: string; params: unknown[]; id: string; jsonrpc: '2.0' },
-    callback: (err: Error | null, value: TruffleProviderResult) => void,
-  ): void;
-}
+export type TruffleProvider = { send: TruffleProviderSend } | { sendAsync: TruffleProviderSend };
 
 export interface TruffleConfig {
   provider: TruffleProvider;
