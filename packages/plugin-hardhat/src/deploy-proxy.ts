@@ -13,7 +13,7 @@ import {
 
 import { getProxyFactory, getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
-import { deploy } from './utils/deploy';
+import { defaultDeploy, TxExecutor } from './utils/deploy';
 
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
@@ -22,6 +22,7 @@ export interface DeployFunction {
 
 export interface DeployOptions extends ValidationOptions {
   initializer?: string | false;
+  executor?: TxExecutor;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
@@ -35,6 +36,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       args = [];
     }
 
+    const deploy = opts.executor || defaultDeploy;
     const { provider } = hre.network;
     const validations = await readValidations(hre);
 
@@ -43,17 +45,17 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     assertUpgradeSafe(validations, version, opts);
 
     const impl = await fetchOrDeploy(version, provider, async () => {
-      const deployment = await deploy(ImplFactory);
+      const deployment = await deploy(ImplFactory, []);
       const layout = getStorageLayout(validations, version);
       return { ...deployment, layout };
     });
 
     const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
-    const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
+    const adminAddress = await fetchOrDeployAdmin(provider, async () => await deploy(AdminFactory, []));
 
     const data = getInitializerData(ImplFactory, args, opts.initializer);
     const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
-    const proxy = await ProxyFactory.deploy(impl, adminAddress, data);
+    const proxy = await deploy(ProxyFactory, [impl, adminAddress, data]);
 
     const inst = ImplFactory.attach(proxy.address);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment

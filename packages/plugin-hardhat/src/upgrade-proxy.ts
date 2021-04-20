@@ -17,18 +17,22 @@ import {
 
 import { getProxyAdminFactory } from './proxy-factory';
 import { readValidations } from './validations';
-import { deploy } from './utils/deploy';
+import { defaultDeploy, TxExecutor } from './utils/deploy';
+
+export interface UpgradeOptions extends ValidationOptions {
+  executor?: TxExecutor;
+}
 
 export type PrepareUpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts?: ValidationOptions,
+  opts?: UpgradeOptions,
 ) => Promise<string>;
 
 export type UpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts?: ValidationOptions,
+  opts?: UpgradeOptions,
 ) => Promise<Contract>;
 
 async function prepareUpgradeImpl(
@@ -36,8 +40,9 @@ async function prepareUpgradeImpl(
   manifest: Manifest,
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts: ValidationOptions,
+  opts: UpgradeOptions,
 ): Promise<string> {
+  const deploy = opts.executor || defaultDeploy;
   const { provider } = hre.network;
   const validations = await readValidations(hre);
 
@@ -52,7 +57,7 @@ async function prepareUpgradeImpl(
   assertStorageUpgradeSafe(deploymentLayout, layout, opts.unsafeAllowCustomTypes);
 
   return await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(ImplFactory);
+    const deployment = await deploy(ImplFactory, []);
     return { ...deployment, layout };
   });
 }
