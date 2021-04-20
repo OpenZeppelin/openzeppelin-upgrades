@@ -5,9 +5,9 @@ import {
   Manifest,
   ValidationOptions,
   fetchOrDeployAdmin,
-  fetchOrDeployProxy,
   logWarning,
   withValidationDefaults,
+  ProxyDeployment,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -39,11 +39,12 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     }
 
     const requiredOpts = withValidationDefaults(opts);
+    const { kind } = requiredOpts;
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    if (requiredOpts.kind === 'uups') {
+    if (kind === 'uups') {
       if (await manifest.getAdmin()) {
         logWarning(`A proxy admin was previously deployed on this network`, [
           `This is not natively used with the current kind of proxy ('uups').`,
@@ -55,11 +56,11 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     const impl = await deployImpl(hre, ImplFactory, requiredOpts);
     const data = getInitializerData(ImplFactory, args, opts.initializer);
 
-    let proxyAddress: string;
-    switch (requiredOpts.kind) {
+    let proxyDeployment: Required<ProxyDeployment>;
+    switch (kind) {
       case 'uups': {
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
-        proxyAddress = await fetchOrDeployProxy(provider, 'uups', () => deploy(ProxyFactory, impl, data));
+        proxyDeployment = Object.assign({ kind }, await deploy(ProxyFactory, impl, data));
         break;
       }
 
@@ -67,19 +68,21 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
         const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
         const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
-        proxyAddress = await fetchOrDeployProxy(provider, 'transparent', () =>
-          deploy(TransparentUpgradeableProxyFactory, impl, adminAddress, data),
+        proxyDeployment = Object.assign(
+          { kind },
+          await deploy(TransparentUpgradeableProxyFactory, impl, adminAddress, data),
         );
         break;
       }
     }
 
-    const { txHash } = await manifest.getProxyFromAddress(proxyAddress);
+    await manifest.addProxy(proxyDeployment);
 
-    const inst = ImplFactory.attach(proxyAddress);
+    const inst = ImplFactory.attach(proxyDeployment.address);
+    const deployTransaction = await inst.provider.getTransaction(proxyDeployment.txHash);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Won't be readonly because inst was created through attach.
-    inst.deployTransaction = await inst.provider.getTransaction(txHash);
+    inst.deployTransaction = deployTransaction;
     return inst;
   };
 

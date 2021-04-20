@@ -72,6 +72,18 @@ export class Manifest {
     return deployment;
   }
 
+  async addProxy(proxy: ProxyDeployment): Promise<void> {
+    await this.lockedRun(async () => {
+      const data = await this.read();
+      const existing = data.proxies.findIndex(p => p.address === proxy.address);
+      if (existing >= 0) {
+        data.proxies.splice(existing, 1);
+      }
+      data.proxies.push(proxy);
+      await this.write(data);
+    });
+  }
+
   async read(): Promise<ManifestData> {
     const release = this.locked ? undefined : await this.lock();
     try {

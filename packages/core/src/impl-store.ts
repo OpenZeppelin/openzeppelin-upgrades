@@ -1,5 +1,5 @@
 import debug from './utils/debug';
-import { Manifest, ManifestData, ImplDeployment, ProxyDeployment } from './manifest';
+import { Manifest, ManifestData, ImplDeployment } from './manifest';
 import { EthereumProvider, isDevelopmentNetwork } from './provider';
 import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import type { Version } from './version';
@@ -72,20 +72,6 @@ const implLens = (versionWithoutMetadata: string) =>
   lens(`implementation ${versionWithoutMetadata}`, data => ({
     get: () => data.impls[versionWithoutMetadata],
     set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
-  }));
-
-export async function fetchOrDeployProxy(
-  provider: EthereumProvider,
-  kind: ProxyDeployment['kind'],
-  deploy: () => Promise<Deployment>,
-): Promise<string> {
-  return fetchOrDeployGeneric(proxyLens(kind), provider, deploy);
-}
-
-const proxyLens = (kind: ProxyDeployment['kind']) =>
-  lens('proxy', data => ({
-    get: () => undefined,
-    set: (value: Deployment) => value && data.proxies.push({ ...value, kind }),
   }));
 
 export async function fetchOrDeployAdmin(

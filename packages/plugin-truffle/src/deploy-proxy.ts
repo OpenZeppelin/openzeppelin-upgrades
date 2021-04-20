@@ -1,4 +1,4 @@
-import { Manifest, fetchOrDeployProxy, fetchOrDeployAdmin, logWarning } from '@openzeppelin/upgrades-core';
+import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
@@ -29,11 +29,12 @@ export async function deployProxy(
     args = [];
   }
   const requiredOpts = withDefaults(opts);
+  const { kind } = requiredOpts;
 
   const provider = wrapProvider(requiredOpts.deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
 
-  if (requiredOpts.kind === 'uups') {
+  if (kind === 'uups') {
     if (await manifest.getAdmin()) {
       logWarning(`A proxy admin was previously deployed on this network`, [
         `This is not natively used with the current kind of proxy ('uups').`,
@@ -45,13 +46,11 @@ export async function deployProxy(
   const impl = await deployImpl(Contract, requiredOpts);
   const data = getInitializerData(Contract, args, opts.initializer);
 
-  let proxyAddress: string;
-  switch (requiredOpts.kind) {
+  let proxyDeployment: Required<ProxyDeployment>;
+  switch (kind) {
     case 'uups': {
       const ProxyFactory = getProxyFactory(Contract);
-      proxyAddress = await fetchOrDeployProxy(provider, 'uups', () =>
-        deploy(requiredOpts.deployer, ProxyFactory, impl, data),
-      );
+      proxyDeployment = Object.assign({ kind }, await deploy(requiredOpts.deployer, ProxyFactory, impl, data));
       break;
     }
 
@@ -59,18 +58,19 @@ export async function deployProxy(
       const AdminFactory = getProxyAdminFactory(Contract);
       const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(requiredOpts.deployer, AdminFactory));
       const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
-      proxyAddress = await fetchOrDeployProxy(provider, 'transparent', () =>
-        deploy(requiredOpts.deployer, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
+      proxyDeployment = Object.assign(
+        { kind },
+        await deploy(requiredOpts.deployer, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
       );
       break;
     }
   }
 
-  const { txHash } = await manifest.getProxyFromAddress(proxyAddress);
+  await manifest.addProxy(proxyDeployment);
 
-  Contract.address = proxyAddress;
-  const contract = new Contract(proxyAddress);
-  contract.transactionHash = txHash;
+  Contract.address = proxyDeployment.address;
+  const contract = new Contract(proxyDeployment.address);
+  contract.transactionHash = proxyDeployment.txHash;
   return contract;
 }
 
