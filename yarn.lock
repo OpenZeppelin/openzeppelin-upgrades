@@ -6198,10 +6198,10 @@ defaults@^1.0.3:
   dependencies:
     clone "^1.0.2"
 
-defender-admin-client@^1.3.2:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/defender-admin-client/-/defender-admin-client-1.5.1.tgz#3f277ddf0bc0a2a3762c56c564c9f571ef3af317"
-  integrity sha512-xxY/nHcJidvOean6Vn0iAhavqHMVudugRl2R2uLNZXhU/OAHB30JlsZ+vUyEYh6NTOXcUS0iq6EnEMkEitmP8Q==
+defender-admin-client@^1.6.0-rc.0:
+  version "1.6.0-rc.0"
+  resolved "https://registry.yarnpkg.com/defender-admin-client/-/defender-admin-client-1.6.0-rc.0.tgz#94da3f3593786bb71f4b864e5b6682576a0da798"
+  integrity sha512-sH/1o4145ilBcUniq2UprfYtaeh7MovIMrqbtJHo7r5xAmGT+FT0KI0oCDq4HHFgmul5QOMtK75lR2lr191RuQ==
   dependencies:
     axios "^0.19.2"
     defender-base-client "1.5.1"

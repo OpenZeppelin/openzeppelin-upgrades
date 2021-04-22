@@ -47,6 +47,40 @@ test('proposes an upgrade', async t => {
       newImplementation: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
       title,
       description,
+      proxyAdmin: undefined,
+      via: undefined,
+      viaType: undefined,
+    },
+    {
+      address: greeter.address,
+      network: 'goerli',
+      abi: GreeterV2.interface.format(FormatTypes.json),
+    },
+  );
+});
+
+test('proposes an upgrade with explicit multisig and proxy admin', async t => {
+  const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
+  fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
+
+  const title = 'My upgrade';
+  const description = 'My contract upgrade';
+  const proxyAdmin = '0x20cE6FeEf8862CbCe65fd1cafA59ac8bbC77e445';
+  const multisig = '0xc0889725c22e2e36c524F41AECfddF5650432464';
+  const multisigType = 'Gnosis Safe';
+  const opts = { title, description, proxyAdmin, multisig, multisigType };
+  const proposal = await proposeUpgrade(greeter.address, GreeterV2, opts);
+
+  t.is(proposal.url, proposalUrl);
+  sinon.assert.calledWithExactly(
+    fakeClient.proposeUpgrade,
+    {
+      newImplementation: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
+      title,
+      description,
+      proxyAdmin,
+      via: multisig,
+      viaType: multisigType,
     },
     {
       address: greeter.address,
@@ -70,6 +104,9 @@ test('proposes an upgrade reusing prepared implementation', async t => {
       newImplementation: greeterV2Impl,
       title: undefined,
       description: undefined,
+      proxyAdmin: undefined,
+      via: undefined,
+      viaType: undefined,
     },
     {
       address: greeter.address,

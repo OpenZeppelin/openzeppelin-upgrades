@@ -47,6 +47,9 @@ test('proposes an upgrade', async t => {
       newImplementation: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
       title,
       description,
+      proxyAdmin: undefined,
+      via: undefined,
+      viaType: undefined,
     },
     {
       address: greeter.address,
@@ -70,6 +73,9 @@ test('proposes an upgrade reusing prepared implementation', async t => {
       newImplementation: greeterV2Impl,
       title: undefined,
       description: undefined,
+      proxyAdmin: undefined,
+      via: undefined,
+      viaType: undefined,
     },
     {
       address: greeter.address,
