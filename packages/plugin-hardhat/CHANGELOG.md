@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for UUPS proxies. ([#315](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/315))
+
 ## 1.6.0 (2021-01-27)
 
 - Add support for structs and enums. ([#261](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/261))

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for UUPS proxies. ([#315](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/315))
+
 ## 1.5.2 (2021-04-20)
 
 - Support using Web3 ProviderEngine providers.
