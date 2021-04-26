@@ -1,7 +1,11 @@
+import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract } from 'ethers';
-import { getProxyAdminFactory } from './proxy-factory';
+import { getProxyAdminFactory } from './utils';
+
+const SUCCESS_CHECK = chalk.keyword('green')('✔') + ' ';
+const FAILURE_CROSS = chalk.keyword('red')('✘') + ' ';
 
 export type ChangeAdminFunction = (proxyAddress: string, newAdmin: string) => Promise<void>;
 export type TransferProxyAdminOwnershipFunction = (newOwner: string) => Promise<void>;
@@ -24,6 +28,17 @@ export function makeTransferProxyAdminOwnership(hre: HardhatRuntimeEnvironment):
   return async function transferProxyAdminOwnership(newOwner) {
     const admin = await getManifestAdmin(hre);
     await admin.transferOwnership(newOwner);
+
+    const { provider } = hre.network;
+    const manifest = await Manifest.forNetwork(provider);
+    const { proxies } = await manifest.read();
+    for (const { address, kind } of proxies) {
+      if (admin.address == (await getAdminAddress(provider, address))) {
+        console.log(SUCCESS_CHECK + `${address} (${kind}) proxy ownership transfered through admin proxy`);
+      } else {
+        console.log(FAILURE_CROSS + `${address} (${kind}) proxy ownership not affected by admin proxy`);
+      }
+    }
   };
 }
 

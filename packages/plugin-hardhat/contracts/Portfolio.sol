@@ -21,3 +21,6 @@ contract Portfolio {
     }
 
 }
+
+import "./utils/Proxiable.sol";
+contract PortfolioProxiable is Portfolio, Proxiable {}

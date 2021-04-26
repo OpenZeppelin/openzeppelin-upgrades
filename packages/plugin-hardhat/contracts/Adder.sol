@@ -12,3 +12,6 @@ contract Adder {
     }
 
 }
+
+import "./utils/Proxiable.sol";
+contract AdderProxiable is Adder, Proxiable {}

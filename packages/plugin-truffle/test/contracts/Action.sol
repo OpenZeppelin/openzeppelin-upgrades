@@ -14,3 +14,6 @@ contract Action {
     }
 
 }
+
+import "./utils/Proxiable.sol";
+contract ActionProxiable is Action, Proxiable {}

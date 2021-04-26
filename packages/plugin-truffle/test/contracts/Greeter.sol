@@ -1,4 +1,4 @@
-pragma solidity ^0.5.1;
+pragma solidity >= 0.4.22 <0.8.0;
 
 contract Greeter {
 
@@ -17,3 +17,6 @@ contract Greeter {
     }
 
 }
+
+import "./utils/Proxiable.sol";
+contract GreeterProxiable is Greeter, Proxiable {}

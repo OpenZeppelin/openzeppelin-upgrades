@@ -2,7 +2,7 @@ import path from 'path';
 import chalk from 'chalk';
 import { promises as fs } from 'fs';
 import { compare as compareVersions } from 'compare-versions';
-import { ManifestData, ImplDeployment } from '../manifest';
+import { ManifestData, ImplDeployment, ProxyDeployment } from '../manifest';
 import type { StorageItem, StorageLayout, TypeItem, TypeItemMembers, StructMember } from '../storage/layout';
 
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
@@ -162,12 +162,35 @@ function updateManifestData(oldManifestData: NetworkFileData): ManifestData {
   }
 
   return {
-    manifestVersion: '3.1',
+    manifestVersion: '3.2',
     impls: transformImplementations(oldManifestData.contracts),
+    proxies: [...transformProxies(oldManifestData.proxies)],
     admin: {
       address: proxyAdmin,
     },
   };
+}
+
+function* transformProxies(proxies: LegacyProxies): Generator<ProxyDeployment> {
+  for (const contractName in proxies) {
+    for (const proxy of proxies[contractName]) {
+      switch (proxy.kind) {
+        case 'Upgradeable':
+          if (proxy.address) {
+            yield {
+              address: proxy.address,
+              kind: 'transparent',
+            };
+          }
+          break;
+
+        case 'Minimal':
+        case 'NonProxy':
+          // not supported by the new plugin
+          break;
+      }
+    }
+  }
 }
 
 function transformImplementations(contracts: LegacyContracts): Record<string, ImplDeployment> {
@@ -339,6 +362,7 @@ function getTypeKind(typeName: string): TypeKind {
 
 type TypeKind = 'Elementary' | 'Mapping' | 'Struct' | 'Enum' | 'DynArray' | 'StaticArray';
 type LegacyContracts = Record<string, ContractInterface>;
+type LegacyProxies = Record<string, ProxyInterface[]>;
 type AstIdGetter = (typeName: string) => number;
 type LegacyTypes = Record<string, LegacyType>;
 type NetworkExportData = Pick<NetworkFileData, 'proxies' | 'proxyFactory' | 'app' | 'package' | 'provider'>;

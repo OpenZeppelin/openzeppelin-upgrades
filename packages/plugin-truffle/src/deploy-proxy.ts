@@ -1,70 +1,76 @@
+import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
+
 import {
-  assertUpgradeSafe,
-  getStorageLayout,
-  fetchOrDeploy,
-  fetchOrDeployAdmin,
-  getVersion,
-} from '@openzeppelin/upgrades-core';
+  ContractClass,
+  ContractInstance,
+  wrapProvider,
+  deploy,
+  deployImpl,
+  getProxyFactory,
+  getTransparentUpgradeableProxyFactory,
+  getProxyAdminFactory,
+  Options,
+  withDefaults,
+} from './utils';
 
-import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
-import { validateArtifacts, getLinkedBytecode } from './validate';
-import { deploy } from './utils/deploy';
-import { getProxyFactory, getProxyAdminFactory } from './factories';
-import { wrapProvider } from './wrap-provider';
-import { Options, withDeployDefaults } from './options';
-
-interface InitializerOptions {
+interface DeployOptions extends Options {
   initializer?: string | false;
 }
 
+export async function deployProxy(Contract: ContractClass, opts?: Options): Promise<ContractInstance>;
+export async function deployProxy(Contract: ContractClass, args?: unknown[], opts?: Options): Promise<ContractInstance>;
 export async function deployProxy(
   Contract: ContractClass,
-  opts?: Options & InitializerOptions,
-): Promise<ContractInstance>;
-
-export async function deployProxy(
-  Contract: ContractClass,
-  args?: unknown[],
-  opts?: Options & InitializerOptions,
-): Promise<ContractInstance>;
-
-export async function deployProxy(
-  Contract: ContractClass,
-  args: unknown[] | (Options & InitializerOptions) = [],
-  opts: Options & InitializerOptions = {},
+  args: unknown[] | Options = [],
+  opts: DeployOptions = {},
 ): Promise<ContractInstance> {
   if (!Array.isArray(args)) {
     opts = args;
     args = [];
   }
+  const requiredOpts = withDefaults(opts);
+  const { kind } = requiredOpts;
 
-  const { deployer } = withDeployDefaults(opts);
-  const provider = wrapProvider(deployer.provider);
+  const provider = wrapProvider(requiredOpts.deployer.provider);
+  const manifest = await Manifest.forNetwork(provider);
 
-  const { contracts_build_directory, contracts_directory } = getTruffleConfig();
-  const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
+  if (kind === 'uups') {
+    if (await manifest.getAdmin()) {
+      logWarning(`A proxy admin was previously deployed on this network`, [
+        `This is not natively used with the current kind of proxy ('uups').`,
+        `Changes to the admin will have no effect on this new proxy.`,
+      ]);
+    }
+  }
 
-  const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
-  const version = getVersion(Contract.bytecode, linkedBytecode);
-  assertUpgradeSafe([validations], version, opts);
-
-  const impl = await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(Contract, deployer);
-    const layout = getStorageLayout([validations], version);
-    return { ...deployment, layout };
-  });
-
-  const AdminFactory = getProxyAdminFactory(Contract);
-  const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory, deployer));
-
+  const impl = await deployImpl(Contract, requiredOpts);
   const data = getInitializerData(Contract, args, opts.initializer);
-  const AdminUpgradeabilityProxy = getProxyFactory(Contract);
-  const proxy = await deployer.deploy(AdminUpgradeabilityProxy, impl, adminAddress, data);
 
-  Contract.address = proxy.address;
+  let proxyDeployment: Required<ProxyDeployment>;
+  switch (kind) {
+    case 'uups': {
+      const ProxyFactory = getProxyFactory(Contract);
+      proxyDeployment = Object.assign({ kind }, await deploy(requiredOpts.deployer, ProxyFactory, impl, data));
+      break;
+    }
 
-  const contract = new Contract(proxy.address);
-  contract.transactionHash = proxy.transactionHash;
+    case 'transparent': {
+      const AdminFactory = getProxyAdminFactory(Contract);
+      const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(requiredOpts.deployer, AdminFactory));
+      const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
+      proxyDeployment = Object.assign(
+        { kind },
+        await deploy(requiredOpts.deployer, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
+      );
+      break;
+    }
+  }
+
+  await manifest.addProxy(proxyDeployment);
+
+  Contract.address = proxyDeployment.address;
+  const contract = new Contract(proxyDeployment.address);
+  contract.transactionHash = proxyDeployment.txHash;
   return contract;
 }
 
@@ -77,7 +83,6 @@ function getInitializerData(Contract: ContractClass, args: unknown[], initialize
   initializer = initializer ?? 'initialize';
 
   const stub = new Contract('');
-
   if (initializer in stub.contract.methods) {
     return stub.contract.methods[initializer](...args).encodeABI();
   } else if (allowNoInitialization) {

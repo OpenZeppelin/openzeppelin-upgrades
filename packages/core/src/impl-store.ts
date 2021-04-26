@@ -68,6 +68,12 @@ export async function fetchOrDeploy(
   return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy);
 }
 
+const implLens = (versionWithoutMetadata: string) =>
+  lens(`implementation ${versionWithoutMetadata}`, data => ({
+    get: () => data.impls[versionWithoutMetadata],
+    set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
+  }));
+
 export async function fetchOrDeployAdmin(
   provider: EthereumProvider,
   deploy: () => Promise<Deployment>,
@@ -79,12 +85,6 @@ const adminLens = lens('proxy admin', data => ({
   get: () => data.admin,
   set: (value?: Deployment) => (data.admin = value),
 }));
-
-const implLens = (versionWithoutMetadata: string) =>
-  lens(`implementation ${versionWithoutMetadata}`, data => ({
-    get: () => data.impls[versionWithoutMetadata],
-    set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
-  }));
 
 function lens<T>(description: string, fn: (data: ManifestData) => ManifestField<T>): ManifestLens<T> {
   return Object.assign(fn, { description });

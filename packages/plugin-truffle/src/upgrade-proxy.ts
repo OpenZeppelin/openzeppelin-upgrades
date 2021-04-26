@@ -1,85 +1,62 @@
+import { Manifest, getAdminAddress, setProxyKind, getCode, EthereumProvider } from '@openzeppelin/upgrades-core';
+
 import {
-  assertUpgradeSafe,
-  assertStorageUpgradeSafe,
-  getStorageLayout,
-  fetchOrDeploy,
-  getVersion,
-  Manifest,
-  getImplementationAddress,
-  getAdminAddress,
-  EthereumProvider,
-  getStorageLayoutForAddress,
-} from '@openzeppelin/upgrades-core';
-
-import { ContractClass, ContractInstance, getTruffleConfig } from './truffle';
-import { validateArtifacts, getLinkedBytecode } from './validate';
-import { deploy } from './utils/deploy';
-import { getProxyAdminFactory } from './factories';
-import { wrapProvider } from './wrap-provider';
-import { Options, withDefaults } from './options';
-
-async function prepareUpgradeImpl(
-  provider: EthereumProvider,
-  manifest: Manifest,
-  proxyAddress: string,
-  Contract: ContractClass,
-  opts: Required<Options>,
-): Promise<string> {
-  const { deployer, unsafeAllowCustomTypes } = opts;
-
-  const { contracts_build_directory, contracts_directory } = getTruffleConfig();
-  const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
-
-  const linkedBytecode: string = await getLinkedBytecode(Contract, provider);
-  const version = getVersion(Contract.bytecode, linkedBytecode);
-  assertUpgradeSafe([validations], version, opts);
-
-  const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-  const deploymentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
-
-  const layout = getStorageLayout([validations], version);
-  assertStorageUpgradeSafe(deploymentLayout, layout, unsafeAllowCustomTypes);
-
-  return await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(Contract, deployer);
-    return { ...deployment, layout };
-  });
-}
-
-export async function prepareUpgrade(
-  proxyAddress: string,
-  Contract: ContractClass,
-  opts: Options = {},
-): Promise<string> {
-  const requiredOpts = withDefaults(opts);
-  const { deployer } = requiredOpts;
-  const provider = wrapProvider(deployer.provider);
-  const manifest = await Manifest.forNetwork(provider);
-
-  return await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts);
-}
+  ContractClass,
+  ContractInstance,
+  wrapProvider,
+  deployImpl,
+  getTransparentUpgradeableProxyFactory,
+  getProxyAdminFactory,
+  Options,
+  withDefaults,
+} from './utils';
 
 export async function upgradeProxy(
   proxyAddress: string,
   Contract: ContractClass,
   opts: Options = {},
 ): Promise<ContractInstance> {
-  const requiredOpts = withDefaults(opts);
-  const { deployer } = requiredOpts;
-  const provider = wrapProvider(deployer.provider);
-  const manifest = await Manifest.forNetwork(provider);
+  const requiredOpts: Required<Options> = withDefaults(opts);
 
-  const AdminFactory = getProxyAdminFactory(Contract);
-  const admin = new AdminFactory(await getAdminAddress(provider, proxyAddress));
-  const manifestAdmin = await manifest.getAdmin();
+  const provider = wrapProvider(requiredOpts.deployer.provider);
 
-  if (admin.address !== manifestAdmin?.address) {
-    throw new Error('Proxy admin is not the one registered in the network manifest');
-  }
+  requiredOpts.kind = await setProxyKind(provider, proxyAddress, opts);
 
-  const nextImpl = await prepareUpgradeImpl(provider, manifest, proxyAddress, Contract, requiredOpts);
-  await admin.upgrade(proxyAddress, nextImpl);
+  const upgradeTo = await getUpgrader(provider, Contract, proxyAddress);
+  const nextImpl = await deployImpl(Contract, requiredOpts, proxyAddress);
+  await upgradeTo(nextImpl);
 
   Contract.address = proxyAddress;
   return new Contract(proxyAddress);
+}
+
+type Upgrader = (nextImpl: string) => Promise<void>;
+
+async function getUpgrader(
+  provider: EthereumProvider,
+  contractTemplate: ContractClass,
+  proxyAddress: string,
+): Promise<Upgrader> {
+  const adminAddress = await getAdminAddress(provider, proxyAddress);
+  const adminBytecode = await getCode(provider, adminAddress);
+
+  if (adminBytecode === '0x') {
+    // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
+    const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(contractTemplate);
+    const proxy = new TransparentUpgradeableProxyFactory(proxyAddress);
+
+    return nextImpl => proxy.upgradeTo(nextImpl);
+  } else {
+    // Admin contract: redirect upgrade call through it
+    const manifest = await Manifest.forNetwork(provider);
+    const AdminFactory = getProxyAdminFactory(contractTemplate);
+    const admin = new AdminFactory(adminAddress);
+    const manifestAdmin = await manifest.getAdmin();
+
+    if (admin.address !== manifestAdmin?.address) {
+      throw new Error('Proxy admin is not the one registered in the network manifest');
+    }
+
+    return nextImpl => admin.upgrade(proxyAddress, nextImpl);
+  }
 }

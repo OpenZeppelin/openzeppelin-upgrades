@@ -1,9 +1,9 @@
+import chalk from 'chalk';
 import { EthereumProvider, getAdminAddress, Manifest } from '@openzeppelin/upgrades-core';
+import { ContractInstance, getProxyAdminFactory, wrapProvider, Options, withDefaults } from './utils';
 
-import { ContractInstance } from './truffle';
-import { getProxyAdminFactory } from './factories';
-import { wrapProvider } from './wrap-provider';
-import { Options, withDefaults } from './options';
+const SUCCESS_CHECK = chalk.keyword('green')('✔') + ' ';
+const FAILURE_CROSS = chalk.keyword('red')('✘') + ' ';
 
 async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Options = {}): Promise<void> {
   const { deployer } = withDefaults(opts);
@@ -23,6 +23,16 @@ async function transferProxyAdminOwnership(newOwner: string, opts: Options = {})
   const provider = wrapProvider(deployer.provider);
   const admin = await getManifestAdmin(provider);
   await admin.transferOwnership(newOwner);
+
+  const manifest = await Manifest.forNetwork(provider);
+  const { proxies } = await manifest.read();
+  for (const { address, kind } of proxies) {
+    if (admin.address == (await getAdminAddress(provider, address))) {
+      console.log(SUCCESS_CHECK + `${address} (${kind}) proxy ownership transfered through admin proxy`);
+    } else {
+      console.log(FAILURE_CROSS + `${address} (${kind}) proxy ownership not affected by admin proxy`);
+    }
+  }
 }
 
 async function getInstance(opts: Options = {}): Promise<ContractInstance> {

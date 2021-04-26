@@ -15,6 +15,9 @@ export type ProposeUpgradeFunction = (
 export interface ProposalOptions extends ValidationOptions {
   title?: string;
   description?: string;
+  proxyAdmin?: string;
+  multisig?: string;
+  multisigType?: 'Gnosis Safe' | 'Gnosis Multisig' | 'EOA';
 }
 
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgradeFunction {
@@ -30,9 +33,19 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       throw new Error(`Network ${chainId} is not supported in Defender Admin`);
     }
 
-    const { title, description } = opts;
+    const { title, description, proxyAdmin, multisig, multisigType } = opts;
     const newImplementation = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory);
     const contract = { address: proxyAddress, network, abi: ImplFactory.interface.format(FormatTypes.json) as string };
-    return client.proposeUpgrade({ newImplementation, title, description }, contract);
+    return client.proposeUpgrade(
+      {
+        newImplementation,
+        title,
+        description,
+        proxyAdmin,
+        via: multisig,
+        viaType: multisigType,
+      },
+      contract,
+    );
   };
 }

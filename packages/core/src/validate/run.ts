@@ -6,6 +6,7 @@ import { SolcOutput, SolcBytecode } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
 import { astDereferencer } from '../ast-dereferencer';
 import { isNullish } from '../utils/is-nullish';
+import { getFunctionSignature } from '../utils/function';
 import { Version, getVersion } from '../version';
 import { extractLinkReferences, LinkReference } from '../link-refs';
 import { extractStorageLayout } from '../storage/extract';
@@ -17,15 +18,33 @@ export interface ContractValidation {
   version?: Version;
   inherit: string[];
   libraries: string[];
+  methods: string[];
   linkReferences: LinkReference[];
   errors: ValidationError[];
   layout: StorageLayout;
 }
 
-export type ValidationError = ValidationErrorConstructor | ValidationErrorOpcode | ValidationErrorWithName;
+const errorKinds = [
+  'state-variable-assignment',
+  'state-variable-immutable',
+  'external-library-linking',
+  'struct-definition',
+  'enum-definition',
+  'constructor',
+  'delegatecall',
+  'selfdestruct',
+  'missing-public-upgradeto',
+] as const;
+
+export type ValidationError =
+  | ValidationErrorConstructor
+  | ValidationErrorOpcode
+  | ValidationErrorWithName
+  | ValidationErrorUpgradeability;
 
 interface ValidationErrorBase {
   src: string;
+  kind: typeof errorKinds[number];
 }
 
 interface ValidationErrorWithName extends ValidationErrorBase {
@@ -45,6 +64,10 @@ interface ValidationErrorConstructor extends ValidationErrorBase {
 
 interface ValidationErrorOpcode extends ValidationErrorBase {
   kind: 'delegatecall' | 'selfdestruct';
+}
+
+interface ValidationErrorUpgradeability extends ValidationErrorBase {
+  kind: 'missing-public-upgradeto';
 }
 
 function* execall(re: RegExp, text: string) {
@@ -74,19 +97,8 @@ function getAllowed(node: Node): string[] {
     }
 
     result.forEach(arg => {
-      if (
-        ![
-          'state-variable-assignment',
-          'state-variable-immutable',
-          'external-library-linking',
-          'struct-definition',
-          'enum-definition',
-          'constructor',
-          'delegatecall',
-          'selfdestruct',
-        ].includes(arg)
-      ) {
-        throw new Error(`NatSpec: openzeppelin-upgrade-allow argument not recognized: ${arg}`);
+      if (!(errorKinds as readonly string[]).includes(arg)) {
+        throw new Error(`NatSpec: oz-upgrades-unsafe-allow argument not recognized: ${arg}`);
       }
     });
 
@@ -118,6 +130,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
         version,
         inherit: [],
         libraries: [],
+        methods: [],
         linkReferences,
         errors: [],
         layout: {
@@ -147,6 +160,9 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
         ];
 
         validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc, deref);
+        validation[contractDef.name].methods = [...findAll('FunctionDefinition', contractDef)]
+          .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
+          .map(fnDef => getFunctionSignature(fnDef, deref));
       }
     }
   }

@@ -2291,10 +2291,10 @@
   dependencies:
     "@octokit/openapi-types" "^6.0.0"
 
-"@openzeppelin/contracts@^3.1.0":
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.1.tgz#03c891fec7f93be0ae44ed74e57a122a38732ce7"
-  integrity sha512-cUriqMauq1ylzP2TxePNdPqkwI7Le3Annh4K9rrpvKfSBB/bdW+Iu1ihBaTIABTAAJ85LmKL5SSPPL9ry8d1gQ==
+"@openzeppelin/contracts@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.0.0.tgz#54d1de30911635020c383cb73b160b698e7ae179"
+  integrity sha512-UcIJl/vUVjTr3H1yYXZi7Sr2PlXzBEHVUJKOUlVyzyy0FI8oQCCy0Wx+BuK/fojdnmLeMvUk4KUvhKUybP+C7Q==
 
 "@openzeppelin/docs-utils@^0.1.0":
   version "0.1.0"
@@ -6197,10 +6197,10 @@ defaults@^1.0.3:
   dependencies:
     clone "^1.0.2"
 
-defender-admin-client@^1.3.2:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/defender-admin-client/-/defender-admin-client-1.5.1.tgz#3f277ddf0bc0a2a3762c56c564c9f571ef3af317"
-  integrity sha512-xxY/nHcJidvOean6Vn0iAhavqHMVudugRl2R2uLNZXhU/OAHB30JlsZ+vUyEYh6NTOXcUS0iq6EnEMkEitmP8Q==
+defender-admin-client@^1.6.0-rc.0:
+  version "1.6.0-rc.0"
+  resolved "https://registry.yarnpkg.com/defender-admin-client/-/defender-admin-client-1.6.0-rc.0.tgz#94da3f3593786bb71f4b864e5b6682576a0da798"
+  integrity sha512-sH/1o4145ilBcUniq2UprfYtaeh7MovIMrqbtJHo7r5xAmGT+FT0KI0oCDq4HHFgmul5QOMtK75lR2lr191RuQ==
   dependencies:
     axios "^0.19.2"
     defender-base-client "1.5.1"

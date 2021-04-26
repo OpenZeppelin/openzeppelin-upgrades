@@ -1,29 +1,16 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract } from 'ethers';
+import type { ContractFactory, Contract, Signer } from 'ethers';
 
 import {
-  assertUpgradeSafe,
-  assertStorageUpgradeSafe,
-  getStorageLayout,
-  fetchOrDeploy,
-  getVersion,
-  getUnlinkedBytecode,
   Manifest,
-  getImplementationAddress,
-  getAdminAddress,
   ValidationOptions,
-  getStorageLayoutForAddress,
+  getAdminAddress,
+  withValidationDefaults,
+  setProxyKind,
+  getCode,
 } from '@openzeppelin/upgrades-core';
 
-import { getProxyAdminFactory } from './proxy-factory';
-import { readValidations } from './validations';
-import { deploy } from './utils/deploy';
-
-export type PrepareUpgradeFunction = (
-  proxyAddress: string,
-  ImplFactory: ContractFactory,
-  opts?: ValidationOptions,
-) => Promise<string>;
+import { deployImpl, getTransparentUpgradeableProxyFactory, getProxyAdminFactory } from './utils';
 
 export type UpgradeFunction = (
   proxyAddress: string,
@@ -31,57 +18,45 @@ export type UpgradeFunction = (
   opts?: ValidationOptions,
 ) => Promise<Contract>;
 
-async function prepareUpgradeImpl(
-  hre: HardhatRuntimeEnvironment,
-  manifest: Manifest,
-  proxyAddress: string,
-  ImplFactory: ContractFactory,
-  opts: ValidationOptions,
-): Promise<string> {
-  const { provider } = hre.network;
-  const validations = await readValidations(hre);
-
-  const unlinkedBytecode: string = getUnlinkedBytecode(validations, ImplFactory.bytecode);
-  const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
-  assertUpgradeSafe(validations, version, opts);
-
-  const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-  const deploymentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
-
-  const layout = getStorageLayout(validations, version);
-  assertStorageUpgradeSafe(deploymentLayout, layout, opts.unsafeAllowCustomTypes);
-
-  return await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(ImplFactory);
-    return { ...deployment, layout };
-  });
-}
-
-export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgradeFunction {
-  return async function prepareUpgrade(proxyAddress, ImplFactory, opts = {}) {
-    const { provider } = hre.network;
-    const manifest = await Manifest.forNetwork(provider);
-
-    return await prepareUpgradeImpl(hre, manifest, proxyAddress, ImplFactory, opts);
-  };
-}
-
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunction {
-  return async function upgradeProxy(proxyAddress, ImplFactory, opts = {}) {
+  return async function upgradeProxy(proxyAddress, ImplFactory, opts: ValidationOptions = {}) {
     const { provider } = hre.network;
-    const manifest = await Manifest.forNetwork(provider);
 
-    const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
-    const admin = AdminFactory.attach(await getAdminAddress(provider, proxyAddress));
-    const manifestAdmin = await manifest.getAdmin();
+    await setProxyKind(provider, proxyAddress, opts);
 
-    if (admin.address !== manifestAdmin?.address) {
-      throw new Error('Proxy admin is not the one registered in the network manifest');
-    }
-
-    const nextImpl = await prepareUpgradeImpl(hre, manifest, proxyAddress, ImplFactory, opts);
-    await admin.upgrade(proxyAddress, nextImpl);
+    const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
+    const nextImpl = await deployImpl(hre, ImplFactory, withValidationDefaults(opts), proxyAddress);
+    await upgradeTo(nextImpl);
 
     return ImplFactory.attach(proxyAddress);
   };
+
+  type Upgrader = (nextImpl: string) => Promise<void>;
+
+  async function getUpgrader(proxyAddress: string, signer: Signer): Promise<Upgrader> {
+    const { provider } = hre.network;
+
+    const adminAddress = await getAdminAddress(provider, proxyAddress);
+    const adminBytecode = await getCode(provider, adminAddress);
+
+    if (adminBytecode === '0x') {
+      // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
+      const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
+      const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);
+
+      return nextImpl => proxy.upgradeTo(nextImpl);
+    } else {
+      // Admin contract: redirect upgrade call through it
+      const manifest = await Manifest.forNetwork(provider);
+      const AdminFactory = await getProxyAdminFactory(hre, signer);
+      const admin = AdminFactory.attach(adminAddress);
+      const manifestAdmin = await manifest.getAdmin();
+
+      if (admin.address !== manifestAdmin?.address) {
+        throw new Error('Proxy admin is not the one registered in the network manifest');
+      }
+
+      return nextImpl => admin.upgrade(proxyAddress, nextImpl);
+    }
+  }
 }

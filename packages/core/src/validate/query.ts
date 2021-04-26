@@ -104,9 +104,21 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
   const dataV3 = normalizeValidationData(data);
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
-  return c.errors
+
+  const errors = c.errors
     .concat(...c.inherit.map(name => runValidation[name].errors))
     .concat(...c.libraries.map(name => runValidation[name].errors));
+
+  const selfAndInheritedMethods = c.methods.concat(...c.inherit.map(name => runValidation[name].methods));
+
+  if (!selfAndInheritedMethods.includes('upgradeTo(address)')) {
+    errors.push({
+      src: contractName,
+      kind: 'missing-public-upgradeto',
+    });
+  }
+
+  return errors;
 }
 
 export function isUpgradeSafe(data: ValidationData, version: Version): boolean {

@@ -8,3 +8,6 @@ contract TokenV2 is Token {
     transfer(to, amount);
   }
 }
+
+import "./utils/Proxiable.sol";
+contract TokenV2Proxiable is TokenV2, Proxiable {}

@@ -9,3 +9,5 @@ contract TokenV3 is Token {
   }
 }
 
+import "./utils/Proxiable.sol";
+contract TokenV3Proxiable is TokenV3, Proxiable {}

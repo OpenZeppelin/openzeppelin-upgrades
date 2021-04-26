@@ -8,3 +8,6 @@ contract DeployOverload {
     }
 
 }
+
+import "./utils/Proxiable.sol";
+contract DeployOverloadProxiable is DeployOverload, Proxiable {}

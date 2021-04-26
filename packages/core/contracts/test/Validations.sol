@@ -161,6 +161,17 @@ contract UsesExplicitUnsafeExternalLibrary {
   }
 }
 
+contract HasInternalUpgradeToFunction {
+  function upgradeTo(address) internal {}
+}
+
+contract HasUpgradeToFunction {
+  function upgradeTo(address) public {}
+}
+
+contract ParentHasUpgradeToFunction is HasUpgradeToFunction {
+}
+
 contract HasInlineAssembly {
   function unsafe() public {
     assembly {

@@ -8,13 +8,14 @@ import { compare as compareVersions } from 'compare-versions';
 import type { Deployment } from './deployment';
 import type { StorageLayout } from './storage';
 
-const currentManifestVersion = '3.1';
+const currentManifestVersion = '3.2';
 
 export interface ManifestData {
   manifestVersion: string;
   impls: {
     [version in string]?: ImplDeployment;
   };
+  proxies: ProxyDeployment[];
   admin?: Deployment;
 }
 
@@ -22,10 +23,15 @@ export interface ImplDeployment extends Deployment {
   layout: StorageLayout;
 }
 
+export interface ProxyDeployment extends Deployment {
+  kind: 'uups' | 'transparent';
+}
+
 function defaultManifest(): ManifestData {
   return {
     manifestVersion: currentManifestVersion,
     impls: {},
+    proxies: [],
   };
 }
 
@@ -52,9 +58,30 @@ export class Manifest {
     const data = await this.read();
     const deployment = Object.values(data.impls).find(d => d?.address === address);
     if (deployment === undefined) {
-      throw new Error(`Deployment at address ${address} is not registered`);
+      throw new DeploymentNotFound(`Deployment at address ${address} is not registered`);
     }
     return deployment;
+  }
+
+  async getProxyFromAddress(address: string): Promise<ProxyDeployment> {
+    const data = await this.read();
+    const deployment = data.proxies.find(d => d?.address === address);
+    if (deployment === undefined) {
+      throw new DeploymentNotFound(`Proxy at address ${address} is not registered`);
+    }
+    return deployment;
+  }
+
+  async addProxy(proxy: ProxyDeployment): Promise<void> {
+    await this.lockedRun(async () => {
+      const data = await this.read();
+      const existing = data.proxies.findIndex(p => p.address === proxy.address);
+      if (existing >= 0) {
+        data.proxies.splice(existing, 1);
+      }
+      data.proxies.push(proxy);
+      await this.write(data);
+    });
   }
 
   async read(): Promise<ManifestData> {
@@ -119,13 +146,18 @@ function validateOrUpdateManifestVersion(data: ManifestData): ManifestData {
 }
 
 export function migrateManifest(data: ManifestData): ManifestData {
-  if (data.manifestVersion === '3.0') {
-    data.manifestVersion = currentManifestVersion;
-    return data;
-  } else {
-    throw new Error('Manifest migration not available');
+  switch (data.manifestVersion) {
+    case '3.0':
+    case '3.1':
+      data.manifestVersion = currentManifestVersion;
+      data.proxies = [];
+      return data;
+    default:
+      throw new Error('Manifest migration not available');
   }
 }
+
+export class DeploymentNotFound extends Error {}
 
 const tNullable = <C extends t.Mixed>(codec: C) => t.union([codec, t.undefined]);
 
@@ -138,10 +170,13 @@ const DeploymentCodec = t.intersection([
   }),
 ]);
 
+const ProxyKindCodec = t.union([t.literal('uups'), t.literal('transparent')]);
+
 const ManifestDataCodec = t.intersection([
   t.strict({
     manifestVersion: t.string,
     impls: t.record(t.string, tNullable(t.intersection([DeploymentCodec, t.strict({ layout: t.any })]))),
+    proxies: t.array(t.intersection([DeploymentCodec, t.strict({ kind: ProxyKindCodec })])),
   }),
   t.partial({
     admin: tNullable(DeploymentCodec),
