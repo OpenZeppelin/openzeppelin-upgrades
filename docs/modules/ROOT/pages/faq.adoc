@@ -36,6 +36,96 @@ contract MyContract is Initializable {
 
 Both plugins will validate that the contract you are trying to deploy complies with these rules. You can read more about how to write upgrade safe contracts xref:upgrades::writing-upgradeable.adoc[here].
 
+[[how-can-i-disable-checks]]
+== How can I disable some of the checks?
+
+Deployment and upgrade related functions come with an optional `opts` object, which includes an `unsafeAllow` option. This can be set to disable any check performed by the plugin. The list of checks that can individually be disabled is:
+
+  * `state-variable-assignment`
+  * `state-variable-immutable`
+  * `external-library-linking`
+  * `struct-definition`
+  * `enum-definition`
+  * `constructor`
+  * `delegatecall`
+  * `selfdestruct`
+  * `missing-public-upgradeto`
+
+This function is a generalized version of the original `unsafeAllowCustomTypes` and `unsafeAllowLinkedLibraries` allowing any check to be manually disabled.
+
+For example, in order to upgrade to an implementation that contains a delegate call, you would call:
+
+[source,ts]
+----
+await upgradeProxy(proxyAddress, implementationFactory, { unsafeAllow: ['delegatecall'] });
+----
+
+Additionally, it is possible to preciselly disable checks directly from the Solidity source code using natspec comments. This requires Solidity >=0.8.2.
+
+[source,solidity]
+----
+contract SomeContract {
+  function some_dangerous_function() public {
+    ...
+    /// @custom:oz-upgrades-unsafe-allow delegatecall
+    (bool success, bytes memory returndata) = msg.sender.delegatecall("");
+    ...
+  }
+}
+----
+
+This syntax can be used will the following errors:
+  * `/// @custom:oz-upgrades-unsafe-allow state-variable-immutable`
+  * `/// @custom:oz-upgrades-unsafe-allow state-variable-assignment`
+  * `/// @custom:oz-upgrades-unsafe-allow external-library-linking`
+  * `/// @custom:oz-upgrades-unsafe-allow constructor`
+  * `/// @custom:oz-upgrades-unsafe-allow delegatecall`
+  * `/// @custom:oz-upgrades-unsafe-allow selfdestruct`
+
+In some cases you may want to allow multiple errors in a single line.
+
+[source,solidity]
+----
+contract SomeOtherContract {
+  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+  uint256 immutable x = 1;
+}
+----
+
+[[delegatecall-selfdestruct]]
+== Can I safely use `delegatecall` and `selfdestruct`?
+
+CAUTION: This is an advanced technique and can put funds at risk of permanent loss.
+
+It may be possible to safely use `delegatecall` and `selfdestruct` if they are guarded so that they can only be triggered through proxies and not on the implementation contract itself. A way to achieve this in Solidity is as follows.
+
+[source,solidity]
+----
+abstract contract OnlyDelegateCall {
+    /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+    address private immutable self = address(this);
+
+    function checkDelegateCall() private view {
+        require(address(this) != original);
+    }
+
+    modifier onlyDelegateCall() {
+        checkDelegateCall();
+        _;
+    }
+}
+----
+
+[source,solidity]
+----
+contract UsesUnsafeOperations is OnlyDelegateCall {
+    /// @custom:oz-upgrades-unsafe-allow selfdestruct
+    function destroyProxy() onlyDelegateCall {
+        selfdestruct(msg.sender);
+    }
+}
+----
+
 [[what-does-it-mean-for-an-implementation-to-be-compatible]]
 == What does it mean for an implementation to be compatible?
 
@@ -93,60 +183,6 @@ You can follow or contribute to https://github.com/OpenZeppelin/openzeppelin-upg
 Past versions of the plugins did not support upgradeable contracts that used custom types like structs or enums in their code or linked libraries. This is no longer the case for current versions of the plugins, and structs and enums will be automatically checked for compatibility when upgrading a contract.
 
 Some users who have already deployed proxies with structs and/or enums and who need to upgrade those proxies may need to use the override flag `unsafeAllowCustomTypes` for their next upgrade, after which it will no longer be necessary. If the project contains the source code for the implementation currently in use by the proxy, the plugin will attempt to recover the metadata that it needs before the upgrade, falling back to the override flag if this is not possible.
-
-[[how-can-i-disable-checks]]
-== How can I disable some checks?
-
-Deployment and upgrade related functions come with an optional `opts` object, which includes an `unsafeAllow` option. This can be set to disable any check performed by the plugin. The list of checks that can individually be disabled is:
-  * `state-variable-assignment`
-  * `state-variable-immutable`
-  * `external-library-linking`
-  * `struct-definition`
-  * `enum-definition`
-  * `constructor`
-  * `delegatecall`
-  * `selfdestruct`
-
-This function is a generalized version of `unsafeAllowCustomTypes` and `unsafeAllowLinkedLibraries` allowing any check to be manually disabled.
-
-For example, in order to upgrade to an implementation that contains a delegate call, you would call:
-
-[source,ts]
-----
-await upgradeProxy(proxyAddress, implementationFactory, { unsafeAllow: ['delegatecall'] });
-----
-
-Additionally, it is possible to preciselly disable checks directly from the Solidity source code using natspec comments. This requires Solidity >=0.8.2.
-
-[source,solidity]
-----
-contract SomeContract {
-  function some_dangerous_function() public {
-    ...
-    /// @custom:oz-upgrades-unsafe-allow delegatecall
-    (bool success, bytes memory returndata) = msg.sender.delegatecall("");
-    ...
-  }
-}
-----
-
-This syntax can be used will the following errors:
-  * `/// @custom:oz-upgrades-unsafe-allow state-variable-immutable`
-  * `/// @custom:oz-upgrades-unsafe-allow state-variable-assignment`
-  * `/// @custom:oz-upgrades-unsafe-allow external-library-linking`
-  * `/// @custom:oz-upgrades-unsafe-allow constructor`
-  * `/// @custom:oz-upgrades-unsafe-allow delegatecall`
-  * `/// @custom:oz-upgrades-unsafe-allow selfdestruct`
-
-In some cases you may want to allow multiple errors in a single line.
-
-[source,solidity]
-----
-contract SomeOtherContract {
-  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
-  uint256 immutable x = 1;
-}
-----
 
 [[why-do-i-have-to-recompile-all-contracts-for-truffle]]
 == Why do I have to recompile all contracts for Truffle?

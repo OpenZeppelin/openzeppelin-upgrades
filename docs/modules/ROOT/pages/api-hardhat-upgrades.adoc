@@ -2,24 +2,46 @@
 
 Both `deployProxy` and `upgradeProxy` functions will return instances of https://docs.ethers.io/v5/api/contract/contract[ethers.js contracts], and require https://docs.ethers.io/v5/api/contract/contract-factory[ethers.js contract factories] as arguments. All functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
 
+[[common-options]]
+== Common Options
+
+The following options are common to all functions.
+
+* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
+* `unsafeAllow`: (`ValidationError[]`) Selectively disable one or more validation errors:
+** `"external-library-linking"`: Allows a deployment with external libraries linked to the implementation contract. (External libraries are otherwise xref:faq.adoc#why-cant-i-use-external-libraries[not yet supported].)
+** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.
+** `"state-variable-assignment"`: Allows assigning state variables in a contract even though they will be stored in the implementation.
+** `"state-variable-immutable"`: Allows use of immutable variables, which are not unsafe
+** `"constructor"`: Allows defining a constructor. Note that constructor arguments are not supported regardless of this option.
+** `"delegatecall"`, `"selfdestruct"`: Allow the use of these operations. Incorrect use of this option can put funds at risk of permanent loss. See xref:faq.adoc#delegatecall-selfdestruct[Can I safely use `delegatecall` and `selfdestruct`?]
+** `"missing-public-upgradeto"`: Allow UUPS implementations that do not contain a public `upgradeTo` function. Enabling this option is likely to cause a revert due to the built-in UUPS safety mechanism.
+
+Note that the options un `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
+
+The following options have been deprecated.
+
+* `unsafeAllowLinkedLibraries`: Equivalent to including `"external-library-linking"` in `unsafeAllow`.
+* `unsafeAllowCustomTypes`: Equivalent to including `"struct-definition"` and `"enum-definition"` in `unsafeAllow`. No longer necessary.
+
 [[deploy-proxy]]
 == deployProxy
 
 Creates a proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
 
-Options are:
-
 * `initializer`: set a different initializer function to call, or specify `false` to disable initialization
-* `unsafeAllowLinkedLibraries`: allows a deployment with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
-* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
-* `unsafeAllow`: selectively disable one or multiple errors types.
+* See <<common-options>>.
 
 [source,ts]
 ----
 async function deployProxy(
   Contract: ethers.ContractFactory,
   args: unknown[] = [],
-  opts: { initializer: string | false, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[] } = {},
+  opts: {
+    initializer: string | false,
+    unsafeAllow: ValidationError[],
+    kind: 'uups' | 'transparent',
+  } = {},
 ): Promise<ethers.Contract>
 ----
 
@@ -28,18 +50,16 @@ async function deployProxy(
 
 Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
 
-Options are:
-
-* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
-* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
-* `unsafeAllow`: selectively disable one or multiple errors types.
+See <<common-options>>.
 
 [source,ts]
 ----
 async function upgradeProxy(
   proxyAddress: string,
   Contract: ethers.ContractFactory,
-  opts: { unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[] } = {},
+  opts: {
+    unsafeAllow: ValidationError[],
+  } = {},
 ): Promise<ethers.Contract>
 ----
 
@@ -48,18 +68,16 @@ async function upgradeProxy(
 
 Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Hardhat.
 
-Options are:
-
-* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
-* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
-* `unsafeAllow`: selectively disable one or multiple errors types.
+See <<common-options>>.
 
 [source,ts]
 ----
 async function prepareUpgrade(
   proxyAddress: string,
   Contract: ethers.ContractFactory,
-  opts: { unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[] } = {},
+  opts: {
+    unsafeAllow: ValidationError[],
+  } = {},
 ): Promise<string>
 ----
 
@@ -70,13 +88,9 @@ NOTE: This method requires the https://www.npmjs.com/package/@openzeppelin/hardh
 
 Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in https://docs.openzeppelin.com/defender/admin[Defender Admin], for review and approval by the upgrade administrators.
 
-Options are:
-
-* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
-* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
-* `unsafeAllow`: selectively disable one or multiple errors types.
 * `title`: title of the upgrade proposal as seen in Defender Admin, defaults to `Upgrade to 0x12345678` (using the first 8 digits of the new implementation address)
 * `description`: description of the upgrade proposal as seen in Defender Admin, defaults to the full implementation address.
+* See <<common-options>>.
 
 [source,ts]
 ----
@@ -84,8 +98,9 @@ async function proposeUpgrade(
   proxyAddress: string,
   ImplFactory: ContractFactory,
   opts: {
-    unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[]
-    title: string, description: string
+    unsafeAllow: ValidationError[],
+    title: string,
+    description: string,
   } = {},
 ): Promise<void>
 ----

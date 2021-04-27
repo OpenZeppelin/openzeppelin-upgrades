@@ -2,6 +2,29 @@
 
 Both `deployProxy` and `upgradeProxy` functions will return instances of https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions[Truffle contracts], and require Truffle contract classes (retrieved via `artifacts.require`) as arguments.
 
+[[common-options]]
+== Common Options
+
+The following options are common to all functions.
+
+* `deployer`: Should be set to the Truffle migration deployer during migrations.
+* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
+* `unsafeAllow`: (`ValidationError[]`) Selectively disable one or more validation errors:
+** `"external-library-linking"`: Allows a deployment with external libraries linked to the implementation contract. (External libraries are otherwise xref:faq.adoc#why-cant-i-use-external-libraries[not yet supported].)
+** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.
+** `"state-variable-assignment"`: Allows assigning state variables in a contract even though they will be stored in the implementation.
+** `"state-variable-immutable"`: Allows use of immutable variables, which are not unsafe
+** `"constructor"`: Allows defining a constructor. Note that constructor arguments are not supported regardless of this option.
+** `"delegatecall"`, `"selfdestruct"`: Allow the use of these operations. Incorrect use of this option can put funds at risk of permanent loss. See xref:faq.adoc#delegatecall-selfdestruct[Can I safely use `delegatecall` and `selfdestruct`?]
+** `"missing-public-upgradeto"`: Allow UUPS implementations that do not contain a public `upgradeTo` function. Enabling this option is likely to cause a revert due to the built-in UUPS safety mechanism.
+
+Note that the options un `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
+
+The following options have been deprecated.
+
+* `unsafeAllowLinkedLibraries`: Equivalent to including `"external-library-linking"` in `unsafeAllow`.
+* `unsafeAllowCustomTypes`: Equivalent to including `"struct-definition"` and `"enum-definition"` in `unsafeAllow`. No longer necessary.
+
 [[deploy-proxy]]
 == deployProxy
 
@@ -9,20 +32,20 @@ Creates a proxy given a Truffle contract class to use as implementation, and ret
 
 If `args` is set, will call an initializer function `initialize` with the supplied `args` during proxy deployment.
 
-Options for this function are:
-
 * `initializer`: set a different initializer function to call, or specify `false` to disable initialization
-* `deployer`: set as the Truffle migration deployer during migrations
-* `unsafeAllowLinkedLibraries`: allows a deployment with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
-* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
-* `unsafeAllow`: selectively disable one or multiple errors types.
+* See <<common-options>>.
 
 [source,ts]
 ----
 async function deployProxy(
   Contract: ContractClass,
   args: unknown[] = [],
-  opts: { deployer: Deployer, initializer: string | false, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[] } = {},
+  opts: {
+    deployer: Deployer,
+    initializer: string | false,
+    unsafeAllow: ValidationError[],
+    kind: 'uups' | 'transparent',
+  } = {},
 ): Promise<ContractInstance>
 ----
 
@@ -31,19 +54,17 @@ async function deployProxy(
 
 Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
 
-Options for this function are:
-
-* `deployer`: set as the Truffle migration deployer during migrations
-* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
-* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
-* `unsafeAllow`: selectively disable one or multiple errors types.
+See <<common-options>>.
 
 [source,ts]
 ----
 async function upgradeProxy(
   proxyAddress: string,
   Contract: ContractClass,
-  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[] } = {},
+  opts: {
+    deployer: Deployer,
+    unsafeAllow: ValidationError[],
+  } = {},
 ): Promise<ContractInstance>
 ----
 
@@ -52,19 +73,17 @@ async function upgradeProxy(
 
 Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Truffle.
 
-Options are:
-
-* `deployer`: set as the Truffle migration deployer during migrations
-* `unsafeAllowLinkedLibraries`: allows an upgrade with external libraries linked to the implementation contract (required since the plugins do not support xref:faq.adoc#why-cant-i-use-external-libraries[external libraries] yet)
-* `unsafeAllowCustomTypes`: an override for a few situations where structs or enums cannot be automatically verified for safety
-* `unsafeAllow`: selectively disable one or multiple errors types.
+See <<common-options>>.
 
 [source,ts]
 ----
 async function prepareUpgrade(
   proxyAddress: string,
   Contract: ContractClass,
-  opts: { deployer: Deployer, unsafeAllowCustomTypes: boolean, unsafeAllowLinkedLibraries: boolean, unsafeAllow: string[] } = {},
+  opts: {
+    deployer: Deployer,
+    unsafeAllow: ValidationError[],
+  } = {},
 ): Promise<string>
 ----
 
