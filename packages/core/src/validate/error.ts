@@ -53,7 +53,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   'missing-public-upgradeto': {
     msg: () => `Implementation is missing a public \`upgradeTo(address)\` function`,
     hint: () =>
-      `Have your implementation inherit from proxy/UUPS/Proxiable or use a transparent proxy by setting the \`kind: 'transparent'\` option`,
+      `Have your implementation inherit from proxy/utils/UUPSUpgradeable or use a transparent proxy by setting the \`kind: 'transparent'\` option`,
     link: 'https://zpl.in/upgrades/error-007', // TODO: add documentation
   },
 };
