@@ -177,6 +177,23 @@ In the meantime you can deploy upgradeable contracts linked to external librarie
 
 You can follow or contribute to https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52[this issue in Github].
 
+[[why-public-upgradeto]]
+== Why do I need a public `upgradeTo` function?
+
+When using UUPS proxies (through the `kind: 'uups'` option), the implementation contract must include the public function `upgradeTo(address newImplementation)`. This is because in the UUPS pattern the proxy does not contain an upgrading function itself, and the entire upgradeability mechanism lives on the implementation side. Thus, on every deploy and upgrade we have to make sure to include it, otherwise we may permanently disable the upgradeability of the contract.
+
+The recommended way to include this function is by inheriting the `UUPSUpgradeable` contract provided in OpenZeppelin Contracts, as shown below. This contract adds the required `upgradeTo` function, but also contains a built-in mechanism that will check on-chain, at the time of an upgrade, that the new implementation proposed preserves `upgradeTo`. In this way, when using the Upgrades Plugins there is a double layer of protection so that upgradeability is not accidentally disabled: off-chain by the plugins, and on-chain by the contract itself.
+
+```solidity
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
+contract MyContract is Initializable, ..., UUPSUpgradeable {
+    ...
+}
+```
+
+Read more about the differences with the Transparent Proxy Pattern in xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
+
 [[why-cant-i-use-custom-types]]
 == Can I use custom types like structs and enums?
 
