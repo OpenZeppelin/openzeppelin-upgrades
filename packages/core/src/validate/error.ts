@@ -55,7 +55,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     hint: () =>
       `Inherit UUPSUpgradeable to include this function in your contract\n` +
       `    @openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol`,
-    link: 'https://zpl.in/upgrades/error-007',
+    link: 'https://zpl.in/upgrades/error-008',
   },
 };
 
