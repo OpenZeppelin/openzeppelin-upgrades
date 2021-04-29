@@ -37,4 +37,6 @@ contract FunctionSignatures {
     function f10(bytes calldata) public {}
 
     function f11(bytes32) public {}
+
+    function f12(FunctionSignatures) public {}
 }

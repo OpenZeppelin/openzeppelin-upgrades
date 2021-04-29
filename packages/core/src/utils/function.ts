@@ -1,6 +1,6 @@
 import type { FunctionDefinition, TypeName } from 'solidity-ast';
 import { ASTDereferencer } from '../ast-dereferencer';
-import { assert } from './assert';
+import { assert, assertUnreachable } from './assert';
 
 function serializeTypeName(typename: TypeName | null | undefined, deref: ASTDereferencer): string {
   assert(!!typename);
@@ -13,7 +13,10 @@ function serializeTypeName(typename: TypeName | null | undefined, deref: ASTDere
     }
 
     case 'UserDefinedTypeName': {
-      const userDefinedType = deref(['StructDefinition', 'EnumDefinition'], typename.referencedDeclaration);
+      const userDefinedType = deref(
+        ['StructDefinition', 'EnumDefinition', 'ContractDefinition'],
+        typename.referencedDeclaration,
+      );
       switch (userDefinedType.nodeType) {
         case 'StructDefinition':
           return '(' + userDefinedType.members.map(member => serializeTypeName(member.typeName, deref)) + ')';
@@ -21,6 +24,12 @@ function serializeTypeName(typename: TypeName | null | undefined, deref: ASTDere
         case 'EnumDefinition':
           assert(userDefinedType.members.length < 256);
           return 'uint8';
+
+        case 'ContractDefinition':
+          return 'address';
+
+        default:
+          assertUnreachable(userDefinedType);
       }
     }
 
