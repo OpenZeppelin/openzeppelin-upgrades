@@ -18,6 +18,14 @@ contract HasNonEmptyConstructorNatspec3 {
   constructor() { msg.sender; }
 }
 
+/**
+ * @dev This confused the parser.
+ * @custom:oz-upgrades-unsafe-allow constructor
+ */
+contract HasNonEmptyConstructorNatspec4 {
+  constructor() { msg.sender; }
+}
+
 contract ParentHasNonEmptyConstructorNatspec1 is HasNonEmptyConstructorNatspec1 {}
 contract ParentHasNonEmptyConstructorNatspec2 is HasNonEmptyConstructorNatspec2 {}
 contract AncestorHasNonEmptyConstructorNatspec1 is ParentHasNonEmptyConstructorNatspec1 {}

@@ -89,7 +89,7 @@ function getAllowed(node: Node): string[] {
 
     const result: string[] = [];
     for (const { groups } of execall(
-      /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^@\w+ )[^])*)/m,
+      /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
       doc,
     )) {
       if (groups && groups.title === 'custom' && groups.tag === 'oz-upgrades-unsafe-allow') {
