@@ -16,6 +16,7 @@ export type ValidationRunData = Record<string, ContractValidation>;
 
 export interface ContractValidation {
   version?: Version;
+  src: string;
   inherit: string[];
   libraries: string[];
   methods: string[];
@@ -127,6 +128,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
       const linkReferences = extractLinkReferences(bytecode);
 
       validation[contractName] = {
+        src: contractName,
         version,
         inherit: [],
         libraries: [],
@@ -150,6 +152,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
         inheritIds[contractDef.name] = contractDef.linearizedBaseContracts.slice(1);
         libraryIds[contractDef.name] = getReferencedLibraryIds(contractDef);
 
+        validation[contractDef.name].src = decodeSrc(contractDef);
         validation[contractDef.name].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getOpcodeErrors(contractDef, decodeSrc),
