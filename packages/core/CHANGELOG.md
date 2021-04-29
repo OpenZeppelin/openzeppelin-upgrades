@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add support for UUPS proxies. ([#315](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/315))
+- Fix parsing of NatSpec `@custom:oz-upgrades-unsafe-allow` when included in a `/**`-style comment.
 
 ## 1.6.0 (2021-04-14)
 - Add `unsafeAllow` as a new field in `ValidationOptions`, which can be used as a manual override to silence any type of validation error. For example, `opts = { unsafeAllow: ['external-library-linking', 'delegatecall'] }` will silence the corresponding checks. ([#320](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/320))

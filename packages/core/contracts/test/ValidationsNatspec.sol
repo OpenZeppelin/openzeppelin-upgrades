@@ -11,6 +11,13 @@ contract HasNonEmptyConstructorNatspec2 {
   constructor() { msg.sender; }
 }
 
+/**
+ * @custom:oz-upgrades-unsafe-allow constructor
+ */
+contract HasNonEmptyConstructorNatspec3 {
+  constructor() { msg.sender; }
+}
+
 contract ParentHasNonEmptyConstructorNatspec1 is HasNonEmptyConstructorNatspec1 {}
 contract ParentHasNonEmptyConstructorNatspec2 is HasNonEmptyConstructorNatspec2 {}
 contract AncestorHasNonEmptyConstructorNatspec1 is ParentHasNonEmptyConstructorNatspec1 {}

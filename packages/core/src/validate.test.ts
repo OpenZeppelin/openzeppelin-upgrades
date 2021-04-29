@@ -100,6 +100,7 @@ testValid('ChildOfProxiable', 'uups', true);
 
 testValid('HasNonEmptyConstructorNatspec1', 'transparent', true);
 testValid('HasNonEmptyConstructorNatspec2', 'transparent', true);
+testValid('HasNonEmptyConstructorNatspec3', 'transparent', true);
 testValid('ParentHasNonEmptyConstructorNatspec1', 'transparent', true);
 testValid('ParentHasNonEmptyConstructorNatspec2', 'transparent', true);
 testValid('AncestorHasNonEmptyConstructorNatspec1', 'transparent', true);
