@@ -7,7 +7,7 @@
 * Manage proxy admin rights.
 * Easily use in tests.
 
-TIP: Upgrades Plugins are only a part of a comprehensive set of OpenZeppelin tools for upgradeable smart contracts. xref:openzeppelin::upgrades.adoc[Check out the full list of resources].
+TIP: Upgrades Plugins are only a part of a comprehensive set of OpenZeppelin tools for deploying and securing upgradeable smart contracts. xref:openzeppelin::upgrades.adoc[Check out the full list of resources].
 
 == Overview
 
