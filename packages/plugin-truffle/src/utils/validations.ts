@@ -21,7 +21,10 @@ export async function validateArtifacts(artifactsPath: string, sourcesPath: stri
 
 async function readArtifacts(artifactsPath: string): Promise<TruffleArtifact[]> {
   const artifactNames = await fs.readdir(artifactsPath);
-  const artifactContents = await Promise.all(artifactNames.map(n => fs.readFile(path.join(artifactsPath, n), 'utf8')));
+  const jsonArtifactNames = artifactNames.filter(a => a.endsWith('.json'));
+  const artifactContents = await Promise.all(
+    jsonArtifactNames.map(n => fs.readFile(path.join(artifactsPath, n), 'utf8')),
+  );
   return artifactContents.map(c => JSON.parse(c));
 }
 
