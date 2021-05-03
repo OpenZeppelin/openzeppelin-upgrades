@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Use `web3_clientVersion` to better detect development networks.
+
 ## 1.7.0 (2021-04-29)
 
 - Add support for UUPS proxies. ([#315](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/315))

@@ -1,8 +1,9 @@
 import BN from 'bn.js';
 
 export interface EthereumProvider {
-  send(method: 'eth_chainId', params: []): Promise<string>;
+  send(method: 'web3_clientVersion', params: []): Promise<string>;
   send(method: 'net_version', params: []): Promise<string>;
+  send(method: 'eth_chainId', params: []): Promise<string>;
   send(method: 'eth_getCode', params: [string, string]): Promise<string>;
   send(method: 'eth_getStorageAt', params: [string, string, string]): Promise<string>;
   send(method: 'eth_getTransactionByHash', params: [string]): Promise<null | EthereumTransaction>;
@@ -20,6 +21,10 @@ export async function getNetworkId(provider: EthereumProvider): Promise<string> 
 export async function getChainId(provider: EthereumProvider): Promise<number> {
   const id = await provider.send('eth_chainId', []);
   return new BN(id.replace(/^0x/, ''), 'hex').toNumber();
+}
+
+export async function getClientVersion(provider: EthereumProvider): Promise<string> {
+  return provider.send('web3_clientVersion', []);
 }
 
 export async function getStorageAt(
@@ -62,5 +67,11 @@ export async function isDevelopmentNetwork(provider: EthereumProvider): Promise<
   const chainId = await getChainId(provider);
   //  1337 => ganache and geth --dev
   // 31337 => hardhat network
-  return chainId === 1337 || chainId === 31337;
+  if (chainId === 1337 || chainId === 31337) {
+    return true;
+  } else {
+    const clientVersion = await getClientVersion(provider);
+    const [name] = clientVersion.split('/', 1);
+    return name === 'HardhatNetwork' || name === 'EthereumJS TestRPC';
+  }
 }
