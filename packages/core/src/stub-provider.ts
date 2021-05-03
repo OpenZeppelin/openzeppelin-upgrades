@@ -2,12 +2,14 @@ import crypto from 'crypto';
 
 import { ImplDeployment } from './manifest';
 
+const defaultClientVersion = 'unknown';
+
 function genChainId(): number {
   return 100 + crypto.randomBytes(2).readUInt16BE(0);
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function stubProvider(chainId = genChainId()) {
+export function stubProvider(chainId = genChainId(), clientVersion = defaultClientVersion) {
   const contracts = new Set<string>();
   const pendingTxs = new Set<string>();
   const blocks = new Map<string, string[]>();
@@ -84,6 +86,8 @@ export function stubProvider(chainId = genChainId()) {
         } else {
           return null;
         }
+      } else if (method === 'web3_clientVersion') {
+        return clientVersion;
       } else {
         throw new Error(`Method ${method} not stubbed`);
       }

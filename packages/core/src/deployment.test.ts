@@ -40,7 +40,8 @@ test('errors if tx is not found', async t => {
 });
 
 test('redeploys if tx is not found on dev network', async t => {
-  const provider = stubProvider(31337); // Hardhat Network chainId
+  // 31337 = Hardhat Network chainId
+  const provider = stubProvider(31337, 'HardhatNetwork/2.2.1/@ethereumjs/vm/5.3.2');
   const fakeDeployment: Deployment = {
     address: '0x1aec6468218510f19bb19f52c4767996895ce711',
     txHash: '0xc48e21ac9c051922f5ccf1b47b62000f567ef9bbc108d274848b44351a6872cb',
