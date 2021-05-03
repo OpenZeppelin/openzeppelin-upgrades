@@ -11,7 +11,7 @@ async function deployAndVerify(contractName, constructorArguments = []) {
   console.log('deploying', contractName, 'at', contract.address);
   await contract.deployed();
   if (hre.network.name !== 'hardhat') {
-    const { sourceName }  = await hre.artifacts.readArtifact(contractName);
+    const { sourceName } = await hre.artifacts.readArtifact(contractName);
     const maxErrors = 5;
     let errors = [];
     while (errors.length < maxErrors) {
