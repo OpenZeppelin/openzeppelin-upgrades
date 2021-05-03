@@ -1,4 +1,5 @@
-export function assertUnreachable(_: never): asserts _ is never {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function assertUnreachable(_: never): never {
   assert(false);
 }
 
