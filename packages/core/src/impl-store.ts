@@ -54,6 +54,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
           await manifest.write(data);
         }
       });
+      e.removed = true;
     }
 
     throw e;

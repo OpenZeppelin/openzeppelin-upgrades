@@ -1,6 +1,7 @@
 import { promisify } from 'util';
 
 import debug from './utils/debug';
+import { makeNonEnumerable } from './utils/make-non-enumerable';
 import { EthereumProvider, getTransactionByHash, hasCode, isDevelopmentNetwork } from './provider';
 
 const sleep = promisify(setTimeout);
@@ -86,7 +87,20 @@ export class TransactionMinedTimeout extends Error {
 }
 
 export class InvalidDeployment extends Error {
+  removed = false;
+
   constructor(readonly deployment: Deployment) {
-    super(`Invalid deployment with address ${deployment.address} and txHash ${deployment.txHash ?? 'unknown'}`);
+    super();
+    // This hides the properties from the error when it's printed.
+    makeNonEnumerable(this, 'removed');
+    makeNonEnumerable(this, 'deployment');
+  }
+
+  get message(): string {
+    let msg = `No contract at address ${this.deployment.address}`;
+    if (this.removed) {
+      msg += ' (Removed from manifest)';
+    }
+    return msg;
   }
 }
