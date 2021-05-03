@@ -11,6 +11,7 @@ async function deployAndVerify(contractName, constructorArguments = []) {
   console.log('deploying', contractName, 'at', contract.address);
   await contract.deployed();
   if (hre.network.name !== 'hardhat') {
+    const { sourceName }  = await hre.artifacts.readArtifact(contractName);
     const maxErrors = 5;
     let errors = [];
     while (errors.length < maxErrors) {
@@ -18,6 +19,7 @@ async function deployAndVerify(contractName, constructorArguments = []) {
         await hre.run('verify:verify', {
           address: contract.address,
           constructorArguments,
+          contract: sourceName + ':' + contractName,
         });
         break;
       } catch (e) {
@@ -41,6 +43,8 @@ async function deployAndVerify(contractName, constructorArguments = []) {
 async function main() {
   const adminAddress = await deployAndVerify('ProxyAdmin');
   await deployAndVerify('AdminUpgradeabilityProxy', [adminAddress, adminAddress, '0x']);
+  await deployAndVerify('TransparentUpgradeableProxy', [adminAddress, adminAddress, '0x']);
+  await deployAndVerify('ERC1967Proxy', [adminAddress, '0x']);
 }
 
 main().catch(e => {
