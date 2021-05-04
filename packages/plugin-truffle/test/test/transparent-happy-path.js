@@ -17,7 +17,7 @@ contract('Greeter', function () {
 
     assert.ok(greeter.transactionHash, 'transaction hash is missing');
 
-    await upgradeProxy(greeter.address, GreeterV2, ['Hello Truffle']);
+    await upgradeProxy(greeter, GreeterV2, ['Hello Truffle']);
 
     const greeter3ImplAddr = await prepareUpgrade(greeter.address, GreeterV3);
     const greeter3 = await GreeterV3.at(greeter3ImplAddr);

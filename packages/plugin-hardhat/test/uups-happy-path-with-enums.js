@@ -18,12 +18,12 @@ test('deployProxy', async t => {
 test('upgradeProxy', async t => {
   const { Action, ActionV2 } = t.context;
   const action = await upgrades.deployProxy(Action, [], { kind: 'uups' });
-  await upgrades.upgradeProxy(action.address, ActionV2);
+  await upgrades.upgradeProxy(action, ActionV2);
 });
 
 test('upgradeProxy with incompatible layout', async t => {
   const { Action, ActionV2Bad } = t.context;
   const action = await upgrades.deployProxy(Action, [], { kind: 'uups' });
-  const error = await t.throwsAsync(() => upgrades.upgradeProxy(action.address, ActionV2Bad));
+  const error = await t.throwsAsync(() => upgrades.upgradeProxy(action, ActionV2Bad));
   t.true(error.message.includes('Upgraded `action` to an incompatible type'));
 });
