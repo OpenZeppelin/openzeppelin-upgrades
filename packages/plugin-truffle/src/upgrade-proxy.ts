@@ -9,16 +9,20 @@ import {
   getProxyAdminFactory,
   Options,
   withDefaults,
+  getContractAddress,
+  ContractAddressOrInstance,
 } from './utils';
 
 export async function upgradeProxy(
-  proxyAddress: string,
+  proxy: ContractAddressOrInstance,
   Contract: ContractClass,
   opts: Options = {},
 ): Promise<ContractInstance> {
   const requiredOpts: Required<Options> = withDefaults(opts);
 
   const provider = wrapProvider(requiredOpts.deployer.provider);
+
+  const proxyAddress = getContractAddress(proxy);
 
   requiredOpts.kind = await setProxyKind(provider, proxyAddress, opts);
 

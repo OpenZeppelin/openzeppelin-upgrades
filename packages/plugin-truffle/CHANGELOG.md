@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support passing contract instance to `upgradeProxy` and `prepareUpgrade`.
+
 ## 1.6.1 (2021-05-03)
 
 - Ignore non-JSON files in artifacts directory.
