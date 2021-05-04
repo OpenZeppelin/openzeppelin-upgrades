@@ -13,8 +13,6 @@ module.exports = {
     'prettier/prettier': 'warn',
     'unicorn/no-array-reduce': 'warn',
     'no-plusplus': ['warn', { allowForLoopAfterthoughts: true }],
-    '@typescript-eslint/ban-ts-comment': 'off',
-    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
   },
   overrides: [
     {
@@ -22,6 +20,10 @@ module.exports = {
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
       extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+      rules: {
+        '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      },
     },
     {
       files: ['ava.config.js'],
