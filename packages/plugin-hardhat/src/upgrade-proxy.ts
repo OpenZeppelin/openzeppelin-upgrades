@@ -10,7 +10,13 @@ import {
   getCode,
 } from '@openzeppelin/upgrades-core';
 
-import { deployImpl, getTransparentUpgradeableProxyFactory, getProxyAdminFactory, getContractAddress, ContractAddressOrInstance } from './utils';
+import {
+  deployImpl,
+  getTransparentUpgradeableProxyFactory,
+  getProxyAdminFactory,
+  getContractAddress,
+  ContractAddressOrInstance,
+} from './utils';
 
 export type UpgradeFunction = (
   proxy: ContractAddressOrInstance,
