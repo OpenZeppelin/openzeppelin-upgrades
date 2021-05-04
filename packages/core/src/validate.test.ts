@@ -18,11 +18,14 @@ interface Context {
 const test = _test as TestInterface<Context>;
 
 test.before(async t => {
-  t.context.validation = await [
+  const contracts = [
     'contracts/test/Validations.sol:HasEmptyConstructor',
     'contracts/test/ValidationsNatspec.sol:HasNonEmptyConstructorNatspec1',
     'contracts/test/Proxiable.sol:ChildOfProxiable',
-  ].reduce(async (validation, contract) => {
+  ];
+
+  t.context.validation = {} as RunValidation;
+  for (const contract of contracts) {
     const buildInfo = await artifacts.getBuildInfo(contract);
     if (buildInfo === undefined) {
       throw new Error(`Build info not found for contract ${contract}`);
@@ -30,8 +33,8 @@ test.before(async t => {
     const solcOutput = buildInfo.output;
     const solcInput = buildInfo.input;
     const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
-    return Object.assign(await validation, validate(solcOutput, decodeSrc));
-  }, Promise.resolve({}));
+    Object.assign(t.context.validation, validate(solcOutput, decodeSrc));
+  }
 });
 
 let testCount = 0;

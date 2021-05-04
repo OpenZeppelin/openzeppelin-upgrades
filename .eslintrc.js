@@ -7,9 +7,11 @@ module.exports = {
   env: {
     node: true,
   },
+  plugins: ['unicorn'],
   rules: {
     curly: 'warn',
     'prettier/prettier': 'warn',
+    'unicorn/no-array-reduce': 'warn',
   },
   overrides: [
     {

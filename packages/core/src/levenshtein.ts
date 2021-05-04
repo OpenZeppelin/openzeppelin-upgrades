@@ -84,7 +84,18 @@ function buildMatrix<T, C>(a: T[], b: T[], getChangeOp: GetChangeOp<T, C>): Matr
 }
 
 function minBy<T>(arr: [T, ...T[]], value: (item: T) => number): T {
-  return arr.reduce((min, item) => (value(item) < value(min) ? item : min));
+  let min = arr[0];
+  let minValue = value(min);
+
+  for (const item of arr) {
+    const itemValue = value(item);
+    if (itemValue < minValue) {
+      min = item;
+      minValue = itemValue;
+    }
+  }
+
+  return min;
 }
 
 function buildOps<T, C>(matrix: MatrixEntry<T, C>[][], a: T[], b: T[]): Operation<T, C>[] {
