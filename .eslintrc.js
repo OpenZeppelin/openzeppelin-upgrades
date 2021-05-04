@@ -12,6 +12,7 @@ module.exports = {
     curly: 'warn',
     'prettier/prettier': 'warn',
     'unicorn/no-array-reduce': 'warn',
+    'no-plusplus': ['warn', { allowForLoopAfterthoughts: true }],
   },
   overrides: [
     {

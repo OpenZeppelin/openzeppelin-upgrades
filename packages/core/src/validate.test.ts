@@ -37,15 +37,15 @@ test.before(async t => {
   }
 });
 
-let testCount = 0;
-
 function testValid(name: string, kind: ValidationOptions['kind'], valid: boolean) {
   testOverride(name, kind, {}, valid);
 }
 
 function testOverride(name: string, kind: ValidationOptions['kind'], opts: ValidationOptions, valid: boolean) {
-  const testName = name.concat(valid ? '_Allowed' : '_NotAllowed');
-  test(`#${++testCount} ` + testName, t => {
+  const optKeys = Object.keys(opts);
+  const describeOpts = optKeys.length > 0 ? '(' + optKeys.join(', ') + ')' : '';
+  const testName = [valid ? 'accepts' : 'rejects', kind, name, describeOpts].join(' ');
+  test(testName, t => {
     const version = getContractVersion(t.context.validation, name);
     const assertUpgSafe = () => assertUpgradeSafe([t.context.validation], version, { kind, ...opts });
     if (valid) {
