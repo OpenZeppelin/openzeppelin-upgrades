@@ -13,6 +13,8 @@ module.exports = {
     'prettier/prettier': 'warn',
     'unicorn/no-array-reduce': 'warn',
     'no-plusplus': ['warn', { allowForLoopAfterthoughts: true }],
+    '@typescript-eslint/ban-ts-comment': 'off',
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
   },
   overrides: [
     {

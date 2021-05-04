@@ -80,7 +80,6 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
 
     const inst = ImplFactory.attach(proxyDeployment.address);
     const deployTransaction = await inst.provider.getTransaction(proxyDeployment.txHash);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = deployTransaction;
     return inst;

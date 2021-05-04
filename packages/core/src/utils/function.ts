@@ -29,11 +29,10 @@ function serializeTypeName(typename: TypeName | null | undefined, deref: ASTDere
           return 'address';
 
         default:
-          assertUnreachable(userDefinedType);
+          return assertUnreachable(userDefinedType);
       }
     }
 
-    // eslint-disable-next-line no-fallthrough
     default:
       throw new Error(`Unsuported TypeName node type: ${typename.nodeType}`);
   }
