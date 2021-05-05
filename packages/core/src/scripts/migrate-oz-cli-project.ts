@@ -8,7 +8,7 @@ import type { StorageItem, StorageLayout, TypeItem, TypeItemMembers, StructMembe
 const OPEN_ZEPPELIN_FOLDER = '.openzeppelin';
 const EXPORT_FILE = 'openzeppelin-cli-export.json';
 const PROJECT_FILE = path.join(OPEN_ZEPPELIN_FOLDER, 'project.json');
-const SUCCESS_CHECK = chalk.keyword('green')('✔') + ' ';
+const SUCCESS_CHECK = chalk.green('✔') + ' ';
 
 export async function migrateLegacyProject(): Promise<void> {
   const manifestFiles = await getManifestFiles();

@@ -2,8 +2,8 @@ import chalk from 'chalk';
 import { EthereumProvider, getAdminAddress, Manifest } from '@openzeppelin/upgrades-core';
 import { ContractInstance, getProxyAdminFactory, wrapProvider, Options, withDefaults } from './utils';
 
-const SUCCESS_CHECK = chalk.keyword('green')('✔') + ' ';
-const FAILURE_CROSS = chalk.keyword('red')('✘') + ' ';
+const SUCCESS_CHECK = chalk.green('✔') + ' ';
+const FAILURE_CROSS = chalk.red('✘') + ' ';
 
 async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Options = {}): Promise<void> {
   const { deployer } = withDefaults(opts);

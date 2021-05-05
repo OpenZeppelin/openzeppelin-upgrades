@@ -4,8 +4,8 @@ import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract } from 'ethers';
 import { getProxyAdminFactory } from './utils';
 
-const SUCCESS_CHECK = chalk.keyword('green')('✔') + ' ';
-const FAILURE_CROSS = chalk.keyword('red')('✘') + ' ';
+const SUCCESS_CHECK = chalk.green('✔') + ' ';
+const FAILURE_CROSS = chalk.red('✘') + ' ';
 
 export type ChangeAdminFunction = (proxyAddress: string, newAdmin: string) => Promise<void>;
 export type TransferProxyAdminOwnershipFunction = (newOwner: string) => Promise<void>;

@@ -27,7 +27,7 @@ export function assertStorageUpgradeSafe(
       ]);
     } else if (unsafeAllowCustomTypes) {
       console.error(
-        chalk.keyword('yellow').bold('Note:') +
+        chalk.yellow.bold('Note:') +
           ` \`unsafeAllowCustomTypes\` is no longer necessary. Structs are enums are automatically checked.\n`,
       );
     }
