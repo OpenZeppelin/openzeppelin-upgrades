@@ -3,17 +3,19 @@ import type { ContractFactory } from 'ethers';
 
 import { ValidationOptions, withValidationDefaults, setProxyKind } from '@openzeppelin/upgrades-core';
 
-import { deployImpl } from './utils';
+import { ContractAddressOrInstance, deployImpl, getContractAddress } from './utils';
 
 export type PrepareUpgradeFunction = (
-  proxyAddress: string,
+  proxyAddress: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
   opts?: ValidationOptions,
 ) => Promise<string>;
 
 export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgradeFunction {
-  return async function prepareUpgrade(proxyAddress, ImplFactory, opts: ValidationOptions = {}) {
+  return async function prepareUpgrade(proxy, ImplFactory, opts: ValidationOptions = {}) {
     const { provider } = hre.network;
+
+    const proxyAddress = getContractAddress(proxy);
 
     await setProxyKind(provider, proxyAddress, opts);
 

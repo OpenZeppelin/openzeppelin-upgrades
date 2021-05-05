@@ -1,15 +1,25 @@
 import { setProxyKind } from '@openzeppelin/upgrades-core';
 
-import { ContractClass, wrapProvider, deployImpl, Options, withDefaults } from './utils';
+import {
+  ContractClass,
+  wrapProvider,
+  deployImpl,
+  Options,
+  withDefaults,
+  ContractAddressOrInstance,
+  getContractAddress,
+} from './utils';
 
 export async function prepareUpgrade(
-  proxyAddress: string,
+  proxy: ContractAddressOrInstance,
   Contract: ContractClass,
   opts: Options = {},
 ): Promise<string> {
   const requiredOpts: Required<Options> = withDefaults(opts);
 
   const provider = wrapProvider(requiredOpts.deployer.provider);
+
+  const proxyAddress = getContractAddress(proxy);
 
   requiredOpts.kind = await setProxyKind(provider, proxyAddress, opts);
 

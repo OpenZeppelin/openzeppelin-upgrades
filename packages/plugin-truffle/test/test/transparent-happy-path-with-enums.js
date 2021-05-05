@@ -8,12 +8,12 @@ const ActionV2Bad = artifacts.require('ActionV2Bad');
 contract('Action', function () {
   it('compatible enums', async function () {
     const action = await deployProxy(Action, [], { kind: 'transparent' });
-    await upgradeProxy(action.address, ActionV2);
+    await upgradeProxy(action, ActionV2);
   });
 
   it('incompatible enums', async function () {
     const action = await deployProxy(Action, [], { kind: 'transparent' });
-    await assert.rejects(upgradeProxy(action.address, ActionV2Bad), error =>
+    await assert.rejects(upgradeProxy(action, ActionV2Bad), error =>
       error.message.includes('Upgraded `action` to an incompatible type'),
     );
   });

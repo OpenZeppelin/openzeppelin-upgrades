@@ -5,5 +5,5 @@ const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 module.exports = async function (deployer) {
   const g = await deployProxy(Greeter, ['Hello Truffle'], { deployer, kind: 'transparent' });
-  await upgradeProxy(g.address, GreeterV2, { deployer });
+  await upgradeProxy(g, GreeterV2, { deployer });
 };

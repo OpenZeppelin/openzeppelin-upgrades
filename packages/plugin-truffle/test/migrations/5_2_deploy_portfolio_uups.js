@@ -5,5 +5,5 @@ const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 module.exports = async function (deployer) {
   const a = await deployProxy(Portfolio, [], { deployer, kind: 'uups' });
-  await upgradeProxy(a.address, PortfolioV2, { deployer });
+  await upgradeProxy(a, PortfolioV2, { deployer });
 };

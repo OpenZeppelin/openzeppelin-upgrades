@@ -19,13 +19,13 @@ test('deployProxy', async t => {
 test('upgradeProxy', async t => {
   const { Portfolio, PortfolioV2 } = t.context;
   const portfolio = await upgrades.deployProxy(Portfolio, [], { kind: 'transparent' });
-  const portfolio2 = await upgrades.upgradeProxy(portfolio.address, PortfolioV2);
+  const portfolio2 = await upgrades.upgradeProxy(portfolio, PortfolioV2);
   await portfolio2.enable('ETH');
 });
 
 test('upgradeProxy with incompatible layout', async t => {
   const { Portfolio, PortfolioV2Bad } = t.context;
   const portfolio = await upgrades.deployProxy(Portfolio, [], { kind: 'transparent' });
-  const error = await t.throwsAsync(() => upgrades.upgradeProxy(portfolio.address, PortfolioV2Bad));
+  const error = await t.throwsAsync(() => upgrades.upgradeProxy(portfolio, PortfolioV2Bad));
   t.true(error.message.includes('Upgraded `assets` to an incompatible type'));
 });

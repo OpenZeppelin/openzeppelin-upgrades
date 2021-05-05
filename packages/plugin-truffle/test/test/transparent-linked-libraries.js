@@ -15,7 +15,7 @@ contract('Token without flag', function () {
       unsafeAllow: ['external-library-linking'],
       kind: 'transparent',
     });
-    await assert.rejects(upgradeProxy(token.address, Token));
+    await assert.rejects(upgradeProxy(token, Token));
   });
 });
 
@@ -28,7 +28,7 @@ contract('Token with flag', function (accounts) {
       unsafeAllow: ['external-library-linking'],
       kind: 'transparent',
     });
-    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
+    const token2 = await upgradeProxy(token, TokenV2, { unsafeAllow: ['external-library-linking'] });
     assert.strictEqual('10000', (await token2.totalSupply()).toString());
     assert.strictEqual('V1', await token2.getLibraryVersion());
   });
@@ -55,7 +55,7 @@ contract('Token with flag', function (accounts) {
 
     const safeMathLib2 = await SafeMathV2.deployed();
     TokenV2.link('SafeMath', safeMathLib2.address);
-    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
+    const token2 = await upgradeProxy(token, TokenV2, { unsafeAllow: ['external-library-linking'] });
 
     assert.strictEqual(token.address, token2.address);
     assert.strictEqual('10000', (await token2.totalSupply()).toString());
@@ -73,8 +73,8 @@ contract('Token with flag', function (accounts) {
       unsafeAllow: ['external-library-linking'],
       kind: 'transparent',
     });
-    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
-    const token3 = await upgradeProxy(token2.address, TokenV3, { unsafeAllow: ['external-library-linking'] });
+    const token2 = await upgradeProxy(token, TokenV2, { unsafeAllow: ['external-library-linking'] });
+    const token3 = await upgradeProxy(token2, TokenV3, { unsafeAllow: ['external-library-linking'] });
 
     assert.strictEqual(token.address, token3.address);
     assert.strictEqual('10000', (await token3.totalSupply()).toString());

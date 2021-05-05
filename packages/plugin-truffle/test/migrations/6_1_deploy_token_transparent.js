@@ -20,9 +20,9 @@ module.exports = async function (deployer) {
   });
 
   await deployer.link(SafeMath, TokenV2);
-  await upgradeProxy(t.address, TokenV2, { deployer, unsafeAllow: ['external-library-linking'] });
+  await upgradeProxy(t, TokenV2, { deployer, unsafeAllow: ['external-library-linking'] });
 
   await deployer.link(SafeMath, TokenV3);
   await deployer.link(SafePercent, TokenV3);
-  await upgradeProxy(t.address, TokenV3, { deployer, unsafeAllow: ['external-library-linking'] });
+  await upgradeProxy(t, TokenV3, { deployer, unsafeAllow: ['external-library-linking'] });
 };

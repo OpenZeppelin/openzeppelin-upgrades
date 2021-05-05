@@ -10,17 +10,25 @@ import {
   getCode,
 } from '@openzeppelin/upgrades-core';
 
-import { deployImpl, getTransparentUpgradeableProxyFactory, getProxyAdminFactory } from './utils';
+import {
+  deployImpl,
+  getTransparentUpgradeableProxyFactory,
+  getProxyAdminFactory,
+  getContractAddress,
+  ContractAddressOrInstance,
+} from './utils';
 
 export type UpgradeFunction = (
-  proxyAddress: string,
+  proxy: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
   opts?: ValidationOptions,
 ) => Promise<Contract>;
 
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunction {
-  return async function upgradeProxy(proxyAddress, ImplFactory, opts: ValidationOptions = {}) {
+  return async function upgradeProxy(proxy, ImplFactory, opts: ValidationOptions = {}) {
     const { provider } = hre.network;
+
+    const proxyAddress = getContractAddress(proxy);
 
     await setProxyKind(provider, proxyAddress, opts);
 

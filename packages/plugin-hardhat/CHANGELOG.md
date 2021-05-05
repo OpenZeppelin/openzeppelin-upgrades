@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support passing contract instance to `upgradeProxy` and `prepareUpgrade`.
+
 ## 1.7.0 (2021-04-29)
 
 - Add support for UUPS proxies. ([#315](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/315))

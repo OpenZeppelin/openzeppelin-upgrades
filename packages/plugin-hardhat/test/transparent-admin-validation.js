@@ -14,7 +14,7 @@ test('admin validation', async t => {
   const greeter = await upgrades.deployProxy(Greeter, ['Hola admin!'], { kind: 'transparent' });
   await upgrades.admin.changeProxyAdmin(greeter.address, NEW_ADMIN);
   await t.throwsAsync(
-    () => upgrades.upgradeProxy(greeter.address, GreeterV2),
+    () => upgrades.upgradeProxy(greeter, GreeterV2),
     undefined,
     'Proxy admin is not the one registered in the network manifest',
   );

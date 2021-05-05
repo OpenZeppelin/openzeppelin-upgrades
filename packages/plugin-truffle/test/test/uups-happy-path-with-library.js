@@ -17,6 +17,6 @@ contract('Adder', function () {
   it('deployProxy', async function () {
     const adder = await deployProxy(Adder, [2], { kind: 'uups' });
     assert.strictEqual(new BN(await adder.n()).toNumber(), 2);
-    await upgradeProxy(adder.address, AdderV2);
+    await upgradeProxy(adder, AdderV2);
   });
 });

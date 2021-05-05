@@ -12,7 +12,7 @@ contract('Token without flag', function () {
 
     // we need use the flag to deploy in order to have an address to upgrade
     const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'uups' });
-    await assert.rejects(upgradeProxy(token.address, Token));
+    await assert.rejects(upgradeProxy(token, Token));
   });
 });
 
@@ -22,7 +22,7 @@ contract('Token with flag', function (accounts) {
 
   it('Deploy and Upgrade Proxy', async function () {
     const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'uups' });
-    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
+    const token2 = await upgradeProxy(token, TokenV2, { unsafeAllow: ['external-library-linking'] });
     assert.strictEqual('10000', (await token2.totalSupply()).toString());
     assert.strictEqual('V1', await token2.getLibraryVersion());
   });
@@ -46,7 +46,7 @@ contract('Token with flag', function (accounts) {
 
     const safeMathLib2 = await SafeMathV2.deployed();
     TokenV2.link('SafeMath', safeMathLib2.address);
-    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
+    const token2 = await upgradeProxy(token, TokenV2, { unsafeAllow: ['external-library-linking'] });
 
     assert.strictEqual(token.address, token2.address);
     assert.strictEqual('10000', (await token2.totalSupply()).toString());
@@ -61,8 +61,8 @@ contract('Token with flag', function (accounts) {
 
   it('Upgrade Proxy with multiple Libraries', async function () {
     const token = await deployProxy(Token, ['TKN', 10000], { unsafeAllow: ['external-library-linking'], kind: 'uups' });
-    const token2 = await upgradeProxy(token.address, TokenV2, { unsafeAllow: ['external-library-linking'] });
-    const token3 = await upgradeProxy(token2.address, TokenV3, { unsafeAllow: ['external-library-linking'] });
+    const token2 = await upgradeProxy(token, TokenV2, { unsafeAllow: ['external-library-linking'] });
+    const token3 = await upgradeProxy(token2, TokenV3, { unsafeAllow: ['external-library-linking'] });
 
     assert.strictEqual(token.address, token3.address);
     assert.strictEqual('10000', (await token3.totalSupply()).toString());
