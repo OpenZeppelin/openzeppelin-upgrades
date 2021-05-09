@@ -6911,16 +6911,15 @@ eslint-plugin-prettier@^3.1.4:
   dependencies:
     prettier-linter-helpers "^1.0.0"
 
-eslint-plugin-unicorn@^31.0.0:
-  version "31.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-unicorn/-/eslint-plugin-unicorn-31.0.0.tgz#53eef3f5152ddaa531888f77a420313e30d9864a"
-  integrity sha512-HR3gI4ANtV8A+0FLAaxjBD/G5J3PWBo+7OswyGeK5nylGqtKLJVbnPksIkBgmVg+SFpxu5MnjaxQQI+9KjyVAg==
+eslint-plugin-unicorn@^32.0.0:
+  version "32.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-unicorn/-/eslint-plugin-unicorn-32.0.0.tgz#a62fa2752b80259ffb8b24878631148237dc2a4d"
+  integrity sha512-VYE/XvZvdcY0RvOKGxsrVVWo8DaI/tGVYuhKzSd6Uuy69Ydc8zX+roZ/H9PgyykM4nuj8JDoOHSwVk9a4OYbCQ==
   dependencies:
     ci-info "^3.1.1"
     clean-regexp "^1.0.0"
     eslint-template-visitor "^2.3.2"
     eslint-utils "^2.1.0"
-    eslint-visitor-keys "^2.0.0"
     import-modules "^2.1.0"
     is-builtin-module "^3.1.0"
     lodash "^4.17.21"
