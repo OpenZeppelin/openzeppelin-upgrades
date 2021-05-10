@@ -40,9 +40,7 @@ export interface ContractInstance {
   transactionHash?: string;
   contract: {
     methods: {
-      [name: string]: (
-        ...args: unknown[]
-      ) => {
+      [name: string]: (...args: unknown[]) => {
         encodeABI(): string;
       };
     };

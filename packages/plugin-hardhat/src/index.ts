@@ -62,25 +62,23 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 });
 
 extendEnvironment(hre => {
-  hre.upgrades = lazyObject(
-    (): HardhatUpgrades => {
-      const { silenceWarnings } = require('@openzeppelin/upgrades-core');
-      const { makeDeployProxy } = require('./deploy-proxy');
-      const { makeUpgradeProxy } = require('./upgrade-proxy');
-      const { makePrepareUpgrade } = require('./prepare-upgrade');
-      const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
+  hre.upgrades = lazyObject((): HardhatUpgrades => {
+    const { silenceWarnings } = require('@openzeppelin/upgrades-core');
+    const { makeDeployProxy } = require('./deploy-proxy');
+    const { makeUpgradeProxy } = require('./upgrade-proxy');
+    const { makePrepareUpgrade } = require('./prepare-upgrade');
+    const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
 
-      return {
-        silenceWarnings,
-        deployProxy: makeDeployProxy(hre),
-        upgradeProxy: makeUpgradeProxy(hre),
-        prepareUpgrade: makePrepareUpgrade(hre),
-        admin: {
-          getInstance: makeGetInstanceFunction(hre),
-          changeProxyAdmin: makeChangeProxyAdmin(hre),
-          transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre),
-        },
-      };
-    },
-  );
+    return {
+      silenceWarnings,
+      deployProxy: makeDeployProxy(hre),
+      upgradeProxy: makeUpgradeProxy(hre),
+      prepareUpgrade: makePrepareUpgrade(hre),
+      admin: {
+        getInstance: makeGetInstanceFunction(hre),
+        changeProxyAdmin: makeChangeProxyAdmin(hre),
+        transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre),
+      },
+    };
+  });
 });
