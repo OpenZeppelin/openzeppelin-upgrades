@@ -28,12 +28,10 @@ extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) =>
 });
 
 extendEnvironment(hre => {
-  hre.defender = lazyObject(
-    (): HardhatDefenderUpgrades => {
-      const { makeProposeUpgrade } = require('./propose-upgrade');
-      return {
-        proposeUpgrade: makeProposeUpgrade(hre),
-      };
-    },
-  );
+  hre.defender = lazyObject((): HardhatDefenderUpgrades => {
+    const { makeProposeUpgrade } = require('./propose-upgrade');
+    return {
+      proposeUpgrade: makeProposeUpgrade(hre),
+    };
+  });
 });
