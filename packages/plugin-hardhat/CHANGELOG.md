@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.8.0 (2021-05-12)
 
 - Support passing contract instance to `upgradeProxy` and `prepareUpgrade`.
 - Enable awaiting until a proxy upgrade is mined:

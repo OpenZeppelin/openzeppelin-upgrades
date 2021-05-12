@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.0 (2021-05-12)
 
 - Support passing contract instance to `upgradeProxy` and `prepareUpgrade`.
 
