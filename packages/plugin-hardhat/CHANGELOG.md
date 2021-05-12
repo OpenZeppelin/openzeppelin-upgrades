@@ -3,6 +3,12 @@
 ## Unreleased
 
 - Support passing contract instance to `upgradeProxy` and `prepareUpgrade`.
+- Enable awaiting until a proxy upgrade is mined:
+
+```
+const v2 = await upgrades.upgradeProxy(proxy, ContractV2);
+await v2.deployed();
+```
 
 ## 1.7.0 (2021-04-29)
 
