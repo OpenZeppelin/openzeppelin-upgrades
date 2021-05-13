@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.3 (2021-05-13)
 
 - Simplify clean up of manifest data before storing to disk.
 

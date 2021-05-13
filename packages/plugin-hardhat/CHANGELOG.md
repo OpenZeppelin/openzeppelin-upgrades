@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.8.2 (2021-05-13)
 
 - Simplify `deployTransaction` assignment in `deployProxy` as a fix for congested networks.
 
