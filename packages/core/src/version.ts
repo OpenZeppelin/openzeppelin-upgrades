@@ -24,13 +24,14 @@ export function hashBytecode(bytecode: string): string {
     .replace(/__\$([0-9a-fA-F]{34})\$__/g, (_, placeholder) => `000${placeholder}000`)
     .replace(/__\w{36}__/g, placeholder => keccak256(Buffer.from(placeholder)).toString('hex', 0, 20));
 
-  // Unlinked bytecode contains placeholders that can consist of non-hex characters.
-  // In these cases we get the version by interpreting it as a utf-8 string, as opposed to hex.
-  // Buffer.from will otherwise silently truncate the bytecode at the first non-hex character.
+  // Fail if bytecode is still not valid hex after transformations above.
+  // Buffer.from silently truncates at the first non-hex character.
   // NOTE: Some bytecode seems to have odd length, so we cannot do ([0-9a-fA-F]{2})*
-  const enc = /^(0x)?[0-9a-fA-F]*$/.test(bytecode) ? 'hex' : 'utf8';
+  if (!/^(0x)?[0-9a-fA-F]*$/.test(bytecode)) {
+    throw new Error('Bytecode is not a valid hex string');
+  }
 
-  const buf = Buffer.from(bytecode.replace(/^0x/, ''), enc);
+  const buf = Buffer.from(bytecode.replace(/^0x/, ''), 'hex');
   return keccak256(buf).toString('hex');
 }
 
