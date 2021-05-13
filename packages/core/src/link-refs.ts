@@ -32,8 +32,10 @@ export function unlinkBytecode(bytecode: string, linkReferences: LinkReference[]
   let unlinkedBytecode: string = bytecode.replace(/^0x/, '');
   for (const linkRef of linkReferences) {
     const { length, start, placeholder } = linkRef;
-    unlinkedBytecode =
-      unlinkedBytecode.substr(0, start * 2) + placeholder + unlinkedBytecode.substr((start + length) * 2);
+    if ((start + length) * 2 <= unlinkedBytecode.length) {
+      unlinkedBytecode =
+        unlinkedBytecode.substr(0, start * 2) + placeholder + unlinkedBytecode.substr((start + length) * 2);
+    }
   }
   return '0x' + unlinkedBytecode;
 }

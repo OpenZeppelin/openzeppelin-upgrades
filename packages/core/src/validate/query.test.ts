@@ -5,10 +5,29 @@ import { getUnlinkedBytecode } from './query';
 import { getVersion } from '../version';
 
 test('getUnlinkedBytecode', t => {
-  const unlinkedBytecode = '0x12$__$78';
-  const linkedBytecode = '0x12345678';
+  const unlinkedBytecode = '0x12__$5ae0c2211b657f8a7ca51e0b14f2a8333d$__78';
+  const linkedBytecode = '0x12456456456456456456456456456456456456456478';
 
   const validation: Record<string, Partial<ContractValidation>> = {
+    B: {
+      version: getVersion(unlinkedBytecode),
+      linkReferences: [
+        {
+          src: '',
+          name: '',
+          start: 50,
+          length: 20,
+          placeholder: '__$5ae0c2211b657f8a7ca51e0b14f2a8333d$__',
+        },
+        {
+          src: '',
+          name: '',
+          start: 30,
+          length: 20,
+          placeholder: '__$5ae0c2211b657f8a7ca51e0b14f2a8333d$__',
+        },
+      ],
+    },
     A: {
       version: getVersion(unlinkedBytecode),
       linkReferences: [
@@ -16,8 +35,8 @@ test('getUnlinkedBytecode', t => {
           src: '',
           name: '',
           start: 1,
-          length: 2,
-          placeholder: '$__$',
+          length: 20,
+          placeholder: '__$5ae0c2211b657f8a7ca51e0b14f2a8333d$__',
         },
       ],
     },

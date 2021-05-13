@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fix `getUnlinkedBytecode` when the project uses external libraries.
+- Fix bug when the project uses external libraries.
 
 ## 1.7.1 (2021-05-03)
 
