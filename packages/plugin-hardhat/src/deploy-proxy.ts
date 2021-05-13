@@ -16,6 +16,7 @@ import {
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
+  DeployTransaction,
 } from './utils';
 
 export interface DeployFunction {
@@ -56,7 +57,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     const impl = await deployImpl(hre, ImplFactory, requiredOpts);
     const data = getInitializerData(ImplFactory, args, opts.initializer);
 
-    let proxyDeployment: Required<ProxyDeployment>;
+    let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;
     switch (kind) {
       case 'uups': {
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
@@ -79,9 +80,8 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     await manifest.addProxy(proxyDeployment);
 
     const inst = ImplFactory.attach(proxyDeployment.address);
-    const deployTransaction = await inst.provider.getTransaction(proxyDeployment.txHash);
     // @ts-ignore Won't be readonly because inst was created through attach.
-    inst.deployTransaction = deployTransaction;
+    inst.deployTransaction = proxyDeployment.deployTransaction;
     return inst;
   };
 
