@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract, Signer, Transaction } from 'ethers';
+import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
 import {
   Manifest,
@@ -37,15 +37,12 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     const upgradeTx = await upgradeTo(nextImpl);
 
     const inst = ImplFactory.attach(proxyAddress);
-    if (upgradeTx.hash) {
-      const deployTransaction = await inst.provider.getTransaction(upgradeTx.hash);
-      // @ts-ignore Won't be readonly because inst was created through attach.
-      inst.deployTransaction = deployTransaction;
-    }
+    // @ts-ignore Won't be readonly because inst was created through attach.
+    inst.deployTransaction = upgradeTx;
     return inst;
   };
 
-  type Upgrader = (nextImpl: string) => Promise<Transaction>;
+  type Upgrader = (nextImpl: string) => Promise<ethers.providers.TransactionResponse>;
 
   async function getUpgrader(proxyAddress: string, signer: Signer): Promise<Upgrader> {
     const { provider } = hre.network;

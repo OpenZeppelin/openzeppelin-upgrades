@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Simplify `deployTransaction` assignment in `upgradeProxy`.
+
 ## 1.8.0 (2021-05-12)
 
 - Support passing contract instance to `upgradeProxy` and `prepareUpgrade`.
