@@ -1,12 +1,13 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 import { EthereumProvider, getChainId, networkNames } from './provider';
-import * as t from 'io-ts';
 import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
 
 import type { Deployment } from './deployment';
 import type { StorageLayout } from './storage';
+import { pick } from './utils/pick';
+import { mapValues } from './utils/map-values';
 
 const currentManifestVersion = '3.2';
 
@@ -159,30 +160,16 @@ export function migrateManifest(data: ManifestData): ManifestData {
 
 export class DeploymentNotFound extends Error {}
 
-const tNullable = <C extends t.Mixed>(codec: C) => t.union([codec, t.undefined]);
+function normalizeManifestData(input: ManifestData): ManifestData {
+  return {
+    ...pick(input, ['manifestVersion', 'admin']),
+    proxies: input.proxies.map(p => normalizeDeployment(p, ['kind'])),
+    impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout'])),
+  };
+}
 
-const DeploymentCodec = t.intersection([
-  t.strict({
-    address: t.string,
-  }),
-  t.partial({
-    txHash: t.string,
-  }),
-]);
-
-const ProxyKindCodec = t.union([t.literal('uups'), t.literal('transparent')]);
-
-const ManifestDataCodec = t.intersection([
-  t.strict({
-    manifestVersion: t.string,
-    impls: t.record(t.string, tNullable(t.intersection([DeploymentCodec, t.strict({ layout: t.any })]))),
-    proxies: t.array(t.intersection([DeploymentCodec, t.strict({ kind: ProxyKindCodec })])),
-  }),
-  t.partial({
-    admin: tNullable(DeploymentCodec),
-  }),
-]);
-
-function normalizeManifestData(data: ManifestData): ManifestData {
-  return ManifestDataCodec.encode(data);
+function normalizeDeployment<D extends Deployment>(input: D): Deployment;
+function normalizeDeployment<D extends Deployment, K extends keyof D>(input: D, include: K[]): Deployment & Pick<D, K>;
+function normalizeDeployment<D extends Deployment, K extends keyof D>(input: D, include: K[] = []): Deployment & Pick<D, K> {
+  return pick(input, ['address', 'txHash', ...include]);
 }

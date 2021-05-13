@@ -2328,22 +2328,6 @@
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
 
-"@openzeppelin/upgrades-core@^1.4.2", "@openzeppelin/upgrades-core@^1.7.0":
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.7.1.tgz#a63f06a6a904dcf543eb9fca32a127ec8e92fcad"
-  integrity sha512-il1BrWOmYGxhtmq0hEG4oXlCvcyCrKQzCgmFiv2lqM+qLhp3C/JaXSysVHLohKXrb3XLPNP0pC39KrMDzPW70Q==
-  dependencies:
-    bn.js "^5.1.2"
-    cbor "^7.0.0"
-    chalk "^4.1.0"
-    compare-versions "^3.6.0"
-    debug "^4.1.1"
-    ethereumjs-util "^7.0.3"
-    fp-ts "^2.7.1"
-    io-ts "^2.2.9"
-    proper-lockfile "^4.1.1"
-    solidity-ast "^0.4.15"
-
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@protobufjs/aspromise/-/aspromise-1.1.2.tgz#9b8b0cc663d669a7d8f6f5d0893a14d348f30fbf"
@@ -7911,11 +7895,6 @@ fp-ts@^1.0.0:
   resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-1.19.5.tgz#3da865e585dfa1fdfd51785417357ac50afc520a"
   integrity sha512-wDNqTimnzs8QqpldiId9OavWK2NptormjXnRJTQecNjzwfyp6P/8s/zG8e4h3ja3oqkKaY72UlTjQYt/1yXf9A==
 
-fp-ts@^2.7.1:
-  version "2.10.5"
-  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.10.5.tgz#7c77868fe8bd9b229743303c1bec505b959f631b"
-  integrity sha512-X2KfTIV0cxIk3d7/2Pvp/pxL/xr2MV1WooyEzKtTWYSc1+52VF4YzjBTXqeOlSiZsPCxIBpDGfT9Dyo7WEY0DQ==
-
 fragment-cache@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/fragment-cache/-/fragment-cache-0.2.1.tgz#4290fad27f13e89be7f33799c6bc5a0abfff0d19"
@@ -9118,11 +9097,6 @@ io-ts@1.10.4:
   integrity sha512-b23PteSnYXSONJ6JQXRAlvJhuw8KOtkqa87W4wDtvMrud/DTJd5X+NpOOI+O/zZwVq6v0VLAaJ+1EDViKEuN9g==
   dependencies:
     fp-ts "^1.0.0"
-
-io-ts@^2.2.9:
-  version "2.2.16"
-  resolved "https://registry.yarnpkg.com/io-ts/-/io-ts-2.2.16.tgz#597dffa03db1913fc318c9c6df6931cb4ed808b2"
-  integrity sha512-y5TTSa6VP6le0hhmIyN0dqEXkrZeJLeC5KApJq6VLci3UEKF80lZ+KuoUs02RhBxNWlrqSNxzfI7otLX1Euv8Q==
 
 ip-regex@^4.0.0:
   version "4.3.0"

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Simplify clean up of manifest data before storing to disk.
+
 ## 1.7.2 (2021-05-13)
 
 - Fix bug when the project uses external libraries.
