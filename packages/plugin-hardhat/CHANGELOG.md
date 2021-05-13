@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.8.1 (2021-05-13)
 
 - Simplify `deployTransaction` assignment in `upgradeProxy`.
 
