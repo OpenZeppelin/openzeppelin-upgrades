@@ -1,6 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fix `getUnlinkedBytecode` when the project uses external libraries.
+
 ## 1.7.1 (2021-05-03)
+
 - Use `web3_clientVersion` to better detect development networks.
 
 ## 1.7.0 (2021-04-29)
