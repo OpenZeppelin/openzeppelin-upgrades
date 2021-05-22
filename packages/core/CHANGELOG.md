@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.5 (2021-05-22)
 
 - Fix exception when upgrading mapping key to enum.
 
