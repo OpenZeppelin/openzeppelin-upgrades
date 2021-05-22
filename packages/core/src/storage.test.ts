@@ -426,15 +426,24 @@ test('storage upgrade with enum key in mapping', t => {
 
   const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_MappingEnumKey_V2_Bad');
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
-    length: 1,
+    length: 2,
     0: {
       kind: 'typechange',
       change: {
         kind: 'mapping key',
         inner: { kind: 'enum members' },
       },
-      original: { label: 'm1' },
-      updated: { label: 'm1' },
+      original: { label: 'm2' },
+      updated: { label: 'm2' },
+    },
+    1: {
+      kind: 'typechange',
+      change: {
+        kind: 'mapping key',
+        inner: { kind: 'obvious mismatch' },
+      },
+      original: { label: 'm3' },
+      updated: { label: 'm3' },
     },
   });
 });

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix exception when upgrading mapping key to enum.
+
 ## 1.7.4 (2021-05-22)
 
 - Fix handling of functions with struct or mapping storage pointer arguments.
