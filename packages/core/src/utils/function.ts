@@ -1,25 +1,31 @@
-import type { FunctionDefinition, TypeName } from 'solidity-ast';
+import type { FunctionDefinition, VariableDeclaration } from 'solidity-ast';
 import { ASTDereferencer } from '../ast-dereferencer';
 import { assert, assertUnreachable } from './assert';
 
-function serializeTypeName(typename: TypeName | null | undefined, deref: ASTDereferencer): string {
-  assert(!!typename);
+function serializeTypeName(parameter: VariableDeclaration, deref: ASTDereferencer): string {
+  const { typeName, storageLocation } = parameter;
+  assert(!!typeName);
 
-  switch (typename.nodeType) {
+  if (storageLocation === 'storage') {
+    assert(typeof typeName.typeDescriptions.typeString === 'string');
+    return typeName.typeDescriptions.typeString.replace(/^struct /, '') + ' storage';
+  }
+
+  switch (typeName.nodeType) {
     case 'ArrayTypeName':
     case 'ElementaryTypeName': {
-      assert(typeof typename.typeDescriptions.typeString === 'string');
-      return typename.typeDescriptions.typeString;
+      assert(typeof typeName.typeDescriptions.typeString === 'string');
+      return typeName.typeDescriptions.typeString;
     }
 
     case 'UserDefinedTypeName': {
       const userDefinedType = deref(
         ['StructDefinition', 'EnumDefinition', 'ContractDefinition'],
-        typename.referencedDeclaration,
+        typeName.referencedDeclaration,
       );
       switch (userDefinedType.nodeType) {
         case 'StructDefinition':
-          return '(' + userDefinedType.members.map(member => serializeTypeName(member.typeName, deref)) + ')';
+          return '(' + userDefinedType.members.map(member => serializeTypeName(member, deref)) + ')';
 
         case 'EnumDefinition':
           assert(userDefinedType.members.length < 256);
@@ -34,12 +40,10 @@ function serializeTypeName(typename: TypeName | null | undefined, deref: ASTDere
     }
 
     default:
-      throw new Error(`Unsuported TypeName node type: ${typename.nodeType}`);
+      throw new Error(`Unsuported TypeName node type: ${typeName.nodeType}`);
   }
 }
 
 export function getFunctionSignature(fnDef: FunctionDefinition, deref: ASTDereferencer): string {
-  return `${fnDef.name}(${fnDef.parameters.parameters
-    .map(parameter => serializeTypeName(parameter.typeName, deref))
-    .join()})`;
+  return `${fnDef.name}(${fnDef.parameters.parameters.map(parameter => serializeTypeName(parameter, deref)).join()})`;
 }

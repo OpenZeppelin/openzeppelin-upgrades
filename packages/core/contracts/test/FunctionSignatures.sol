@@ -3,7 +3,7 @@ pragma solidity ^0.6.8;
 
 pragma experimental ABIEncoderV2;
 
-contract FunctionSignatures {
+contract ContractFunctionSignatures {
     function f01() public {}
     function f02(uint x) public {}
     function f03(string calldata a) public {}
@@ -38,5 +38,17 @@ contract FunctionSignatures {
 
     function f11(bytes32) public {}
 
-    function f12(FunctionSignatures) public {}
+    function f12(ContractFunctionSignatures) public {}
+}
+
+library LibraryFunctionSignatures {
+    struct S {
+        address a;
+    }
+
+    function lf01(S storage s) external {}
+
+    function lf02(mapping (uint => uint) storage m) external {}
+
+    function lf03(uint[] storage s) external {}
 }
