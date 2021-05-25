@@ -368,16 +368,19 @@ contract StorageUpgrade_MappingEnumKey_V1 {
     mapping (E1 => uint) m1;
     mapping (E1 => uint) m2;
     mapping (uint8 => uint) m3;
+    mapping (Storage1 => uint) m4;
 }
 
 contract StorageUpgrade_MappingEnumKey_V2_Ok {
     mapping (E1 => uint) m1;
     mapping (E2_Ok => uint) m2;
     mapping (uint8 => uint) m3;
+    mapping (Storage1 => uint) m4;
 }
 
 contract StorageUpgrade_MappingEnumKey_V2_Bad {
     mapping (E1 => uint) m1;
     mapping (E2_Bad => uint) m2;
     mapping (E1 => uint) m3;
+    mapping (uint => uint) m4;
 }

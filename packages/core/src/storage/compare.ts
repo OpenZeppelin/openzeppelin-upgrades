@@ -4,6 +4,7 @@ import { UpgradesError } from '../error';
 import { StructMember as _StructMember, isEnumMembers, isStructMembers } from './layout';
 import { LayoutCompatibilityReport } from './report';
 import { assert } from '../utils/assert';
+import { isValueType } from '../utils/is-value-type';
 
 export type StorageItem = _StorageItem<ParsedTypeDetailed>;
 type StructMember = _StructMember<ParsedTypeDetailed>;
@@ -186,11 +187,7 @@ export class StorageLayoutComparator {
         const [updatedKey, updatedValue] = updated.args;
 
         // validate an invariant we assume from solidity: key types are always simple value types
-        assert(
-          originalKey.head === 't_enum' ||
-            updatedKey.head === 't_enum' ||
-            (originalKey.args === undefined && updatedKey.args === undefined),
-        );
+        assert(isValueType(originalKey) && isValueType(updatedKey));
 
         // network files migrated from the OZ CLI have an unknown key type
         // we allow it to match with any other key type, carrying over the semantics of OZ CLI

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.6 (2021-05-25)
+
+- Fix recognition of value types in storage layouts.
+
 ## 1.7.5 (2021-05-22)
 
 - Fix exception when upgrading mapping key to enum.
