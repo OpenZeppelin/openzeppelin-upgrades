@@ -183,7 +183,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
   for (const fnDef of findAll('FunctionDefinition', contractDef, node => skipCheck('constructor', node))) {
-    if (fnDef.kind === 'constructor' && ((fnDef.body?.statements.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
+    if (fnDef.kind === 'constructor' && ((fnDef.body?.statements?.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
       yield {
         kind: 'constructor',
         contract: contractDef.name,
