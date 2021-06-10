@@ -73,7 +73,7 @@ Another difference between a `constructor` and a regular function is that Solidi
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract BaseContract is Initializable {
     uint256 public y;
