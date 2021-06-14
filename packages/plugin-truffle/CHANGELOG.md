@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.1 (2021-06-14)
 
 - Prioritize `sendAsync` over `send` in the provider.
 
