@@ -6,7 +6,7 @@ import { EthereumProvider } from '@openzeppelin/upgrades-core';
 import { TruffleProvider } from './truffle';
 
 export function wrapProvider(provider: TruffleProvider): EthereumProvider {
-  const sendAsync = ('send' in provider ? provider.send : provider.sendAsync).bind(provider);
+  const sendAsync = ('sendAsync' in provider ? provider.sendAsync : provider.send).bind(provider);
   const send = promisify(sendAsync);
   return {
     async send(method: string, params: unknown[]) {
