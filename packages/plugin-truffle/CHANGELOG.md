@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add option `unsafeAllowRenames` to configure storage layout check to allow variable renaming.
+
 ## 1.7.1 (2021-06-14)
 
 - Prioritize `sendAsync` over `send` in the provider.

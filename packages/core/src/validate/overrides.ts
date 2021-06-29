@@ -5,6 +5,7 @@ import { logWarning } from '../utils/log';
 export interface ValidationOptions {
   unsafeAllowCustomTypes?: boolean;
   unsafeAllowLinkedLibraries?: boolean;
+  unsafeAllowRenames?: boolean;
   unsafeAllow?: ValidationError['kind'][];
   kind?: ProxyDeployment['kind'];
 }
@@ -53,7 +54,9 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   }
   const kind = opts.kind ?? 'transparent';
 
-  return { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, unsafeAllow, kind };
+  const unsafeAllowRenames = opts.unsafeAllowRenames ?? false;
+
+  return { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, unsafeAllowRenames, unsafeAllow, kind };
 }
 
 export function processExceptions(
