@@ -91,6 +91,9 @@ Similar to `prepareUpgrade`. This method validates and deploys the new implement
 
 * `title`: title of the upgrade proposal as seen in Defender Admin, defaults to `Upgrade to 0x12345678` (using the first 8 digits of the new implementation address)
 * `description`: description of the upgrade proposal as seen in Defender Admin, defaults to the full implementation address.
+* `multisig`: address of the multisignature wallet contract with the rights to execute the upgrade. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]). Both Gnosis Safe and Gnosis MultisigWallet multisigs are supported.
+* `proxyAdmin`: address of the https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[`ProxyAdmin`] contract that manages the proxy, if exists. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]), though UUPS proxies typically do not require the usage of a ProxyAdmin.
+
 * See <<common-options>>.
 
 [source,ts]
@@ -99,9 +102,11 @@ async function proposeUpgrade(
   proxyAddress: string,
   ImplFactory: ContractFactory,
   opts: {
-    unsafeAllow: ValidationError[],
-    title: string,
-    description: string,
+    unsafeAllow?: ValidationError[],
+    title?: string,
+    description?: string,
+    multisig?: string,
+    proxyAdmin?: string,
   } = {},
 ): Promise<void>
 ----
