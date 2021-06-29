@@ -127,6 +127,13 @@ test('storage upgrade rename', t => {
   });
 });
 
+test('storage upgrade rename allowed', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Rename_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_Rename_V2');
+  const comparison = getStorageUpgradeErrors(v1, v2, { unsafeAllowRenames: true });
+  t.is(comparison.length, 0);
+});
+
 test('storage upgrade with obvious mismatch', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_ObviousMismatch_V1');
 

@@ -6,17 +6,34 @@ import { UpgradesError } from '../error';
 import { StorageLayout, getDetailedLayout } from './layout';
 import { StorageOperation, StorageItem, StorageLayoutComparator } from './compare';
 import { LayoutCompatibilityReport } from './report';
-import { ValidationOptions, isSilencingWarnings } from '../validate/overrides';
+import { ValidationOptions, isSilencingWarnings, withValidationDefaults } from '../validate/overrides';
 import { logWarning } from '../utils/log';
 
 export function assertStorageUpgradeSafe(
   original: StorageLayout,
   updated: StorageLayout,
-  unsafeAllowCustomTypes = false,
+  unsafeAllowCustomTypes: boolean,
+): void;
+
+export function assertStorageUpgradeSafe(
+  original: StorageLayout,
+  updated: StorageLayout,
+  opts: Required<ValidationOptions>,
+): void;
+
+export function assertStorageUpgradeSafe(
+  original: StorageLayout,
+  updated: StorageLayout,
+  opts: Required<ValidationOptions> | boolean = false,
 ): void {
+  if (typeof opts === 'boolean') {
+    const unsafeAllowCustomTypes = opts;
+    opts = withValidationDefaults({ unsafeAllowCustomTypes });
+  }
+
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
-  const comparator = new StorageLayoutComparator(unsafeAllowCustomTypes);
+  const comparator = new StorageLayoutComparator(opts.unsafeAllowCustomTypes, opts.unsafeAllowRenames);
   const report = comparator.compareLayouts(originalDetailed, updatedDetailed);
 
   if (!isSilencingWarnings()) {
@@ -25,7 +42,7 @@ export function assertStorageUpgradeSafe(
         `You are using \`unsafeAllowCustomTypes\` to force approve structs or enums with missing data.`,
         `Make sure you have manually checked the storage layout for incompatibilities.`,
       ]);
-    } else if (unsafeAllowCustomTypes) {
+    } else if (opts.unsafeAllowCustomTypes) {
       console.error(
         chalk.yellow.bold('Note:') +
           ` \`unsafeAllowCustomTypes\` is no longer necessary. Structs are enums are automatically checked.\n`,
@@ -51,7 +68,7 @@ export function getStorageUpgradeErrors(
   opts: ValidationOptions = {},
 ): StorageOperation<StorageItem>[] {
   try {
-    assertStorageUpgradeSafe(original, updated, opts.unsafeAllowCustomTypes);
+    assertStorageUpgradeSafe(original, updated, withValidationDefaults(opts));
   } catch (e) {
     if (e instanceof StorageUpgradeErrors) {
       return e.report.ops;

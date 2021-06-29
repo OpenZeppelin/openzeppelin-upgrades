@@ -58,7 +58,7 @@ export class StorageLayoutComparator {
   stack = new Set<string>();
   cache = new Map<string, TypeChange | undefined>();
 
-  constructor(readonly unsafeAllowCustomTypes = false) {}
+  constructor(readonly unsafeAllowCustomTypes = false, readonly unsafeAllowRenames = false) {}
 
   compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
     return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
@@ -79,12 +79,12 @@ export class StorageLayoutComparator {
   }
 
   getFieldChange<F extends StorageField>(original: F, updated: F): StorageFieldChange<F> | undefined {
-    const nameMatches = original.label === updated.label;
+    const nameChange = !this.unsafeAllowRenames && original.label !== updated.label;
     const typeChange = this.getTypeChange(original.type, updated.type, { allowAppend: false });
 
-    if (typeChange && !nameMatches) {
+    if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
-    } else if (!nameMatches) {
+    } else if (nameChange) {
       return { kind: 'rename', original, updated };
     } else if (typeChange) {
       return { kind: 'typechange', change: typeChange, original, updated };
