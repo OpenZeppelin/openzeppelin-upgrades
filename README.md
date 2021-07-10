@@ -3,7 +3,7 @@
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins)
 [![Coverage Status](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades/graph/badge.svg)](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades)
 
-**Integrate upgrades into your existing workflow.** Plugins for [Hardhat](https://hardhat.org/) and [Truffle](https://www.trufflesuite.com/truffle) to deploy and manage upgradeable contracts on Ethereum.
+**Integrate upgrades into your existing workflow.** There are plugins for [Hardhat](https://hardhat.org/) and [Truffle](https://www.trufflesuite.com/truffle), and full suite [Brownie](https://github.com/eth-brownie/brownie) examples to deploy and manage upgradeable contracts on Ethereum.
 
 - Deploy upgradeable contracts.
 - Upgrade deployed contracts.
@@ -30,12 +30,21 @@ require('@openzeppelin/hardhat-upgrades');
 npm install --save-dev @openzeppelin/truffle-upgrades
 ```
 
+### Brownie 
+
+This is how to download and start a sample Brownie project with Openzeppelin upgradable smart contracts. 
+
+```
+brownie bake upgrades-mix
+cd upgrades
+```
+
 ## Usage
 
 See the documentation for each plugin, or take a look at the sample code snippets below.
 
-| [<img src="assets/hardhat.svg" height="20px" width="30px" alt="">Hardhat](./packages/plugin-hardhat/README.md)| [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) |
-|-|-|
+| [<img src="assets/hardhat.svg" height="20px" width="30px" alt="">Hardhat](./packages/plugin-hardhat/README.md) | [<img src="assets/truffle.svg" height="20px" width="30px" alt="">Truffle](./packages/plugin-truffle/README.md) | [<img src="assets/brownie.svg" height="20px" width="30px" alt="">Brownie](https://github.com/brownie-mix/upgrades-mix) |
+| -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 
 Hardhat users will be able to write [scripts](https:/hardhat.org/guides/scripts.html) that use the plugin to deploy or upgrade a contract, and manage proxy admin rights.
 
@@ -82,6 +91,95 @@ it('works before and after upgrading', async function () {
 });
 ```
 
+Brownie users can't use the javascript plugins, but can use the contracts and easily deploy upgrades. In your contracts folder, you'll want to at least have `ProxyAdmin` contract, and whatever proxy methodology contract that you'd like, for example the `TransparentUpgradeableProxy`, in their own folder.
+
+```bash
+├── contracts
+│   ├── Box.sol
+│   ├── BoxV2.sol
+│   └── transparent_proxy
+│       ├── ProxyAdmin.sol
+│       └── TransparentUpgradeableProxy.sol
+```
+
+Then, you can have a brownie script that will deploy the proxy admin, the proxy, and the implementation.
+
+```python
+#!/usr/bin/python3
+from brownie import (
+    Box,
+    BoxV2
+    TransparentUpgradeableProxy,
+    ProxyAdmin,
+    accounts,
+    network,
+    Contract,
+)
+from scripts.helpful_scripts import encode_function_data, upgrade
+
+
+def main():
+    account = accounts[0]
+    proxy_admin = ProxyAdmin.deploy({"from": account})
+    box = Box.deploy({"from": account})
+    box_encoded_initializer_function = encode_function_data()
+    proxy = TransparentUpgradeableProxy.deploy(
+        box.address,
+        proxy_admin.address,
+        box_encoded_initializer_function,
+        {"from": account, "gas_limit": 1000000},
+    )
+    proxy_box = Contract.from_abi("Box", proxy.address, Box.abi)
+
+    ## Upgrade
+    box_v2 = BoxV2.deploy({"from": account})
+    upgrade(account, proxy, box_v2, proxy_admin_contract=proxy_admin)
+    proxy_box = Contract.from_abi("BoxV2", proxy.address, BoxV2.abi)
+```
+
+In your `helpful_scripts.py` file, you'll have 2 functions:
+
+`encode_function_data` and `upgrade`
+
+```python
+def upgrade(
+    account,
+    proxy,
+    newimplementation_address,
+    proxy_admin_contract=None,
+    initializer=None,
+    *args
+):
+    transaction = None
+    if proxy_admin_contract:
+        if initializer:
+            encoded_function_call = encode_function_data(initializer, *args)
+            transaction = proxy_admin_contract.upgradeAndCall(
+                proxy.address,
+                newimplementation_address,
+                encoded_function_call,
+                {"from": account},
+            )
+        else:
+            transaction = proxy_admin_contract.upgrade(
+                proxy.address, newimplementation_address, {"from": account}
+            )
+    else:
+        if initializer:
+            encoded_function_call = encode_function_data(initializer, *args)
+            transaction = proxy.upgradeToAndCall(
+                newimplementation_address, encoded_function_call, {"from": account}
+            )
+        else:
+            transaction = proxy.upgradeTo(newimplementation_address, {"from": account})
+    return transaction
+
+def encode_function_data(initializer=None, *args):
+    if len(args) == 0 or not initializer:
+        return eth_utils.to_bytes(hexstr="0x")
+    else:
+        return initializer.encode_input(*args)
+```
 ## How do the plugins work?
 
 Both plugins provide two main functions, `deployProxy` and `upgradeProxy`, which take care of managing upgradeable deployments of your contracts. In the case of `deployProxy`, this means:

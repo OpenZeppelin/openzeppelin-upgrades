@@ -1,0 +1,196 @@
+= Using with Brownie
+
+This document shows how to build Brownie scripts so you can deploy and upgrade proxies for your contracts.
+
+
+TIP: Check out the [Brownie Upgrades Mix](https://github.com/brownie-mix/upgrades-mix) for a out-of-the-box upgradable project with Brownie. 
+
+[[install]]
+== Installation
+
+First, install `pipx`.
+
+[source,console]
+----
+$ python3 -m pip install --user pipx
+$ python3 -m pipx ensurepath
+$ exit
+----
+Then reopen a new terminal to install brownie.
+[source,console]
+----
+pipx install eth-brownie
+----
+
+[[script-usage]]
+== Usage in scripts
+
+Brownie users can't use the javascript plugins, but can use the contracts and easily deploy upgrades. In your contracts folder, you'll want to at least have `ProxyAdmin` contract, and whatever proxy methodology contract that you'd like, for example the `TransparentUpgradeableProxy`, in their own folder.
+
+[sourcebash]
+----
+├── contracts
+│   ├── Box.sol
+│   ├── BoxV2.sol
+│   └── transparent_proxy
+│       ├── ProxyAdmin.sol
+│       └── TransparentUpgradeableProxy.sol
+----
+
+Then, you can have a brownie script that will deploy the proxy admin, the proxy, and the implementation.
+
+[source,python]
+----
+#!/usr/bin/python3
+from brownie import (
+    Box,
+    BoxV2
+    TransparentUpgradeableProxy,
+    ProxyAdmin,
+    accounts,
+    network,
+    Contract,
+)
+from scripts.helpful_scripts import encode_function_data, upgrade
+
+
+def main():
+    account = accounts[0]
+    proxy_admin = ProxyAdmin.deploy({"from": account})
+    box = Box.deploy({"from": account})
+    box_encoded_initializer_function = encode_function_data()
+    proxy = TransparentUpgradeableProxy.deploy(
+        box.address,
+        proxy_admin.address,
+        box_encoded_initializer_function,
+        {"from": account, "gas_limit": 1000000},
+    )
+    proxy_box = Contract.from_abi("Box", proxy.address, Box.abi)
+
+    ## Upgrade
+    box_v2 = BoxV2.deploy({"from": account})
+    upgrade(account, proxy, box_v2, proxy_admin_contract=proxy_admin)
+    proxy_box = Contract.from_abi("BoxV2", proxy.address, BoxV2.abi)
+----
+
+In your `helpful_scripts.py` file, you'll have 2 functions:
+
+`encode_function_data` and `upgrade`
+
+[source,python]
+----
+def upgrade(
+    account,
+    proxy,
+    newimplementation_address,
+    proxy_admin_contract=None,
+    initializer=None,
+    *args
+):
+    transaction = None
+    if proxy_admin_contract:
+        if initializer:
+            encoded_function_call = encode_function_data(initializer, *args)
+            transaction = proxy_admin_contract.upgradeAndCall(
+                proxy.address,
+                newimplementation_address,
+                encoded_function_call,
+                {"from": account},
+            )
+        else:
+            transaction = proxy_admin_contract.upgrade(
+                proxy.address, newimplementation_address, {"from": account}
+            )
+    else:
+        if initializer:
+            encoded_function_call = encode_function_data(initializer, *args)
+            transaction = proxy.upgradeToAndCall(
+                newimplementation_address, encoded_function_call, {"from": account}
+            )
+        else:
+            transaction = proxy.upgradeTo(newimplementation_address, {"from": account})
+    return transaction
+
+def encode_function_data(initializer=None, *args):
+    """Encodes the function call so we can work with an initializer.
+
+    Args:
+        initializer ([brownie.network.contract.ContractTx], optional):
+        The initializer function we want to call. Example: `box.store`.
+        Defaults to None.
+
+        args (Any, optional):
+        The arguments to pass to the initializer function
+
+    Returns:
+        [bytes]: Return the encoded bytes.
+    """
+    if len(args) == 0 or not initializer:
+        return eth_utils.to_bytes(hexstr="0x")
+    else:
+        return initializer.encode_input(*args)
+----
+
+The docstring of `encode_function_data` has a lot of helpful tips on what to pass it. `Box.store` is a valid input for the function. In future versions of Brownie, we expect the functionality to detect blank bytes will be built in. 
+
+
+[[test-usage]]
+== Usage in tests
+
+You can also use the `deployProxy` and `upgradeProxy` functions from your Hardhat tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in scripts.
+
+[source,py]
+----
+import pytest
+from brownie import (
+    Box,
+    BoxV2
+    TransparentUpgradeableProxy,
+    ProxyAdmin,
+    Contract,
+    network,
+    config,
+    accounts,
+    exceptions,
+)
+from scripts.helpful_scripts import encode_function_data, upgrade
+
+
+def test_proxy_delegates_calls():
+    account = accounts[0]
+    box = Box.deploy({"from": account})
+    proxy_admin = ProxyAdmin.deploy({"from": account})
+    box_encoded_initializer_function = encode_function_data()
+    proxy = TransparentUpgradeableProxy.deploy(
+        box.address,
+        proxy_admin.address,
+        box_encoded_initializer_function,
+        {"from": account, "gas_limit": 1000000},
+    )
+    proxy_box = Contract.from_abi("Box", proxy.address, Box.abi)
+    assert proxy_box.retrieve() == 0
+    proxy_box.store(1, {"from": account})
+    assert proxy_box.retrieve() == 1
+    with pytest.raises(AttributeError):
+        proxy_box.increment({"from": account})
+    
+def test_upgrades():
+    account = accounts[0]
+    box = Box.deploy({"from": account})
+    proxy_admin = ProxyAdmin.deploy({"from": account})
+    box_encoded_initializer_function = encode_function_data()
+    proxy = TransparentUpgradeableProxy.deploy(
+        box.address,
+        proxy_admin.address,
+        box_encoded_initializer_function,
+        {"from": account, "gas_limit": 1000000},
+    )
+    box_v2 = BoxV2.deploy({"from": account})
+    proxy_box = Contract.from_abi("BoxV2", proxy.address, BoxV2.abi)
+    with pytest.raises(exceptions.VirtualMachineError):
+        proxy_box.increment({"from": account})
+    upgrade(account, proxy, box_v2, proxy_admin_contract=proxy_admin)
+    assert proxy_box.retrieve() == 0
+    proxy_box.increment({"from": account})
+    assert proxy_box.retrieve() == 1
+----

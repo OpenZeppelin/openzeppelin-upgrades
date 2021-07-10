@@ -1,6 +1,6 @@
 = Upgrades Plugins
 
-**Integrate upgrades into your existing workflow.** Plugins for https://hardhat.org[Hardhat] and https://www.trufflesuite.com/truffle[Truffle] to deploy and manage upgradeable contracts on Ethereum.
+**Integrate upgrades into your existing workflow.** There are plugins for [Hardhat](https://hardhat.org/) and [Truffle](https://www.trufflesuite.com/truffle), and full suite [Brownie](https://github.com/eth-brownie/brownie) examples to deploy and manage upgradeable contracts on Ethereum.
 
 * Deploy upgradeable contracts.
 * Upgrade deployed contracts.
@@ -32,10 +32,21 @@ This installs our Hardhat plugin along with the necessary peer dependencies.
 $ npm install --save-dev @openzeppelin/truffle-upgrades
 ----
 
+[[mix-brownie]]
+==== Brownie Mix
+
+[source,console]
+----
+$ brownie bake upgrades-mix
+$ cd upgrades
+----
+
+This will download the [Brownie Upgrades Mix](https://github.com/brownie-mix/upgrades-mix).
+
 [[usage]]
 === Usage
 
-See the documentation for using xref:truffle-upgrades.adoc[Truffle Upgrades] and xref:hardhat-upgrades.adoc[Hardhat Upgrades], or take a look at the sample code snippets below.
+See the documentation for using xref:truffle-upgrades.adoc[Truffle Upgrades], xref:hardhat-upgrades.adoc[Hardhat Upgrades], and xref:brownie-upgrades.adoc[Brownie Upgrades], or take a look at the sample code snippets below.
 
 [[hardhat-usage]]
 ==== Hardhat usage
@@ -78,6 +89,102 @@ module.exports = async function (deployer) {
 }
 ----
 
+[[brownie-usage]]
+==== Brownie usage
+
+Brownie users can't use the javascript plugins, but can use the contracts and easily deploy upgrades. In your contracts folder, you'll want to at least have `ProxyAdmin` contract, and whatever proxy methodology contract that you'd like, for example the `TransparentUpgradeableProxy`, in their own folder.
+
+[sourcebash]
+----
+├── contracts
+│   ├── Box.sol
+│   ├── BoxV2.sol
+│   └── transparent_proxy
+│       ├── ProxyAdmin.sol
+│       └── TransparentUpgradeableProxy.sol
+----
+
+Then, you can have a brownie script that will deploy the proxy admin, the proxy, and the implementation.
+
+[source,python]
+----
+#!/usr/bin/python3
+from brownie import (
+    Box,
+    BoxV2
+    TransparentUpgradeableProxy,
+    ProxyAdmin,
+    accounts,
+    network,
+    Contract,
+)
+from scripts.helpful_scripts import encode_function_data, upgrade
+
+
+def main():
+    account = accounts[0]
+    proxy_admin = ProxyAdmin.deploy({"from": account})
+    box = Box.deploy({"from": account})
+    box_encoded_initializer_function = encode_function_data()
+    proxy = TransparentUpgradeableProxy.deploy(
+        box.address,
+        proxy_admin.address,
+        box_encoded_initializer_function,
+        {"from": account, "gas_limit": 1000000},
+    )
+    proxy_box = Contract.from_abi("Box", proxy.address, Box.abi)
+
+    ## Upgrade
+    box_v2 = BoxV2.deploy({"from": account})
+    upgrade(account, proxy, box_v2, proxy_admin_contract=proxy_admin)
+    proxy_box = Contract.from_abi("BoxV2", proxy.address, BoxV2.abi)
+----
+
+In your `helpful_scripts.py` file, you'll have 2 functions:
+
+`encode_function_data` and `upgrade`
+
+[source,python]
+----
+def upgrade(
+    account,
+    proxy,
+    newimplementation_address,
+    proxy_admin_contract=None,
+    initializer=None,
+    *args
+):
+    transaction = None
+    if proxy_admin_contract:
+        if initializer:
+            encoded_function_call = encode_function_data(initializer, *args)
+            transaction = proxy_admin_contract.upgradeAndCall(
+                proxy.address,
+                newimplementation_address,
+                encoded_function_call,
+                {"from": account},
+            )
+        else:
+            transaction = proxy_admin_contract.upgrade(
+                proxy.address, newimplementation_address, {"from": account}
+            )
+    else:
+        if initializer:
+            encoded_function_call = encode_function_data(initializer, *args)
+            transaction = proxy.upgradeToAndCall(
+                newimplementation_address, encoded_function_call, {"from": account}
+            )
+        else:
+            transaction = proxy.upgradeTo(newimplementation_address, {"from": account})
+    return transaction
+
+def encode_function_data(initializer=None, *args):
+    if len(args) == 0 or not initializer:
+        return eth_utils.to_bytes(hexstr="0x")
+    else:
+        return initializer.encode_input(*args)
+----
+
 
 [[test-usage]]
 ==== Test usage
@@ -94,6 +201,8 @@ it('works before and after upgrading', async function () {
   assert.strictEqual(await instance.retrieve(), 42);
 });
 ----
+
+For brownie, take a look at the tests in the [upgrades-mix](https://github.com/brownie-mix/upgrades-mix/tree/main/tests).
 
 [[how-plugins-work]]
 == How the plugins work

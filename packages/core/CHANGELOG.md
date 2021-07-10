@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.8.1 (2021-07-10)
+- Add support for the Brownie smart contract development framework. 
+
 ## 1.8.0 (2021-06-29)
 
 - Add option `unsafeAllowRenames` to configure storage layout check to allow variable renaming.
