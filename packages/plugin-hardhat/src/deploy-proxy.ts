@@ -1,5 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract } from 'ethers';
+import type { ContractFactory } from 'ethers';
 
 import {
   Manifest,
@@ -19,9 +19,11 @@ import {
   DeployTransaction,
 } from './utils';
 
+type InstanceOf<F extends ContractFactory> = ReturnType<F['attach']>;
+
 export interface DeployFunction {
-  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
-  (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
+  <F extends ContractFactory>(ImplFactory: F, args?: unknown[], opts?: DeployOptions): Promise<InstanceOf<F>>;
+  <F extends ContractFactory>(ImplFactory: F, opts?: DeployOptions): Promise<InstanceOf<F>>;
 }
 
 export interface DeployOptions extends ValidationOptions {
