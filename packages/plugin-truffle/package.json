@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@openzeppelin/upgrades-core": "^1.8.0",
-    "@truffle/contract": "^4.2.12",
+    "@truffle/contract": "^4.3.26",
     "solidity-ast": "^0.4.15"
   },
   "peerDependencies": {
