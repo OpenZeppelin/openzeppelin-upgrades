@@ -46,13 +46,14 @@ export async function resumeOrDeploy<T extends Deployment>(
 
 export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
   const { txHash, address } = deployment;
-  const startTime = Date.now();
+
+  // Poll for 60 seconds with a 5 second poll interval.
+  // TODO: Make these parameters configurable.
+  const pollTimeout = 60e3;
+  const pollInterval = 5e3;
 
   if (txHash !== undefined) {
-    // Poll for 60 seconds with a 5 second poll interval.
-    // TODO: Make these parameters configurable.
-    const pollTimeout = 60e3;
-    const pollInterval = 5e3;
+    const startTime = Date.now();
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -73,11 +74,15 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
   }
 
   debug('succeeded verifying deployment', txHash);
-  if (await hasCode(provider, address)) {
-    return;
+  while (!(await hasCode(provider, address))) {
+    const startTime = Date.now();
+    const elapsedTime = Date.now() - startTime;
+    // We only poll for code if we are in the context of a tx
+    if (elapsedTime >= pollTimeout || txHash === undefined) {
+      throw new InvalidDeployment(deployment);
+    }
+    await sleep(pollInterval);
   }
-
-  throw new InvalidDeployment(deployment);
 }
 
 export class TransactionMinedTimeout extends Error {

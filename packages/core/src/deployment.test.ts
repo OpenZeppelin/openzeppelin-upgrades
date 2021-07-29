@@ -77,3 +77,14 @@ test('waits for a deployment to mine', async t => {
   provider.mine();
   await waitAndValidateDeployment(provider, deployment);
 });
+
+test('waits for a deployment to return contract code', async t => {
+  const timeout = Symbol('timeout');
+  const provider = stubProvider();
+  const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
+  provider.removeContract(deployment.address);
+  const result = await Promise.race([waitAndValidateDeployment(provider, deployment), sleep(100).then(() => timeout)]);
+  t.is(result, timeout);
+  provider.addContract(deployment.address);
+  await waitAndValidateDeployment(provider, deployment);
+});

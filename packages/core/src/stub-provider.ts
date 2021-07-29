@@ -31,7 +31,7 @@ export function stubProvider(chainId = genChainId(), clientVersion = defaultClie
     contracts.add(address);
     pendingTxs.add(txHash);
     if (immediate) {
-      await mine();
+      mine();
     }
     return {
       address,
@@ -54,6 +54,12 @@ export function stubProvider(chainId = genChainId(), clientVersion = defaultClie
     },
     isContract(address: string) {
       return contracts.has(address);
+    },
+    removeContract(address: string) {
+      return contracts.delete(address);
+    },
+    addContract(address: string) {
+      return contracts.add(address);
     },
     getMethodCount(method: string) {
       return methodCounters.get(method) ?? 0;
