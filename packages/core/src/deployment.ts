@@ -2,7 +2,14 @@ import { promisify } from 'util';
 
 import debug from './utils/debug';
 import { makeNonEnumerable } from './utils/make-non-enumerable';
-import { EthereumProvider, getTransactionByHash, hasCode, isDevelopmentNetwork } from './provider';
+import {
+  EthereumProvider,
+  getTransactionByHash,
+  getTransactionReceipt,
+  hasCode,
+  isDevelopmentNetwork,
+  isReceiptSuccessful,
+} from './provider';
 
 const sleep = promisify(setTimeout);
 
@@ -63,26 +70,30 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
         throw new TransactionMinedTimeout(deployment);
       }
       debug('verifying deployment tx mined', txHash);
-      const tx = await getTransactionByHash(provider, txHash);
-      if (tx?.blockHash !== null && tx?.blockHash !== undefined) {
+      const receipt = await getTransactionReceipt(provider, txHash);
+      if (receipt && isReceiptSuccessful(receipt)) {
         debug('succeeded verifying deployment tx mined', txHash);
         break;
+      } else if (receipt) {
+        debug('tx was reverted', txHash);
+        throw new InvalidDeployment(deployment);
+      } else {
+        debug('waiting for deployment tx mined', txHash);
+        await sleep(pollInterval);
       }
-      debug('waiting for deployment tx mined', txHash);
-      await sleep(pollInterval);
     }
   }
 
-  debug('succeeded verifying deployment', txHash);
+  debug('verifying code in target address', address);
   while (!(await hasCode(provider, address))) {
     const startTime = Date.now();
     const elapsedTime = Date.now() - startTime;
-    // We only poll for code if we are in the context of a tx
     if (elapsedTime >= pollTimeout || txHash === undefined) {
       throw new InvalidDeployment(deployment);
     }
     await sleep(pollInterval);
   }
+  debug('code in target address found', address);
 }
 
 export class TransactionMinedTimeout extends Error {

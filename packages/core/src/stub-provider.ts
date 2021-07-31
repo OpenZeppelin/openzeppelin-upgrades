@@ -12,6 +12,7 @@ function genChainId(): number {
 export function stubProvider(chainId = genChainId(), clientVersion = defaultClientVersion) {
   const contracts = new Set<string>();
   const pendingTxs = new Set<string>();
+  const failedTxs = new Set<string>();
   const blocks = new Map<string, string[]>();
   const txBlock = new Map<string, string>();
   const methodCounters = new Map<string, number>();
@@ -64,6 +65,9 @@ export function stubProvider(chainId = genChainId(), clientVersion = defaultClie
     getMethodCount(method: string) {
       return methodCounters.get(method) ?? 0;
     },
+    failTx(txHash: string) {
+      return failedTxs.add(txHash);
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async send(method: string, params?: unknown[]): Promise<any> {
       methodCounters.set(method, 1 + (methodCounters.get(method) ?? 0));
@@ -94,6 +98,20 @@ export function stubProvider(chainId = genChainId(), clientVersion = defaultClie
         }
       } else if (method === 'web3_clientVersion') {
         return clientVersion;
+      } else if (method === 'eth_getTransactionReceipt') {
+        const param = params?.[0];
+        if (typeof param !== 'string') {
+          throw new Error('Param must be string');
+        }
+        if (txBlock.has(param)) {
+          return {
+            transactionHash: param,
+            blockHash: txBlock.get(param),
+            status: failedTxs.has(param) ? '0x0' : '0x1',
+          };
+        } else {
+          return null;
+        }
       } else {
         throw new Error(`Method ${method} not stubbed`);
       }
