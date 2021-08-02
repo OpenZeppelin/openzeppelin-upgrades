@@ -85,8 +85,8 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
   }
 
   debug('verifying code in target address', address);
+  const startTime = Date.now();
   while (!(await hasCode(provider, address))) {
-    const startTime = Date.now();
     const elapsedTime = Date.now() - startTime;
     if (elapsedTime >= pollTimeout || txHash === undefined) {
       throw new InvalidDeployment(deployment);

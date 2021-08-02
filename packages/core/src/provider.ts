@@ -69,7 +69,9 @@ export async function getTransactionReceipt(
   provider: EthereumProvider,
   txHash: string,
 ): Promise<EthereumTransactionReceipt | null> {
-  return provider.send('eth_getTransactionReceipt', [txHash]);
+  const receipt = await provider.send('eth_getTransactionReceipt', [txHash]);
+  receipt.status = receipt.status.replace(/^0x0+/, '0x');
+  return receipt;
 }
 
 export const networkNames: { [chainId in number]?: string } = Object.freeze({
