@@ -2,7 +2,14 @@ import { promisify } from 'util';
 
 import debug from './utils/debug';
 import { makeNonEnumerable } from './utils/make-non-enumerable';
-import { EthereumProvider, getTransactionByHash, hasCode, isDevelopmentNetwork } from './provider';
+import {
+  EthereumProvider,
+  getTransactionByHash,
+  getTransactionReceipt,
+  hasCode,
+  isDevelopmentNetwork,
+  isReceiptSuccessful,
+} from './provider';
 
 const sleep = promisify(setTimeout);
 
@@ -46,13 +53,14 @@ export async function resumeOrDeploy<T extends Deployment>(
 
 export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
   const { txHash, address } = deployment;
-  const startTime = Date.now();
+
+  // Poll for 60 seconds with a 5 second poll interval.
+  // TODO: Make these parameters configurable.
+  const pollTimeout = 60e3;
+  const pollInterval = 5e3;
 
   if (txHash !== undefined) {
-    // Poll for 60 seconds with a 5 second poll interval.
-    // TODO: Make these parameters configurable.
-    const pollTimeout = 60e3;
-    const pollInterval = 5e3;
+    const startTime = Date.now();
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -62,22 +70,30 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
         throw new TransactionMinedTimeout(deployment);
       }
       debug('verifying deployment tx mined', txHash);
-      const tx = await getTransactionByHash(provider, txHash);
-      if (tx?.blockHash !== null && tx?.blockHash !== undefined) {
+      const receipt = await getTransactionReceipt(provider, txHash);
+      if (receipt && isReceiptSuccessful(receipt)) {
         debug('succeeded verifying deployment tx mined', txHash);
         break;
+      } else if (receipt) {
+        debug('tx was reverted', txHash);
+        throw new InvalidDeployment(deployment);
+      } else {
+        debug('waiting for deployment tx mined', txHash);
+        await sleep(pollInterval);
       }
-      debug('waiting for deployment tx mined', txHash);
-      await sleep(pollInterval);
     }
   }
 
-  debug('succeeded verifying deployment', txHash);
-  if (await hasCode(provider, address)) {
-    return;
+  debug('verifying code in target address', address);
+  const startTime = Date.now();
+  while (!(await hasCode(provider, address))) {
+    const elapsedTime = Date.now() - startTime;
+    if (elapsedTime >= pollTimeout || txHash === undefined) {
+      throw new InvalidDeployment(deployment);
+    }
+    await sleep(pollInterval);
   }
-
-  throw new InvalidDeployment(deployment);
+  debug('code in target address found', address);
 }
 
 export class TransactionMinedTimeout extends Error {

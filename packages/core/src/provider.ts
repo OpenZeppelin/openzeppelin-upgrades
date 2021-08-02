@@ -7,11 +7,22 @@ export interface EthereumProvider {
   send(method: 'eth_getCode', params: [string, string]): Promise<string>;
   send(method: 'eth_getStorageAt', params: [string, string, string]): Promise<string>;
   send(method: 'eth_getTransactionByHash', params: [string]): Promise<null | EthereumTransaction>;
+  send(method: 'eth_getTransactionReceipt', params: [string]): Promise<null | EthereumTransactionReceipt>;
   send(method: string, params: unknown[]): Promise<unknown>;
 }
 
 interface EthereumTransaction {
   blockHash: string | null;
+}
+
+interface EthereumTransactionReceipt {
+  status: string;
+  to: string | null;
+  from: string;
+  blockHash: string;
+  blockNumber: string;
+  transactionHash: string;
+  transactionIndex: string;
 }
 
 export async function getNetworkId(provider: EthereumProvider): Promise<string> {
@@ -54,6 +65,17 @@ export async function getTransactionByHash(
   return provider.send('eth_getTransactionByHash', [txHash]);
 }
 
+export async function getTransactionReceipt(
+  provider: EthereumProvider,
+  txHash: string,
+): Promise<EthereumTransactionReceipt | null> {
+  const receipt = await provider.send('eth_getTransactionReceipt', [txHash]);
+  if (receipt?.status) {
+    receipt.status = receipt.status.match(/^0x0+$/) ? '0x0' : receipt.status.replace(/^0x0+/, '0x');
+  }
+  return receipt;
+}
+
 export const networkNames: { [chainId in number]?: string } = Object.freeze({
   1: 'mainnet',
   2: 'morden',
@@ -74,4 +96,8 @@ export async function isDevelopmentNetwork(provider: EthereumProvider): Promise<
     const [name] = clientVersion.split('/', 1);
     return name === 'HardhatNetwork' || name === 'EthereumJS TestRPC';
   }
+}
+
+export function isReceiptSuccessful(receipt: Pick<EthereumTransactionReceipt, 'status'>): boolean {
+  return receipt.status === '0x1';
 }

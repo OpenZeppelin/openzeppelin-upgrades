@@ -55,7 +55,7 @@ test('validates a mined deployment with txHash', async t => {
   const provider = stubProvider();
   const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
   await waitAndValidateDeployment(provider, deployment);
-  t.is(provider.getMethodCount('eth_getTransactionByHash'), 1);
+  t.is(provider.getMethodCount('eth_getTransactionReceipt'), 1);
   t.is(provider.getMethodCount('eth_getCode'), 1);
 });
 
@@ -64,7 +64,7 @@ test('validates a mined deployment without txHash', async t => {
   const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
   delete deployment.txHash;
   await waitAndValidateDeployment(provider, deployment);
-  t.is(provider.getMethodCount('eth_getTransactionByHash'), 0);
+  t.is(provider.getMethodCount('eth_getTransactionReceipt'), 0);
   t.is(provider.getMethodCount('eth_getCode'), 1);
 });
 
@@ -75,5 +75,24 @@ test('waits for a deployment to mine', async t => {
   const result = await Promise.race([waitAndValidateDeployment(provider, deployment), sleep(100).then(() => timeout)]);
   t.is(result, timeout);
   provider.mine();
+  await waitAndValidateDeployment(provider, deployment);
+});
+
+test('fails deployment fast if tx reverts', async t => {
+  const provider = stubProvider();
+  const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  provider.failTx(deployment.txHash!);
+  await t.throwsAsync(waitAndValidateDeployment(provider, deployment));
+});
+
+test('waits for a deployment to return contract code', async t => {
+  const timeout = Symbol('timeout');
+  const provider = stubProvider();
+  const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
+  provider.removeContract(deployment.address);
+  const result = await Promise.race([waitAndValidateDeployment(provider, deployment), sleep(100).then(() => timeout)]);
+  t.is(result, timeout);
+  provider.addContract(deployment.address);
   await waitAndValidateDeployment(provider, deployment);
 });
