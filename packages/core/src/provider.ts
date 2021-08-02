@@ -70,7 +70,9 @@ export async function getTransactionReceipt(
   txHash: string,
 ): Promise<EthereumTransactionReceipt | null> {
   const receipt = await provider.send('eth_getTransactionReceipt', [txHash]);
-  receipt.status = receipt.status.replace(/^0x0+/, '0x');
+  if (receipt?.status) {
+    receipt.status = receipt.status.match(/^0x0+$/) ? '0x0' : receipt.status.replace(/^0x0+/, '0x');
+  }
   return receipt;
 }
 
