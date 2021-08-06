@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.8.1 (2021-08-06)
 
 - Add support for function types.
 
