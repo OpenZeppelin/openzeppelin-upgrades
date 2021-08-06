@@ -39,6 +39,14 @@ contract ContractFunctionSignatures {
     function f11(bytes32) public {}
 
     function f12(ContractFunctionSignatures) public {}
+
+    function f13(function(address,uint256,bytes32) external) public {}
+
+    function f14(function(address,uint256,bytes32) external returns (bool)) public {}
+
+    function f15(function(Enum,S1 memory) external returns (bool)) public {}
+
+    function f16(function(Enum,S1 memory) external returns (bool),Enum,S1 memory) public {}
 }
 
 library LibraryFunctionSignatures {

@@ -39,6 +39,10 @@ function serializeTypeName(parameter: VariableDeclaration, deref: ASTDereference
       }
     }
 
+    case 'FunctionTypeName': {
+      return `function`;
+    }
+
     default:
       throw new Error(`Unsuported TypeName node type: ${typeName.nodeType}`);
   }
