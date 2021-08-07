@@ -27,7 +27,7 @@
     "version": "node ../../scripts/bump-changelog.js"
   },
   "devDependencies": {
-    "@ava/typescript": "^1.1.1",
+    "@ava/typescript": "^2.0.0",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^2.1.0",
     "@openzeppelin/contracts": "4.1.0",

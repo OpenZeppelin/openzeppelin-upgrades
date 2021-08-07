@@ -81,12 +81,13 @@
   dependencies:
     tslib "~2.0.1"
 
-"@ava/typescript@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@ava/typescript/-/typescript-1.1.1.tgz#3dcaba3aced8026fdb584d927d809752854dc6e6"
-  integrity sha512-KbLUAe2cWXK63WLK6LnOJonjwEDU/8MNXCOA1ooX/YFZgKRmeAD1kZu+2K0ks5fnOCEcckNQAooyBNGdZUmMQA==
+"@ava/typescript@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@ava/typescript/-/typescript-2.0.0.tgz#519aff16ce53bec7f323cae0bcf427a957679ba3"
+  integrity sha512-sn+upcMk81AMrlnx/hb/9T7gCGuBfw7hi+p79NPSSQMvY2G64mOB7qRaDExiHiZfZ7FN9j7HwQeFhHZLGD/NWQ==
   dependencies:
-    escape-string-regexp "^2.0.0"
+    escape-string-regexp "^4.0.0"
+    execa "^5.0.0"
 
 "@babel/code-frame@7.12.11":
   version "7.12.11"
