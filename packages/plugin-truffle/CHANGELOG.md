@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.8.1 (2021-08-12)
 
 - Bump required version of `@truffle/contract`.
 
