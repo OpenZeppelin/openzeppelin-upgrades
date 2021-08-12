@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Bump required version of `@truffle/contract`.
+
 ## 1.8.0 (2021-06-29)
 
 - Add option `unsafeAllowRenames` to configure storage layout check to allow variable renaming.
