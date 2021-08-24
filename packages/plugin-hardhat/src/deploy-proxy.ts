@@ -18,6 +18,7 @@ import {
   getProxyAdminFactory,
   DeployTransaction,
 } from './utils';
+import { detectUUPS } from './utils/detect-uups';
 
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
@@ -37,10 +38,16 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     if (!Array.isArray(args)) {
       opts = args;
       args = [];
-    }
+    } 
 
+    // // Check if upgradeTo is present, set kind::uups
+    // if(opts.kind === undefined && detectUUPS(hre, ImplFactory)) {
+    //   opts.kind === 'uups';
+    // }
+
+    //default:kind occurs in withValidationDefaults
     const requiredOpts = withValidationDefaults(opts);
-    const { kind } = requiredOpts;
+    let { kind } = requiredOpts;
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
