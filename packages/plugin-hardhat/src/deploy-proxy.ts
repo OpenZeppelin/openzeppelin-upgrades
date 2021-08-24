@@ -40,10 +40,10 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       args = [];
     } 
 
-    // // Check if upgradeTo is present, set kind::uups
-    // if(opts.kind === undefined && detectUUPS(hre, ImplFactory)) {
-    //   opts.kind === 'uups';
-    // }
+    // Check if upgradeTo is present, set kind::uups
+    if(opts.kind === undefined && detectUUPS(hre, ImplFactory)) {
+      opts.kind === 'uups';
+    }
 
     //default:kind occurs in withValidationDefaults
     const requiredOpts = withValidationDefaults(opts);
