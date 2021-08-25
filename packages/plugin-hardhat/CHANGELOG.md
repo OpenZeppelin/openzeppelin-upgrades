@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `erc1967` module. ([#413](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/413))
+
 ## 1.9.0 (2021-06-29)
 
 - Add option `unsafeAllowRenames` to configure storage layout check to allow variable renaming.
