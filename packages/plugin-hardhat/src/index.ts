@@ -22,7 +22,7 @@ export interface HardhatUpgrades {
     changeProxyAdmin: ChangeAdminFunction;
     transferProxyAdminOwnership: TransferProxyAdminOwnershipFunction;
   };
-  eip1967: {
+  erc1967: {
     getAdminAddress: (proxyAdress: string) => Promise<string>;
     getImplementationAddress: (proxyAdress: string) => Promise<string>;
     getBeaconAddress: (proxyAdress: string) => Promise<string>;
@@ -89,7 +89,7 @@ extendEnvironment(hre => {
         changeProxyAdmin: makeChangeProxyAdmin(hre),
         transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre),
       },
-      eip1967: {
+      erc1967: {
         getAdminAddress: proxyAddress => getAdminAddress(hre.network.provider, proxyAddress),
         getImplementationAddress: proxyAddress => getImplementationAddress(hre.network.provider, proxyAddress),
         getBeaconAddress: proxyAddress => getBeaconAddress(hre.network.provider, proxyAddress),
