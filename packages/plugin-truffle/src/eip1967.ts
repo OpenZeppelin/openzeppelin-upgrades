@@ -1,7 +1,12 @@
-import { getImplementationAddress } from '@openzeppelin/upgrades-core';
+import { getAdminAddress, getImplementationAddress } from '@openzeppelin/upgrades-core';
 import { wrapProvider, Options, withDefaults } from './utils';
 
 export const eip1967 = {
+  getAdminAddress: async function (proxyAddress: string, opts: Options = {}): Promise<string> {
+    const { deployer } = withDefaults(opts);
+    const provider = wrapProvider(deployer.provider);
+    return getAdminAddress(provider, proxyAddress);
+  },
   getImplementationAddress: async function (proxyAddress: string, opts: Options = {}): Promise<string> {
     const { deployer } = withDefaults(opts);
     const provider = wrapProvider(deployer.provider);
