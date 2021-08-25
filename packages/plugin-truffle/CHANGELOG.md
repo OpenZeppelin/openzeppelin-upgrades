@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `erc1967` module. ([#413](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/413))
+
 ## 1.8.1 (2021-08-12)
 
 - Bump required version of `@truffle/contract`.

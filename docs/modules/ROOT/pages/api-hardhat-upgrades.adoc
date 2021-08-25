@@ -136,6 +136,18 @@ async function transferProxyAdminOwnership(
 ): Promise<void>
 ----
 
+[[erc1967]]
+== erc1967
+
+Functions in this module provide access to the https://eips.ethereum.org/EIPS/eip-1967[ERC1967] variables of a proxy contract.
+
+[source,ts]
+----
+async function erc1967.getImplementationAddress(proxyAddress: string): Promise<string>;
+async function erc1967.getBeaconAddress(proxyAddress: string): Promise<string>;
+async function erc1967.getAdminAddress(proxyAddress: string): Promise<string>;
+----
+
 == silenceWarnings
 
 Silences all subsequent warnings about the use of unsafe flags. Prints a last warning before doing so.
