@@ -22,6 +22,9 @@ export interface HardhatUpgrades {
     changeProxyAdmin: ChangeAdminFunction;
     transferProxyAdminOwnership: TransferProxyAdminOwnershipFunction;
   };
+  eip1967: {
+    getImplementationAddress: (proxyAdress: string) => Promise<string>;
+  }
 }
 
 interface RunCompilerArgs {
@@ -63,7 +66,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 
 extendEnvironment(hre => {
   hre.upgrades = lazyObject((): HardhatUpgrades => {
-    const { silenceWarnings } = require('@openzeppelin/upgrades-core');
+    const { silenceWarnings, getImplementationAddress } = require('@openzeppelin/upgrades-core');
     const { makeDeployProxy } = require('./deploy-proxy');
     const { makeUpgradeProxy } = require('./upgrade-proxy');
     const { makePrepareUpgrade } = require('./prepare-upgrade');
@@ -78,6 +81,9 @@ extendEnvironment(hre => {
         getInstance: makeGetInstanceFunction(hre),
         changeProxyAdmin: makeChangeProxyAdmin(hre),
         transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre),
+      },
+      eip1967: {
+        getImplementationAddress: proxyAddress => getImplementationAddress(hre.network.provider, proxyAddress),
       },
     };
   });
