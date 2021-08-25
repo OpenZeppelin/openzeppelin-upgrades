@@ -4,35 +4,49 @@ import BN from 'bn.js';
 import { EthereumProvider, getStorageAt } from './provider';
 
 export async function getAdminAddress(provider: EthereumProvider, address: string): Promise<string> {
-  const ADMIN_LABEL = 'eip1967.proxy.admin';
-  const FALLBACK_ADMIN_LABEL = 'org.zeppelinos.proxy.admin';
-  const storage = await getEip1967Storage(provider, address, ADMIN_LABEL, FALLBACK_ADMIN_LABEL);
+  const storage = await getStorageFallback(
+    provider,
+    address,
+    toEip1967Hash('eip1967.proxy.admin'),
+    toFallbackEip1967Hash('org.zeppelinos.proxy.admin'),
+  );
 
   return parseAddress(storage);
 }
 
 export async function getImplementationAddress(provider: EthereumProvider, address: string): Promise<string> {
-  const IMPLEMENTATION_LABEL = 'eip1967.proxy.implementation';
-  const FALLBACK_IMPLEMENTATION_LABEL = 'org.zeppelinos.proxy.implementation';
-  const storage = await getEip1967Storage(provider, address, IMPLEMENTATION_LABEL, FALLBACK_IMPLEMENTATION_LABEL);
+  const storage = await getStorageFallback(
+    provider,
+    address,
+    toEip1967Hash('eip1967.proxy.implementation'),
+    toFallbackEip1967Hash('org.zeppelinos.proxy.implementation'),
+  );
 
   if (isEmptySlot(storage)) {
-    throw new Error(`Contract at ${address} doesn't look like an EIP 1967 proxy`);
+    throw new Error(`Contract at ${address} doesn't look like an administered ERC 1967 proxy`);
   }
 
   return parseAddress(storage);
 }
 
-async function getEip1967Storage(
-  provider: EthereumProvider,
-  address: string,
-  slot: string,
-  fallbackSlot: string,
-): Promise<string> {
-  let storage = await getStorageAt(provider, address, toEip1967Hash(slot));
+export async function getBeaconAddress(provider: EthereumProvider, address: string): Promise<string> {
+  const storage = await getStorageFallback(provider, address, toEip1967Hash('eip1967.proxy.beacon'));
 
   if (isEmptySlot(storage)) {
-    storage = await getStorageAt(provider, address, toFallbackEip1967Hash(fallbackSlot));
+    throw new Error(`Contract at ${address} doesn't look like an ERC 1967 beacon proxy`);
+  }
+
+  return parseAddress(storage);
+}
+
+async function getStorageFallback(provider: EthereumProvider, address: string, ...slots: string[]): Promise<string> {
+  let storage = '0x0000000000000000000000000000000000000000000000000000000000000000'; // default: empty slot
+
+  for (const slot of slots) {
+    storage = await getStorageAt(provider, address, slot);
+    if (!isEmptySlot(storage)) {
+      break;
+    }
   }
 
   return storage;

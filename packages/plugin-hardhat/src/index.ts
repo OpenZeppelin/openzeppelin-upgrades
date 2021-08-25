@@ -25,6 +25,7 @@ export interface HardhatUpgrades {
   eip1967: {
     getAdminAddress: (proxyAdress: string) => Promise<string>;
     getImplementationAddress: (proxyAdress: string) => Promise<string>;
+    getBeaconAddress: (proxyAdress: string) => Promise<string>;
   };
 }
 
@@ -67,7 +68,12 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 
 extendEnvironment(hre => {
   hre.upgrades = lazyObject((): HardhatUpgrades => {
-    const { silenceWarnings, getAdminAddress, getImplementationAddress } = require('@openzeppelin/upgrades-core');
+    const {
+      silenceWarnings,
+      getAdminAddress,
+      getImplementationAddress,
+      getBeaconAddress,
+    } = require('@openzeppelin/upgrades-core');
     const { makeDeployProxy } = require('./deploy-proxy');
     const { makeUpgradeProxy } = require('./upgrade-proxy');
     const { makePrepareUpgrade } = require('./prepare-upgrade');
@@ -86,6 +92,7 @@ extendEnvironment(hre => {
       eip1967: {
         getAdminAddress: proxyAddress => getAdminAddress(hre.network.provider, proxyAddress),
         getImplementationAddress: proxyAddress => getImplementationAddress(hre.network.provider, proxyAddress),
+        getBeaconAddress: proxyAddress => getBeaconAddress(hre.network.provider, proxyAddress),
       },
     };
   });
