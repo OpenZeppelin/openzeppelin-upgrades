@@ -24,7 +24,7 @@ export interface HardhatUpgrades {
   };
   eip1967: {
     getImplementationAddress: (proxyAdress: string) => Promise<string>;
-  }
+  };
 }
 
 interface RunCompilerArgs {
