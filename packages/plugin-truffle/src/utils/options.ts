@@ -5,7 +5,7 @@ export interface Options extends ValidationOptions {
   deployer?: Deployer;
 }
 
-export function withDefaults(opts: Options): Required<Options> {
+export function withDefaults(opts: Options = {}): Required<Options> {
   return {
     deployer: opts.deployer ?? defaultDeployer,
     ...withValidationDefaults(opts),

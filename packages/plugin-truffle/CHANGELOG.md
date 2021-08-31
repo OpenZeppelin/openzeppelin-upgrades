@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Make options argument optional in `erc1967` functions.
+
 ## 1.9.0 (2021-08-25)
 
 - Add `erc1967` module. ([#413](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/413))

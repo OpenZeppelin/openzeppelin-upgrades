@@ -8,7 +8,7 @@ import {
 import { wrapProvider, Options, withDefaults } from './utils';
 
 function wrapWithProvider<A, R>(getter: (provider: EthereumProvider, args: A) => R): (args: A, opts: Options) => R {
-  return (args: A, opts: Options) => {
+  return (args: A, opts?: Options) => {
     const { deployer } = withDefaults(opts);
     const provider = wrapProvider(deployer.provider);
     return getter(provider, args);
