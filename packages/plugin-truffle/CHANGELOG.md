@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.9.1 (2021-08-31)
 
 - Make options argument optional in `erc1967` functions.
 
