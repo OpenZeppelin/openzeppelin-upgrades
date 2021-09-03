@@ -93,3 +93,11 @@ test('replace', t => {
   const report = getReport(v1, v2);
   t.snapshot(report.explain());
 });
+
+test('gap usage', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2');
+  const report = getReport(v1, v2);
+  report.explain();
+  // t.snapshot(report.explain());
+});

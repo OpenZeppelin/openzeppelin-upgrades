@@ -384,3 +384,24 @@ contract StorageUpgrade_MappingEnumKey_V2_Bad {
     mapping (E1 => uint) m3;
     mapping (uint => uint) m4;
 }
+
+contract StorageUpgrade_Gap_Base {
+    uint public b1;
+    uint[50] private __gap;
+}
+
+contract StorageUpgrade_Gap_V1 is StorageUpgrade_Gap_Base {
+    uint x1;
+    uint[50] private __gap;
+    mapping (uint => uint) m1;
+}
+
+contract StorageUpgrade_Gap_V2 {
+    uint x1;
+    address x2;
+    mapping (string => uint) m0;
+    uint[2] x3;
+    string x4;
+    uint[45] private __gap;
+    mapping (uint => uint) m1;
+}
