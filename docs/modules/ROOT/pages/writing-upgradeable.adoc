@@ -188,6 +188,17 @@ contract MyContract {
 }
 ----
 
+=== Initializing the Implementation Contract
+
+Avoid leaving a contract uninitialized! This includes the implementation contract behind a proxy.
+
+An uninitialized contract can be used in certain kinds of exploits since it may allow an attacker to take control of the contract. You can either invoke the initializer manually, independently of initialization of the proxy, or you can include a constructor to automatically mark it as initialized when it is deployed:
+
+```
+/// @custom:oz-upgrades-unsafe-allow constructor
+constructor() initializer {}
+```
+
 [[creating-new-instances-from-your-contract-code]]
 == Creating New Instances From Your Contract Code
 
