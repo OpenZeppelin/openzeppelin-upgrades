@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.9.1 (2021-09-15)
 
 - Silence all warnings when using `silenceWarnings`.
 
