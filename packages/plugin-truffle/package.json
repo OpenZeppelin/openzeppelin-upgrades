@@ -13,9 +13,10 @@
     "migrate-oz-cli-project": "dist/scripts/migrate-oz-cli-project.js"
   },
   "scripts": {
-    "prepublish": "rimraf dist *.tsbuildinfo",
-    "prepare": "tsc -b",
-    "test": "tsc -b && bash test.sh",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "compile": "tsc -b",
+    "prepare": "yarn clean && yarn compile",
+    "test": "yarn compile && bash test.sh",
     "version": "node ../../scripts/bump-changelog.js"
   },
   "devDependencies": {

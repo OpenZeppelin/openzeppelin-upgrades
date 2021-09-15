@@ -5,7 +5,7 @@
   "scripts": {
     "docs": "oz-docs",
     "docs:watch": "oz-docs watch",
-    "prepare": "wsrun -ms prepare:contracts && tsc -b",
+    "prepare": "wsrun -ms compile:contracts && tsc -b",
     "lint": "yarn lint:path .",
     "lint:path": "eslint --ignore-path .gitignore --max-warnings 0",
     "test": "tsc -b && wsrun -ms test",

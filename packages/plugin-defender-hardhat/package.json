@@ -10,8 +10,9 @@
     "/src"
   ],
   "scripts": {
-    "prepublish": "rimraf dist *.tsbuildinfo",
-    "prepare": "tsc -b",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "compile": "tsc -b",
+    "prepare": "yarn clean && yarn compile",
     "test": "tsc -b && bash scripts/test.sh",
     "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --",
     "version": "node ../../scripts/bump-changelog.js"

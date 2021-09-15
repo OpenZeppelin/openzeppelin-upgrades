@@ -18,9 +18,10 @@
     "/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json"
   ],
   "scripts": {
-    "prepublish": "rimraf artifacts cache dist *.tsbuildinfo",
-    "prepare": "tsc -b && yarn prepare:contracts",
-    "prepare:contracts": "hardhat compile",
+    "clean": "hardhat clean && rimraf dist *.tsbuildinfo",
+    "compile": "tsc -b && yarn compile:contracts",
+    "compile:contracts": "hardhat compile",
+    "prepare": "yarn clean && yarn compile",
     "prepublishOnly": "bash scripts/copy-artifacts.sh",
     "test": "tsc -b && hardhat compile --force && ava",
     "test:watch": "hardhat compile --force && fgbg 'ava --watch' 'tsc -b --watch' --",

@@ -2,7 +2,7 @@
 
 set -xeuo pipefail
 
-yarn lerna run prepublish
+yarn lerna run clean
 
 yarn prepare
 
