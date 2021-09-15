@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Silence all warnings when using `silenceWarnings`.
+
 ## 1.9.0 (2021-08-25)
 
 - Add `getBeaconAddress`. ([#413](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/413))

@@ -2,6 +2,9 @@ import { ValidationError } from './run';
 import { ProxyDeployment } from '../manifest';
 import { logWarning } from '../utils/log';
 
+// Backwards compatibility
+export { silenceWarnings } from '../utils/log';
+
 export interface ValidationOptions {
   unsafeAllowCustomTypes?: boolean;
   unsafeAllowLinkedLibraries?: boolean;
@@ -80,26 +83,11 @@ export function processExceptions(
         return !isException;
       });
 
-      if (exceptionsFound && !silenced && errorDescription) {
+      if (exceptionsFound && errorDescription) {
         logWarning(`Potentially unsafe deployment of ${contractName}`, errorDescription);
       }
     }
   }
 
   return errors;
-}
-
-let silenced = false;
-
-export function silenceWarnings(): void {
-  if (!silenced) {
-    logWarning(`All subsequent Upgrades warnings will be silenced.`, [
-      `Make sure you have manually checked all uses of unsafe flags.`,
-    ]);
-    silenced = true;
-  }
-}
-
-export function isSilencingWarnings(): boolean {
-  return silenced;
 }

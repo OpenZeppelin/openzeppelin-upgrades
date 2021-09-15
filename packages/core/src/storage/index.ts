@@ -6,8 +6,8 @@ import { UpgradesError } from '../error';
 import { StorageLayout, getDetailedLayout } from './layout';
 import { StorageOperation, StorageItem, StorageLayoutComparator } from './compare';
 import { LayoutCompatibilityReport } from './report';
-import { ValidationOptions, isSilencingWarnings, withValidationDefaults } from '../validate/overrides';
-import { logWarning } from '../utils/log';
+import { ValidationOptions, withValidationDefaults } from '../validate/overrides';
+import { logNote, logWarning } from '../utils/log';
 
 export function assertStorageUpgradeSafe(
   original: StorageLayout,
@@ -36,18 +36,13 @@ export function assertStorageUpgradeSafe(
   const comparator = new StorageLayoutComparator(opts.unsafeAllowCustomTypes, opts.unsafeAllowRenames);
   const report = comparator.compareLayouts(originalDetailed, updatedDetailed);
 
-  if (!isSilencingWarnings()) {
-    if (comparator.hasAllowedUncheckedCustomTypes) {
-      logWarning(`Potentially unsafe deployment`, [
-        `You are using \`unsafeAllowCustomTypes\` to force approve structs or enums with missing data.`,
-        `Make sure you have manually checked the storage layout for incompatibilities.`,
-      ]);
-    } else if (opts.unsafeAllowCustomTypes) {
-      console.error(
-        chalk.yellow.bold('Note:') +
-          ` \`unsafeAllowCustomTypes\` is no longer necessary. Structs are enums are automatically checked.\n`,
-      );
-    }
+  if (comparator.hasAllowedUncheckedCustomTypes) {
+    logWarning(`Potentially unsafe deployment`, [
+      `You are using \`unsafeAllowCustomTypes\` to force approve structs or enums with missing data.`,
+      `Make sure you have manually checked the storage layout for incompatibilities.`,
+    ]);
+  } else if (opts.unsafeAllowCustomTypes) {
+    logNote(`\`unsafeAllowCustomTypes\` is no longer necessary. Structs are enums are automatically checked.\n`);
   }
 
   if (!report.pass) {
