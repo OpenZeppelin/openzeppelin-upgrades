@@ -90,7 +90,7 @@ export class Manifest {
     try {
       const data = JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
       return validateOrUpdateManifestVersion(data);
-    } catch (e) {
+    } catch (e: any) {
       if (e.code === 'ENOENT') {
         return defaultManifest();
       } else {

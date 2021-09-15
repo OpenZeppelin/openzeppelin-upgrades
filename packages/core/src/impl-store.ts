@@ -3,6 +3,7 @@ import { Manifest, ManifestData, ImplDeployment } from './manifest';
 import { EthereumProvider, isDevelopmentNetwork } from './provider';
 import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import type { Version } from './version';
+import assert from 'assert';
 
 interface ManifestLens<T> {
   description: string;
@@ -46,6 +47,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
     // If we run into a deployment error, we remove it from the manifest.
     if (e instanceof InvalidDeployment) {
       await manifest.lockedRun(async () => {
+        assert(e instanceof InvalidDeployment); // Not sure why this is needed but otherwise doesn't type
         const data = await manifest.read();
         const deployment = lens(data);
         const stored = deployment.get();
