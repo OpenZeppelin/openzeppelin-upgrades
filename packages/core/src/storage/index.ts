@@ -1,5 +1,3 @@
-import chalk from 'chalk';
-
 export * from './compat';
 
 import { UpgradesError } from '../error';
