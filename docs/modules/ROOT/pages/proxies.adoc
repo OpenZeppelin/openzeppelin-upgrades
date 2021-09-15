@@ -144,7 +144,7 @@ To ensure that the `initialize` function can only be called once, a simple modif
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract MyContract is Initializable {
     function initialize(

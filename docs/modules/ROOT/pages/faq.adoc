@@ -22,9 +22,9 @@ As a replacement for the constructor, it is common to set up an `initialize` fun
 
 [source,solidity]
 ----
-import "@openzeppelin/contracts/proxy/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 // Alternatively, if you are using @openzeppelin/contracts-upgradeable:
-// import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+// import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract MyContract is Initializable {
   uint256 value;

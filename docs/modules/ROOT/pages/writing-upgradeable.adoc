@@ -54,7 +54,7 @@ Since this pattern is very common when writing upgradeable contracts, OpenZeppel
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract MyContract is Initializable {
     uint256 public x;
@@ -210,7 +210,7 @@ For instance, in the following example, even if `MyContract` is deployed as upgr
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MyContract is Initializable {
@@ -230,7 +230,7 @@ If you would like the `ERC20` instance to be upgradeable, the easiest way to ach
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 contract MyContract is Initializable {
