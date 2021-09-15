@@ -17,7 +17,7 @@
     "@typescript-eslint/parser": "^4.1.0",
     "eslint": "^7.4.0",
     "eslint-config-prettier": "^8.0.0",
-    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-unicorn": "^36.0.0",
     "ethers": "^5.0.5",
     "lerna": "^4.0.0",
