@@ -68,7 +68,6 @@ export function stubProvider(chainId = genChainId(), clientVersion = defaultClie
     failTx(txHash: string) {
       return failedTxs.add(txHash);
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async send(method: string, params?: unknown[]): Promise<any> {
       methodCounters.set(method, 1 + (methodCounters.get(method) ?? 0));
 

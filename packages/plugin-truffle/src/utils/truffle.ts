@@ -45,7 +45,6 @@ export interface ContractInstance {
       };
     };
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [other: string]: any;
 }
 
@@ -58,7 +57,6 @@ export interface TruffleArtifact {
   ast?: SourceUnit;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TruffleProviderResult = { result: any; error: { message: string } };
 type TruffleProviderSend = (
   args: { method: string; params: unknown[]; id: string; jsonrpc: '2.0' },
