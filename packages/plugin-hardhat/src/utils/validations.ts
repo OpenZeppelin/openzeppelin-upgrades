@@ -37,7 +37,7 @@ export async function readValidations(hre: HardhatRuntimeEnvironment): Promise<V
       throw new ValidationsCacheOutdated();
     }
     return data;
-  } catch (e) {
+  } catch (e: any) {
     if (e.code === 'ENOENT') {
       throw new ValidationsCacheNotFound();
     } else {

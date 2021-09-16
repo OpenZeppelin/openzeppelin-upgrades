@@ -61,9 +61,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
 
 function describeError(e: ValidationError): string {
   const info = errorInfo[e.kind];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const log = [chalk.bold(e.src) + ': ' + info.msg(e as any)];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hint = info.hint?.(e as any);
   if (hint) {
     log.push(hint);
