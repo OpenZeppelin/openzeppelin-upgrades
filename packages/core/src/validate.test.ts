@@ -131,3 +131,4 @@ testValid('UsesExplicitSafeInternalLibraryNatspec', 'transparent', true);
 testValid('UsesExplicitSafeExternalLibraryNatspec', 'transparent', true);
 testValid('UsesExplicitUnsafeInternalLibraryNatspec', 'transparent', true);
 testValid('UsesExplicitUnsafeExternalLibraryNatspec', 'transparent', true);
+testValid('TransitiveLibraryIsUnsafe', 'transparent', false);

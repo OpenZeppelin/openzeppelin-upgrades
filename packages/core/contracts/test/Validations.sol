@@ -179,3 +179,19 @@ contract HasInlineAssembly {
     }
   }
 }
+
+library TransitiveLibrary {
+    function f3() internal {
+        selfdestruct(msg.sender);
+    }
+}
+library DirectLibrary {
+    function f2() internal {
+        TransitiveLibrary.f3();
+    }
+}
+contract TransitiveLibraryIsUnsafe {
+    function f1() public {
+        DirectLibrary.f2();
+    }
+}
