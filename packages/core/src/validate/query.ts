@@ -105,9 +105,8 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
 
-  const errors = c.errors
-    .concat(...c.inherit.map(name => runValidation[name].errors))
-    .concat(...c.libraries.map(name => runValidation[name].errors));
+  const errors = getUsedContractsAndLibraries(contractName, runValidation)
+    .flatMap(name => runValidation[name].errors)
 
   const selfAndInheritedMethods = c.methods.concat(...c.inherit.map(name => runValidation[name].methods));
 
@@ -119,6 +118,19 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
   }
 
   return errors;
+}
+
+function getUsedContractsAndLibraries(contractName: string, runValidation: ValidationRunData) {
+  const c = runValidation[contractName];
+  // Add current contract and all of its parents
+  const res = new Set([contractName, ...c.inherit]);
+  // Add used libraries transitively until no more are found
+  for (const c1 of res) {
+    for (const c2 of runValidation[c1].libraries) {
+      res.add(c2);
+    }
+  }
+  return Array.from(res);
 }
 
 export function isUpgradeSafe(data: ValidationData, version: Version): boolean {

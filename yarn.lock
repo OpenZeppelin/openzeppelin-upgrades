@@ -2419,6 +2419,11 @@
   dependencies:
     "@octokit/openapi-types" "^10.2.2"
 
+"@openzeppelin/contracts-upgradeable@4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.1.0.tgz#36a6113ceeda278ae14f740280e5388161dfd383"
+  integrity sha512-QZSvbYqNpU/x60vARhq/jghh97VWjml3NAlKfu4u1XehvpEBbHVXJyKTBSZtZY7jviG305jOczEisnN8VeOMcw==
+
 "@openzeppelin/contracts@4.1.0":
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.1.0.tgz#baec89a7f5f73e3d8ea582a78f1980134b605375"
@@ -3693,7 +3698,6 @@
 
 "@zondax/filecoin-signing-tools@github:Digital-MOB-Filecoin/filecoin-signing-tools-js":
   version "0.2.0"
-  uid "8f8e92157cac2556d35cab866779e9a8ea8a4e25"
   resolved "https://codeload.github.com/Digital-MOB-Filecoin/filecoin-signing-tools-js/tar.gz/8f8e92157cac2556d35cab866779e9a8ea8a4e25"
   dependencies:
     axios "^0.20.0"

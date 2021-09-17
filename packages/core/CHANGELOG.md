@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.2 (2021-09-17)
+
+- Fix a bug where libraries used transitively were not considered for safety checks.
+
 ## 1.9.1 (2021-09-15)
 
 - Silence all warnings when using `silenceWarnings`.
