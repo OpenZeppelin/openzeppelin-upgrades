@@ -3,7 +3,6 @@ import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
 import {
   Manifest,
-  ValidationOptions,
   getAdminAddress,
   withValidationDefaults,
   setProxyKind,
@@ -18,14 +17,16 @@ import {
   ContractAddressOrInstance,
 } from './utils';
 
+import { DeployOptions } from './deploy-proxy';
+
 export type UpgradeFunction = (
   proxy: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
-  opts?: ValidationOptions,
+  opts?: DeployOptions,
 ) => Promise<Contract>;
 
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunction {
-  return async function upgradeProxy(proxy, ImplFactory, opts: ValidationOptions = {}) {
+  return async function upgradeProxy(proxy, ImplFactory, opts: DeployOptions = {}) {
     const { provider } = hre.network;
 
     const proxyAddress = getContractAddress(proxy);
@@ -33,7 +34,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     await setProxyKind(provider, proxyAddress, opts);
 
     const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
-    const nextImpl = await deployImpl(hre, ImplFactory, withValidationDefaults(opts), proxyAddress);
+    const nextImpl = await deployImpl(hre, ImplFactory, withValidationDefaults(opts), proxyAddress, opts.constructorArgs);
     const upgradeTx = await upgradeTo(nextImpl);
 
     const inst = ImplFactory.attach(proxyAddress);

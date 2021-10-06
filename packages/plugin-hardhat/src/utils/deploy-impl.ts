@@ -22,6 +22,7 @@ export async function deployImpl(
   ImplFactory: ContractFactory,
   requiredOpts: Required<ValidationOptions>,
   proxyAddress?: string,
+  constructorArgs?: unknown[]
 ): Promise<string> {
   const { provider } = hre.network;
   const validations = await readValidations(hre);
@@ -38,7 +39,7 @@ export async function deployImpl(
   }
 
   return await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(ImplFactory);
+    const deployment = await deploy(ImplFactory, ...(constructorArgs ?? []));
     return { ...deployment, layout };
   });
 }
