@@ -22,7 +22,7 @@ export async function deployImpl(
   ImplFactory: ContractFactory,
   requiredOpts: Required<ValidationOptions>,
   proxyAddress?: string,
-  constructorArgs?: unknown[]
+  constructorArgs?: unknown[],
 ): Promise<string> {
   const { provider } = hre.network;
   const validations = await readValidations(hre);

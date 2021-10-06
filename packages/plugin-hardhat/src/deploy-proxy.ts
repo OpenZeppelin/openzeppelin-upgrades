@@ -25,7 +25,7 @@ export interface DeployFunction {
 }
 
 export interface DeployOptions extends ValidationOptions {
-  initializer?:     string | false;
+  initializer?: string | false;
   constructorArgs?: unknown[];
 }
 
