@@ -3,14 +3,14 @@ import type { ContractFactory, Contract } from 'ethers';
 
 import {
   Manifest,
-  ValidationOptions,
   fetchOrDeployAdmin,
   logWarning,
-  withValidationDefaults,
   ProxyDeployment,
 } from '@openzeppelin/upgrades-core';
 
 import {
+  DeployOptions,
+  withDeployDefaults,
   deploy,
   deployImpl,
   getProxyFactory,
@@ -24,11 +24,6 @@ export interface DeployFunction {
   (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
 }
 
-export interface DeployOptions extends ValidationOptions {
-  initializer?: string | false;
-  constructorArgs?: unknown[];
-}
-
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
   return async function deployProxy(
     ImplFactory: ContractFactory,
@@ -40,7 +35,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       args = [];
     }
 
-    const requiredOpts = withValidationDefaults(opts);
+    const requiredOpts = withDeployDefaults(opts);
     const { kind } = requiredOpts;
 
     const { provider } = hre.network;

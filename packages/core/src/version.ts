@@ -10,8 +10,8 @@ export interface Version {
 export function getVersion(bytecode: string, linkedBytecode?: string, constructorArgs?: string): Version {
   if (bytecode !== '') {
     return {
-      withMetadata: hashBytecode(bytecode, constructorArgs),
-      withoutMetadata: hashBytecodeWithoutMetadata(bytecode, constructorArgs),
+      withMetadata: hashBytecode(bytecode),
+      withoutMetadata: hashBytecodeWithoutMetadata(bytecode),
       linkedWithoutMetadata: hashBytecodeWithoutMetadata(linkedBytecode ?? bytecode, constructorArgs),
     };
   } else {
