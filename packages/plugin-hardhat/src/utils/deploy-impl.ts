@@ -27,7 +27,7 @@ export async function deployImpl(
   const { provider } = hre.network;
   const validations = await readValidations(hre);
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
-  const version = getVersion(unlinkedBytecode, ImplFactory.bytecode);
+  const version = getVersion(unlinkedBytecode, ImplFactory.bytecode, ImplFactory.interface.encodeDeploy(constructorArgs));
   const layout = getStorageLayout(validations, version);
   assertUpgradeSafe(validations, version, requiredOpts);
 
