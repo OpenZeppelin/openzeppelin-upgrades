@@ -7,8 +7,6 @@ test.before(async t => {
 });
 
 test('admin.getInstance', async t => {
-  await t.throwsAsync(upgrades.admin.getInstance(), undefined, 'No ProxyAdmin was found in the network manifest');
-
   const { Greeter } = t.context;
   const greeter = await upgrades.deployProxy(Greeter, ['Hola admin!'], { kind: 'transparent' });
   const adminInstance = await upgrades.admin.getInstance();
