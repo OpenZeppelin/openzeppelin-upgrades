@@ -1,12 +1,7 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import {
-  Manifest,
-  fetchOrDeployAdmin,
-  logWarning,
-  ProxyDeployment,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
 
 import {
   DeployOptions,
@@ -50,7 +45,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       }
     }
 
-    const impl = await deployImpl(hre, ImplFactory, requiredOpts, undefined, opts.constructorArgs);
+    const impl = await deployImpl(hre, ImplFactory, requiredOpts, undefined);
     const data = getInitializerData(ImplFactory, args, opts.initializer);
 
     let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;

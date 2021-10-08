@@ -9,26 +9,26 @@ import {
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
-  Options,
-  withDefaults,
+  DeployOptions,
+  withDeployDefaults,
 } from './utils';
 
-interface DeployOptions extends Options {
-  initializer?: string | false;
-}
-
-export async function deployProxy(Contract: ContractClass, opts?: Options): Promise<ContractInstance>;
-export async function deployProxy(Contract: ContractClass, args?: unknown[], opts?: Options): Promise<ContractInstance>;
+export async function deployProxy(Contract: ContractClass, opts?: DeployOptions): Promise<ContractInstance>;
 export async function deployProxy(
   Contract: ContractClass,
-  args: unknown[] | Options = [],
+  args?: unknown[],
+  opts?: DeployOptions,
+): Promise<ContractInstance>;
+export async function deployProxy(
+  Contract: ContractClass,
+  args: unknown[] | DeployOptions = [],
   opts: DeployOptions = {},
 ): Promise<ContractInstance> {
   if (!Array.isArray(args)) {
     opts = args;
     args = [];
   }
-  const requiredOpts = withDefaults(opts);
+  const requiredOpts = withDeployDefaults(opts);
   const { kind } = requiredOpts;
 
   const provider = wrapProvider(requiredOpts.deployer.provider);

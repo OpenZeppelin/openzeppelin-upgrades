@@ -1,9 +1,9 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import { withValidationDefaults, setProxyKind } from '@openzeppelin/upgrades-core';
+import { setProxyKind } from '@openzeppelin/upgrades-core';
 
-import { Options, ContractAddressOrInstance, deployImpl, getContractAddress } from './utils';
+import { Options, ContractAddressOrInstance, deployImpl, getContractAddress, withDefaults } from './utils';
 
 export type PrepareUpgradeFunction = (
   proxyAddress: ContractAddressOrInstance,
@@ -19,6 +19,6 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
 
     await setProxyKind(provider, proxyAddress, opts);
 
-    return await deployImpl(hre, ImplFactory, withValidationDefaults(opts), proxyAddress, opts.constructorArgs);
+    return await deployImpl(hre, ImplFactory, withDefaults(opts), proxyAddress);
   };
 }

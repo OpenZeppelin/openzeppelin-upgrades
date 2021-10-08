@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
-import { Manifest, getAdminAddress, withValidationDefaults, setProxyKind, getCode } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress, setProxyKind, getCode } from '@openzeppelin/upgrades-core';
 
 import {
   Options,
@@ -10,6 +10,7 @@ import {
   getProxyAdminFactory,
   getContractAddress,
   ContractAddressOrInstance,
+  withDefaults,
 } from './utils';
 
 export type UpgradeFunction = (
@@ -27,13 +28,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     await setProxyKind(provider, proxyAddress, opts);
 
     const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
-    const nextImpl = await deployImpl(
-      hre,
-      ImplFactory,
-      withValidationDefaults(opts),
-      proxyAddress,
-      opts.constructorArgs,
-    );
+    const nextImpl = await deployImpl(hre, ImplFactory, withDefaults(opts), proxyAddress);
     const upgradeTx = await upgradeTo(nextImpl);
 
     const inst = ImplFactory.attach(proxyAddress);

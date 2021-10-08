@@ -3,7 +3,6 @@ import type { ContractFactory } from 'ethers';
 
 import {
   Manifest,
-  ValidationOptions,
   assertUpgradeSafe,
   assertStorageUpgradeSafe,
   fetchOrDeploy,
@@ -15,19 +14,20 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
+import { Options } from './options';
 import { readValidations } from './validations';
 
 export async function deployImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  requiredOpts: Required<ValidationOptions>,
+  requiredOpts: Required<Options>,
   proxyAddress?: string,
-  constructorArgs?: unknown[],
 ): Promise<string> {
   const { provider } = hre.network;
   const validations = await readValidations(hre);
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
-  const version = getVersion(unlinkedBytecode, ImplFactory.bytecode, ImplFactory.interface.encodeDeploy(constructorArgs));
+  const encodedArgs = ImplFactory.interface.encodeDeploy(requiredOpts.constructorArgs);
+  const version = getVersion(unlinkedBytecode, ImplFactory.bytecode, encodedArgs);
   const layout = getStorageLayout(validations, version);
   assertUpgradeSafe(validations, version, requiredOpts);
 
@@ -39,7 +39,7 @@ export async function deployImpl(
   }
 
   return await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(ImplFactory, ...(constructorArgs ?? []));
+    const deployment = await deploy(ImplFactory, ...requiredOpts.constructorArgs);
     return { ...deployment, layout };
   });
 }
