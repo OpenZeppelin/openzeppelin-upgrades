@@ -45,7 +45,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       }
     }
 
-    const impl = await deployImpl(hre, ImplFactory, requiredOpts, undefined);
+    const impl = await deployImpl(hre, ImplFactory, requiredOpts);
     const data = getInitializerData(ImplFactory, args, opts.initializer);
 
     let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;
