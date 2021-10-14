@@ -7,7 +7,7 @@ export interface Version {
   linkedWithoutMetadata: string;
 }
 
-export function getVersion(bytecode: string, linkedBytecode?: string, constructorArgs: string = ''): Version {
+export function getVersion(bytecode: string, linkedBytecode?: string, constructorArgs = ''): Version {
   if (bytecode !== '') {
     return {
       withMetadata: hashBytecode(bytecode),
@@ -19,7 +19,7 @@ export function getVersion(bytecode: string, linkedBytecode?: string, constructo
   }
 }
 
-export function hashBytecode(bytecode: string, constructorArgs: string = ''): string {
+export function hashBytecode(bytecode: string, constructorArgs = ''): string {
   bytecode = bytecode
     .replace(/__\$([0-9a-fA-F]{34})\$__/g, (_, placeholder) => `000${placeholder}000`)
     .replace(/__\w{36}__/g, placeholder => keccak256(Buffer.from(placeholder)).toString('hex', 0, 20));
@@ -43,7 +43,7 @@ export function hashBytecode(bytecode: string, constructorArgs: string = ''): st
   return keccak256(buf).toString('hex');
 }
 
-export function hashBytecodeWithoutMetadata(bytecode: string, constructorArgs: string = ''): string {
+export function hashBytecodeWithoutMetadata(bytecode: string, constructorArgs = ''): string {
   return hashBytecode(trimBytecodeMetadata(bytecode), constructorArgs);
 }
 
