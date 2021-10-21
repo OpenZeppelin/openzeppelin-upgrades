@@ -15,13 +15,7 @@ export async function prepareUpgrade(
   Contract: ContractClass,
   opts: Options = {},
 ): Promise<string> {
-  const requiredOpts: Required<Options> = withDefaults(opts);
-
-  const provider = wrapProvider(requiredOpts.deployer.provider);
-
   const proxyAddress = getContractAddress(proxy);
-
-  requiredOpts.kind = await setProxyKind(provider, proxyAddress, opts);
-
-  return await deployImpl(Contract, requiredOpts, proxyAddress);
+  const { impl } = await deployImpl(Contract, opts, proxyAddress);
+  return impl;
 }
