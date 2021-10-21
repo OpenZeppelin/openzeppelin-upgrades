@@ -1,14 +1,4 @@
-import { setProxyKind } from '@openzeppelin/upgrades-core';
-
-import {
-  ContractClass,
-  wrapProvider,
-  deployImpl,
-  Options,
-  withDefaults,
-  ContractAddressOrInstance,
-  getContractAddress,
-} from './utils';
+import { ContractClass, deployImpl, Options, ContractAddressOrInstance, getContractAddress } from './utils';
 
 export async function prepareUpgrade(
   proxy: ContractAddressOrInstance,

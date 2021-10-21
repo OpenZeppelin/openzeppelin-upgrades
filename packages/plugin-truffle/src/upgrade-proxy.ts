@@ -1,4 +1,4 @@
-import { Manifest, getAdminAddress, setProxyKind, getCode, EthereumProvider } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress, getCode, EthereumProvider } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,

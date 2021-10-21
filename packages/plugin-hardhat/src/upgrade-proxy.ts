@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
-import { Manifest, ValidationOptions, getAdminAddress, setProxyKind, getCode } from '@openzeppelin/upgrades-core';
+import { Manifest, ValidationOptions, getAdminAddress, getCode } from '@openzeppelin/upgrades-core';
 
 import {
   deployImpl,

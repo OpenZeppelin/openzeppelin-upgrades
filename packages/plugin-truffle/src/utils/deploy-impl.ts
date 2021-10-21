@@ -23,11 +23,7 @@ interface DeployedImpl {
   kind: NonNullable<ValidationOptions['kind']>;
 }
 
-export async function deployImpl(
-  Contract: ContractClass,
-  opts: Options,
-  proxyAddress?: string,
-): Promise<DeployedImpl> {
+export async function deployImpl(Contract: ContractClass, opts: Options, proxyAddress?: string): Promise<DeployedImpl> {
   const fullOpts = withDefaults(opts);
   const provider = wrapProvider(fullOpts.deployer.provider);
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
@@ -58,6 +54,5 @@ export async function deployImpl(
     return { ...deployment, layout };
   });
 
-  const { kind } = fullOpts;
   return { impl, kind: fullOpts.kind };
 }
