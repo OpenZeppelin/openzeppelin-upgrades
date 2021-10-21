@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.0
+
+- Infer whether a proxy should be UUPS or Transparent. ([#441](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/441))
+
 ## 1.9.1 (2021-08-31)
 
 - Make options argument optional in `erc1967` functions.

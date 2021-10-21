@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.0
+
+- Infer whether a proxy should be UUPS or Transparent. ([#441](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/441))
+
 ## 1.9.2 (2021-09-17)
 
 - Fix a bug where libraries used transitively were not considered for safety checks.
