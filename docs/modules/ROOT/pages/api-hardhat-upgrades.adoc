@@ -30,7 +30,7 @@ The following options have been deprecated.
 
 Creates a proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
 
-* `initializer`: set a different initializer function to call, or specify `false` to disable initialization
+* `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization
 * See <<common-options>>.
 
 [source,ts]
