@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.0
+
+- Add implementation constructor arguments to initialize immutable variables. ([#433](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/433))
+
 ## 1.10.0 (2021-08-25)
 
 - Add `erc1967` module. ([#413](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/413))

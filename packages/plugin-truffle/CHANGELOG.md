@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.0
+
+- Add implementation constructor arguments to initialize immutable variables. ([#433](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/433))
+
 ## 1.9.1 (2021-08-31)
 
 - Make options argument optional in `erc1967` functions.

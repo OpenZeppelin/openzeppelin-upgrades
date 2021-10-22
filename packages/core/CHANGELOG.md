@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.0
+
+- Add implementation constructor arguments to initialize immutable variables. ([#433](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/433))
+
 ## 1.9.2 (2021-09-17)
 
 - Fix a bug where libraries used transitively were not considered for safety checks.

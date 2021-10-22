@@ -18,6 +18,7 @@ The following options are common to all functions.
 ** `"delegatecall"`, `"selfdestruct"`: Allow the use of these operations. Incorrect use of this option can put funds at risk of permanent loss. See xref:faq.adoc#delegatecall-selfdestruct[Can I safely use `delegatecall` and `selfdestruct`?]
 ** `"missing-public-upgradeto"`: Allow UUPS implementations that do not contain a public `upgradeTo` function. Enabling this option is likely to cause a revert due to the built-in UUPS safety mechanism.
 * `unsafeAllowRenames`: (`boolean`) Configure storage layout check to allow variable renaming.
+* `constructorArgs`: (`unknown[]`) Provide arguments for the constructor of the implementation contract. Note that these are different from initializer arguments, and will be used in the deployment of the implementation contract itself. Can be used to initialize immutable variables.
 
 Note that the options un `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
