@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.10.0
+## 1.10.0 (2021-10-22)
 
 - Infer whether a proxy should be UUPS or Transparent. ([#441](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/441))
 - Add a standalone interface to the core. ([#442](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/442))
