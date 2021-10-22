@@ -17,7 +17,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
-import { Options, withDeployDefaults } from './options';
+import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
 
 interface DeployedImpl {
@@ -46,7 +46,7 @@ export async function deployImpl(
     await setProxyKind(provider, proxyAddress, opts);
   }
 
-  const fullOpts = withDeployDefaults(opts);
+  const fullOpts = withDefaults(opts);
 
   assertUpgradeSafe(validations, version, fullOpts);
 

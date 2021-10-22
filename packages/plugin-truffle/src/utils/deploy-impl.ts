@@ -29,7 +29,7 @@ export async function deployImpl(Contract: ContractClass, opts: Options, proxyAd
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
   const linkedBytecode = await getLinkedBytecode(Contract, provider);
-  const encodedArgs = encodeArgs(Contract, requiredOpts.constructorArgs);
+  const encodedArgs = encodeArgs(Contract, fullOpts.constructorArgs);
   const version = getVersion(Contract.bytecode, linkedBytecode, encodedArgs);
   const layout = getStorageLayout([validations], version);
 
