@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.0
+
+- Add a standalone interface to the core. ([#442](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/442))
+
 ## 1.9.2 (2021-09-17)
 
 - Fix a bug where libraries used transitively were not considered for safety checks.
