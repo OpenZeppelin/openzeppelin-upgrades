@@ -10,8 +10,7 @@ export function assertUpgradeSafe(data: ValidationData, version: Version, opts: 
   const dataV3 = normalizeValidationData(data);
   const [contractName] = getContractNameAndRunValidation(dataV3, version);
 
-  let errors = getErrors(dataV3, version);
-  errors = processExceptions(contractName, errors, opts);
+  const errors = getErrors(dataV3, version, opts);
 
   if (errors.length > 0) {
     throw new ValidationErrors(contractName, errors);
@@ -100,7 +99,7 @@ export function getUnlinkedBytecode(data: ValidationData, bytecode: string): str
   return bytecode;
 }
 
-export function getErrors(data: ValidationData, version: Version): ValidationError[] {
+export function getErrors(data: ValidationData, version: Version, opts: ValidationOptions = {}): ValidationError[] {
   const dataV3 = normalizeValidationData(data);
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
@@ -116,7 +115,7 @@ export function getErrors(data: ValidationData, version: Version): ValidationErr
     });
   }
 
-  return errors;
+  return processExceptions(contractName, errors, opts);
 }
 
 function getUsedContractsAndLibraries(contractName: string, runValidation: ValidationRunData) {

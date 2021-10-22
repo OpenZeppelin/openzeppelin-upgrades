@@ -12,6 +12,7 @@ export {
   getErrors,
   isUpgradeSafe,
 } from './query';
+export { UpgradeableContractErrorReport } from './report';
 
 // Backwards compatibility
 export { silenceWarnings } from '../utils/log';
