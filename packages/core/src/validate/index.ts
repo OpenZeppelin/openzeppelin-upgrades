@@ -11,7 +11,9 @@ export {
   getUnlinkedBytecode,
   getErrors,
   isUpgradeSafe,
+  inferProxyKind,
 } from './query';
+export { UpgradeableContractErrorReport } from './report';
 
 // Backwards compatibility
 export { silenceWarnings } from '../utils/log';

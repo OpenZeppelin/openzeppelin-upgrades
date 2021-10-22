@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import { setProxyKind } from '@openzeppelin/upgrades-core';
+import { ValidationOptions } from '@openzeppelin/upgrades-core';
 
 import { Options, ContractAddressOrInstance, deployImpl, getContractAddress, withDefaults } from './utils';
 
@@ -13,12 +13,8 @@ export type PrepareUpgradeFunction = (
 
 export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgradeFunction {
   return async function prepareUpgrade(proxy, ImplFactory, opts: Options = {}) {
-    const { provider } = hre.network;
-
     const proxyAddress = getContractAddress(proxy);
-
-    await setProxyKind(provider, proxyAddress, opts);
-
-    return await deployImpl(hre, ImplFactory, withDefaults(opts), proxyAddress);
+    const { impl } = await deployImpl(hre, ImplFactory, opts, proxyAddress);
+    return impl;
   };
 }

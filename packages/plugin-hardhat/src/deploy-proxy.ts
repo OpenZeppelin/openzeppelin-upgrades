@@ -1,7 +1,13 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
+import {
+  Manifest,
+  ValidationOptions,
+  fetchOrDeployAdmin,
+  logWarning,
+  ProxyDeployment,
+} from '@openzeppelin/upgrades-core';
 
 import {
   DeployOptions,
@@ -30,11 +36,11 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       args = [];
     }
 
-    const requiredOpts = withDeployDefaults(opts);
-    const { kind } = requiredOpts;
-
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
+
+    const { impl, kind } = await deployImpl(hre, ImplFactory, opts);
+    const data = getInitializerData(ImplFactory, args, opts.initializer);
 
     if (kind === 'uups') {
       if (await manifest.getAdmin()) {
@@ -44,9 +50,6 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
         ]);
       }
     }
-
-    const impl = await deployImpl(hre, ImplFactory, requiredOpts);
-    const data = getInitializerData(ImplFactory, args, opts.initializer);
 
     let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;
     switch (kind) {

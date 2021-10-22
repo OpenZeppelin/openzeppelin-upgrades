@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import _chalk from 'chalk';
 
 import type { BasicOperation } from '../levenshtein';
 import type { ParsedTypeDetailed } from './layout';
@@ -8,13 +8,18 @@ import { indent } from '../utils/indent';
 import { assert } from '../utils/assert';
 
 export class LayoutCompatibilityReport {
-  readonly pass: boolean;
+  constructor(readonly ops: StorageOperation<StorageItem>[]) {}
 
-  constructor(readonly ops: StorageOperation<StorageItem>[]) {
-    this.pass = ops.length === 0;
+  get ok(): boolean {
+    return this.pass;
   }
 
-  explain(): string {
+  get pass(): boolean {
+    return this.ops.length === 0;
+  }
+
+  explain(color = true): string {
+    const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
     const res = [];
 
     for (const op of this.ops) {

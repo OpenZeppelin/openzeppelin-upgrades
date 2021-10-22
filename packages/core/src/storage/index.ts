@@ -29,6 +29,18 @@ export function assertStorageUpgradeSafe(
     opts = withValidationDefaults({ unsafeAllowCustomTypes });
   }
 
+  const report = getStorageUpgradeReport(original, updated, opts);
+
+  if (!report.pass) {
+    throw new StorageUpgradeErrors(report);
+  }
+}
+
+export function getStorageUpgradeReport(
+  original: StorageLayout,
+  updated: StorageLayout,
+  opts: Required<ValidationOptions>,
+): LayoutCompatibilityReport {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
   const comparator = new StorageLayoutComparator(opts.unsafeAllowCustomTypes, opts.unsafeAllowRenames);
@@ -43,12 +55,10 @@ export function assertStorageUpgradeSafe(
     logNote(`\`unsafeAllowCustomTypes\` is no longer necessary. Structs are enums are automatically checked.\n`);
   }
 
-  if (!report.pass) {
-    throw new StorageUpgradeErrors(report);
-  }
+  return report;
 }
 
-class StorageUpgradeErrors extends UpgradesError {
+export class StorageUpgradeErrors extends UpgradesError {
   constructor(readonly report: LayoutCompatibilityReport) {
     super(`New storage layout is incompatible`, () => report.explain());
   }

@@ -5,13 +5,15 @@ import { unlinkBytecode } from '../link-refs';
 import { ValidationOptions, processExceptions } from './overrides';
 import { ValidationErrors } from './error';
 import { ValidationData, normalizeValidationData } from './data';
+import { ProxyDeployment } from '../manifest';
+
+const upgradeToSignature = 'upgradeTo(address)';
 
 export function assertUpgradeSafe(data: ValidationData, version: Version, opts: ValidationOptions): void {
   const dataV3 = normalizeValidationData(data);
   const [contractName] = getContractNameAndRunValidation(dataV3, version);
 
-  let errors = getErrors(dataV3, version);
-  errors = processExceptions(contractName, errors, opts);
+  const errors = getErrors(dataV3, version, opts);
 
   if (errors.length > 0) {
     throw new ValidationErrors(contractName, errors);
@@ -100,23 +102,28 @@ export function getUnlinkedBytecode(data: ValidationData, bytecode: string): str
   return bytecode;
 }
 
-export function getErrors(data: ValidationData, version: Version): ValidationError[] {
+export function getErrors(data: ValidationData, version: Version, opts: ValidationOptions = {}): ValidationError[] {
   const dataV3 = normalizeValidationData(data);
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[contractName];
 
   const errors = getUsedContractsAndLibraries(contractName, runValidation).flatMap(name => runValidation[name].errors);
 
-  const selfAndInheritedMethods = c.methods.concat(...c.inherit.map(name => runValidation[name].methods));
+  const selfAndInheritedMethods = getAllMethods(runValidation, contractName);
 
-  if (!selfAndInheritedMethods.includes('upgradeTo(address)')) {
+  if (!selfAndInheritedMethods.includes(upgradeToSignature)) {
     errors.push({
       src: c.src,
       kind: 'missing-public-upgradeto',
     });
   }
 
-  return errors;
+  return processExceptions(contractName, errors, opts);
+}
+
+function getAllMethods(runValidation: ValidationRunData, contractName: string): string[] {
+  const c = runValidation[contractName];
+  return c.methods.concat(...c.inherit.map(name => runValidation[name].methods));
 }
 
 function getUsedContractsAndLibraries(contractName: string, runValidation: ValidationRunData) {
@@ -135,4 +142,15 @@ function getUsedContractsAndLibraries(contractName: string, runValidation: Valid
 export function isUpgradeSafe(data: ValidationData, version: Version): boolean {
   const dataV3 = normalizeValidationData(data);
   return getErrors(dataV3, version).length == 0;
+}
+
+export function inferProxyKind(data: ValidationData, version: Version): ProxyDeployment['kind'] {
+  const dataV3 = normalizeValidationData(data);
+  const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
+  const methods = getAllMethods(runValidation, contractName);
+  if (methods.includes(upgradeToSignature)) {
+    return 'uups';
+  } else {
+    return 'transparent';
+  }
 }
