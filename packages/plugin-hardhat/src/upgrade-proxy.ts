@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
-import { Manifest, ValidationOptions, getAdminAddress, getCode } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress, getCode } from '@openzeppelin/upgrades-core';
 
 import {
   Options,
@@ -10,7 +10,6 @@ import {
   getProxyAdminFactory,
   getContractAddress,
   ContractAddressOrInstance,
-  withDefaults,
 } from './utils';
 
 export type UpgradeFunction = (

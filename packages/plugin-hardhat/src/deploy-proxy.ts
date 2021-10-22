@@ -1,17 +1,10 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import {
-  Manifest,
-  ValidationOptions,
-  fetchOrDeployAdmin,
-  logWarning,
-  ProxyDeployment,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
 
 import {
   DeployOptions,
-  withDeployDefaults,
   deploy,
   deployImpl,
   getProxyFactory,

@@ -1,9 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import { ValidationOptions } from '@openzeppelin/upgrades-core';
-
-import { Options, ContractAddressOrInstance, deployImpl, getContractAddress, withDefaults } from './utils';
+import { Options, ContractAddressOrInstance, deployImpl, getContractAddress } from './utils';
 
 export type PrepareUpgradeFunction = (
   proxyAddress: ContractAddressOrInstance,
