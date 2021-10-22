@@ -173,7 +173,7 @@ contract ParentHasUpgradeToFunction is HasUpgradeToFunction {
 }
 
 contract HasInlineAssembly {
-  function unsafe() public {
+  function unsafe() public pure {
     assembly {
       // Anything could happen here (delegate call / selfdestruct)
     }
