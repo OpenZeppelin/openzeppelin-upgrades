@@ -10,3 +10,4 @@
 .API Reference
 * xref:api-truffle-upgrades.adoc[Truffle Upgrades]
 * xref:api-hardhat-upgrades.adoc[Hardhat Upgrades]
+* xref:api-core.adoc[Core]

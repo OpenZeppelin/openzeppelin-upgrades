@@ -1,0 +1,58 @@
+= OpenZeppelin Upgrades Core API
+
+The core logic to check for upgrade safety as well as storage layout compatibility is implemented by the package `@openzeppelin/upgrades-core`.
+
+The package exports a standalone interface that works with https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description[Solidity input and output JSON objects].
+
+[.hljs-theme-light.nopadding]
+```javascript
+import { UpgradeableContract } from '@openzeppelin/upgrades-core';
+```
+
+== UpgradeableContract
+
+This class represents the implementation for an upgradeable contract and gives access to error reports.
+
+[.hljs-theme-light.nopadding]
+```javascript
+new UpgradeableContract(name, solcInput, solcOutput, opts?);
+```
+
+`opts` is an object with options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options].
+
+TIP: In Hardhat, `solcInput` and `solcOutput` can be obtained from the Build Info file, which itself can be retrieved with `hre.artifacts.getBuildInfo`.
+
+=== getErrorReport
+
+Returns a report about errors pertaining to proxied contracts, e.g. the use of `selfdestruct`.
+
+[.hljs-theme-light.nopadding]
+```javascript
+contract.getErrorReport()
+```
+
+=== getStorageUpgradeReport
+
+Compares the storage layout of an upgradeable contract with that of a proposed upgrade. Receives as an argument another instance of `UpgradeableContract`.
+
+[.hljs-theme-light.nopadding]
+```javascript
+contract.getStorageUpgradeReport(upgradedContract)
+```
+
+== Report
+
+An object that represents the results of an analysis.
+
+[.hljs-theme-light.nopadding]
+```typescript
+interface Report {
+  ok: boolean;
+  explain(color?: boolean): string;
+}
+```
+
+The field `ok` is `false` if any errors were found, and `true` otherwise.
+
+The method `explain()` will return a message explaining the errors in detail, if any.
+
