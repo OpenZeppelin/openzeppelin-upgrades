@@ -1,4 +1,4 @@
-import { Manifest, getAdminAddress, setProxyKind, getCode, EthereumProvider } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress, getCode, EthereumProvider } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
@@ -18,16 +18,13 @@ export async function upgradeProxy(
   Contract: ContractClass,
   opts: Options = {},
 ): Promise<ContractInstance> {
-  const requiredOpts: Required<Options> = withDefaults(opts);
-
-  const provider = wrapProvider(requiredOpts.deployer.provider);
+  const { deployer } = withDefaults(opts);
+  const provider = wrapProvider(deployer.provider);
 
   const proxyAddress = getContractAddress(proxy);
 
-  requiredOpts.kind = await setProxyKind(provider, proxyAddress, opts);
-
   const upgradeTo = await getUpgrader(provider, Contract, proxyAddress);
-  const nextImpl = await deployImpl(Contract, requiredOpts, proxyAddress);
+  const { impl: nextImpl } = await deployImpl(Contract, opts, proxyAddress);
   await upgradeTo(nextImpl);
 
   Contract.address = proxyAddress;

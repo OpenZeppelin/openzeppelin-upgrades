@@ -28,11 +28,12 @@ export async function deployProxy(
     opts = args;
     args = [];
   }
-  const requiredOpts = withDefaults(opts);
-  const { kind } = requiredOpts;
-
-  const provider = wrapProvider(requiredOpts.deployer.provider);
+  const { deployer } = withDefaults(opts);
+  const provider = wrapProvider(deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
+
+  const { impl, kind } = await deployImpl(Contract, opts);
+  const data = getInitializerData(Contract, args, opts.initializer);
 
   if (kind === 'uups') {
     if (await manifest.getAdmin()) {
@@ -43,24 +44,21 @@ export async function deployProxy(
     }
   }
 
-  const impl = await deployImpl(Contract, requiredOpts);
-  const data = getInitializerData(Contract, args, opts.initializer);
-
   let proxyDeployment: Required<ProxyDeployment>;
   switch (kind) {
     case 'uups': {
       const ProxyFactory = getProxyFactory(Contract);
-      proxyDeployment = Object.assign({ kind }, await deploy(requiredOpts.deployer, ProxyFactory, impl, data));
+      proxyDeployment = Object.assign({ kind }, await deploy(deployer, ProxyFactory, impl, data));
       break;
     }
 
     case 'transparent': {
       const AdminFactory = getProxyAdminFactory(Contract);
-      const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(requiredOpts.deployer, AdminFactory));
+      const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(deployer, AdminFactory));
       const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
       proxyDeployment = Object.assign(
         { kind },
-        await deploy(requiredOpts.deployer, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
+        await deploy(deployer, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
       );
       break;
     }

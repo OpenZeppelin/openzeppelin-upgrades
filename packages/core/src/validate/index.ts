@@ -11,6 +11,7 @@ export {
   getUnlinkedBytecode,
   getErrors,
   isUpgradeSafe,
+  inferProxyKind,
 } from './query';
 
 // Backwards compatibility

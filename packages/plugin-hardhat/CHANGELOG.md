@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.0
+
+- Infer whether a proxy should be UUPS or Transparent. ([#441](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/441))
+
 ## 1.10.0 (2021-08-25)
 
 - Add `erc1967` module. ([#413](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/413))

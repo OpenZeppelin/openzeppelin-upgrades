@@ -6,7 +6,6 @@ import {
   ValidationOptions,
   fetchOrDeployAdmin,
   logWarning,
-  withValidationDefaults,
   ProxyDeployment,
 } from '@openzeppelin/upgrades-core';
 
@@ -39,11 +38,11 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       args = [];
     }
 
-    const requiredOpts = withValidationDefaults(opts);
-    const { kind } = requiredOpts;
-
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
+
+    const { impl, kind } = await deployImpl(hre, ImplFactory, opts);
+    const data = getInitializerData(ImplFactory, args, opts.initializer);
 
     if (kind === 'uups') {
       if (await manifest.getAdmin()) {
@@ -53,9 +52,6 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
         ]);
       }
     }
-
-    const impl = await deployImpl(hre, ImplFactory, requiredOpts);
-    const data = getInitializerData(ImplFactory, args, opts.initializer);
 
     let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;
     switch (kind) {

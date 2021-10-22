@@ -1,14 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
-import {
-  Manifest,
-  ValidationOptions,
-  getAdminAddress,
-  withValidationDefaults,
-  setProxyKind,
-  getCode,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, ValidationOptions, getAdminAddress, getCode } from '@openzeppelin/upgrades-core';
 
 import {
   deployImpl,
@@ -26,14 +19,10 @@ export type UpgradeFunction = (
 
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunction {
   return async function upgradeProxy(proxy, ImplFactory, opts: ValidationOptions = {}) {
-    const { provider } = hre.network;
-
     const proxyAddress = getContractAddress(proxy);
 
-    await setProxyKind(provider, proxyAddress, opts);
-
     const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
-    const nextImpl = await deployImpl(hre, ImplFactory, withValidationDefaults(opts), proxyAddress);
+    const { impl: nextImpl } = await deployImpl(hre, ImplFactory, opts, proxyAddress);
     const upgradeTx = await upgradeTo(nextImpl);
 
     const inst = ImplFactory.attach(proxyAddress);
