@@ -18,13 +18,6 @@ export interface DeployOptions extends Options {
   initializer?: string | false;
 }
 
-export function withDeployDefaults(opts: DeployOptions = {}): Required<DeployOptions> {
-  return {
-    initializer: opts.initializer ?? 'initialize',
-    ...withDefaults(opts),
-  };
-}
-
 const defaultDeployer: Deployer = {
   get provider() {
     return getTruffleConfig().provider;

@@ -10,7 +10,7 @@ import {
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   DeployOptions,
-  withDeployDefaults,
+  withDefaults,
 } from './utils';
 
 export async function deployProxy(Contract: ContractClass, opts?: DeployOptions): Promise<ContractInstance>;
@@ -28,7 +28,7 @@ export async function deployProxy(
     opts = args;
     args = [];
   }
-  const { deployer } = withDeployDefaults(opts);
+  const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
 
