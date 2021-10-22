@@ -29,7 +29,8 @@ export async function deployImpl(Contract: ContractClass, opts: Options, proxyAd
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
   const validations = await validateArtifacts(contracts_build_directory, contracts_directory);
   const linkedBytecode = await getLinkedBytecode(Contract, provider);
-  const version = getVersion(Contract.bytecode, linkedBytecode);
+  const encodedArgs = encodeArgs(Contract, fullOpts.constructorArgs);
+  const version = getVersion(Contract.bytecode, linkedBytecode, encodedArgs);
   const layout = getStorageLayout([validations], version);
 
   if (opts.kind === undefined) {
@@ -50,9 +51,18 @@ export async function deployImpl(Contract: ContractClass, opts: Options, proxyAd
   }
 
   const impl = await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(fullOpts.deployer, Contract);
+    const deployment = await deploy(fullOpts.deployer, Contract, ...fullOpts.constructorArgs);
     return { ...deployment, layout };
   });
 
   return { impl, kind: fullOpts.kind };
+}
+
+function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string {
+  const fragment = (Contract as any).abi.find((entry: any) => entry.type == 'constructor');
+
+  return (Contract as any).web3.eth.abi.encodeParameters(
+    fragment?.inputs?.map((entry: any) => entry.type) ?? [],
+    constructorArgs,
+  );
 }

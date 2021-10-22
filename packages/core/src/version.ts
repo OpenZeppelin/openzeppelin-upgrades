@@ -7,19 +7,19 @@ export interface Version {
   linkedWithoutMetadata: string;
 }
 
-export function getVersion(bytecode: string, linkedBytecode?: string): Version {
+export function getVersion(bytecode: string, linkedBytecode?: string, constructorArgs = ''): Version {
   if (bytecode !== '') {
     return {
       withMetadata: hashBytecode(bytecode),
       withoutMetadata: hashBytecodeWithoutMetadata(bytecode),
-      linkedWithoutMetadata: hashBytecodeWithoutMetadata(linkedBytecode ?? bytecode),
+      linkedWithoutMetadata: hashBytecodeWithoutMetadata(linkedBytecode ?? bytecode, constructorArgs),
     };
   } else {
     throw new Error('Abstract contract not allowed here');
   }
 }
 
-export function hashBytecode(bytecode: string): string {
+export function hashBytecode(bytecode: string, constructorArgs = ''): string {
   bytecode = bytecode
     .replace(/__\$([0-9a-fA-F]{34})\$__/g, (_, placeholder) => `000${placeholder}000`)
     .replace(/__\w{36}__/g, placeholder => keccak256(Buffer.from(placeholder)).toString('hex', 0, 20));
@@ -31,12 +31,20 @@ export function hashBytecode(bytecode: string): string {
     throw new Error('Bytecode is not a valid hex string');
   }
 
-  const buf = Buffer.from(bytecode.replace(/^0x/, ''), 'hex');
+  if (!/^(0x)?[0-9a-fA-F]*$/.test(constructorArgs)) {
+    throw new Error('Constructor arguments are not a valid hex string');
+  }
+
+  const buf = Buffer.concat([
+    Buffer.from(bytecode.replace(/^0x/, ''), 'hex'),
+    Buffer.from(constructorArgs.replace(/^0x/, ''), 'hex'),
+  ]);
+
   return keccak256(buf).toString('hex');
 }
 
-export function hashBytecodeWithoutMetadata(bytecode: string): string {
-  return hashBytecode(trimBytecodeMetadata(bytecode));
+export function hashBytecodeWithoutMetadata(bytecode: string, constructorArgs = ''): string {
+  return hashBytecode(trimBytecodeMetadata(bytecode), constructorArgs);
 }
 
 function trimBytecodeMetadata(bytecode: string): string {

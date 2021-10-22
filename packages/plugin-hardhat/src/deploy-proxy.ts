@@ -1,15 +1,10 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import {
-  Manifest,
-  ValidationOptions,
-  fetchOrDeployAdmin,
-  logWarning,
-  ProxyDeployment,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
 
 import {
+  DeployOptions,
   deploy,
   deployImpl,
   getProxyFactory,
@@ -21,10 +16,6 @@ import {
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
   (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
-}
-
-export interface DeployOptions extends ValidationOptions {
-  initializer?: string | false;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {

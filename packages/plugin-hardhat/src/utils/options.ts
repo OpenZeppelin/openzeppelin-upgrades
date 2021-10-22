@@ -1,14 +1,11 @@
-import { Deployer, ContractClass, ContractInstance, getTruffleConfig } from './truffle';
 import { ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
 
 export interface Options extends ValidationOptions {
-  deployer?: Deployer;
   constructorArgs?: unknown[];
 }
 
 export function withDefaults(opts: Options = {}): Required<Options> {
   return {
-    deployer: opts.deployer ?? defaultDeployer,
     constructorArgs: opts.constructorArgs ?? [],
     ...withValidationDefaults(opts),
   };
@@ -17,12 +14,3 @@ export function withDefaults(opts: Options = {}): Required<Options> {
 export interface DeployOptions extends Options {
   initializer?: string | false;
 }
-
-const defaultDeployer: Deployer = {
-  get provider() {
-    return getTruffleConfig().provider;
-  },
-  async deploy(Contract: ContractClass, ...args: unknown[]): Promise<ContractInstance> {
-    return Contract.new(...args);
-  },
-};
