@@ -90,7 +90,7 @@ Both plugins provide two main functions, `deployProxy` and `upgradeProxy`, which
 
 2. Deploy a [proxy admin](https://docs.openzeppelin.com/upgrades-plugins/faq#what-is-a-proxy-admin) for your project
 
-3. Deploy the [implementation contract](https://docs.openzeppelin.com/upgrades-plugins/faq#what-is-an-implementation-contract)
+3. Check if there is an [implementation contract](https://docs.openzeppelin.com/upgrades-plugins/faq#what-is-an-implementation-contract) deployed with the same bytecode, and deploy one if not
 
 4. Create and initialize the proxy contract
 
