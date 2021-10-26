@@ -34,6 +34,8 @@ Creates a proxy given a Truffle contract class to use as implementation, and ret
 
 If `args` is set, will call an initializer function `initialize` with the supplied `args` during proxy deployment.
 
+If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
+
 * `initializer`: set a different initializer function to call, or specify `false` to disable initialization
 * See <<common-options>>.
 
