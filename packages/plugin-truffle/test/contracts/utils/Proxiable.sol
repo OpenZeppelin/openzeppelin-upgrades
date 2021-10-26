@@ -9,11 +9,21 @@ contract Proxiable {
         _setImplementation(newImplementation);
     }
 
-    // function upgradeToAndCall(address newImplementation, bytes calldata data) external payable {
-    //     _setImplementation(newImplementation);
-    //     (bool success, ) = newImplementation.delegatecall(data);
-    //     require(success, "upgradeToAndCall: call failled");
-    // }
+    function upgradeToAndCall(address newImplementation, bytes calldata data) external {
+        _setImplementation(newImplementation);
+        if (data.length > 0) {
+            /**
+             * using address(this).call is dangerous as the call can impersonate the proxy being upgraded.
+             * a better option is to use a delegate call with an oz-upgrades-unsafe-allow, but this is not
+             * suported by the early version of solidity used here
+             *
+             * /// @custom:oz-upgrades-unsafe-allow delegatecall
+             * (bool success, ) = newImplementation.delegatecall(data);
+             */
+            (bool success, ) = address(this).call(data);
+            require(success, "upgrade call reverted");
+        }
+    }
 
     function _setImplementation(address newImplementation) private {
         bytes32 slot = _IMPLEMENTATION_SLOT;
