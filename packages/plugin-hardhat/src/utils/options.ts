@@ -16,5 +16,5 @@ export interface DeployOptions extends Options {
 }
 
 export interface UpgradeOptions extends Options {
-  call?: { fn: string; args?: any[] } | string;
+  call?: { fn: string; args?: unknown[] } | string;
 }

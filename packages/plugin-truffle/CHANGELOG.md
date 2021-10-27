@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for `upgradeToAndCall` to batch a function call into the upgrade transaction. ([#443](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/443))
+
 ## 1.10.0 (2021-10-22)
 
 - Infer whether a proxy should be UUPS or Transparent. ([#441](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/441))
