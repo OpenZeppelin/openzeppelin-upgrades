@@ -7,15 +7,30 @@ test.before(async t => {
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
 });
 
-test('happy path', async t => {
+test('happy path - call with args', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
+
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  const greeter2 = await upgrades.upgradeProxy(greeter, GreeterV2, {
-    call: { function: 'setGreeting', args: ['Called during upgrade'] },
+  await upgrades.upgradeProxy(greeter, GreeterV2, {
+    call: { fn: 'setGreeting', args: ['Called during upgrade'] },
   });
-  await greeter2.deployed();
-  t.is(await greeter2.greet(), 'Called during upgrade');
+
+  t.is(await greeter.greet(), 'Called during upgrade');
+});
+
+test('happy path - call without args', async t => {
+  const { Greeter, GreeterV2 } = t.context;
+
+  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
+
+  t.is(await greeter.greet(), 'Hello, Hardhat!');
+
+  await upgrades.upgradeProxy(greeter, GreeterV2, {
+    call: 'resetGreeting',
+  });
+
+  t.is(await greeter.greet(), 'Hello World');
 });

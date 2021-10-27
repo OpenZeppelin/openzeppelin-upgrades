@@ -25,15 +25,7 @@ export async function upgradeProxy(
 
   const upgradeTo = await getUpgrader(provider, Contract, proxyAddress);
   const { impl: nextImpl } = await deployImpl(Contract, opts, proxyAddress);
-
-  const call: string | undefined = opts.call
-    ? await (Contract as any)
-        .at(proxyAddress)
-        .then(
-          ({ contract }: any) =>
-            opts.call && contract.methods[opts.call.function](...(opts.call.args ?? [])).encodeABI(),
-        )
-    : undefined;
+  const call = encodeCall(Contract, opts.call);
   await upgradeTo(nextImpl, call);
 
   Contract.address = proxyAddress;
@@ -70,4 +62,17 @@ async function getUpgrader(
     return (nextImpl, call) =>
       call ? admin.upgradeAndCall(proxyAddress, nextImpl, call) : admin.upgrade(proxyAddress, nextImpl);
   }
+}
+
+function encodeCall(factory: ContractClass, call: UpgradeOptions['call']): string | undefined {
+  if (!call) {
+    return undefined;
+  }
+
+  if (typeof call === 'string') {
+    call = { fn: call };
+  }
+
+  const contract = new (factory as any).web3.eth.Contract((factory as any)._json.abi);
+  return contract.methods[call.fn](...(call.args ?? [])).encodeABI();
 }

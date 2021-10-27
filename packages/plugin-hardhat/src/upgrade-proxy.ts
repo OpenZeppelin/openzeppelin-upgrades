@@ -24,9 +24,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
 
     const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
     const { impl: nextImpl } = await deployImpl(hre, ImplFactory, opts, proxyAddress);
-    const call = opts.call
-      ? ImplFactory.interface.encodeFunctionData(opts.call.function, opts.call.args ?? [])
-      : undefined;
+    const call = encodeCall(ImplFactory, opts.call);
     const upgradeTx = await upgradeTo(nextImpl, call);
 
     const inst = ImplFactory.attach(proxyAddress);
@@ -64,4 +62,16 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
         call ? admin.upgradeAndCall(proxyAddress, nextImpl, call) : admin.upgrade(proxyAddress, nextImpl);
     }
   }
+}
+
+function encodeCall(factory: ContractFactory, call: UpgradeOptions['call']): string | undefined {
+  if (!call) {
+    return undefined;
+  }
+
+  if (typeof call === 'string') {
+    call = { fn: call };
+  }
+
+  return factory.interface.encodeFunctionData(call.fn, call.args ?? []);
 }

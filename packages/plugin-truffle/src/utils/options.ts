@@ -19,7 +19,7 @@ export interface DeployOptions extends Options {
 }
 
 export interface UpgradeOptions extends Options {
-  call?: { function: string; args?: any[] } | false;
+  call?: { fn: string; args?: any[] } | string;
 }
 
 const defaultDeployer: Deployer = {
