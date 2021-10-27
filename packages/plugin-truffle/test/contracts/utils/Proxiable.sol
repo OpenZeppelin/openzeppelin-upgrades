@@ -15,7 +15,7 @@ contract Proxiable {
             /**
              * Using address(this).call is dangerous as the call can impersonate the proxy being upgraded.
              * a better option is to use a delegate call with an oz-upgrades-unsafe-allow, but this is not
-             * suported by the early version of solidity used here.
+             * supported by the early version of solidity used here.
              *
              * /// @custom:oz-upgrades-unsafe-allow delegatecall
              * (bool success, ) = newImplementation.delegatecall(data);
