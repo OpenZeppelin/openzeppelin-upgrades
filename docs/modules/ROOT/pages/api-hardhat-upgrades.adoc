@@ -54,7 +54,8 @@ async function deployProxy(
 
 Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
 
-See <<common-options>>.
+* `call`: enables the execution of an arbitrary function call during the upgrade process. This call is described using a function name, signature, or selector (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), and optional arguments. It is batched into the upgrade transaction, making it safe to call migration initializing functions.
+* See <<common-options>>.
 
 [source,ts]
 ----
@@ -62,6 +63,7 @@ async function upgradeProxy(
   proxyAddress: string,
   Contract: ethers.ContractFactory,
   opts: {
+    call: string | { fn: string; args?: unknown[] },
     unsafeAllow: ValidationError[],
   } = {},
 ): Promise<ethers.Contract>

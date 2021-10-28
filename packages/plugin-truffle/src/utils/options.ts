@@ -18,6 +18,10 @@ export interface DeployOptions extends Options {
   initializer?: string | false;
 }
 
+export interface UpgradeOptions extends Options {
+  call?: { fn: string; args?: unknown[] } | string;
+}
+
 const defaultDeployer: Deployer = {
   get provider() {
     return getTruffleConfig().provider;

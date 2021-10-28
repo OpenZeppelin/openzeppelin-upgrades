@@ -4,7 +4,7 @@ import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 import { Manifest, getAdminAddress, getCode } from '@openzeppelin/upgrades-core';
 
 import {
-  Options,
+  UpgradeOptions,
   deployImpl,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
@@ -15,16 +15,17 @@ import {
 export type UpgradeFunction = (
   proxy: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
-  opts?: Options,
+  opts?: UpgradeOptions,
 ) => Promise<Contract>;
 
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunction {
-  return async function upgradeProxy(proxy, ImplFactory, opts: Options = {}) {
+  return async function upgradeProxy(proxy, ImplFactory, opts: UpgradeOptions = {}) {
     const proxyAddress = getContractAddress(proxy);
 
     const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
     const { impl: nextImpl } = await deployImpl(hre, ImplFactory, opts, proxyAddress);
-    const upgradeTx = await upgradeTo(nextImpl);
+    const call = encodeCall(ImplFactory, opts.call);
+    const upgradeTx = await upgradeTo(nextImpl, call);
 
     const inst = ImplFactory.attach(proxyAddress);
     // @ts-ignore Won't be readonly because inst was created through attach.
@@ -32,7 +33,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     return inst;
   };
 
-  type Upgrader = (nextImpl: string) => Promise<ethers.providers.TransactionResponse>;
+  type Upgrader = (nextImpl: string, call?: string) => Promise<ethers.providers.TransactionResponse>;
 
   async function getUpgrader(proxyAddress: string, signer: Signer): Promise<Upgrader> {
     const { provider } = hre.network;
@@ -45,7 +46,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
       const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
       const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);
 
-      return nextImpl => proxy.upgradeTo(nextImpl);
+      return (nextImpl, call) => (call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl));
     } else {
       // Admin contract: redirect upgrade call through it
       const manifest = await Manifest.forNetwork(provider);
@@ -57,7 +58,20 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
         throw new Error('Proxy admin is not the one registered in the network manifest');
       }
 
-      return nextImpl => admin.upgrade(proxyAddress, nextImpl);
+      return (nextImpl, call) =>
+        call ? admin.upgradeAndCall(proxyAddress, nextImpl, call) : admin.upgrade(proxyAddress, nextImpl);
     }
   }
+}
+
+function encodeCall(factory: ContractFactory, call: UpgradeOptions['call']): string | undefined {
+  if (!call) {
+    return undefined;
+  }
+
+  if (typeof call === 'string') {
+    call = { fn: call };
+  }
+
+  return factory.interface.encodeFunctionData(call.fn, call.args ?? []);
 }

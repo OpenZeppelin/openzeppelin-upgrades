@@ -7,7 +7,7 @@ import {
   deployImpl,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
-  Options,
+  UpgradeOptions,
   withDefaults,
   getContractAddress,
   ContractAddressOrInstance,
@@ -16,7 +16,7 @@ import {
 export async function upgradeProxy(
   proxy: ContractAddressOrInstance,
   Contract: ContractClass,
-  opts: Options = {},
+  opts: UpgradeOptions = {},
 ): Promise<ContractInstance> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
@@ -25,13 +25,14 @@ export async function upgradeProxy(
 
   const upgradeTo = await getUpgrader(provider, Contract, proxyAddress);
   const { impl: nextImpl } = await deployImpl(Contract, opts, proxyAddress);
-  await upgradeTo(nextImpl);
+  const call = encodeCall(Contract, opts.call);
+  await upgradeTo(nextImpl, call);
 
   Contract.address = proxyAddress;
   return new Contract(proxyAddress);
 }
 
-type Upgrader = (nextImpl: string) => Promise<void>;
+type Upgrader = (nextImpl: string, call?: string) => Promise<void>;
 
 async function getUpgrader(
   provider: EthereumProvider,
@@ -46,7 +47,7 @@ async function getUpgrader(
     const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(contractTemplate);
     const proxy = new TransparentUpgradeableProxyFactory(proxyAddress);
 
-    return nextImpl => proxy.upgradeTo(nextImpl);
+    return (nextImpl, call) => (call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl));
   } else {
     // Admin contract: redirect upgrade call through it
     const manifest = await Manifest.forNetwork(provider);
@@ -58,6 +59,20 @@ async function getUpgrader(
       throw new Error('Proxy admin is not the one registered in the network manifest');
     }
 
-    return nextImpl => admin.upgrade(proxyAddress, nextImpl);
+    return (nextImpl, call) =>
+      call ? admin.upgradeAndCall(proxyAddress, nextImpl, call) : admin.upgrade(proxyAddress, nextImpl);
   }
+}
+
+function encodeCall(factory: ContractClass, call: UpgradeOptions['call']): string | undefined {
+  if (!call) {
+    return undefined;
+  }
+
+  if (typeof call === 'string') {
+    call = { fn: call };
+  }
+
+  const contract = new (factory as any).web3.eth.Contract((factory as any)._json.abi);
+  return contract.methods[call.fn](...(call.args ?? [])).encodeABI();
 }
