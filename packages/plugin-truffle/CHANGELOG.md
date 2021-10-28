@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.11.0 (2021-10-28)
 
 - Add support for `upgradeToAndCall` to batch a function call into the upgrade transaction. ([#443](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/443))
 
