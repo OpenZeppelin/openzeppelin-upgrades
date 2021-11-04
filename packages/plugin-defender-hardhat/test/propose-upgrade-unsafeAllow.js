@@ -38,7 +38,11 @@ test('proposes an upgrade', async t => {
 
   const title = 'My upgrade';
   const description = 'My contract upgrade';
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { title, description, unsafeAllow: ['delegatecall'] });
+  const proposal = await proposeUpgrade(greeter.address, GreeterV2, {
+    title,
+    description,
+    unsafeAllow: ['delegatecall'],
+  });
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(
