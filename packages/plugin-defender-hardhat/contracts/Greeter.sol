@@ -12,6 +12,13 @@ contract GreeterV2 {
     }
 }
 
+contract GreeterV2Bad {
+  function x() public {
+    (bool ok, ) = address(this).delegatecall("");
+    require(ok);
+  }
+}
+
 import "./utils/Proxiable.sol";
 contract GreeterProxiable is Greeter, Proxiable {}
 contract GreeterV2Proxiable is GreeterV2, Proxiable {}

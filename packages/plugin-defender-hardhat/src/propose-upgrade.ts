@@ -33,8 +33,8 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       throw new Error(`Network ${chainId} is not supported in Defender Admin`);
     }
 
-    const { title, description, proxyAdmin, multisig, multisigType } = opts;
-    const newImplementation = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory);
+    const { title, description, proxyAdmin, multisig, multisigType, ...moreOpts } = opts;
+    const newImplementation = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory, moreOpts);
     const contract = { address: proxyAddress, network, abi: ImplFactory.interface.format(FormatTypes.json) as string };
     return client.proposeUpgrade(
       {
