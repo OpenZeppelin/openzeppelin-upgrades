@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.5.1 (2021-11-04)
 
 - Pass additional options on to `prepareUpgrade`.
 
