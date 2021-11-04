@@ -13,6 +13,7 @@ jobs:
           - core
           - plugin-hardhat
           - plugin-truffle
+          - plugin-defender-hardhat
 
     runs-on: ubuntu-latest
 
