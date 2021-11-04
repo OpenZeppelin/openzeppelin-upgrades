@@ -56,7 +56,7 @@ A very important thing to note is that the code makes use of the EVM's `delegate
 [[unstructured-storage-proxies]]
 == Unstructured Storage Proxies
 
-A problem that quickly comes up when using proxies has to do with the way in which variables are stored in the proxy contract. Suppose that the proxy stores the logic contract's address in it's only variable `address public _implementation;`. Now, suppose that the logic contract is a basic token whose first variable is `address public _owner`. Both variables are 32 byte in size, and as far as the EVM knows, occupy the first slot of the resulting execution flow of a proxied call. When the logic contract writes to `_owner`, it does so in the scope of the proxy's state, and in reality writes to `_implementation`. This problem can be referred to as a "storage collision".
+A problem that quickly comes up when using proxies has to do with the way in which variables are stored in the proxy contract. Suppose that the proxy stores the logic contract's address in its only variable `address public _implementation;`. Now, suppose that the logic contract is a basic token whose first variable is `address public _owner`. Both variables are 32 byte in size, and as far as the EVM knows, occupy the first slot of the resulting execution flow of a proxied call. When the logic contract writes to `_owner`, it does so in the scope of the proxy's state, and in reality writes to `_implementation`. This problem can be referred to as a "storage collision".
 
 ....
 |Proxy                     |Implementation           |
@@ -166,7 +166,7 @@ As described in the previous sections, upgradeable contract instances (or proxie
 
 CAUTION: Clashing can also happen among functions with different names. Every function that is part of a contract's public ABI is identified, at the bytecode level, by a 4-byte identifier. This identifier depends on the name and arity of the function, but since it's only 4 bytes, there is a possibility that two different functions with different names may end up having the same identifier. The Solidity compiler tracks when this happens within the same contract, but not when the collision happens across different ones, such as between a proxy and its logic contract. Read https://medium.com/nomic-labs-blog/malicious-backdoors-in-ethereum-proxies-62629adf3357[this article] for more info on this.
 
-The way OpenZeppelin Upgrades deals with this problem is via the _transparent proxy_ pattern. A transparent proxy will decide which calls are delegated to the underlying logic contract based on the caller address (ie the `msg.sender`):
+The way OpenZeppelin Upgrades deals with this problem is via the _transparent proxy_ pattern. A transparent proxy will decide which calls are delegated to the underlying logic contract based on the caller address (i.e., the `msg.sender`):
 
 * If the caller is the admin of the proxy (the address with rights to upgrade the proxy), then the proxy will *not* delegate any calls, and only answer any messages it understands.
 * If the caller is any other address, the proxy will *always* delegate a call, no matter if it matches one of the proxy's functions.
