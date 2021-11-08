@@ -10,7 +10,6 @@ import {
   getProxyAdminFactory,
   getContractAddress,
   ContractAddressOrInstance,
-  getUpgradeableBeaconFactory,
 } from './utils';
 
 export type UpgradeFunction = (

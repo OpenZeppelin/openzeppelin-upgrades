@@ -11,19 +11,12 @@ import {
   getStorageLayoutForAddress,
   getUnlinkedBytecode,
   getVersion,
-  inferProxyKind,
-  setProxyKind,
-  ValidationOptions,
-  getBeaconAddress,
-  EthereumProvider,
-  ProxyDeployment,
-  DeploymentNotFound,
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
 import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
-import { getIBeaconFactory, getUpgradeableBeaconFactory } from '.';
+import { getIBeaconFactory } from '.';
 
 interface DeployedImplForBeacon {
   impl: string;
@@ -58,11 +51,10 @@ export async function deployImplForBeacon(
 
   if (beaconAddress !== undefined) {
     const manifest = await Manifest.forNetwork(provider);
-    let currentImplAddress: string;
 
     const IBeaconFactory = await getIBeaconFactory(hre, ImplFactory.signer);
     const beaconContract = IBeaconFactory.attach(beaconAddress);
-    currentImplAddress = await beaconContract.implementation();
+    const currentImplAddress = await beaconContract.implementation();
 
     const currentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
     assertStorageUpgradeSafe(currentLayout, layout, fullOpts);

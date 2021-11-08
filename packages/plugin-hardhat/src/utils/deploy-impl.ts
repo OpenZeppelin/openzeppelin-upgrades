@@ -15,15 +15,12 @@ import {
   setProxyKind,
   ValidationOptions,
   getBeaconAddress,
-  EthereumProvider,
-  ProxyDeployment,
-  DeploymentNotFound,
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
 import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
-import { getIBeaconFactory, getUpgradeableBeaconFactory } from '.';
+import { getIBeaconFactory } from '.';
 
 interface DeployedImpl {
   impl: string;

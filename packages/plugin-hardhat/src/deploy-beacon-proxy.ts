@@ -56,9 +56,8 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
       ]);
     }
 
-    let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;
     const BeaconProxyFactory = await getBeaconProxyFactory(hre, ImplFactoryOrSigner instanceof ContractFactory ? ImplFactoryOrSigner.signer : ImplFactoryOrSigner);
-    proxyDeployment = Object.assign({ kind: opts.kind }, await deploy(BeaconProxyFactory, beaconAddress, data));
+    const proxyDeployment: Required<ProxyDeployment & DeployTransaction> = Object.assign({ kind: opts.kind }, await deploy(BeaconProxyFactory, beaconAddress, data));
 
     await manifest.addProxy(proxyDeployment);
 

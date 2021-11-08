@@ -21,6 +21,7 @@ test('happy path - call with args', async t => {
     });
     t.fail("Expected an error due to function call during beacon implementation upgrade");
   } catch (e) {
+    // expected error
   }
 });
 
@@ -38,5 +39,6 @@ test('happy path - call without args', async t => {
     });
     t.fail("Expected an error due to function call during beacon implementation upgrade");
   } catch (e) {
+    // expected error
   }
 });

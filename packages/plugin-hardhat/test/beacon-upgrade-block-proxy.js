@@ -20,18 +20,21 @@ test('block beacon upgrade via upgradeProxy', async t => {
     await upgrades.upgradeProxy(greeter, GreeterV2);
     t.fail("upgradeProxy() should not allow a beacon proxy to be upgraded");
   } catch (e) {
+    // expected error
   }
 
   try {
     await upgrades.prepareUpgrade(greeter.address, GreeterV3);
     t.fail("prepareUpgrade() should not allow a beacon proxy to be prepared for upgrade");
   } catch (e) {
+    // expected error
   }
 
   try {
     await upgrades.prepareUpgrade(beacon.address, GreeterV3);
     t.fail("prepareUpgrade() should not allow a beacon to be prepared for upgrade");
   } catch (e) {
+    // expected error
   }
 });
 
@@ -45,6 +48,7 @@ test('block beacon proxy upgrade via upgradeBeacon', async t => {
     await upgrades.upgradeBeacon(greeter, GreeterV2);
     t.fail("upgradeBeacon() should not allow a non-beacon address");
   } catch (e) {
+    // expected error
   }
 });
 
@@ -57,6 +61,7 @@ test('block transparent proxy upgrade via upgradeBeacon', async t => {
     await upgrades.upgradeBeacon(greeter, GreeterV2);
     t.fail("upgradeBeacon() should not allow a non-beacon address");
   } catch (e) {
+    // expected error
   }
 });
 
@@ -69,5 +74,6 @@ test('block uups proxy upgrade via upgradeBeacon', async t => {
     await upgrades.upgradeBeacon(greeter, GreeterV2Proxiable);
     t.fail("upgradeBeacon() should not allow a non-beacon address");
   } catch (e) {
+    // expected error
   }
 });

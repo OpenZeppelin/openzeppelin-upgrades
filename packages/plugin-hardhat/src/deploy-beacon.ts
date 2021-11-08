@@ -27,11 +27,9 @@ export function makeDeployBeacon(hre: HardhatRuntimeEnvironment): DeployBeaconFu
 
     const { impl } = await deployImplForBeacon(hre, ImplFactory, opts);
 
-    let beaconDeployment: Required<BeaconDeployment & DeployTransaction>;
-
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
     const abi = ImplFactory.interface.format(FormatTypes.json);
-    beaconDeployment = Object.assign({ abi: abi }, await deploy(UpgradeableBeaconFactory, impl));
+    const beaconDeployment: Required<BeaconDeployment & DeployTransaction> = Object.assign({ abi: abi }, await deploy(UpgradeableBeaconFactory, impl));
 
     await manifest.addBeacon(beaconDeployment);
 
