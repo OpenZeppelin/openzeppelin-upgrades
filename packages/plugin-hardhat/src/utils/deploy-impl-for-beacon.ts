@@ -25,17 +25,16 @@ import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
 import { getIBeaconFactory, getUpgradeableBeaconFactory } from '.';
 
-interface DeployedImpl {
+interface DeployedImplForBeacon {
   impl: string;
-  kind: NonNullable<ValidationOptions['kind']>;
 }
 
-export async function deployImpl(
+export async function deployImplForBeacon(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: Options,
-  proxyAddress?: string,
-): Promise<DeployedImpl> {
+  beaconAddress?: string,
+): Promise<DeployedImplForBeacon> {
   const { provider } = hre.network;
   const validations = await readValidations(hre);
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
@@ -43,29 +42,28 @@ export async function deployImpl(
   const version = getVersion(unlinkedBytecode, ImplFactory.bytecode, encodedArgs);
   const layout = getStorageLayout(validations, version);
 
-  if (opts.kind === undefined) {
-    opts.kind = await inferProxyKind(validations, version, provider, proxyAddress);
-  }
-
-  if (proxyAddress !== undefined) {
-    await setProxyKind(provider, proxyAddress, opts);
+  if (beaconAddress !== undefined) {
+    try {
+      if (await getImplementationAddress(provider, beaconAddress) !== undefined) {
+        throw new Error('Address is a regular proxy and cannot be upgraded using upgradeBeacon(). Use upgradeProxy() instead.');
+      }  
+    } catch (e: any) {
+      // error is expected for beacons since they don't use EIP-1967 implementation slots
+    }
   }
 
   const fullOpts = withDefaults(opts);
 
   assertUpgradeSafe(validations, version, fullOpts);
 
-  if (proxyAddress !== undefined) {
+  if (beaconAddress !== undefined) {
     const manifest = await Manifest.forNetwork(provider);
     let currentImplAddress: string;
-    if (opts.kind === 'beacon') {
-      const currentBeaconAddress = await getBeaconAddress(provider, proxyAddress);
-      const IBeaconFactory = await getIBeaconFactory(hre, ImplFactory.signer);
-      const beaconContract = IBeaconFactory.attach(currentBeaconAddress);
-      currentImplAddress = await beaconContract.implementation();
-    } else {
-      currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-    }
+
+    const IBeaconFactory = await getIBeaconFactory(hre, ImplFactory.signer);
+    const beaconContract = IBeaconFactory.attach(beaconAddress);
+    currentImplAddress = await beaconContract.implementation();
+
     const currentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
     assertStorageUpgradeSafe(currentLayout, layout, fullOpts);
   }
@@ -75,5 +73,5 @@ export async function deployImpl(
     return { ...deployment, layout };
   });
 
-  return { impl, kind: opts.kind };
+  return { impl };
 }

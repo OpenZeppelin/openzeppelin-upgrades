@@ -69,7 +69,7 @@ export function processExceptions(
 ): ValidationError[] {
   const { unsafeAllow } = withValidationDefaults(opts);
 
-  if (opts.kind === 'transparent') {
+  if (opts.kind === 'transparent' || opts.kind === 'beacon') {
     errors = errors.filter(error => error.kind !== 'missing-public-upgradeto');
   }
 
