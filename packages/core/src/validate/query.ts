@@ -146,7 +146,12 @@ export function isUpgradeSafe(data: ValidationData, version: Version): boolean {
   return getErrors(dataV3, version).length == 0;
 }
 
-export async function inferProxyKind(data: ValidationData, version: Version, provider?: EthereumProvider, proxyAddress?: string): Promise<ProxyDeployment['kind']> {
+export async function inferProxyKind(
+  data: ValidationData,
+  version: Version,
+  provider?: EthereumProvider,
+  proxyAddress?: string,
+): Promise<ProxyDeployment['kind']> {
   const dataV3 = normalizeValidationData(data);
   const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const methods = getAllMethods(runValidation, contractName);
