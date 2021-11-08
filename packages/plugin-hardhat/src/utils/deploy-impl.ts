@@ -14,13 +14,11 @@ import {
   inferProxyKind,
   setProxyKind,
   ValidationOptions,
-  getBeaconAddress,
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
 import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
-import { getIBeaconFactory } from '.';
 
 interface DeployedImpl {
   impl: string;
@@ -48,21 +46,17 @@ export async function deployImpl(
     await setProxyKind(provider, proxyAddress, opts);
   }
 
+  if (opts.kind === 'beacon') {
+    throw new DeployKindUnsupported();
+  }
+
   const fullOpts = withDefaults(opts);
 
   assertUpgradeSafe(validations, version, fullOpts);
 
   if (proxyAddress !== undefined) {
     const manifest = await Manifest.forNetwork(provider);
-    let currentImplAddress: string;
-    if (opts.kind === 'beacon') {
-      const currentBeaconAddress = await getBeaconAddress(provider, proxyAddress);
-      const IBeaconFactory = await getIBeaconFactory(hre, ImplFactory.signer);
-      const beaconContract = IBeaconFactory.attach(currentBeaconAddress);
-      currentImplAddress = await beaconContract.implementation();
-    } else {
-      currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-    }
+    const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
     const currentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
     assertStorageUpgradeSafe(currentLayout, layout, fullOpts);
   }
@@ -73,4 +67,12 @@ export async function deployImpl(
   });
 
   return { impl, kind: opts.kind };
+}
+
+export class DeployKindUnsupported extends Error {
+  constructor() {
+    super(
+      'Beacon proxies are not supported with the current function. Use deployBeacon(), deployBeaconProxy(), or upgradeBeacon() instead.',
+    );
+  }
 }

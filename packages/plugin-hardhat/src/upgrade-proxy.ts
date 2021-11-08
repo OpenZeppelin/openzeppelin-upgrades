@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
-import { Manifest, getAdminAddress, getCode, getBeaconAddress, ProxyDeployment } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress, getCode } from '@openzeppelin/upgrades-core';
 
 import {
   UpgradeOptions,
@@ -24,7 +24,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
 
     const { impl: nextImpl } = await deployImpl(hre, ImplFactory, opts, proxyAddress);
     // upgrade kind is inferred above
-    const upgradeTo = await getUpgrader(proxyAddress, opts.kind, ImplFactory.signer);
+    const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
     const call = encodeCall(ImplFactory, opts.call);
     const upgradeTx = await upgradeTo(nextImpl, call);
 
@@ -36,22 +36,13 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
 
   type Upgrader = (nextImpl: string, call?: string) => Promise<ethers.providers.TransactionResponse>;
 
-  async function getUpgrader(
-    proxyAddress: string,
-    kind: ProxyDeployment['kind'] | undefined,
-    signer: Signer,
-  ): Promise<Upgrader> {
+  async function getUpgrader(proxyAddress: string, signer: Signer): Promise<Upgrader> {
     const { provider } = hre.network;
 
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     const adminBytecode = await getCode(provider, adminAddress);
 
-    if (kind === 'beacon') {
-      const currentBeaconAddress = await getBeaconAddress(provider, proxyAddress);
-      throw new Error(
-        `The proxy is a beacon proxy which cannot be upgraded directly. Use upgradeBeacon() with the beacon at address ${currentBeaconAddress} instead.`,
-      );
-    } else if (adminBytecode === '0x') {
+    if (adminBytecode === '0x') {
       // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
       const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
       const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);

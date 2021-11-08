@@ -11,8 +11,7 @@ import {
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   DeployTransaction,
-  getBeaconProxyFactory,
-  getUpgradeableBeaconFactory,
+  DeployKindUnsupported,
 } from './utils';
 import { Interface } from '@ethersproject/abi';
 
@@ -39,10 +38,10 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     const contractInterface = ImplFactory.interface;
     const data = getInitializerData(contractInterface, args, opts.initializer);
 
-    if (kind === 'uups' || kind === 'beacon') {
+    if (kind === 'uups') {
       if (await manifest.getAdmin()) {
         logWarning(`A proxy admin was previously deployed on this network`, [
-          `This is not natively used with the current kind of proxy ('${kind}').`,
+          `This is not natively used with the current kind of proxy ('uups').`,
           `Changes to the admin will have no effect on this new proxy.`,
         ]);
       }
@@ -50,17 +49,13 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
 
     let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;
     switch (kind) {
+      case 'beacon': {
+        throw new DeployKindUnsupported();
+      }
+
       case 'uups': {
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
         proxyDeployment = Object.assign({ kind }, await deploy(ProxyFactory, impl, data));
-        break;
-      }
-
-      case 'beacon': {
-        const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
-        const beaconDeployment = await deploy(UpgradeableBeaconFactory, impl);
-        const BeaconProxyFactory = await getBeaconProxyFactory(hre, ImplFactory.signer);
-        proxyDeployment = Object.assign({ kind }, await deploy(BeaconProxyFactory, beaconDeployment.address, data));
         break;
       }
 
