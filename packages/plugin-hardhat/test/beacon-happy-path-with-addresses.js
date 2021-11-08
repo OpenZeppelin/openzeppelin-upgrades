@@ -11,7 +11,7 @@ test.before(async t => {
 test('happy path - addresses and signers', async t => {
   const { Greeter, GreeterV2, GreeterV3 } = t.context;
 
-  const greeterBeacon = await upgrades.deployBeacon(Greeter); 
+  const greeterBeacon = await upgrades.deployBeacon(Greeter);
   const greeter = await upgrades.deployBeaconProxy(greeterBeacon, Greeter.signer, ['Hello, Hardhat!']);
   await greeter.deployed();
   t.is(await greeter.greet(), 'Hello, Hardhat!');
@@ -20,15 +20,17 @@ test('happy path - addresses and signers', async t => {
   await greeterSecond.deployed();
   t.is(await greeterSecond.greet(), 'Hello, Hardhat second!');
 
-  const greeterBeaconDuplicate = await upgrades.deployBeacon(Greeter); 
-  const greeterThird = await upgrades.deployBeaconProxy(greeterBeaconDuplicate.address, Greeter.signer, ['Hello, Hardhat third!']);
+  const greeterBeaconDuplicate = await upgrades.deployBeacon(Greeter);
+  const greeterThird = await upgrades.deployBeaconProxy(greeterBeaconDuplicate.address, Greeter.signer, [
+    'Hello, Hardhat third!',
+  ]);
   await greeterThird.deployed();
   t.is(await greeterThird.greet(), 'Hello, Hardhat third!');
 
   // new impls
   await upgrades.upgradeBeacon(greeterBeacon, GreeterV2);
 
-  await upgrades.upgradeBeacon(greeterBeaconDuplicate.address, GreeterV3);  
+  await upgrades.upgradeBeacon(greeterBeaconDuplicate.address, GreeterV3);
 
   // reload proxy to work with the new contract
   const greeter2 = await upgrades.reloadBeaconProxy(greeter);

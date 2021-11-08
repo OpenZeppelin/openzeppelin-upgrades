@@ -17,7 +17,9 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
     const { provider } = hre.network;
     if (await isBeaconProxy(provider, proxyAddress)) {
       const currentBeaconAddress = await getBeaconAddress(provider, proxyAddress);
-      throw new Error(`The proxy is a beacon proxy which cannot be upgraded directly. Use upgradeBeacon() with the beacon at address ${currentBeaconAddress} instead.`);
+      throw new Error(
+        `The proxy is a beacon proxy which cannot be upgraded directly. Use upgradeBeacon() with the beacon at address ${currentBeaconAddress} instead.`,
+      );
     }
     const { impl } = await deployImpl(hre, ImplFactory, opts, proxyAddress);
     return impl;

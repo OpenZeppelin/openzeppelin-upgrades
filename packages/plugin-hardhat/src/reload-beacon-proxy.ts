@@ -10,9 +10,7 @@ export interface ReloadBeaconProxyFunction {
 }
 
 export function makeReloadBeaconProxy(hre: HardhatRuntimeEnvironment): ReloadBeaconProxyFunction {
-  return async function reloadBeaconProxy(
-    proxy: Contract
-  ) {
+  return async function reloadBeaconProxy(proxy: Contract) {
     const { provider } = hre.network;
 
     const beaconAddress = await getBeaconAddress(provider, proxy.address);
@@ -21,9 +19,11 @@ export function makeReloadBeaconProxy(hre: HardhatRuntimeEnvironment): ReloadBea
       contractInterface = await getBeaconInterfaceFromManifest(hre, beaconAddress);
       return new Contract(proxy.address, contractInterface, proxy.signer);
     } catch (e: any) {
-        throw new Error(`Beacon at address ${beaconAddress} was not found in the network manifest. Use the implementation's contract factory to attach to the proxy address instead.`);
-      }
+      throw new Error(
+        `Beacon at address ${beaconAddress} was not found in the network manifest. Use the implementation's contract factory to attach to the proxy address instead.`,
+      );
     }
+  };
 }
 
 async function getBeaconInterfaceFromManifest(hre: HardhatRuntimeEnvironment, beaconAddress: string) {

@@ -3,13 +3,7 @@ import type { ContractFactory, Contract } from 'ethers';
 
 import { Manifest, BeaconDeployment } from '@openzeppelin/upgrades-core';
 
-import {
-  DeployOptions,
-  deploy,
-  DeployTransaction,
-  getUpgradeableBeaconFactory,
-  deployImplForBeacon,
-} from './utils';
+import { DeployOptions, deploy, DeployTransaction, getUpgradeableBeaconFactory, deployImplForBeacon } from './utils';
 import { FormatTypes } from 'ethers/lib/utils';
 
 export interface DeployBeaconFunction {
@@ -17,11 +11,7 @@ export interface DeployBeaconFunction {
 }
 
 export function makeDeployBeacon(hre: HardhatRuntimeEnvironment): DeployBeaconFunction {
-  return async function deployBeacon(
-    ImplFactory: ContractFactory,
-    opts: DeployOptions = {},
-  ) {
-
+  return async function deployBeacon(ImplFactory: ContractFactory, opts: DeployOptions = {}) {
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
@@ -29,7 +19,10 @@ export function makeDeployBeacon(hre: HardhatRuntimeEnvironment): DeployBeaconFu
 
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
     const abi = ImplFactory.interface.format(FormatTypes.json);
-    const beaconDeployment: Required<BeaconDeployment & DeployTransaction> = Object.assign({ abi: abi }, await deploy(UpgradeableBeaconFactory, impl));
+    const beaconDeployment: Required<BeaconDeployment & DeployTransaction> = Object.assign(
+      { abi: abi },
+      await deploy(UpgradeableBeaconFactory, impl),
+    );
 
     await manifest.addBeacon(beaconDeployment);
 

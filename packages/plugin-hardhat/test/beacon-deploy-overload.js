@@ -7,7 +7,7 @@ test.before(async t => {
 });
 
 test('no args', async t => {
-  const beacon = await upgrades.deployBeacon(t.context.DeployOverload); 
+  const beacon = await upgrades.deployBeacon(t.context.DeployOverload);
   const c = await upgrades.deployBeaconProxy(beacon, t.context.DeployOverload.signer, {
     kind: 'beacon',
     initializer: 'customInitialize',

@@ -12,11 +12,7 @@ test('without flag', async t => {
 
   // Attempting to Deploy Token
   const Token = await getLinkedContractFactory('Token', { SafeMath: safeMathLib.address });
-  await t.throwsAsync(
-    () => upgrades.deployBeacon(Token),
-    undefined,
-    'Contract `Token` is not upgrade safe',
-  );
+  await t.throwsAsync(() => upgrades.deployBeacon(Token), undefined, 'Contract `Token` is not upgrade safe');
 });
 
 test('with flag', async t => {
@@ -75,7 +71,7 @@ test('with flag', async t => {
     SafeMath: safeMathLib.address,
     SafePercent: safePctLib.address,
   });
-  await upgrades.upgradeBeacon(beacon, TokenV3,{
+  await upgrades.upgradeBeacon(beacon, TokenV3, {
     unsafeAllow: ['external-library-linking'],
   });
   const token3 = await upgrades.reloadBeaconProxy(token);

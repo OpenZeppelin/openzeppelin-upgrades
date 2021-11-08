@@ -30,6 +30,9 @@ export async function getIBeaconFactory(hre: HardhatRuntimeEnvironment, signer?:
   return hre.ethers.getContractFactory(IBeacon.abi, IBeacon.bytecode, signer);
 }
 
-export async function getUpgradeableBeaconFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
+export async function getUpgradeableBeaconFactory(
+  hre: HardhatRuntimeEnvironment,
+  signer?: Signer,
+): Promise<ContractFactory> {
   return hre.ethers.getContractFactory(UpgradeableBeacon.abi, UpgradeableBeacon.bytecode, signer);
 }

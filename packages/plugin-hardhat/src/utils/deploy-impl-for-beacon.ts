@@ -37,9 +37,11 @@ export async function deployImplForBeacon(
 
   if (beaconAddress !== undefined) {
     try {
-      if (await getImplementationAddress(provider, beaconAddress) !== undefined) {
-        throw new Error('Address is a regular proxy and cannot be upgraded using upgradeBeacon(). Use upgradeProxy() instead.');
-      }  
+      if ((await getImplementationAddress(provider, beaconAddress)) !== undefined) {
+        throw new Error(
+          'Address is a regular proxy and cannot be upgraded using upgradeBeacon(). Use upgradeProxy() instead.',
+        );
+      }
     } catch (e: any) {
       // error is expected for beacons since they don't use EIP-1967 implementation slots
     }

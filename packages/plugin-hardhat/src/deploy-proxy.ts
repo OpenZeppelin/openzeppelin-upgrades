@@ -85,7 +85,11 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
   };
 }
 
-export function getInitializerData(contractInterface: Interface, args: unknown[], initializer?: string | false): string {
+export function getInitializerData(
+  contractInterface: Interface,
+  args: unknown[],
+  initializer?: string | false,
+): string {
   if (initializer === false) {
     return '0x';
   }

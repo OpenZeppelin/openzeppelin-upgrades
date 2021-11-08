@@ -15,8 +15,17 @@ import { getInitializerData } from './deploy-proxy';
 import { Interface } from '@ethersproject/abi';
 
 export interface DeployBeaconProxyFunction {
-  (beacon: ContractAddressOrInstance, ImplFactoryOrSigner: ContractFactory | Signer, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
-  (beacon: ContractAddressOrInstance, ImplFactoryOrSigner: ContractFactory | Signer, opts?: DeployOptions): Promise<Contract>;
+  (
+    beacon: ContractAddressOrInstance,
+    ImplFactoryOrSigner: ContractFactory | Signer,
+    args?: unknown[],
+    opts?: DeployOptions,
+  ): Promise<Contract>;
+  (
+    beacon: ContractAddressOrInstance,
+    ImplFactoryOrSigner: ContractFactory | Signer,
+    opts?: DeployOptions,
+  ): Promise<Contract>;
 }
 
 export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBeaconProxyFunction {
@@ -44,11 +53,13 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
       if (ImplFactoryOrSigner instanceof ContractFactory) {
         contractInterface = ImplFactoryOrSigner.interface;
       } else {
-        throw new Error(`Beacon at address ${beaconAddress} was not found in the network manifest. Call deployBeaconProxy() with a contract factory for the beacon's current implementation contract.`);
+        throw new Error(
+          `Beacon at address ${beaconAddress} was not found in the network manifest. Call deployBeaconProxy() with a contract factory for the beacon's current implementation contract.`,
+        );
       }
     }
     const data = getInitializerData(contractInterface, args, opts.initializer);
-    
+
     if (await manifest.getAdmin()) {
       logWarning(`A proxy admin was previously deployed on this network`, [
         `This is not natively used with the current kind of proxy ('beacon').`,
@@ -56,8 +67,14 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
       ]);
     }
 
-    const BeaconProxyFactory = await getBeaconProxyFactory(hre, ImplFactoryOrSigner instanceof ContractFactory ? ImplFactoryOrSigner.signer : ImplFactoryOrSigner);
-    const proxyDeployment: Required<ProxyDeployment & DeployTransaction> = Object.assign({ kind: opts.kind }, await deploy(BeaconProxyFactory, beaconAddress, data));
+    const BeaconProxyFactory = await getBeaconProxyFactory(
+      hre,
+      ImplFactoryOrSigner instanceof ContractFactory ? ImplFactoryOrSigner.signer : ImplFactoryOrSigner,
+    );
+    const proxyDeployment: Required<ProxyDeployment & DeployTransaction> = Object.assign(
+      { kind: opts.kind },
+      await deploy(BeaconProxyFactory, beaconAddress, data),
+    );
 
     await manifest.addProxy(proxyDeployment);
 

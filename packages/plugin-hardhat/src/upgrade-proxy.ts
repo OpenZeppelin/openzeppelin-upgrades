@@ -36,7 +36,11 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
 
   type Upgrader = (nextImpl: string, call?: string) => Promise<ethers.providers.TransactionResponse>;
 
-  async function getUpgrader(proxyAddress: string, kind: ProxyDeployment['kind'] | undefined, signer: Signer): Promise<Upgrader> {
+  async function getUpgrader(
+    proxyAddress: string,
+    kind: ProxyDeployment['kind'] | undefined,
+    signer: Signer,
+  ): Promise<Upgrader> {
     const { provider } = hre.network;
 
     const adminAddress = await getAdminAddress(provider, proxyAddress);
@@ -44,7 +48,9 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
 
     if (kind === 'beacon') {
       const currentBeaconAddress = await getBeaconAddress(provider, proxyAddress);
-      throw new Error(`The proxy is a beacon proxy which cannot be upgraded directly. Use upgradeBeacon() with the beacon at address ${currentBeaconAddress} instead.`);
+      throw new Error(
+        `The proxy is a beacon proxy which cannot be upgraded directly. Use upgradeBeacon() with the beacon at address ${currentBeaconAddress} instead.`,
+      );
     } else if (adminBytecode === '0x') {
       // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
       const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);

@@ -30,12 +30,12 @@ export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment): UpgradeBeacon
     const beaconContract = UpgradeableBeaconFactory.attach(beaconAddress);
     const upgradeTx = await beaconContract.upgradeTo(nextImpl);
     const abi = ImplFactory.interface.format(FormatTypes.json);
-    
+
     const beaconDeployment = {
       address: beaconAddress,
       txHash: upgradeTx.hash,
-      abi: abi
-    }
+      abi: abi,
+    };
     await manifest.addBeacon(beaconDeployment);
 
     // @ts-ignore Won't be readonly because inst was created through attach.

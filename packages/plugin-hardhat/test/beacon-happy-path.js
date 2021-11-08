@@ -10,7 +10,7 @@ test.before(async t => {
 test('happy path', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
-  const greeterBeacon = await upgrades.deployBeacon(Greeter); 
+  const greeterBeacon = await upgrades.deployBeacon(Greeter);
   const greeter = await upgrades.deployBeaconProxy(greeterBeacon, Greeter, ['Hello, Hardhat!']);
   await greeter.deployed();
   t.is(await greeter.greet(), 'Hello, Hardhat!');
@@ -19,8 +19,8 @@ test('happy path', async t => {
   await greeterSecond.deployed();
   t.is(await greeterSecond.greet(), 'Hello, Hardhat second!');
 
-  // new impl 
-  await upgrades.upgradeBeacon(greeterBeacon, GreeterV2);  
+  // new impl
+  await upgrades.upgradeBeacon(greeterBeacon, GreeterV2);
 
   // reload proxy to work with the new contract
   const greeter2 = await upgrades.reloadBeaconProxy(greeter);
