@@ -149,7 +149,7 @@ export function isUpgradeSafe(data: ValidationData, version: Version): boolean {
 export async function inferProxyKind(
   data: ValidationData,
   version: Version,
-  provider?: EthereumProvider,
+  provider: EthereumProvider,
   proxyAddress?: string,
 ): Promise<ProxyDeployment['kind']> {
   const dataV3 = normalizeValidationData(data);
@@ -164,8 +164,8 @@ export async function inferProxyKind(
   }
 }
 
-export async function isBeaconProxy(provider?: EthereumProvider, proxyAddress?: string): Promise<boolean> {
-  if (provider !== undefined && proxyAddress != undefined) {
+export async function isBeaconProxy(provider: EthereumProvider, proxyAddress?: string): Promise<boolean> {
+  if (proxyAddress !== undefined) {
     try {
       await getBeaconAddress(provider, proxyAddress);
       return true;
