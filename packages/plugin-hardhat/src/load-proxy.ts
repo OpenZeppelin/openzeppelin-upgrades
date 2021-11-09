@@ -1,23 +1,29 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { Contract, ethers } from 'ethers';
+import { Contract, ethers, Signer } from 'ethers';
 
 import { Manifest, getBeaconAddress } from '@openzeppelin/upgrades-core';
 
 import { Interface } from '@ethersproject/abi';
+import { ContractAddressOrInstance, getContractAddress } from './utils';
 
 export interface LoadProxyFunction {
-  (proxy: Contract): Promise<Contract>;
+  (proxy: Contract, signer?: Signer): Promise<Contract>;
+  (proxy: ContractAddressOrInstance, signer: Signer): Promise<Contract>;
 }
 
 export function makeLoadProxy(hre: HardhatRuntimeEnvironment): LoadProxyFunction {
-  return async function loadProxy(proxy: Contract) {
+  return async function loadProxy(proxy: ContractAddressOrInstance | Contract, signer?: Signer) {
     const { provider } = hre.network;
 
-    const beaconAddress = await getBeaconAddress(provider, proxy.address);
+    const proxyAddress = getContractAddress(proxy);
+    const beaconAddress = await getBeaconAddress(provider, proxyAddress);
     let contractInterface: Interface;
     try {
       contractInterface = await getBeaconInterfaceFromManifest(hre, beaconAddress);
-      return new Contract(proxy.address, contractInterface, proxy.signer);
+      if (signer === undefined && proxy instanceof Contract) {
+        signer = proxy.signer;
+      }
+      return new Contract(proxyAddress, contractInterface, signer);
     } catch (e: any) {
       throw new Error(
         `Beacon at address ${beaconAddress} was not found in the network manifest. Use the implementation's contract factory to attach to the proxy address instead.`,

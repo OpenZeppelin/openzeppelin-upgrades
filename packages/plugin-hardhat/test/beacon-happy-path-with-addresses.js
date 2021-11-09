@@ -39,13 +39,13 @@ test('happy path - addresses and signers', async t => {
   t.is(await greeter2.greet(), 'Hello World');
 
   // reload proxy to work with the new contract
-  const greeterSecond2 = await upgrades.loadProxy(greeterSecond);
+  const greeterSecond2 = await upgrades.loadProxy(greeterSecond.address, greeterSecond.signer);
   t.is(await greeterSecond2.greet(), 'Hello, Hardhat second!');
   await greeterSecond2.resetGreeting();
   t.is(await greeterSecond2.greet(), 'Hello World');
 
   // reload proxy to work with the new contract
-  const greeterThird2 = await upgrades.loadProxy(greeterThird);
+  const greeterThird2 = await upgrades.loadProxy(greeterThird, greeterThird.signer);
   t.is(await greeterThird2.greet(), 'Hello, Hardhat third!');
   await greeterThird2.resetGreeting();
   t.is(await greeterThird2.greet(), 'Hello World');
