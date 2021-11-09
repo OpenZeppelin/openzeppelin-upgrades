@@ -77,3 +77,17 @@ test('block uups proxy upgrade via upgradeBeacon', async t => {
     // expected error
   }
 });
+
+// Remove this test case when loadProxy() supports non-beacon proxies
+test('load non-beacon proxy from loadProxy', async t => {
+  const { Greeter } = t.context;
+
+  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
+
+  try {
+    await upgrades.loadProxy(greeter.address, greeter.signer);
+    t.fail('loadProxy() should not allow a non-beacon address');
+  } catch (e) {
+    // expected error since loadProxy() only supports beacon proxies for now
+  }
+});
