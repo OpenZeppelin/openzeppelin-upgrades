@@ -7,7 +7,7 @@ test.before(async t => {
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
 });
 
-test('happy path - call with args', async t => {
+test('call with args', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
@@ -15,17 +15,15 @@ test('happy path - call with args', async t => {
 
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  try {
-    await upgrades.upgradeBeacon(greeter, GreeterV2, {
-      call: { fn: 'setGreeting', args: ['Called during upgrade'] },
-    });
-    t.fail('Expected an error due to function call during beacon implementation upgrade');
-  } catch (e) {
-    // expected error
-  }
+  await upgrades.upgradeBeacon(greeterBeacon, GreeterV2, {
+    call: { fn: 'setGreeting', args: ['Called during upgrade'] },
+  });
+  // the above call does nothing useful since beacon upgrades do not use that option
+
+  t.is(await greeter.greet(), 'Hello, Hardhat!');
 });
 
-test('happy path - call without args', async t => {
+test('call without args', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
@@ -33,12 +31,10 @@ test('happy path - call without args', async t => {
 
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  try {
-    await upgrades.upgradeBeacon(greeter, GreeterV2, {
-      call: 'resetGreeting',
-    });
-    t.fail('Expected an error due to function call during beacon implementation upgrade');
-  } catch (e) {
-    // expected error
-  }
+  await upgrades.upgradeBeacon(greeterBeacon, GreeterV2, {
+    call: 'resetGreeting',
+  });
+  // the above call does nothing useful since beacon upgrades do not use that option
+
+  t.is(await greeter.greet(), 'Hello, Hardhat!');
 });

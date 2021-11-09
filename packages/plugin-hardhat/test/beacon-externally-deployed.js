@@ -8,6 +8,9 @@ test.before(async t => {
   t.context.Beacon = await ethers.getContractFactory('Beacon');
 });
 
+const IS_NOT_REGISTERED = 'is not registered';
+const WAS_NOT_FOUND_IN_MANIFEST = 'was not found in the network manifest';
+
 test('block upgrade to unregistered beacon', async t => {
   const { Greeter, GreeterV2, Beacon } = t.context;
 
@@ -24,7 +27,7 @@ test('block upgrade to unregistered beacon', async t => {
     await upgrades.upgradeBeacon(beacon.address, GreeterV2);
     t.fail('Expected an error due to unregistered deployment');
   } catch (e) {
-    // expected error
+    t.true(e.message.includes(IS_NOT_REGISTERED), e.message);
   }
 });
 
@@ -60,6 +63,6 @@ test('add proxy to unregistered beacon using signer', async t => {
     await upgrades.deployBeaconProxy(beacon.address, Greeter.signer, ['Hello, proxy!']);
     t.fail('Expected an error since beacon ABI cannot be determined');
   } catch (e) {
-    // expected error
+    t.true(e.message.includes(WAS_NOT_FOUND_IN_MANIFEST), e.message);
   }
 });
