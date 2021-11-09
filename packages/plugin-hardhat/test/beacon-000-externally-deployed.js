@@ -11,6 +11,8 @@ test.before(async t => {
 const IS_NOT_REGISTERED = 'is not registered';
 const WAS_NOT_FOUND_IN_MANIFEST = 'was not found in the network manifest';
 
+// These tests need to run before the other beacon tests so that the beacon address will not already be in the manifest.
+
 test('block upgrade to unregistered beacon', async t => {
   const { Greeter, GreeterV2, Beacon } = t.context;
 
