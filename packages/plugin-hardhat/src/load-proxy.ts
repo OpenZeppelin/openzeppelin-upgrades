@@ -5,12 +5,12 @@ import { Manifest, getBeaconAddress } from '@openzeppelin/upgrades-core';
 
 import { Interface } from '@ethersproject/abi';
 
-export interface ReloadBeaconProxyFunction {
+export interface LoadProxyFunction {
   (proxy: Contract): Promise<Contract>;
 }
 
-export function makeReloadBeaconProxy(hre: HardhatRuntimeEnvironment): ReloadBeaconProxyFunction {
-  return async function reloadBeaconProxy(proxy: Contract) {
+export function makeLoadProxy(hre: HardhatRuntimeEnvironment): LoadProxyFunction {
+  return async function loadProxy(proxy: Contract) {
     const { provider } = hre.network;
 
     const beaconAddress = await getBeaconAddress(provider, proxy.address);

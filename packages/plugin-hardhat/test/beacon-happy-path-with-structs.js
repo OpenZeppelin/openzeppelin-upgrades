@@ -24,7 +24,7 @@ test('upgradeBeacon', async t => {
 
   await upgrades.upgradeBeacon(beacon, PortfolioV2);
 
-  const portfolio2 = await upgrades.reloadBeaconProxy(portfolio);
+  const portfolio2 = await upgrades.loadProxy(portfolio);
   await portfolio2.enable('ETH');
 });
 

@@ -14,6 +14,6 @@ test('happy path with library', async t => {
   const adder = await upgrades.deployBeaconProxy(beacon, Adder);
 
   await upgrades.upgradeBeacon(beacon, AdderV2);
-  const adder2 = await upgrades.reloadBeaconProxy(adder);
+  const adder2 = await upgrades.loadProxy(adder);
   await adder2.add(1);
 });

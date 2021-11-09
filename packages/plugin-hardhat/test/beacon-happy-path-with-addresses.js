@@ -33,19 +33,19 @@ test('happy path - addresses and signers', async t => {
   await upgrades.upgradeBeacon(greeterBeaconDuplicate.address, GreeterV3);
 
   // reload proxy to work with the new contract
-  const greeter2 = await upgrades.reloadBeaconProxy(greeter);
+  const greeter2 = await upgrades.loadProxy(greeter);
   t.is(await greeter2.greet(), 'Hello, Hardhat!');
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
 
   // reload proxy to work with the new contract
-  const greeterSecond2 = await upgrades.reloadBeaconProxy(greeterSecond);
+  const greeterSecond2 = await upgrades.loadProxy(greeterSecond);
   t.is(await greeterSecond2.greet(), 'Hello, Hardhat second!');
   await greeterSecond2.resetGreeting();
   t.is(await greeterSecond2.greet(), 'Hello World');
 
   // reload proxy to work with the new contract
-  const greeterThird2 = await upgrades.reloadBeaconProxy(greeterThird);
+  const greeterThird2 = await upgrades.loadProxy(greeterThird);
   t.is(await greeterThird2.greet(), 'Hello, Hardhat third!');
   await greeterThird2.resetGreeting();
   t.is(await greeterThird2.greet(), 'Hello World');
