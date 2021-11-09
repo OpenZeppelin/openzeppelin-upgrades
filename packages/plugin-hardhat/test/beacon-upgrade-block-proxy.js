@@ -10,6 +10,12 @@ test.before(async t => {
   t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3');
 });
 
+const BEACON_PROXY_NOT_SUPPORTED = 'Beacon proxies are not supported with the current function';
+const DOESNT_LOOK_LIKE_PROXY = "doesn't look like an administered ERC 1967 proxy";
+const DOESNT_LOOK_LIKE_BEACON_PROXY = "doesn't look like an ERC 1967 beacon proxy";
+const ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY = 'Address is a transparent or uups proxy';
+const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy';
+
 test('block beacon upgrade via upgradeProxy', async t => {
   const { Greeter, GreeterV2, GreeterV3 } = t.context;
 
@@ -20,21 +26,21 @@ test('block beacon upgrade via upgradeProxy', async t => {
     await upgrades.upgradeProxy(greeter, GreeterV2);
     t.fail('upgradeProxy() should not allow a beacon proxy to be upgraded');
   } catch (e) {
-    // expected error
+    t.true(e.message.includes(BEACON_PROXY_NOT_SUPPORTED), e.message);
   }
 
   try {
     await upgrades.prepareUpgrade(greeter.address, GreeterV3);
     t.fail('prepareUpgrade() should not allow a beacon proxy to be prepared for upgrade');
   } catch (e) {
-    // expected error
+    t.true(e.message.includes(BEACON_PROXY_NOT_SUPPORTED), e.message);
   }
 
   try {
     await upgrades.prepareUpgrade(beacon.address, GreeterV3);
     t.fail('prepareUpgrade() should not allow a beacon to be prepared for upgrade');
   } catch (e) {
-    // expected error
+    t.true(e.message.includes(DOESNT_LOOK_LIKE_PROXY), e.message);
   }
 });
 
@@ -48,7 +54,7 @@ test('block beacon proxy upgrade via upgradeBeacon', async t => {
     await upgrades.upgradeBeacon(greeter, GreeterV2);
     t.fail('upgradeBeacon() should not allow a non-beacon address');
   } catch (e) {
-    // expected error
+    t.true(e.message.includes(ADDRESS_IS_A_BEACON_PROXY), e.message);
   }
 });
 
@@ -61,7 +67,7 @@ test('block transparent proxy upgrade via upgradeBeacon', async t => {
     await upgrades.upgradeBeacon(greeter, GreeterV2);
     t.fail('upgradeBeacon() should not allow a non-beacon address');
   } catch (e) {
-    // expected error
+    t.true(e.message.includes(ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY), e.message);
   }
 });
 
@@ -74,7 +80,7 @@ test('block uups proxy upgrade via upgradeBeacon', async t => {
     await upgrades.upgradeBeacon(greeter, GreeterV2Proxiable);
     t.fail('upgradeBeacon() should not allow a non-beacon address');
   } catch (e) {
-    // expected error
+    t.true(e.message.includes(ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY), e.message);
   }
 });
 
@@ -88,6 +94,7 @@ test('load non-beacon proxy from loadProxy', async t => {
     await upgrades.loadProxy(greeter.address, greeter.signer);
     t.fail('loadProxy() should not allow a non-beacon address');
   } catch (e) {
-    // expected error since loadProxy() only supports beacon proxies for now
+    // loadProxy() only supports beacon proxies for now
+    t.true(e.message.includes(DOESNT_LOOK_LIKE_BEACON_PROXY), e.message);
   }
 });

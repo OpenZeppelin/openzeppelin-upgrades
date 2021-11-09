@@ -14,6 +14,7 @@ import {
   inferProxyKind,
   setProxyKind,
   ValidationOptions,
+  getBeaconAddress,
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
@@ -69,7 +70,18 @@ async function deployImpl(
 
   if (isBeacon) {
     if (proxyOrBeaconAddress !== undefined) {
-      await verifyIsNotProxy(proxyOrBeaconAddress);
+      if (await isTransparentOrUUPSProxy(proxyOrBeaconAddress)) {
+        throw new Error(
+          'Address is a transparent or uups proxy which cannot be upgraded using upgradeBeacon(). Use upgradeProxy() instead.',
+        );
+      } else if (await isBeaconProxy(proxyOrBeaconAddress)) {
+        throw new Error(
+          `Address is a beacon proxy which cannot be upgraded directly. Use upgradeBeacon() on its beacon address ${await getBeaconAddress(
+            provider,
+            proxyOrBeaconAddress,
+          )} instead.`,
+        );
+      }
     }
   } else {
     await processProxyKind();
@@ -119,15 +131,25 @@ async function deployImpl(
     }
   }
 
-  async function verifyIsNotProxy(proxyOrBeaconAddress: string) {
+  async function isTransparentOrUUPSProxy(proxyOrBeaconAddress: string): Promise<boolean> {
     try {
-      if ((await getImplementationAddress(provider, proxyOrBeaconAddress)) !== undefined) {
-        throw new Error(
-          'Address is a regular proxy and cannot be upgraded using upgradeBeacon(). Use upgradeProxy() instead.',
-        );
-      }
+      await getImplementationAddress(provider, proxyOrBeaconAddress);
+      // if an exception was not encountered above, then this address is a transparent/uups proxy
+      return true;
     } catch (e: any) {
-      // error is expected for beacons since they don't use EIP-1967 implementation slots
+      // error is expected for beacons since they don't use EIP-1967 slots
+      return false;
+    }
+  }
+
+  async function isBeaconProxy(proxyOrBeaconAddress: string): Promise<boolean> {
+    try {
+      await getBeaconAddress(provider, proxyOrBeaconAddress);
+      // if an exception was not encountered above, then this address is a beacon proxy
+      return true;
+    } catch (e: any) {
+      // error is expected for beacons since they don't use EIP-1967 slots
+      return false;
     }
   }
 }
