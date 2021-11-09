@@ -17,7 +17,7 @@ export interface ManifestData {
     [version in string]?: ImplDeployment;
   };
   proxies: ProxyDeployment[];
-  beacons: BeaconDeployment[];
+  beacons?: BeaconDeployment[];
   admin?: Deployment;
 }
 
@@ -72,7 +72,7 @@ export class Manifest {
 
   async getBeaconFromAddress(address: string): Promise<BeaconDeployment> {
     const data = await this.read();
-    const deployment = data.beacons.find(d => d?.address === address);
+    const deployment = data.beacons?.find(d => d?.address === address);
     if (deployment === undefined) {
       throw new DeploymentNotFound(`Beacon at address ${address} is not registered`);
     }
@@ -91,6 +91,9 @@ export class Manifest {
   async addBeacon(beacon: BeaconDeployment): Promise<void> {
     await this.lockedRun(async () => {
       const data = await this.read();
+      if (data.beacons === undefined) {
+        data.beacons = [];
+      }
       const existing = data.beacons.findIndex(p => p.address === beacon.address);
       if (existing >= 0) {
         data.beacons.splice(existing, 1);
@@ -191,7 +194,7 @@ function normalizeManifestData(input: ManifestData): ManifestData {
   return {
     ...pick(input, ['manifestVersion', 'admin']),
     proxies: input.proxies.map(p => normalizeDeployment(p, ['kind'])),
-    beacons: input.beacons.map(p => normalizeDeployment(p, ['abi'])),
+    beacons: input.beacons?.map(p => normalizeDeployment(p, ['abi'])),
     impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout'])),
   };
 }

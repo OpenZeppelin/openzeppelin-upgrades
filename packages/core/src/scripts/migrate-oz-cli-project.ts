@@ -165,7 +165,6 @@ function updateManifestData(oldManifestData: NetworkFileData): ManifestData {
     manifestVersion: '3.2',
     impls: transformImplementations(oldManifestData.contracts),
     proxies: [...transformProxies(oldManifestData.proxies)],
-    beacons: [],
     admin: {
       address: proxyAdmin,
     },
