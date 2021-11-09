@@ -6,12 +6,12 @@ import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@open
 import {
   DeployOptions,
   deploy,
-  deployImpl,
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   DeployTransaction,
   DeployKindUnsupported,
+  deployProxyImpl,
 } from './utils';
 import { Interface } from '@ethersproject/abi';
 
@@ -34,7 +34,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const { impl, kind } = await deployImpl(hre, ImplFactory, opts);
+    const { impl, kind } = await deployProxyImpl(hre, ImplFactory, opts);
     const contractInterface = ImplFactory.interface;
     const data = getInitializerData(contractInterface, args, opts.initializer);
 

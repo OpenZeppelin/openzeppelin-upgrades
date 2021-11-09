@@ -5,7 +5,7 @@ import { Manifest, getAdminAddress, getCode } from '@openzeppelin/upgrades-core'
 
 import {
   UpgradeOptions,
-  deployImpl,
+  deployProxyImpl,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   getContractAddress,
@@ -22,7 +22,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
   return async function upgradeProxy(proxy, ImplFactory, opts: UpgradeOptions = {}) {
     const proxyAddress = getContractAddress(proxy);
 
-    const { impl: nextImpl } = await deployImpl(hre, ImplFactory, opts, proxyAddress);
+    const { impl: nextImpl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress);
     // upgrade kind is inferred above
     const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
     const call = encodeCall(ImplFactory, opts.call);

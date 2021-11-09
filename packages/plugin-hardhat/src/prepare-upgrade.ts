@@ -1,7 +1,13 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import { Options, ContractAddressOrInstance, deployImpl, getContractAddress, DeployKindUnsupported } from './utils';
+import {
+  Options,
+  ContractAddressOrInstance,
+  getContractAddress,
+  DeployKindUnsupported,
+  deployProxyImpl,
+} from './utils';
 import { isBeaconProxy } from '@openzeppelin/upgrades-core/dist/validate/query';
 
 export type PrepareUpgradeFunction = (
@@ -17,7 +23,7 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
     if (await isBeaconProxy(provider, proxyAddress)) {
       throw new DeployKindUnsupported();
     }
-    const { impl } = await deployImpl(hre, ImplFactory, opts, proxyAddress);
+    const { impl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress);
     return impl;
   };
 }

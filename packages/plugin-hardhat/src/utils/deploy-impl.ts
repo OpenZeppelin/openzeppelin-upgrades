@@ -19,18 +19,47 @@ import {
 import { deploy } from './deploy';
 import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
+import { getIBeaconFactory } from '.';
 
-interface DeployedImpl {
+interface DeployedProxyImpl {
   impl: string;
   kind: NonNullable<ValidationOptions['kind']>;
 }
 
-export async function deployImpl(
+interface DeployedBeaconImpl {
+  impl: string;
+}
+
+export enum DeployType {
+  Proxy,
+  Beacon,
+}
+
+export async function deployProxyImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: Options,
-  proxyAddress?: string,
-): Promise<DeployedImpl> {
+  proxyOrBeaconAddress?: string,
+): Promise<DeployedProxyImpl> {
+  return deployImpl(hre, ImplFactory, opts, false, proxyOrBeaconAddress);
+}
+
+export async function deployBeaconImpl(
+  hre: HardhatRuntimeEnvironment,
+  ImplFactory: ContractFactory,
+  opts: Options,
+  proxyOrBeaconAddress?: string,
+): Promise<DeployedBeaconImpl> {
+  return deployImpl(hre, ImplFactory, opts, true, proxyOrBeaconAddress);
+}
+
+async function deployImpl(
+  hre: HardhatRuntimeEnvironment,
+  ImplFactory: ContractFactory,
+  opts: Options,
+  isBeacon: boolean,
+  proxyOrBeaconAddress?: string,
+): Promise<any> {
   const { provider } = hre.network;
   const validations = await readValidations(hre);
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
@@ -38,25 +67,29 @@ export async function deployImpl(
   const version = getVersion(unlinkedBytecode, ImplFactory.bytecode, encodedArgs);
   const layout = getStorageLayout(validations, version);
 
-  if (opts.kind === undefined) {
-    opts.kind = await inferProxyKind(validations, version, provider, proxyAddress);
-  }
-
-  if (proxyAddress !== undefined) {
-    await setProxyKind(provider, proxyAddress, opts);
-  }
-
-  if (opts.kind === 'beacon') {
-    throw new DeployKindUnsupported();
+  if (isBeacon) {
+    if (proxyOrBeaconAddress !== undefined) {
+      await verifyIsNotProxy(proxyOrBeaconAddress);
+    }
+  } else {
+    await processProxyKind();
   }
 
   const fullOpts = withDefaults(opts);
 
   assertUpgradeSafe(validations, version, fullOpts);
 
-  if (proxyAddress !== undefined) {
+  if (proxyOrBeaconAddress !== undefined) {
+    // upgrade scenario
     const manifest = await Manifest.forNetwork(provider);
-    const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
+    let currentImplAddress;
+    if (isBeacon) {
+      const IBeaconFactory = await getIBeaconFactory(hre, ImplFactory.signer);
+      const beaconContract = IBeaconFactory.attach(proxyOrBeaconAddress);
+      currentImplAddress = await beaconContract.implementation();
+    } else {
+      currentImplAddress = await getImplementationAddress(provider, proxyOrBeaconAddress);
+    }
     const currentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
     assertStorageUpgradeSafe(currentLayout, layout, fullOpts);
   }
@@ -66,7 +99,37 @@ export async function deployImpl(
     return { ...deployment, layout };
   });
 
-  return { impl, kind: opts.kind };
+  if (isBeacon) {
+    return { impl };
+  } else {
+    return { impl, kind: opts.kind };
+  }
+
+  async function processProxyKind() {
+    if (opts.kind === undefined) {
+      opts.kind = await inferProxyKind(validations, version, provider, proxyOrBeaconAddress);
+    }
+
+    if (proxyOrBeaconAddress !== undefined) {
+      await setProxyKind(provider, proxyOrBeaconAddress, opts);
+    }
+
+    if (opts.kind === 'beacon') {
+      throw new DeployKindUnsupported();
+    }
+  }
+
+  async function verifyIsNotProxy(proxyOrBeaconAddress: string) {
+    try {
+      if ((await getImplementationAddress(provider, proxyOrBeaconAddress)) !== undefined) {
+        throw new Error(
+          'Address is a regular proxy and cannot be upgraded using upgradeBeacon(). Use upgradeProxy() instead.',
+        );
+      }
+    } catch (e: any) {
+      // error is expected for beacons since they don't use EIP-1967 implementation slots
+    }
+  }
 }
 
 export class DeployKindUnsupported extends Error {

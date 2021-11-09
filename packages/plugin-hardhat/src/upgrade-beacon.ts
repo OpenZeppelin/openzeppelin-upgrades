@@ -5,7 +5,7 @@ import {
   getContractAddress,
   ContractAddressOrInstance,
   getUpgradeableBeaconFactory,
-  deployImplForBeacon,
+  deployBeaconImpl,
   Options,
 } from './utils';
 import { FormatTypes } from '@ethersproject/abi';
@@ -24,7 +24,7 @@ export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment): UpgradeBeacon
 
     const beaconAddress = getContractAddress(beacon);
 
-    const { impl: nextImpl } = await deployImplForBeacon(hre, ImplFactory, opts, beaconAddress);
+    const { impl: nextImpl } = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
 
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
     const beaconContract = UpgradeableBeaconFactory.attach(beaconAddress);
