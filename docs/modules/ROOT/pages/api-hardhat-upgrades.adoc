@@ -226,7 +226,7 @@ Given a previous proxy contract instance or a combination of proxy address and s
 [source,ts]
 ----
 async function loadProxy(
-  Contract: ethers.Contract,
+  proxyInstance: ethers.Contract,
 ): Promise<ethers.Contract>
 ----
 
