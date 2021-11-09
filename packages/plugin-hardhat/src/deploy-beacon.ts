@@ -3,15 +3,15 @@ import type { ContractFactory, Contract } from 'ethers';
 
 import { Manifest, BeaconDeployment } from '@openzeppelin/upgrades-core';
 
-import { DeployOptions, deploy, DeployTransaction, getUpgradeableBeaconFactory, deployBeaconImpl } from './utils';
+import { Options, deploy, DeployTransaction, getUpgradeableBeaconFactory, deployBeaconImpl } from './utils';
 import { FormatTypes } from 'ethers/lib/utils';
 
 export interface DeployBeaconFunction {
-  (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
+  (ImplFactory: ContractFactory, opts?: Options): Promise<Contract>;
 }
 
 export function makeDeployBeacon(hre: HardhatRuntimeEnvironment): DeployBeaconFunction {
-  return async function deployBeacon(ImplFactory: ContractFactory, opts: DeployOptions = {}) {
+  return async function deployBeacon(ImplFactory: ContractFactory, opts: Options = {}) {
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
