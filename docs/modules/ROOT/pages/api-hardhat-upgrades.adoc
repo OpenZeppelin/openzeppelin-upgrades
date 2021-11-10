@@ -1,6 +1,6 @@
 = OpenZeppelin Hardhat Upgrades API
 
-`deployProxy`, `upgradeProxy`, `deployBeacon` and `upgradeBeacon` functions will return instances of https://docs.ethers.io/v5/api/contract/contract[ethers.js contracts], and require https://docs.ethers.io/v5/api/contract/contract-factory[ethers.js contract factories] as arguments. All functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
+Both `deployProxy` and `upgradeProxy` functions will return instances of https://docs.ethers.io/v5/api/contract/contract[ethers.js contracts], and require https://docs.ethers.io/v5/api/contract/contract-factory[ethers.js contract factories] as arguments. For https://docs.openzeppelin.com/contracts/4.x/api/proxy#beacon[beacons], `deployBeacon` and `upgradeBeacon` will both return an upgradable beacon instance that can be used with a beacon proxy. All functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
 
 [[common-options]]
 == Common Options
@@ -184,7 +184,7 @@ async function deployBeacon(
 [[upgrade-beacon]]
 == upgradeBeacon
 
-Upgrades a https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[beacon] at a specified address to a new implementation contract, and returns the beacon contract instance.
+Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] at a specified address to a new implementation contract, and returns the beacon contract instance.
 
 * See <<common-options>>.
 
@@ -221,7 +221,7 @@ async function deployBeaconProxy(
 [[load-proxy]]
 == loadProxy
 
-Given a previous proxy contract instance or a combination of proxy address and signer, returns a contract instance with the proxy address and its current implementation interface. Only supported for beacon proxies.
+Given a previous proxy contract instance or a combination of proxy address and signer, returns a contract instance with the proxy address and its current implementation interface. Currently only supported for beacon proxies.
 
 [source,ts]
 ----
