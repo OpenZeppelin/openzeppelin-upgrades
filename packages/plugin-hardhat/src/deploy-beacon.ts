@@ -23,12 +23,11 @@ export function makeDeployBeacon(hre: HardhatRuntimeEnvironment): DeployBeaconFu
       { abi: abi },
       await deploy(UpgradeableBeaconFactory, impl),
     );
-
     await manifest.addBeacon(beaconDeployment);
 
-    const beacon = UpgradeableBeaconFactory.attach(beaconDeployment.address);
-    // @ts-ignore Won't be readonly because inst was created through attach.
-    beacon.deployTransaction = beaconDeployment.deployTransaction;
-    return beacon;
+    const beaconContract = UpgradeableBeaconFactory.attach(beaconDeployment.address);
+    // @ts-ignore Won't be readonly because beaconContract was created through attach.
+    beaconContract.deployTransaction = beaconDeployment.deployTransaction;
+    return beaconContract;
   };
 }
