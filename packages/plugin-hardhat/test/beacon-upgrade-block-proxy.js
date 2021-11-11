@@ -12,7 +12,6 @@ test.before(async t => {
 
 const BEACON_PROXY_NOT_SUPPORTED = 'Beacon proxies are not supported with the current function';
 const DOESNT_LOOK_LIKE_PROXY = "doesn't look like an administered ERC 1967 proxy";
-const DOESNT_LOOK_LIKE_BEACON_PROXY = "doesn't look like an ERC 1967 beacon proxy";
 const ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY = 'Address is a transparent or uups proxy';
 const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy';
 
@@ -81,20 +80,5 @@ test('block uups proxy upgrade via upgradeBeacon', async t => {
     t.fail('upgradeBeacon() should not allow a non-beacon address');
   } catch (e) {
     t.true(e.message.includes(ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY), e.message);
-  }
-});
-
-// Remove this test case when loadProxy() supports non-beacon proxies
-test('load non-beacon proxy from loadProxy', async t => {
-  const { Greeter } = t.context;
-
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
-
-  try {
-    await upgrades.loadProxy(greeter.address, greeter.signer);
-    t.fail('loadProxy() should not allow a non-beacon address');
-  } catch (e) {
-    // loadProxy() only supports beacon proxies for now
-    t.true(e.message.includes(DOESNT_LOOK_LIKE_BEACON_PROXY), e.message);
   }
 });

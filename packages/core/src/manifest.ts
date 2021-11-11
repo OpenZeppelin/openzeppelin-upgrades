@@ -17,20 +17,16 @@ export interface ManifestData {
     [version in string]?: ImplDeployment;
   };
   proxies: ProxyDeployment[];
-  beacons?: BeaconDeployment[];
   admin?: Deployment;
 }
 
 export interface ImplDeployment extends Deployment {
   layout: StorageLayout;
+  abi?: string | string[];
 }
 
 export interface ProxyDeployment extends Deployment {
   kind: 'uups' | 'transparent' | 'beacon';
-}
-
-export interface BeaconDeployment extends Deployment {
-  abi: string | string[];
 }
 
 function defaultManifest(): ManifestData {
@@ -38,7 +34,6 @@ function defaultManifest(): ManifestData {
     manifestVersion: currentManifestVersion,
     impls: {},
     proxies: [],
-    beacons: [],
   };
 }
 
@@ -70,15 +65,6 @@ export class Manifest {
     return deployment;
   }
 
-  async getBeaconFromAddress(address: string): Promise<BeaconDeployment> {
-    const data = await this.read();
-    const deployment = data.beacons?.find(d => d?.address === address);
-    if (deployment === undefined) {
-      throw new DeploymentNotFound(`Beacon at address ${address} is not registered`);
-    }
-    return deployment;
-  }
-
   async getProxyFromAddress(address: string): Promise<ProxyDeployment> {
     const data = await this.read();
     const deployment = data.proxies.find(d => d?.address === address);
@@ -86,21 +72,6 @@ export class Manifest {
       throw new DeploymentNotFound(`Proxy at address ${address} is not registered`);
     }
     return deployment;
-  }
-
-  async addBeacon(beacon: BeaconDeployment): Promise<void> {
-    await this.lockedRun(async () => {
-      const data = await this.read();
-      if (data.beacons === undefined) {
-        data.beacons = [];
-      }
-      const existing = data.beacons.findIndex(p => p.address === beacon.address);
-      if (existing >= 0) {
-        data.beacons.splice(existing, 1);
-      }
-      data.beacons.push(beacon);
-      await this.write(data);
-    });
   }
 
   async addProxy(proxy: ProxyDeployment): Promise<void> {
@@ -194,8 +165,7 @@ function normalizeManifestData(input: ManifestData): ManifestData {
   return {
     ...pick(input, ['manifestVersion', 'admin']),
     proxies: input.proxies.map(p => normalizeDeployment(p, ['kind'])),
-    beacons: input.beacons?.map(p => normalizeDeployment(p, ['abi'])),
-    impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout'])),
+    impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout', 'abi'])),
   };
 }
 

@@ -221,7 +221,7 @@ async function deployBeaconProxy(
 [[load-proxy]]
 == loadProxy
 
-Given a previous proxy contract instance or a combination of proxy address and signer, returns a contract instance with the proxy address and its current implementation interface. Currently only supported for beacon proxies.
+Given a previous proxy contract instance or a combination of proxy address and signer, returns a contract instance with the proxy address and its current implementation interface.
 
 [source,ts]
 ----

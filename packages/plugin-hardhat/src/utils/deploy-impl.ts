@@ -21,6 +21,7 @@ import { deploy } from './deploy';
 import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
 import { getIBeaconFactory } from '.';
+import { FormatTypes } from 'ethers/lib/utils';
 
 interface DeployedProxyImpl {
   impl: string;
@@ -107,7 +108,8 @@ async function deployImpl(
   }
 
   const impl = await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(ImplFactory, ...fullOpts.constructorArgs);
+    const abi = ImplFactory.interface.format(FormatTypes.json);
+    const deployment = Object.assign({ abi }, await deploy(ImplFactory, ...fullOpts.constructorArgs));
     return { ...deployment, layout };
   });
 
