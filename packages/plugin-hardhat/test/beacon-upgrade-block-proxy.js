@@ -15,6 +15,17 @@ const DOESNT_LOOK_LIKE_PROXY = "doesn't look like an administered ERC 1967 proxy
 const ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY = 'Address is a transparent or uups proxy';
 const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy';
 
+test('block beacon proxy deploy via deployProxy', async t => {
+  const { Greeter } = t.context;
+
+  try {
+    await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'beacon' });
+    t.fail('deployProxy() should not allow a beacon proxy to be deployed');
+  } catch (e) {
+    t.true(e.message.includes(BEACON_PROXY_NOT_SUPPORTED), e.message);
+  }
+});
+
 test('block beacon upgrade via upgradeProxy', async t => {
   const { Greeter, GreeterV2, GreeterV3 } = t.context;
 
