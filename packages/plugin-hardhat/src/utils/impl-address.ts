@@ -58,9 +58,6 @@ export async function getInterfaceFromManifest(
   hre: HardhatRuntimeEnvironment,
   implAddress: string,
 ): Promise<utils.Interface | undefined> {
-  if (implAddress === undefined) {
-    return undefined;
-  }
   const { provider } = hre.network;
   const manifest = await Manifest.forNetwork(provider);
   try {

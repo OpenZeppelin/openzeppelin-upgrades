@@ -22,7 +22,7 @@ export interface ManifestData {
 
 export interface ImplDeployment extends Deployment {
   layout: StorageLayout;
-  abi?: string | string[];
+  abi?: string[];
 }
 
 export interface ProxyDeployment extends Deployment {

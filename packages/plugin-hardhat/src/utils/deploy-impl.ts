@@ -108,7 +108,7 @@ async function deployImpl(
   }
 
   const impl = await fetchOrDeploy(version, provider, async () => {
-    const abi = ImplFactory.interface.format(FormatTypes.json);
+    const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
     const deployment = Object.assign({ abi }, await deploy(ImplFactory, ...fullOpts.constructorArgs));
     return { ...deployment, layout };
   });
