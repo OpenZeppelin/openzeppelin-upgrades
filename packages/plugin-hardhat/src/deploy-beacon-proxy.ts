@@ -48,7 +48,7 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
     opts.kind = 'beacon';
 
     const beaconAddress = getContractAddress(beacon);
-    const implAddress = await getImplementationAddressFromBeacon(hre, getSigner(ImplFactoryOrSigner), beaconAddress);
+    const implAddress = await getImplementationAddressFromBeacon(hre, beaconAddress);
     let contractInterface = await getInterfaceFromManifest(hre, implAddress);
 
     if (contractInterface === undefined) {

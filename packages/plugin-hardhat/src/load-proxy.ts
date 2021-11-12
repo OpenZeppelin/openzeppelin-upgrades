@@ -19,7 +19,7 @@ export function makeLoadProxy(hre: HardhatRuntimeEnvironment): LoadProxyFunction
 
     const proxyAddress = getContractAddress(proxy);
 
-    const implAddress = await getImplementationAddressFromProxy(provider, proxyAddress, hre, proxy, signer);
+    const implAddress = await getImplementationAddressFromProxy(provider, proxyAddress, hre);
     if (implAddress === undefined) {
       throw new Error(`Contract at address ${proxyAddress} doesn't look like an ERC 1967 proxy or beacon proxy.`);
     }

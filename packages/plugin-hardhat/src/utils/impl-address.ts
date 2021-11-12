@@ -1,19 +1,15 @@
 import { DeploymentNotFound, getBeaconAddress, getImplementationAddress, Manifest } from '@openzeppelin/upgrades-core';
-import { Contract, ethers, Signer, utils } from 'ethers';
+import { utils } from 'ethers';
 import { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
-import { ContractAddressOrInstance, getIBeaconFactory } from '.';
+import { getIBeaconFactory } from '.';
 
 /**
  * Gets the implementation address from a Beacon.
  *
  * @returns the implementation address.
  */
-export async function getImplementationAddressFromBeacon(
-  hre: HardhatRuntimeEnvironment,
-  signer: ethers.Signer | undefined,
-  beaconAddress: string,
-) {
-  const IBeaconFactory = await getIBeaconFactory(hre, signer);
+export async function getImplementationAddressFromBeacon(hre: HardhatRuntimeEnvironment, beaconAddress: string) {
+  const IBeaconFactory = await getIBeaconFactory(hre);
   const beaconContract = IBeaconFactory.attach(beaconAddress);
   const currentImplAddress = await beaconContract.implementation();
   return currentImplAddress;
@@ -28,8 +24,6 @@ export async function getImplementationAddressFromProxy(
   provider: EthereumProvider,
   proxyAddress: string,
   hre: HardhatRuntimeEnvironment,
-  proxy: Contract | ContractAddressOrInstance,
-  signer: Signer | undefined,
 ) {
   let result: string | undefined;
   try {
@@ -37,11 +31,7 @@ export async function getImplementationAddressFromProxy(
   } catch (e: any) {
     try {
       const beaconAddress = await getBeaconAddress(provider, proxyAddress);
-      result = await getImplementationAddressFromBeacon(
-        hre,
-        proxy instanceof Contract ? proxy.signer : signer,
-        beaconAddress,
-      );
+      result = await getImplementationAddressFromBeacon(hre, beaconAddress);
     } catch (e: any) {
       // error expected if the address was not a beacon proxy
     }
