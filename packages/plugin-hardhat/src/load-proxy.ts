@@ -1,8 +1,12 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Contract, Signer } from 'ethers';
 
-import { ContractAddressOrInstance, getContractAddress } from './utils';
-import { getImplementationAddressFromProxy, getInterfaceFromManifest } from './utils/impl-address';
+import {
+  ContractAddressOrInstance,
+  getContractAddress,
+  getImplementationAddressFromProxy,
+  getInterfaceFromManifest,
+} from './utils';
 
 export interface LoadProxyFunction {
   (proxy: Contract, signer?: Signer): Promise<Contract>;

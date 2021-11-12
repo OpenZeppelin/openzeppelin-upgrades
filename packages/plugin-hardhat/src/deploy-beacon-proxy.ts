@@ -12,9 +12,10 @@ import {
   getContractAddress,
   ContractFactoryOrSigner,
   getSigner,
+  getInitializerData,
+  getImplementationAddressFromBeacon,
+  getInterfaceFromManifest,
 } from './utils';
-import { getInitializerData } from './deploy-proxy';
-import { getImplementationAddressFromBeacon, getInterfaceFromManifest } from './utils/impl-address';
 
 export interface DeployBeaconProxyFunction {
   (

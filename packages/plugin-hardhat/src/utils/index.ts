@@ -6,3 +6,4 @@ export * from './validations';
 export * from './contract-types';
 export * from './options';
 export * from './impl-address';
+export * from './initializer-data';
