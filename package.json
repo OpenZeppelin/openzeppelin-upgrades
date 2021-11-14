@@ -18,7 +18,7 @@
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^8.0.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-unicorn": "^37.0.0",
+    "eslint-plugin-unicorn": "^38.0.0",
     "ethers": "^5.0.5",
     "lerna": "^4.0.0",
     "node-gyp-cache": "^0.2.1",
