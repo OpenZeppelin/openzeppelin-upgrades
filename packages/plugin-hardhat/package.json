@@ -31,7 +31,8 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^1.10.0"
+    "@openzeppelin/upgrades-core": "^1.10.0",
+    "chalk": "^4.1.0"
   },
   "peerDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
