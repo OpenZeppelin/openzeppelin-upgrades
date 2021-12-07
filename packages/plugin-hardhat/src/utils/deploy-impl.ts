@@ -79,7 +79,8 @@ async function deployImpl(
         const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
         throw new UpgradesError(
           'Address is a beacon proxy which cannot be upgraded directly.',
-          () => `Use upgradeBeacon() on its beacon address ${beaconAddress} instead.`,
+          () =>
+            `upgradeBeacon() must be called with a beacon address, not a beacon proxy address. Call upgradeBeacon() on the beacon address ${beaconAddress} instead.`,
         );
       }
     }

@@ -13,7 +13,7 @@ test.before(async t => {
 const BEACON_PROXY_NOT_SUPPORTED = 'Beacon proxies are not supported with the current function';
 const DOESNT_LOOK_LIKE_PROXY = "doesn't look like an administered ERC 1967 proxy";
 const ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY = 'Address is a transparent or uups proxy';
-const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy';
+const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy which cannot be upgraded directly.';
 const PROXY_KIND_UUPS_NOT_SUPPORTED = "The proxy kind 'uups' is not supported with the current function.";
 
 test('block beacon proxy deploy via deployProxy', async t => {
