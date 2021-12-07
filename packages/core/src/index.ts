@@ -9,6 +9,7 @@ export * from './src-decoder';
 export * from './solc-api';
 export * from './deployment';
 export * from './link-refs';
+export * from './error';
 
 export { getStorageLayoutForAddress } from './manifest-storage-layout';
 

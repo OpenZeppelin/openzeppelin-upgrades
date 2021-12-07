@@ -5,7 +5,7 @@ import {
   Options,
   ContractAddressOrInstance,
   getContractAddress,
-  DeployKindUnsupported,
+  BeaconProxyUnsupportedError,
   deployProxyImpl,
 } from './utils';
 import { isBeaconProxy } from '@openzeppelin/upgrades-core/dist/validate/query';
@@ -21,7 +21,7 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
     const proxyAddress = getContractAddress(proxy);
     const { provider } = hre.network;
     if (await isBeaconProxy(provider, proxyAddress)) {
-      throw new DeployKindUnsupported();
+      throw new BeaconProxyUnsupportedError();
     }
     const { impl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress);
     return impl;

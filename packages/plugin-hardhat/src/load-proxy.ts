@@ -7,6 +7,7 @@ import {
   getImplementationAddressFromProxy,
   getInterfaceFromManifest,
 } from './utils';
+import { UpgradesError } from '@openzeppelin/upgrades-core';
 
 export interface LoadProxyFunction {
   (proxy: Contract, signer?: Signer): Promise<Contract>;
@@ -25,13 +26,17 @@ export function makeLoadProxy(hre: HardhatRuntimeEnvironment): LoadProxyFunction
 
     const implAddress = await getImplementationAddressFromProxy(provider, proxyAddress, hre);
     if (implAddress === undefined) {
-      throw new Error(`Contract at address ${proxyAddress} doesn't look like an ERC 1967 proxy or beacon proxy.`);
+      throw new UpgradesError(
+        `Contract at address ${proxyAddress} doesn't look like an ERC 1967 proxy or beacon proxy.`,
+        () => 'Only existing proxies can be loaded with the loadProxy() function.',
+      );
     }
 
     const contractInterface = await getInterfaceFromManifest(hre, implAddress);
     if (contractInterface === undefined) {
-      throw new Error(
-        `Implementation at address ${implAddress} was not found in the network manifest. Use the implementation's contract factory to attach to the proxy address ${proxyAddress} instead.`,
+      throw new UpgradesError(
+        'Implementation at address ${implAddress} was not found in the network manifest.',
+        () => `Use the implementation's contract factory to attach to the proxy address ${proxyAddress} instead.`,
       );
     }
 

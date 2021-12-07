@@ -1,27 +1,26 @@
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory } from 'ethers';
-
 import {
-  Manifest,
-  assertUpgradeSafe,
   assertStorageUpgradeSafe,
+  assertUpgradeSafe,
   fetchOrDeploy,
+  getBeaconAddress,
   getImplementationAddress,
   getStorageLayout,
   getStorageLayoutForAddress,
   getUnlinkedBytecode,
   getVersion,
   inferProxyKind,
+  Manifest,
   setProxyKind,
+  UpgradesError,
   ValidationOptions,
-  getBeaconAddress,
 } from '@openzeppelin/upgrades-core';
-
+import type { ContractFactory } from 'ethers';
+import { FormatTypes } from 'ethers/lib/utils';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { getIBeaconFactory } from '.';
 import { deploy } from './deploy';
 import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
-import { getIBeaconFactory } from '.';
-import { FormatTypes } from 'ethers/lib/utils';
 
 interface DeployedProxyImpl {
   impl: string;
@@ -72,15 +71,15 @@ async function deployImpl(
   if (isBeacon) {
     if (proxyOrBeaconAddress !== undefined) {
       if (await isTransparentOrUUPSProxy(proxyOrBeaconAddress)) {
-        throw new Error(
-          'Address is a transparent or uups proxy which cannot be upgraded using upgradeBeacon(). Use upgradeProxy() instead.',
+        throw new UpgradesError(
+          'Address is a transparent or uups proxy which cannot be upgraded using upgradeBeacon().',
+          () => 'Use upgradeProxy() instead.',
         );
       } else if (await isBeaconProxy(proxyOrBeaconAddress)) {
-        throw new Error(
-          `Address is a beacon proxy which cannot be upgraded directly. Use upgradeBeacon() on its beacon address ${await getBeaconAddress(
-            provider,
-            proxyOrBeaconAddress,
-          )} instead.`,
+        const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
+        throw new UpgradesError(
+          'Address is a beacon proxy which cannot be upgraded directly.',
+          () => `Use upgradeBeacon() on its beacon address ${beaconAddress} instead.`,
         );
       }
     }
@@ -129,7 +128,7 @@ async function deployImpl(
     }
 
     if (opts.kind === 'beacon') {
-      throw new DeployKindUnsupported();
+      throw new BeaconProxyUnsupportedError();
     }
   }
 
@@ -156,10 +155,11 @@ async function deployImpl(
   }
 }
 
-export class DeployKindUnsupported extends Error {
+export class BeaconProxyUnsupportedError extends UpgradesError {
   constructor() {
     super(
-      'Beacon proxies are not supported with the current function. Use deployBeacon(), deployBeaconProxy(), or upgradeBeacon() instead.',
+      'Beacon proxies are not supported with the current function.',
+      () => 'Use deployBeacon(), deployBeaconProxy(), or upgradeBeacon() instead.',
     );
   }
 }

@@ -10,7 +10,7 @@ import {
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   DeployTransaction,
-  DeployKindUnsupported,
+  BeaconProxyUnsupportedError,
   deployProxyImpl,
   getInitializerData,
 } from './utils';
@@ -50,7 +50,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;
     switch (kind) {
       case 'beacon': {
-        throw new DeployKindUnsupported();
+        throw new BeaconProxyUnsupportedError();
       }
 
       case 'uups': {
