@@ -14,6 +14,7 @@ const BEACON_PROXY_NOT_SUPPORTED = 'Beacon proxies are not supported with the cu
 const DOESNT_LOOK_LIKE_PROXY = "doesn't look like an administered ERC 1967 proxy";
 const ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY = 'Address is a transparent or uups proxy';
 const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy';
+const PROXY_KIND_UUPS_NOT_SUPPORTED = "The proxy kind 'uups' is not supported with the current function.";
 
 test('block beacon proxy deploy via deployProxy', async t => {
   const { Greeter } = t.context;
@@ -91,5 +92,18 @@ test('block uups proxy upgrade via upgradeBeacon', async t => {
     t.fail('upgradeBeacon() should not allow a non-beacon address');
   } catch (e) {
     t.true(e.message.includes(ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY), e.message);
+  }
+});
+
+test('block deployBeaconProxy with non-beacon kind', async t => {
+  const { Greeter } = t.context;
+
+  const beacon = await upgrades.deployBeacon(Greeter);
+
+  try {
+    await upgrades.deployBeaconProxy(beacon, Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
+    t.fail('deployBeaconProxy() should not allow a non-beacon kind');
+  } catch (e) {
+    t.true(e.message.includes(PROXY_KIND_UUPS_NOT_SUPPORTED), e.message);
   }
 });

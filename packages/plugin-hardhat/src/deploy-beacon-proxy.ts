@@ -1,7 +1,7 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { ContractFactory, Contract } from 'ethers';
 
-import { Manifest, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
+import { Manifest, logWarning, ProxyDeployment, UpgradesError } from '@openzeppelin/upgrades-core';
 
 import {
   DeployOptions,
@@ -45,6 +45,13 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
+
+    if (opts.kind !== undefined && opts.kind !== 'beacon') {
+      throw new UpgradesError(
+        `The proxy kind '${opts.kind}' is not supported with the current function.`,
+        () => `deployBeaconProxy() is only supported with proxy kind undefined or 'beacon'`,
+      );
+    }
 
     opts.kind = 'beacon';
 
