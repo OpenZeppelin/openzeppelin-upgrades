@@ -33,7 +33,7 @@ Creates a proxy given an ethers contract factory to use as implementation, and r
 
 If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
 
-* `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization
+* `initializer`: set a different initializer function to call (see link:++https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments++[Specifying Fragments]), or specify `false` to disable initialization
 * See <<common-options>>.
 
 [source,ts]
