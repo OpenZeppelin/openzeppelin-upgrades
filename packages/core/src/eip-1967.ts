@@ -1,7 +1,11 @@
-import { toChecksumAddress, keccak256 } from 'ethereumjs-util';
 import BN from 'bn.js';
-
+import { keccak256, toChecksumAddress } from 'ethereumjs-util';
+import { UpgradesError } from './error';
 import { EthereumProvider, getStorageAt } from './provider';
+
+export class EIP1967ImplementationNotFound extends UpgradesError {}
+
+export class EIP1967BeaconNotFound extends UpgradesError {}
 
 export async function getAdminAddress(provider: EthereumProvider, address: string): Promise<string> {
   const storage = await getStorageFallback(
@@ -23,7 +27,7 @@ export async function getImplementationAddress(provider: EthereumProvider, addre
   );
 
   if (isEmptySlot(storage)) {
-    throw new Error(`Contract at ${address} doesn't look like an administered ERC 1967 proxy`);
+    throw new EIP1967ImplementationNotFound(`Contract at ${address} doesn't look like an administered ERC 1967 proxy`);
   }
 
   return parseAddress(storage);
@@ -33,7 +37,7 @@ export async function getBeaconAddress(provider: EthereumProvider, address: stri
   const storage = await getStorageFallback(provider, address, toEip1967Hash('eip1967.proxy.beacon'));
 
   if (isEmptySlot(storage)) {
-    throw new Error(`Contract at ${address} doesn't look like an ERC 1967 beacon proxy`);
+    throw new EIP1967BeaconNotFound(`Contract at ${address} doesn't look like an ERC 1967 beacon proxy`);
   }
 
   return parseAddress(storage);

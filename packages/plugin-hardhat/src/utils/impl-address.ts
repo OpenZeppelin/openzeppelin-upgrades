@@ -1,4 +1,11 @@
-import { DeploymentNotFound, getBeaconAddress, getImplementationAddress, Manifest } from '@openzeppelin/upgrades-core';
+import {
+  DeploymentNotFound,
+  EIP1967BeaconNotFound,
+  EIP1967ImplementationNotFound,
+  getBeaconAddress,
+  getImplementationAddress,
+  Manifest,
+} from '@openzeppelin/upgrades-core';
 import { utils } from 'ethers';
 import { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getIBeaconFactory } from '.';
@@ -24,19 +31,25 @@ export async function getImplementationAddressFromProxy(
   provider: EthereumProvider,
   proxyAddress: string,
   hre: HardhatRuntimeEnvironment,
-) {
-  let result: string | undefined;
+): Promise<string | undefined> {
   try {
-    result = await getImplementationAddress(provider, proxyAddress);
+    return await getImplementationAddress(provider, proxyAddress);
   } catch (e: any) {
-    try {
-      const beaconAddress = await getBeaconAddress(provider, proxyAddress);
-      result = await getImplementationAddressFromBeacon(hre, beaconAddress);
-    } catch (e: any) {
-      // error expected if the address was not a beacon proxy
+    if (e instanceof EIP1967ImplementationNotFound) {
+      try {
+        const beaconAddress = await getBeaconAddress(provider, proxyAddress);
+        return await getImplementationAddressFromBeacon(hre, beaconAddress);
+      } catch (e: any) {
+        if (e instanceof EIP1967BeaconNotFound) {
+          return undefined;
+        } else {
+          throw e;
+        }
+      }
+    } else {
+      throw e;
     }
   }
-  return result;
 }
 
 /**
@@ -59,8 +72,8 @@ export async function getInterfaceFromManifest(
   } catch (e: any) {
     if (e instanceof DeploymentNotFound) {
       return undefined;
+    } else {
+      throw e;
     }
-    // otherwise rethrow due to some other error
-    throw e;
   }
 }
