@@ -55,7 +55,7 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
         throw new UpgradesError(
           `Beacon's current implementation at address ${implAddress} was not found in the network manifest.`,
           () =>
-            `Call deployBeaconProxy() with the contractFactory option providing the beacon's current implementation.`,
+            `Call deployBeaconProxy() with the implementation option providing the beacon's current implementation.`,
         );
       }
     }
@@ -81,7 +81,7 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
       } else {
         throw new UpgradesError(
           `No signer was found.`,
-          () => `Call deployBeaconProxy() with the signer or contractFactory option.`,
+          () => `Call deployBeaconProxy() with the signer or implementation option.`,
         );
       }
     }
