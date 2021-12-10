@@ -33,111 +33,115 @@ interface DeployedBeaconImpl {
   impl: string;
 }
 
-export enum DeployType {
-  Proxy,
-  Beacon,
-}
-
-export async function deployProxyImpl(
-  hre: HardhatRuntimeEnvironment,
-  ImplFactory: ContractFactory,
-  opts: Options,
-  proxyOrBeaconAddress?: string,
-): Promise<DeployedProxyImpl> {
-  return deployImpl(hre, ImplFactory, opts, false, proxyOrBeaconAddress);
-}
-
-export async function deployBeaconImpl(
-  hre: HardhatRuntimeEnvironment,
-  ImplFactory: ContractFactory,
-  opts: Options,
-  proxyOrBeaconAddress?: string,
-): Promise<DeployedBeaconImpl> {
-  return deployImpl(hre, ImplFactory, opts, true, proxyOrBeaconAddress);
-}
-
-async function deployImpl(
-  hre: HardhatRuntimeEnvironment,
-  ImplFactory: ContractFactory,
-  opts: Options,
-  isBeacon: boolean,
-  proxyOrBeaconAddress?: string,
-): Promise<any> {
+async function getDeployData(hre: HardhatRuntimeEnvironment, ImplFactory: ContractFactory, opts: Options) {
   const { provider } = hre.network;
   const validations = await readValidations(hre);
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
   const encodedArgs = ImplFactory.interface.encodeDeploy(opts.constructorArgs);
   const version = getVersion(unlinkedBytecode, ImplFactory.bytecode, encodedArgs);
   const layout = getStorageLayout(validations, version);
-
-  if (isBeacon) {
-    if (proxyOrBeaconAddress !== undefined) {
-      if (await isTransparentOrUUPSProxy(provider, proxyOrBeaconAddress)) {
-        throw new UpgradesError(
-          'Address is a transparent or uups proxy which cannot be upgraded using upgradeBeacon().',
-          () => 'Use upgradeProxy() instead.',
-        );
-      } else if (await isBeaconProxy(provider, proxyOrBeaconAddress)) {
-        const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
-        throw new UpgradesError(
-          'Address is a beacon proxy which cannot be upgraded directly.',
-          () =>
-            `upgradeBeacon() must be called with a beacon address, not a beacon proxy address. Call upgradeBeacon() on the beacon address ${beaconAddress} instead.`,
-        );
-      }
-    }
-  } else {
-    await processProxyKind();
-  }
-
   const fullOpts = withDefaults(opts);
+  return { provider, validations, unlinkedBytecode, encodedArgs, version, layout, fullOpts };
+}
 
-  assertUpgradeSafe(validations, version, fullOpts);
+export async function deployProxyImpl(
+  hre: HardhatRuntimeEnvironment,
+  ImplFactory: ContractFactory,
+  opts: Options,
+  proxyAddress?: string,
+): Promise<DeployedProxyImpl> {
+  const deployData = await getDeployData(hre, ImplFactory, opts);
+  await processProxyKind();
 
-  if (proxyOrBeaconAddress !== undefined) {
+  let currentImplAddress;
+  if (proxyAddress !== undefined) {
     // upgrade scenario
-    const manifest = await Manifest.forNetwork(provider);
-    let currentImplAddress;
-    if (isBeacon) {
-      const IBeaconFactory = await getIBeaconFactory(hre, ImplFactory.signer);
-      const beaconContract = IBeaconFactory.attach(proxyOrBeaconAddress);
-      currentImplAddress = await beaconContract.implementation();
-    } else {
-      currentImplAddress = await getImplementationAddress(provider, proxyOrBeaconAddress);
-    }
-    const currentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
-    assertStorageUpgradeSafe(currentLayout, layout, fullOpts);
+    currentImplAddress = await getImplementationAddress(deployData.provider, proxyAddress);
   }
 
-  const impl = await fetchOrDeploy(version, provider, async () => {
-    const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
-    const deployment = Object.assign({ abi }, await deploy(ImplFactory, ...fullOpts.constructorArgs));
-    return { ...deployment, layout };
-  });
-
-  if (isBeacon) {
-    return { impl };
-  } else {
-    return { impl, kind: opts.kind };
-  }
+  return deployImpl(deployData, ImplFactory, opts, currentImplAddress);
 
   async function processProxyKind() {
     if (opts.kind === undefined) {
-      if (proxyOrBeaconAddress !== undefined && (await isBeaconProxy(provider, proxyOrBeaconAddress))) {
+      if (proxyAddress !== undefined && (await isBeaconProxy(deployData.provider, proxyAddress))) {
         opts.kind = 'beacon';
       } else {
-        opts.kind = inferProxyKind(validations, version);
+        opts.kind = inferProxyKind(deployData.validations, deployData.version);
       }
     }
 
-    if (proxyOrBeaconAddress !== undefined) {
-      await setProxyKind(provider, proxyOrBeaconAddress, opts);
+    if (proxyAddress !== undefined) {
+      await setProxyKind(deployData.provider, proxyAddress, opts);
     }
 
     if (opts.kind === 'beacon') {
       throw new BeaconProxyUnsupportedError();
     }
   }
+}
+
+export async function deployBeaconImpl(
+  hre: HardhatRuntimeEnvironment,
+  ImplFactory: ContractFactory,
+  opts: Options,
+  beaconAddress?: string,
+): Promise<DeployedBeaconImpl> {
+  const deployData = await getDeployData(hre, ImplFactory, opts);
+
+  let currentImplAddress;
+  if (beaconAddress !== undefined) {
+    // upgrade scenario
+    currentImplAddress = await getBeaconImplementationAddress(beaconAddress);
+  }
+  return deployImpl(deployData, ImplFactory, opts, currentImplAddress);
+
+  async function getBeaconImplementationAddress(beaconAddress: string): Promise<string> {
+    await assertNotProxy(beaconAddress);
+
+    const IBeaconFactory = await getIBeaconFactory(hre, ImplFactory.signer);
+    const beaconContract = IBeaconFactory.attach(beaconAddress);
+    return await beaconContract.implementation();
+  }
+
+  async function assertNotProxy(address: string) {
+    if (await isTransparentOrUUPSProxy(deployData.provider, address)) {
+      throw new UpgradesError(
+        'Address is a transparent or uups proxy which cannot be upgraded using upgradeBeacon().',
+        () => 'Use upgradeProxy() instead.',
+      );
+    } else if (await isBeaconProxy(deployData.provider, address)) {
+      const beaconAddress = await getBeaconAddress(deployData.provider, address);
+      throw new UpgradesError(
+        'Address is a beacon proxy which cannot be upgraded directly.',
+        () =>
+          `upgradeBeacon() must be called with a beacon address, not a beacon proxy address. Call upgradeBeacon() on the beacon address ${beaconAddress} instead.`,
+      );
+    }
+  }
+}
+
+async function deployImpl(
+  deployData: any,
+  ImplFactory: ContractFactory,
+  opts: Options,
+  currentImplAddress?: string,
+): Promise<any> {
+  assertUpgradeSafe(deployData.validations, deployData.version, deployData.fullOpts);
+  const layout = deployData.layout;
+
+  if (currentImplAddress !== undefined) {
+    const manifest = await Manifest.forNetwork(deployData.provider);
+    const currentLayout = await getStorageLayoutForAddress(manifest, deployData.validations, currentImplAddress);
+    assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
+  }
+
+  const impl = await fetchOrDeploy(deployData.version, deployData.provider, async () => {
+    const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
+    const deployment = Object.assign({ abi }, await deploy(ImplFactory, ...deployData.fullOpts.constructorArgs));
+    return { ...deployment, layout };
+  });
+
+  return { impl, kind: opts.kind };
 }
 
 export class BeaconProxyUnsupportedError extends UpgradesError {
