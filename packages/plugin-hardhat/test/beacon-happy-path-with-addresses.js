@@ -12,18 +12,20 @@ test('happy path - addresses and signers', async t => {
   const { Greeter, GreeterV2, GreeterV3 } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, Greeter.signer, ['Hello, Hardhat!']);
+  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, ['Hello, Hardhat!'], { signer: Greeter.signer });
   await greeter.deployed();
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  const greeterSecond = await upgrades.deployBeaconProxy(greeterBeacon.address, Greeter, ['Hello, Hardhat second!']);
+  const greeterSecond = await upgrades.deployBeaconProxy(greeterBeacon.address, ['Hello, Hardhat second!'], {
+    implementation: Greeter,
+  });
   await greeterSecond.deployed();
   t.is(await greeterSecond.greet(), 'Hello, Hardhat second!');
 
   const greeterBeaconDuplicate = await upgrades.deployBeacon(Greeter);
-  const greeterThird = await upgrades.deployBeaconProxy(greeterBeaconDuplicate.address, Greeter.signer, [
-    'Hello, Hardhat third!',
-  ]);
+  const greeterThird = await upgrades.deployBeaconProxy(greeterBeaconDuplicate.address, ['Hello, Hardhat third!'], {
+    signer: Greeter.signer,
+  });
   await greeterThird.deployed();
   t.is(await greeterThird.greet(), 'Hello, Hardhat third!');
 

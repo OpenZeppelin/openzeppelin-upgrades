@@ -45,7 +45,9 @@ test('add proxy to unregistered beacon using contract factory', async t => {
   await beacon.deployed();
 
   // add proxy to beacon
-  const greeterProxy = await upgrades.deployBeaconProxy(beacon.address, Greeter, ['Hello, proxy!']);
+  const greeterProxy = await upgrades.deployBeaconProxy(beacon.address, ['Hello, proxy!'], {
+    implementation: Greeter,
+  });
   t.is(await greeterProxy.greet(), 'Hello, proxy!');
 });
 
@@ -62,7 +64,7 @@ test('add proxy to unregistered beacon using signer', async t => {
 
   // add proxy to beacon
   try {
-    await upgrades.deployBeaconProxy(beacon.address, Greeter.signer, ['Hello, proxy!']);
+    await upgrades.deployBeaconProxy(beacon.address, ['Hello, proxy!'], { signer: Greeter.signer });
     t.fail('Expected an error since beacon ABI cannot be determined');
   } catch (e) {
     t.true(e.message.includes(WAS_NOT_FOUND_IN_MANIFEST), e.message);

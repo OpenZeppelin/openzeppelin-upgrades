@@ -4,7 +4,7 @@ import type { ContractFactory, Contract } from 'ethers';
 import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
 
 import {
-  DeployOptions,
+  DeployProxyOptions,
   deploy,
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
@@ -16,15 +16,15 @@ import {
 } from './utils';
 
 export interface DeployFunction {
-  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
-  (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
+  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployProxyOptions): Promise<Contract>;
+  (ImplFactory: ContractFactory, opts?: DeployProxyOptions): Promise<Contract>;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
   return async function deployProxy(
     ImplFactory: ContractFactory,
-    args: unknown[] | DeployOptions = [],
-    opts: DeployOptions = {},
+    args: unknown[] | DeployProxyOptions = [],
+    opts: DeployProxyOptions = {},
   ) {
     if (!Array.isArray(args)) {
       opts = args;

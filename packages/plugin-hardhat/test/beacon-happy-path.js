@@ -11,11 +11,11 @@ test('happy path', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, Greeter, ['Hello, Hardhat!']);
+  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, ['Hello, Hardhat!']);
   await greeter.deployed();
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  const greeterSecond = await upgrades.deployBeaconProxy(greeterBeacon, Greeter, ['Hello, Hardhat second!']);
+  const greeterSecond = await upgrades.deployBeaconProxy(greeterBeacon, ['Hello, Hardhat second!']);
   await greeterSecond.deployed();
   t.is(await greeterSecond.greet(), 'Hello, Hardhat second!');
 

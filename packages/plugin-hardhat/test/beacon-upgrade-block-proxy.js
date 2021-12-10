@@ -31,7 +31,7 @@ test('block beacon upgrade via upgradeProxy', async t => {
   const { Greeter, GreeterV2, GreeterV3 } = t.context;
 
   const beacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(beacon, Greeter, ['Hello, Hardhat!']);
+  const greeter = await upgrades.deployBeaconProxy(beacon, ['Hello, Hardhat!']);
 
   try {
     await upgrades.upgradeProxy(greeter, GreeterV2);
@@ -59,7 +59,7 @@ test('block beacon proxy upgrade via upgradeBeacon', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const beacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(beacon, Greeter, ['Hello, Hardhat!']);
+  const greeter = await upgrades.deployBeaconProxy(beacon, ['Hello, Hardhat!']);
 
   try {
     await upgrades.upgradeBeacon(greeter, GreeterV2);
@@ -101,7 +101,7 @@ test('block deployBeaconProxy with non-beacon kind', async t => {
   const beacon = await upgrades.deployBeacon(Greeter);
 
   try {
-    await upgrades.deployBeaconProxy(beacon, Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
+    await upgrades.deployBeaconProxy(beacon, ['Hello, Hardhat!'], { kind: 'uups' });
     t.fail('deployBeaconProxy() should not allow a non-beacon kind');
   } catch (e) {
     t.true(e.message.includes(PROXY_KIND_UUPS_NOT_SUPPORTED), e.message);

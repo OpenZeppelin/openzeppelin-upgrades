@@ -11,7 +11,7 @@ test('happy path with library', async t => {
   const { Adder, AdderV2 } = t.context;
 
   const beacon = await upgrades.deployBeacon(Adder);
-  const adder = await upgrades.deployBeaconProxy(beacon, Adder);
+  const adder = await upgrades.deployBeaconProxy(beacon);
 
   await upgrades.upgradeBeacon(beacon, AdderV2);
   const adder2 = await upgrades.loadProxy(adder);
