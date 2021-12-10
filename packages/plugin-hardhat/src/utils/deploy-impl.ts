@@ -1,8 +1,6 @@
 import {
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
-  EIP1967BeaconNotFound,
-  EIP1967ImplementationNotFound,
   fetchOrDeploy,
   getBeaconAddress,
   getImplementationAddress,
@@ -11,6 +9,8 @@ import {
   getUnlinkedBytecode,
   getVersion,
   inferProxyKind,
+  isBeaconProxy,
+  isTransparentOrUUPSProxy,
   Manifest,
   setProxyKind,
   UpgradesError,
@@ -72,12 +72,12 @@ async function deployImpl(
 
   if (isBeacon) {
     if (proxyOrBeaconAddress !== undefined) {
-      if (await isTransparentOrUUPSProxy(proxyOrBeaconAddress)) {
+      if (await isTransparentOrUUPSProxy(provider, proxyOrBeaconAddress)) {
         throw new UpgradesError(
           'Address is a transparent or uups proxy which cannot be upgraded using upgradeBeacon().',
           () => 'Use upgradeProxy() instead.',
         );
-      } else if (await isBeaconProxy(proxyOrBeaconAddress)) {
+      } else if (await isBeaconProxy(provider, proxyOrBeaconAddress)) {
         const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
         throw new UpgradesError(
           'Address is a beacon proxy which cannot be upgraded directly.',
@@ -123,7 +123,11 @@ async function deployImpl(
 
   async function processProxyKind() {
     if (opts.kind === undefined) {
-      opts.kind = await inferProxyKind(validations, version, provider, proxyOrBeaconAddress);
+      if (proxyOrBeaconAddress !== undefined && (await isBeaconProxy(provider, proxyOrBeaconAddress))) {
+        opts.kind = 'beacon';
+      } else {
+        opts.kind = inferProxyKind(validations, version);
+      }
     }
 
     if (proxyOrBeaconAddress !== undefined) {
@@ -132,34 +136,6 @@ async function deployImpl(
 
     if (opts.kind === 'beacon') {
       throw new BeaconProxyUnsupportedError();
-    }
-  }
-
-  async function isTransparentOrUUPSProxy(proxyOrBeaconAddress: string): Promise<boolean> {
-    try {
-      await getImplementationAddress(provider, proxyOrBeaconAddress);
-      // if an exception was not encountered above, then this address is a transparent/uups proxy
-      return true;
-    } catch (e: any) {
-      if (e instanceof EIP1967ImplementationNotFound) {
-        return false;
-      } else {
-        throw e;
-      }
-    }
-  }
-
-  async function isBeaconProxy(proxyOrBeaconAddress: string): Promise<boolean> {
-    try {
-      await getBeaconAddress(provider, proxyOrBeaconAddress);
-      // if an exception was not encountered above, then this address is a beacon proxy
-      return true;
-    } catch (e: any) {
-      if (e instanceof EIP1967BeaconNotFound) {
-        return false;
-      } else {
-        throw e;
-      }
     }
   }
 }

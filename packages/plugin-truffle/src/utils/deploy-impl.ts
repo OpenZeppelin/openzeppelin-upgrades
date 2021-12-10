@@ -34,7 +34,7 @@ export async function deployImpl(Contract: ContractClass, opts: Options, proxyAd
   const layout = getStorageLayout([validations], version);
 
   if (opts.kind === undefined) {
-    fullOpts.kind = await inferProxyKind(validations, version, provider, proxyAddress);
+    fullOpts.kind = inferProxyKind(validations, version);
   }
 
   if (proxyAddress !== undefined) {

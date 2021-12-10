@@ -8,7 +8,7 @@ import {
   BeaconProxyUnsupportedError,
   deployProxyImpl,
 } from './utils';
-import { isBeaconProxy } from '@openzeppelin/upgrades-core/dist/validate/query';
+import { isBeaconProxy } from '@openzeppelin/upgrades-core';
 
 export type PrepareUpgradeFunction = (
   proxyAddress: ContractAddressOrInstance,
