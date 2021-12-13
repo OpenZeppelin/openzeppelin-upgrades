@@ -24,6 +24,20 @@ $ npm install --save-dev @openzeppelin/hardhat-upgrades @nomiclabs/hardhat-ether
 
 This installs our Hardhat plugin along with the necessary peer dependencies.
 
+You also need to load it in your Hardhat config file:
+
+[source,javascript]
+----
+// hardhat.config.js
+require('@openzeppelin/hardhat-upgrades');
+----
+
+[source,javascript]
+----
+// hardhat.config.ts
+import '@openzeppelin/hardhat-upgrades';
+----
+
 [[install-truffle]]
 ==== Truffle install
 
