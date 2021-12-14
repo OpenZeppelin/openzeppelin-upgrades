@@ -6,10 +6,7 @@ import {
 } from './eip-1967';
 import { EthereumProvider } from './provider';
 
-export async function isTransparentOrUUPSProxy(
-  provider: EthereumProvider,
-  address: string,
-): Promise<boolean> {
+export async function isTransparentOrUUPSProxy(provider: EthereumProvider, address: string): Promise<boolean> {
   try {
     await getImplementationAddress(provider, address);
     // if an exception was not encountered above, then this address is a transparent/uups proxy

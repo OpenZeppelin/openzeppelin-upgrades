@@ -106,7 +106,7 @@ export async function deployBeaconImpl(
   async function assertNotProxy(address: string) {
     if (await isTransparentOrUUPSProxy(deployData.provider, address)) {
       throw new UpgradesError(
-        'Address is a transparent or uups proxy which cannot be upgraded using upgradeBeacon().',
+        'Address is a transparent or UUPS proxy which cannot be upgraded using upgradeBeacon().',
         () => 'Use upgradeProxy() instead.',
       );
     } else if (await isBeaconProxy(deployData.provider, address)) {
