@@ -53,7 +53,7 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
       contractInterface = await getInterfaceFromManifest(hre, implAddress);
       if (contractInterface === undefined) {
         throw new UpgradesError(
-          `Beacon's current implementation at address ${implAddress} was not found in the network manifest.`,
+          `Beacon's current implementation at ${implAddress} is unknown`,
           () =>
             `Call deployBeaconProxy() with the implementation option providing the beacon's current implementation.`,
         );
