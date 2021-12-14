@@ -8,10 +8,10 @@ import { EthereumProvider } from './provider';
 
 export async function isTransparentOrUUPSProxy(
   provider: EthereumProvider,
-  proxyOrBeaconAddress: string,
+  address: string,
 ): Promise<boolean> {
   try {
-    await getImplementationAddress(provider, proxyOrBeaconAddress);
+    await getImplementationAddress(provider, address);
     // if an exception was not encountered above, then this address is a transparent/uups proxy
     return true;
   } catch (e: any) {
@@ -23,9 +23,9 @@ export async function isTransparentOrUUPSProxy(
   }
 }
 
-export async function isBeaconProxy(provider: EthereumProvider, proxyOrBeaconAddress: string): Promise<boolean> {
+export async function isBeaconProxy(provider: EthereumProvider, address: string): Promise<boolean> {
   try {
-    await getBeaconAddress(provider, proxyOrBeaconAddress);
+    await getBeaconAddress(provider, address);
     // if an exception was not encountered above, then this address is a beacon proxy
     return true;
   } catch (e: any) {

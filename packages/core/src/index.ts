@@ -3,7 +3,6 @@ export * from './impl-store';
 export * from './version';
 export * from './manifest';
 export * from './storage';
-export * from './eip-1967-type';
 export * from './eip-1967';
 export * from './provider';
 export * from './src-decoder';
@@ -20,3 +19,5 @@ export { logWarning } from './utils/log';
 export { setProxyKind } from './set-proxy-kind';
 
 export { UpgradeableContract } from './standalone';
+
+export { isTransparentOrUUPSProxy, isBeaconProxy } from './eip-1967-type';
