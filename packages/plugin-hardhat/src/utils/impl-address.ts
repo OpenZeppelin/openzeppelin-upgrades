@@ -23,6 +23,23 @@ export async function getImplementationAddressFromBeacon(hre: HardhatRuntimeEnvi
 }
 
 /**
+ * Checks if the address looks like a beacon.
+ *
+ * @returns true if the address has an implementation() function that returns an address, false otherwise.
+ */
+export async function isBeacon(hre: HardhatRuntimeEnvironment, beaconAddress: string) {
+  try {
+    return hre.ethers.utils.isAddress(await getImplementationAddressFromBeacon(hre, beaconAddress));
+  } catch (e: any) {
+    if (e.message.includes('function selector was not recognized') || e.message.includes('call revert exception')) {
+      return false;
+    } else {
+      throw e;
+    }
+  }
+}
+
+/**
  * Gets the implementation address from a UUPS/Transparent/Beacon proxy.
  *
  * @returns a Promise with the implementation address, or undefined if a UUPS/Transparent/Beacon proxy is not located at the address.

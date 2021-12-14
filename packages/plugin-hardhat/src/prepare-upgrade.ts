@@ -1,8 +1,15 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import { Options, ContractAddressOrInstance, getContractAddress, deployProxyImpl, deployBeaconImpl } from './utils';
-import { getBeaconAddress, isBeaconProxy, isTransparentOrUUPSProxy } from '@openzeppelin/upgrades-core';
+import {
+  Options,
+  ContractAddressOrInstance,
+  getContractAddress,
+  deployProxyImpl,
+  deployBeaconImpl,
+  isBeacon,
+} from './utils';
+import { getBeaconAddress, isBeaconProxy, isTransparentOrUUPSProxy, UpgradesError } from '@openzeppelin/upgrades-core';
 
 export type PrepareUpgradeFunction = (
   proxyOrBeaconAddress: ContractAddressOrInstance,
@@ -20,8 +27,13 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
     } else if (await isBeaconProxy(provider, proxyOrBeaconAddress)) {
       const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
       deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
-    } else {
+    } else if (await isBeacon(hre, proxyOrBeaconAddress)) {
       deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, proxyOrBeaconAddress);
+    } else {
+      throw new UpgradesError(
+        `Contract at address ${proxyOrBeaconAddress} doesn't look like a supported proxy or beacon`,
+        () => `Only transparent, UUPS, or beacon proxies or beacons can be used with the prepareUpgrade() function.`,
+      );
     }
     return deployedImpl.impl;
   };
