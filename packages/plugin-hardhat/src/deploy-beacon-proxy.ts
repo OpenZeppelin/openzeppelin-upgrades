@@ -37,7 +37,7 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
 
     if (opts.kind !== undefined && opts.kind !== 'beacon') {
       throw new UpgradesError(
-        `The proxy kind '${opts.kind}' is not supported with the current function.`,
+        `Unsupported proxy kind '${opts.kind}'`,
         () => `deployBeaconProxy() is only supported with proxy kind undefined or 'beacon'`,
       );
     }
