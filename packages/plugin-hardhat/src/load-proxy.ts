@@ -27,8 +27,8 @@ export function makeLoadProxy(hre: HardhatRuntimeEnvironment): LoadProxyFunction
     const implAddress = await getImplementationAddressFromProxy(provider, proxyAddress, hre);
     if (implAddress === undefined) {
       throw new UpgradesError(
-        `Contract at address ${proxyAddress} doesn't look like an ERC 1967 proxy or beacon proxy.`,
-        () => 'Only transparent, uups, or beacon proxies can be loaded with the loadProxy() function.',
+        `Contract at ${proxyAddress} doesn't look like a supported proxy`,
+        () => 'Only transparent, UUPS, or beacon proxies can be loaded with the loadProxy() function.',
       );
     }
 
