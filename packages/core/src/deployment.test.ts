@@ -1,10 +1,13 @@
 import test from 'ava';
 import { promisify } from 'util';
+import { PollingOptions, withPollingDefaults } from '.';
 
 import { Deployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import { stubProvider } from './stub-provider';
 
 const sleep = promisify(setTimeout);
+
+const pollingOptions: Required<PollingOptions> = withPollingDefaults({});
 
 test('deploys new contract', async t => {
   const provider = stubProvider();
@@ -54,7 +57,7 @@ test('redeploys if tx is not found on dev network', async t => {
 test('validates a mined deployment with txHash', async t => {
   const provider = stubProvider();
   const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
-  await waitAndValidateDeployment(provider, deployment);
+  await waitAndValidateDeployment(provider, deployment, pollingOptions);
   t.is(provider.getMethodCount('eth_getTransactionReceipt'), 1);
   t.is(provider.getMethodCount('eth_getCode'), 1);
 });
@@ -63,7 +66,7 @@ test('validates a mined deployment without txHash', async t => {
   const provider = stubProvider();
   const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
   delete deployment.txHash;
-  await waitAndValidateDeployment(provider, deployment);
+  await waitAndValidateDeployment(provider, deployment, pollingOptions);
   t.is(provider.getMethodCount('eth_getTransactionReceipt'), 0);
   t.is(provider.getMethodCount('eth_getCode'), 1);
 });
@@ -72,10 +75,10 @@ test('waits for a deployment to mine', async t => {
   const timeout = Symbol('timeout');
   const provider = stubProvider();
   const deployment = await resumeOrDeploy(provider, undefined, provider.deployPending);
-  const result = await Promise.race([waitAndValidateDeployment(provider, deployment), sleep(100).then(() => timeout)]);
+  const result = await Promise.race([waitAndValidateDeployment(provider, deployment, pollingOptions), sleep(100).then(() => timeout)]);
   t.is(result, timeout);
   provider.mine();
-  await waitAndValidateDeployment(provider, deployment);
+  await waitAndValidateDeployment(provider, deployment, pollingOptions);
 });
 
 test('fails deployment fast if tx reverts', async t => {
@@ -83,7 +86,7 @@ test('fails deployment fast if tx reverts', async t => {
   const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   provider.failTx(deployment.txHash!);
-  await t.throwsAsync(waitAndValidateDeployment(provider, deployment));
+  await t.throwsAsync(waitAndValidateDeployment(provider, deployment, pollingOptions));
 });
 
 test('waits for a deployment to return contract code', async t => {
@@ -91,8 +94,8 @@ test('waits for a deployment to return contract code', async t => {
   const provider = stubProvider();
   const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
   provider.removeContract(deployment.address);
-  const result = await Promise.race([waitAndValidateDeployment(provider, deployment), sleep(100).then(() => timeout)]);
+  const result = await Promise.race([waitAndValidateDeployment(provider, deployment, pollingOptions), sleep(100).then(() => timeout)]);
   t.is(result, timeout);
   provider.addContract(deployment.address);
-  await waitAndValidateDeployment(provider, deployment);
+  await waitAndValidateDeployment(provider, deployment, pollingOptions);
 });

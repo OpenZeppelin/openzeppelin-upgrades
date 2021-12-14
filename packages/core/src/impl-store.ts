@@ -2,6 +2,7 @@ import debug from './utils/debug';
 import { Manifest, ManifestData, ImplDeployment } from './manifest';
 import { EthereumProvider, isDevelopmentNetwork } from './provider';
 import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
+import { PollingOptions } from '.';
 import type { Version } from './version';
 import assert from 'assert';
 
@@ -19,6 +20,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
   lens: ManifestLens<T>,
   provider: EthereumProvider,
   deploy: () => Promise<T>,
+  options: Required<PollingOptions>,
 ): Promise<string> {
   const manifest = await Manifest.forNetwork(provider);
 
@@ -40,7 +42,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
       return updated;
     });
 
-    await waitAndValidateDeployment(provider, deployment);
+    await waitAndValidateDeployment(provider, deployment, options);
 
     return deployment.address;
   } catch (e) {
@@ -67,8 +69,9 @@ export async function fetchOrDeploy(
   version: Version,
   provider: EthereumProvider,
   deploy: () => Promise<ImplDeployment>,
+  options: Required<PollingOptions>
 ): Promise<string> {
-  return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy);
+  return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, options);
 }
 
 const implLens = (versionWithoutMetadata: string) =>
@@ -80,8 +83,9 @@ const implLens = (versionWithoutMetadata: string) =>
 export async function fetchOrDeployAdmin(
   provider: EthereumProvider,
   deploy: () => Promise<Deployment>,
+  options: Required<PollingOptions>
 ): Promise<string> {
-  return fetchOrDeployGeneric(adminLens, provider, deploy);
+  return fetchOrDeployGeneric(adminLens, provider, deploy, options);
 }
 
 const adminLens = lens('proxy admin', data => ({
@@ -106,8 +110,8 @@ async function checkForAddressClash(
     } else {
       throw new Error(
         `The following deployment clashes with an existing one at ${updated.address}\n\n` +
-          JSON.stringify(updated, null, 2) +
-          `\n\n`,
+        JSON.stringify(updated, null, 2) +
+        `\n\n`,
       );
     }
   }

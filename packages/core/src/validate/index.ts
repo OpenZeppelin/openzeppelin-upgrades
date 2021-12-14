@@ -1,5 +1,6 @@
 export { validate, ValidationRunData, ContractValidation } from './run';
 export { ValidationOptions, withValidationDefaults } from './overrides';
+export { PollingOptions, withPollingDefaults } from './overrides';
 export { ValidationErrors } from './error';
 export { RunValidation, ValidationLog, Validation, ValidationResult } from './compat';
 export { ValidationData, ValidationDataCurrent, isCurrentValidationData, concatRunData } from './data';

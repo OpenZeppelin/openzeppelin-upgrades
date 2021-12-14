@@ -13,6 +13,11 @@ export interface ValidationOptions {
   kind?: ProxyDeployment['kind'];
 }
 
+export interface PollingOptions {
+  pollTimeout?: number;
+  pollInterval?: number;
+}
+
 export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], string[]> = {
   'state-variable-assignment': [
     `You are using the \`unsafeAllow.state-variable-assignment\` flag.`,
@@ -60,6 +65,13 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   const unsafeAllowRenames = opts.unsafeAllowRenames ?? false;
 
   return { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, unsafeAllowRenames, unsafeAllow, kind };
+}
+
+export function withPollingDefaults(opts: PollingOptions): Required<PollingOptions> {
+  // Poll for 60 seconds with a 5 second poll interval.
+  const pollTimeout = opts.pollTimeout ?? 60e3;
+  const pollInterval = opts.pollInterval ?? 5e3;
+  return { pollTimeout, pollInterval };
 }
 
 export function processExceptions(

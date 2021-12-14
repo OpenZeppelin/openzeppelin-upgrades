@@ -10,6 +10,7 @@ import {
   isDevelopmentNetwork,
   isReceiptSuccessful,
 } from './provider';
+import { PollingOptions } from '.';
 
 const sleep = promisify(setTimeout);
 
@@ -51,13 +52,8 @@ export async function resumeOrDeploy<T extends Deployment>(
   return deployment;
 }
 
-export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
+export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment, { pollTimeout, pollInterval }: Required<PollingOptions>): Promise<void> {
   const { txHash, address } = deployment;
-
-  // Poll for 60 seconds with a 5 second poll interval.
-  // TODO: Make these parameters configurable.
-  const pollTimeout = 60e3;
-  const pollInterval = 5e3;
 
   if (txHash !== undefined) {
     const startTime = Date.now();

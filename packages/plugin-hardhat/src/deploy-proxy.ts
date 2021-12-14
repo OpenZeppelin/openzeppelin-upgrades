@@ -11,6 +11,7 @@ import {
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   DeployTransaction,
+  withDefaults,
 } from './utils';
 
 export interface DeployFunction {
@@ -45,6 +46,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     }
 
     let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;
+    const fullOpts = withDefaults(opts);
     switch (kind) {
       case 'uups': {
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
@@ -54,7 +56,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
 
       case 'transparent': {
         const AdminFactory = await getProxyAdminFactory(hre, ImplFactory.signer);
-        const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory));
+        const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(AdminFactory), fullOpts);
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
         proxyDeployment = Object.assign(
           { kind },

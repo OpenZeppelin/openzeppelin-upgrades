@@ -1,12 +1,14 @@
-import { ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
+import { ValidationOptions, PollingOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
+import { withPollingDefaults } from '@openzeppelin/upgrades-core/src/validate/overrides';
 
-export interface Options extends ValidationOptions {
+export interface Options extends ValidationOptions, PollingOptions {
   constructorArgs?: unknown[];
 }
 
 export function withDefaults(opts: Options = {}): Required<Options> {
   return {
     constructorArgs: opts.constructorArgs ?? [],
+    ...withPollingDefaults(opts),
     ...withValidationDefaults(opts),
   };
 }

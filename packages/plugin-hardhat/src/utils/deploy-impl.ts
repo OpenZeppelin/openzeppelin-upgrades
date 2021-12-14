@@ -57,10 +57,12 @@ export async function deployImpl(
     assertStorageUpgradeSafe(currentLayout, layout, fullOpts);
   }
 
-  const impl = await fetchOrDeploy(version, provider, async () => {
+  const deployFunc = async () => {
     const deployment = await deploy(ImplFactory, ...fullOpts.constructorArgs);
     return { ...deployment, layout };
-  });
+  }
+
+  const impl = await fetchOrDeploy(version, provider, deployFunc, fullOpts);
 
   return { impl, kind: opts.kind };
 }
