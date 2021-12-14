@@ -1,7 +1,7 @@
 import { Deployer, ContractClass, ContractInstance, getTruffleConfig } from './truffle';
-import { ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
+import { PollingOptions, ValidationOptions, withPollingDefaults, withValidationDefaults } from '@openzeppelin/upgrades-core';
 
-export interface Options extends ValidationOptions {
+export interface Options extends ValidationOptions, PollingOptions {
   deployer?: Deployer;
   constructorArgs?: unknown[];
 }
@@ -10,6 +10,7 @@ export function withDefaults(opts: Options = {}): Required<Options> {
   return {
     deployer: opts.deployer ?? defaultDeployer,
     constructorArgs: opts.constructorArgs ?? [],
+    ...withPollingDefaults(opts),
     ...withValidationDefaults(opts),
   };
 }

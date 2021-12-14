@@ -45,6 +45,7 @@ export async function deployProxy(
   }
 
   let proxyDeployment: Required<ProxyDeployment>;
+  const fullOpts = withDefaults(opts);
   switch (kind) {
     case 'uups': {
       const ProxyFactory = getProxyFactory(Contract);
@@ -54,7 +55,7 @@ export async function deployProxy(
 
     case 'transparent': {
       const AdminFactory = getProxyAdminFactory(Contract);
-      const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(deployer, AdminFactory));
+      const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(deployer, AdminFactory), fullOpts);
       const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
       proxyDeployment = Object.assign(
         { kind },

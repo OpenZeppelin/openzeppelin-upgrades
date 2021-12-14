@@ -9,6 +9,7 @@ import os from 'os';
 import { fetchOrDeploy } from './impl-store';
 import { getVersion } from './version';
 import { stubProvider } from './stub-provider';
+import { PollingOptions, withPollingDefaults } from '.';
 
 const rimraf = util.promisify(rimrafAsync);
 
@@ -23,15 +24,17 @@ test.after(async () => {
 const version1 = getVersion('01');
 const version2 = getVersion('02', '02');
 
+const pollingOptions: Required<PollingOptions> = withPollingDefaults({});
+
 test('deploys on cache miss', async t => {
   const provider = stubProvider();
-  await fetchOrDeploy(version1, provider, provider.deploy);
+  await fetchOrDeploy(version1, provider, provider.deploy, pollingOptions);
   t.is(provider.deployCount, 1);
 });
 
 test('reuses on cache hit', async t => {
   const provider = stubProvider();
-  const cachedDeploy = () => fetchOrDeploy(version1, provider, provider.deploy);
+  const cachedDeploy = () => fetchOrDeploy(version1, provider, provider.deploy, pollingOptions);
   const address1 = await cachedDeploy();
   const address2 = await cachedDeploy();
   t.is(provider.deployCount, 1);
@@ -40,8 +43,8 @@ test('reuses on cache hit', async t => {
 
 test('does not reuse unrelated version', async t => {
   const provider = stubProvider();
-  const address1 = await fetchOrDeploy(version1, provider, provider.deploy);
-  const address2 = await fetchOrDeploy(version2, provider, provider.deploy);
+  const address1 = await fetchOrDeploy(version1, provider, provider.deploy, pollingOptions);
+  const address2 = await fetchOrDeploy(version2, provider, provider.deploy, pollingOptions);
   t.is(provider.deployCount, 2);
   t.not(address2, address1);
 });
@@ -50,10 +53,10 @@ test('cleans up invalid deployment', async t => {
   const chainId = 1234;
   const provider1 = stubProvider(chainId);
   // create a deployment on a network
-  await fetchOrDeploy(version1, provider1, provider1.deploy);
+  await fetchOrDeploy(version1, provider1, provider1.deploy, pollingOptions);
   // try to fetch it on a different network with same chainId
   const provider2 = stubProvider(chainId);
-  await t.throwsAsync(fetchOrDeploy(version1, provider2, provider2.deploy));
+  await t.throwsAsync(fetchOrDeploy(version1, provider2, provider2.deploy, pollingOptions));
   // the failed deployment has been cleaned up
-  await fetchOrDeploy(version1, provider2, provider2.deploy);
+  await fetchOrDeploy(version1, provider2, provider2.deploy, pollingOptions);
 });
