@@ -9,6 +9,7 @@ test.before(async t => {
 });
 
 const WAS_NOT_FOUND_IN_MANIFEST = 'was not found in the network manifest';
+const BEACON_IMPL_UNKNOWN_REGEX = /Beacon's current implementation at \S+ is unknown/;
 
 // These tests need to run before the other upgrade beacon tests so that the upgraded implementation will not already be in the manifest.
 
@@ -31,7 +32,7 @@ test('deploy proxy using beacon address after external beacon upgrade', async t 
     await upgrades.deployBeaconProxy(greeterBeacon.address, ['Hello, Hardhat!']);
     t.fail('Expected an error since beacon ABI cannot be determined');
   } catch (e) {
-    t.true(e.message.includes(WAS_NOT_FOUND_IN_MANIFEST), e.message);
+    t.true(BEACON_IMPL_UNKNOWN_REGEX.test(e.message), e.message);
   }
 });
 

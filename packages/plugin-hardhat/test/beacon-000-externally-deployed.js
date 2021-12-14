@@ -9,7 +9,7 @@ test.before(async t => {
 });
 
 const IS_NOT_REGISTERED = 'is not registered';
-const WAS_NOT_FOUND_IN_MANIFEST = 'was not found in the network manifest';
+const BEACON_IMPL_UNKNOWN_REGEX = /Beacon's current implementation at \S+ is unknown/;
 
 // These tests need to run before the other deploy beacon tests so that the beacon implementation will not already be in the manifest.
 
@@ -67,6 +67,6 @@ test('add proxy to unregistered beacon using signer', async t => {
     await upgrades.deployBeaconProxy(beacon.address, ['Hello, proxy!'], { signer: Greeter.signer });
     t.fail('Expected an error since beacon ABI cannot be determined');
   } catch (e) {
-    t.true(e.message.includes(WAS_NOT_FOUND_IN_MANIFEST), e.message);
+    t.true(BEACON_IMPL_UNKNOWN_REGEX.test(e.message), e.message);
   }
 });

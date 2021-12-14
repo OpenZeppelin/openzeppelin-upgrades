@@ -45,3 +45,16 @@ test('load proxy with address but without a signer', async t => {
     t.is(e.message, 'loadProxy() must be called with a contract instance or both a contract address and a signer.');
   }
 });
+
+test('load non-proxy address with loadProxy', async t => {
+  const { GreeterProxiable } = t.context;
+  const greeter = await GreeterProxiable.deploy();
+  await greeter.deployed();
+
+  try {
+    await upgrades.loadProxy(greeter.address, greeter.signer);
+    t.fail('Expected an error since loadProxy() was called with a non-proxy address');
+  } catch (e) {
+    t.true(/Contract at \S+ doesn't look like a supported proxy/.test(e.message), e.message);
+  }
+});
