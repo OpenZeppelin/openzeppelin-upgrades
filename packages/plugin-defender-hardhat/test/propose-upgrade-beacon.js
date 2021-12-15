@@ -52,7 +52,20 @@ test('block proposing an upgrade on beacon', async t => {
   const title = 'My upgrade';
   const description = 'My contract upgrade';
   await t.throwsAsync(() => proposeUpgrade(greeterBeacon.address, GreeterV2, { title, description }), {
-    message: /doesn't look like an administered ERC 1967 proxy/,
+    message: 'Beacon is not currently supported with defender.proposeUpgrade()',
+  });
+});
+
+test('block proposing an upgrade on generic contract', async t => {
+  const { proposeUpgrade, fakeClient, Greeter, GreeterV2 } = t.context;
+  fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
+
+  const genericContract = await Greeter.deploy();
+
+  const title = 'My upgrade';
+  const description = 'My contract upgrade';
+  await t.throwsAsync(() => proposeUpgrade(genericContract.address, GreeterV2, { title, description }), {
+    message: /Contract at \S+ doesn't look like an administered ERC 1967 proxy/,
   });
 });
 
@@ -72,6 +85,6 @@ test('block proposing an upgrade reusing prepared implementation on beacon', asy
 
   await upgrades.prepareUpgrade(greeterBeacon.address, GreeterV2);
   await t.throwsAsync(() => proposeUpgrade(greeterBeacon.address, GreeterV2), {
-    message: /doesn't look like an administered ERC 1967 proxy/,
+    message: 'Beacon is not currently supported with defender.proposeUpgrade()',
   });
 });

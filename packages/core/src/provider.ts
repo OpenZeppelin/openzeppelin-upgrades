@@ -5,6 +5,7 @@ export interface EthereumProvider {
   send(method: 'net_version', params: []): Promise<string>;
   send(method: 'eth_chainId', params: []): Promise<string>;
   send(method: 'eth_getCode', params: [string, string]): Promise<string>;
+  send(method: 'eth_call', params: unknown[]): Promise<string>;
   send(method: 'eth_getStorageAt', params: [string, string, string]): Promise<string>;
   send(method: 'eth_getTransactionByHash', params: [string]): Promise<null | EthereumTransaction>;
   send(method: 'eth_getTransactionReceipt', params: [string]): Promise<null | EthereumTransactionReceipt>;
@@ -51,6 +52,21 @@ export async function getStorageAt(
 
 export async function getCode(provider: EthereumProvider, address: string, block = 'latest'): Promise<string> {
   return provider.send('eth_getCode', [address, block]);
+}
+
+export async function call(
+  provider: EthereumProvider,
+  address: string,
+  data: string,
+  block = 'latest',
+): Promise<string> {
+  return provider.send('eth_call', [
+    {
+      to: address,
+      data: data,
+    },
+    block,
+  ]);
 }
 
 export async function hasCode(provider: EthereumProvider, address: string, block?: string): Promise<boolean> {

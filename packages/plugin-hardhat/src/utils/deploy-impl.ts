@@ -4,6 +4,7 @@ import {
   fetchOrDeploy,
   getBeaconAddress,
   getImplementationAddress,
+  getImplementationAddressFromBeacon,
   getStorageLayout,
   getStorageLayoutForAddress,
   getUnlinkedBytecode,
@@ -19,7 +20,6 @@ import {
 import type { ContractFactory } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getIBeaconFactory } from '.';
 import { deploy } from './deploy';
 import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
@@ -91,17 +91,11 @@ export async function deployBeaconImpl(
   let currentImplAddress;
   if (beaconAddress !== undefined) {
     // upgrade scenario
-    currentImplAddress = await getBeaconImplementationAddress(beaconAddress);
+    const { provider } = hre.network;
+    await assertNotProxy(beaconAddress);
+    currentImplAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
   }
   return deployImpl(deployData, ImplFactory, opts, currentImplAddress);
-
-  async function getBeaconImplementationAddress(beaconAddress: string): Promise<string> {
-    await assertNotProxy(beaconAddress);
-
-    const IBeaconFactory = await getIBeaconFactory(hre, ImplFactory.signer);
-    const beaconContract = IBeaconFactory.attach(beaconAddress);
-    return await beaconContract.implementation();
-  }
 
   async function assertNotProxy(address: string) {
     if (await isTransparentOrUUPSProxy(deployData.provider, address)) {

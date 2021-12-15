@@ -14,7 +14,6 @@
     "/artifacts/contracts/proxy/ProxyAdmin.sol/ProxyAdmin.json",
     "/contracts/Initializable.sol",
     "/artifacts/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol",
-    "/artifacts/@openzeppelin/contracts/proxy/beacon/IBeacon.sol",
     "/artifacts/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol",
     "/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
     "/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json ",

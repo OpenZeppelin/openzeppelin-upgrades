@@ -1,15 +1,14 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
+import { Options, ContractAddressOrInstance, getContractAddress, deployProxyImpl, deployBeaconImpl } from './utils';
 import {
-  Options,
-  ContractAddressOrInstance,
-  getContractAddress,
-  deployProxyImpl,
-  deployBeaconImpl,
+  getBeaconAddress,
+  isBeaconProxy,
+  isTransparentOrUUPSProxy,
+  UpgradesError,
   isBeacon,
-} from './utils';
-import { getBeaconAddress, isBeaconProxy, isTransparentOrUUPSProxy, UpgradesError } from '@openzeppelin/upgrades-core';
+} from '@openzeppelin/upgrades-core';
 
 export type PrepareUpgradeFunction = (
   proxyOrBeaconAddress: ContractAddressOrInstance,
@@ -27,7 +26,7 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
     } else if (await isBeaconProxy(provider, proxyOrBeaconAddress)) {
       const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
       deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
-    } else if (await isBeacon(hre, proxyOrBeaconAddress)) {
+    } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
       deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, proxyOrBeaconAddress);
     } else {
       throw new UpgradesError(
