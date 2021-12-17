@@ -9,6 +9,7 @@ export * from './src-decoder';
 export * from './solc-api';
 export * from './deployment';
 export * from './link-refs';
+export * from './error';
 
 export { getStorageLayoutForAddress } from './manifest-storage-layout';
 
@@ -18,3 +19,7 @@ export { logWarning } from './utils/log';
 export { setProxyKind } from './set-proxy-kind';
 
 export { UpgradeableContract } from './standalone';
+
+export { isTransparentOrUUPSProxy, isBeaconProxy } from './eip-1967-type';
+export { getImplementationAddressFromBeacon, getImplementationAddressFromProxy } from './impl-address';
+export { isBeacon } from './beacon';

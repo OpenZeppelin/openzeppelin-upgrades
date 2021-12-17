@@ -10,12 +10,20 @@ import type { silenceWarnings, SolcInput } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { PrepareUpgradeFunction } from './prepare-upgrade';
 import type { UpgradeFunction } from './upgrade-proxy';
+import type { DeployBeaconFunction } from './deploy-beacon';
+import type { DeployBeaconProxyFunction } from './deploy-beacon-proxy';
+import type { UpgradeBeaconFunction } from './upgrade-beacon';
+import type { LoadProxyFunction } from './load-proxy';
 import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction, GetInstanceFunction } from './admin';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
   upgradeProxy: UpgradeFunction;
   prepareUpgrade: PrepareUpgradeFunction;
+  deployBeacon: DeployBeaconFunction;
+  deployBeaconProxy: DeployBeaconProxyFunction;
+  upgradeBeacon: UpgradeBeaconFunction;
+  loadProxy: LoadProxyFunction;
   silenceWarnings: typeof silenceWarnings;
   admin: {
     getInstance: GetInstanceFunction;
@@ -77,6 +85,10 @@ extendEnvironment(hre => {
     const { makeDeployProxy } = require('./deploy-proxy');
     const { makeUpgradeProxy } = require('./upgrade-proxy');
     const { makePrepareUpgrade } = require('./prepare-upgrade');
+    const { makeDeployBeacon } = require('./deploy-beacon');
+    const { makeDeployBeaconProxy } = require('./deploy-beacon-proxy');
+    const { makeUpgradeBeacon } = require('./upgrade-beacon');
+    const { makeLoadProxy } = require('./load-proxy');
     const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
 
     return {
@@ -84,6 +96,10 @@ extendEnvironment(hre => {
       deployProxy: makeDeployProxy(hre),
       upgradeProxy: makeUpgradeProxy(hre),
       prepareUpgrade: makePrepareUpgrade(hre),
+      deployBeacon: makeDeployBeacon(hre),
+      deployBeaconProxy: makeDeployBeaconProxy(hre),
+      upgradeBeacon: makeUpgradeBeacon(hre),
+      loadProxy: makeLoadProxy(hre),
       admin: {
         getInstance: makeGetInstanceFunction(hre),
         changeProxyAdmin: makeChangeProxyAdmin(hre),

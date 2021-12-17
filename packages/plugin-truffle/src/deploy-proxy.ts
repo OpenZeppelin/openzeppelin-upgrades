@@ -52,6 +52,10 @@ export async function deployProxy(
       break;
     }
 
+    case 'beacon': {
+      throw new Error('Beacon proxy is not currently supported with Truffle Upgrades.');
+    }
+
     case 'transparent': {
       const AdminFactory = getProxyAdminFactory(Contract);
       const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(deployer, AdminFactory));

@@ -1,13 +1,13 @@
 = OpenZeppelin Hardhat Upgrades API
 
-Both `deployProxy` and `upgradeProxy` functions will return instances of https://docs.ethers.io/v5/api/contract/contract[ethers.js contracts], and require https://docs.ethers.io/v5/api/contract/contract-factory[ethers.js contract factories] as arguments. All functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
+Both `deployProxy` and `upgradeProxy` functions will return instances of https://docs.ethers.io/v5/api/contract/contract[ethers.js contracts], and require https://docs.ethers.io/v5/api/contract/contract-factory[ethers.js contract factories] as arguments. For https://docs.openzeppelin.com/contracts/4.x/api/proxy#beacon[beacons], `deployBeacon` and `upgradeBeacon` will both return an upgradable beacon instance that can be used with a beacon proxy. All functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
 
 [[common-options]]
 == Common Options
 
 The following options are common to all functions.
 
-* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
+* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. Not applicable for Beacon proxies. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
 * `unsafeAllow`: (`ValidationError[]`) Selectively disable one or more validation errors:
 ** `"external-library-linking"`: Allows a deployment with external libraries linked to the implementation contract. (External libraries are otherwise xref:faq.adoc#why-cant-i-use-external-libraries[not yet supported].)
 ** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.
@@ -29,7 +29,7 @@ The following options have been deprecated.
 [[deploy-proxy]]
 == deployProxy
 
-Creates a proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
+Creates a UUPS or Transparent proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
 
 If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
 
@@ -52,7 +52,7 @@ async function deployProxy(
 [[upgrade-proxy]]
 == upgradeProxy
 
-Upgrades a proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
+Upgrades a UUPS or Transparent proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
 
 * `call`: enables the execution of an arbitrary function call during the upgrade process. This call is described using a function name, signature, or selector (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), and optional arguments. It is batched into the upgrade transaction, making it safe to call migration initializing functions.
 * See <<common-options>>.
@@ -69,17 +69,94 @@ async function upgradeProxy(
 ): Promise<ethers.Contract>
 ----
 
+[[deploy-beacon]]
+== deployBeacon
+
+Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] given an ethers contract factory to use as implementation, and returns the beacon contract instance.
+
+* See <<common-options>>.
+
+[source,ts]
+----
+async function deployBeacon(
+  Contract: ethers.ContractFactory,
+  opts: {
+    unsafeAllow: ValidationError[],
+  } = {},
+): Promise<ethers.Contract>
+----
+
+[[upgrade-beacon]]
+== upgradeBeacon
+
+Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] at a specified address to a new implementation contract, and returns the beacon contract instance.
+
+* See <<common-options>>.
+
+[source,ts]
+----
+async function upgradeBeacon(
+  beaconAddress: string,
+  Contract: ethers.ContractFactory,
+  opts: {
+    unsafeAllow: ValidationError[],
+  } = {},
+): Promise<ethers.Contract>
+----
+
+[[deploy-beacon-proxy]]
+== deployBeaconProxy
+
+Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
+
+* `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization
+* `implementation`: an ethers contract factory corresponding to the beacon's current implementation contract. If not specified, attempts to find the implementation contract from a previous beacon deployment.
+* `signer`: an ethers signer to use for deploying the beacon proxy. If not specified, uses the signer from the `implementation` option if available, otherwise uses the https://hardhat.org/plugins/nomiclabs-hardhat-ethers.html#helpers[default signer from hardhat-ethers].
+
+[source,ts]
+----
+async function deployBeaconProxy(
+  beaconAddress: string,
+  args: unknown[] = [],
+  opts: {
+    initializer?: string | false,
+    implementation?: ethers.ContractFactory,
+    signer?: ethers.Signer,
+  } = {},
+): Promise<ethers.Contract>
+----
+
+[[load-proxy]]
+== loadProxy
+
+Given a previous UUPS, Transparent, or Beacon proxy contract instance or a combination of proxy address and signer, returns a contract instance with the proxy address and its current implementation interface.
+
+[source,ts]
+----
+async function loadProxy(
+  proxyInstance: ethers.Contract,
+): Promise<ethers.Contract>
+----
+
+[source,ts]
+----
+async function loadProxy(
+  proxyAddress: string,
+  Signer: ethers.Signer,
+): Promise<ethers.Contract>
+----
+
 [[prepare-upgrade]]
 == prepareUpgrade
 
-Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Hardhat.
+Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Hardhat. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons.
 
 See <<common-options>>.
 
 [source,ts]
 ----
 async function prepareUpgrade(
-  proxyAddress: string,
+  proxyOrBeaconAddress: string,
   Contract: ethers.ContractFactory,
   opts: {
     unsafeAllow: ValidationError[],
@@ -92,7 +169,7 @@ async function prepareUpgrade(
 
 NOTE: This method requires the https://www.npmjs.com/package/@openzeppelin/hardhat-defender[`@openzeppelin/hardhat-defender`] package, as well as configuring a Defender Team API Key.
 
-Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in https://docs.openzeppelin.com/defender/admin[Defender Admin], for review and approval by the upgrade administrators.
+Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in https://docs.openzeppelin.com/defender/admin[Defender Admin], for review and approval by the upgrade administrators. Supported for UUPS or Transparent proxies. Not currently supported for beacon proxies or beacons. For beacons, use `prepareUpgrade` along with a custom action in Defender Admin to upgrade the beacon to the deployed implementation.
 
 * `title`: title of the upgrade proposal as seen in Defender Admin, defaults to `Upgrade to 0x12345678` (using the first 8 digits of the new implementation address)
 * `description`: description of the upgrade proposal as seen in Defender Admin, defaults to the full implementation address.

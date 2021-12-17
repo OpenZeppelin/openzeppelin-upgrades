@@ -22,10 +22,11 @@ export interface ManifestData {
 
 export interface ImplDeployment extends Deployment {
   layout: StorageLayout;
+  abi?: string[];
 }
 
 export interface ProxyDeployment extends Deployment {
-  kind: 'uups' | 'transparent';
+  kind: 'uups' | 'transparent' | 'beacon';
 }
 
 function defaultManifest(): ManifestData {
@@ -164,7 +165,7 @@ function normalizeManifestData(input: ManifestData): ManifestData {
   return {
     ...pick(input, ['manifestVersion', 'admin']),
     proxies: input.proxies.map(p => normalizeDeployment(p, ['kind'])),
-    impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout'])),
+    impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout', 'abi'])),
   };
 }
 

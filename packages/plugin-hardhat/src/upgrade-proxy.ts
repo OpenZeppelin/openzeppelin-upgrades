@@ -4,8 +4,8 @@ import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 import { Manifest, getAdminAddress, getCode } from '@openzeppelin/upgrades-core';
 
 import {
-  UpgradeOptions,
-  deployImpl,
+  UpgradeProxyOptions,
+  deployProxyImpl,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   getContractAddress,
@@ -15,15 +15,16 @@ import {
 export type UpgradeFunction = (
   proxy: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
-  opts?: UpgradeOptions,
+  opts?: UpgradeProxyOptions,
 ) => Promise<Contract>;
 
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunction {
-  return async function upgradeProxy(proxy, ImplFactory, opts: UpgradeOptions = {}) {
+  return async function upgradeProxy(proxy, ImplFactory, opts: UpgradeProxyOptions = {}) {
     const proxyAddress = getContractAddress(proxy);
 
+    const { impl: nextImpl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress);
+    // upgrade kind is inferred above
     const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
-    const { impl: nextImpl } = await deployImpl(hre, ImplFactory, opts, proxyAddress);
     const call = encodeCall(ImplFactory, opts.call);
     const upgradeTx = await upgradeTo(nextImpl, call);
 
@@ -64,7 +65,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
   }
 }
 
-function encodeCall(factory: ContractFactory, call: UpgradeOptions['call']): string | undefined {
+function encodeCall(factory: ContractFactory, call: UpgradeProxyOptions['call']): string | undefined {
   if (!call) {
     return undefined;
   }

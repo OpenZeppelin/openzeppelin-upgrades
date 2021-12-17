@@ -1,5 +1,11 @@
 import '@openzeppelin/hardhat-upgrades/dist/type-extensions';
-import { getChainId, ValidationOptions } from '@openzeppelin/upgrades-core';
+import {
+  getChainId,
+  getImplementationAddress,
+  isBeacon,
+  isBeaconProxy,
+  ValidationOptions,
+} from '@openzeppelin/upgrades-core';
 import { AdminClient, ProposalResponse } from 'defender-admin-client';
 import type { ContractFactory } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
@@ -34,6 +40,16 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
     }
 
     const { title, description, proxyAdmin, multisig, multisigType, ...moreOpts } = opts;
+
+    if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
+      throw new Error(`Beacon proxy is not currently supported with defender.proposeUpgrade()`);
+    } else if (await isBeacon(hre.network.provider, proxyAddress)) {
+      throw new Error(`Beacon is not currently supported with defender.proposeUpgrade()`);
+    } else {
+      // try getting the implementation address so that it will give an error if it's not a transparent/uups proxy
+      await getImplementationAddress(hre.network.provider, proxyAddress);
+    }
+
     const newImplementation = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory, moreOpts);
     const contract = { address: proxyAddress, network, abi: ImplFactory.interface.format(FormatTypes.json) as string };
     return client.proposeUpgrade(
