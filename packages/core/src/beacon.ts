@@ -7,9 +7,10 @@ import { EthereumProvider } from './provider';
  *
  * @returns true if the address has an implementation() function that returns an address, false otherwise.
  */
-export async function isBeacon(provider: EthereumProvider, beaconAddress: string) {
+export async function isBeacon(provider: EthereumProvider, beaconAddress: string): Promise<boolean> {
   try {
-    return await getImplementationAddressFromBeacon(provider, beaconAddress);
+    await getImplementationAddressFromBeacon(provider, beaconAddress);
+    return true;
   } catch (e: any) {
     if (e.message.includes('function selector was not recognized') || e instanceof InvalidBeaconImplementation) {
       return false;
