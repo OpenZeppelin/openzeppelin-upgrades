@@ -19,7 +19,7 @@ The following options are common to all functions.
 * `unsafeAllowRenames`: (`boolean`) Configure storage layout check to allow variable renaming.
 * `constructorArgs`: (`unknown[]`) Provide arguments for the constructor of the implementation contract. Note that these are different from initializer arguments, and will be used in the deployment of the implementation contract itself. Can be used to initialize immutable variables.
 
-Note that the options un `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
+Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
 The following options have been deprecated.
 
@@ -193,14 +193,14 @@ async function proposeUpgrade(
 ): Promise<void>
 ----
 
-[[admin-change-admin-for-proxy]]
-== admin.changeAdminForProxy
+[[admin-change-proxy-admin]]
+== admin.changeProxyAdmin
 
 Changes the admin for a specific proxy. Receives the address of the proxy to change, and the new admin address.
 
 [source,ts]
 ----
-async function changeAdminForProxy(
+async function changeProxyAdmin(
   proxyAddress: string,
   newAdmin: string,
 ): Promise<void>
