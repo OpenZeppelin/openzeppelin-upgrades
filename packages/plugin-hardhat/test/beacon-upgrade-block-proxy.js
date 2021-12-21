@@ -16,6 +16,7 @@ const ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY = 'Address is a transparent or UUPS
 const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy which cannot be upgraded directly.';
 const PROXY_KIND_UUPS_NOT_SUPPORTED = "Unsupported proxy kind 'uups'";
 const NOT_PROXY_OR_BEACON_REGEX = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
+const NOT_BEACON = /Contract at \S+ doesn't look like a beacon/;
 
 test('block beacon proxy deploy via deployProxy', async t => {
   const { Greeter } = t.context;
@@ -92,6 +93,18 @@ test('block deployBeaconProxy with non-beacon kind', async t => {
     t.fail('deployBeaconProxy() should not allow a non-beacon kind');
   } catch (e) {
     t.true(e.message.includes(PROXY_KIND_UUPS_NOT_SUPPORTED), e.message);
+  }
+});
+
+test('block deployBeaconProxy with non-beacon address', async t => {
+  const { Greeter } = t.context;
+
+  const genericContract = await Greeter.deploy();
+  try {
+    await upgrades.deployBeaconProxy(genericContract, ['Hello, Hardhat!']);
+    t.fail('deployBeaconProxy() should not allow a non-beacon address');
+  } catch (e) {
+    t.true(NOT_BEACON.test(e.message), e.message);
   }
 });
 
