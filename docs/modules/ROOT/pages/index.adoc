@@ -137,7 +137,7 @@ The plugins will keep track of all the implementation contracts you have deploye
 [[managing-ownership]]
 == Managing ownership
 
-All proxies define an _admin_ address which has the rights to upgrade them. By default, the admin is a xref:faq.adoc#what-is-a-proxy-admin[proxy admin contract] deployed behind the scenes. You can change the admin of a proxy by calling the `admin.changeAdminForProxy` function in the plugin. Keep in mind that the _admin_ of a proxy can only upgrade it, but not interact with the implementation contract. Read xref:proxies.adoc#transparent-proxies-and-function-clashes[Transparent Proxies and Function Clashes] for more info on this restriction.
+All proxies define an _admin_ address which has the rights to upgrade them. By default, the admin is a xref:faq.adoc#what-is-a-proxy-admin[proxy admin contract] deployed behind the scenes. You can change the admin of a proxy by calling the `admin.changeProxyAdmin` function in the plugin. Keep in mind that the _admin_ of a proxy can only upgrade it, but not interact with the implementation contract. Read xref:proxies.adoc#transparent-proxies-and-function-clashes[Transparent Proxies and Function Clashes] for more info on this restriction.
 
 The proxy admin contract also defines an _owner_ address which has the rights to operate it. By default, this address is the externally owned account used during deployment. You can change the proxy admin owner by calling the `admin.transferProxyAdminOwnership` function in the plugin. Note that changing the proxy admin owner effectively transfers the power to upgrade any proxy in your whole project to the new owner, so use with care.
 
