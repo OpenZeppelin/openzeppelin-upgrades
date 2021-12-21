@@ -7,6 +7,7 @@ import {
   ProxyDeployment,
   UpgradesError,
   getImplementationAddressFromBeacon,
+  isBeacon,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -49,6 +50,12 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
     opts.kind = 'beacon';
 
     const beaconAddress = getContractAddress(beacon);
+    if (!(await isBeacon(provider, beaconAddress))) {
+      throw new UpgradesError(
+        `Contract at ${beaconAddress} doesn't look like a beacon`,
+        () => 'The address parameter for deployBeaconProxy() must be the address of a previously deployed beacon.',
+      );
+    }
 
     let contractInterface;
     if (opts.implementation !== undefined) {
