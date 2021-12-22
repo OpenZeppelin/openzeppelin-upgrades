@@ -42,6 +42,12 @@ test('Storage2', t => {
   t.snapshot(stabilizeStorageLayout(layout));
 });
 
+test('UserDefinedValueType', t => {
+  const layout = t.context.extractStorageLayout('UserDefinedValueType');
+  t.snapshot(stabilizeStorageLayout(layout));
+});
+
+
 test('storage upgrade equal', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Equal_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Equal_V2');
