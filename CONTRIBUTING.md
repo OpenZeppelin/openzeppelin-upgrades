@@ -5,15 +5,17 @@ Contributions to OpenZeppelin Upgrades are welcome. Please review the informatio
 
 ## Building and testing the project
 
-### Pre-requisites
-The following pre-requisites are required to build the project locally:
+### Prerequisites
+The following prerequisites are required to build the project locally:
 - [Node.js](https://nodejs.org/)
 - [Yarn](https://yarnpkg.com/getting-started/install)
 
-The commands below can be run from this project's `openzeppelin-upgrades` directory.
+After the prerequisites are installed, the commands below can be run from this project's `openzeppelin-upgrades` directory.
 
 ### Building the project
 ```yarn install```
+
+The project must be built before running the tests or linter.
 
 ### Running tests
 ```yarn test```
