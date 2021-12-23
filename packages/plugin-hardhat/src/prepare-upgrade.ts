@@ -6,8 +6,8 @@ import {
   getBeaconAddress,
   isBeaconProxy,
   isTransparentOrUUPSProxy,
-  UpgradesError,
   isBeacon,
+  PrepareUpgradeUnsupportedError,
 } from '@openzeppelin/upgrades-core';
 
 export type PrepareUpgradeFunction = (
@@ -29,10 +29,7 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
     } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
       deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, proxyOrBeaconAddress);
     } else {
-      throw new UpgradesError(
-        `Contract at address ${proxyOrBeaconAddress} doesn't look like a supported proxy or beacon`,
-        () => `Only transparent, UUPS, or beacon proxies or beacons can be used with the prepareUpgrade() function.`,
-      );
+      throw new PrepareUpgradeUnsupportedError(proxyOrBeaconAddress);
     }
     return deployedImpl.impl;
   };

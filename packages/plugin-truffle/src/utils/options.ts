@@ -14,8 +14,13 @@ export function withDefaults(opts: Options = {}): Required<Options> {
   };
 }
 
-export interface DeployOptions extends Options {
+export interface DeployProxyOptions extends Options {
   initializer?: string | false;
+}
+
+export interface DeployBeaconProxyOptions extends DeployProxyOptions {
+  initializer?: string | false;
+  implementation?: ContractClass;
 }
 
 export interface UpgradeOptions extends Options {

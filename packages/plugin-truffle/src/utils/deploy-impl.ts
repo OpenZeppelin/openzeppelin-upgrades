@@ -10,6 +10,10 @@ import {
   inferProxyKind,
   ValidationOptions,
   setProxyKind,
+  isBeaconProxy,
+  BeaconProxyUnsupportedError,
+  assertNotProxy,
+  getImplementationAddressFromBeacon,
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
@@ -23,7 +27,11 @@ interface DeployedImpl {
   kind: NonNullable<ValidationOptions['kind']>;
 }
 
-export async function deployImpl(Contract: ContractClass, opts: Options, proxyAddress?: string): Promise<DeployedImpl> {
+interface DeployedBeaconImpl {
+  impl: string;
+}
+
+async function getDeployData(opts: Options, Contract: ContractClass) {
   const fullOpts = withDefaults(opts);
   const provider = wrapProvider(fullOpts.deployer.provider);
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
@@ -32,30 +40,59 @@ export async function deployImpl(Contract: ContractClass, opts: Options, proxyAd
   const encodedArgs = encodeArgs(Contract, fullOpts.constructorArgs);
   const version = getVersion(Contract.bytecode, linkedBytecode, encodedArgs);
   const layout = getStorageLayout([validations], version);
+  return { fullOpts, validations, version, provider, layout };
+}
 
-  if (opts.kind === undefined) {
-    fullOpts.kind = inferProxyKind(validations, version);
-  }
+export async function deployProxyImpl(
+  Contract: ContractClass,
+  opts: Options,
+  proxyAddress?: string,
+): Promise<DeployedImpl> {
+  const deployData = await getDeployData(opts, Contract);
 
+  await processProxyKind();
+
+  let currentImplAddress;
   if (proxyAddress !== undefined) {
-    await setProxyKind(provider, proxyAddress, fullOpts);
+    // upgrade scenario
+    currentImplAddress = await getImplementationAddress(deployData.provider, proxyAddress);
   }
 
-  assertUpgradeSafe([validations], version, fullOpts);
+  return deployImpl(deployData, Contract, opts, currentImplAddress);
 
-  if (proxyAddress !== undefined) {
-    const manifest = await Manifest.forNetwork(provider);
-    const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
-    const currentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
-    assertStorageUpgradeSafe(currentLayout, layout, fullOpts);
+  async function processProxyKind() {
+    if (opts.kind === undefined) {
+      if (proxyAddress !== undefined && (await isBeaconProxy(deployData.provider, proxyAddress))) {
+        opts.kind = 'beacon';
+      } else {
+        opts.kind = inferProxyKind(deployData.validations, deployData.version);
+      }
+    }
+
+    if (proxyAddress !== undefined) {
+      await setProxyKind(deployData.provider, proxyAddress, opts);
+    }
+
+    if (opts.kind === 'beacon') {
+      throw new BeaconProxyUnsupportedError();
+    }
   }
+}
 
-  const impl = await fetchOrDeploy(version, provider, async () => {
-    const deployment = await deploy(fullOpts.deployer, Contract, ...fullOpts.constructorArgs);
-    return { ...deployment, layout };
-  });
+export async function deployBeaconImpl(
+  Contract: ContractClass,
+  opts: Options,
+  beaconAddress?: string,
+): Promise<DeployedBeaconImpl> {
+  const deployData = await getDeployData(opts, Contract);
 
-  return { impl, kind: fullOpts.kind };
+  let currentImplAddress;
+  if (beaconAddress !== undefined) {
+    // upgrade scenario
+    await assertNotProxy(deployData.provider, beaconAddress);
+    currentImplAddress = await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
+  }
+  return deployImpl(deployData, Contract, opts, currentImplAddress);
 }
 
 function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string {
@@ -65,4 +102,31 @@ function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string
     fragment?.inputs?.map((entry: any) => entry.type) ?? [],
     constructorArgs,
   );
+}
+
+async function deployImpl(
+  deployData: any,
+  Contract: ContractClass,
+  opts: Options,
+  currentImplAddress?: string,
+): Promise<any> {
+  assertUpgradeSafe([deployData.validations], deployData.version, deployData.fullOpts);
+  const layout = deployData.layout;
+
+  if (currentImplAddress !== undefined) {
+    const manifest = await Manifest.forNetwork(deployData.provider);
+    const currentLayout = await getStorageLayoutForAddress(manifest, deployData.validations, currentImplAddress);
+    assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
+  }
+
+  const impl = await fetchOrDeploy(deployData.version, deployData.provider, async () => {
+    const abi = (Contract as any).abi;
+    const deployment = Object.assign(
+      { abi },
+      await deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs),
+    );
+    return { ...deployment, layout };
+  });
+
+  return { impl, kind: opts.kind };
 }

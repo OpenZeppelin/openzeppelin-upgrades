@@ -1,8 +1,9 @@
 import {
+  assertNotProxy,
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
+  BeaconProxyUnsupportedError,
   fetchOrDeploy,
-  getBeaconAddress,
   getImplementationAddress,
   getImplementationAddressFromBeacon,
   getStorageLayout,
@@ -11,10 +12,8 @@ import {
   getVersion,
   inferProxyKind,
   isBeaconProxy,
-  isTransparentOrUUPSProxy,
   Manifest,
   setProxyKind,
-  UpgradesError,
   ValidationOptions,
 } from '@openzeppelin/upgrades-core';
 import type { ContractFactory } from 'ethers';
@@ -91,27 +90,10 @@ export async function deployBeaconImpl(
   let currentImplAddress;
   if (beaconAddress !== undefined) {
     // upgrade scenario
-    const { provider } = hre.network;
-    await assertNotProxy(beaconAddress);
-    currentImplAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
+    await assertNotProxy(deployData.provider, beaconAddress);
+    currentImplAddress = await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
   }
   return deployImpl(deployData, ImplFactory, opts, currentImplAddress);
-
-  async function assertNotProxy(address: string) {
-    if (await isTransparentOrUUPSProxy(deployData.provider, address)) {
-      throw new UpgradesError(
-        'Address is a transparent or UUPS proxy which cannot be upgraded using upgradeBeacon().',
-        () => 'Use upgradeProxy() instead.',
-      );
-    } else if (await isBeaconProxy(deployData.provider, address)) {
-      const beaconAddress = await getBeaconAddress(deployData.provider, address);
-      throw new UpgradesError(
-        'Address is a beacon proxy which cannot be upgraded directly.',
-        () =>
-          `upgradeBeacon() must be called with a beacon address, not a beacon proxy address. Call upgradeBeacon() on the beacon address ${beaconAddress} instead.`,
-      );
-    }
-  }
 }
 
 async function deployImpl(
@@ -136,13 +118,4 @@ async function deployImpl(
   });
 
   return { impl, kind: opts.kind };
-}
-
-export class BeaconProxyUnsupportedError extends UpgradesError {
-  constructor() {
-    super(
-      'Beacon proxies are not supported with the current function.',
-      () => 'Use deployBeacon(), deployBeaconProxy(), or upgradeBeacon() instead.',
-    );
-  }
 }

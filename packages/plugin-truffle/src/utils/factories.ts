@@ -3,6 +3,8 @@ import { TruffleContract, ContractClass, getTruffleDefaults, getTruffleProvider 
 import ERC1967ProxyArtifact from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
 import TransparentUpgradeableProxyArtifact from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 import ProxyAdminArtifact from '@openzeppelin/upgrades-core/artifacts//@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
+import BeaconProxyArtifact from '@openzeppelin/upgrades-core/artifacts//@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
+import UpgradeableBeaconArtifact from '@openzeppelin/upgrades-core/artifacts//@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
 
 function makeFactoryGetter(artifacts: unknown): (template?: ContractClass) => ContractClass {
   return function (template?: ContractClass): ContractClass {
@@ -16,3 +18,5 @@ function makeFactoryGetter(artifacts: unknown): (template?: ContractClass) => Co
 export const getProxyFactory = makeFactoryGetter(ERC1967ProxyArtifact);
 export const getTransparentUpgradeableProxyFactory = makeFactoryGetter(TransparentUpgradeableProxyArtifact);
 export const getProxyAdminFactory = makeFactoryGetter(ProxyAdminArtifact);
+export const getBeaconProxyFactory = makeFactoryGetter(BeaconProxyArtifact);
+export const getUpgradeableBeaconFactory = makeFactoryGetter(UpgradeableBeaconArtifact);

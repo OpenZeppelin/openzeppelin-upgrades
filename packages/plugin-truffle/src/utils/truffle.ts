@@ -9,6 +9,8 @@ export interface ContractClass {
   new (address: string): ContractInstance;
   'new'(...args: unknown[]): ContractInstance;
   deployed(): Promise<ContractInstance>;
+  at(address: string): Promise<ContractInstance>;
+  detectNetwork(): void;
   setProvider(provider: TruffleProvider): void;
   defaults(defaults: ContractClassDefaults): void;
   bytecode: string;
