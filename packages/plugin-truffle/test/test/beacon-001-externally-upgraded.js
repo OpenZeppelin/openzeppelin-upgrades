@@ -3,7 +3,7 @@ const assert = require('assert');
 const { deployBeacon, deployBeaconProxy, loadProxy } = require('@openzeppelin/truffle-upgrades');
 
 const Greeter = artifacts.require('Greeter');
-const GreeterV2 = artifacts.require('GreeterV2');
+const GreeterV2StandaloneImpl = artifacts.require('GreeterV2StandaloneImpl');
 const Beacon = artifacts.require('Beacon');
 
 const WAS_NOT_FOUND_IN_MANIFEST = 'was not found in the network manifest';
@@ -17,7 +17,7 @@ contract('Greeter', function () {
     const greeterBeacon = await deployBeacon(Greeter);
 
     // external impl 2
-    const greeter2 = await GreeterV2.new();
+    const greeter2 = await GreeterV2StandaloneImpl.deployed();
 
     // external upgrade beacon to impl 2
     const beaconContract = await Beacon.at(greeterBeacon.address);
@@ -34,7 +34,7 @@ contract('Greeter', function () {
     const greeterBeacon = await deployBeacon(Greeter);
 
     // external impl 2
-    const greeter2 = await GreeterV2.new();
+    const greeter2 = await GreeterV2StandaloneImpl.deployed();
 
     // external upgrade beacon to impl 2
     const beaconContract = await Beacon.at(greeterBeacon.address);
@@ -42,7 +42,7 @@ contract('Greeter', function () {
 
     // deploy beacon proxy to attach to beacon (which points to impl 2)
     const greeterProxy = await deployBeaconProxy(greeterBeacon, ['Hello Truffle'], {
-      implementation: GreeterV2,
+      implementation: GreeterV2StandaloneImpl,
     });
     assert.equal(await greeterProxy.greet(), 'Hello Truffle');
     await greeterProxy.resetGreeting();
@@ -57,7 +57,7 @@ contract('Greeter', function () {
     const greeterProxy = await deployBeaconProxy(greeterBeacon, ['Hello Truffle']);
 
     // external impl 2
-    const greeter2 = await GreeterV2.new();
+    const greeter2 = await GreeterV2StandaloneImpl.deployed();
 
     // external upgrade beacon to impl 2
     const beaconContract = await Beacon.at(greeterBeacon.address);
@@ -74,7 +74,7 @@ contract('Greeter', function () {
     const greeterProxy = await deployBeaconProxy(greeterBeacon, ['Hello Truffle']);
 
     // external impl 2
-    const greeter2 = await GreeterV2.new();
+    const greeter2 = await GreeterV2StandaloneImpl.deployed();
 
     // external upgrade beacon to impl 2
     const beaconContract = await Beacon.at(greeterBeacon.address);
@@ -91,14 +91,14 @@ contract('Greeter', function () {
     const greeterProxy = await deployBeaconProxy(greeterBeacon, ['Hello Truffle']);
 
     // external impl 2
-    const greeter2 = await GreeterV2.new();
+    const greeter2 = await GreeterV2StandaloneImpl.deployed();
 
     // external upgrade beacon to impl 2
     const beaconContract = await Beacon.at(greeterBeacon.address);
     await beaconContract.upgradeTo(greeter2.address);
 
     // manually attach to proxy address
-    const manualAttach = await GreeterV2.at(greeterProxy.address);
+    const manualAttach = await GreeterV2StandaloneImpl.at(greeterProxy.address);
     assert.equal(await manualAttach.greet(), 'Hello Truffle');
     await manualAttach.resetGreeting();
     assert.equal(await manualAttach.greet(), 'Hello World');

@@ -8,20 +8,21 @@ const {
   prepareUpgrade,
 } = require('@openzeppelin/truffle-upgrades');
 
-const Greeter = artifacts.require('Greeter');
+const GreeterBeaconImpl = artifacts.require('GreeterBeaconImpl');
 const GreeterV2 = artifacts.require('GreeterV2');
 const GreeterV3 = artifacts.require('GreeterV3');
 
 const TX_HASH_MISSING = 'transaction hash is missing';
 
-contract('Greeter', function () {
+contract('GreeterBeaconImpl', function () {
   it('greeting', async function () {
-    const greeter = await Greeter.deployed();
+    const beacon = await GreeterBeaconImpl.deployed();
+    const greeter = await deployBeaconProxy(beacon, ['Hello Truffle']);
     assert.strictEqual(await greeter.greet(), 'Hello Truffle');
   });
 
   it('deployBeaconProxy', async function () {
-    const greeterBeacon = await deployBeacon(Greeter);
+    const greeterBeacon = await deployBeacon(GreeterBeaconImpl);
     assert.ok(greeterBeacon.transactionHash, TX_HASH_MISSING);
     const greeter = await deployBeaconProxy(greeterBeacon, ['Hello Truffle']);
     assert.ok(greeter.transactionHash, TX_HASH_MISSING);

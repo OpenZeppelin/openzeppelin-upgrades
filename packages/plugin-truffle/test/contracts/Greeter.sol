@@ -20,3 +20,5 @@ contract Greeter {
 
 import "./utils/Proxiable.sol";
 contract GreeterProxiable is Greeter, Proxiable {}
+contract GreeterBeaconImpl is Greeter {}
+contract GreeterStandaloneImpl is Greeter {}

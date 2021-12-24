@@ -4,6 +4,7 @@ const { deployProxy, loadProxy } = require('@openzeppelin/truffle-upgrades');
 
 const Greeter = artifacts.require('Greeter');
 const GreeterProxiable = artifacts.require('GreeterProxiable');
+const GreeterStandaloneImpl = artifacts.require('GreeterStandaloneImpl');
 
 contract('Greeter', function () {
   it('load transparent proxy from loadProxy', async function () {
@@ -31,7 +32,7 @@ contract('Greeter', function () {
   });
 
   it('load non-proxy address with loadProxy', async function () {
-    const greeter = await Greeter.new();
+    const greeter = await GreeterStandaloneImpl.deployed();
 
     await assert.rejects(loadProxy(greeter.address), error =>
       /Contract at \S+ doesn't look like a supported proxy/.test(error.message),

@@ -12,6 +12,7 @@ const Greeter = artifacts.require('Greeter');
 const GreeterProxiable = artifacts.require('GreeterProxiable');
 const GreeterV2 = artifacts.require('GreeterV2');
 const GreeterV2Proxiable = artifacts.require('GreeterV2Proxiable');
+const GreeterStandaloneImpl = artifacts.require('GreeterStandaloneImpl');
 const GreeterFallback = artifacts.require('GreeterFallback');
 
 const BEACON_PROXY_NOT_SUPPORTED = 'Beacon proxies are not supported with the current function';
@@ -67,7 +68,7 @@ contract('Greeter', function () {
   });
 
   it('block deployBeaconProxy with non-beacon address', async function () {
-    const genericContract = Greeter.deployed();
+    const genericContract = GreeterStandaloneImpl.deployed();
 
     await assert.rejects(deployBeaconProxy(genericContract, ['Hello Truffle']), error =>
       NOT_BEACON.test(error.message),
@@ -75,7 +76,7 @@ contract('Greeter', function () {
   });
 
   it('block prepareUpgrade on generic contract', async function () {
-    const genericContract = Greeter.deployed();
+    const genericContract = GreeterStandaloneImpl.deployed();
 
     await assert.rejects(prepareUpgrade(genericContract, GreeterV2), error =>
       NOT_PROXY_OR_BEACON_REGEX.test(error.message),
