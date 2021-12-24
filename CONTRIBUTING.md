@@ -29,5 +29,5 @@ If linting errors or warnings occur, run `yarn lint --fix` to attempt to auto-fi
 
 ## Creating Pull Requests (PRs)
 
-As a contributor, you are expected to fork this repository, work on your own fork and then submit pull requests. The pull requests will be reviewed and eventually merged into the main repo. See ["Fork-a-Repo"](https://help.github.com/articles/fork-a-repo/) for how this works.
+As a contributor, we ask that you fork this repository, work on your own fork and then submit pull requests. The pull requests will be reviewed and eventually merged into the main repo. See ["Fork-a-Repo"](https://help.github.com/articles/fork-a-repo/) for how this works.
 
