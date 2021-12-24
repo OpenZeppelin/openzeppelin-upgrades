@@ -6,7 +6,7 @@ import { subtask, extendEnvironment } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
 
-import type { silenceWarnings, SolcInput } from '@openzeppelin/upgrades-core';
+import { getImplementationAddressFromBeacon, silenceWarnings, SolcInput } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { PrepareUpgradeFunction } from './prepare-upgrade';
 import type { UpgradeFunction } from './upgrade-proxy';
@@ -34,6 +34,9 @@ export interface HardhatUpgrades {
     getAdminAddress: (proxyAdress: string) => Promise<string>;
     getImplementationAddress: (proxyAdress: string) => Promise<string>;
     getBeaconAddress: (proxyAdress: string) => Promise<string>;
+  };
+  beacon: {
+    getImplementationAddress: (beaconAddress: string) => Promise<string>;
   };
 }
 
@@ -109,6 +112,10 @@ extendEnvironment(hre => {
         getAdminAddress: proxyAddress => getAdminAddress(hre.network.provider, proxyAddress),
         getImplementationAddress: proxyAddress => getImplementationAddress(hre.network.provider, proxyAddress),
         getBeaconAddress: proxyAddress => getBeaconAddress(hre.network.provider, proxyAddress),
+      },
+      beacon: {
+        getImplementationAddress: beaconAddress =>
+          getImplementationAddressFromBeacon(hre.network.provider, beaconAddress),
       },
     };
   });

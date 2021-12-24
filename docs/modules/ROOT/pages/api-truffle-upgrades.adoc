@@ -197,6 +197,16 @@ async function erc1967.getBeaconAddress(proxyAddress: string): Promise<string>;
 async function erc1967.getAdminAddress(proxyAddress: string): Promise<string>;
 ----
 
+[[beacon]]
+== beacon
+
+This module provides a convenience function to get the implementation address from a beacon contract.
+
+[source,ts]
+----
+async function beacon.getImplementationAddress(beaconAddress: string): Promise<string>;
+----
+
 == silenceWarnings
 
 Silences all subsequent warnings about the use of unsafe flags. Prints a last warning before doing so.

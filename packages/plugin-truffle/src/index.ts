@@ -9,3 +9,4 @@ export { upgradeBeacon } from './upgrade-beacon';
 export { loadProxy } from './load-proxy';
 export { admin } from './admin';
 export { erc1967 } from './erc1967';
+export { beacon } from './beacon';
