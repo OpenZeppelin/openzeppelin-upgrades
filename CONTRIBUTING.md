@@ -15,7 +15,7 @@ After the prerequisites are installed, the commands below can be run from this p
 ### Installing dependencies
 ```yarn install```
 
-The project must be built at least once before running the tests or linter.
+The dependencies must be installed at least once before running the tests or linter.
 
 ### Running tests
 ```yarn test```
