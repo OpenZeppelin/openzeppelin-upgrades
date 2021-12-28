@@ -12,7 +12,7 @@ The following prerequisites are required to build the project locally:
 
 After the prerequisites are installed, the commands below can be run from this project's root directory.
 
-### Building the project
+### Installing dependencies
 ```yarn install```
 
 The project must be built at least once before running the tests or linter.
