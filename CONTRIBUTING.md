@@ -10,7 +10,7 @@ The following prerequisites are required to build the project locally:
 - [Node.js](https://nodejs.org/)
 - [Yarn](https://yarnpkg.com/getting-started/install)
 
-After the prerequisites are installed, the commands below can be run from this project's `openzeppelin-upgrades` directory.
+After the prerequisites are installed, the commands below can be run from this project's root directory.
 
 ### Building the project
 ```yarn install```
