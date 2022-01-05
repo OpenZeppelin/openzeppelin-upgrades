@@ -12,7 +12,7 @@ export async function deploy(
   ...args: unknown[]
 ): Promise<Required<Deployment & DeployTransaction>> {
   const contractInstance = await factory.deploy(...args);
-  const deployTransaction = contractInstance.deployTransaction;
+  const { deployTransaction } = contractInstance;
 
   const address: string = getContractAddress({
     from: await factory.signer.getAddress(),
@@ -20,12 +20,7 @@ export async function deploy(
   });
   if (address !== contractInstance.address) {
     debug(
-      'overriding contract address from ' +
-        contractInstance.address +
-        ' to ' +
-        address +
-        ' for nonce ' +
-        deployTransaction.nonce,
+      `overriding contract address from ${contractInstance.address} to ${address} for nonce ${deployTransaction.nonce}`,
     );
   }
 
