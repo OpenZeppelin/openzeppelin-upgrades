@@ -15,7 +15,6 @@ export async function deployBeacon(Contract: ContractClass, opts: Options = {}):
   const UpgradeableBeaconFactory = getUpgradeableBeaconFactory(Contract);
   const beaconDeployment = await deploy(deployer, UpgradeableBeaconFactory, impl);
 
-  UpgradeableBeaconFactory.address = beaconDeployment.address;
   const beaconContract = new UpgradeableBeaconFactory(beaconDeployment.address);
   beaconContract.transactionHash = beaconDeployment.txHash;
   return beaconContract;
