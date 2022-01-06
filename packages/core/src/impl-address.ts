@@ -30,7 +30,13 @@ export async function getImplementationAddressFromBeacon(
     const implAddress = await call(provider, beaconAddress, implementationFunction);
     result = parseAddress(implAddress);
   } catch (e: any) {
-    if (!(e.message.includes('function selector was not recognized') || e.message.includes('invalid opcode'))) {
+    if (
+      !(
+        e.message.includes('function selector was not recognized') ||
+        e.message.includes('invalid opcode') ||
+        e.message.includes('Transaction reverted')
+      )
+    ) {
       throw e;
     } // otherwise fall through with no result
   }

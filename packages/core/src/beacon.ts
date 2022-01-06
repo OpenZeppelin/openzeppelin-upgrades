@@ -4,7 +4,7 @@ import { EthereumProvider } from './provider';
 /**
  * Checks if the address looks like a beacon.
  *
- * @returns Promise<true> if the address has an implementation() function that returns an address, Promise<false> otherwise.
+ * @returns true if the address has an implementation() function that returns an address, false otherwise.
  */
 export async function isBeacon(provider: EthereumProvider, beaconAddress: string): Promise<boolean> {
   try {

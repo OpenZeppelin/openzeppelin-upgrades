@@ -7,13 +7,14 @@ import {
   Manifest,
   getImplementationAddress,
   getStorageLayoutForAddress,
-  inferProxyKind,
   ValidationOptions,
-  setProxyKind,
-  isBeaconProxy,
-  BeaconProxyUnsupportedError,
   assertNotProxy,
   getImplementationAddressFromBeacon,
+  EthereumProvider,
+  StorageLayout,
+  ValidationRunData,
+  Version,
+  processProxyKind,
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
@@ -31,7 +32,15 @@ interface DeployedBeaconImpl {
   impl: string;
 }
 
-async function getDeployData(opts: Options, Contract: ContractClass) {
+interface DeployData {
+  fullOpts: Required<Options>;
+  validations: ValidationRunData;
+  version: Version;
+  provider: EthereumProvider;
+  layout: StorageLayout;
+}
+
+async function getDeployData(opts: Options, Contract: ContractClass): Promise<DeployData> {
   const fullOpts = withDefaults(opts);
   const provider = wrapProvider(fullOpts.deployer.provider);
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
@@ -50,33 +59,15 @@ export async function deployProxyImpl(
 ): Promise<DeployedImpl> {
   const deployData = await getDeployData(opts, Contract);
 
-  await processProxyKind();
+  await processProxyKind(deployData.provider, proxyAddress, opts, deployData.validations, deployData.version);
 
-  let currentImplAddress;
+  let currentImplAddress: string | undefined;
   if (proxyAddress !== undefined) {
     // upgrade scenario
     currentImplAddress = await getImplementationAddress(deployData.provider, proxyAddress);
   }
 
   return deployImpl(deployData, Contract, opts, currentImplAddress);
-
-  async function processProxyKind() {
-    if (opts.kind === undefined) {
-      if (proxyAddress !== undefined && (await isBeaconProxy(deployData.provider, proxyAddress))) {
-        opts.kind = 'beacon';
-      } else {
-        opts.kind = inferProxyKind(deployData.validations, deployData.version);
-      }
-    }
-
-    if (proxyAddress !== undefined) {
-      await setProxyKind(deployData.provider, proxyAddress, opts);
-    }
-
-    if (opts.kind === 'beacon') {
-      throw new BeaconProxyUnsupportedError();
-    }
-  }
 }
 
 export async function deployBeaconImpl(
@@ -105,7 +96,7 @@ function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string
 }
 
 async function deployImpl(
-  deployData: any,
+  deployData: DeployData,
   Contract: ContractClass,
   opts: Options,
   currentImplAddress?: string,

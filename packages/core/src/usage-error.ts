@@ -20,10 +20,7 @@ export class DeployBeaconProxyKindError extends UpgradesError {
 
 export class DeployBeaconProxyUnsupportedError extends UpgradesError {
   constructor(beaconAddress: string) {
-    super(
-      `Contract at ${beaconAddress} doesn't look like a beacon`,
-      () => 'The address parameter for deployBeaconProxy() must be the address of a previously deployed beacon.',
-    );
+    super(`Contract at ${beaconAddress} doesn't look like a beacon`, () => 'Deploy a beacon using deployBeacon().');
   }
 }
 

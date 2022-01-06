@@ -2,7 +2,6 @@ import {
   assertNotProxy,
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
-  BeaconProxyUnsupportedError,
   fetchOrDeploy,
   getImplementationAddress,
   getImplementationAddressFromBeacon,
@@ -10,15 +9,16 @@ import {
   getStorageLayoutForAddress,
   getUnlinkedBytecode,
   getVersion,
-  inferProxyKind,
-  isBeaconProxy,
   Manifest,
-  setProxyKind,
+  processProxyKind,
+  StorageLayout,
+  ValidationDataCurrent,
   ValidationOptions,
+  Version,
 } from '@openzeppelin/upgrades-core';
 import type { ContractFactory } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
 import { Options, withDefaults } from './options';
 import { readValidations } from './validations';
@@ -32,7 +32,21 @@ interface DeployedBeaconImpl {
   impl: string;
 }
 
-async function getDeployData(hre: HardhatRuntimeEnvironment, ImplFactory: ContractFactory, opts: Options) {
+interface DeployData {
+  provider: EthereumProvider;
+  validations: ValidationDataCurrent;
+  unlinkedBytecode: string;
+  encodedArgs: string;
+  version: Version;
+  layout: StorageLayout;
+  fullOpts: Required<Options>;
+}
+
+async function getDeployData(
+  hre: HardhatRuntimeEnvironment,
+  ImplFactory: ContractFactory,
+  opts: Options,
+): Promise<DeployData> {
   const { provider } = hre.network;
   const validations = await readValidations(hre);
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
@@ -50,33 +64,16 @@ export async function deployProxyImpl(
   proxyAddress?: string,
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
-  await processProxyKind();
 
-  let currentImplAddress;
+  await processProxyKind(deployData.provider, proxyAddress, opts, deployData.validations, deployData.version);
+
+  let currentImplAddress: string | undefined;
   if (proxyAddress !== undefined) {
     // upgrade scenario
     currentImplAddress = await getImplementationAddress(deployData.provider, proxyAddress);
   }
 
   return deployImpl(deployData, ImplFactory, opts, currentImplAddress);
-
-  async function processProxyKind() {
-    if (opts.kind === undefined) {
-      if (proxyAddress !== undefined && (await isBeaconProxy(deployData.provider, proxyAddress))) {
-        opts.kind = 'beacon';
-      } else {
-        opts.kind = inferProxyKind(deployData.validations, deployData.version);
-      }
-    }
-
-    if (proxyAddress !== undefined) {
-      await setProxyKind(deployData.provider, proxyAddress, opts);
-    }
-
-    if (opts.kind === 'beacon') {
-      throw new BeaconProxyUnsupportedError();
-    }
-  }
 }
 
 export async function deployBeaconImpl(
@@ -97,7 +94,7 @@ export async function deployBeaconImpl(
 }
 
 async function deployImpl(
-  deployData: any,
+  deployData: DeployData,
   ImplFactory: ContractFactory,
   opts: Options,
   currentImplAddress?: string,
