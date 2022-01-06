@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.12.1 (2022-01-06)
+
+- Fix issues when deploying to Polygon Mumbai testnet. ([#487](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/487))
+
 ## 1.12.0 (2021-10-28)
 
 - Add support for `upgradeToAndCall` to batch a function call into the upgrade transaction. ([#443](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/443))
