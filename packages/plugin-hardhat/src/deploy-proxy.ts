@@ -4,27 +4,25 @@ import type { ContractFactory, Contract } from 'ethers';
 import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
 
 import {
-  DeployProxyOptions,
+  DeployOptions,
   deploy,
+  deployImpl,
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   DeployTransaction,
-  BeaconProxyUnsupportedError,
-  deployProxyImpl,
-  getInitializerData,
 } from './utils';
 
 export interface DeployFunction {
-  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployProxyOptions): Promise<Contract>;
-  (ImplFactory: ContractFactory, opts?: DeployProxyOptions): Promise<Contract>;
+  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployOptions): Promise<Contract>;
+  (ImplFactory: ContractFactory, opts?: DeployOptions): Promise<Contract>;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
   return async function deployProxy(
     ImplFactory: ContractFactory,
-    args: unknown[] | DeployProxyOptions = [],
-    opts: DeployProxyOptions = {},
+    args: unknown[] | DeployOptions = [],
+    opts: DeployOptions = {},
   ) {
     if (!Array.isArray(args)) {
       opts = args;
@@ -34,9 +32,8 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const { impl, kind } = await deployProxyImpl(hre, ImplFactory, opts);
-    const contractInterface = ImplFactory.interface;
-    const data = getInitializerData(contractInterface, args, opts.initializer);
+    const { impl, kind } = await deployImpl(hre, ImplFactory, opts);
+    const data = getInitializerData(ImplFactory, args, opts.initializer);
 
     if (kind === 'uups') {
       if (await manifest.getAdmin()) {
@@ -49,10 +46,6 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
 
     let proxyDeployment: Required<ProxyDeployment & DeployTransaction>;
     switch (kind) {
-      case 'beacon': {
-        throw new BeaconProxyUnsupportedError();
-      }
-
       case 'uups': {
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
         proxyDeployment = Object.assign({ kind }, await deploy(ProxyFactory, impl, data));
@@ -78,4 +71,25 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     inst.deployTransaction = proxyDeployment.deployTransaction;
     return inst;
   };
+
+  function getInitializerData(ImplFactory: ContractFactory, args: unknown[], initializer?: string | false): string {
+    if (initializer === false) {
+      return '0x';
+    }
+
+    const allowNoInitialization = initializer === undefined && args.length === 0;
+    initializer = initializer ?? 'initialize';
+
+    try {
+      const fragment = ImplFactory.interface.getFunction(initializer);
+      return ImplFactory.interface.encodeFunctionData(fragment, args);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        if (allowNoInitialization && e.message.includes('no matching function')) {
+          return '0x';
+        }
+      }
+      throw e;
+    }
+  }
 }

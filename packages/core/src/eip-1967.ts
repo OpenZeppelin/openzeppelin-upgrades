@@ -1,12 +1,7 @@
+import { toChecksumAddress, keccak256 } from 'ethereumjs-util';
 import BN from 'bn.js';
-import { keccak256 } from 'ethereumjs-util';
-import { UpgradesError } from './error';
+
 import { EthereumProvider, getStorageAt } from './provider';
-import { parseAddress } from './utils/address';
-
-export class EIP1967ImplementationNotFound extends UpgradesError {}
-
-export class EIP1967BeaconNotFound extends UpgradesError {}
 
 export async function getAdminAddress(provider: EthereumProvider, address: string): Promise<string> {
   const storage = await getStorageFallback(
@@ -16,7 +11,7 @@ export async function getAdminAddress(provider: EthereumProvider, address: strin
     toFallbackEip1967Hash('org.zeppelinos.proxy.admin'),
   );
 
-  return parseAddressFromStorage(storage);
+  return parseAddress(storage);
 }
 
 export async function getImplementationAddress(provider: EthereumProvider, address: string): Promise<string> {
@@ -28,20 +23,20 @@ export async function getImplementationAddress(provider: EthereumProvider, addre
   );
 
   if (isEmptySlot(storage)) {
-    throw new EIP1967ImplementationNotFound(`Contract at ${address} doesn't look like an administered ERC 1967 proxy`);
+    throw new Error(`Contract at ${address} doesn't look like an administered ERC 1967 proxy`);
   }
 
-  return parseAddressFromStorage(storage);
+  return parseAddress(storage);
 }
 
 export async function getBeaconAddress(provider: EthereumProvider, address: string): Promise<string> {
   const storage = await getStorageFallback(provider, address, toEip1967Hash('eip1967.proxy.beacon'));
 
   if (isEmptySlot(storage)) {
-    throw new EIP1967BeaconNotFound(`Contract at ${address} doesn't look like an ERC 1967 beacon proxy`);
+    throw new Error(`Contract at ${address} doesn't look like an ERC 1967 beacon proxy`);
   }
 
-  return parseAddressFromStorage(storage);
+  return parseAddress(storage);
 }
 
 async function getStorageFallback(provider: EthereumProvider, address: string, ...slots: string[]): Promise<string> {
@@ -72,10 +67,11 @@ function isEmptySlot(storage: string): boolean {
   return new BN(storage, 'hex').isZero();
 }
 
-function parseAddressFromStorage(storage: string): string {
-  const address = parseAddress(storage);
-  if (address === undefined) {
+function parseAddress(storage: string): string {
+  const buf = Buffer.from(storage.replace(/^0x/, ''), 'hex');
+  if (!buf.slice(0, 12).equals(Buffer.alloc(12, 0))) {
     throw new Error(`Value in storage is not an address (${storage})`);
   }
-  return address;
+  const address = '0x' + buf.toString('hex', 12, 32); // grab the last 20 bytes
+  return toChecksumAddress(address);
 }
