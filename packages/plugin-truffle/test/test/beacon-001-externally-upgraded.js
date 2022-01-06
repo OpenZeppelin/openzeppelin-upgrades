@@ -20,8 +20,7 @@ contract('Greeter', function () {
     const greeter2 = await GreeterV2StandaloneImpl.deployed();
 
     // external upgrade beacon to impl 2
-    const beaconContract = await Beacon.at(greeterBeacon.address);
-    await beaconContract.upgradeTo(greeter2.address);
+    await greeterBeacon.upgradeTo(greeter2.address);
 
     // upgrade beacon to new impl
     await assert.rejects(deployBeaconProxy(greeterBeacon.address, ['Hello Truffle']), error =>
@@ -37,8 +36,7 @@ contract('Greeter', function () {
     const greeter2 = await GreeterV2StandaloneImpl.deployed();
 
     // external upgrade beacon to impl 2
-    const beaconContract = await Beacon.at(greeterBeacon.address);
-    await beaconContract.upgradeTo(greeter2.address);
+    await greeterBeacon.upgradeTo(greeter2.address);
 
     // deploy beacon proxy to attach to beacon (which points to impl 2)
     const greeterProxy = await deployBeaconProxy(greeterBeacon, ['Hello Truffle'], {

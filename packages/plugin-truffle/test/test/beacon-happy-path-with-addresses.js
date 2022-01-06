@@ -9,12 +9,6 @@ const GreeterV3 = artifacts.require('GreeterV3');
 const TX_HASH_MISSING = 'transaction hash is missing';
 
 contract('GreeterBeaconImpl', function () {
-  it('greeting', async function () {
-    const beacon = await GreeterBeaconImpl.deployed();
-    const greeter = await deployBeaconProxy(beacon.address, ['Hello Truffle']);
-    assert.strictEqual(await greeter.greet(), 'Hello Truffle');
-  });
-
   it('deployBeaconProxy with addresses', async function () {
     const greeterBeacon = await deployBeacon(GreeterBeaconImpl);
     assert.ok(greeterBeacon.transactionHash, TX_HASH_MISSING);
