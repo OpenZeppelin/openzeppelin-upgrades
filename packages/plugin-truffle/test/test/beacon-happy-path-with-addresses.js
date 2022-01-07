@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-const { deployBeacon, deployBeaconProxy, upgradeBeacon, loadProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployBeacon, deployBeaconProxy, upgradeBeacon } = require('@openzeppelin/truffle-upgrades');
 
 const { getBeaconAddress } = require('@openzeppelin/upgrades-core');
 const { wrapProvider } = require('@openzeppelin/truffle-upgrades/dist/utils/wrap-provider.js');
@@ -31,18 +31,20 @@ contract('GreeterBeaconImpl', function () {
   it('deployBeaconProxy with addresses', async function () {
     const greeterBeacon = await deployBeacon(GreeterBeaconImpl);
     assert.ok(greeterBeacon.transactionHash, TX_HASH_MISSING);
-    const greeter = await deployBeaconProxy(greeterBeacon, ['Hello Truffle']);
+    const greeter = await deployBeaconProxy(greeterBeacon, GreeterBeaconImpl, ['Hello Truffle']);
     assert.ok(greeter.transactionHash, TX_HASH_MISSING);
     assert.notEqual(greeter.transactionHash, greeterBeacon.transactionHash);
     assert.equal(await greeter.greet(), 'Hello Truffle');
 
-    const greeterSecond = await deployBeaconProxy(greeterBeacon.address, ['Hello Truffle second']);
+    const greeterSecond = await deployBeaconProxy(greeterBeacon.address, GreeterBeaconImpl, ['Hello Truffle second']);
     assert.ok(greeterSecond.transactionHash, TX_HASH_MISSING);
     assert.notEqual(greeterSecond.transactionHash, greeter.transactionHash);
     assert.equal(await greeterSecond.greet(), 'Hello Truffle second');
 
     const greeterBeaconDuplicate = await deployBeacon(GreeterBeaconImpl);
-    const greeterThird = await deployBeaconProxy(greeterBeaconDuplicate.address, ['Hello Truffle third']);
+    const greeterThird = await deployBeaconProxy(greeterBeaconDuplicate.address, GreeterBeaconImpl, [
+      'Hello Truffle third',
+    ]);
     assert.ok(greeterThird.transactionHash, TX_HASH_MISSING);
     assert.notEqual(greeterThird.transactionHash, greeterSecond.transactionHash);
     assert.equal(await greeterThird.greet(), 'Hello Truffle third');
@@ -57,19 +59,19 @@ contract('GreeterBeaconImpl', function () {
     assert.notEqual(upgradedBeaconDuplicate.transactionHash, upgradedBeacon.transactionHash);
 
     // reload proxy to work with the new contract
-    const greeter2 = await loadProxy(greeter);
+    const greeter2 = await GreeterV2.at(greeter.address);
     assert.equal(await greeter2.greet(), 'Hello Truffle');
     await greeter2.resetGreeting();
     assert.equal(await greeter2.greet(), 'Hello World');
 
     // reload proxy to work with the new contract
-    const greeterSecond2 = await loadProxy(greeterSecond.address);
+    const greeterSecond2 = await GreeterV2.at(greeterSecond.address);
     assert.equal(await greeterSecond2.greet(), 'Hello Truffle second');
     await greeterSecond2.resetGreeting();
     assert.equal(await greeterSecond2.greet(), 'Hello World');
 
     // reload proxy to work with the new contract
-    const greeterThird2 = await loadProxy(greeterThird.address);
+    const greeterThird2 = await GreeterV3.at(greeterThird.address);
     assert.equal(await greeterThird2.greet(), 'Hello Truffle third');
     await greeterThird2.resetGreeting();
     assert.equal(await greeterThird2.greet(), 'Hello World');

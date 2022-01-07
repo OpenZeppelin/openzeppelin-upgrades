@@ -1,17 +1,14 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { Contract } from 'ethers';
-import { Interface } from 'ethers/lib/utils';
+import { Contract, ContractFactory } from 'ethers';
 
 import {
   Manifest,
   logWarning,
   ProxyDeployment,
-  UpgradesError,
-  getImplementationAddressFromBeacon,
   isBeacon,
   DeployBeaconProxyUnsupportedError,
-  DeployBeaconProxyImplUnknownError,
   DeployBeaconProxyKindError,
+  UpgradesError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -22,21 +19,31 @@ import {
   ContractAddressOrInstance,
   getContractAddress,
   getInitializerData,
-  getInterfaceFromManifest,
-  DeployBeaconProxyOptions,
 } from './utils';
 
 export interface DeployBeaconProxyFunction {
-  (beacon: ContractAddressOrInstance, args?: unknown[], opts?: DeployBeaconProxyOptions): Promise<Contract>;
-  (beacon: ContractAddressOrInstance, opts?: DeployBeaconProxyOptions): Promise<Contract>;
+  (
+    beacon: ContractAddressOrInstance,
+    attachTo: ContractFactory,
+    args?: unknown[],
+    opts?: DeployProxyOptions,
+  ): Promise<Contract>;
+  (beacon: ContractAddressOrInstance, attachTo: ContractFactory, opts?: DeployProxyOptions): Promise<Contract>;
 }
 
 export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBeaconProxyFunction {
   return async function deployBeaconProxy(
     beacon: ContractAddressOrInstance,
+    attachTo: ContractFactory,
     args: unknown[] | DeployProxyOptions = [],
-    opts: DeployBeaconProxyOptions = {},
+    opts: DeployProxyOptions = {},
   ) {
+    if (!(attachTo instanceof ContractFactory)) {
+      throw new UpgradesError(
+        `attachTo must specify a contract factory`,
+        () => `Include the contract factory for the beacon's current implementation in the attachTo parameter`,
+      );
+    }
     if (!Array.isArray(args)) {
       opts = args;
       args = [];
@@ -55,18 +62,7 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
       throw new DeployBeaconProxyUnsupportedError(beaconAddress);
     }
 
-    let contractInterface: Interface | undefined;
-    if (opts.implementation !== undefined) {
-      contractInterface = opts.implementation.interface;
-    } else {
-      const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
-      contractInterface = await getInterfaceFromManifest(hre, implAddress);
-      if (contractInterface === undefined) {
-        throw new DeployBeaconProxyImplUnknownError(implAddress);
-      }
-    }
-
-    const data = getInitializerData(contractInterface, args, opts.initializer);
+    const data = getInitializerData(attachTo.interface, args, opts.initializer);
 
     if (await manifest.getAdmin()) {
       logWarning(`A proxy admin was previously deployed on this network`, [
@@ -75,24 +71,7 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
       ]);
     }
 
-    let signer;
-    if (opts.signer !== undefined) {
-      signer = opts.signer;
-    } else if (opts.implementation !== undefined) {
-      signer = opts.implementation.signer;
-    } else {
-      const signers = await hre.ethers.getSigners();
-      if (signers.length > 0) {
-        signer = signers[0];
-      } else {
-        throw new UpgradesError(
-          `No signer was found.`,
-          () => `Call deployBeaconProxy() with the signer or implementation option.`,
-        );
-      }
-    }
-
-    const BeaconProxyFactory = await getBeaconProxyFactory(hre, signer);
+    const BeaconProxyFactory = await getBeaconProxyFactory(hre, attachTo.signer);
     const proxyDeployment: Required<ProxyDeployment & DeployTransaction> = Object.assign(
       { kind: opts.kind },
       await deploy(BeaconProxyFactory, beaconAddress, data),
@@ -100,12 +79,7 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
 
     await manifest.addProxy(proxyDeployment);
 
-    let inst: Contract;
-    if (opts.implementation !== undefined) {
-      inst = opts.implementation.attach(proxyDeployment.address);
-    } else {
-      inst = new Contract(proxyDeployment.address, contractInterface, signer);
-    }
+    const inst = attachTo.attach(proxyDeployment.address);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = proxyDeployment.deployTransaction;
     return inst;

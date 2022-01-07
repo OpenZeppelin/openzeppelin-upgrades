@@ -2,11 +2,10 @@ import {
   Manifest,
   logWarning,
   ProxyDeployment,
-  getImplementationAddressFromBeacon,
   isBeacon,
   DeployBeaconProxyUnsupportedError,
-  DeployBeaconProxyImplUnknownError,
   DeployBeaconProxyKindError,
+  UpgradesError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -14,29 +13,38 @@ import {
   ContractInstance,
   wrapProvider,
   deploy,
-  DeployBeaconProxyOptions,
   withDefaults,
   getContractAddress,
   ContractAddressOrInstance,
   getBeaconProxyFactory,
+  DeployProxyOptions,
 } from './utils';
-import { getInterfaceFromManifest } from './utils/impl-interface';
 import { getInitializerData } from './utils/initializer-data';
 
 export async function deployBeaconProxy(
   beacon: ContractAddressOrInstance,
-  opts?: DeployBeaconProxyOptions,
+  attachTo: ContractClass,
+  opts?: DeployProxyOptions,
 ): Promise<ContractInstance>;
 export async function deployBeaconProxy(
   beacon: ContractAddressOrInstance,
+  attachTo: ContractClass,
   args?: unknown[],
-  opts?: DeployBeaconProxyOptions,
+  opts?: DeployProxyOptions,
 ): Promise<ContractInstance>;
 export async function deployBeaconProxy(
   beacon: ContractAddressOrInstance,
-  args: unknown[] | DeployBeaconProxyOptions = [],
-  opts: DeployBeaconProxyOptions = {},
+  attachTo: ContractClass,
+  args: unknown[] | DeployProxyOptions = [],
+  opts: DeployProxyOptions = {},
 ): Promise<ContractInstance> {
+  // infer attachTo's interface
+  if (attachTo === undefined || !('bytecode' in attachTo)) {
+    throw new UpgradesError(
+      `attachTo must specify a contract abstraction`,
+      () => `Include the contract abstraction for the beacon's current implementation in the attachTo parameter`,
+    );
+  }
   if (!Array.isArray(args)) {
     opts = args;
     args = [];
@@ -55,18 +63,7 @@ export async function deployBeaconProxy(
     throw new DeployBeaconProxyUnsupportedError(beaconAddress);
   }
 
-  let contractInterface: ContractClass | undefined;
-  if (opts.implementation !== undefined) {
-    contractInterface = opts.implementation;
-  } else {
-    const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
-    contractInterface = await getInterfaceFromManifest(provider, implAddress);
-    if (contractInterface === undefined) {
-      throw new DeployBeaconProxyImplUnknownError(implAddress);
-    }
-  }
-
-  const data = getInitializerData(contractInterface, args, opts.initializer);
+  const data = getInitializerData(attachTo, args, opts.initializer);
 
   if (await manifest.getAdmin()) {
     logWarning(`A proxy admin was previously deployed on this network`, [
@@ -75,7 +72,7 @@ export async function deployBeaconProxy(
     ]);
   }
 
-  const BeaconProxyFactory = getBeaconProxyFactory(contractInterface);
+  const BeaconProxyFactory = getBeaconProxyFactory(attachTo);
 
   const proxyDeployment: Required<ProxyDeployment> = Object.assign(
     { kind: opts.kind },
@@ -84,8 +81,8 @@ export async function deployBeaconProxy(
 
   await manifest.addProxy(proxyDeployment);
 
-  contractInterface.address = proxyDeployment.address;
-  const contract = new contractInterface(proxyDeployment.address);
+  attachTo.address = proxyDeployment.address;
+  const contract = new attachTo(proxyDeployment.address);
   contract.transactionHash = proxyDeployment.txHash;
   return contract;
 }

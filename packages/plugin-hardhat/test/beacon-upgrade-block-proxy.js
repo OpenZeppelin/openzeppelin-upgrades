@@ -16,6 +16,7 @@ const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy which cannot be upg
 const PROXY_KIND_UUPS_NOT_SUPPORTED = "Unsupported proxy kind 'uups'";
 const NOT_PROXY_OR_BEACON_REGEX = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
 const NOT_BEACON = /Contract at \S+ doesn't look like a beacon/;
+const MUST_SPECIFY_CONTRACT_FACTORY = 'attachTo must specify a contract factory';
 
 test('block beacon proxy deploy via deployProxy', async t => {
   const { Greeter } = t.context;
@@ -32,7 +33,7 @@ test('block beacon upgrade via upgradeProxy', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const beacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(beacon, ['Hello, Hardhat!']);
+  const greeter = await upgrades.deployBeaconProxy(beacon, Greeter, ['Hello, Hardhat!']);
 
   try {
     await upgrades.upgradeProxy(greeter, GreeterV2);
@@ -46,7 +47,7 @@ test('block beacon proxy upgrade via upgradeBeacon', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const beacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(beacon, ['Hello, Hardhat!']);
+  const greeter = await upgrades.deployBeaconProxy(beacon, Greeter, ['Hello, Hardhat!']);
 
   try {
     await upgrades.upgradeBeacon(greeter, GreeterV2);
@@ -88,7 +89,7 @@ test('block deployBeaconProxy with non-beacon kind', async t => {
   const beacon = await upgrades.deployBeacon(Greeter);
 
   try {
-    await upgrades.deployBeaconProxy(beacon, ['Hello, Hardhat!'], { kind: 'uups' });
+    await upgrades.deployBeaconProxy(beacon, Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
     t.fail('deployBeaconProxy() should not allow a non-beacon kind');
   } catch (e) {
     t.true(e.message.includes(PROXY_KIND_UUPS_NOT_SUPPORTED), e.message);
@@ -100,7 +101,7 @@ test('block deployBeaconProxy with non-beacon address', async t => {
 
   const genericContract = await Greeter.deploy();
   try {
-    await upgrades.deployBeaconProxy(genericContract, ['Hello, Hardhat!']);
+    await upgrades.deployBeaconProxy(genericContract, Greeter, ['Hello, Hardhat!']);
     t.fail('deployBeaconProxy() should not allow a non-beacon address');
   } catch (e) {
     t.true(NOT_BEACON.test(e.message), e.message);
@@ -130,4 +131,22 @@ test('block prepareUpgrade on generic contract with fallback', async t => {
   } catch (e) {
     t.true(NOT_PROXY_OR_BEACON_REGEX.test(e.message), e.message);
   }
+});
+
+test('block deployBeaconProxy without attachTo with args', async t => {
+  const { Greeter } = t.context;
+
+  const beacon = await upgrades.deployBeacon(Greeter);
+
+  const error = await t.throwsAsync(() => upgrades.deployBeaconProxy(beacon, ['Hello, Hardhat!']));
+  t.true(error.message.includes(MUST_SPECIFY_CONTRACT_FACTORY));
+});
+
+test('block deployBeaconProxy without attachTo without args', async t => {
+  const { Greeter } = t.context;
+
+  const beacon = await upgrades.deployBeacon(Greeter);
+
+  const error = await t.throwsAsync(() => upgrades.deployBeaconProxy(beacon));
+  t.true(error.message.includes(MUST_SPECIFY_CONTRACT_FACTORY));
 });

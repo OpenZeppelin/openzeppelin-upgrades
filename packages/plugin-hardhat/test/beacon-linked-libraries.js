@@ -29,7 +29,7 @@ test('with flag', async t => {
   const beacon = await upgrades.deployBeacon(Token, {
     unsafeAllow: ['external-library-linking'],
   });
-  const token = await upgrades.deployBeaconProxy(beacon, ['TKN', 10000]);
+  const token = await upgrades.deployBeaconProxy(beacon, Token, ['TKN', 10000]);
 
   t.is('10000', (await token.totalSupply()).toString());
   t.is('V1', await token.getLibraryVersion());
@@ -39,7 +39,7 @@ test('with flag', async t => {
   const beaconNew = await upgrades.deployBeacon(TokenNew, {
     unsafeAllow: ['external-library-linking'],
   });
-  const tokenNew = await upgrades.deployBeaconProxy(beaconNew, ['TKN', 5000]);
+  const tokenNew = await upgrades.deployBeaconProxy(beaconNew, TokenNew, ['TKN', 5000]);
 
   t.is('5000', (await tokenNew.totalSupply()).toString());
   t.is('V2', await tokenNew.getLibraryVersion());
@@ -49,7 +49,7 @@ test('with flag', async t => {
   await upgrades.upgradeBeacon(beacon, TokenV2, {
     unsafeAllow: ['external-library-linking'],
   });
-  const token2 = await upgrades.loadProxy(token);
+  const token2 = TokenV2.attach(token.address);
 
   t.is(token.address, token2.address);
   t.is('10000', (await token2.totalSupply()).toString());
@@ -60,7 +60,7 @@ test('with flag', async t => {
   await upgrades.upgradeBeacon(beacon, TokenV2New, {
     unsafeAllow: ['external-library-linking'],
   });
-  const token2New = await upgrades.loadProxy(token);
+  const token2New = TokenV2New.attach(token.address);
 
   t.is(token.address, token2New.address);
   t.is('10000', (await token2New.totalSupply()).toString());
@@ -74,7 +74,7 @@ test('with flag', async t => {
   await upgrades.upgradeBeacon(beacon, TokenV3, {
     unsafeAllow: ['external-library-linking'],
   });
-  const token3 = await upgrades.loadProxy(token);
+  const token3 = TokenV3.attach(token.address);
 
   t.is(token.address, token3.address);
   t.is('10000', (await token3.totalSupply()).toString());

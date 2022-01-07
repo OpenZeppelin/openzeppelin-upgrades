@@ -16,7 +16,7 @@ contract('Adder', function () {
 
   it('deployProxy', async function () {
     const beacon = await deployBeacon(Adder);
-    const adder = await deployBeaconProxy(beacon, [2]);
+    const adder = await deployBeaconProxy(beacon, Adder, [2]);
     assert.strictEqual(new BN(await adder.n()).toNumber(), 2);
     await upgradeBeacon(beacon, AdderV2);
   });

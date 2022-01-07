@@ -21,6 +21,7 @@ const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy which cannot be upg
 const PROXY_KIND_UUPS_NOT_SUPPORTED = "Unsupported proxy kind 'uups'";
 const NOT_PROXY_OR_BEACON_REGEX = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
 const NOT_BEACON = /Contract at \S+ doesn't look like a beacon/;
+const MUST_SPECIFY_CONTRACT_ABSTRACTION = 'attachTo must specify a contract abstraction';
 
 contract('Greeter', function () {
   it('block beacon proxy deploy via deployProxy', async function () {
@@ -31,14 +32,14 @@ contract('Greeter', function () {
 
   it('block beacon upgrade via upgradeProxy', async function () {
     const beacon = await deployBeacon(Greeter);
-    const greeter = await deployBeaconProxy(beacon, ['Hello Truffle']);
+    const greeter = await deployBeaconProxy(beacon, Greeter, ['Hello Truffle']);
 
     await assert.rejects(upgradeProxy(greeter, GreeterV2), error => error.message.includes(BEACON_PROXY_NOT_SUPPORTED));
   });
 
   it('block beacon proxy upgrade via upgradeBeacon', async function () {
     const beacon = await deployBeacon(Greeter);
-    const greeter = await deployBeaconProxy(beacon, ['Hello Truffle']);
+    const greeter = await deployBeaconProxy(beacon, Greeter, ['Hello Truffle']);
 
     await assert.rejects(upgradeBeacon(greeter, GreeterV2), error => error.message.includes(ADDRESS_IS_A_BEACON_PROXY));
   });
@@ -62,7 +63,7 @@ contract('Greeter', function () {
   it('block deployBeaconProxy with non-beacon kind', async function () {
     const beacon = await deployBeacon(Greeter);
 
-    await assert.rejects(deployBeaconProxy(beacon, ['Hello Truffle'], { kind: 'uups' }), error =>
+    await assert.rejects(deployBeaconProxy(beacon, Greeter, ['Hello Truffle'], { kind: 'uups' }), error =>
       error.message.includes(PROXY_KIND_UUPS_NOT_SUPPORTED),
     );
   });
@@ -70,7 +71,7 @@ contract('Greeter', function () {
   it('block deployBeaconProxy with non-beacon address', async function () {
     const genericContract = GreeterStandaloneImpl.deployed();
 
-    await assert.rejects(deployBeaconProxy(genericContract, ['Hello Truffle']), error =>
+    await assert.rejects(deployBeaconProxy(genericContract, GreeterStandaloneImpl, ['Hello Truffle']), error =>
       NOT_BEACON.test(error.message),
     );
   });
@@ -89,5 +90,17 @@ contract('Greeter', function () {
     await assert.rejects(prepareUpgrade(genericContract, GreeterV2), error =>
       NOT_PROXY_OR_BEACON_REGEX.test(error.message),
     );
+  });
+
+  it('block deployBeaconProxy without attachTo with args', async function () {
+    const beacon = await deployBeacon(Greeter);
+    await assert.rejects(deployBeaconProxy(beacon, ['Hello Truffle']), error =>
+      error.message.includes(MUST_SPECIFY_CONTRACT_ABSTRACTION),
+    );
+  });
+
+  it('block deployBeaconProxy without attachTo without args', async function () {
+    const beacon = await deployBeacon(Greeter);
+    await assert.rejects(deployBeaconProxy(beacon), error => error.message.includes(MUST_SPECIFY_CONTRACT_ABSTRACTION));
   });
 });
