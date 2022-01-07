@@ -129,7 +129,7 @@ async function deployBeaconProxy(
 [[load-proxy]]
 == loadProxy
 
-Given a previous UUPS, Transparent, or Beacon proxy contract instance or a combination of proxy address and signer, returns a contract instance with the proxy address and its current implementation interface.
+Given a previously deployed UUPS, Transparent, or Beacon proxy contract instance or a combination of proxy address and signer, returns an updated contract instance with the proxy address and its current implementation interface.
 
 [source,ts]
 ----
@@ -228,6 +228,16 @@ Functions in this module provide access to the https://eips.ethereum.org/EIPS/ei
 async function erc1967.getImplementationAddress(proxyAddress: string): Promise<string>;
 async function erc1967.getBeaconAddress(proxyAddress: string): Promise<string>;
 async function erc1967.getAdminAddress(proxyAddress: string): Promise<string>;
+----
+
+[[beacon]]
+== beacon
+
+This module provides a convenience function to get the implementation address from a beacon contract.
+
+[source,ts]
+----
+async function beacon.getImplementationAddress(beaconAddress: string): Promise<string>;
 ----
 
 == silenceWarnings

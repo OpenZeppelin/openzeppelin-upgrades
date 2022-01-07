@@ -4,7 +4,7 @@ import {
   ContractClass,
   ContractInstance,
   wrapProvider,
-  deployImpl,
+  deployProxyImpl,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   UpgradeOptions,
@@ -24,7 +24,7 @@ export async function upgradeProxy(
   const proxyAddress = getContractAddress(proxy);
 
   const upgradeTo = await getUpgrader(provider, Contract, proxyAddress);
-  const { impl: nextImpl } = await deployImpl(Contract, opts, proxyAddress);
+  const { impl: nextImpl } = await deployProxyImpl(Contract, opts, proxyAddress);
   const call = encodeCall(Contract, opts.call);
   await upgradeTo(nextImpl, call);
 

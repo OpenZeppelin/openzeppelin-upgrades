@@ -11,30 +11,39 @@ import {
 import { EthereumProvider } from './provider';
 import { parseAddress } from './utils/address';
 
-export class InvalidBeaconImplementation extends UpgradesError {}
+export class InvalidBeacon extends UpgradesError {}
 
 /**
  * Gets the implementation address from the beacon using its implementation() function.
  * @param provider
  * @param beaconAddress
  * @returns The implementation address.
- * @throws {InvalidBeaconImplementation} If the implementation() function does not return an address.
+ * @throws {InvalidBeacon} If the implementation() function could not be called or does not return an address.
  */
 export async function getImplementationAddressFromBeacon(
   provider: EthereumProvider,
   beaconAddress: string,
-): Promise<any> {
+): Promise<string> {
   const implementationFunction = '0x' + keccak256(Buffer.from('implementation()')).toString('hex').slice(0, 8);
-  const implAddress = await call(provider, beaconAddress, implementationFunction);
-  return parseBeaconImplAddress(beaconAddress, implAddress);
-}
-
-function parseBeaconImplAddress(beaconAddress: string, implAddress: string): string {
-  const address = parseAddress(implAddress);
-  if (address === undefined) {
-    throw new InvalidBeaconImplementation(`Contract at ${beaconAddress} doesn't look like a beacon`);
+  let result: string | undefined;
+  try {
+    const implAddress = await call(provider, beaconAddress, implementationFunction);
+    result = parseAddress(implAddress);
+  } catch (e: any) {
+    if (
+      !(
+        e.message.includes('function selector was not recognized') ||
+        e.message.includes('invalid opcode') ||
+        e.message.includes('Transaction reverted')
+      )
+    ) {
+      throw e;
+    } // otherwise fall through with no result
   }
-  return address;
+  if (result === undefined) {
+    throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
+  }
+  return result;
 }
 
 /**

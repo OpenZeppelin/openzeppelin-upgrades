@@ -1,5 +1,4 @@
-import { getImplementationAddressFromBeacon } from '.';
-import { InvalidBeaconImplementation } from './impl-address';
+import { InvalidBeacon, getImplementationAddressFromBeacon } from './impl-address';
 import { EthereumProvider } from './provider';
 
 /**
@@ -12,7 +11,7 @@ export async function isBeacon(provider: EthereumProvider, beaconAddress: string
     await getImplementationAddressFromBeacon(provider, beaconAddress);
     return true;
   } catch (e: any) {
-    if (e.message.includes('function selector was not recognized') || e instanceof InvalidBeaconImplementation) {
+    if (e instanceof InvalidBeacon) {
       return false;
     } else {
       throw e;

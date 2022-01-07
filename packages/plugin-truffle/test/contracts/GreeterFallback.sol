@@ -1,6 +1,6 @@
-pragma solidity >= 0.4.22 <0.8.0;
+pragma solidity >= 0.4.22 <0.6.0;
 
-contract Greeter {
+contract GreeterFallback {
 
     string greeting;
 
@@ -16,9 +16,5 @@ contract Greeter {
         greeting = _greeting;
     }
 
+    function() external {}
 }
-
-import "./utils/Proxiable.sol";
-contract GreeterProxiable is Greeter, Proxiable {}
-contract GreeterBeaconImpl is Greeter {}
-contract GreeterStandaloneImpl is Greeter {}

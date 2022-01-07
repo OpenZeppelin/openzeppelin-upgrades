@@ -1,5 +1,6 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Contract } from 'ethers';
+import { Interface } from 'ethers/lib/utils';
 
 import {
   Manifest,
@@ -8,6 +9,9 @@ import {
   UpgradesError,
   getImplementationAddressFromBeacon,
   isBeacon,
+  DeployBeaconProxyUnsupportedError,
+  DeployBeaconProxyImplUnknownError,
+  DeployBeaconProxyKindError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -42,33 +46,23 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
     const manifest = await Manifest.forNetwork(provider);
 
     if (opts.kind !== undefined && opts.kind !== 'beacon') {
-      throw new UpgradesError(
-        `Unsupported proxy kind '${opts.kind}'`,
-        () => `deployBeaconProxy() is only supported with proxy kind undefined or 'beacon'`,
-      );
+      throw new DeployBeaconProxyKindError(opts.kind);
     }
     opts.kind = 'beacon';
 
     const beaconAddress = getContractAddress(beacon);
     if (!(await isBeacon(provider, beaconAddress))) {
-      throw new UpgradesError(
-        `Contract at ${beaconAddress} doesn't look like a beacon`,
-        () => 'The address parameter for deployBeaconProxy() must be the address of a previously deployed beacon.',
-      );
+      throw new DeployBeaconProxyUnsupportedError(beaconAddress);
     }
 
-    let contractInterface;
+    let contractInterface: Interface | undefined;
     if (opts.implementation !== undefined) {
       contractInterface = opts.implementation.interface;
     } else {
       const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
       contractInterface = await getInterfaceFromManifest(hre, implAddress);
       if (contractInterface === undefined) {
-        throw new UpgradesError(
-          `Beacon's current implementation at ${implAddress} is unknown`,
-          () =>
-            `Call deployBeaconProxy() with the implementation option providing the beacon's current implementation.`,
-        );
+        throw new DeployBeaconProxyImplUnknownError(implAddress);
       }
     }
 

@@ -19,7 +19,6 @@ test('block upgrade to unregistered beacon', async t => {
   // deploy beacon without upgrades plugin
   const greeter = await Greeter.deploy();
   await greeter.deployed();
-  greeter.initialize('Hello, Hardhat!');
 
   const beacon = await Beacon.deploy(greeter.address);
   await beacon.deployed();
@@ -39,7 +38,6 @@ test('add proxy to unregistered beacon using contract factory', async t => {
   // deploy beacon without upgrades plugin
   const greeter = await Greeter.deploy();
   await greeter.deployed();
-  greeter.initialize('Hello, Hardhat!');
 
   const beacon = await Beacon.deploy(greeter.address);
   await beacon.deployed();
@@ -57,7 +55,6 @@ test('add proxy to unregistered beacon using signer', async t => {
   // deploy beacon without upgrades plugin
   const greeter = await Greeter.deploy();
   await greeter.deployed();
-  greeter.initialize('Hello, Hardhat!');
 
   const beacon = await Beacon.deploy(greeter.address);
   await beacon.deployed();

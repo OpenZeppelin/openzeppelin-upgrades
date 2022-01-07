@@ -1,28 +1,35 @@
-import { Manifest, fetchOrDeployAdmin, logWarning, ProxyDeployment } from '@openzeppelin/upgrades-core';
+import {
+  Manifest,
+  fetchOrDeployAdmin,
+  logWarning,
+  ProxyDeployment,
+  BeaconProxyUnsupportedError,
+} from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
   ContractInstance,
   wrapProvider,
   deploy,
-  deployImpl,
+  deployProxyImpl,
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
-  DeployOptions,
+  DeployProxyOptions,
   withDefaults,
 } from './utils';
+import { getInitializerData } from './utils/initializer-data';
 
-export async function deployProxy(Contract: ContractClass, opts?: DeployOptions): Promise<ContractInstance>;
+export async function deployProxy(Contract: ContractClass, opts?: DeployProxyOptions): Promise<ContractInstance>;
 export async function deployProxy(
   Contract: ContractClass,
   args?: unknown[],
-  opts?: DeployOptions,
+  opts?: DeployProxyOptions,
 ): Promise<ContractInstance>;
 export async function deployProxy(
   Contract: ContractClass,
-  args: unknown[] | DeployOptions = [],
-  opts: DeployOptions = {},
+  args: unknown[] | DeployProxyOptions = [],
+  opts: DeployProxyOptions = {},
 ): Promise<ContractInstance> {
   if (!Array.isArray(args)) {
     opts = args;
@@ -32,7 +39,7 @@ export async function deployProxy(
   const provider = wrapProvider(deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
 
-  const { impl, kind } = await deployImpl(Contract, opts);
+  const { impl, kind } = await deployProxyImpl(Contract, opts);
   const data = getInitializerData(Contract, args, opts.initializer);
 
   if (kind === 'uups') {
@@ -46,14 +53,14 @@ export async function deployProxy(
 
   let proxyDeployment: Required<ProxyDeployment>;
   switch (kind) {
+    case 'beacon': {
+      throw new BeaconProxyUnsupportedError();
+    }
+
     case 'uups': {
       const ProxyFactory = getProxyFactory(Contract);
       proxyDeployment = Object.assign({ kind }, await deploy(deployer, ProxyFactory, impl, data));
       break;
-    }
-
-    case 'beacon': {
-      throw new Error('Beacon proxy is not currently supported with Truffle Upgrades.');
     }
 
     case 'transparent': {
@@ -74,22 +81,4 @@ export async function deployProxy(
   const contract = new Contract(proxyDeployment.address);
   contract.transactionHash = proxyDeployment.txHash;
   return contract;
-}
-
-function getInitializerData(Contract: ContractClass, args: unknown[], initializer?: string | false): string {
-  if (initializer === false) {
-    return '0x';
-  }
-
-  const allowNoInitialization = initializer === undefined && args.length === 0;
-  initializer = initializer ?? 'initialize';
-
-  const stub = new Contract('');
-  if (initializer in stub.contract.methods) {
-    return stub.contract.methods[initializer](...args).encodeABI();
-  } else if (allowNoInitialization) {
-    return '0x';
-  } else {
-    throw new Error(`Contract ${Contract.name} does not have a function \`${initializer}\``);
-  }
 }
