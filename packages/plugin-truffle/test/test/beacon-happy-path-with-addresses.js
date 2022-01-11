@@ -1,10 +1,6 @@
 const assert = require('assert');
 
-const { deployBeacon, deployBeaconProxy, upgradeBeacon } = require('@openzeppelin/truffle-upgrades');
-
-const { getBeaconAddress } = require('@openzeppelin/upgrades-core');
-const { wrapProvider } = require('@openzeppelin/truffle-upgrades/dist/utils/wrap-provider.js');
-const { withDefaults } = require('@openzeppelin/truffle-upgrades/dist/utils/options.js');
+const { erc1967, deployBeacon, deployBeaconProxy, upgradeBeacon } = require('@openzeppelin/truffle-upgrades');
 
 const GreeterBeaconImpl = artifacts.require('GreeterBeaconImpl');
 const GreeterV2 = artifacts.require('GreeterV2');
@@ -17,9 +13,7 @@ contract('GreeterBeaconImpl', function () {
     const greeter = await GreeterBeaconImpl.deployed();
     assert.strictEqual(await greeter.greet(), 'Hello Truffle');
 
-    const { deployer } = withDefaults({});
-    const provider = wrapProvider(deployer.provider);
-    const beaconAddress = await getBeaconAddress(provider, greeter.address);
+    const beaconAddress = await erc1967.getBeaconAddress(greeter.address);
     await upgradeBeacon(beaconAddress, GreeterV2);
 
     const greeter2 = await GreeterV2.at(greeter.address);
