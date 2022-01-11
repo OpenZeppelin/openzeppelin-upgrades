@@ -16,3 +16,9 @@ test('incompatible storage', async t => {
     'New storage layout is incompatible due to the following changes',
   );
 });
+
+test('incompatible storage - forced', async t => {
+  const { Greeter, GreeterStorageConflict } = t.context;
+  const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!'], { kind: 'uups' });
+  await upgrades.upgradeProxy(greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
+});

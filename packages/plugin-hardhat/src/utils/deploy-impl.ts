@@ -17,7 +17,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
-import { Options, withDefaults } from './options';
+import { Options, UpgradeOptions, withDefaults } from './options';
 import { readValidations } from './validations';
 
 interface DeployedImpl {
@@ -28,7 +28,7 @@ interface DeployedImpl {
 export async function deployImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: UpgradeOptions,
   proxyAddress?: string,
 ): Promise<DeployedImpl> {
   const { provider } = hre.network;
@@ -54,7 +54,9 @@ export async function deployImpl(
     const manifest = await Manifest.forNetwork(provider);
     const currentImplAddress = await getImplementationAddress(provider, proxyAddress);
     const currentLayout = await getStorageLayoutForAddress(manifest, validations, currentImplAddress);
-    assertStorageUpgradeSafe(currentLayout, layout, fullOpts);
+    if (opts.unsafeSkipStorageCheck !== true) {
+      assertStorageUpgradeSafe(currentLayout, layout, fullOpts);
+    }
   }
 
   const impl = await fetchOrDeploy(version, provider, async () => {
