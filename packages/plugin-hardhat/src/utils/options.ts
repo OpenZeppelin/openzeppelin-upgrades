@@ -24,4 +24,5 @@ export interface DeployBeaconProxyOptions extends DeployProxyOptions {
 
 export interface UpgradeProxyOptions extends Options {
   call?: { fn: string; args?: unknown[] } | string;
+  unsafeSkipStorageCheck?: boolean;
 }
