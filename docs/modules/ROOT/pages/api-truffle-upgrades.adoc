@@ -112,32 +112,19 @@ async function upgradeBeacon(
 [[deploy-beacon-proxy]]
 == deployBeaconProxy
 
-Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
+Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address and a Truffle contract class corresponding to the beacon's current implementation contract, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
 
 * `initializer`: set a different initializer function to call, or specify `false` to disable initialization
-* `implementation`: a Truffle contract class corresponding to the beacon's current implementation contract. If not specified, attempts to find the implementation contract from a previous beacon deployment.
 
 [source,ts]
 ----
 async function deployBeaconProxy(
   beaconAddress: string,
+  attachTo: ContractClass,
   args: unknown[] = [],
   opts: {
     initializer?: string | false,
-    implementation?: ContractClass,
   } = {},
-): Promise<ContractInstance>
-----
-
-[[load-proxy]]
-== loadProxy
-
-Given a previously deployed UUPS, Transparent, or Beacon proxy contract instance or address, returns an updated contract instance with the proxy address and its current implementation interface.
-
-[source,ts]
-----
-async function loadProxy(
-  proxyInstanceOrAddress: ContractInstance | string,
 ): Promise<ContractInstance>
 ----
 

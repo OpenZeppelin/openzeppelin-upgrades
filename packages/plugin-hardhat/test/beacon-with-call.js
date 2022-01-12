@@ -11,7 +11,7 @@ test('call with args', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, ['Hello, Hardhat!']);
+  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, Greeter, ['Hello, Hardhat!']);
 
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
@@ -27,7 +27,7 @@ test('call without args', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, ['Hello, Hardhat!']);
+  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, Greeter, ['Hello, Hardhat!']);
 
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 

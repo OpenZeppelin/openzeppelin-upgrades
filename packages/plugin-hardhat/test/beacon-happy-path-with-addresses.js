@@ -8,24 +8,22 @@ test.before(async t => {
   t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3');
 });
 
-test('happy path - addresses and signers', async t => {
+test('happy path - addresses', async t => {
   const { Greeter, GreeterV2, GreeterV3 } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, ['Hello, Hardhat!'], { signer: Greeter.signer });
+  const greeter = await upgrades.deployBeaconProxy(greeterBeacon, Greeter, ['Hello, Hardhat!']);
   await greeter.deployed();
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  const greeterSecond = await upgrades.deployBeaconProxy(greeterBeacon.address, ['Hello, Hardhat second!'], {
-    implementation: Greeter,
-  });
+  const greeterSecond = await upgrades.deployBeaconProxy(greeterBeacon.address, Greeter, ['Hello, Hardhat second!']);
   await greeterSecond.deployed();
   t.is(await greeterSecond.greet(), 'Hello, Hardhat second!');
 
   const greeterBeaconDuplicate = await upgrades.deployBeacon(Greeter);
-  const greeterThird = await upgrades.deployBeaconProxy(greeterBeaconDuplicate.address, ['Hello, Hardhat third!'], {
-    signer: Greeter.signer,
-  });
+  const greeterThird = await upgrades.deployBeaconProxy(greeterBeaconDuplicate.address, Greeter, [
+    'Hello, Hardhat third!',
+  ]);
   await greeterThird.deployed();
   t.is(await greeterThird.greet(), 'Hello, Hardhat third!');
 
@@ -35,19 +33,19 @@ test('happy path - addresses and signers', async t => {
   await upgrades.upgradeBeacon(greeterBeaconDuplicate.address, GreeterV3);
 
   // reload proxy to work with the new contract
-  const greeter2 = await upgrades.loadProxy(greeter);
+  const greeter2 = GreeterV2.attach(greeter.address);
   t.is(await greeter2.greet(), 'Hello, Hardhat!');
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
 
   // reload proxy to work with the new contract
-  const greeterSecond2 = await upgrades.loadProxy(greeterSecond.address, greeterSecond.signer);
+  const greeterSecond2 = GreeterV2.attach(greeterSecond.address);
   t.is(await greeterSecond2.greet(), 'Hello, Hardhat second!');
   await greeterSecond2.resetGreeting();
   t.is(await greeterSecond2.greet(), 'Hello World');
 
   // reload proxy to work with the new contract
-  const greeterThird2 = await upgrades.loadProxy(greeterThird, greeterThird.signer);
+  const greeterThird2 = GreeterV3.attach(greeterThird.address);
   t.is(await greeterThird2.greet(), 'Hello, Hardhat third!');
   await greeterThird2.resetGreeting();
   t.is(await greeterThird2.greet(), 'Hello World');

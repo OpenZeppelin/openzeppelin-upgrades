@@ -25,7 +25,7 @@ test.beforeEach(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
   t.context.greeterBeacon = await upgrades.deployBeacon(t.context.Greeter);
-  t.context.greeter = await upgrades.deployBeaconProxy(t.context.greeterBeacon);
+  t.context.greeter = await upgrades.deployBeaconProxy(t.context.greeterBeacon, t.context.Greeter);
 });
 
 test.afterEach.always(() => {

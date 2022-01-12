@@ -5,6 +5,6 @@ const { deployBeacon, deployBeaconProxy, upgradeBeacon } = require('@openzeppeli
 
 module.exports = async function (deployer) {
   const beacon = await deployBeacon(GreeterBeaconImpl, { deployer });
-  await deployBeaconProxy(beacon, ['Hello Truffle'], { deployer });
+  await deployBeaconProxy(beacon, GreeterBeaconImpl, ['Hello Truffle'], { deployer });
   await upgradeBeacon(beacon, GreeterV2, { deployer });
 };
