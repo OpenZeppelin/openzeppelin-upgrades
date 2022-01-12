@@ -69,7 +69,7 @@ The plugin will take care of comparing `BoxV2` to the previous one to ensure the
 [[beacon-proxies]]
 === Beacon proxies
 
-You can also use this plugin to deploy an upgradable beacon for your contract with the `deployBeacon` function, then deploy one or more beacon proxies that point to it by using the `deployBeaconProxy` function.
+You can also use this plugin to deploy an upgradeable beacon for your contract with the `deployBeacon` function, then deploy one or more beacon proxies that point to it by using the `deployBeaconProxy` function.
 
 [source,js]
 ----
