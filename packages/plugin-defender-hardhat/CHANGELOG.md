@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for beacon proxies. ([#342](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/342))
+
 ## 1.5.1 (2021-11-04)
 
 - Pass additional options on to `prepareUpgrade`.

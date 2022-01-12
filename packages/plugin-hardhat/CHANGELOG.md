@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for beacon proxies. ([#342](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/342))
+
 ## 1.12.1 (2022-01-06)
 
 - Fix issues when deploying to Polygon Mumbai testnet. ([#487](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/487))
