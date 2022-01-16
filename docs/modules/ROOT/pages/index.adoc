@@ -118,7 +118,7 @@ For example, `deployProxy` does the following:
 
 1. Validate that the implementation is xref:faq.adoc#what-does-it-mean-for-a-contract-to-be-upgrade-safe[upgrade safe].
 
-2. Deploy a xref:faq.adoc#what-is-a-proxy-admin[proxy admin] for your project (if using a transparent proxy).
+2. Deploy a xref:faq.adoc#what-is-a-proxy-admin[proxy admin] for your project (if needed).
 
 3. Deploy the xref:faq.adoc#what-is-an-implementation-contract[implementation contract].
 
@@ -141,7 +141,7 @@ The plugins will keep track of all the implementation contracts you have deploye
 
 The plugins support the UUPS, transparent, and beacon proxy patterns. UUPS and transparent proxies are upgraded individually, whereas any number of beacon proxies can be upgraded atomically at the same time by upgrading the beacon that they point to. For more details on the different proxy patterns available, see the documentation for https://docs.openzeppelin.com/contracts/4.x/api/proxy[Proxies].
 
-For UUPS and transparent proxies, use `deployProxy` and `upgradeProxy` as shown above. For beacon proxies, use `deployBeacon`, `deployBeaconProxy`, and `upgradeBeacon`. See the documentation for xref:truffle-upgrades.adoc[Truffle Upgrades] and xref:hardhat-upgrades.adoc[Hardhat Upgrades] for examples.
+For UUPS and transparent proxies, use `deployProxy` and `upgradeProxy` as shown above. For beacon proxies, use `deployBeacon`, `deployBeaconProxy`, and `upgradeBeacon`. See the documentation for xref:hardhat-upgrades.adoc[Hardhat Upgrades] and xref:truffle-upgrades.adoc[Truffle Upgrades] for examples.
 
 [[managing-ownership]]
 == Managing ownership
