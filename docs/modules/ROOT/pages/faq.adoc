@@ -60,7 +60,7 @@ For example, in order to upgrade to an implementation that contains a delegate c
 await upgradeProxy(proxyAddress, implementationFactory, { unsafeAllow: ['delegatecall'] });
 ----
 
-Additionally, it is possible to preciselly disable checks directly from the Solidity source code using natspec comments. This requires Solidity >=0.8.2.
+Additionally, it is possible to precisely disable checks directly from the Solidity source code using natspec comments. This requires Solidity >=0.8.2.
 
 [source,solidity]
 ----
@@ -170,7 +170,7 @@ NOTE: In some cases immutable variables are upgrade safe. The plugins cannot cur
 [[why-cant-i-use-external-libraries]]
 == Why can't I use external libraries?
 
-At the moment the plugins only have partial support for upgradeable contracts linked to external libraries. This is because it's not known at compile time what implementation is going to be linked thus making very difficult to guarantee the safety of the upgrade operation.
+At the moment the plugins only have partial support for upgradeable contracts linked to external libraries. This is because it's not known at compile time what implementation is going to be linked thus making it very difficult to guarantee the safety of the upgrade operation.
 
 There are plans to add this functionality in the near future with certain constraints that make the issue easier to address like assuming that the external library's source code is either present in the codebase or that it's been deployed and mined so it can be fetched from the blockchain for analysis.
 
