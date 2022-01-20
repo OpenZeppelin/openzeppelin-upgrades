@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix error when proposing upgrade to Infura. ([#503](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/503))
+
 ## 1.11.0 (2022-01-12)
 
 - Add support for beacon proxies. ([#342](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/342))
