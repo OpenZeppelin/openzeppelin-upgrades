@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.11.1 (2022-01-20)
 
 - Fix error when proposing upgrade to Infura. ([#503](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/503))
 
