@@ -74,7 +74,7 @@ contract SomeContract {
 }
 ----
 
-This syntax can be used will the following errors:
+This syntax can be used with the following errors:
 
   * `/// @custom:oz-upgrades-unsafe-allow state-variable-immutable`
   * `/// @custom:oz-upgrades-unsafe-allow state-variable-assignment`
