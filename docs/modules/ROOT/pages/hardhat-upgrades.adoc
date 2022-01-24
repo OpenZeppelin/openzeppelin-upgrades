@@ -104,7 +104,7 @@ async function main() {
   await upgrades.upgradeBeacon(BEACON_ADDRESS, BoxV2);
   console.log("Beacon upgraded");
 
-  const box = BoxV2.attach(box.address);
+  const box = BoxV2.attach(BOX_ADDRESS);
 }
 
 main();

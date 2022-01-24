@@ -84,11 +84,13 @@ it('works before and after upgrading', async function () {
 
 ## How do the plugins work?
 
-Both plugins provide two main functions, `deployProxy` and `upgradeProxy`, which take care of managing upgradeable deployments of your contracts. In the case of `deployProxy`, this means:
+Both plugins provide functions which take care of managing upgradeable deployments of your contracts.
+
+For example, `deployProxy` does the following:
 
 1. Validate that the implementation is [upgrade safe](https://docs.openzeppelin.com/upgrades-plugins/faq#what-does-it-mean-for-a-contract-to-be-upgrade-safe)
 
-2. Deploy a [proxy admin](https://docs.openzeppelin.com/upgrades-plugins/faq#what-is-a-proxy-admin) for your project
+2. Deploy a [proxy admin](https://docs.openzeppelin.com/upgrades-plugins/faq#what-is-a-proxy-admin) for your project (if needed)
 
 3. Check if there is an [implementation contract](https://docs.openzeppelin.com/upgrades-plugins/faq#what-is-an-implementation-contract) deployed with the same bytecode, and deploy one if not
 
@@ -106,15 +108,21 @@ The plugins will keep track of all the implementation contracts you have deploye
 
 > Note: the format of the files within the `.openzeppelin` folder is not compatible with those of the [OpenZeppelin CLI](https://docs.openzeppelin.com/cli). If you want to use these plugins for an existing OpenZeppelin CLI project, we will be sharing soon a guide on how to migrate.
 
+## Proxy patterns
+
+The plugins support the UUPS, transparent, and beacon proxy patterns. UUPS and transparent proxies are upgraded individually, whereas any number of beacon proxies can be upgraded atomically at the same time by upgrading the beacon that they point to. For more details on the different proxy patterns available, see the documentation for [Proxies](https://docs.openzeppelin.com/contracts/4.x/api/proxy).
+
+For UUPS and transparent proxies, use `deployProxy` and `upgradeProxy` as shown above. For beacon proxies, use `deployBeacon`, `deployBeaconProxy`, and `upgradeBeacon`. See the documentation for [Hardhat Upgrades](./packages/plugin-hardhat/README.md) and [Truffle Upgrades](./packages/plugin-truffle/README.md) for examples.
+
 ## Managing ownership
 
-All proxies define an _admin_ address which has the rights to upgrade them. By default, the admin is a [proxy admin contract](https://docs.openzeppelin.com/upgrades-plugins/faq#what-is-a-proxy-admin) deployed behind the scenes. You can change the admin of a proxy by calling the `admin.changeAdminForProxy` function in the plugin. Keep in mind that the _admin_ of a proxy can only upgrade it, but not interact with the implementation contract. Read [here](https://docs.openzeppelin.com/upgrades-plugins/proxies#transparent-proxies-and-function-clashes) for more info on this restriction.
+Transparent proxies define an _admin_ address which has the rights to upgrade them. By default, the admin is a [proxy admin contract](https://docs.openzeppelin.com/upgrades-plugins/faq#what-is-a-proxy-admin) deployed behind the scenes. You can change the admin of a proxy by calling the `admin.changeProxyAdmin` function in the plugin. Keep in mind that the _admin_ of a proxy can only upgrade it, but not interact with the implementation contract. Read [here](https://docs.openzeppelin.com/upgrades-plugins/proxies#transparent-proxies-and-function-clashes) for more info on this restriction.
 
-The proxy admin contract also defines an _owner_ address which has the rights to operate it. By default, this address is the externally owned account used during deployment. You can change the proxy admin owner by calling the `admin.transferProxyAdminOwnership` function in the plugin. Note that changing the proxy admin owner effectively transfers the power to upgrade any proxy in your whole project to the new owner, so use with care.
+The proxy admin contract also defines an _owner_ address which has the rights to operate it. By default, this address is the externally owned account used during deployment. You can change the proxy admin owner by calling the `admin.transferProxyAdminOwnership` function in the plugin. Note that changing the proxy admin owner effectively transfers the power to upgrade any proxy in your whole project to the new owner, so use with care. Refer to each plugin documentation for more details on the `admin` functions.
 
-Once you have transferred the rights to upgrade a proxy to another address, you can still use your local setup to validate and deploy the implementation contract. The plugins include a `prepareUpgrade` function that will validate that the new implementation is upgrade-safe and compatible with the previous one, and deploy it using your local Ethereum account. You can then execute the upgrade itself from the admin address. You can also use the `proposeUpgrade` function to automatically set up the upgrade in [Defender Admin](https://docs.openzeppelin.com/defender/admin).
+UUPS and beacon proxies do not use admin addresses. UUPS proxies rely on an [`_authorizeUpgrade`](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable-_authorizeUpgrade-address-) function to be overridden to include access restriction to the upgrade mechanism, whereas beacon proxies are upgradable only by the owner of their corresponding beacon.
 
-Refer to each plugin documentation for more details on the `admin` functions.
+Once you have transferred the rights to upgrade a proxy or beacon to another address, you can still use your local setup to validate and deploy the implementation contract. The plugins include a `prepareUpgrade` function that will validate that the new implementation is upgrade-safe and compatible with the previous one, and deploy it using your local Ethereum account. You can then execute the upgrade itself from the admin or owner address. You can also use the `proposeUpgrade` function to automatically set up the upgrade in [Defender Admin](https://docs.openzeppelin.com/defender/admin).
 
 ## Community
 
