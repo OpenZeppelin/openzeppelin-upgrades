@@ -18,6 +18,11 @@ export interface Deployment {
   txHash?: string;
 }
 
+export interface DeployOpts {
+  timeout?: number;
+  pollingInterval?: number;
+}
+
 export async function resumeOrDeploy<T extends Deployment>(
   provider: EthereumProvider,
   cached: T | undefined,
@@ -51,24 +56,24 @@ export async function resumeOrDeploy<T extends Deployment>(
   return deployment;
 }
 
-export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
+export async function waitAndValidateDeployment(
+  provider: EthereumProvider,
+  deployment: Deployment,
+  opts?: DeployOpts,
+): Promise<void> {
   const { txHash, address } = deployment;
 
-  // Poll for 60 seconds with a 5 second poll interval.
-  // TODO: Make these parameters configurable.
-  const pollTimeout = 60e3;
-  const pollInterval = 5e3;
+  // Poll for 60 seconds with a 5 second poll interval by default.
+  const pollTimeout = opts?.timeout ?? 60e3;
+  const pollInterval = opts?.pollingInterval ?? 5e3;
+
+  debug('polling timeout', pollTimeout, 'polling interval', pollInterval);
 
   if (txHash !== undefined) {
     const startTime = Date.now();
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime >= pollTimeout) {
-        // A timeout is NOT an InvalidDeployment
-        throw new TransactionMinedTimeout(deployment);
-      }
       debug('verifying deployment tx mined', txHash);
       const receipt = await getTransactionReceipt(provider, txHash);
       if (receipt && isReceiptSuccessful(receipt)) {
@@ -80,6 +85,13 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
       } else {
         debug('waiting for deployment tx mined', txHash);
         await sleep(pollInterval);
+      }
+      if (pollTimeout != 0) {
+        const elapsedTime = Date.now() - startTime;
+        if (elapsedTime >= pollTimeout) {
+          // A timeout is NOT an InvalidDeployment
+          throw new TransactionMinedTimeout(deployment, !!opts);
+        }
       }
     }
   }
@@ -97,8 +109,13 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
 }
 
 export class TransactionMinedTimeout extends Error {
-  constructor(readonly deployment: Deployment) {
-    super(`Timed out waiting for transaction ${deployment.txHash}`);
+  constructor(readonly deployment: Deployment, configurableTimeout: boolean) {
+    super(
+      `Timed out waiting for transaction ${deployment.txHash}. Run the function again to continue waiting for the transaction confirmation.` +
+        (configurableTimeout
+          ? ` If the problem persists, adjust the polling parameters with the timeout and pollingInterval options.`
+          : ``),
+    );
   }
 }
 

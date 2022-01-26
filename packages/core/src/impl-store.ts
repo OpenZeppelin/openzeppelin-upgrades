@@ -4,6 +4,7 @@ import { EthereumProvider, isDevelopmentNetwork } from './provider';
 import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import type { Version } from './version';
 import assert from 'assert';
+import { DeployOpts } from '.';
 
 interface ManifestLens<T> {
   description: string;
@@ -15,10 +16,22 @@ interface ManifestField<T> {
   set(value: T | undefined): void;
 }
 
+/**
+ * Fetches the deployment from the manifest, or deploys it if not found.
+ *
+ * @param lens the manifest lens
+ * @param provider the Ethereum provider
+ * @param deploy the deploy function
+ * @param opts options containing the timeout and pollingInterval parameters. If undefined, assumes the timeout is not configurable and will not mention those parameters in the error message for TransactionMinedTimeout.
+ * @returns the deployment address
+ * @throws {InvalidDeployment} if the deployment is invalid
+ * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
+ */
 async function fetchOrDeployGeneric<T extends Deployment>(
   lens: ManifestLens<T>,
   provider: EthereumProvider,
   deploy: () => Promise<T>,
+  opts?: DeployOpts,
 ): Promise<string> {
   const manifest = await Manifest.forNetwork(provider);
 
@@ -40,7 +53,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
       return updated;
     });
 
-    await waitAndValidateDeployment(provider, deployment);
+    await waitAndValidateDeployment(provider, deployment, opts);
 
     return deployment.address;
   } catch (e) {
@@ -67,8 +80,9 @@ export async function fetchOrDeploy(
   version: Version,
   provider: EthereumProvider,
   deploy: () => Promise<ImplDeployment>,
+  opts?: DeployOpts,
 ): Promise<string> {
-  return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy);
+  return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, opts);
 }
 
 const implLens = (versionWithoutMetadata: string) =>
@@ -80,8 +94,9 @@ const implLens = (versionWithoutMetadata: string) =>
 export async function fetchOrDeployAdmin(
   provider: EthereumProvider,
   deploy: () => Promise<Deployment>,
+  opts?: DeployOpts,
 ): Promise<string> {
-  return fetchOrDeployGeneric(adminLens, provider, deploy);
+  return fetchOrDeployGeneric(adminLens, provider, deploy, opts);
 }
 
 const adminLens = lens('proxy admin', data => ({

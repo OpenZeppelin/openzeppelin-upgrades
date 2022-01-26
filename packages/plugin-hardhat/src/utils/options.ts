@@ -2,11 +2,15 @@ import { ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrade
 
 export interface Options extends ValidationOptions {
   constructorArgs?: unknown[];
+  timeout?: number;
+  pollingInterval?: number;
 }
 
 export function withDefaults(opts: Options = {}): Required<Options> {
   return {
     constructorArgs: opts.constructorArgs ?? [],
+    timeout: opts.timeout ?? 60e3,
+    pollingInterval: opts.pollingInterval ?? 5e3,
     ...withValidationDefaults(opts),
   };
 }
