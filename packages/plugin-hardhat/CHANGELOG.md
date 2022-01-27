@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add options `timeout` and `pollingInterval`. ([#55](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/55))
+
 ## 1.13.0 (2022-01-12)
 
 - Add support for beacon proxies. ([#342](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/342))
