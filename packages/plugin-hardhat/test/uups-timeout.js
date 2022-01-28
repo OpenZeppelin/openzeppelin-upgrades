@@ -14,7 +14,7 @@ test.beforeEach(async () => {
     params: [],
   });
   await network.provider.send('evm_setAutomine', [false]);
-  await network.provider.send('evm_setIntervalMining', [100]);
+  await network.provider.send('evm_setIntervalMining', [500]);
 });
 
 const TIMED_OUT = 'Timed out waiting for transaction';
@@ -23,7 +23,7 @@ const USE_OPTIONS =
 
 test('timeout too low, long polling', async t => {
   const error = await t.throwsAsync(() =>
-    upgrades.deployProxy(t.context.Greeter, ['Hello, Hardhat!'], { kind: 'uups', timeout: 1, pollingInterval: 200 }),
+    upgrades.deployProxy(t.context.Greeter, ['Hello, Hardhat!'], { kind: 'uups', timeout: 1, pollingInterval: 1000 }),
   );
   t.true(error.message.includes(TIMED_OUT) && error.message.includes(USE_OPTIONS));
 });
@@ -45,15 +45,15 @@ test('timeout too low, 0 ms polling', async t => {
 test('good timeout, long polling', async t => {
   await upgrades.deployProxy(t.context.Greeter, ['Hello, Hardhat!'], {
     kind: 'uups',
-    timeout: 1000,
-    pollingInterval: 200,
+    timeout: 2000,
+    pollingInterval: 1000,
   });
 });
 
 test('good timeout, short polling', async t => {
   await upgrades.deployProxy(t.context.Greeter, ['Hello, Hardhat!'], {
     kind: 'uups',
-    timeout: 1000,
+    timeout: 2000,
     pollingInterval: 10,
   });
 });
@@ -62,7 +62,7 @@ test('infinite timeout, long polling', async t => {
   await upgrades.deployProxy(t.context.Greeter, ['Hello, Hardhat!'], {
     kind: 'uups',
     timeout: 0,
-    pollingInterval: 200,
+    pollingInterval: 1000,
   });
 });
 
