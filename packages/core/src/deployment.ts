@@ -20,7 +20,14 @@ export interface Deployment {
 }
 
 export interface DeployOpts {
+  /**
+   * Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Use `0` to wait indefinitely.
+   */
   timeout?: number;
+
+  /**
+   * Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract.
+   */
   pollingInterval?: number;
 }
 
