@@ -10,6 +10,7 @@ import {
   isDevelopmentNetwork,
   isReceiptSuccessful,
 } from './provider';
+import { UpgradesError } from './error';
 
 const sleep = promisify(setTimeout);
 
@@ -59,6 +60,7 @@ export async function resumeOrDeploy<T extends Deployment>(
 export async function waitAndValidateDeployment(
   provider: EthereumProvider,
   deployment: Deployment,
+  type?: string,
   opts?: DeployOpts,
 ): Promise<void> {
   const { txHash, address } = deployment;
@@ -90,7 +92,7 @@ export async function waitAndValidateDeployment(
         const elapsedTime = Date.now() - startTime;
         if (elapsedTime >= pollTimeout) {
           // A timeout is NOT an InvalidDeployment
-          throw new TransactionMinedTimeout(deployment, !!opts);
+          throw new TransactionMinedTimeout(deployment, type, !!opts);
         }
       }
     }
@@ -108,13 +110,17 @@ export async function waitAndValidateDeployment(
   debug('code in target address found', address);
 }
 
-export class TransactionMinedTimeout extends Error {
-  constructor(readonly deployment: Deployment, configurableTimeout: boolean) {
+export class TransactionMinedTimeout extends UpgradesError {
+  constructor(readonly deployment: Deployment, type?: string, configurableTimeout?: boolean) {
     super(
-      `Timed out waiting for transaction ${deployment.txHash}. Run the function again to continue waiting for the transaction confirmation.` +
+      `Timed out waiting for ${type ? type + ' ' : ''}contract deployment to address ${
+        deployment.address
+      } with transaction ${deployment.txHash}`,
+      () =>
+        'Run the function again to continue waiting for the transaction confirmation.' +
         (configurableTimeout
-          ? ` If the problem persists, adjust the polling parameters with the timeout and pollingInterval options.`
-          : ``),
+          ? ' If the problem persists, adjust the polling parameters with the timeout and pollingInterval options.'
+          : ''),
     );
   }
 }

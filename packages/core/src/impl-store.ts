@@ -8,6 +8,7 @@ import { DeployOpts } from '.';
 
 interface ManifestLens<T> {
   description: string;
+  type: string;
   (data: ManifestData): ManifestField<T>;
 }
 
@@ -53,7 +54,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
       return updated;
     });
 
-    await waitAndValidateDeployment(provider, deployment, opts);
+    await waitAndValidateDeployment(provider, deployment, lens.type, opts);
 
     return deployment.address;
   } catch (e) {
@@ -86,7 +87,7 @@ export async function fetchOrDeploy(
 }
 
 const implLens = (versionWithoutMetadata: string) =>
-  lens(`implementation ${versionWithoutMetadata}`, data => ({
+  lens(`implementation ${versionWithoutMetadata}`, 'implementation', data => ({
     get: () => data.impls[versionWithoutMetadata],
     set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
   }));
@@ -99,13 +100,13 @@ export async function fetchOrDeployAdmin(
   return fetchOrDeployGeneric(adminLens, provider, deploy, opts);
 }
 
-const adminLens = lens('proxy admin', data => ({
+const adminLens = lens('proxy admin', 'proxy admin', data => ({
   get: () => data.admin,
   set: (value?: Deployment) => (data.admin = value),
 }));
 
-function lens<T>(description: string, fn: (data: ManifestData) => ManifestField<T>): ManifestLens<T> {
-  return Object.assign(fn, { description });
+function lens<T>(description: string, type: string, fn: (data: ManifestData) => ManifestField<T>): ManifestLens<T> {
+  return Object.assign(fn, { description, type });
 }
 
 async function checkForAddressClash(
