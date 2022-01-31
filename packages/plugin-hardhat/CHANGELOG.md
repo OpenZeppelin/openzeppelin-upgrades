@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.14.0 (2022-01-31)
 
 - Add options `timeout` and `pollingInterval`. ([#55](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/55))
 
