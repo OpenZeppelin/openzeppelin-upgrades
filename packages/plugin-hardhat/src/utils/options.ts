@@ -1,12 +1,15 @@
-import { ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
+import { DeployOpts, ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
 
-export interface Options extends ValidationOptions {
-  constructorArgs?: unknown[];
-}
+export type Options = ValidationOptions &
+  DeployOpts & {
+    constructorArgs?: unknown[];
+  };
 
 export function withDefaults(opts: Options = {}): Required<Options> {
   return {
     constructorArgs: opts.constructorArgs ?? [],
+    timeout: opts.timeout ?? 60e3,
+    pollingInterval: opts.pollingInterval ?? 5e3,
     ...withValidationDefaults(opts),
   };
 }
