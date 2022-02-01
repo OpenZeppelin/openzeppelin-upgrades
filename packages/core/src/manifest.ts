@@ -162,7 +162,8 @@ export class DeploymentNotFound extends Error {}
 
 function normalizeManifestData(input: ManifestData): ManifestData {
   return {
-    ...pick(input, ['manifestVersion', 'admin']),
+    manifestVersion: input.manifestVersion,
+    admin: input.admin && normalizeDeployment(input.admin),
     proxies: input.proxies.map(p => normalizeDeployment(p, ['kind'])),
     impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout'])),
   };
