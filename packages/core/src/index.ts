@@ -21,7 +21,6 @@ export {
 
 export { getStorageLayoutForAddress } from './manifest-storage-layout';
 
-
 export * from './scripts/migrate-oz-cli-project';
 
 export { logWarning } from './utils/log';

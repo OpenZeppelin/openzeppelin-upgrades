@@ -24,7 +24,7 @@ test('normalize manifest', t => {
     manifestVersion: '3.0',
     admin: deployment,
     impls: { a: deployment },
-    proxies: [ deployment ],
+    proxies: [deployment],
   };
   const norm = normalizeManifestData(input);
   t.like(norm.admin, {
