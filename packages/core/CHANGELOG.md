@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Remove `admin.deployTransaction` field written to network manifest. ([#510](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/510))
+
 ## 1.12.0 (2022-01-31)
 
 - Add options `timeout` and `pollingInterval`. ([#55](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/55))
