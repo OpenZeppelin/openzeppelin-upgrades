@@ -160,7 +160,7 @@ export function migrateManifest(data: ManifestData): ManifestData {
 
 export class DeploymentNotFound extends Error {}
 
-function normalizeManifestData(input: ManifestData): ManifestData {
+export function normalizeManifestData(input: ManifestData): ManifestData {
   return {
     manifestVersion: input.manifestVersion,
     admin: input.admin && normalizeDeployment(input.admin),
