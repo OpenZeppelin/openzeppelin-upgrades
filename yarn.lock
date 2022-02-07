@@ -2343,11 +2343,11 @@
     web3-utils "1.5.3"
 
 "@truffle/compile-common@^0.7.24":
-  version "0.7.24"
-  resolved "https://registry.yarnpkg.com/@truffle/compile-common/-/compile-common-0.7.24.tgz#a2ce11191a68b685cffcbfaa4d34d2b6880ff8fb"
-  integrity sha512-iF3zjXhxcFVAYEZfQA6Rh2vxQ4xSuk/7pKm7yKlLh3p9WjFaPE+dF8wbgQoehftUnBh6SY91uZI6XiD4QDuxYQ==
+  version "0.7.26"
+  resolved "https://registry.yarnpkg.com/@truffle/compile-common/-/compile-common-0.7.26.tgz#b903b4f6c275d33c741adcc11a2e9a3aae7f20a1"
+  integrity sha512-eHcplTfknX8ezBxxJgKBH6+AD3ufwo+fnlJd+JnMmPb6ndMcxyDpP/eepjLSNfzUdQSkd9n7ECvA0QIOdnNQuQ==
   dependencies:
-    "@truffle/error" "^0.0.14"
+    "@truffle/error" "^0.0.15"
     colors "1.4.0"
 
 "@truffle/config@^1.3.14":
@@ -2467,6 +2467,11 @@
   version "0.0.14"
   resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.14.tgz#59683b5407bede7bddf16d80dc5592f9c5e5fa05"
   integrity sha512-utJx+SZYoMqk8wldQG4gCVKhV8GwMJbWY7sLXFT/D8wWZTnE2peX7URFJh/cxkjTRCO328z1s2qewkhyVsu2HA==
+
+"@truffle/error@^0.0.15":
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.15.tgz#fa24de95c7eb37dd8ee71161e1a876320ddb41e6"
+  integrity sha512-keiYGlVAH7GLggqMpB+XorT7NkOlr3qeBc56thI2WP0eas3qstlyrc0WvckXJ2LXrOfcR2uH6f0Nk6FIxaKXSA==
 
 "@truffle/events@^0.0.18":
   version "0.0.18"
@@ -3013,7 +3018,6 @@
 
 "@zondax/filecoin-signing-tools@github:Digital-MOB-Filecoin/filecoin-signing-tools-js":
   version "0.2.0"
-  uid "8f8e92157cac2556d35cab866779e9a8ea8a4e25"
   resolved "https://codeload.github.com/Digital-MOB-Filecoin/filecoin-signing-tools-js/tar.gz/8f8e92157cac2556d35cab866779e9a8ea8a4e25"
   dependencies:
     axios "^0.20.0"
@@ -5083,15 +5087,10 @@ color-name@~1.1.4:
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
 
-colors@1.4.0:
+colors@1.4.0, colors@latest:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/colors/-/colors-1.4.0.tgz#c50491479d4c1bdaed2c9ced32cf7c7dc2360f78"
   integrity sha512-a+UqTh4kgZg/SlGvfbzDHpgRu7AAQOmmqRHJnxhRZICKFUT91brVhNNt58CMWU9PsBbv3PDCZUHbVxuDiH2mtA==
-
-colors@latest:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/colors/-/colors-1.4.2.tgz#cd4fe227412ca2c75bb6f5683ec2e5e68de4f317"
-  integrity sha512-5QhJWPFZqkKIieXJPpCprdOytvH7v0AGWpu9K2jZ4LWkGg3dVBNoYPgGGRpEsc0jb8Boy0ElYrdjH9uXfhRSqw==
 
 columnify@^1.5.4:
   version "1.5.4"
