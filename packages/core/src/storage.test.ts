@@ -344,7 +344,7 @@ test('storage upgrade with recursive type', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Recursive_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Recursive_V2');
   const e = t.throws(() => getStorageUpgradeErrors(v1, v2));
-  t.true(e.message.includes('Recursion found'));
+  t.true(e?.message.includes('Recursion found'));
 });
 
 test('storage upgrade with contract type', t => {
