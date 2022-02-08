@@ -42,7 +42,7 @@
     "@types/node": "^10.17.26",
     "@types/proper-lockfile": "^4.1.1",
     "@types/rimraf": "^3.0.0",
-    "ava": "^3.9.0",
+    "ava": "^4.0.0",
     "dotenv": "^16.0.0",
     "fgbg": "^0.1.4",
     "hardhat": "^2.0.2",

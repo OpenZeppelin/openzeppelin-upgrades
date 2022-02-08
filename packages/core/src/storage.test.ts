@@ -1,4 +1,4 @@
-import _test, { TestInterface } from 'ava';
+import _test, { TestFn } from 'ava';
 import { ContractDefinition } from 'solidity-ast';
 import { findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
@@ -14,7 +14,7 @@ interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
 }
 
-const test = _test as TestInterface<Context>;
+const test = _test as TestFn<Context>;
 
 test.before(async t => {
   const buildInfo = await artifacts.getBuildInfo('contracts/test/Storage.sol:Storage1');
@@ -344,7 +344,7 @@ test('storage upgrade with recursive type', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Recursive_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Recursive_V2');
   const e = t.throws(() => getStorageUpgradeErrors(v1, v2));
-  t.true(e.message.includes('Recursion found'));
+  t.true(e?.message.includes('Recursion found'));
 });
 
 test('storage upgrade with contract type', t => {

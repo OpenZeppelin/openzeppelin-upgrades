@@ -23,7 +23,7 @@
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
     "@types/mocha": "^7.0.2",
-    "ava": "^3.9.0",
+    "ava": "^4.0.0",
     "ethers": "^5.0.5",
     "fgbg": "^0.1.4",
     "hardhat": "^2.0.2",

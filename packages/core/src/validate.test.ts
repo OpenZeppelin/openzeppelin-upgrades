@@ -1,4 +1,4 @@
-import _test, { TestInterface } from 'ava';
+import _test, { TestFn } from 'ava';
 import { artifacts } from 'hardhat';
 
 import {
@@ -15,7 +15,7 @@ interface Context {
   validation: RunValidation;
 }
 
-const test = _test as TestInterface<Context>;
+const test = _test as TestFn<Context>;
 
 test.before(async t => {
   const contracts = [

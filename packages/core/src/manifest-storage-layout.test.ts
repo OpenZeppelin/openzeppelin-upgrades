@@ -1,4 +1,4 @@
-import _test, { TestInterface } from 'ava';
+import _test, { TestFn } from 'ava';
 import assert from 'assert';
 
 import { artifacts } from 'hardhat';
@@ -17,7 +17,7 @@ interface Context {
   validationData: ValidationData;
 }
 
-const test = _test as TestInterface<Context>;
+const test = _test as TestFn<Context>;
 
 test.before(async t => {
   const buildInfo = await artifacts.getBuildInfo('contracts/test/ManifestMigrate.sol:ManifestMigrateUnique');
