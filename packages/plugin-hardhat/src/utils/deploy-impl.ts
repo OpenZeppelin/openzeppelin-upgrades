@@ -102,7 +102,7 @@ async function deployImpl(
   assertUpgradeSafe(deployData.validations, deployData.version, deployData.fullOpts);
   const layout = deployData.layout;
 
-  if (currentImplAddress !== undefined) {
+  if (currentImplAddress !== undefined && currentImplAddress !== '0x0000000000000000000000000000000000000000') {
     const manifest = await Manifest.forNetwork(deployData.provider);
     const currentLayout = await getStorageLayoutForAddress(manifest, deployData.validations, currentImplAddress);
     assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
