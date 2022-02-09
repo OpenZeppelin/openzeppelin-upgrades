@@ -8,6 +8,10 @@ export interface SolcOutput {
           bytecode: SolcBytecode;
           methodIdentifiers?: Record<string, string>;
         };
+        storageLayout?:{
+          storage: [];
+          types?: [];
+        };
       };
     };
   };
