@@ -17,65 +17,62 @@ export function extractStorageLayout(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
   deref: ASTDereferencer,
-  //solcOutput: SolcOutput,
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion };
-  if (/*solcOutput*/false)  {
-    //console.log('solc: ', solcOutput);
-  } else {
-    // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
-    const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition']);
 
-    for (const varDecl of contractDef.nodes) {
-      if (isNodeType('VariableDeclaration', varDecl)) {
-        if (!varDecl.constant && varDecl.mutability !== 'immutable') {
-          const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
+  // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
+  const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition']);
 
-          layout.storage.push({
-            contract: contractDef.name,
-            label: varDecl.name,
-            type,
-            src: decodeSrc(varDecl),
-          });
+  for (const varDecl of contractDef.nodes) {
+    if (isNodeType('VariableDeclaration', varDecl)) {
+      if (!varDecl.constant && varDecl.mutability !== 'immutable') {
+        const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
 
-          assert(varDecl.typeName != null);
+        layout.storage.push({
+          contract: contractDef.name,
+          label: varDecl.name,
+          type,
+          src: decodeSrc(varDecl),
+        });
 
-          // We will recursively look for all types involved in this variable declaration in order to store their type
-          // information. We iterate over a Map that is indexed by typeIdentifier to ensure we visit each type only once.
-          // Note that there can be recursive types.
-          const typeNames = new Map(
-            [...findTypeNames(varDecl.typeName)].map(n => [typeDescriptions(n).typeIdentifier, n]),
-          );
+        assert(varDecl.typeName != null);
 
-          for (const typeName of typeNames.values()) {
-            const { typeIdentifier, typeString: label } = typeDescriptions(typeName);
+        // We will recursively look for all types involved in this variable declaration in order to store their type
+        // information. We iterate over a Map that is indexed by typeIdentifier to ensure we visit each type only once.
+        // Note that there can be recursive types.
+        const typeNames = new Map(
+          [...findTypeNames(varDecl.typeName)].map(n => [typeDescriptions(n).typeIdentifier, n]),
+        );
 
-            const type = normalizeTypeIdentifier(typeIdentifier);
+        for (const typeName of typeNames.values()) {
+          const { typeIdentifier, typeString: label } = typeDescriptions(typeName);
 
-            if (type in layout.types) {
-              continue;
-            }
+          const type = normalizeTypeIdentifier(typeIdentifier);
 
-            let members;
+          if (type in layout.types) {
+            continue;
+          }
 
-            if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
-              const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
-              members = getTypeMembers(typeDef);
-              // Recursively look for the types referenced in this definition and add them to the queue.
-              for (const typeName of findTypeNames(typeDef)) {
-                const { typeIdentifier } = typeDescriptions(typeName);
-                if (!typeNames.has(typeIdentifier)) {
-                  typeNames.set(typeIdentifier, typeName);
-                }
+          let members;
+
+          if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
+            const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
+            members = getTypeMembers(typeDef);
+            // Recursively look for the types referenced in this definition and add them to the queue.
+            for (const typeName of findTypeNames(typeDef)) {
+              const { typeIdentifier } = typeDescriptions(typeName);
+              if (!typeNames.has(typeIdentifier)) {
+                typeNames.set(typeIdentifier, typeName);
               }
             }
-
-            layout.types[type] = { label, members };
           }
+
+          layout.types[type] = { label, members };
         }
       }
     }
-}
+  }
+
   return layout;
 }
 
