@@ -10,7 +10,7 @@ export interface SolcOutput {
         };
         storageLayout?:{
           storage: [];
-          types?: [];
+          types?: {};
         };
       };
     };
