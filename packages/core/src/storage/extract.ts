@@ -1,7 +1,6 @@
 import assert from 'assert';
 import { ContractDefinition, StructDefinition, EnumDefinition, TypeDescriptions } from 'solidity-ast';
 import { isNodeType, findAll } from 'solidity-ast/utils';
-import { SolcOutput } from '../solc-api';
 import { StorageLayout, TypeItem } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
@@ -17,62 +16,65 @@ export function extractStorageLayout(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
   deref: ASTDereferencer,
+  storageLayout?: StorageLayout | undefined,
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion };
+  if (storageLayout !== undefined) {
+    layout.types = storageLayout.types;
+  } else {
+    // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
+    const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition']);
 
-  // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
-  const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition']);
+    for (const varDecl of contractDef.nodes) {
+      if (isNodeType('VariableDeclaration', varDecl)) {
+        if (!varDecl.constant && varDecl.mutability !== 'immutable') {
+          const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
 
-  for (const varDecl of contractDef.nodes) {
-    if (isNodeType('VariableDeclaration', varDecl)) {
-      if (!varDecl.constant && varDecl.mutability !== 'immutable') {
-        const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
+          layout.storage.push({
+            contract: contractDef.name,
+            label: varDecl.name,
+            type,
+            src: decodeSrc(varDecl),
+          });
 
-        layout.storage.push({
-          contract: contractDef.name,
-          label: varDecl.name,
-          type,
-          src: decodeSrc(varDecl),
-        });
+          assert(varDecl.typeName != null);
 
-        assert(varDecl.typeName != null);
+          // We will recursively look for all types involved in this variable declaration in order to store their type
+          // information. We iterate over a Map that is indexed by typeIdentifier to ensure we visit each type only once.
+          // Note that there can be recursive types.
+          const typeNames = new Map(
+            [...findTypeNames(varDecl.typeName)].map(n => [typeDescriptions(n).typeIdentifier, n]),
+          );
 
-        // We will recursively look for all types involved in this variable declaration in order to store their type
-        // information. We iterate over a Map that is indexed by typeIdentifier to ensure we visit each type only once.
-        // Note that there can be recursive types.
-        const typeNames = new Map(
-          [...findTypeNames(varDecl.typeName)].map(n => [typeDescriptions(n).typeIdentifier, n]),
-        );
+          for (const typeName of typeNames.values()) {
+            const { typeIdentifier, typeString: label } = typeDescriptions(typeName);
 
-        for (const typeName of typeNames.values()) {
-          const { typeIdentifier, typeString: label } = typeDescriptions(typeName);
+            const type = normalizeTypeIdentifier(typeIdentifier);
 
-          const type = normalizeTypeIdentifier(typeIdentifier);
+            if (type in layout.types) {
+              continue;
+            }
 
-          if (type in layout.types) {
-            continue;
-          }
+            let members;
 
-          let members;
-
-          if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
-            const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
-            members = getTypeMembers(typeDef);
-            // Recursively look for the types referenced in this definition and add them to the queue.
-            for (const typeName of findTypeNames(typeDef)) {
-              const { typeIdentifier } = typeDescriptions(typeName);
-              if (!typeNames.has(typeIdentifier)) {
-                typeNames.set(typeIdentifier, typeName);
+            if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
+              const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
+              members = getTypeMembers(typeDef);
+              // Recursively look for the types referenced in this definition and add them to the queue.
+              for (const typeName of findTypeNames(typeDef)) {
+                const { typeIdentifier } = typeDescriptions(typeName);
+                if (!typeNames.has(typeIdentifier)) {
+                  typeNames.set(typeIdentifier, typeName);
+                }
               }
             }
-          }
 
-          layout.types[type] = { label, members };
+            layout.types[type] = { label, members };
+          }
         }
       }
     }
   }
-
   return layout;
 }
 

@@ -161,12 +161,13 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
         ];
-        if (solcOutput.contracts[source][contractDef.name].storageLayout) {
-          validation[contractDef.name].layout.storage = solcOutput.contracts[source][contractDef.name].storageLayout?.storage!;
-          validation[contractDef.name].layout.types = solcOutput.contracts[source][contractDef.name].storageLayout?.types!;
-        } else {
+
+        /*if (solcOutput.contracts[source][contractDef.name].storageLayout !== undefined) {
+          validation[contractDef.name].layout =
+            solcOutput.contracts[source][contractDef.name].storageLayout!;
+        } else {*/
           validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc, deref);
-        }
+        //}
         validation[contractDef.name].methods = [...findAll('FunctionDefinition', contractDef)]
           .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
           .map(fnDef => getFunctionSignature(fnDef, deref));
