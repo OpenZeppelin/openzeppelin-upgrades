@@ -133,20 +133,40 @@ export class TransactionMinedTimeout extends UpgradesError {
 }
 
 export class InvalidDeployment extends Error {
-  removed = false;
+  reason: Reason | undefined;
 
-  constructor(readonly deployment: Deployment) {
+  constructor(readonly deployment: Deployment, reason?: Reason) {
     super();
+    this.reason = reason;
     // This hides the properties from the error when it's printed.
-    makeNonEnumerable(this, 'removed');
+    makeNonEnumerable(this, 'reason');
     makeNonEnumerable(this, 'deployment');
   }
 
   get message(): string {
     let msg = `No contract at address ${this.deployment.address}`;
-    if (this.removed) {
-      msg += ' (Removed from manifest)';
+    switch (this.reason) {
+      case Reason.Removed: {
+        msg += ' (Removed from manifest)';
+        break;
+      }
+      case Reason.NoBytecode: {
+        msg +=
+          ' (No bytecode was found at address. Ensure that you are using the network files for the correct network.)';
+        break;
+      }
+      case Reason.MismatchedBytecode: {
+        msg +=
+          ' (Different bytecode was found at address compared to a previous deployment. Ensure that you are using the network files for the correct network.)';
+        break;
+      }
     }
     return msg;
   }
+}
+
+export enum Reason {
+  Removed,
+  NoBytecode,
+  MismatchedBytecode,
 }

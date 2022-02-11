@@ -1,5 +1,6 @@
 export * from './deploy';
-export * from './deploy-impl';
+export { deployProxyImpl, deployBeaconImpl } from './deploy-impl';
+export { simulateDeployImpl } from './simulate-deploy';
 export * from './factories';
 export * from './is-full-solc-output';
 export * from './validations';

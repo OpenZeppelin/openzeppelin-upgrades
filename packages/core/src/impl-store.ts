@@ -1,8 +1,8 @@
 import debug from './utils/debug';
-import { Manifest, ManifestData, ImplDeployment } from './manifest';
-import { EthereumProvider, isDevelopmentNetwork } from './provider';
-import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
-import type { Version } from './version';
+import { Manifest, ManifestData, ImplDeployment, AdminDeployment, GenericDeployment } from './manifest';
+import { EthereumProvider, getCode, isDevelopmentNetwork, isEmpty } from './provider';
+import { Deployment, InvalidDeployment, Reason, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
+import { hashBytecode, Version } from './version';
 import assert from 'assert';
 import { DeployOpts } from '.';
 
@@ -15,6 +15,8 @@ interface ManifestLens<T> {
 interface ManifestField<T> {
   get(): T | undefined;
   set(value: T | undefined): void;
+  getBytecodeHash(): string | undefined;
+  merge?(value: T | undefined): Promise<void>;
 }
 
 /**
@@ -24,15 +26,17 @@ interface ManifestField<T> {
  * @param provider the Ethereum provider
  * @param deploy the deploy function
  * @param opts options containing the timeout and pollingInterval parameters. If undefined, assumes the timeout is not configurable and will not mention those parameters in the error message for TransactionMinedTimeout.
+ * @param merge if true, adds a deployment to existing deployment by merging their addresses. Defaults to false.
  * @returns the deployment address
  * @throws {InvalidDeployment} if the deployment is invalid
  * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
  */
-async function fetchOrDeployGeneric<T extends Deployment>(
+async function fetchOrDeployGeneric<T extends GenericDeployment>(
   lens: ManifestLens<T>,
   provider: EthereumProvider,
   deploy: () => Promise<T>,
   opts?: DeployOpts,
+  merge?: boolean,
 ): Promise<string> {
   const manifest = await Manifest.forNetwork(provider);
 
@@ -41,15 +45,24 @@ async function fetchOrDeployGeneric<T extends Deployment>(
       debug('fetching deployment of', lens.description);
       const data = await manifest.read();
       const deployment = lens(data);
-      const stored = deployment.get();
-      if (stored === undefined) {
-        debug('deployment of', lens.description, 'not found');
-      }
-      const updated = await resumeOrDeploy(provider, stored, deploy);
-      if (updated !== stored) {
+      let updated;
+      const stored = await getAndValidate<T>(deployment, lens, provider);
+      if (merge) {
+        updated = await deploy();
         await checkForAddressClash(provider, data, updated);
-        deployment.set(updated);
+        if (deployment.merge) {
+          await deployment.merge(updated);
+        } else {
+          deployment.set(updated);
+        }
         await manifest.write(data);
+      } else {
+        updated = await resumeOrDeploy(provider, stored, deploy);
+        if (updated !== stored) {
+          await checkForAddressClash(provider, data, updated);
+          deployment.set(updated);
+          await manifest.write(data);
+        }
       }
       return updated;
     });
@@ -70,11 +83,57 @@ async function fetchOrDeployGeneric<T extends Deployment>(
           await manifest.write(data);
         }
       });
-      e.removed = true;
+      e.reason = Reason.Removed;
     }
 
     throw e;
   }
+}
+
+async function getAndValidate<T extends GenericDeployment>(
+  deployment: ManifestField<T>,
+  lens: ManifestLens<T>,
+  provider: EthereumProvider,
+) {
+  let stored = deployment.get();
+  if (stored === undefined) {
+    debug('deployment of', lens.description, 'not found');
+  } else {
+    const existingBytecode = await getCode(provider, stored.address);
+    const isDevNet = await isDevelopmentNetwork(provider);
+
+    if (isEmpty(existingBytecode)) {
+      if (isDevNet) {
+        debug('omitting a previous deployment due to no bytecode at address', stored.address);
+        stored = undefined;
+      } else {
+        throw new InvalidDeployment(stored, Reason.NoBytecode);
+      }
+    } else {
+      stored = validate(stored, deployment.getBytecodeHash(), hashBytecode(existingBytecode), isDevNet);
+    }
+  }
+  if (stored === undefined) {
+    deployment.set(undefined);
+  }
+  return stored;
+}
+
+function validate<T extends Deployment>(
+  deployment: T,
+  storedBytecodeHash: string | undefined,
+  existingBytecodeHash: string,
+  isDevNet: boolean,
+) {
+  if (storedBytecodeHash !== undefined && storedBytecodeHash !== existingBytecodeHash) {
+    if (isDevNet) {
+      debug('omitting a previous deployment due to mismatched bytecode at address ', deployment.address);
+      return undefined;
+    } else {
+      throw new InvalidDeployment(deployment, Reason.MismatchedBytecode);
+    }
+  }
+  return deployment;
 }
 
 export async function fetchOrDeploy(
@@ -82,27 +141,61 @@ export async function fetchOrDeploy(
   provider: EthereumProvider,
   deploy: () => Promise<ImplDeployment>,
   opts?: DeployOpts,
+  merge?: boolean,
 ): Promise<string> {
-  return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, opts);
+  return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, opts, merge);
 }
 
 const implLens = (versionWithoutMetadata: string) =>
   lens(`implementation ${versionWithoutMetadata}`, 'implementation', data => ({
     get: () => data.impls[versionWithoutMetadata],
     set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
+    getBytecodeHash: () => data.impls[versionWithoutMetadata]?.bytecodeHash,
+    merge: async (value?: ImplDeployment) => {
+      const existing = data.impls[versionWithoutMetadata];
+      if (existing !== undefined && value !== undefined) {
+        const { address, allAddresses } = await mergeAddresses(existing, value);
+        data.impls[versionWithoutMetadata] = { ...value, address, allAddresses };
+      } else {
+        data.impls[versionWithoutMetadata] = value;
+      }
+    },
   }));
+
+/**
+ * Merge the addresses in the deployments and returns them.
+ *
+ * @param existing existing deployment
+ * @param value deployment to add
+ */
+export async function mergeAddresses(existing: ImplDeployment, value: ImplDeployment) {
+  const merged = new Set<string>();
+
+  merged.add(existing.address);
+  merged.add(value.address);
+
+  if (existing.allAddresses !== undefined) {
+    existing.allAddresses.forEach(item => merged.add(item));
+  }
+  if (value.allAddresses !== undefined) {
+    value.allAddresses.forEach(item => merged.add(item));
+  }
+
+  return { address: existing.address, allAddresses: Array.from(merged) };
+}
 
 export async function fetchOrDeployAdmin(
   provider: EthereumProvider,
   deploy: () => Promise<Deployment>,
-  opts?: DeployOpts,
+  merge?: DeployOpts,
 ): Promise<string> {
-  return fetchOrDeployGeneric(adminLens, provider, deploy, opts);
+  return fetchOrDeployGeneric(adminLens, provider, deploy, merge);
 }
 
 const adminLens = lens('proxy admin', 'proxy admin', data => ({
   get: () => data.admin,
-  set: (value?: Deployment) => (data.admin = value),
+  set: (value?: AdminDeployment) => (data.admin = value),
+  getBytecodeHash: () => data.admin?.bytecodeHash,
 }));
 
 function lens<T>(description: string, type: string, fn: (data: ManifestData) => ManifestField<T>): ManifestLens<T> {
@@ -129,13 +222,16 @@ async function checkForAddressClash(
   }
 }
 
-function lookupDeployment(data: ManifestData, address: string): ManifestField<Deployment> | undefined {
+function lookupDeployment(data: ManifestData, address: string): ManifestField<GenericDeployment> | undefined {
   if (data.admin?.address === address) {
     return adminLens(data);
   }
 
   for (const versionWithoutMetadata in data.impls) {
-    if (data.impls[versionWithoutMetadata]?.address === address) {
+    if (
+      data.impls[versionWithoutMetadata]?.address === address ||
+      data.impls[versionWithoutMetadata]?.allAddresses?.includes(address)
+    ) {
       return implLens(versionWithoutMetadata)(data);
     }
   }

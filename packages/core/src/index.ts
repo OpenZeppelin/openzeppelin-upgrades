@@ -1,5 +1,5 @@
 export * from './validate';
-export * from './impl-store';
+export { fetchOrDeploy, fetchOrDeployAdmin } from './impl-store';
 export * from './version';
 export * from './storage';
 export * from './eip-1967';
@@ -31,6 +31,8 @@ export { UpgradeableContract } from './standalone';
 export { isTransparentOrUUPSProxy, isBeaconProxy } from './eip-1967-type';
 export { getImplementationAddressFromBeacon, getImplementationAddressFromProxy } from './impl-address';
 export { isBeacon } from './beacon';
+export { detectProxyKindFromBytecode, getAndCompareImplBytecode } from './bytecode-match';
+export { addProxyToManifest } from './add-proxy-to-manifest';
 
 export {
   BeaconProxyUnsupportedError,
@@ -39,5 +41,6 @@ export {
   DeployBeaconProxyUnsupportedError,
   DeployBeaconProxyImplUnknownError,
   DeployBeaconProxyKindError,
+  ImportProxyUnsupportedError,
   assertNotProxy,
 } from './usage-error';

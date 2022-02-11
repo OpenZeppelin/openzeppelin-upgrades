@@ -17,11 +17,18 @@ export interface ManifestData {
     [version in string]?: ImplDeployment;
   };
   proxies: ProxyDeployment[];
-  admin?: Deployment;
+  admin?: AdminDeployment;
 }
 
-export interface ImplDeployment extends Deployment {
+export interface GenericDeployment extends Deployment {
+  bytecodeHash?: string;
+}
+
+export type AdminDeployment = GenericDeployment;
+
+export interface ImplDeployment extends GenericDeployment {
   layout: StorageLayout;
+  allAddresses?: string[];
 }
 
 export interface ProxyDeployment extends Deployment {
@@ -57,7 +64,10 @@ export class Manifest {
 
   async getDeploymentFromAddress(address: string): Promise<ImplDeployment> {
     const data = await this.read();
-    const deployment = Object.values(data.impls).find(d => d?.address === address);
+    const deployment = Object.values(data.impls).find(
+      d => d?.address === address || d?.allAddresses?.includes(address),
+    );
+
     if (deployment === undefined) {
       throw new DeploymentNotFound(`Deployment at address ${address} is not registered`);
     }
@@ -163,9 +173,9 @@ export class DeploymentNotFound extends Error {}
 export function normalizeManifestData(input: ManifestData): ManifestData {
   return {
     manifestVersion: input.manifestVersion,
-    admin: input.admin && normalizeDeployment(input.admin),
+    admin: input.admin && normalizeDeployment(input.admin, ['bytecodeHash']),
     proxies: input.proxies.map(p => normalizeDeployment(p, ['kind'])),
-    impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout'])),
+    impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout', 'allAddresses', 'bytecodeHash'])),
   };
 }
 

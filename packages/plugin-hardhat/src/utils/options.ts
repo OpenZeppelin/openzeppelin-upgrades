@@ -21,3 +21,7 @@ export interface DeployProxyOptions extends Options {
 export interface UpgradeProxyOptions extends Options {
   call?: { fn: string; args?: unknown[] } | string;
 }
+
+export interface ImportProxyOptions extends Options {
+  force?: boolean;
+}

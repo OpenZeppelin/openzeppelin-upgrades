@@ -32,7 +32,7 @@ interface DeployedBeaconImpl {
   impl: string;
 }
 
-interface DeployData {
+export interface DeployData {
   provider: EthereumProvider;
   validations: ValidationDataCurrent;
   unlinkedBytecode: string;
@@ -42,7 +42,7 @@ interface DeployData {
   fullOpts: Required<Options>;
 }
 
-async function getDeployData(
+export async function getDeployData(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: Options,
