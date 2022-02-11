@@ -12,6 +12,7 @@ export interface StorageLayout {
 }
 
 export interface StorageItem<Type = string> {
+  astId?: number;
   contract: string;
   label: string;
   type: Type;

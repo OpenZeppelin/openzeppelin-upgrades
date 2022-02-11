@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { ContractDefinition, StructDefinition, EnumDefinition, TypeDescriptions } from 'solidity-ast';
+import { ContractDefinition, StructDefinition, EnumDefinition, TypeDescriptions, VariableDeclaration } from 'solidity-ast';
 import { isNodeType, findAll } from 'solidity-ast/utils';
 import { StorageLayout, TypeItem } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
@@ -21,6 +21,17 @@ export function extractStorageLayout(
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion };
   if (storageLayout !== undefined) {
     layout.types = storageLayout.types;
+
+    for (const storage of storageLayout.storage) {
+      const varDecl:VariableDeclaration = contractDef.nodes.filter(n => n.id == storage.astId && isNodeType('VariableDeclaration', n))[0];
+
+      layout.storage.push({
+        contract: contractDef.name,
+        label: storage.label,
+        type: storage.type,
+        src: decodeSrc(varDecl),
+      });
+    }
   } else {
     // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
     const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition']);
