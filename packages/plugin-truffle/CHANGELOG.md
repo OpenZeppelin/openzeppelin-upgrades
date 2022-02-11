@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Add `importProxy` function to import an existing proxy. ([#517](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/517))
+- Add `importProxy` function to import an existing proxy or beacon. ([#517](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/517))
 
 ## 1.12.0 (2022-01-12)
 
