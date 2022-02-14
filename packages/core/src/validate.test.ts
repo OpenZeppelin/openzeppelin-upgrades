@@ -83,7 +83,7 @@ testValid('UsesExplicitSafeExternalLibrary', 'transparent', false);
 test('inherited storage', t => {
   const version = getContractVersion(t.context.validation, 'StorageInheritChild');
   const layout = getStorageLayout([t.context.validation], version);
-  console.log('got in test', layout, version);
+
   t.is(layout.storage.length, 8);
   for (let i = 0; i < layout.storage.length; i++) {
     t.is(layout.storage[i].label, `v${i}`);
