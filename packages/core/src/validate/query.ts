@@ -58,13 +58,17 @@ export function getStorageLayout(data: ValidationData, version: Version): Storag
 }
 
 export function unfoldStorageLayout(runData: ValidationRunData, contractName: string): StorageLayout {
-  const c = runData[contractName];
-  const layout: StorageLayout = { storage: [], types: {} };
-  for (const name of [contractName].concat(c.inherit)) {
-    layout.storage.unshift(...runData[name].layout.storage);
-    Object.assign(layout.types, runData[name].layout.types);
+  if (runData[name].layout.flat) {
+    return runData[name].layout;
+  } else {
+    const c = runData[contractName];
+    const layout: StorageLayout = { storage: [], types: {} };
+    for (const name of [contractName].concat(c.inherit)) {
+      layout.storage.unshift(...runData[name].layout.storage);
+      Object.assign(layout.types, runData[name].layout.types);
+    }
+    return layout;
   }
-  return layout;
 }
 
 export function* findVersionWithoutMetadataMatches(

@@ -18,20 +18,17 @@ export function extractStorageLayout(
   deref: ASTDereferencer,
   storageLayout?: StorageLayout | undefined,
 ): StorageLayout {
-  const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion };
+  const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
     layout.types = storageLayout.types;
 
     for (const storage of storageLayout.storage) {
       const varDecl = contractDef.nodes.filter(n => n.id == storage.astId && isNodeType('VariableDeclaration', n))[0];
-      if (varDecl) {
-        layout.storage.push({
-          contract: contractDef.name,
-          label: storage.label,
-          type: storage.type,
-          src: decodeSrc(varDecl),
-        });
-      }
+      const { label, offset, slot, type } = storage;
+      const src = decodeSrc(varDecl);
+      const contract = contractDef.name;//TODO
+      layout.storage.push({ label, offset, slot, type, contract, src });
+      layout.flat = true;
     }
   } else {
     // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
