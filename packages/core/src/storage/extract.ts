@@ -26,7 +26,7 @@ export function extractStorageLayout(
       const varDecl = contractDef.nodes.filter(n => n.id == storage.astId && isNodeType('VariableDeclaration', n))[0];
       const { label, offset, slot, type } = storage;
       const src = decodeSrc(varDecl);
-      const contract = contractDef.name;//TODO
+      const contract = contractDef.name; //TODO
       layout.storage.push({ label, offset, slot, type, contract, src });
       layout.flat = true;
     }

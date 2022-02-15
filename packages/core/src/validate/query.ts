@@ -58,8 +58,8 @@ export function getStorageLayout(data: ValidationData, version: Version): Storag
 }
 
 export function unfoldStorageLayout(runData: ValidationRunData, contractName: string): StorageLayout {
-  if (runData[name].layout.flat) {
-    return runData[name].layout;
+  if (runData[contractName].layout.flat) {
+    return runData[contractName].layout;
   } else {
     const c = runData[contractName];
     const layout: StorageLayout = { storage: [], types: {} };

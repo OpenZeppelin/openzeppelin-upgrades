@@ -2,10 +2,10 @@
 
 import '@nomiclabs/hardhat-ethers';
 import './type-extensions';
-import { subtask, extendEnvironment } from 'hardhat/config';
+import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
-
+import { HardhatConfig } from 'hardhat/types';
 import { getImplementationAddressFromBeacon, silenceWarnings, SolcInput } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { PrepareUpgradeFunction } from './prepare-upgrade';
@@ -115,4 +115,16 @@ extendEnvironment(hre => {
       },
     };
   });
+});
+
+extendConfig((config: HardhatConfig) => {
+  for (const compiler of config.solidity.compilers) {
+    if (compiler.settings.outputSelection['*']['*'] === undefined) {
+      compiler.settings.outputSelection['*']['*'] = [];
+    }
+
+    if (compiler.settings.outputSelection['*']['*'].indexOf('storageLayout') === -1) {
+      compiler.settings.outputSelection['*']['*'].push('storageLayout');
+    }
+  }
 });

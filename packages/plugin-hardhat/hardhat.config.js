@@ -4,7 +4,6 @@ const settings = {
   outputSelection: {
     '*': {
       '*': ['storageLayout'],
-      '': ['storageLayout'],
     },
   },
 };
