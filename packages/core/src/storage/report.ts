@@ -121,7 +121,6 @@ function explainTypeChange(ch: TypeChange): string {
     }
 
     case 'missing members': {
-      console.log('missing head?', ch.updated.head);
       const type = ch.updated.head.replace(/^t_/, ''); // t_struct, t_enum -> struct, enum
       return `Insufficient data to compare ${type}s\nManually assess compatibility, then use option \`unsafeAllowCustomTypes: true\``;
     }

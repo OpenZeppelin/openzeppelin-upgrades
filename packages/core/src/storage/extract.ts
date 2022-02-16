@@ -1,7 +1,7 @@
 import assert from 'assert';
-import { ContractDefinition, StructDefinition, EnumDefinition, TypeDescriptions } from 'solidity-ast';
+import { ContractDefinition, StructDefinition, EnumDefinition, TypeDescriptions, VariableDeclaration } from 'solidity-ast';
 import { isNodeType, findAll } from 'solidity-ast/utils';
-import { StorageLayout, TypeItem } from './layout';
+import { StorageLayout, TypeItem, StorageItem } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
 import { ASTDereferencer } from '../ast-dereferencer';
@@ -21,14 +21,23 @@ export function extractStorageLayout(
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
     layout.types = storageLayout.types;
-
     for (const storage of storageLayout.storage) {
-      const varDecl = contractDef.nodes.filter(n => n.id == storage.astId && isNodeType('VariableDeclaration', n))[0];
+      const varDecl = contractDef.nodes.filter(n => n.id == storage.astId)[0];
       const { label, offset, slot, type } = storage;
-      const src = decodeSrc(varDecl);
-      const contract = contractDef.name; //TODO
-      layout.storage.push({ label, offset, slot, type, contract, src });
-      layout.flat = true;
+
+      if (varDecl) {
+        const src = decodeSrc(varDecl);
+        const contract = contractDef.name;
+        layout.storage.push({ label, offset, slot, type, contract, src });
+        layout.flat = true;
+      } else {
+        const [originalDeclarartion, contract] = GetOriginContract(contractDef, storage, deref);
+        if (originalDeclarartion) {
+          const src = decodeSrc(originalDeclarartion);
+          layout.storage.push({ label, offset, slot, type, contract, src });
+          layout.flat = true;
+        }else{console.log('did not found', storage);}
+      }
     }
   } else {
     // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
@@ -118,4 +127,20 @@ function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['m
   } else {
     return typeDef.members.map(m => m.name);
   }
+}
+
+function GetOriginContract(basecontract: ContractDefinition, storage: StorageItem, deref: ASTDereferencer): [VariableDeclaration| undefined, string] {
+console.log(basecontract.id,basecontract.name, basecontract.linearizedBaseContracts);
+  for (const id of basecontract.linearizedBaseContracts.reverse()) {
+    if (id === basecontract.id) {
+      continue;
+    }
+    const parentContract = deref(['ContractDefinition'], id);
+    console.log(parentContract.id,parentContract.name);
+    const varDecl = parentContract.nodes.filter(n => n.id == storage.astId)[0];
+    if (varDecl && isNodeType('VariableDeclaration', varDecl)) {
+      return [varDecl, parentContract.name];
+    }
+  }
+  return [undefined, ''];
 }
