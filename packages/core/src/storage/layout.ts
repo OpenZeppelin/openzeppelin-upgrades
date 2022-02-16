@@ -32,6 +32,8 @@ export type TypeItemMembers<Type = string> = StructMember<Type>[] | EnumMember[]
 export interface StructMember<Type = string> {
   label: string;
   type: Type;
+  contract?: string;
+  astId?: number;
 }
 
 export type EnumMember = string;

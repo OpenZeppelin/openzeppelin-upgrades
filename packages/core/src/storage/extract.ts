@@ -1,7 +1,13 @@
 import assert from 'assert';
-import { ContractDefinition, StructDefinition, EnumDefinition, TypeDescriptions, VariableDeclaration } from 'solidity-ast';
+import {
+  ContractDefinition,
+  StructDefinition,
+  EnumDefinition,
+  TypeDescriptions,
+  VariableDeclaration,
+} from 'solidity-ast';
 import { isNodeType, findAll } from 'solidity-ast/utils';
-import { StorageLayout, TypeItem, StorageItem } from './layout';
+import { StorageLayout, TypeItem } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
 import { ASTDereferencer } from '../ast-dereferencer';
@@ -20,23 +26,33 @@ export function extractStorageLayout(
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
+    console.log(contractDef.name);
     layout.types = storageLayout.types;
+    for (const type of Object.entries(layout.types)) {
+      if (type[1].members) {
+        for (const member of type[1].members) {
+          // If member includes contract and ast the declaration contract should be used, right now it always uses the contract being processed
+          if (member.contract) {
+            const [, contract] = GetOriginContract(contractDef, member.astId, deref);
+            member.contract = contract;
+          }
+        }
+      }
+    }
+
     for (const storage of storageLayout.storage) {
-      const varDecl = contractDef.nodes.filter(n => n.id == storage.astId)[0];
-      const { label, offset, slot, type } = storage;
+      let varDecl: any = contractDef.nodes.filter(n => n.id == storage.astId)[0];
+      let contract = contractDef.name;
+
+      if (!varDecl) {
+        [varDecl, contract] = GetOriginContract(contractDef, storage.astId, deref);
+      }
 
       if (varDecl) {
+        const { astId, label, offset, slot, type } = storage;
         const src = decodeSrc(varDecl);
-        const contract = contractDef.name;
-        layout.storage.push({ label, offset, slot, type, contract, src });
+        layout.storage.push({ astId, label, offset, slot, type, contract, src });
         layout.flat = true;
-      } else {
-        const [originalDeclarartion, contract] = GetOriginContract(contractDef, storage, deref);
-        if (originalDeclarartion) {
-          const src = decodeSrc(originalDeclarartion);
-          layout.storage.push({ label, offset, slot, type, contract, src });
-          layout.flat = true;
-        }else{console.log('did not found', storage);}
       }
     }
   } else {
@@ -129,18 +145,22 @@ function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['m
   }
 }
 
-function GetOriginContract(basecontract: ContractDefinition, storage: StorageItem, deref: ASTDereferencer): [VariableDeclaration| undefined, string] {
-console.log(basecontract.id,basecontract.name, basecontract.linearizedBaseContracts);
+function GetOriginContract(
+  basecontract: ContractDefinition,
+  astId: number | undefined,
+  deref: ASTDereferencer,
+): [VariableDeclaration | undefined, string] {
   for (const id of basecontract.linearizedBaseContracts.reverse()) {
     if (id === basecontract.id) {
       continue;
     }
     const parentContract = deref(['ContractDefinition'], id);
-    console.log(parentContract.id,parentContract.name);
-    const varDecl = parentContract.nodes.filter(n => n.id == storage.astId)[0];
+
+    const varDecl = parentContract.nodes.filter(n => n.id == astId)[0];
     if (varDecl && isNodeType('VariableDeclaration', varDecl)) {
       return [varDecl, parentContract.name];
     }
   }
+
   return [undefined, ''];
 }
