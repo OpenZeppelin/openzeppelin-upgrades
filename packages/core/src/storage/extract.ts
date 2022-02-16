@@ -26,14 +26,13 @@ export function extractStorageLayout(
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
-    console.log(contractDef.name);
     layout.types = storageLayout.types;
     for (const type of Object.entries(layout.types)) {
       if (type[1].members) {
         for (const member of type[1].members) {
           // If member includes contract and ast the declaration contract should be used, right now it always uses the contract being processed
-          if (member.contract) {
-            const [, contract] = GetOriginContract(contractDef, member.astId, deref);
+          if (typeof member === 'object' && ('contract' in member) && member.contract) {
+            const [, contract] = getOriginContract(contractDef, member.astId, deref);
             member.contract = contract;
           }
         }
@@ -45,7 +44,7 @@ export function extractStorageLayout(
       let contract = contractDef.name;
 
       if (!varDecl) {
-        [varDecl, contract] = GetOriginContract(contractDef, storage.astId, deref);
+        [varDecl, contract] = getOriginContract(contractDef, storage.astId, deref);
       }
 
       if (varDecl) {
@@ -145,7 +144,7 @@ function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['m
   }
 }
 
-function GetOriginContract(
+function getOriginContract(
   basecontract: ContractDefinition,
   astId: number | undefined,
   deref: ASTDereferencer,
