@@ -161,7 +161,7 @@ function getOriginContract(
     }
     const parentContract = deref(['ContractDefinition'], id);
 
-    const varDecl = parentContract.nodes.filter(n => n.id == astId)[0];
+    const varDecl = parentContract.nodes.find(n => n.id == astId);
     if (varDecl && isNodeType('VariableDeclaration', varDecl)) {
       return [varDecl, parentContract.name];
     }
