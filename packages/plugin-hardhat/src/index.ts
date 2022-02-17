@@ -119,9 +119,7 @@ extendEnvironment(hre => {
 
 extendConfig((config: HardhatConfig) => {
   for (const compiler of config.solidity.compilers) {
-    if (compiler.settings.outputSelection['*']['*'] === undefined) {
-      compiler.settings.outputSelection['*']['*'] = [];
-    }
+    compiler.settings.outputSelection['*']['*'] ??= [];
 
     if (!compiler.settings.outputSelection['*']['*'].includes('storageLayout')) {
       compiler.settings.outputSelection['*']['*'].push('storageLayout');
