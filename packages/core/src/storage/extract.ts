@@ -37,6 +37,10 @@ export function extractStorageLayout(
               member.contract = contract;
             }
           }
+        } else {
+          // In some cases the past version didnt have members and the updated version has members = undefined,
+          // this is for those cases
+          type[1].members = undefined;
         }
       }
     }

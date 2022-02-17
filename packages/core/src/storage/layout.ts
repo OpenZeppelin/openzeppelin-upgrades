@@ -34,6 +34,8 @@ export interface StructMember<Type = string> {
   type: Type;
   contract?: string;
   astId?: number;
+  numberOfBytes?: number;
+  encoding?: string;
 }
 
 export type EnumMember = string;
