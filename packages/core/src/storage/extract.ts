@@ -26,32 +26,28 @@ export function extractStorageLayout(
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
-    layout.types = storageLayout.types;
-    if (layout.types) {
-      for (const type of Object.entries(layout.types)) {
-        if (type[1].members) {
-          for (const member of type[1].members) {
-            // If member includes contract and ast the declaration contract should be used, right now it always uses the contract being processed
-            if (typeof member === 'object' && 'contract' in member && member.contract) {
-              const [, contract] = getOriginContract(contractDef, member.astId, deref);
-              member.contract = contract;
-            }
+    for (const key of Object.keys(storageLayout.types)) {
+      const label = storageLayout.types[key].label;
+      let members;
+      const solcMembers = storageLayout.types[key].members;
+      if (solcMembers) {
+        members = solcMembers.map(m =>{
+          if (typeof m === "object") {
+            return {
+              label: m.label,
+              type: m.type,
+            };
+          } else {
+            return m;
           }
-        } else {
-          // In some cases the past version didnt have members and the updated version has members = undefined,
-          // this is for those cases
-          type[1].members = undefined;
-        }
+        }) as TypeItem['members'];
       }
+
+      layout.types[key] = { label, members };
     }
 
     for (const storage of storageLayout.storage) {
-      let varDecl: any = contractDef.nodes.filter(n => n.id == storage.astId)[0];
-      let contract = contractDef.name;
-
-      if (!varDecl) {
-        [varDecl, contract] = getOriginContract(contractDef, storage.astId, deref);
-      }
+      const [varDecl, contract] = getOriginContract(contractDef, storage.astId, deref)!;
 
       if (varDecl) {
         const { astId, label, offset, slot, type } = storage;
@@ -156,9 +152,6 @@ function getOriginContract(
   deref: ASTDereferencer,
 ): undefined | [VariableDeclaration, string] {
   for (const id of contract.linearizedBaseContracts.reverse()) {
-    if (id === contract.id) {
-      continue;
-    }
     const parentContract = deref(['ContractDefinition'], id);
 
     const varDecl = parentContract.nodes.find(n => n.id == astId);
