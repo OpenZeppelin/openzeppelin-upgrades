@@ -151,12 +151,12 @@ function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['m
 }
 
 function getOriginContract(
-  basecontract: ContractDefinition,
+  contract: ContractDefinition,
   astId: number | undefined,
   deref: ASTDereferencer,
-): [VariableDeclaration | undefined, string] {
-  for (const id of basecontract.linearizedBaseContracts.reverse()) {
-    if (id === basecontract.id) {
+): undefined | [VariableDeclaration, string] {
+  for (const id of contract.linearizedBaseContracts.reverse()) {
+    if (id === contract.id) {
       continue;
     }
     const parentContract = deref(['ContractDefinition'], id);
@@ -166,6 +166,4 @@ function getOriginContract(
       return [varDecl, parentContract.name];
     }
   }
-
-  return [undefined, ''];
 }
