@@ -123,7 +123,7 @@ extendConfig((config: HardhatConfig) => {
       compiler.settings.outputSelection['*']['*'] = [];
     }
 
-    if (compiler.settings.outputSelection['*']['*'].indexOf('storageLayout') === -1) {
+    if (!compiler.settings.outputSelection['*']['*'].includes('storageLayout')) {
       compiler.settings.outputSelection['*']['*'].push('storageLayout');
     }
   }
