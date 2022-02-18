@@ -5,6 +5,11 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployData, getDeployData } from './deploy-impl';
 import { Options } from './options';
 
+// To import an already deployed contract we want to reuse fetchOrDeploy for its ability to validate
+// a deployment and record it in the network file. We are able to do this by "simulating" a deployment:
+// for the "deploy" part we pass a function that simply returns the contract to be imported, rather than
+// actually deploying something.
+
 export async function simulateDeployAdmin(
   hre: HardhatRuntimeEnvironment,
   ProxyAdminFactory: ContractFactory,
