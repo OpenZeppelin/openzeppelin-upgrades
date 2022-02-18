@@ -5,7 +5,6 @@ import {
   Manifest,
   getImplementationAddressFromProxy,
   getAdminAddress,
-  detectProxyKindFromBytecode,
   getCode,
   getAndCompareImplBytecode,
   addProxyToManifest,
@@ -13,13 +12,11 @@ import {
   ImportProxyUnsupportedError,
   ProxyDeployment,
   getImplementationAddressFromBeacon,
+  detectProxyKind,
 } from '@openzeppelin/upgrades-core';
 
 import {
   ImportProxyOptions,
-  getProxyFactory,
-  getTransparentUpgradeableProxyFactory,
-  getBeaconProxyFactory,
   simulateDeployImpl,
   ContractAddressOrInstance,
   getContractAddress,
@@ -44,7 +41,7 @@ export function makeImportProxy(hre: HardhatRuntimeEnvironment): ImportProxyFunc
 
     const implAddress = await getImplementationAddressFromProxy(provider, proxyOrBeaconAddress);
     if (implAddress !== undefined) {
-      const importKind = await detectProxyKind(provider, hre, proxyOrBeaconAddress, ImplFactory, opts);
+      const importKind = await detectProxyKind(provider, proxyOrBeaconAddress);
       await importProxyToManifest(
         provider,
         hre,
@@ -108,23 +105,4 @@ async function addAdminToManifest(
   const adminBytecode = await getCode(provider, adminAddress);
   // don't need to compare the admin contract's bytecode with creation code since it could be a custom admin, but store it to manifest in case it is used with the wrong network later on
   await simulateDeployAdmin(hre, ImplFactory, opts, adminAddress, adminBytecode);
-}
-
-async function detectProxyKind(
-  provider: EthereumProvider,
-  hre: HardhatRuntimeEnvironment,
-  proxyAddress: string,
-  ImplFactory: ContractFactory,
-  opts: ImportProxyOptions,
-) {
-  const UUPSProxy = (await getProxyFactory(hre, ImplFactory.signer)).bytecode;
-  const TransparentProxy = (await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer)).bytecode;
-  const BeaconProxy = (await getBeaconProxyFactory(hre, ImplFactory.signer)).bytecode;
-
-  return await detectProxyKindFromBytecode(
-    provider,
-    proxyAddress,
-    { UUPSProxy, TransparentProxy, BeaconProxy },
-    opts.kind,
-  );
 }

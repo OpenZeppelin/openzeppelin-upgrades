@@ -22,9 +22,6 @@ const CustomProxy = artifacts.require('CustomProxy');
 const NOT_MATCH_BYTECODE = /Contract does not match with implementation bytecode deployed at \S+/;
 const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the network manifest';
 const NOT_SUPPORTED_FUNCTION = 'Beacon proxies are not supported with the current function';
-const CANNOT_DETERMINE_KIND =
-  /Cannot determine the proxy kind at address \S+. Specify the kind option for the importProxy function./;
-const INVALID_KIND = 'kind must be uups, transparent, or beacon';
 const NOT_SUPPORTED_PROXY_OR_BEACON = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
 const ONLY_PROXY_OR_BEACON =
   'Only transparent, UUPS, or beacon proxies or beacons can be used with the importProxy() function.';
@@ -133,7 +130,7 @@ contract('Greeter', function () {
     await assert.rejects(upgradeProxy(greeter, GreeterV2), error => error.message.startsWith(NOT_SUPPORTED_FUNCTION));
   });
 
-  it('manually set kind', async function () {
+  it('import custom proxy', async function () {
     const impl = await deployer.deploy(GreeterProxiable);
     const proxy = await deployer.deploy(
       CustomProxy,
@@ -141,18 +138,7 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle!']),
     );
 
-    // assert that kind is required since it cannot be determined due to custom proxy
-    await assert.rejects(importProxy(proxy.address, GreeterProxiable), error =>
-      CANNOT_DETERMINE_KIND.test(error.message),
-    );
-
-    // assert that kind is required since it cannot be determined due to custom proxy
-    await assert.rejects(importProxy(proxy.address, GreeterProxiable, { kind: 'invalid' }), error =>
-      error.message.startsWith(INVALID_KIND),
-    );
-
-    // valid kind
-    const greeter = await importProxy(proxy.address, GreeterProxiable, { kind: 'uups' });
+    const greeter = await importProxy(proxy.address, GreeterProxiable);
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
     await upgradeProxy(greeter, GreeterV2Proxiable);

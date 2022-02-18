@@ -2,7 +2,6 @@ import {
   Manifest,
   getImplementationAddressFromProxy,
   EthereumProvider,
-  detectProxyKindFromBytecode,
   getCode,
   getAdminAddress,
   getAndCompareImplBytecode,
@@ -11,16 +10,14 @@ import {
   ImportProxyUnsupportedError,
   getImplementationAddressFromBeacon,
   isBeacon,
+  detectProxyKind,
 } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
   ContractInstance,
   wrapProvider,
-  getProxyFactory,
-  getTransparentUpgradeableProxyFactory,
   withDefaults,
-  getBeaconProxyFactory,
   ImportProxyOptions,
   ContractAddressOrInstance,
   getContractAddress,
@@ -41,7 +38,7 @@ export async function importProxy(
 
   const implAddress = await getImplementationAddressFromProxy(provider, proxyOrBeaconAddress);
   if (implAddress !== undefined) {
-    const importKind = await detectProxyKind(provider, proxyOrBeaconAddress, Contract, opts);
+    const importKind = await detectProxyKind(provider, proxyOrBeaconAddress);
     await importProxyToManifest(provider, proxyOrBeaconAddress, implAddress, Contract, opts, importKind, manifest);
 
     return Contract.at(proxyOrBeaconAddress);
@@ -92,22 +89,4 @@ async function addAdminToManifest(
   const adminBytecode = await getCode(provider, adminAddress);
   // don't need to compare the admin contract's bytecode with creation code since it could be a custom admin, but store it to manifest in case it is used with the wrong network later on
   await simulateDeployAdmin(Contract, opts, adminAddress, adminBytecode);
-}
-
-async function detectProxyKind(
-  provider: EthereumProvider,
-  proxyAddress: string,
-  Contract: ContractClass,
-  opts: ImportProxyOptions,
-) {
-  const UUPSProxy = getProxyFactory(Contract).bytecode;
-  const TransparentProxy = getTransparentUpgradeableProxyFactory(Contract).bytecode;
-  const BeaconProxy = getBeaconProxyFactory(Contract).bytecode;
-
-  return await detectProxyKindFromBytecode(
-    provider,
-    proxyAddress,
-    { UUPSProxy, TransparentProxy, BeaconProxy },
-    opts.kind,
-  );
 }
