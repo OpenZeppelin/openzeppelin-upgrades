@@ -41,9 +41,9 @@ export function extractStorageLayout(
       if (origin) {
         const [varDecl, contract] = origin;
         loadLayoutType(varDecl, layout, deref);
-        const { astId, label, offset, slot, type } = storage;
+        const { label, offset, slot, type } = storage;
         const src = decodeSrc(varDecl);
-        layout.storage.push({ astId, label, offset, slot, type, contract, src });
+        layout.storage.push({ label, offset, slot, type, contract, src });
         layout.flat = true;
       }
     }
