@@ -1,9 +1,14 @@
 import { fetchOrDeploy, logWarning, fetchOrDeployAdmin, hashBytecode } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
-import { DeployData, getDeployData } from './deploy-impl';
+import { getDeployData } from './deploy-impl';
 import { Options } from './options';
 import { ContractClass } from './truffle';
+
+// To import an already deployed contract we want to reuse fetchOrDeploy for its ability to validate
+// a deployment and record it in the network file. We are able to do this by "simulating" a deployment:
+// for the "deploy" part we pass a function that simply returns the contract to be imported, rather than
+// actually deploying something.
 
 export async function simulateDeployAdmin(
   ProxyAdminFactory: ContractClass,
@@ -11,7 +16,7 @@ export async function simulateDeployAdmin(
   adminAddress: string,
   adminBytecode: string,
 ) {
-  const { deployData, simulateDeploy } = await simulateDeployment(ProxyAdminFactory, opts, adminAddress, adminBytecode);
+  const { deployData, simulateDeploy } = await getSimulatedData(ProxyAdminFactory, opts, adminAddress, adminBytecode);
   const manifestAdminAddress = await fetchOrDeployAdmin(deployData.provider, simulateDeploy, opts);
   if (adminAddress !== manifestAdminAddress) {
     logWarning(
@@ -30,37 +35,24 @@ export async function simulateDeployImpl(
   implAddress: string,
   runtimeBytecode: string,
 ) {
-  const { deployData, simulateDeploy } = await simulateDeployment(Contract, opts, implAddress, runtimeBytecode);
+  const { deployData, simulateDeploy } = await getSimulatedData(Contract, opts, implAddress, runtimeBytecode);
   await fetchOrDeploy(deployData.version, deployData.provider, simulateDeploy, opts, true);
 }
 
-async function simulateDeployment(
-  Contract: ContractClass,
-  opts: Options,
-  implAddress: string,
-  runtimeBytecode?: string,
-) {
+async function getSimulatedData(Contract: ContractClass, opts: Options, implAddress: string, runtimeBytecode?: string) {
   const deployData = await getDeployData(opts, Contract);
-  const simulateDeploy = await getSimulateDeploy(
-    deployData,
-    Contract,
-    implAddress,
-    runtimeBytecode && hashBytecode(runtimeBytecode),
-  );
-  return { deployData, simulateDeploy };
-}
-
-/**
- * Gets a function that returns a simulated deployment of the given contract to the given address.
- */
-async function getSimulateDeploy(deployData: DeployData, Contract: ContractClass, addr: string, bytecodeHash?: string) {
   const simulateDeploy = async () => {
     const abi = (Contract as any).abi;
     const deployment = Object.assign(
       { abi },
       await deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs),
     );
-    return { ...deployment, layout: deployData.layout, address: addr, bytecodeHash };
+    return {
+      ...deployment,
+      layout: deployData.layout,
+      address: implAddress,
+      bytecodeHash: runtimeBytecode && hashBytecode(runtimeBytecode),
+    };
   };
-  return simulateDeploy;
+  return { deployData, simulateDeploy };
 }

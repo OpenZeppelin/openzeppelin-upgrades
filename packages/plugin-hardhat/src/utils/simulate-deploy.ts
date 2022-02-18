@@ -2,7 +2,7 @@ import { fetchOrDeploy, fetchOrDeployAdmin, hashBytecode, logWarning } from '@op
 import type { ContractFactory } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { DeployData, getDeployData } from './deploy-impl';
+import { getDeployData } from './deploy-impl';
 import { Options } from './options';
 
 // To import an already deployed contract we want to reuse fetchOrDeploy for its ability to validate
@@ -17,7 +17,7 @@ export async function simulateDeployAdmin(
   adminAddress: string,
   adminBytecode: string,
 ) {
-  const { deployData, simulateDeploy } = await simulateDeployment(
+  const { deployData, simulateDeploy } = await getSimulatedData(
     hre,
     ProxyAdminFactory,
     opts,
@@ -43,11 +43,14 @@ export async function simulateDeployImpl(
   implAddress: string,
   runtimeBytecode: string,
 ) {
-  const { deployData, simulateDeploy } = await simulateDeployment(hre, ImplFactory, opts, implAddress, runtimeBytecode);
+  const { deployData, simulateDeploy } = await getSimulatedData(hre, ImplFactory, opts, implAddress, runtimeBytecode);
   await fetchOrDeploy(deployData.version, deployData.provider, simulateDeploy, opts, true);
 }
 
-async function simulateDeployment(
+/**
+ * Gets data for a simulated deployment of the given contract to the given address.
+ */
+async function getSimulatedData(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: Options,
@@ -55,28 +58,15 @@ async function simulateDeployment(
   runtimeBytecode?: string,
 ) {
   const deployData = await getDeployData(hre, ImplFactory, opts);
-  const simulateDeploy = await getSimulateDeploy(
-    deployData,
-    ImplFactory,
-    implAddress,
-    runtimeBytecode && hashBytecode(runtimeBytecode),
-  );
-  return { deployData, simulateDeploy };
-}
-
-/**
- * Gets a function that returns a simulated deployment of the given contract to the given address.
- */
-async function getSimulateDeploy(
-  deployData: DeployData,
-  contractFactory: ContractFactory,
-  addr: string,
-  bytecodeHash?: string,
-) {
   const simulateDeploy = async () => {
-    const abi = contractFactory.interface.format(FormatTypes.minimal) as string[];
+    const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
     const deployment = Object.assign({ abi });
-    return { ...deployment, layout: deployData.layout, address: addr, bytecodeHash };
+    return {
+      ...deployment,
+      layout: deployData.layout,
+      address: implAddress,
+      bytecodeHash: runtimeBytecode && hashBytecode(runtimeBytecode),
+    };
   };
-  return simulateDeploy;
+  return { deployData, simulateDeploy };
 }
