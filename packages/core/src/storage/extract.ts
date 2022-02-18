@@ -11,6 +11,8 @@ import { StorageLayout, TypeItem } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
 import { ASTDereferencer } from '../ast-dereferencer';
+import { mapValues } from '../utils/map-values';
+import { pick } from '../utils/pick';
 
 const currentLayoutVersion = '1.1';
 
@@ -26,21 +28,13 @@ export function extractStorageLayout(
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
-    layout.types = Object.fromEntries(Object.entries(storageLayout.types).map(
-      ([
-          key,
-          {
-              label,
-              members,
-          },
-      ]) => ([
-          key,
-          {
-              label,
-              members: members && members.map(m => (typeof m === 'object') ? { label: m.label, type: m.type } : m) as TypeItem['members'],
-          },
-      ])
-    ));
+    layout.types = mapValues(storageLayout.types, m => {
+      let { label, members } = m;
+      if (members !== undefined) {
+        members = members.map(m => typeof m === 'string' ? m : pick(m, ['label', 'type'])) as TypeItem['members'];
+      }
+      return { label, members };
+    });
 
     for (const storage of storageLayout.storage) {
       const [varDecl, contract] = getOriginContract(contractDef, storage.astId, deref) ?? [undefined, ''];
