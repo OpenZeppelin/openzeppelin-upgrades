@@ -60,7 +60,7 @@ export function getStorageLayout(data: ValidationData, version: Version): Storag
 export function unfoldStorageLayout(runData: ValidationRunData, contractName: string): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {} };
   if (runData[contractName].layout.flat) {
-    return {storage: runData[contractName].layout.storage, types: runData[contractName].layout.types};
+    return { storage: runData[contractName].layout.storage, types: runData[contractName].layout.types };
   } else {
     const c = runData[contractName];
     for (const name of [contractName].concat(c.inherit)) {

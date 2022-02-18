@@ -26,28 +26,30 @@ export function extractStorageLayout(
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
-    for (const key of Object.keys(storageLayout.types)) {
-      const label = storageLayout.types[key].label;
-      let members;
-      const solcMembers = storageLayout.types[key].members;
-      if (solcMembers) {
-        members = solcMembers.map(m =>{
-          if (typeof m === "object") {
-            return {
-              label: m.label,
-              type: m.type,
-            };
-          } else {
-            return m;
-          }
-        }) as TypeItem['members'];
-      }
+    if (storageLayout.types) {
+      for (const key of Object.keys(storageLayout.types)) {
+        const label = storageLayout.types[key].label;
+        let members;
+        const solcMembers = storageLayout.types[key].members;
+        if (solcMembers) {
+          members = solcMembers.map(m => {
+            if (typeof m === 'object') {
+              return {
+                label: m.label,
+                type: m.type,
+              };
+            } else {
+              return m;
+            }
+          }) as TypeItem['members'];
+        }
 
-      layout.types[key] = { label, members };
+        layout.types[key] = { label, members };
+      }
     }
 
     for (const storage of storageLayout.storage) {
-      const [varDecl, contract] = getOriginContract(contractDef, storage.astId, deref)!;
+      const [varDecl, contract] = getOriginContract(contractDef, storage.astId, deref) ?? [undefined, ''];
 
       if (varDecl) {
         const { astId, label, offset, slot, type } = storage;
