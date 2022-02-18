@@ -2,7 +2,8 @@ import { UpgradesError } from './error';
 import { EthereumProvider, getCode } from './provider';
 
 /**
- * Determines whether runtime bytecode matches with contract creation code.
+ * Tries to determine whether runtime bytecode matches with contract creation code.
+ * May return false negatives in some cases, such as contracts that use immutable variables.
  *
  * @param creationCode the creation code that may have deployed a contract
  * @param runtimeBytecode the runtime bytecode that was deployed
