@@ -26,27 +26,21 @@ export function extractStorageLayout(
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
-    if (storageLayout.types) {
-      for (const key of Object.keys(storageLayout.types)) {
-        const label = storageLayout.types[key].label;
-        let members;
-        const solcMembers = storageLayout.types[key].members;
-        if (solcMembers) {
-          members = solcMembers.map(m => {
-            if (typeof m === 'object') {
-              return {
-                label: m.label,
-                type: m.type,
-              };
-            } else {
-              return m;
-            }
-          }) as TypeItem['members'];
-        }
-
-        layout.types[key] = { label, members };
-      }
-    }
+    layout.types = Object.fromEntries(Object.entries(storageLayout.types).map(
+      ([
+          key,
+          {
+              label,
+              members,
+          },
+      ]) => ([
+          key,
+          {
+              label,
+              members: members && members.map(m => (typeof m === 'object') ? { label: m.label, type: m.type } : m) as TypeItem['members'],
+          },
+      ])
+    ));
 
     for (const storage of storageLayout.storage) {
       const [varDecl, contract] = getOriginContract(contractDef, storage.astId, deref) ?? [undefined, ''];
