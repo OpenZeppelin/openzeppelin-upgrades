@@ -40,6 +40,7 @@ export function extractStorageLayout(
 
       if (origin) {
         const [varDecl, contract] = origin;
+        // Solc layout doesn't bring members for enums so we get them using the ast method
         loadLayoutType(varDecl, layout, deref);
         const { label, offset, slot, type } = storage;
         const src = decodeSrc(varDecl);
