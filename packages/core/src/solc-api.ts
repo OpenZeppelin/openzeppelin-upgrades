@@ -1,4 +1,5 @@
 import type { SourceUnit } from 'solidity-ast';
+import { StorageItem, TypeItem } from './storage';
 
 export interface SolcOutput {
   contracts: {
@@ -7,6 +8,10 @@ export interface SolcOutput {
         evm: {
           bytecode: SolcBytecode;
           methodIdentifiers?: Record<string, string>;
+        };
+        storageLayout?: {
+          storage: StorageItem[];
+          types: Record<string, TypeItem>;
         };
       };
     };

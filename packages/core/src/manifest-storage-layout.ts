@@ -18,7 +18,6 @@ export async function getStorageLayoutForAddress(
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { layout } = data.impls[versionWithoutMetadata]!;
-
   if (isCurrentLayoutVersion(layout)) {
     return layout;
   } else {

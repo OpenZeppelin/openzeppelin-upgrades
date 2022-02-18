@@ -44,6 +44,7 @@ test('getStorageLayoutForAddress - update layout', async t => {
     },
     proxies: [],
   });
+
   const layout = await getStorageLayoutForAddress(manifest, t.context.validationData, address);
   t.deepEqual(layout, updatedLayout);
   t.like(manifest.data, {
