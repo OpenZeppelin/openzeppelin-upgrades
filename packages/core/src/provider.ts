@@ -75,7 +75,7 @@ export async function hasCode(provider: EthereumProvider, address: string, block
 }
 
 export function isEmpty(code: string) {
-  return code === '0x';
+  return code.replace(/^0x/, '') === '';
 }
 
 export async function getTransactionByHash(
