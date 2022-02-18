@@ -29,11 +29,10 @@ export function extractStorageLayout(
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
     layout.types = mapValues(storageLayout.types, m => {
-      let { label, members } = m;
-      if (members !== undefined) {
-        members = members.map(m => typeof m === 'string' ? m : pick(m, ['label', 'type'])) as TypeItem['members'];
-      }
-      return { label, members };
+      return {
+        label: m.label,
+        members: m.members?.map(m => (typeof m === 'string' ? m : pick(m, ['label', 'type']))) as TypeItem['members'],
+      };
     });
 
     for (const storage of storageLayout.storage) {

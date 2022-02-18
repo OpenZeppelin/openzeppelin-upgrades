@@ -5,7 +5,7 @@ import './type-extensions';
 import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
-import { HardhatConfig, SolcConfig } from 'hardhat/types';
+import { HardhatConfig } from 'hardhat/types';
 import { getImplementationAddressFromBeacon, silenceWarnings, SolcInput } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { PrepareUpgradeFunction } from './prepare-upgrade';
