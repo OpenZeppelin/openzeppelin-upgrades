@@ -1,8 +1,7 @@
 import { logWarning, Manifest, ProxyDeployment } from '.';
 
-export async function addProxyToManifest(kind: ProxyDeployment['kind'], proxyAddress: string, manifest: Manifest) {
-  const proxyToImport: ProxyDeployment = { kind: kind, address: proxyAddress };
-  await manifest.addProxy(proxyToImport);
+export async function addProxyToManifest(kind: ProxyDeployment['kind'], address: string, manifest: Manifest) {
+  await manifest.addProxy({ kind, address });
 
   if (kind !== 'transparent' && (await manifest.getAdmin())) {
     logWarning(`A proxy admin was previously deployed on this network`, [
