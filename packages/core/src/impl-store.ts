@@ -15,7 +15,6 @@ interface ManifestLens<T> {
 interface ManifestField<T> {
   get(): T | undefined;
   set(value: T | undefined): void;
-  getBytecodeHash(): string | undefined;
   merge?(value: T | undefined): Promise<void>;
 }
 
@@ -110,7 +109,7 @@ async function getAndValidate<T extends GenericDeployment>(
         throw new InvalidDeployment(stored, Reason.NoBytecode);
       }
     } else {
-      stored = validate(stored, deployment.getBytecodeHash(), hashBytecode(existingBytecode), isDevNet);
+      stored = validate(stored, stored.bytecodeHash, hashBytecode(existingBytecode), isDevNet);
     }
   }
   if (stored === undefined) {
@@ -150,7 +149,6 @@ const implLens = (versionWithoutMetadata: string) =>
   lens(`implementation ${versionWithoutMetadata}`, 'implementation', data => ({
     get: () => data.impls[versionWithoutMetadata],
     set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
-    getBytecodeHash: () => data.impls[versionWithoutMetadata]?.bytecodeHash,
     merge: async (value?: ImplDeployment) => {
       const existing = data.impls[versionWithoutMetadata];
       if (existing !== undefined && value !== undefined) {
@@ -191,7 +189,6 @@ export async function fetchOrDeployAdmin(
 const adminLens = lens('proxy admin', 'proxy admin', data => ({
   get: () => data.admin,
   set: (value?: AdminDeployment) => (data.admin = value),
-  getBytecodeHash: () => data.admin?.bytecodeHash,
 }));
 
 function lens<T>(description: string, type: string, fn: (data: ManifestData) => ManifestField<T>): ManifestLens<T> {
