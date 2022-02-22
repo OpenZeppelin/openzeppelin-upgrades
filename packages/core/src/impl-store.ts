@@ -15,7 +15,7 @@ interface ManifestLens<T> {
 interface ManifestField<T> {
   get(): T | undefined;
   set(value: T | undefined): void;
-  merge?(value: T | undefined): Promise<void>;
+  merge?(value: T | undefined): void;
 }
 
 /**
@@ -44,24 +44,22 @@ async function fetchOrDeployGeneric<T extends GenericDeployment>(
       debug('fetching deployment of', lens.description);
       const data = await manifest.read();
       const deployment = lens(data);
-      let updated;
+      if (merge && !deployment.merge) {
+        throw new Error(
+          'fetchOrDeployGeneric was called with merge set to true but the deployment lens does not have a merge function'
+        );
+      }
+
       const stored = await getAndValidate(deployment, lens, provider);
-      if (merge) {
-        updated = await deploy();
+      const updated = merge ? await deploy() : await resumeOrDeploy(provider, stored, deploy);
+      if (updated !== stored) {
         await checkForAddressClash(provider, data, updated);
-        if (deployment.merge) {
-          await deployment.merge(updated);
+        if (merge) {
+          deployment.merge!(updated);
         } else {
           deployment.set(updated);
         }
         await manifest.write(data);
-      } else {
-        updated = await resumeOrDeploy(provider, stored, deploy);
-        if (updated !== stored) {
-          await checkForAddressClash(provider, data, updated);
-          deployment.set(updated);
-          await manifest.write(data);
-        }
       }
       return updated;
     });
@@ -149,10 +147,10 @@ const implLens = (versionWithoutMetadata: string) =>
   lens(`implementation ${versionWithoutMetadata}`, 'implementation', data => ({
     get: () => data.impls[versionWithoutMetadata],
     set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
-    merge: async (value?: ImplDeployment) => {
+    merge: (value?: ImplDeployment) => {
       const existing = data.impls[versionWithoutMetadata];
       if (existing !== undefined && value !== undefined) {
-        const { address, allAddresses } = await mergeAddresses(existing, value);
+        const { address, allAddresses } = mergeAddresses(existing, value);
         data.impls[versionWithoutMetadata] = { ...value, address, allAddresses };
       } else {
         data.impls[versionWithoutMetadata] = value;
@@ -166,7 +164,7 @@ const implLens = (versionWithoutMetadata: string) =>
  * @param existing existing deployment
  * @param value deployment to add
  */
-export async function mergeAddresses(existing: ImplDeployment, value: ImplDeployment) {
+export function mergeAddresses(existing: ImplDeployment, value: ImplDeployment) {
   const merged = new Set<string>();
 
   merged.add(existing.address);
