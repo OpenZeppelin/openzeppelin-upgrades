@@ -46,7 +46,7 @@ async function fetchOrDeployGeneric<T extends GenericDeployment>(
       const deployment = lens(data);
       if (merge && !deployment.merge) {
         throw new Error(
-          'fetchOrDeployGeneric was called with merge set to true but the deployment lens does not have a merge function'
+          'fetchOrDeployGeneric was called with merge set to true but the deployment lens does not have a merge function',
         );
       }
 
@@ -54,8 +54,8 @@ async function fetchOrDeployGeneric<T extends GenericDeployment>(
       const updated = merge ? await deploy() : await resumeOrDeploy(provider, stored, deploy);
       if (updated !== stored) {
         await checkForAddressClash(provider, data, updated);
-        if (merge) {
-          deployment.merge!(updated);
+        if (merge && deployment.merge) {
+          deployment.merge(updated);
         } else {
           deployment.set(updated);
         }
