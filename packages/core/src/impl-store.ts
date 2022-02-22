@@ -174,12 +174,8 @@ export async function mergeAddresses(existing: ImplDeployment, value: ImplDeploy
   merged.add(existing.address);
   merged.add(value.address);
 
-  if (existing.allAddresses !== undefined) {
-    existing.allAddresses.forEach(item => merged.add(item));
-  }
-  if (value.allAddresses !== undefined) {
-    value.allAddresses.forEach(item => merged.add(item));
-  }
+  existing.allAddresses?.forEach(item => merged.add(item));
+  value.allAddresses?.forEach(item => merged.add(item));
 
   return { address: existing.address, allAddresses: Array.from(merged) };
 }
