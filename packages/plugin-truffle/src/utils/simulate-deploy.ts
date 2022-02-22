@@ -38,14 +38,14 @@ export async function simulateDeployImpl(
   await fetchOrDeploy(deployData.version, deployData.provider, simulateDeploy, opts, true);
 }
 
-async function getSimulatedData(Contract: ContractClass, opts: Options, implAddress: string, runtimeBytecode?: string) {
+async function getSimulatedData(Contract: ContractClass, opts: Options, implAddress: string, runtimeBytecode: string) {
   const deployData = await getDeployData(opts, Contract);
   const simulateDeploy = async () => {
     return {
       abi: (Contract as any).abi,
       layout: deployData.layout,
       address: implAddress,
-      bytecodeHash: runtimeBytecode && hashBytecode(runtimeBytecode),
+      bytecodeHash: hashBytecode(runtimeBytecode),
     };
   };
   return { deployData, simulateDeploy };

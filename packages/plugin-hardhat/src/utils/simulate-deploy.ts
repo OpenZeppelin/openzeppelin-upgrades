@@ -55,7 +55,7 @@ async function getSimulatedData(
   ImplFactory: ContractFactory,
   opts: Options,
   implAddress: string,
-  runtimeBytecode?: string,
+  runtimeBytecode: string,
 ) {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   const simulateDeploy = async () => {
@@ -63,7 +63,7 @@ async function getSimulatedData(
       abi: ImplFactory.interface.format(FormatTypes.minimal) as string[],
       layout: deployData.layout,
       address: implAddress,
-      bytecodeHash: runtimeBytecode && hashBytecode(runtimeBytecode),
+      bytecodeHash: hashBytecode(runtimeBytecode),
     };
   };
   return { deployData, simulateDeploy };
