@@ -1,6 +1,5 @@
 import { fetchOrDeploy, logWarning, fetchOrDeployAdmin, hashBytecode } from '@openzeppelin/upgrades-core';
 
-import { deploy } from './deploy';
 import { getDeployData } from './deploy-impl';
 import { Options } from './options';
 import { ContractClass } from './truffle';

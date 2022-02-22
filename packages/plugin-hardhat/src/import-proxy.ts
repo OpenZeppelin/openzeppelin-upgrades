@@ -10,7 +10,6 @@ import {
   addProxyToManifest,
   isBeacon,
   ImportProxyUnsupportedError,
-  ProxyDeployment,
   getImplementationAddressFromBeacon,
   detectProxyKind,
 } from '@openzeppelin/upgrades-core';
@@ -41,15 +40,7 @@ export function makeImportProxy(hre: HardhatRuntimeEnvironment): ImportProxyFunc
 
     const implAddress = await getImplementationAddressFromProxy(provider, proxyOrBeaconAddress);
     if (implAddress !== undefined) {
-      await importProxyToManifest(
-        provider,
-        hre,
-        proxyOrBeaconAddress,
-        implAddress,
-        ImplFactory,
-        opts,
-        manifest,
-      );
+      await importProxyToManifest(provider, hre, proxyOrBeaconAddress, implAddress, ImplFactory, opts, manifest);
 
       return ImplFactory.attach(proxyOrBeaconAddress);
     } else if (await isBeacon(provider, proxyOrBeaconAddress)) {

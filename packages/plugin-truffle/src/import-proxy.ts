@@ -6,7 +6,6 @@ import {
   getAdminAddress,
   getAndCompareImplBytecode,
   addProxyToManifest,
-  ProxyDeployment,
   ImportProxyUnsupportedError,
   getImplementationAddressFromBeacon,
   isBeacon,
