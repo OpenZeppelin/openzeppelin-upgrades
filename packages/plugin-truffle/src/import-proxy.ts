@@ -38,8 +38,7 @@ export async function importProxy(
 
   const implAddress = await getImplementationAddressFromProxy(provider, proxyOrBeaconAddress);
   if (implAddress !== undefined) {
-    const importKind = await detectProxyKind(provider, proxyOrBeaconAddress);
-    await importProxyToManifest(provider, proxyOrBeaconAddress, implAddress, Contract, opts, importKind, manifest);
+    await importProxyToManifest(provider, proxyOrBeaconAddress, implAddress, Contract, opts, manifest);
 
     return Contract.at(proxyOrBeaconAddress);
   } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
@@ -59,10 +58,10 @@ async function importProxyToManifest(
   implAddress: string,
   Contract: ContractClass,
   opts: ImportProxyOptions,
-  importKind: ProxyDeployment['kind'],
   manifest: Manifest,
 ) {
   await addImplToManifest(provider, implAddress, Contract, opts);
+  const importKind = await detectProxyKind(provider, proxyAddress);
   if (importKind === 'transparent') {
     await addAdminToManifest(provider, proxyAddress, Contract, opts);
   }

@@ -59,10 +59,8 @@ async function getSimulatedData(
 ) {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   const simulateDeploy = async () => {
-    const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
-    const deployment = Object.assign({ abi });
     return {
-      ...deployment,
+      abi: ImplFactory.interface.format(FormatTypes.minimal) as string[],
       layout: deployData.layout,
       address: implAddress,
       bytecodeHash: runtimeBytecode && hashBytecode(runtimeBytecode),

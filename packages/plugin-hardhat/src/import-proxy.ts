@@ -41,7 +41,6 @@ export function makeImportProxy(hre: HardhatRuntimeEnvironment): ImportProxyFunc
 
     const implAddress = await getImplementationAddressFromProxy(provider, proxyOrBeaconAddress);
     if (implAddress !== undefined) {
-      const importKind = await detectProxyKind(provider, proxyOrBeaconAddress);
       await importProxyToManifest(
         provider,
         hre,
@@ -49,7 +48,6 @@ export function makeImportProxy(hre: HardhatRuntimeEnvironment): ImportProxyFunc
         implAddress,
         ImplFactory,
         opts,
-        importKind,
         manifest,
       );
 
@@ -73,10 +71,10 @@ async function importProxyToManifest(
   implAddress: string,
   ImplFactory: ContractFactory,
   opts: ImportProxyOptions,
-  importKind: ProxyDeployment['kind'],
   manifest: Manifest,
 ) {
   await addImplToManifest(provider, hre, implAddress, ImplFactory, opts);
+  const importKind = await detectProxyKind(provider, proxyAddress);
   if (importKind === 'transparent') {
     await addAdminToManifest(provider, hre, proxyAddress, ImplFactory, opts);
   }

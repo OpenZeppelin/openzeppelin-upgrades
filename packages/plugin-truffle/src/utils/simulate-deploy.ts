@@ -42,13 +42,8 @@ export async function simulateDeployImpl(
 async function getSimulatedData(Contract: ContractClass, opts: Options, implAddress: string, runtimeBytecode?: string) {
   const deployData = await getDeployData(opts, Contract);
   const simulateDeploy = async () => {
-    const abi = (Contract as any).abi;
-    const deployment = Object.assign(
-      { abi },
-      await deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs),
-    );
     return {
-      ...deployment,
+      abi: (Contract as any).abi,
       layout: deployData.layout,
       address: implAddress,
       bytecodeHash: runtimeBytecode && hashBytecode(runtimeBytecode),

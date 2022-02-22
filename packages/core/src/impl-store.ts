@@ -183,9 +183,9 @@ export async function mergeAddresses(existing: ImplDeployment, value: ImplDeploy
 export async function fetchOrDeployAdmin(
   provider: EthereumProvider,
   deploy: () => Promise<Deployment>,
-  merge?: DeployOpts,
+  opts?: DeployOpts,
 ): Promise<string> {
-  return fetchOrDeployGeneric(adminLens, provider, deploy, merge);
+  return fetchOrDeployGeneric(adminLens, provider, deploy, opts);
 }
 
 const adminLens = lens('proxy admin', 'proxy admin', data => ({
