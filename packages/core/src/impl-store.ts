@@ -46,7 +46,7 @@ async function fetchOrDeployGeneric<T extends GenericDeployment>(
       const data = await manifest.read();
       const deployment = lens(data);
       let updated;
-      const stored = await getAndValidate<T>(deployment, lens, provider);
+      const stored = await getAndValidate(deployment, lens, provider);
       if (merge) {
         updated = await deploy();
         await checkForAddressClash(provider, data, updated);
