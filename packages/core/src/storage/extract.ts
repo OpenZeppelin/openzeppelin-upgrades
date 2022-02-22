@@ -32,6 +32,7 @@ export function extractStorageLayout(
       return {
         label: m.label,
         members: m.members?.map(m => (typeof m === 'string' ? m : pick(m, ['label', 'type']))) as TypeItem['members'],
+        numberOfBytes: m.numberOfBytes,
       };
     });
 
@@ -40,11 +41,18 @@ export function extractStorageLayout(
 
       if (origin) {
         const [varDecl, contract] = origin;
+        let retyped: string | undefined;
+        let rename: string | undefined;
+        if ('documentation' in varDecl) {
+          const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
+          // Can contain more than one natspec tag
+          docs.split('@').forEach(doc => );
+        }
         // Solc layout doesn't bring members for enums so we get them using the ast method
         loadLayoutType(varDecl, layout, deref);
         const { label, offset, slot, type } = storage;
         const src = decodeSrc(varDecl);
-        layout.storage.push({ label, offset, slot, type, contract, src });
+        layout.storage.push({ label, offset, slot, type, contract, src, retyped, rename });
         layout.flat = true;
       }
     }
