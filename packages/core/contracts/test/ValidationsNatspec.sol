@@ -221,3 +221,22 @@ contract UsesExplicitUnsafeExternalLibraryNatspec {
     UnsafeExternalLibraryNatspec.explode(x, y);
   }
 }
+
+contract RenameV1 {
+  uint x;
+}
+
+contract RenameV2 {
+  ///@custom:oz-renamed-from x
+ uint y;
+}
+
+contract RetypeV1 {
+ bool x;
+}
+
+contract RetypeV2 {
+  ///@dev a retyped variable
+  ///@custom:oz-retyped-from bool
+  uint8 x;
+}

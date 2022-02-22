@@ -20,11 +20,14 @@ export interface StorageItem<Type = string> {
   src: string;
   offset?: number;
   slot?: string;
+  retyped?: string;
+  rename?: string;
 }
 
 export interface TypeItem<Type = string> {
   label: string;
   members?: TypeItemMembers<Type>;
+  numberOfBytes?: number;
 }
 
 export type TypeItemMembers<Type = string> = StructMember<Type>[] | EnumMember[];
