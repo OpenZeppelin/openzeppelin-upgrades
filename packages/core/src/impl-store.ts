@@ -80,7 +80,7 @@ async function fetchOrDeployGeneric<T extends GenericDeployment>(
           await manifest.write(data);
         }
       });
-      e.reason = Reason.Removed;
+      e.removed = true;
     }
 
     throw e;
