@@ -146,19 +146,22 @@ export class InvalidDeployment extends Error {
   }
 
   get message(): string {
-    let msg = `No contract at address ${this.deployment.address}`;
+    let msg =
+      this.reason === Reason.MismatchedBytecode
+        ? `Incorrect contract at address ${this.deployment.address}`
+        : `No contract at address ${this.deployment.address}`;
     if (this.removed) {
       msg += ' (Removed from manifest)';
     }
     switch (this.reason) {
       case Reason.NoBytecode: {
         msg +=
-          '\n\nNo bytecode was found at address. Ensure that you are using the network files for the correct network.';
+          '\n\nNo bytecode was found at the address. Ensure that you are using the network files for the correct network.';
         break;
       }
       case Reason.MismatchedBytecode: {
         msg +=
-          '\n\nDifferent bytecode was found at address compared to a previous deployment. Ensure that you are using the network files for the correct network.';
+          '\n\nDifferent bytecode was found at the address compared to a previous deployment. Ensure that you are using the network files for the correct network.';
         break;
       }
     }
