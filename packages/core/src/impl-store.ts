@@ -51,7 +51,7 @@ async function fetchOrDeployGeneric<T extends GenericDeployment>(
       }
 
       const stored = deployment.get();
-      const updated = await resumeOrDeploy(provider, stored, deploy, deployment, merge);
+      const updated = await resumeOrDeploy(provider, stored, deploy, lens.type, opts, deployment, merge);
       if (updated !== stored) {
         await checkForAddressClash(provider, data, updated);
         if (merge && deployment.merge) {

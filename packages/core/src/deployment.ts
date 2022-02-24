@@ -44,6 +44,10 @@ export interface DeployOpts {
  * @param provider the Ethereum provider
  * @param cached the cached deployment
  * @param deploy the function to deploy a new deployment if needed
+ * @param type the manifest lens type. If merge is true, used for the timeout message if a previous deployment is not
+ *   confirmed within the timeout period. Otherwise not used.
+ * @param opts polling timeout and interval options. If merge is true, used to check a previous deployment for confirmation.
+ *   Otherwise not used.
  * @param deployment the manifest field for this deployment. Optional for backward compatibility.
  *   If not provided, invalid deployments will not be deleted in a dev network (which is not a problem if merge is false,
  *   since it will be overwritten with the new deployment).
@@ -55,10 +59,12 @@ export async function resumeOrDeploy<T extends Deployment>(
   provider: EthereumProvider,
   cached: T | undefined,
   deploy: () => Promise<T>,
+  type?: string,
+  opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
 ): Promise<T> {
-  const validated = await validateCached<T>(cached, provider, deployment, merge);
+  const validated = await validateCached<T>(cached, provider, type, opts, deployment, merge);
   if (validated === undefined || merge) {
     const deployment = await deploy();
     debug('initiated deployment', deployment.txHash, merge);
@@ -71,12 +77,14 @@ export async function resumeOrDeploy<T extends Deployment>(
 async function validateCached<T extends Deployment>(
   cached: T | undefined,
   provider: EthereumProvider,
+  type?: string,
+  opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
 ): Promise<T | undefined> {
   if (cached !== undefined) {
     try {
-      await validateStoredDeployment(cached, provider, merge);
+      await validateStoredDeployment(cached, provider, type, opts, merge);
     } catch (e) {
       if (e instanceof InvalidDeployment && (await isDevelopmentNetwork(provider))) {
         debug('ignoring invalid deployment in development network', e.deployment.address, 'reason:', e.reason);
@@ -95,6 +103,8 @@ async function validateCached<T extends Deployment>(
 async function validateStoredDeployment<T extends GenericDeployment>(
   stored: T,
   provider: EthereumProvider,
+  type?: string,
+  opts?: DeployOpts,
   merge?: boolean,
 ) {
   const { txHash } = stored;
@@ -107,7 +117,7 @@ async function validateStoredDeployment<T extends GenericDeployment>(
       debug('resuming previous deployment', txHash);
       if (merge) {
         // If merging, wait for the existing deployment to be mined
-        waitAndValidateDeployment(provider, stored);
+        waitAndValidateDeployment(provider, stored, type, opts);
       }
     } else {
       // If the transaction is not found we throw an error, except if we're in
