@@ -1,8 +1,8 @@
 import debug from './utils/debug';
 import { Manifest, ManifestData, ImplDeployment, AdminDeployment, GenericDeployment } from './manifest';
-import { EthereumProvider, getCode, isDevelopmentNetwork, isEmpty } from './provider';
-import { Deployment, InvalidDeployment, Reason, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
-import { hashBytecode, Version } from './version';
+import { EthereumProvider, isDevelopmentNetwork } from './provider';
+import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
+import { Version } from './version';
 import assert from 'assert';
 import { DeployOpts } from '.';
 
@@ -12,7 +12,7 @@ interface ManifestLens<T> {
   (data: ManifestData): ManifestField<T>;
 }
 
-interface ManifestField<T> {
+export interface ManifestField<T> {
   get(): T | undefined;
   set(value: T | undefined): void;
   merge?(value: T | undefined): void;
@@ -50,8 +50,8 @@ async function fetchOrDeployGeneric<T extends GenericDeployment>(
         );
       }
 
-      const stored = await getAndValidate(deployment, lens, provider);
-      const updated = merge ? await deploy() : await resumeOrDeploy(provider, stored, deploy);
+      const stored = deployment.get();
+      const updated = await resumeOrDeploy(provider, stored, deploy, deployment, merge);
       if (updated !== stored) {
         await checkForAddressClash(provider, data, updated);
         if (merge && deployment.merge) {
@@ -87,50 +87,12 @@ async function fetchOrDeployGeneric<T extends GenericDeployment>(
   }
 }
 
-async function getAndValidate<T extends GenericDeployment>(
-  deployment: ManifestField<T>,
-  lens: ManifestLens<T>,
-  provider: EthereumProvider,
-) {
-  let stored = deployment.get();
-  if (stored === undefined) {
-    debug('deployment of', lens.description, 'not found');
-  } else {
-    const existingBytecode = await getCode(provider, stored.address);
-    const isDevNet = await isDevelopmentNetwork(provider);
-
-    if (isEmpty(existingBytecode)) {
-      if (isDevNet) {
-        debug('omitting a previous deployment due to no bytecode at address', stored.address);
-        stored = undefined;
-      } else {
-        throw new InvalidDeployment(stored, Reason.NoBytecode);
-      }
-    } else {
-      stored = validate(stored, stored.bytecodeHash, hashBytecode(existingBytecode), isDevNet);
-    }
-  }
-  if (stored === undefined) {
-    deployment.set(undefined);
-  }
-  return stored;
-}
-
-function validate<T extends Deployment>(
-  deployment: T,
-  storedBytecodeHash: string | undefined,
-  existingBytecodeHash: string,
-  isDevNet: boolean,
-) {
-  if (storedBytecodeHash !== undefined && storedBytecodeHash !== existingBytecodeHash) {
-    if (isDevNet) {
-      debug('omitting a previous deployment due to mismatched bytecode at address ', deployment.address);
-      return undefined;
-    } else {
-      throw new InvalidDeployment(deployment, Reason.MismatchedBytecode);
-    }
-  }
-  return deployment;
+/**
+ * Deletes the deployment by setting it to undefined.
+ * Should only be used during a manifest run.
+ */
+export function deleteDeployment(deployment: ManifestField<GenericDeployment>) {
+  deployment.set(undefined);
 }
 
 export async function fetchOrDeploy(
