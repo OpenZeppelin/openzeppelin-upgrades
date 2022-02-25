@@ -25,10 +25,6 @@ export interface UpgradeOptions extends Options {
   call?: { fn: string; args?: unknown[] } | string;
 }
 
-export interface ImportProxyOptions extends Options {
-  force?: boolean;
-}
-
 const defaultDeployer: Deployer = {
   get provider() {
     return getTruffleConfig().provider;

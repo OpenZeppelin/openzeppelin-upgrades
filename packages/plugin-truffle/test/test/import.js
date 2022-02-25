@@ -19,7 +19,6 @@ const GreeterProxiable = artifacts.require('GreeterProxiable');
 const GreeterV2Proxiable = artifacts.require('GreeterV2Proxiable');
 const CustomProxy = artifacts.require('CustomProxy');
 
-const NOT_MATCH_BYTECODE = /Contract does not match with implementation bytecode deployed at \S+/;
 const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the network manifest';
 const NOT_SUPPORTED_FUNCTION = 'Beacon proxies are not supported with the current function';
 const NOT_SUPPORTED_PROXY_OR_BEACON = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
@@ -154,20 +153,7 @@ contract('Greeter', function () {
       getInitializerData(Greeter, ['Hello, Truffle!']),
     );
 
-    await assert.rejects(importProxy(proxy.address, GreeterV2), error => NOT_MATCH_BYTECODE.test(error.message));
-  });
-
-  it('force implementation', async function () {
-    const impl = await deployer.deploy(Greeter);
-    const admin = await deployer.deploy(getProxyAdminFactory());
-    const proxy = await deployer.deploy(
-      getTransparentUpgradeableProxyFactory(),
-      impl.address,
-      admin.address,
-      getInitializerData(Greeter, ['Hello, Truffle!']),
-    );
-
-    const greeter = await importProxy(proxy.address, GreeterV2, { force: true });
+    const greeter = await importProxy(proxy.address, GreeterV2);
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
     // since this is the wrong impl, expect it to have an error if using a non-existent function

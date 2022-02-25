@@ -3,7 +3,6 @@ import {
   getImplementationAddressFromProxy,
   EthereumProvider,
   getAdminAddress,
-  compareImplBytecode,
   addProxyToManifest,
   ImportProxyUnsupportedError,
   getImplementationAddressFromBeacon,
@@ -16,17 +15,17 @@ import {
   ContractInstance,
   wrapProvider,
   withDefaults,
-  ImportProxyOptions,
   ContractAddressOrInstance,
   getContractAddress,
   getUpgradeableBeaconFactory,
+  Options,
 } from './utils';
 import { simulateDeployAdmin, simulateDeployImpl } from './utils/simulate-deploy';
 
 export async function importProxy(
   proxyOrBeacon: ContractAddressOrInstance,
   Contract: ContractClass,
-  opts: ImportProxyOptions = {},
+  opts: Options = {},
 ): Promise<ContractInstance> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
@@ -41,7 +40,7 @@ export async function importProxy(
     return Contract.at(proxyOrBeaconAddress);
   } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
     const beaconImplAddress = await getImplementationAddressFromBeacon(provider, proxyOrBeaconAddress);
-    await addImplToManifest(provider, beaconImplAddress, Contract, opts);
+    await addImplToManifest(beaconImplAddress, Contract, opts);
 
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(Contract);
     return UpgradeableBeaconFactory.at(proxyOrBeaconAddress);
@@ -55,10 +54,10 @@ async function importProxyToManifest(
   proxyAddress: string,
   implAddress: string,
   Contract: ContractClass,
-  opts: ImportProxyOptions,
+  opts: Options,
   manifest: Manifest,
 ) {
-  await addImplToManifest(provider, implAddress, Contract, opts);
+  await addImplToManifest(implAddress, Contract, opts);
   const importKind = await detectProxyKind(provider, proxyAddress);
   if (importKind === 'transparent') {
     await addAdminToManifest(provider, proxyAddress, Contract, opts);
@@ -66,15 +65,7 @@ async function importProxyToManifest(
   await addProxyToManifest(importKind, proxyAddress, manifest);
 }
 
-async function addImplToManifest(
-  provider: EthereumProvider,
-  implAddress: string,
-  Contract: ContractClass,
-  opts: ImportProxyOptions,
-) {
-  if (!opts.force) {
-    await compareImplBytecode(provider, implAddress, Contract.bytecode);
-  }
+async function addImplToManifest(implAddress: string, Contract: ContractClass, opts: Options) {
   await simulateDeployImpl(Contract, opts, implAddress);
 }
 
@@ -82,7 +73,7 @@ async function addAdminToManifest(
   provider: EthereumProvider,
   proxyAddress: string,
   Contract: ContractClass,
-  opts: ImportProxyOptions,
+  opts: Options,
 ) {
   const adminAddress = await getAdminAddress(provider, proxyAddress);
   await simulateDeployAdmin(Contract, opts, adminAddress);

@@ -37,7 +37,6 @@ function getInitializerData(contractInterface, args) {
   return contractInterface.encodeFunctionData(fragment, args);
 }
 
-const NOT_MATCH_BYTECODE = /Contract does not match with implementation bytecode deployed at \S+/;
 const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the network manifest';
 const NOT_SUPPORTED_FUNCTION = 'Beacon proxies are not supported with the current function';
 const NOT_SUPPORTED_PROXY_OR_BEACON = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
@@ -204,25 +203,7 @@ test('wrong implementation', async t => {
   );
   await proxy.deployed();
 
-  const e = await t.throwsAsync(() => upgrades.importProxy(proxy.address, GreeterV2));
-  t.true(NOT_MATCH_BYTECODE.test(e.message), e.message);
-});
-
-test('force implementation', async t => {
-  const { Greeter, GreeterV2, ProxyAdmin, TransparentUpgradableProxy } = t.context;
-
-  const impl = await Greeter.deploy();
-  await impl.deployed();
-  const admin = await ProxyAdmin.deploy();
-  await admin.deployed();
-  const proxy = await TransparentUpgradableProxy.deploy(
-    impl.address,
-    admin.address,
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
-  );
-  await proxy.deployed();
-
-  const greeter = await upgrades.importProxy(proxy.address, GreeterV2, { force: true });
+  const greeter = await upgrades.importProxy(proxy.address, GreeterV2);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   // since this is the wrong impl, expect it to have an error if using a non-existent function

@@ -5,7 +5,6 @@ import {
   Manifest,
   getImplementationAddressFromProxy,
   getAdminAddress,
-  compareImplBytecode,
   addProxyToManifest,
   isBeacon,
   ImportProxyUnsupportedError,
@@ -14,23 +13,23 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import {
-  ImportProxyOptions,
   simulateDeployImpl,
   ContractAddressOrInstance,
   getContractAddress,
   getUpgradeableBeaconFactory,
+  Options,
 } from './utils';
 import { simulateDeployAdmin } from './utils/simulate-deploy';
 
 export interface ImportProxyFunction {
-  (proxyAddress: string, ImplFactory: ContractFactory, opts?: ImportProxyOptions): Promise<Contract>;
+  (proxyAddress: string, ImplFactory: ContractFactory, opts?: Options): Promise<Contract>;
 }
 
 export function makeImportProxy(hre: HardhatRuntimeEnvironment): ImportProxyFunction {
   return async function importProxy(
     proxyOrBeacon: ContractAddressOrInstance,
     ImplFactory: ContractFactory,
-    opts: ImportProxyOptions = {},
+    opts: Options = {},
   ) {
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
@@ -44,7 +43,7 @@ export function makeImportProxy(hre: HardhatRuntimeEnvironment): ImportProxyFunc
       return ImplFactory.attach(proxyOrBeaconAddress);
     } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
       const beaconImplAddress = await getImplementationAddressFromBeacon(provider, proxyOrBeaconAddress);
-      await addImplToManifest(provider, hre, beaconImplAddress, ImplFactory, opts);
+      await addImplToManifest(hre, beaconImplAddress, ImplFactory, opts);
 
       const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
       return UpgradeableBeaconFactory.attach(proxyOrBeaconAddress);
@@ -60,10 +59,10 @@ async function importProxyToManifest(
   proxyAddress: string,
   implAddress: string,
   ImplFactory: ContractFactory,
-  opts: ImportProxyOptions,
+  opts: Options,
   manifest: Manifest,
 ) {
-  await addImplToManifest(provider, hre, implAddress, ImplFactory, opts);
+  await addImplToManifest(hre, implAddress, ImplFactory, opts);
   const importKind = await detectProxyKind(provider, proxyAddress);
   if (importKind === 'transparent') {
     await addAdminToManifest(provider, hre, proxyAddress, ImplFactory, opts);
@@ -72,15 +71,11 @@ async function importProxyToManifest(
 }
 
 async function addImplToManifest(
-  provider: EthereumProvider,
   hre: HardhatRuntimeEnvironment,
   implAddress: string,
   ImplFactory: ContractFactory,
-  opts: ImportProxyOptions,
+  opts: Options,
 ) {
-  if (!opts.force) {
-    await compareImplBytecode(provider, implAddress, ImplFactory.bytecode);
-  }
   await simulateDeployImpl(hre, ImplFactory, opts, implAddress);
 }
 
@@ -89,7 +84,7 @@ async function addAdminToManifest(
   hre: HardhatRuntimeEnvironment,
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts: ImportProxyOptions,
+  opts: Options,
 ) {
   const adminAddress = await getAdminAddress(provider, proxyAddress);
   await simulateDeployAdmin(hre, ImplFactory, opts, adminAddress);
