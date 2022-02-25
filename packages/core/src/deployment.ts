@@ -126,7 +126,7 @@ async function validateStoredDeployment<T extends Deployment>(
   } else {
     const existingBytecode = await getCode(provider, stored.address);
     if (isEmpty(existingBytecode)) {
-      throw new InvalidDeployment(stored, Reason.NoBytecode);
+      throw new InvalidDeployment(stored, 'no-bytecode');
     }
   }
 }
@@ -214,19 +214,19 @@ export class InvalidDeployment extends Error {
 
   get message(): string {
     let msg =
-      this.reason === Reason.MismatchedBytecode
+      this.reason === 'mismatched-bytecode'
         ? `Incorrect contract at address ${this.deployment.address}`
         : `No contract at address ${this.deployment.address}`;
     if (this.removed) {
       msg += ' (Removed from manifest)';
     }
     switch (this.reason) {
-      case Reason.NoBytecode: {
+      case 'no-bytecode': {
         msg +=
           '\n\nNo bytecode was found at the address. Ensure that you are using the network files for the correct network.';
         break;
       }
-      case Reason.MismatchedBytecode: {
+      case 'mismatched-bytecode': {
         msg +=
           '\n\nDifferent bytecode was found at the address compared to a previous deployment. Ensure that you are using the network files for the correct network.';
         break;
@@ -236,7 +236,4 @@ export class InvalidDeployment extends Error {
   }
 }
 
-export enum Reason {
-  NoBytecode = 'NoBytecode',
-  MismatchedBytecode = 'MismatchedBytecode',
-}
+export type Reason = 'no-bytecode' | 'mismatched-bytecode';
