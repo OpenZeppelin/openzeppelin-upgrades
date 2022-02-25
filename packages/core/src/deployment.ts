@@ -85,7 +85,7 @@ async function validateCached<T extends Deployment>(
       await validateStoredDeployment(cached, provider, type, opts, merge);
     } catch (e) {
       if (e instanceof InvalidDeployment && (await isDevelopmentNetwork(provider))) {
-        debug('ignoring invalid deployment in development network', e.deployment.address, 'reason:', e.reason);
+        debug('ignoring invalid deployment in development network', e.deployment.address);
         if (deployment !== undefined) {
           deleteDeployment(deployment);
         }
@@ -126,7 +126,7 @@ async function validateStoredDeployment<T extends Deployment>(
   } else {
     const existingBytecode = await getCode(provider, stored.address);
     if (isEmpty(existingBytecode)) {
-      throw new InvalidDeployment(stored, 'no-bytecode');
+      throw new InvalidDeployment(stored);
     }
   }
 }
@@ -201,14 +201,11 @@ export class TransactionMinedTimeout extends UpgradesError {
 
 export class InvalidDeployment extends Error {
   removed = false;
-  reason: Reason | undefined;
 
-  constructor(readonly deployment: Deployment, reason?: Reason) {
+  constructor(readonly deployment: Deployment) {
     super();
-    this.reason = reason;
     // This hides the properties from the error when it's printed.
     makeNonEnumerable(this, 'removed');
-    makeNonEnumerable(this, 'reason');
     makeNonEnumerable(this, 'deployment');
   }
 
@@ -217,15 +214,6 @@ export class InvalidDeployment extends Error {
     if (this.removed) {
       msg += ' (Removed from manifest)';
     }
-    switch (this.reason) {
-      case 'no-bytecode': {
-        msg +=
-          '\n\nNo bytecode was found at the address. Ensure that you are using the network files for the correct network.';
-        break;
-      }
-    }
     return msg;
   }
 }
-
-export type Reason = 'no-bytecode';
