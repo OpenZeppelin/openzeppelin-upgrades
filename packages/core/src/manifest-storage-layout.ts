@@ -19,7 +19,7 @@ export async function getStorageLayoutForAddress(
   if (versionWithoutMetadata === undefined) {
     throw new UpgradesError(
       `Deployment at address ${implAddress} is not registered`,
-      () => 'To register a previously deployed proxy for upgrading, use the importProxy function.',
+      () => 'To register a previously deployed proxy for upgrading, use the forceImport function.',
     );
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

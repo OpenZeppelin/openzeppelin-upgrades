@@ -9,7 +9,7 @@ const {
 } = require('@openzeppelin/truffle-upgrades/dist/utils/factories.js');
 const { getInitializerData } = require('@openzeppelin/truffle-upgrades/dist/utils/initializer-data');
 
-const { importProxy, upgradeProxy, upgradeBeacon, prepareUpgrade, erc1967 } = require('@openzeppelin/truffle-upgrades');
+const { forceImport, upgradeProxy, upgradeBeacon, prepareUpgrade, erc1967 } = require('@openzeppelin/truffle-upgrades');
 
 const { deployer } = withDefaults({});
 
@@ -23,7 +23,7 @@ const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the netwo
 const NOT_SUPPORTED_FUNCTION = 'Beacon proxies are not supported with the current function';
 const NOT_SUPPORTED_PROXY_OR_BEACON = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
 const ONLY_PROXY_OR_BEACON =
-  'Only transparent, UUPS, or beacon proxies or beacons can be used with the importProxy() function.';
+  'Only transparent, UUPS, or beacon proxies or beacons can be used with the forceImport() function.';
 
 contract('Greeter', function () {
   it('transparent happy path', async function () {
@@ -36,7 +36,7 @@ contract('Greeter', function () {
       getInitializerData(Greeter, ['Hello, Truffle!']),
     );
 
-    const greeter = await importProxy(proxy.address, Greeter);
+    const greeter = await forceImport(proxy.address, Greeter);
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
     // can't upgrade directly because different admin was deployed during migrations
@@ -50,7 +50,7 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle!']),
     );
 
-    const greeter = await importProxy(proxy.address, GreeterProxiable);
+    const greeter = await forceImport(proxy.address, GreeterProxiable);
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
     const greeter2 = await upgradeProxy(greeter, GreeterV2Proxiable);
@@ -68,7 +68,7 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle!']),
     );
 
-    const greeter = await importProxy(proxy.address, Greeter);
+    const greeter = await forceImport(proxy.address, Greeter);
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
     await upgradeBeacon(beacon, GreeterV2);
@@ -82,7 +82,7 @@ contract('Greeter', function () {
     const impl = await deployer.deploy(Greeter);
     const beacon = await deployer.deploy(getUpgradeableBeaconFactory(), impl.address);
 
-    const beaconImported = await importProxy(beacon.address, Greeter);
+    const beaconImported = await forceImport(beacon.address, Greeter);
     assert.equal(await beaconImported.implementation(), impl.address);
 
     await upgradeBeacon(beacon, GreeterV2);
@@ -92,7 +92,7 @@ contract('Greeter', function () {
     const impl = await deployer.deploy(Greeter);
 
     await assert.rejects(
-      importProxy(impl.address, Greeter),
+      forceImport(impl.address, Greeter),
       error => NOT_SUPPORTED_PROXY_OR_BEACON.test(error.message) && error.message.includes(ONLY_PROXY_OR_BEACON),
     );
   });
@@ -105,7 +105,7 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle!']),
     );
 
-    const greeter = await importProxy(proxy, GreeterProxiable);
+    const greeter = await forceImport(proxy, GreeterProxiable);
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
     const greeter2 = await upgradeProxy(greeter, GreeterV2Proxiable);
@@ -124,7 +124,7 @@ contract('Greeter', function () {
     );
 
     // specify uups, but import should detect that it is a beacon proxy
-    const greeter = await importProxy(proxy.address, Greeter, { kind: 'uups' });
+    const greeter = await forceImport(proxy.address, Greeter, { kind: 'uups' });
 
     await assert.rejects(upgradeProxy(greeter, GreeterV2), error => error.message.startsWith(NOT_SUPPORTED_FUNCTION));
   });
@@ -137,7 +137,7 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle!']),
     );
 
-    const greeter = await importProxy(proxy.address, GreeterProxiable);
+    const greeter = await forceImport(proxy.address, GreeterProxiable);
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
     await upgradeProxy(greeter, GreeterV2Proxiable);
@@ -153,7 +153,7 @@ contract('Greeter', function () {
       getInitializerData(Greeter, ['Hello, Truffle!']),
     );
 
-    const greeter = await importProxy(proxy.address, GreeterV2);
+    const greeter = await forceImport(proxy.address, GreeterV2);
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
     // since this is the wrong impl, expect it to have an error if using a non-existent function
@@ -175,11 +175,11 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle 2!']),
     );
 
-    const greeter = await importProxy(proxy.address, GreeterProxiable);
+    const greeter = await forceImport(proxy.address, GreeterProxiable);
     const greeterUpgraded = await upgradeProxy(greeter, GreeterV2Proxiable);
     assert.equal(await greeterUpgraded.greet(), 'Hello, Truffle!');
 
-    const greeter2 = await importProxy(proxy2.address, GreeterProxiable);
+    const greeter2 = await forceImport(proxy2.address, GreeterProxiable);
     const greeter2Upgraded = await upgradeProxy(greeter2, GreeterV2Proxiable);
     assert.equal(await greeter2Upgraded.greet(), 'Hello, Truffle 2!');
   });
@@ -197,8 +197,8 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle 2!']),
     );
 
-    const greeter = await importProxy(proxy.address, GreeterProxiable);
-    const greeter2 = await importProxy(proxy2.address, GreeterProxiable);
+    const greeter = await forceImport(proxy.address, GreeterProxiable);
+    const greeter2 = await forceImport(proxy2.address, GreeterProxiable);
 
     const implAddr1 = await erc1967.getImplementationAddress(greeter.address);
     const implAddr2 = await erc1967.getImplementationAddress(greeter2.address);
@@ -223,8 +223,8 @@ contract('Greeter', function () {
       getInitializerData(Greeter, ['Hello, Truffle!']),
     );
 
-    const greeter = await importProxy(proxy.address, Greeter);
-    const greeter2 = await importProxy(proxy2.address, Greeter);
+    const greeter = await forceImport(proxy.address, Greeter);
+    const greeter2 = await forceImport(proxy2.address, Greeter);
 
     assert.notEqual(await erc1967.getAdminAddress(greeter2.address), await erc1967.getAdminAddress(greeter.address));
 

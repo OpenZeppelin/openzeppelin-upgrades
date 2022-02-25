@@ -41,7 +41,7 @@ const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the netwo
 const NOT_SUPPORTED_FUNCTION = 'Beacon proxies are not supported with the current function';
 const NOT_SUPPORTED_PROXY_OR_BEACON = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
 const ONLY_PROXY_OR_BEACON =
-  'Only transparent, UUPS, or beacon proxies or beacons can be used with the importProxy() function.';
+  'Only transparent, UUPS, or beacon proxies or beacons can be used with the forceImport() function.';
 
 test('transparent happy path', async t => {
   const { Greeter, GreeterV2, ProxyAdmin, TransparentUpgradableProxy } = t.context;
@@ -57,7 +57,7 @@ test('transparent happy path', async t => {
   );
   await proxy.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, Greeter);
+  const greeter = await upgrades.forceImport(proxy.address, Greeter);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   const greeter2 = await upgrades.upgradeProxy(greeter, GreeterV2);
@@ -78,7 +78,7 @@ test('uups happy path', async t => {
   );
   await proxy.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, GreeterProxiable);
+  const greeter = await upgrades.forceImport(proxy.address, GreeterProxiable);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   const greeter2 = await upgrades.upgradeProxy(greeter, GreeterV2Proxiable);
@@ -98,7 +98,7 @@ test('beacon proxy happy path', async t => {
   const proxy = await BeaconProxy.deploy(beacon.address, getInitializerData(Greeter.interface, ['Hello, Hardhat!']));
   await proxy.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, Greeter);
+  const greeter = await upgrades.forceImport(proxy.address, Greeter);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   await upgrades.upgradeBeacon(beacon, GreeterV2);
@@ -117,7 +117,7 @@ test('beacon happy path', async t => {
   const beacon = await UpgradableBeacon.deploy(impl.address);
   await beacon.deployed();
 
-  const beaconImported = await upgrades.importProxy(beacon.address, Greeter);
+  const beaconImported = await upgrades.forceImport(beacon.address, Greeter);
   t.is(await beaconImported.implementation(), impl.address);
 
   await upgrades.upgradeBeacon(beacon, GreeterV2);
@@ -129,7 +129,7 @@ test('not proxy or beacon', async t => {
   const impl = await Greeter.deploy();
   await impl.deployed();
 
-  const e = await t.throwsAsync(() => upgrades.importProxy(impl.address, Greeter));
+  const e = await t.throwsAsync(() => upgrades.forceImport(impl.address, Greeter));
   t.true(NOT_SUPPORTED_PROXY_OR_BEACON.test(e.message) && e.message.includes(ONLY_PROXY_OR_BEACON), e.message);
 });
 
@@ -144,7 +144,7 @@ test('import proxy using contract instance', async t => {
   );
   await proxy.deployed();
 
-  const greeter = await upgrades.importProxy(proxy, GreeterProxiable);
+  const greeter = await upgrades.forceImport(proxy, GreeterProxiable);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   const greeter2 = await upgrades.upgradeProxy(greeter, GreeterV2Proxiable);
@@ -165,7 +165,7 @@ test('ignore kind', async t => {
   await proxy.deployed();
 
   // specify uups, but import should detect that it is a beacon proxy
-  const greeter = await upgrades.importProxy(proxy.address, Greeter, { kind: 'uups' });
+  const greeter = await upgrades.forceImport(proxy.address, Greeter, { kind: 'uups' });
 
   // check that it is indeed imported as beacon proxy by trying to upgrade it directly
   const e = await t.throwsAsync(() => upgrades.upgradeProxy(greeter, GreeterV2));
@@ -183,7 +183,7 @@ test('import custom proxy', async t => {
   );
   await proxy.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, GreeterProxiable);
+  const greeter = await upgrades.forceImport(proxy.address, GreeterProxiable);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   await upgrades.upgradeProxy(greeter, GreeterV2Proxiable);
@@ -203,7 +203,7 @@ test('wrong implementation', async t => {
   );
   await proxy.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, GreeterV2);
+  const greeter = await upgrades.forceImport(proxy.address, GreeterV2);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   // since this is the wrong impl, expect it to have an error if using a non-existent function
@@ -230,11 +230,11 @@ test('multiple identical implementations', async t => {
   );
   await proxy2.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, GreeterProxiable);
+  const greeter = await upgrades.forceImport(proxy.address, GreeterProxiable);
   const greeterUpgraded = await upgrades.upgradeProxy(greeter, GreeterV2Proxiable);
   t.is(await greeterUpgraded.greet(), 'Hello, Hardhat!');
 
-  const greeter2 = await upgrades.importProxy(proxy2.address, GreeterProxiable);
+  const greeter2 = await upgrades.forceImport(proxy2.address, GreeterProxiable);
   const greeter2Upgraded = await upgrades.upgradeProxy(greeter2, GreeterV2Proxiable);
   t.is(await greeter2Upgraded.greet(), 'Hello, Hardhat 2!');
 });
@@ -255,8 +255,8 @@ test('same implementation', async t => {
   );
   await proxy2.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, GreeterProxiable);
-  const greeter2 = await upgrades.importProxy(proxy2.address, GreeterProxiable);
+  const greeter = await upgrades.forceImport(proxy.address, GreeterProxiable);
+  const greeter2 = await upgrades.forceImport(proxy2.address, GreeterProxiable);
 
   const implAddr1 = await upgrades.erc1967.getImplementationAddress(greeter.address);
   const implAddr2 = await upgrades.erc1967.getImplementationAddress(greeter2.address);
@@ -286,8 +286,8 @@ test('import transparents with different admin', async t => {
   );
   await proxy2.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, Greeter);
-  const greeter2 = await upgrades.importProxy(proxy2.address, Greeter);
+  const greeter = await upgrades.forceImport(proxy.address, Greeter);
+  const greeter2 = await upgrades.forceImport(proxy2.address, Greeter);
 
   t.not(
     await upgrades.erc1967.getAdminAddress(greeter2.address),

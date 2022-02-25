@@ -13,7 +13,7 @@ import type { UpgradeFunction } from './upgrade-proxy';
 import type { DeployBeaconFunction } from './deploy-beacon';
 import type { DeployBeaconProxyFunction } from './deploy-beacon-proxy';
 import type { UpgradeBeaconFunction } from './upgrade-beacon';
-import type { ImportProxyFunction } from './import-proxy';
+import type { ForceImportFunction } from './force-import';
 import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction, GetInstanceFunction } from './admin';
 
 export interface HardhatUpgrades {
@@ -23,7 +23,7 @@ export interface HardhatUpgrades {
   deployBeacon: DeployBeaconFunction;
   deployBeaconProxy: DeployBeaconProxyFunction;
   upgradeBeacon: UpgradeBeaconFunction;
-  importProxy: ImportProxyFunction;
+  forceImport: ForceImportFunction;
   silenceWarnings: typeof silenceWarnings;
   admin: {
     getInstance: GetInstanceFunction;
@@ -91,7 +91,7 @@ extendEnvironment(hre => {
     const { makeDeployBeacon } = require('./deploy-beacon');
     const { makeDeployBeaconProxy } = require('./deploy-beacon-proxy');
     const { makeUpgradeBeacon } = require('./upgrade-beacon');
-    const { makeImportProxy } = require('./import-proxy');
+    const { makeForceImport } = require('./force-import');
     const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
 
     return {
@@ -102,7 +102,7 @@ extendEnvironment(hre => {
       deployBeacon: makeDeployBeacon(hre),
       deployBeaconProxy: makeDeployBeaconProxy(hre),
       upgradeBeacon: makeUpgradeBeacon(hre),
-      importProxy: makeImportProxy(hre),
+      forceImport: makeForceImport(hre),
       admin: {
         getInstance: makeGetInstanceFunction(hre),
         changeProxyAdmin: makeChangeProxyAdmin(hre),

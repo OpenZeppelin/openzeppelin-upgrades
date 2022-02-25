@@ -39,7 +39,7 @@ test('import then deploy with same impl', async t => {
   );
   await proxy.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, GreeterProxiable);
+  const greeter = await upgrades.forceImport(proxy.address, GreeterProxiable);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   const greeter2 = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat 2!']);
@@ -66,7 +66,7 @@ test('deploy then import with same impl', async t => {
   );
   await proxy.deployed();
 
-  const greeter2 = await upgrades.importProxy(proxy.address, GreeterProxiable);
+  const greeter2 = await upgrades.forceImport(proxy.address, GreeterProxiable);
   t.is(await greeter2.greet(), 'Hello, Hardhat 2!');
 
   const implAddr1 = await upgrades.erc1967.getImplementationAddress(greeter.address);
@@ -90,7 +90,7 @@ test('import previous deployment', async t => {
   const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!']);
   await greeter.deployed();
 
-  const greeterImported = await upgrades.importProxy(greeter.address, GreeterProxiable);
+  const greeterImported = await upgrades.forceImport(greeter.address, GreeterProxiable);
   t.is(await greeterImported.greet(), 'Hello, Hardhat!');
 
   t.is(greeterImported.address, greeter.address);
@@ -111,8 +111,8 @@ test('import previous import', async t => {
   );
   await proxy.deployed();
 
-  const greeterImported = await upgrades.importProxy(proxy.address, GreeterProxiable);
-  const greeterImportedAgain = await upgrades.importProxy(proxy.address, GreeterProxiable);
+  const greeterImported = await upgrades.forceImport(proxy.address, GreeterProxiable);
+  const greeterImportedAgain = await upgrades.forceImport(proxy.address, GreeterProxiable);
 
   t.is(greeterImportedAgain.address, greeterImported.address);
   t.is(
@@ -135,7 +135,7 @@ test('import then deploy transparent with same admin', async t => {
   );
   await proxy.deployed();
 
-  const greeter = await upgrades.importProxy(proxy.address, Greeter);
+  const greeter = await upgrades.forceImport(proxy.address, Greeter);
   const greeter2 = await upgrades.deployProxy(Greeter, ['Hello, Hardhat 2!']);
   await greeter2.deployed();
 

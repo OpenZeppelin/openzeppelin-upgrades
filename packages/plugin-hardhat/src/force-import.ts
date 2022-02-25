@@ -7,9 +7,9 @@ import {
   getAdminAddress,
   addProxyToManifest,
   isBeacon,
-  ImportProxyUnsupportedError,
   getImplementationAddressFromBeacon,
   detectProxyKind,
+  ForceImportUnsupportedError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -21,12 +21,12 @@ import {
 } from './utils';
 import { simulateDeployAdmin } from './utils/simulate-deploy';
 
-export interface ImportProxyFunction {
+export interface ForceImportFunction {
   (proxyAddress: string, ImplFactory: ContractFactory, opts?: Options): Promise<Contract>;
 }
 
-export function makeImportProxy(hre: HardhatRuntimeEnvironment): ImportProxyFunction {
-  return async function importProxy(
+export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunction {
+  return async function forceImport(
     proxyOrBeacon: ContractAddressOrInstance,
     ImplFactory: ContractFactory,
     opts: Options = {},
@@ -48,7 +48,7 @@ export function makeImportProxy(hre: HardhatRuntimeEnvironment): ImportProxyFunc
       const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
       return UpgradeableBeaconFactory.attach(proxyOrBeaconAddress);
     } else {
-      throw new ImportProxyUnsupportedError(proxyOrBeaconAddress);
+      throw new ForceImportUnsupportedError(proxyOrBeaconAddress);
     }
   };
 }

@@ -4,10 +4,10 @@ import {
   EthereumProvider,
   getAdminAddress,
   addProxyToManifest,
-  ImportProxyUnsupportedError,
   getImplementationAddressFromBeacon,
   isBeacon,
   detectProxyKind,
+  ForceImportUnsupportedError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -22,7 +22,7 @@ import {
 } from './utils';
 import { simulateDeployAdmin, simulateDeployImpl } from './utils/simulate-deploy';
 
-export async function importProxy(
+export async function forceImport(
   proxyOrBeacon: ContractAddressOrInstance,
   Contract: ContractClass,
   opts: Options = {},
@@ -45,7 +45,7 @@ export async function importProxy(
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(Contract);
     return UpgradeableBeaconFactory.at(proxyOrBeaconAddress);
   } else {
-    throw new ImportProxyUnsupportedError(proxyOrBeaconAddress);
+    throw new ForceImportUnsupportedError(proxyOrBeaconAddress);
   }
 }
 

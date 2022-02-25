@@ -7,7 +7,7 @@ const {
 } = require('@openzeppelin/truffle-upgrades/dist/utils/factories.js');
 const { getInitializerData } = require('@openzeppelin/truffle-upgrades/dist/utils/initializer-data');
 
-const { importProxy, upgradeProxy, deployProxy, erc1967 } = require('@openzeppelin/truffle-upgrades');
+const { forceImport, upgradeProxy, deployProxy, erc1967 } = require('@openzeppelin/truffle-upgrades');
 
 const { deployer } = withDefaults({});
 
@@ -25,7 +25,7 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle!']),
     );
 
-    const greeter = await importProxy(proxy.address, GreeterProxiable);
+    const greeter = await forceImport(proxy.address, GreeterProxiable);
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
     const greeter2 = await deployProxy(GreeterProxiable, ['Hello, Truffle 2!']);
@@ -44,7 +44,7 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle 2!']),
     );
 
-    const greeter2 = await importProxy(proxy.address, GreeterProxiable);
+    const greeter2 = await forceImport(proxy.address, GreeterProxiable);
     assert.equal(await greeter2.greet(), 'Hello, Truffle 2!');
 
     const implAddr1 = await erc1967.getImplementationAddress(greeter.address);
@@ -65,7 +65,7 @@ contract('Greeter', function () {
   it('import previous deployment', async function () {
     const greeter = await deployProxy(GreeterProxiable, ['Hello, Truffle!']);
 
-    const greeterImported = await importProxy(greeter.address, GreeterProxiable);
+    const greeterImported = await forceImport(greeter.address, GreeterProxiable);
     assert.equal(await greeterImported.greet(), 'Hello, Truffle!');
 
     assert.equal(greeterImported.address, greeter.address);
@@ -83,8 +83,8 @@ contract('Greeter', function () {
       getInitializerData(GreeterProxiable, ['Hello, Truffle 2!']),
     );
 
-    const greeterImported = await importProxy(proxy.address, GreeterProxiable);
-    const greeterImportedAgain = await importProxy(proxy.address, GreeterProxiable);
+    const greeterImported = await forceImport(proxy.address, GreeterProxiable);
+    const greeterImportedAgain = await forceImport(proxy.address, GreeterProxiable);
 
     assert.equal(greeterImportedAgain.address, greeterImported.address);
     assert.equal(
@@ -106,7 +106,7 @@ contract('Greeter', function () {
     );
 
     // admin may be different than what's already on the network
-    await importProxy(proxy.address, Greeter);
+    await forceImport(proxy.address, Greeter);
 
     const greeter2 = await deployProxy(Greeter, ['Hello, Truffle 2!']);
 
