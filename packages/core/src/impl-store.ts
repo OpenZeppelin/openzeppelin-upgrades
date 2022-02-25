@@ -113,7 +113,7 @@ const implLens = (versionWithoutMetadata: string) =>
       const existing = data.impls[versionWithoutMetadata];
       if (existing !== undefined && value !== undefined) {
         const { address, allAddresses } = mergeAddresses(existing, value);
-        data.impls[versionWithoutMetadata] = { ...value, address, allAddresses };
+        data.impls[versionWithoutMetadata] = { ...existing, address, allAddresses };
       } else {
         data.impls[versionWithoutMetadata] = value;
       }
