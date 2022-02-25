@@ -36,7 +36,7 @@ export interface DeployOpts {
 
 /**
  * Resumes a deployment or deploys a new one, based on whether the cached deployment should continue to be used and is valid
- * (has a valid txHash for the current network or has runtime bytecode that matches the stored bytecode hash).
+ * (has a valid txHash for the current network or has runtime bytecode).
  * If a cached deployment is not valid, deletes it if using a development network, otherwise throws an InvalidDeployment error.
  *
  * @param provider the Ethereum provider
