@@ -53,10 +53,13 @@ async function fetchOrDeployGeneric<T extends Deployment>(
       const stored = deployment.get();
       const updated = await resumeOrDeploy(provider, stored, deploy, lens.type, opts, deployment, merge);
       if (updated !== stored) {
-        await checkForAddressClash(provider, data, updated);
         if (merge && deployment.merge) {
+          // only check primary addresses for clashes, since the address could already exist in an allAddresses field
+          // but the above updated and stored objects are different instances representing the same entry
+          await checkForAddressClash(provider, data, updated, false);
           deployment.merge(updated);
         } else {
+          await checkForAddressClash(provider, data, updated, true);
           deployment.set(updated);
         }
         await manifest.write(data);
@@ -159,8 +162,9 @@ async function checkForAddressClash(
   provider: EthereumProvider,
   data: ManifestData,
   updated: Deployment,
+  checkAllAddresses: boolean,
 ): Promise<void> {
-  const clash = lookupDeployment(data, updated.address);
+  const clash = lookupDeployment(data, updated.address, checkAllAddresses);
   if (clash !== undefined) {
     if (await isDevelopmentNetwork(provider)) {
       debug('deleting a previous deployment at address', updated.address);
@@ -175,7 +179,11 @@ async function checkForAddressClash(
   }
 }
 
-function lookupDeployment(data: ManifestData, address: string): ManifestField<Deployment> | undefined {
+function lookupDeployment(
+  data: ManifestData,
+  address: string,
+  checkAllAddresses: boolean,
+): ManifestField<Deployment> | undefined {
   if (data.admin?.address === address) {
     return adminLens(data);
   }
@@ -183,7 +191,7 @@ function lookupDeployment(data: ManifestData, address: string): ManifestField<De
   for (const versionWithoutMetadata in data.impls) {
     if (
       data.impls[versionWithoutMetadata]?.address === address ||
-      data.impls[versionWithoutMetadata]?.allAddresses?.includes(address)
+      (checkAllAddresses && data.impls[versionWithoutMetadata]?.allAddresses?.includes(address))
     ) {
       return implLens(versionWithoutMetadata)(data);
     }
