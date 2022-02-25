@@ -5,8 +5,7 @@ import {
   Manifest,
   getImplementationAddressFromProxy,
   getAdminAddress,
-  getCode,
-  getAndCompareImplBytecode,
+  compareImplBytecode,
   addProxyToManifest,
   isBeacon,
   ImportProxyUnsupportedError,
@@ -79,8 +78,10 @@ async function addImplToManifest(
   ImplFactory: ContractFactory,
   opts: ImportProxyOptions,
 ) {
-  const runtimeBytecode = await getAndCompareImplBytecode(provider, implAddress, ImplFactory.bytecode, opts.force);
-  await simulateDeployImpl(hre, ImplFactory, opts, implAddress, runtimeBytecode);
+  if (!opts.force) {
+    await compareImplBytecode(provider, implAddress, ImplFactory.bytecode);
+  }
+  await simulateDeployImpl(hre, ImplFactory, opts, implAddress);
 }
 
 async function addAdminToManifest(
@@ -91,7 +92,5 @@ async function addAdminToManifest(
   opts: ImportProxyOptions,
 ) {
   const adminAddress = await getAdminAddress(provider, proxyAddress);
-  const adminBytecode = await getCode(provider, adminAddress);
-  // don't need to compare the admin contract's bytecode with creation code since it could be a custom admin, but store it to manifest in case it is used with the wrong network later on
-  await simulateDeployAdmin(hre, ImplFactory, opts, adminAddress, adminBytecode);
+  await simulateDeployAdmin(hre, ImplFactory, opts, adminAddress);
 }

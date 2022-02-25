@@ -1,4 +1,4 @@
-import { fetchOrDeploy, fetchOrDeployAdmin, hashBytecode, logWarning } from '@openzeppelin/upgrades-core';
+import { fetchOrDeploy, fetchOrDeployAdmin, logWarning } from '@openzeppelin/upgrades-core';
 import type { ContractFactory } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
@@ -15,15 +15,8 @@ export async function simulateDeployAdmin(
   ProxyAdminFactory: ContractFactory,
   opts: Options,
   adminAddress: string,
-  adminBytecode: string,
 ) {
-  const { deployData, simulateDeploy } = await getSimulatedData(
-    hre,
-    ProxyAdminFactory,
-    opts,
-    adminAddress,
-    adminBytecode,
-  );
+  const { deployData, simulateDeploy } = await getSimulatedData(hre, ProxyAdminFactory, opts, adminAddress);
   const manifestAdminAddress = await fetchOrDeployAdmin(deployData.provider, simulateDeploy, opts);
   if (adminAddress !== manifestAdminAddress) {
     logWarning(
@@ -41,9 +34,8 @@ export async function simulateDeployImpl(
   ImplFactory: ContractFactory,
   opts: Options,
   implAddress: string,
-  runtimeBytecode: string,
 ) {
-  const { deployData, simulateDeploy } = await getSimulatedData(hre, ImplFactory, opts, implAddress, runtimeBytecode);
+  const { deployData, simulateDeploy } = await getSimulatedData(hre, ImplFactory, opts, implAddress);
   await fetchOrDeploy(deployData.version, deployData.provider, simulateDeploy, opts, true);
 }
 
@@ -55,7 +47,6 @@ async function getSimulatedData(
   ImplFactory: ContractFactory,
   opts: Options,
   implAddress: string,
-  runtimeBytecode: string,
 ) {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   const simulateDeploy = async () => {
@@ -63,7 +54,6 @@ async function getSimulatedData(
       abi: ImplFactory.interface.format(FormatTypes.minimal) as string[],
       layout: deployData.layout,
       address: implAddress,
-      bytecodeHash: hashBytecode(runtimeBytecode),
     };
   };
   return { deployData, simulateDeploy };

@@ -1,4 +1,4 @@
-import { fetchOrDeploy, logWarning, fetchOrDeployAdmin, hashBytecode } from '@openzeppelin/upgrades-core';
+import { fetchOrDeploy, logWarning, fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
 
 import { getDeployData } from './deploy-impl';
 import { Options } from './options';
@@ -9,13 +9,8 @@ import { ContractClass } from './truffle';
 // for the "deploy" part we pass a function that simply returns the contract to be imported, rather than
 // actually deploying something.
 
-export async function simulateDeployAdmin(
-  ProxyAdminFactory: ContractClass,
-  opts: Options,
-  adminAddress: string,
-  adminBytecode: string,
-) {
-  const { deployData, simulateDeploy } = await getSimulatedData(ProxyAdminFactory, opts, adminAddress, adminBytecode);
+export async function simulateDeployAdmin(ProxyAdminFactory: ContractClass, opts: Options, adminAddress: string) {
+  const { deployData, simulateDeploy } = await getSimulatedData(ProxyAdminFactory, opts, adminAddress);
   const manifestAdminAddress = await fetchOrDeployAdmin(deployData.provider, simulateDeploy, opts);
   if (adminAddress !== manifestAdminAddress) {
     logWarning(
@@ -28,24 +23,18 @@ export async function simulateDeployAdmin(
   }
 }
 
-export async function simulateDeployImpl(
-  Contract: ContractClass,
-  opts: Options,
-  implAddress: string,
-  runtimeBytecode: string,
-) {
-  const { deployData, simulateDeploy } = await getSimulatedData(Contract, opts, implAddress, runtimeBytecode);
+export async function simulateDeployImpl(Contract: ContractClass, opts: Options, implAddress: string) {
+  const { deployData, simulateDeploy } = await getSimulatedData(Contract, opts, implAddress);
   await fetchOrDeploy(deployData.version, deployData.provider, simulateDeploy, opts, true);
 }
 
-async function getSimulatedData(Contract: ContractClass, opts: Options, implAddress: string, runtimeBytecode: string) {
+async function getSimulatedData(Contract: ContractClass, opts: Options, implAddress: string) {
   const deployData = await getDeployData(opts, Contract);
   const simulateDeploy = async () => {
     return {
       abi: (Contract as any).abi,
       layout: deployData.layout,
       address: implAddress,
-      bytecodeHash: hashBytecode(runtimeBytecode),
     };
   };
   return { deployData, simulateDeploy };

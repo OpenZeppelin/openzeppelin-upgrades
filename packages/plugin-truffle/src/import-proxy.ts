@@ -2,9 +2,8 @@ import {
   Manifest,
   getImplementationAddressFromProxy,
   EthereumProvider,
-  getCode,
   getAdminAddress,
-  getAndCompareImplBytecode,
+  compareImplBytecode,
   addProxyToManifest,
   ImportProxyUnsupportedError,
   getImplementationAddressFromBeacon,
@@ -73,8 +72,10 @@ async function addImplToManifest(
   Contract: ContractClass,
   opts: ImportProxyOptions,
 ) {
-  const runtimeBytecode = await getAndCompareImplBytecode(provider, implAddress, Contract.bytecode, opts.force);
-  await simulateDeployImpl(Contract, opts, implAddress, runtimeBytecode);
+  if (!opts.force) {
+    await compareImplBytecode(provider, implAddress, Contract.bytecode);
+  }
+  await simulateDeployImpl(Contract, opts, implAddress);
 }
 
 async function addAdminToManifest(
@@ -84,7 +85,5 @@ async function addAdminToManifest(
   opts: ImportProxyOptions,
 ) {
   const adminAddress = await getAdminAddress(provider, proxyAddress);
-  const adminBytecode = await getCode(provider, adminAddress);
-  // don't need to compare the admin contract's bytecode with creation code since it could be a custom admin, but store it to manifest in case it is used with the wrong network later on
-  await simulateDeployAdmin(Contract, opts, adminAddress, adminBytecode);
+  await simulateDeployAdmin(Contract, opts, adminAddress);
 }

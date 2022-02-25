@@ -16,25 +16,15 @@ async function compareBytecode(creationCode: string, runtimeBytecode: string) {
 }
 
 /**
- * Compares the creation bytecode with implAddress's runtime bytecode. If the former contains the latter or if
- * the force option is true, return the runtime bytecode. Otherwise throw an error.
+ * Compares the creation bytecode with implAddress's runtime bytecode. Throws an error if the former
+ * does not contains the latter.
  *
  * @param provider the Ethereum provider
  * @param implAddress the address to get the runtime bytecode from
  * @param creationCode the creation code that may have deployed the contract
- * @param force whether to force the match
- * @returns the runtime bytecode if the creation code contains the runtime code or force is true
  */
-export async function getAndCompareImplBytecode(
-  provider: EthereumProvider,
-  implAddress: string,
-  creationCode: string,
-  force?: boolean,
-) {
-  const runtimeBytecode = await getCode(provider, implAddress);
-  if (force || (await compareBytecode(creationCode, runtimeBytecode))) {
-    return runtimeBytecode;
-  } else {
+export async function compareImplBytecode(provider: EthereumProvider, implAddress: string, creationCode: string) {
+  if (!(await compareBytecode(creationCode, await getCode(provider, implAddress)))) {
     throw new UpgradesError(
       `Contract does not match with implementation bytecode deployed at ${implAddress}`,
       () =>

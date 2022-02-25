@@ -1,5 +1,5 @@
 import debug from './utils/debug';
-import { Manifest, ManifestData, ImplDeployment, AdminDeployment, GenericDeployment } from './manifest';
+import { Manifest, ManifestData, ImplDeployment } from './manifest';
 import { EthereumProvider, isDevelopmentNetwork } from './provider';
 import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import { Version } from './version';
@@ -30,7 +30,7 @@ export interface ManifestField<T> {
  * @throws {InvalidDeployment} if the deployment is invalid
  * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
  */
-async function fetchOrDeployGeneric<T extends GenericDeployment>(
+async function fetchOrDeployGeneric<T extends Deployment>(
   lens: ManifestLens<T>,
   provider: EthereumProvider,
   deploy: () => Promise<T>,
@@ -91,7 +91,7 @@ async function fetchOrDeployGeneric<T extends GenericDeployment>(
  * Deletes the deployment by setting it to undefined.
  * Should only be used during a manifest run.
  */
-export function deleteDeployment(deployment: ManifestField<GenericDeployment>) {
+export function deleteDeployment(deployment: ManifestField<Deployment>) {
   deployment.set(undefined);
 }
 
@@ -148,7 +148,7 @@ export async function fetchOrDeployAdmin(
 
 const adminLens = lens('proxy admin', 'proxy admin', data => ({
   get: () => data.admin,
-  set: (value?: AdminDeployment) => (data.admin = value),
+  set: (value?: Deployment) => (data.admin = value),
 }));
 
 function lens<T>(description: string, type: string, fn: (data: ManifestData) => ManifestField<T>): ManifestLens<T> {
@@ -175,7 +175,7 @@ async function checkForAddressClash(
   }
 }
 
-function lookupDeployment(data: ManifestData, address: string): ManifestField<GenericDeployment> | undefined {
+function lookupDeployment(data: ManifestData, address: string): ManifestField<Deployment> | undefined {
   if (data.admin?.address === address) {
     return adminLens(data);
   }

@@ -13,8 +13,6 @@ import {
   isReceiptSuccessful,
 } from './provider';
 import { UpgradesError } from './error';
-import { GenericDeployment } from './manifest';
-import { hashBytecode } from './version';
 import { deleteDeployment, ManifestField } from './impl-store';
 
 const sleep = promisify(setTimeout);
@@ -67,7 +65,7 @@ export async function resumeOrDeploy<T extends Deployment>(
   const validated = await validateCached<T>(cached, provider, type, opts, deployment, merge);
   if (validated === undefined || merge) {
     const deployment = await deploy();
-    debug('initiated deployment', deployment.txHash, merge);
+    debug('initiated deployment', 'transaction hash:', deployment.txHash, 'merge:', merge);
     return deployment;
   } else {
     return validated;
@@ -100,7 +98,7 @@ async function validateCached<T extends Deployment>(
   return cached;
 }
 
-async function validateStoredDeployment<T extends GenericDeployment>(
+async function validateStoredDeployment<T extends Deployment>(
   stored: T,
   provider: EthereumProvider,
   type?: string,
@@ -129,8 +127,6 @@ async function validateStoredDeployment<T extends GenericDeployment>(
     const existingBytecode = await getCode(provider, stored.address);
     if (isEmpty(existingBytecode)) {
       throw new InvalidDeployment(stored, Reason.NoBytecode);
-    } else if (stored.bytecodeHash !== undefined && stored.bytecodeHash !== hashBytecode(existingBytecode)) {
-      throw new InvalidDeployment(stored, Reason.MismatchedBytecode);
     }
   }
 }
