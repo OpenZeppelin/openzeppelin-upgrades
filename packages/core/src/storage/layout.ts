@@ -35,6 +35,8 @@ export type TypeItemMembers<Type = string> = StructMember<Type>[] | EnumMember[]
 export interface StructMember<Type = string> {
   label: string;
   type: Type;
+  retyped?: string;
+  rename?: string;
 }
 
 export type EnumMember = string;

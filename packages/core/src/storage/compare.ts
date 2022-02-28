@@ -79,8 +79,8 @@ export class StorageLayoutComparator {
   }
 
   getFieldChange<F extends StorageField>(original: F, updated: F): StorageFieldChange<F> | undefined {
-    const nameChange = !this.unsafeAllowRenames && original.label !== updated.label;
-    const typeChange = this.getTypeChange(original.type, updated.type, { allowAppend: false });
+    const nameChange = !this.unsafeAllowRenames && original.label !== updated.label && original.label !== updated.rename;
+    const typeChange = this.getTypeChange(original.type, updated.type, { allowAppend: false }, updated.retyped);
 
     if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
@@ -95,6 +95,7 @@ export class StorageLayoutComparator {
     original: ParsedTypeDetailed,
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
+    retype?: string | undefined,
   ): TypeChange | undefined {
     const key = JSON.stringify({ original: original.id, updated: updated.id, allowAppend });
 
@@ -108,7 +109,7 @@ export class StorageLayoutComparator {
 
     try {
       this.stack.add(key);
-      const result = this.uncachedGetTypeChange(original, updated, { allowAppend });
+      const result = this.uncachedGetTypeChange(original, updated, { allowAppend }, retype);
       this.cache.set(key, result);
       return result;
     } finally {
@@ -120,8 +121,9 @@ export class StorageLayoutComparator {
     original: ParsedTypeDetailed,
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
+    retype?: string | undefined,
   ): TypeChange | undefined {
-    if (original.head !== updated.head) {
+    if (original.head !== updated.head && retype === undefined) {
       return { kind: 'obvious mismatch', original, updated };
     }
 

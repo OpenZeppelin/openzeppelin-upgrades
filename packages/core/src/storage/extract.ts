@@ -45,8 +45,15 @@ export function extractStorageLayout(
         let rename: string | undefined;
         if ('documentation' in varDecl) {
           const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
-          // Can contain more than one natspec tag
-          docs.split('@').forEach(doc => );
+          const retypedRegex = new RegExp(/(?<=(custom:oz-retyped-from))\s*(\w+)/);
+          const renameRegex = new RegExp(/(?<=(custom:oz-renamed-from))\s*(\w+)/);
+          for (const doc of docs.split('@')) {
+            if (retypedRegex.test(doc) && retypedRegex.exec(doc)) {
+              retyped = retypedRegex.exec(doc)![0];
+            } else if (renameRegex.test(doc)){
+              rename = renameRegex.exec(doc)![0];
+            }
+          }
         }
         // Solc layout doesn't bring members for enums so we get them using the ast method
         loadLayoutType(varDecl, layout, deref);
