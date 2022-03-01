@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add `forceImport` function to import an existing proxy or beacon. ([#517](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/517))
+- Extract and store more detailed information about storage layout. ([#519](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/519))
 
 ## 1.14.0 (2022-01-31)
 

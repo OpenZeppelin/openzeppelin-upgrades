@@ -4,6 +4,7 @@
 
 - Remove `admin.deployTransaction` field written to network manifest. ([#510](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/510))
 - Add `forceImport` function to import an existing proxy or beacon. ([#517](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/517))
+- Extract and store more detailed information about storage layout. ([#519](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/519))
 
 ## 1.12.0 (2022-01-31)
 
