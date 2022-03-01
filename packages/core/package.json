@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/upgrades-core",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/core",
   "license": "MIT",
