@@ -62,7 +62,7 @@ export async function resumeOrDeploy<T extends Deployment>(
   deployment?: ManifestField<T>,
   merge?: boolean,
 ): Promise<T> {
-  const validated = await validateCached<T>(cached, provider, type, opts, deployment, merge);
+  const validated = await validateCached(cached, provider, type, opts, deployment, merge);
   if (validated === undefined || merge) {
     const deployment = await deploy();
     debug('initiated deployment', 'transaction hash:', deployment.txHash, 'merge:', merge);
