@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `forceImport` function to import an existing proxy or beacon. ([#517](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/517))
+
 ## 1.14.0 (2022-01-31)
 
 - Add options `timeout` and `pollingInterval`. ([#55](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/55))

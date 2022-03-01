@@ -4,13 +4,16 @@ import debug from './utils/debug';
 import { makeNonEnumerable } from './utils/make-non-enumerable';
 import {
   EthereumProvider,
+  getCode,
   getTransactionByHash,
   getTransactionReceipt,
   hasCode,
   isDevelopmentNetwork,
+  isEmpty,
   isReceiptSuccessful,
 } from './provider';
 import { UpgradesError } from './error';
+import { deleteDeployment, ManifestField } from './impl-store';
 
 const sleep = promisify(setTimeout);
 
@@ -31,37 +34,101 @@ export interface DeployOpts {
   pollingInterval?: number;
 }
 
+/**
+ * Resumes a deployment or deploys a new one, based on whether the cached deployment should continue to be used and is valid
+ * (has a valid txHash for the current network or has runtime bytecode).
+ * If a cached deployment is not valid, deletes it if using a development network, otherwise throws an InvalidDeployment error.
+ *
+ * @param provider the Ethereum provider
+ * @param cached the cached deployment
+ * @param deploy the function to deploy a new deployment if needed
+ * @param type the manifest lens type. If merge is true, used for the timeout message if a previous deployment is not
+ *   confirmed within the timeout period. Otherwise not used.
+ * @param opts polling timeout and interval options. If merge is true, used to check a previous deployment for confirmation.
+ *   Otherwise not used.
+ * @param deployment the manifest field for this deployment. Optional for backward compatibility.
+ *   If not provided, invalid deployments will not be deleted in a dev network (which is not a problem if merge is false,
+ *   since it will be overwritten with the new deployment).
+ * @param merge whether the cached deployment is intended to be merged with the new deployment. Defaults to false.
+ * @returns the cached deployment if it should be used, otherwise the new deployment from the deploy function
+ * @throws {InvalidDeployment} if the cached deployment is invalid and we are not on a dev network
+ */
 export async function resumeOrDeploy<T extends Deployment>(
   provider: EthereumProvider,
   cached: T | undefined,
   deploy: () => Promise<T>,
+  type?: string,
+  opts?: DeployOpts,
+  deployment?: ManifestField<T>,
+  merge?: boolean,
 ): Promise<T> {
+  const validated = await validateCached(cached, provider, type, opts, deployment, merge);
+  if (validated === undefined || merge) {
+    const deployment = await deploy();
+    debug('initiated deployment', 'transaction hash:', deployment.txHash, 'merge:', merge);
+    return deployment;
+  } else {
+    return validated;
+  }
+}
+
+async function validateCached<T extends Deployment>(
+  cached: T | undefined,
+  provider: EthereumProvider,
+  type?: string,
+  opts?: DeployOpts,
+  deployment?: ManifestField<T>,
+  merge?: boolean,
+): Promise<T | undefined> {
   if (cached !== undefined) {
-    const { txHash } = cached;
-    if (txHash === undefined) {
-      // Nothing to do here without a txHash.
-      // This is the case for deployments migrated from OpenZeppelin CLI.
-      return cached;
+    try {
+      await validateStoredDeployment(cached, provider, type, opts, merge);
+    } catch (e) {
+      if (e instanceof InvalidDeployment && (await isDevelopmentNetwork(provider))) {
+        debug('ignoring invalid deployment in development network', e.deployment.address);
+        if (deployment !== undefined) {
+          deleteDeployment(deployment);
+        }
+        return undefined;
+      } else {
+        throw e;
+      }
     }
+  }
+  return cached;
+}
+
+async function validateStoredDeployment<T extends Deployment>(
+  stored: T,
+  provider: EthereumProvider,
+  type?: string,
+  opts?: DeployOpts,
+  merge?: boolean,
+) {
+  const { txHash } = stored;
+  if (txHash !== undefined) {
     // If there is a deployment with txHash stored, we look its transaction up. If the
     // transaction is found, the deployment is reused.
     debug('found previous deployment', txHash);
     const tx = await getTransactionByHash(provider, txHash);
     if (tx !== null) {
       debug('resuming previous deployment', txHash);
-      return cached;
-    } else if (!(await isDevelopmentNetwork(provider))) {
+      if (merge) {
+        // If merging, wait for the existing deployment to be mined
+        waitAndValidateDeployment(provider, stored, type, opts);
+      }
+    } else {
       // If the transaction is not found we throw an error, except if we're in
       // a development network then we simply silently redeploy.
-      throw new InvalidDeployment(cached);
-    } else {
-      debug('ignoring invalid deployment in development network', txHash);
+      // This error should be caught by the caller to determine if we're in a dev network.
+      throw new InvalidDeployment(stored);
+    }
+  } else {
+    const existingBytecode = await getCode(provider, stored.address);
+    if (isEmpty(existingBytecode)) {
+      throw new InvalidDeployment(stored);
     }
   }
-
-  const deployment = await deploy();
-  debug('initiated deployment', deployment.txHash);
-  return deployment;
 }
 
 export async function waitAndValidateDeployment(

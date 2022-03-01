@@ -65,7 +65,7 @@ test('block proposing an upgrade on generic contract', async t => {
   const title = 'My upgrade';
   const description = 'My contract upgrade';
   await t.throwsAsync(() => proposeUpgrade(genericContract.address, GreeterV2, { title, description }), {
-    message: /Contract at \S+ doesn't look like an administered ERC 1967 proxy/,
+    message: /Contract at \S+ doesn't look like an ERC 1967 proxy with a logic contract address/,
   });
 });
 

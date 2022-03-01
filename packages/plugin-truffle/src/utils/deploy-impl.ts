@@ -32,7 +32,7 @@ interface DeployedBeaconImpl {
   impl: string;
 }
 
-interface DeployData {
+export interface DeployData {
   fullOpts: Required<Options>;
   validations: ValidationRunData;
   version: Version;
@@ -40,7 +40,7 @@ interface DeployData {
   layout: StorageLayout;
 }
 
-async function getDeployData(opts: Options, Contract: ContractClass): Promise<DeployData> {
+export async function getDeployData(opts: Options, Contract: ContractClass): Promise<DeployData> {
   const fullOpts = withDefaults(opts);
   const provider = wrapProvider(fullOpts.deployer.provider);
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
