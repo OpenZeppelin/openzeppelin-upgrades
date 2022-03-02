@@ -79,10 +79,9 @@ export class StorageLayoutComparator {
   }
 
   getFieldChange<F extends StorageField>(original: F, updated: F): StorageFieldChange<F> | undefined {
-    console.log('the updated', updated);
     const nameChange = !this.unsafeAllowRenames && original.label !== (updated.rename ?? updated.label);
     let type: ParsedTypeDetailed | undefined = undefined;
-    if (original.type.item.label == updated.retyped) {
+    if (original.type.item.label == updated.retyped?.trim()) {
       type = original.type;
     }
     const typeChange = this.getTypeChange(original.type, type ?? updated.type, { allowAppend: false });
@@ -97,8 +96,13 @@ export class StorageLayoutComparator {
     }
   }
 
+  // Verify the original type and updated real type, not the reported one, are actually compatible
   getLayoutChange(original: StorageField, updated: StorageField): boolean {
-    throw new Error('Method not implemented.'); //TODO implement
+    const knownCompatibleTypes = ['uint8', 'bool'].includes(original.type.item.label) && ['uint8', 'bool'].includes(updated.type.item.label);
+    if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
+      return true;
+    }
+    return false;
   }
 
   getTypeChange(
@@ -248,7 +252,6 @@ export class StorageLayoutComparator {
       }
 
       default:
-        console.log('this was a default', original, updated);
         return { kind: 'unknown', original, updated };
     }
   }
