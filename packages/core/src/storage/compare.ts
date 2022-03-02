@@ -79,8 +79,14 @@ export class StorageLayoutComparator {
   }
 
   getFieldChange<F extends StorageField>(original: F, updated: F): StorageFieldChange<F> | undefined {
-    const nameChange = !this.unsafeAllowRenames && original.label !== updated.label && original.label !== updated.rename;
-    const typeChange = this.getTypeChange(original.type, updated.type, { allowAppend: false }, updated.retyped);
+    console.log('the updated', updated);
+    const nameChange = !this.unsafeAllowRenames && original.label !== (updated.rename ?? updated.label);
+    let type: ParsedTypeDetailed | undefined = undefined;
+    if (original.type.item.label == updated.retyped) {
+      type = original.type;
+    }
+    const typeChange = this.getTypeChange(original.type, type ?? updated.type, { allowAppend: false });
+    const layoutChange = this.getLayoutChange(original, updated);
 
     if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
@@ -91,14 +97,16 @@ export class StorageLayoutComparator {
     }
   }
 
+  getLayoutChange(original: StorageField, updated: StorageField): boolean {
+    throw new Error('Method not implemented.'); //TODO implement
+  }
+
   getTypeChange(
     original: ParsedTypeDetailed,
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
-    retype?: string | undefined,
   ): TypeChange | undefined {
     const key = JSON.stringify({ original: original.id, updated: updated.id, allowAppend });
-
     if (this.cache.has(key)) {
       return this.cache.get(key);
     }
@@ -109,7 +117,7 @@ export class StorageLayoutComparator {
 
     try {
       this.stack.add(key);
-      const result = this.uncachedGetTypeChange(original, updated, { allowAppend }, retype);
+      const result = this.uncachedGetTypeChange(original, updated, { allowAppend });
       this.cache.set(key, result);
       return result;
     } finally {
@@ -121,9 +129,8 @@ export class StorageLayoutComparator {
     original: ParsedTypeDetailed,
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
-    retype?: string | undefined,
   ): TypeChange | undefined {
-    if (original.head !== updated.head && retype === undefined) {
+    if (original.head !== updated.head) {
       return { kind: 'obvious mismatch', original, updated };
     }
 
@@ -241,6 +248,7 @@ export class StorageLayoutComparator {
       }
 
       default:
+        console.log('this was a default', original, updated);
         return { kind: 'unknown', original, updated };
     }
   }
