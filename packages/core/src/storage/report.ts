@@ -90,14 +90,12 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
 
 function explainTypeChange(ch: TypeChange): string {
   switch (ch.kind) {
+    case 'visibility change':
+      return `Bad upgrade visibility changed ${describeTransition(ch.original, ch.updated)}`;
     case 'obvious mismatch':
     case 'struct members':
     case 'enum members':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}`;
-    case 'visibility change':
-      return `Bad upgrade visibility changed ${describeTransitionPath(ch.original.visibility, ch.updated.visibility)}`;
-    case 'mutability change':
-      return `Bad upgrade mutability changed ${describeTransitionPath(ch.original.mutability, ch.updated.mutability)}`;
     case 'enum resize':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent representation sizes`;
 
@@ -207,18 +205,15 @@ function explainBasicOperation<T>(op: BasicOperation<T>, getName: (t: T) => stri
   }
 }
 
-function describeTransitionPath(from: string | undefined, to: string | undefined): string {
-  if (from === to) {
-    return `to ${to}`;
-  } else {
-    return `from ${from} to ${to}`;
-  }
-}
-
 function describeTransition(original: ParsedTypeDetailed, updated: ParsedTypeDetailed): string {
   const originalLabel = original.item.label;
   const updatedLabel = updated.item.label;
-  return describeTransitionPath(originalLabel, updatedLabel);
+
+  if (originalLabel === updatedLabel) {
+    return `to ${updatedLabel}`;
+  } else {
+    return `from ${originalLabel} to ${updatedLabel}`;
+  }
 }
 
 function label(variable: { label: string }): string {

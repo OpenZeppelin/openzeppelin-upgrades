@@ -5,8 +5,6 @@ import assert from 'assert';
 export interface ParsedTypeId {
   id: string;
   head: string;
-  visibility?: string;
-  mutability?: string;
   args?: ParsedTypeId[];
   tail?: string;
   rets?: ParsedTypeId[];
@@ -67,9 +65,11 @@ export function parseTypeId(id: string): ParsedTypeId {
 
     return args;
   }
+
   const openArgs = matcher.match(/\(/);
-  const [head, visibility, mutability] = id.slice(0, openArgs?.index).split(/_(internal|external|public|private)_/);
+  const head = id.slice(0, openArgs?.index);
   let args, tail, rets;
+
   if (openArgs) {
     args = parseList();
 
@@ -83,7 +83,8 @@ export function parseTypeId(id: string): ParsedTypeId {
       rets = parseList();
     }
   }
-  return { id, head, visibility, mutability, args, tail, rets };
+
+  return { id, head, args, tail, rets };
 }
 
 class StatefulGlobalMatcher {

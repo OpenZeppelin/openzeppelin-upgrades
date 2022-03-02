@@ -327,20 +327,6 @@ contract StorageUpgrade_FunctionType_Visibility_V2_Bad {
     S s1;
 }
 
-contract StorageUpgrade_FunctionType_Mutability_V1 {
-    struct S {
-        function () internal view m;
-    }
-    S s1;
-}
-
-contract StorageUpgrade_FunctionType_Mutability_V2_Bad {
-    struct S {
-        function () internal m;
-    }
-    S s1;
-}
-
 contract StorageUpgrade_Contract_V1 {
     StorageUpgrade_Contract_V1 data;
 }

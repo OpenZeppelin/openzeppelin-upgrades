@@ -26,10 +26,9 @@ export type TypeChange = (
   | {
       kind:
         | 'obvious mismatch'
-        | 'visibility change'
-        | 'mutability change'
         | 'unknown'
         | 'array grow'
+        | 'visibility change'
         | 'array shrink'
         | 'array dynamic'
         | 'enum resize'
@@ -80,6 +79,16 @@ export class StorageLayoutComparator {
     }
   }
 
+  getVisibilityChange(original: ParsedTypeDetailed, updated: ParsedTypeDetailed): TypeChange | undefined {
+    const re = /(internal|external|public|private)/
+    const originalVisibility = original.head.match(re);
+    const updatedVisibility = updated.head.match(re);
+    assert(originalVisibility && updatedVisibility);
+    if (originalVisibility[0] !== updatedVisibility[0]) {
+      return { kind: 'visibility change', original, updated }
+    }
+  }
+
   getFieldChange<F extends StorageField>(original: F, updated: F): StorageFieldChange<F> | undefined {
     const nameChange = !this.unsafeAllowRenames && original.label !== updated.label;
     const typeChange = this.getTypeChange(original.type, updated.type, { allowAppend: false });
@@ -123,7 +132,9 @@ export class StorageLayoutComparator {
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
   ): TypeChange | undefined {
-    if (original.head !== updated.head) {
+    if (updated.head.startsWith('t_function')) {
+      return this.getVisibilityChange(original, updated);
+    } else if (original.head !== updated.head) {
       return { kind: 'obvious mismatch', original, updated };
     }
     if (original.args === undefined || updated.args === undefined) {
@@ -136,13 +147,7 @@ export class StorageLayoutComparator {
       case 't_contract':
         // no storage layout errors can be introduced here since it is just an address
         return undefined;
-      case 't_function':
-        if (original.mutability !== updated.mutability) {
-          return { kind: 'mutability change', original, updated };
-        } else if (original.visibility !== updated.visibility) {
-          return { kind: 'visibility change', original, updated };
-        }
-        return undefined;
+
       case 't_struct': {
         const originalMembers = original.item.members;
         const updatedMembers = updated.item.members;
