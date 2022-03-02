@@ -93,17 +93,3 @@ test('replace', t => {
   const report = getReport(v1, v2);
   t.snapshot(report.explain());
 });
-
-test.only('rename new', t => {
-  const v1 = t.context.extractStorageLayout('RenameV1');
-  const v2 = t.context.extractStorageLayout('RenameV2');
-  const report = getReport(v1, v2);
-  t.pass();
-});
-
-test.only('retype new', t => {
-  const v1 = t.context.extractStorageLayout('RetypeV1');
-  const v2 = t.context.extractStorageLayout('RetypeV2');
-  const report = getReport(v1, v2);
-  t.pass();
-});
