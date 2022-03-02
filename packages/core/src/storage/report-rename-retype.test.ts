@@ -26,6 +26,7 @@ const testContracts = [
 test.before(async t => {
   const contracts: Record<string, ContractDefinition> = {};
   const deref: Record<string, ASTDereferencer> = {};
+  const storageLayout: Record <string, StorageLayout> = {};
   for (const contract of testContracts) {
     const buildInfo = await artifacts.getBuildInfo(contract);
     if (buildInfo === undefined) {
@@ -35,10 +36,11 @@ test.before(async t => {
     for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/ValidationsNatspec.sol'].ast)) {
       contracts[def.name] = def;
       deref[def.name] = astDereferencer(solcOutput);
+      storageLayout[def.name] = (solcOutput.contracts['contracts/test/ValidationsNatspec.sol'][def.name] as any).storageLayout;
     }
   }
 
-  t.context.extractStorageLayout = name => extractStorageLayout(contracts[name], dummyDecodeSrc, deref[name]);
+  t.context.extractStorageLayout = name => extractStorageLayout(contracts[name], dummyDecodeSrc, deref[name], storageLayout[name]);
 });
 
 function getReport(original: StorageLayout, updated: StorageLayout) {
@@ -49,13 +51,10 @@ function getReport(original: StorageLayout, updated: StorageLayout) {
 }
 
 test.only('rename new', t => {
-  console.log('im here');
   const v1 = t.context.extractStorageLayout('RenameV1');
-  console.log('im here0');
   const v2 = t.context.extractStorageLayout('RenameV2');
-  console.log('im here1');
   const report = getReport(v1, v2);
-  console.log('im here2', report);
+  //console.log('im here2', report);
   t.pass();
 });
 
@@ -64,6 +63,6 @@ test.only('retype new', t => {
   const v2 = t.context.extractStorageLayout('RetypeV2');
   const report = getReport(v1, v2);
 
-  console.log('im rtyped here2', report);
+  //console.log('im rtyped here2', report);
   t.pass();
 });
