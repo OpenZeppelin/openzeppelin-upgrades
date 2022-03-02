@@ -26,6 +26,8 @@ export type TypeChange = (
   | {
       kind:
         | 'obvious mismatch'
+        | 'visibility change'
+        | 'mutability change'
         | 'unknown'
         | 'array grow'
         | 'array shrink'
@@ -124,7 +126,6 @@ export class StorageLayoutComparator {
     if (original.head !== updated.head) {
       return { kind: 'obvious mismatch', original, updated };
     }
-
     if (original.args === undefined || updated.args === undefined) {
       // both should be undefined at the same time
       assert(original.args === updated.args);
@@ -135,7 +136,13 @@ export class StorageLayoutComparator {
       case 't_contract':
         // no storage layout errors can be introduced here since it is just an address
         return undefined;
-
+      case 't_function':
+        if (original.mutability !== updated.mutability) {
+          return { kind: 'mutability change', original, updated };
+        } else if (original.visibility !== updated.visibility) {
+          return { kind: 'visibility change', original, updated };
+        }
+        return undefined;
       case 't_struct': {
         const originalMembers = original.item.members;
         const updatedMembers = updated.item.members;
