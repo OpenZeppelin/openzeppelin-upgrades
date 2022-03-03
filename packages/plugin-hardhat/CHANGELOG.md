@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.15.1
+
+- Use a lockfile when reading validations cache to avoid problems with parallel compilation in Hardhat 2.9.0. ([#530](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/530))
+
 ## 1.15.0 (2022-03-01)
 
 - Add `forceImport` function to import an existing proxy or beacon. ([#517](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/517))
