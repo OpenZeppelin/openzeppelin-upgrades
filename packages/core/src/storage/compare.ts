@@ -134,9 +134,12 @@ export class StorageLayoutComparator {
   ): TypeChange | undefined {
     if (updated.head.startsWith('t_function')) {
       return this.getVisibilityChange(original, updated);
-    } else if (original.head !== updated.head) {
+    }
+
+    if (original.head !== updated.head) {
       return { kind: 'obvious mismatch', original, updated };
     }
+
     if (original.args === undefined || updated.args === undefined) {
       // both should be undefined at the same time
       assert(original.args === updated.args);
