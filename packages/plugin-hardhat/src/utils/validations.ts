@@ -36,7 +36,10 @@ export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunDat
   }
 }
 
-export async function readValidations(hre: HardhatRuntimeEnvironment, acquireLock = true): Promise<ValidationDataCurrent> {
+export async function readValidations(
+  hre: HardhatRuntimeEnvironment,
+  acquireLock = true,
+): Promise<ValidationDataCurrent> {
   const cachePath = getValidationsCachePath(hre);
   let releaseLock;
   try {
