@@ -20,17 +20,17 @@ export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunDat
   let releaseLock;
   try {
     releaseLock = await lock(cachePath);
-    const storedData = await readValidations(hre, false);
-
+    const storedData = await readValidations(hre, false).catch(e => {
+      // If there is no previous data to append to, we ignore the error and write
+      // the file from scratch.
+      if (e instanceof ValidationsCacheNotFound) {
+        return undefined;
+      } else {
+        throw e;
+      }
+    });
     const validations = concatRunData(newRunData, storedData);
-
     await fs.writeFile(cachePath, JSON.stringify(validations, null, 2));
-  } catch (e) {
-    // If there is no previous data to append to, we ignore the error and write
-    // the file from scratch.
-    if (!(e instanceof ValidationsCacheNotFound)) {
-      throw e;
-    }
   } finally {
     await releaseLock?.();
   }
