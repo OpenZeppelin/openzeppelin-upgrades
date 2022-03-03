@@ -10,7 +10,8 @@ import {
   isCurrentValidationData,
 } from '@openzeppelin/upgrades-core';
 
-function lock(file: string) {
+async function lock(file: string) {
+  await fs.mkdir(path.dirname(file), { recursive: true });
   return lockfile.lock(file, { retries: 3, realpath: false });
 }
 
@@ -23,7 +24,6 @@ export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunDat
 
     const validations = concatRunData(newRunData, storedData);
 
-    await fs.mkdir(hre.config.paths.cache, { recursive: true });
     await fs.writeFile(cachePath, JSON.stringify(validations, null, 2));
   } catch (e) {
     // If there is no previous data to append to, we ignore the error and write
