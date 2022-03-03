@@ -80,7 +80,7 @@ export class StorageLayoutComparator {
   }
 
   getVisibilityChange(original: ParsedTypeDetailed, updated: ParsedTypeDetailed): TypeChange | undefined {
-    const re = /(internal|external|public|private)/
+    const re = /^t_function_(internal|external)/
     const originalVisibility = original.head.match(re);
     const updatedVisibility = updated.head.match(re);
     assert(originalVisibility && updatedVisibility);
