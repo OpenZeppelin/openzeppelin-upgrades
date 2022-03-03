@@ -91,7 +91,8 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
 function explainTypeChange(ch: TypeChange): string {
   switch (ch.kind) {
     case 'visibility change':
-      return `Bad upgrade visibility changed ${describeTransition(ch.original, ch.updated)}`;
+      return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent visibility`;
+
     case 'obvious mismatch':
     case 'struct members':
     case 'enum members':
