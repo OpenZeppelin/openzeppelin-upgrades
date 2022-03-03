@@ -21,6 +21,8 @@ const testContracts = [
   'contracts/test/ValidationsNatspec.sol:RenameV2',
   'contracts/test/ValidationsNatspec.sol:RetypeV1',
   'contracts/test/ValidationsNatspec.sol:RetypeV2',
+  'contracts/test/ValidationsNatspec.sol:WronglyReportedRetypeV3',
+  'contracts/test/ValidationsNatspec.sol:MissmatchingTypeRetypeV4',
 ];
 
 test.before(async t => {
@@ -50,19 +52,30 @@ function getReport(original: StorageLayout, updated: StorageLayout) {
   return comparator.compareLayouts(originalDetailed, updatedDetailed);
 }
 
-test.only('rename new', t => {
+test.only('succesful rename', t => {
   const v1 = t.context.extractStorageLayout('RenameV1');
   const v2 = t.context.extractStorageLayout('RenameV2');
   const report = getReport(v1, v2);
-  //console.log('im here2', report);
   t.pass();
 });
 
-test.only('retype new', t => {
+test.only('succesful retype', t => {
   const v1 = t.context.extractStorageLayout('RetypeV1');
   const v2 = t.context.extractStorageLayout('RetypeV2');
   const report = getReport(v1, v2);
+  t.pass();
+});
 
-  //console.log('im rtyped here2', report);
+test.only('wrongly reported retype', t => {
+  const v1 = t.context.extractStorageLayout('RetypeV1');
+  const v2 = t.context.extractStorageLayout('WronglyReportedRetypeV3');
+  const report = getReport(v1, v2);
+  t.pass();
+});
+
+test.only('rightly reported retype but incompatible new type', t => {
+  const v1 = t.context.extractStorageLayout('RetypeV1');
+  const v2 = t.context.extractStorageLayout('MissmatchingTypeRetypeV4');
+  const report = getReport(v1, v2);
   t.pass();
 });

@@ -240,3 +240,13 @@ contract RetypeV2 {
   ///@custom:oz-retyped-from bool
   uint8 x;
 }
+
+contract WronglyReportedRetypeV3 {
+  ///@custom:oz-retyped-from address
+  uint8 x;
+}
+
+contract MissmatchingTypeRetypeV4 {
+  ///@custom:oz-retyped-from bool
+  bytes32 x;
+}
