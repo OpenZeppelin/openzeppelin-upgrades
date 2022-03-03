@@ -35,7 +35,7 @@ jobs:
       run: bash scripts/bundle-pack.sh
 
     - name: Uplaod tarballs as artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: package
         path: "*.tgz"
