@@ -45,13 +45,14 @@ export interface ParsedTypeDetailed extends ParsedTypeId {
   item: TypeItem<ParsedTypeDetailed>;
   args?: ParsedTypeDetailed[];
   rets?: ParsedTypeDetailed[];
+  rename?: string;
+  retyped?: string;
 }
 
 type Replace<T, K extends string, V> = Omit<T, K> & Record<K, V>;
 
 export function getDetailedLayout(layout: StorageLayout): StorageItem<ParsedTypeDetailed>[] {
   const cache: Record<string, ParsedTypeDetailed> = {};
-
   return layout.storage.map(parseWithDetails);
 
   function parseWithDetails<I extends { type: string }>(item: I): Replace<I, 'type', ParsedTypeDetailed> {

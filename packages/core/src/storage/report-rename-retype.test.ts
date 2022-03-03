@@ -2,8 +2,6 @@ import _test, { TestFn } from 'ava';
 import { ContractDefinition } from 'solidity-ast';
 import { ASTDereferencer, findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
-
-import { SolcOutput } from '../solc-api';
 import { astDereferencer } from '../ast-dereferencer';
 import { extractStorageLayout } from './extract';
 import { StorageLayoutComparator } from './compare';
@@ -28,7 +26,7 @@ const testContracts = [
 test.before(async t => {
   const contracts: Record<string, ContractDefinition> = {};
   const deref: Record<string, ASTDereferencer> = {};
-  const storageLayout: Record <string, StorageLayout> = {};
+  const storageLayout: Record<string, StorageLayout> = {};
   for (const contract of testContracts) {
     const buildInfo = await artifacts.getBuildInfo(contract);
     if (buildInfo === undefined) {
@@ -38,11 +36,14 @@ test.before(async t => {
     for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/ValidationsNatspec.sol'].ast)) {
       contracts[def.name] = def;
       deref[def.name] = astDereferencer(solcOutput);
-      storageLayout[def.name] = (solcOutput.contracts['contracts/test/ValidationsNatspec.sol'][def.name] as any).storageLayout;
+      storageLayout[def.name] = (
+        solcOutput.contracts['contracts/test/ValidationsNatspec.sol'][def.name] as any
+      ).storageLayout;
     }
   }
 
-  t.context.extractStorageLayout = name => extractStorageLayout(contracts[name], dummyDecodeSrc, deref[name], storageLayout[name]);
+  t.context.extractStorageLayout = name =>
+    extractStorageLayout(contracts[name], dummyDecodeSrc, deref[name], storageLayout[name]);
 });
 
 function getReport(original: StorageLayout, updated: StorageLayout) {
@@ -52,28 +53,28 @@ function getReport(original: StorageLayout, updated: StorageLayout) {
   return comparator.compareLayouts(originalDetailed, updatedDetailed);
 }
 
-test.only('succesful rename', t => {
+test('succesful rename', t => {
   const v1 = t.context.extractStorageLayout('RenameV1');
   const v2 = t.context.extractStorageLayout('RenameV2');
   const report = getReport(v1, v2);
   t.snapshot(report.explain());
 });
 
-test.only('succesful retype', t => {
+test('succesful retype', t => {
   const v1 = t.context.extractStorageLayout('RetypeV1');
   const v2 = t.context.extractStorageLayout('RetypeV2');
   const report = getReport(v1, v2);
   t.snapshot(report.explain());
 });
 
-test.only('wrongly reported retype', t => {
+test('wrongly reported retype', t => {
   const v1 = t.context.extractStorageLayout('RetypeV1');
   const v2 = t.context.extractStorageLayout('WronglyReportedRetypeV3');
   const report = getReport(v1, v2);
   t.snapshot(report.explain());
 });
 
-test.only('rightly reported retype but incompatible new type', t => {
+test('rightly reported retype but incompatible new type', t => {
   const v1 = t.context.extractStorageLayout('RetypeV1');
   const v2 = t.context.extractStorageLayout('MissmatchingTypeRetypeV4');
   const report = getReport(v1, v2);

@@ -85,9 +85,9 @@ export class StorageLayoutComparator {
       type = original.type;
     }
     const typeChange = this.getTypeChange(original.type, type ?? updated.type, { allowAppend: false });
-    const layoutChange = this.getLayoutChange(original, updated);
+    const layoutChange = updated.retyped ? this.getLayoutChange(original, updated) : false;
 
-    if (typeChange && nameChange) {
+    if ((typeChange && nameChange) || layoutChange) {
       return { kind: 'replace', original, updated };
     } else if (nameChange) {
       return { kind: 'rename', original, updated };
@@ -98,11 +98,28 @@ export class StorageLayoutComparator {
 
   // Verify the original type and updated real type, not the reported one, are actually compatible
   getLayoutChange(original: StorageField, updated: StorageField): boolean {
-    const knownCompatibleTypes = ['uint8', 'bool'].includes(original.type.item.label) && ['uint8', 'bool'].includes(updated.type.item.label);
+    const validPair = ['uint8', 'bool'];
+    const knownCompatibleTypes =
+      validPair.includes(original.type.item.label) && validPair.includes(updated.type.item.label);
+    // This is so it doesnt throw an error when reading slot and offset
+    const anyOriginal: any = original;
+    const anyUpdated: any = updated;
     if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
-      return true;
+      return false;
+    } else if (anyOriginal.slot && anyOriginal.offset && anyUpdated.slot && anyUpdated.offset) {
+      const originalValues = JSON.stringify({
+        slot: anyOriginal.slot,
+        offset: anyOriginal.offset,
+        numberOfBytes: original.type.item.numberOfBytes,
+      });
+      const updatedValues = JSON.stringify({
+        slot: anyUpdated.slot,
+        offset: anyUpdated.offset,
+        numberOfBytes: updated.type.item.numberOfBytes,
+      });
+      return !(originalValues === updatedValues);
     }
-    return false;
+    return true;
   }
 
   getTypeChange(

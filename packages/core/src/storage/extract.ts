@@ -27,6 +27,8 @@ export function extractStorageLayout(
   storageLayout?: StorageLayout | undefined,
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
+  let retyped: string | undefined;
+  let rename: string | undefined;
   if (storageLayout !== undefined) {
     layout.types = mapValues(storageLayout.types, m => {
       return {
@@ -41,20 +43,7 @@ export function extractStorageLayout(
 
       if (origin) {
         const [varDecl, contract] = origin;
-        let retyped: string | undefined;
-        let rename: string | undefined;
-        if ('documentation' in varDecl) {
-          const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
-          const retypedRegex = new RegExp(/(?<=(custom:oz-retyped-from))\s*(\w+)/);
-          const renameRegex = new RegExp(/(?<=(custom:oz-renamed-from))\s*(\w+)/);
-          for (const doc of docs.split('@')) {
-            if (retypedRegex.test(doc) && retypedRegex.exec(doc)) {
-              retyped = retypedRegex.exec(doc)![0];
-            } else if (renameRegex.test(doc)){
-              rename = renameRegex.exec(doc)![0];
-            }
-          }
-        }
+        [rename, retyped] = getDocumentationValues(varDecl);
         // Solc layout doesn't bring members for enums so we get them using the ast method
         loadLayoutType(varDecl, layout, deref);
         const { label, offset, slot, type } = storage;
@@ -68,20 +57,7 @@ export function extractStorageLayout(
       if (isNodeType('VariableDeclaration', varDecl)) {
         if (!varDecl.constant && varDecl.mutability !== 'immutable') {
           const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
-          let retyped: string | undefined;
-        let rename: string | undefined;
-          if ('documentation' in varDecl) {
-            const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
-            const retypedRegex = new RegExp(/(?<=(custom:oz-retyped-from))\s*(\w+)/);
-            const renameRegex = new RegExp(/(?<=(custom:oz-renamed-from))\s*(\w+)/);
-            for (const doc of docs.split('@')) {
-              if (retypedRegex.test(doc) && retypedRegex.exec(doc)) {
-                retyped = retypedRegex.exec(doc)![0];
-              } else if (renameRegex.test(doc)){
-                rename = renameRegex.exec(doc)![0];
-              }
-            }
-          }
+          [rename, retyped] = getDocumentationValues(varDecl);
           layout.storage.push({
             contract: contractDef.name,
             label: varDecl.name,
@@ -182,4 +158,24 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
 
     layout.types[type] = { label, members };
   }
+}
+
+function getDocumentationValues(varDecl: VariableDeclaration): [string | undefined, string | undefined] {
+  let retyped: string | undefined;
+  let rename: string | undefined;
+  const retypedRegex = new RegExp(/(?<=(custom:oz-retyped-from))\s*(\w+)/);
+  const renameRegex = new RegExp(/(?<=(custom:oz-renamed-from))\s*(\w+)/);
+  if ('documentation' in varDecl) {
+    const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
+    for (const doc of docs.split('@')) {
+      if (retypedRegex.test(doc)) {
+        const matches = retypedRegex.exec(doc);
+        retyped = matches ? matches[0] : undefined;
+      } else if (renameRegex.test(doc)) {
+        const matches = renameRegex.exec(doc);
+        rename = matches ? matches[0] : undefined;
+      }
+    }
+  }
+  return [rename, retyped];
 }
