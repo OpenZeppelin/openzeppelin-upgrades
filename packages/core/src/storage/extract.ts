@@ -68,12 +68,27 @@ export function extractStorageLayout(
       if (isNodeType('VariableDeclaration', varDecl)) {
         if (!varDecl.constant && varDecl.mutability !== 'immutable') {
           const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
-
+          let retyped: string | undefined;
+        let rename: string | undefined;
+          if ('documentation' in varDecl) {
+            const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
+            const retypedRegex = new RegExp(/(?<=(custom:oz-retyped-from))\s*(\w+)/);
+            const renameRegex = new RegExp(/(?<=(custom:oz-renamed-from))\s*(\w+)/);
+            for (const doc of docs.split('@')) {
+              if (retypedRegex.test(doc) && retypedRegex.exec(doc)) {
+                retyped = retypedRegex.exec(doc)![0];
+              } else if (renameRegex.test(doc)){
+                rename = renameRegex.exec(doc)![0];
+              }
+            }
+          }
           layout.storage.push({
             contract: contractDef.name,
             label: varDecl.name,
             type,
             src: decodeSrc(varDecl),
+            retyped,
+            rename,
           });
 
           loadLayoutType(varDecl, layout, deref);
@@ -124,7 +139,6 @@ function getOriginContract(
 ): undefined | [VariableDeclaration, string] {
   for (const id of contract.linearizedBaseContracts.reverse()) {
     const parentContract = deref(['ContractDefinition'], id);
-
     const varDecl = parentContract.nodes.find(n => n.id == astId);
     if (varDecl && isNodeType('VariableDeclaration', varDecl)) {
       return [varDecl, parentContract.name];
