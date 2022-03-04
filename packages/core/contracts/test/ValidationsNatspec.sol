@@ -227,7 +227,7 @@ contract RenameV1 {
 }
 
 contract RenameV2 {
-  ///@custom:oz-renamed-from x
+  /// @custom:oz-renamed-from x
  uint y;
 }
 
@@ -236,17 +236,17 @@ contract RetypeV1 {
 }
 
 contract RetypeV2 {
-  ///@dev a retyped variable
-  ///@custom:oz-retyped-from bool
+  /// @dev a retyped variable
+  /// @custom:oz-retyped-from bool
   uint8 x;
 }
 
 contract WronglyReportedRetypeV3 {
-  ///@custom:oz-retyped-from address
+  /// @custom:oz-retyped-from address
   uint8 x;
 }
 
 contract MissmatchingTypeRetypeV4 {
-  ///@custom:oz-retyped-from bool
+  /// @custom:oz-retyped-from bool
   bytes32 x;
 }

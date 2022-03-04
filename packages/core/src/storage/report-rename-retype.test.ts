@@ -57,6 +57,7 @@ test('succesful rename', t => {
   const v1 = t.context.extractStorageLayout('RenameV1');
   const v2 = t.context.extractStorageLayout('RenameV2');
   const report = getReport(v1, v2);
+  t.true(report.ok);
   t.snapshot(report.explain());
 });
 
@@ -64,6 +65,7 @@ test('succesful retype', t => {
   const v1 = t.context.extractStorageLayout('RetypeV1');
   const v2 = t.context.extractStorageLayout('RetypeV2');
   const report = getReport(v1, v2);
+  t.true(report.ok);
   t.snapshot(report.explain());
 });
 
@@ -71,6 +73,7 @@ test('wrongly reported retype', t => {
   const v1 = t.context.extractStorageLayout('RetypeV1');
   const v2 = t.context.extractStorageLayout('WronglyReportedRetypeV3');
   const report = getReport(v1, v2);
+  t.false(report.ok);
   t.snapshot(report.explain());
 });
 
@@ -78,5 +81,6 @@ test('rightly reported retype but incompatible new type', t => {
   const v1 = t.context.extractStorageLayout('RetypeV1');
   const v2 = t.context.extractStorageLayout('MissmatchingTypeRetypeV4');
   const report = getReport(v1, v2);
+  t.false(report.ok);
   t.snapshot(report.explain());
 });
