@@ -85,7 +85,7 @@ export class StorageLayoutComparator {
     const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = this.getLayoutChange(original, updated);
 
-    if (layoutChange) {
+    if (updated.retypedFrom && layoutChange) {
       return { kind: 'layoutchange', original, updated };
     } else if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
