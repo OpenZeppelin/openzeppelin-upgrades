@@ -80,11 +80,8 @@ export class StorageLayoutComparator {
 
   getFieldChange<F extends StorageField>(original: F, updated: F): StorageFieldChange<F> | undefined {
     const nameChange = !this.unsafeAllowRenames && original.label !== (updated.rename ?? updated.label);
-    let type: ParsedTypeDetailed | undefined = undefined;
-    if (original.type.item.label == updated.retyped?.trim()) {
-      type = original.type;
-    }
-    const typeChange = this.getTypeChange(original.type, type ?? updated.type, { allowAppend: false });
+    const retypedFromOriginal = original.type.item.label === updated.retyped?.trim();
+    const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = updated.retyped ? this.getLayoutChange(original, updated) : false;
 
     if ((typeChange && nameChange) || layoutChange) {
