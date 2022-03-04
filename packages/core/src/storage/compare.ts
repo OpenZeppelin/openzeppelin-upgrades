@@ -85,7 +85,7 @@ export class StorageLayoutComparator {
     const layoutChange = updated.retypedFrom ? this.getLayoutChange(original, updated) : false;
 
     if (layoutChange) {
-      return { kind: 'layoutchange', original, updated };
+      //return { kind: 'layoutchange', original, updated };
     } else if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
     } else if (nameChange) {
@@ -103,16 +103,16 @@ export class StorageLayoutComparator {
     if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
       return false;
     } else if (original.slot && original.offset && updated.slot && updated.offset) {
-      const originalValues = JSON.stringify({
+      const originalValues = {
         slot: original.slot,
         offset: original.offset,
         numberOfBytes: original.type.item.numberOfBytes,
-      });
-      const updatedValues = JSON.stringify({
+      };
+      const updatedValues = {
         slot: updated.slot,
         offset: updated.offset,
         numberOfBytes: updated.type.item.numberOfBytes,
-      });
+      };
       return !(originalValues === updatedValues);
     }
     return true;

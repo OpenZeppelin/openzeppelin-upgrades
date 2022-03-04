@@ -48,7 +48,7 @@ export function extractStorageLayout(
         loadLayoutType(varDecl, layout, deref);
         const { label, offset, slot, type } = storage;
         const src = decodeSrc(varDecl);
-        layout.storage.push({ label, offset, slot, type, contract, src, retyped, rename });
+        layout.storage.push({ label, offset, slot, type, contract, src, retypedFrom: retyped, renameFrom: rename });
         layout.flat = true;
       }
     }
@@ -63,8 +63,8 @@ export function extractStorageLayout(
             label: varDecl.name,
             type,
             src: decodeSrc(varDecl),
-            retyped,
-            rename,
+            retypedFrom: retyped,
+            renameFrom: rename,
           });
 
           loadLayoutType(varDecl, layout, deref);
