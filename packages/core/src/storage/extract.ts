@@ -27,8 +27,6 @@ export function extractStorageLayout(
   storageLayout?: StorageLayout | undefined,
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
-  let retyped: string | undefined;
-  let rename: string | undefined;
   if (storageLayout !== undefined) {
     layout.types = mapValues(storageLayout.types, m => {
       return {
@@ -43,7 +41,7 @@ export function extractStorageLayout(
 
       if (origin) {
         const [varDecl, contract] = origin;
-        [rename, retyped] = getDocumentationValues(varDecl);
+        const { rename, retyped } = {...getDocumentationValues(varDecl)};
         // Solc layout doesn't bring members for enums so we get them using the ast method
         loadLayoutType(varDecl, layout, deref);
         const { label, offset, slot, type } = storage;
@@ -57,7 +55,7 @@ export function extractStorageLayout(
       if (isNodeType('VariableDeclaration', varDecl)) {
         if (!varDecl.constant && varDecl.mutability !== 'immutable') {
           const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
-          [rename, retyped] = getDocumentationValues(varDecl);
+          const { rename, retyped } = {...getDocumentationValues(varDecl)};
           layout.storage.push({
             contract: contractDef.name,
             label: varDecl.name,
@@ -160,22 +158,35 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
   }
 }
 
-function getDocumentationValues(varDecl: VariableDeclaration): [string | undefined, string | undefined] {
-  let retyped: string | undefined;
-  let rename: string | undefined;
-  const retypedRegex = new RegExp(/(?<=(custom:oz-retyped-from))\s*(\w+)/);
-  const renameRegex = new RegExp(/(?<=(custom:oz-renamed-from))\s*(\w+)/);
+function getDocumentationValues(varDecl: VariableDeclaration): { rename: string| undefined; retyped: string| undefined; } | undefined {
   if ('documentation' in varDecl) {
     const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
-    for (const doc of docs.split('@')) {
-      if (retypedRegex.test(doc)) {
-        const matches = retypedRegex.exec(doc);
-        retyped = matches ? matches[0] : undefined;
-      } else if (renameRegex.test(doc)) {
-        const matches = renameRegex.exec(doc);
-        rename = matches ? matches[0] : undefined;
+    let retyped: string|undefined;
+    let rename: string|undefined;
+    for (const { groups } of execall(
+      /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
+      docs,
+    )) {
+      if (groups && groups.title === 'custom' && groups.tag === 'oz-retyped-from') {
+        retyped = [...groups.args.split(/\s+/)][0];
+      } else if (groups && groups.title === 'custom' && groups.tag === 'oz-renamed-from') {
+        rename = [...groups.args.split(/\s+/)][0];
       }
     }
+    if (retyped || rename) {
+      return {rename: rename, retyped: retyped}
+    }
   }
-  return [rename, retyped];
+}
+
+function* execall(re: RegExp, text: string) {
+  re = new RegExp(re, re.flags + (re.sticky ? '' : 'y'));
+  while (true) {
+    const match = re.exec(text);
+    if (match && match[0] !== '') {
+      yield match;
+    } else {
+      break;
+    }
+  }
 }
