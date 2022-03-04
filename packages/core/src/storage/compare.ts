@@ -79,10 +79,10 @@ export class StorageLayoutComparator {
   }
 
   getFieldChange<F extends StorageField>(original: F, updated: F): StorageFieldChange<F> | undefined {
-    const nameChange = !this.unsafeAllowRenames && original.label !== (updated.rename ?? updated.label);
-    const retypedFromOriginal = original.type.item.label === updated.retyped?.trim();
+    const nameChange = !this.unsafeAllowRenames && original.label !== (updated.renameFrom ?? updated.label);
+    const retypedFromOriginal = original.type.item.label === updated.retypedFrom?.trim();
     const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
-    const layoutChange = updated.retyped ? this.getLayoutChange(original, updated) : false;
+    const layoutChange = updated.retypedFrom ? this.getLayoutChange(original, updated) : false;
 
     if (layoutChange) {
       return { kind: 'layoutchange', original, updated };
@@ -100,20 +100,17 @@ export class StorageLayoutComparator {
     const validPair = ['uint8', 'bool'];
     const knownCompatibleTypes =
       validPair.includes(original.type.item.label) && validPair.includes(updated.type.item.label);
-    // This is so it doesnt throw an error when reading slot and offset
-    const anyOriginal: any = original;
-    const anyUpdated: any = updated;
     if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
       return false;
-    } else if (anyOriginal.slot && anyOriginal.offset && anyUpdated.slot && anyUpdated.offset) {
+    } else if (original.slot && original.offset && updated.slot && updated.offset) {
       const originalValues = JSON.stringify({
-        slot: anyOriginal.slot,
-        offset: anyOriginal.offset,
+        slot: original.slot,
+        offset: original.offset,
         numberOfBytes: original.type.item.numberOfBytes,
       });
       const updatedValues = JSON.stringify({
-        slot: anyUpdated.slot,
-        offset: anyUpdated.offset,
+        slot: updated.slot,
+        offset: updated.offset,
         numberOfBytes: updated.type.item.numberOfBytes,
       });
       return !(originalValues === updatedValues);

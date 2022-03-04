@@ -20,8 +20,8 @@ export interface StorageItem<Type = string> {
   src: string;
   offset?: number;
   slot?: string;
-  retyped?: string;
-  rename?: string;
+  retypedFrom?: string;
+  renameFrom?: string;
 }
 
 export interface TypeItem<Type = string> {
@@ -45,8 +45,6 @@ export interface ParsedTypeDetailed extends ParsedTypeId {
   item: TypeItem<ParsedTypeDetailed>;
   args?: ParsedTypeDetailed[];
   rets?: ParsedTypeDetailed[];
-  rename?: string;
-  retyped?: string;
 }
 
 type Replace<T, K extends string, V> = Omit<T, K> & Record<K, V>;
