@@ -41,7 +41,7 @@ export function extractStorageLayout(
 
       if (origin) {
         const [varDecl, contract] = origin;
-        const { rename, retyped } = {...getDocumentationValues(varDecl)};
+        const { rename, retyped } = { ...getDocumentationValues(varDecl) };
         // Solc layout doesn't bring members for enums so we get them using the ast method
         loadLayoutType(varDecl, layout, deref);
         const { label, offset, slot, type } = storage;
@@ -55,7 +55,7 @@ export function extractStorageLayout(
       if (isNodeType('VariableDeclaration', varDecl)) {
         if (!varDecl.constant && varDecl.mutability !== 'immutable') {
           const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
-          const { rename, retyped } = {...getDocumentationValues(varDecl)};
+          const { rename, retyped } = { ...getDocumentationValues(varDecl) };
           layout.storage.push({
             contract: contractDef.name,
             label: varDecl.name,
@@ -158,11 +158,13 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
   }
 }
 
-function getDocumentationValues(varDecl: VariableDeclaration): { rename: string| undefined; retyped: string| undefined; } | undefined {
+function getDocumentationValues(
+  varDecl: VariableDeclaration,
+): { rename: string | undefined; retyped: string | undefined } | undefined {
   if ('documentation' in varDecl) {
     const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
-    let retyped: string|undefined;
-    let rename: string|undefined;
+    let retyped: string | undefined;
+    let rename: string | undefined;
     for (const { groups } of execall(
       /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
       docs,
@@ -174,7 +176,7 @@ function getDocumentationValues(varDecl: VariableDeclaration): { rename: string|
       }
     }
     if (retyped || rename) {
-      return {rename: rename, retyped: retyped}
+      return { rename: rename, retyped: retyped };
     }
   }
 }

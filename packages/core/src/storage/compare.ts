@@ -17,7 +17,7 @@ export type EnumOperation = Operation<string, { kind: 'replace'; original: strin
 type StorageFieldChange<F extends StorageField> = (
   | { kind: 'replace' | 'rename' }
   | { kind: 'typechange'; change: TypeChange }
-  | { kind: 'layoutchange'}
+  | { kind: 'layoutchange' }
 ) & {
   original: F;
   updated: F;
