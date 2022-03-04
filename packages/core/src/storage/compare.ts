@@ -1,7 +1,7 @@
 import { levenshtein, Operation } from '../levenshtein';
-import { ParsedTypeDetailed, StorageItem as _StorageItem } from './layout';
+import { hasLayout, ParsedTypeDetailed, isEnumMembers, isStructMembers } from './layout';
 import { UpgradesError } from '../error';
-import { StructMember as _StructMember, isEnumMembers, isStructMembers } from './layout';
+import { StorageItem as _StorageItem, StructMember as _StructMember, StorageField as _StorageField } from './layout';
 import { LayoutCompatibilityReport } from './report';
 import { assert } from '../utils/assert';
 import { isValueType } from '../utils/is-value-type';
@@ -9,7 +9,7 @@ import { isValueType } from '../utils/is-value-type';
 export type StorageItem = _StorageItem<ParsedTypeDetailed>;
 type StructMember = _StructMember<ParsedTypeDetailed>;
 
-export type StorageField = StorageItem | StructMember;
+export type StorageField = _StorageField<ParsedTypeDetailed>;
 export type StorageOperation<F extends StorageField> = Operation<F, StorageFieldChange<F>>;
 
 export type EnumOperation = Operation<string, { kind: 'replace'; original: string; updated: string }>;
@@ -103,14 +103,15 @@ export class StorageLayoutComparator {
       validPair.includes(original.type.item.label) && validPair.includes(updated.type.item.label);
     if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
       return false;
-    } else if (original.slot && original.offset && updated.slot && updated.offset) {
+    } else if (hasLayout(original) && hasLayout(updated)) {
       return (
         original.slot !== updated.slot ||
         original.offset !== updated.offset ||
         original.type.item.numberOfBytes !== updated.type.item.numberOfBytes
       );
+    } else {
+      return true;
     }
-    return true;
   }
 
   getTypeChange(

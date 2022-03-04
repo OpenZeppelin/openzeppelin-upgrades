@@ -12,6 +12,8 @@ export interface StorageLayout {
   flat?: boolean;
 }
 
+export type StorageField<Type = string> = StorageItem<Type> | StructMember<Type>;
+
 export interface StorageItem<Type = string> {
   astId?: number;
   contract: string;
@@ -95,4 +97,11 @@ export function isEnumMembers<T>(members: TypeItemMembers<T>): members is EnumMe
 
 export function isStructMembers<T>(members: TypeItemMembers<T>): members is StructMember<T>[] {
   return members.length === 0 || typeof members[0] === 'object';
+}
+
+type StorageFieldWithLayout = StorageField<ParsedTypeDetailed> &
+  Required<Pick<StorageField, 'offset' | 'slot'>> & { type: { item: Required<Pick<TypeItem, 'numberOfBytes'>> } };
+
+export function hasLayout(field: StorageField<ParsedTypeDetailed>): field is StorageFieldWithLayout {
+  return field.offset !== undefined && field.slot !== undefined && field.type.item.numberOfBytes !== undefined;
 }
