@@ -23,7 +23,7 @@ export interface StorageItem<Type = string> {
   offset?: number;
   slot?: string;
   retypedFrom?: string;
-  renameFrom?: string;
+  renamedFrom?: string;
 }
 
 export interface TypeItem<Type = string> {
@@ -38,7 +38,7 @@ export interface StructMember<Type = string> {
   label: string;
   type: Type;
   retypedFrom?: string;
-  renameFrom?: string;
+  renamedFrom?: string;
   offset?: number;
   slot?: string;
 }

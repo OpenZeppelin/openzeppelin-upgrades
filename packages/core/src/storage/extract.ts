@@ -13,6 +13,7 @@ import { SrcDecoder } from '../src-decoder';
 import { ASTDereferencer } from '../ast-dereferencer';
 import { mapValues } from '../utils/map-values';
 import { pick } from '../utils/pick';
+import { execall } from '../utils/execall';
 
 const currentLayoutVersion = '1.1';
 
@@ -41,12 +42,12 @@ export function extractStorageLayout(
 
       if (origin) {
         const [varDecl, contract] = origin;
-        const { rename, retyped } = { ...getDocumentationValues(varDecl) };
+        const { renamedFrom, retypedFrom } = getRetypedRenamed(varDecl);
         // Solc layout doesn't bring members for enums so we get them using the ast method
         loadLayoutType(varDecl, layout, deref);
         const { label, offset, slot, type } = storage;
         const src = decodeSrc(varDecl);
-        layout.storage.push({ label, offset, slot, type, contract, src, retypedFrom: retyped, renameFrom: rename });
+        layout.storage.push({ label, offset, slot, type, contract, src, retypedFrom, renamedFrom });
         layout.flat = true;
       }
     }
@@ -55,14 +56,14 @@ export function extractStorageLayout(
       if (isNodeType('VariableDeclaration', varDecl)) {
         if (!varDecl.constant && varDecl.mutability !== 'immutable') {
           const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
-          const { rename, retyped } = { ...getDocumentationValues(varDecl) };
+          const { renamedFrom, retypedFrom } = getRetypedRenamed(varDecl);
           layout.storage.push({
             contract: contractDef.name,
             label: varDecl.name,
             type,
             src: decodeSrc(varDecl),
-            retypedFrom: retyped,
-            renameFrom: rename,
+            retypedFrom,
+            renamedFrom,
           });
 
           loadLayoutType(varDecl, layout, deref);
@@ -158,37 +159,22 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
   }
 }
 
-function getDocumentationValues(
-  varDecl: VariableDeclaration,
-): { rename: string | undefined; retyped: string | undefined } | undefined {
+function getRetypedRenamed(varDecl: VariableDeclaration) {
+  let retypedFrom, renamedFrom;
   if ('documentation' in varDecl) {
     const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
-    let retyped: string | undefined;
-    let rename: string | undefined;
     for (const { groups } of execall(
       /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
       docs,
     )) {
-      if (groups && groups.title === 'custom' && groups.tag === 'oz-retyped-from') {
-        retyped = [...groups.args.split(/\s+/)][0];
-      } else if (groups && groups.title === 'custom' && groups.tag === 'oz-renamed-from') {
-        rename = [...groups.args.split(/\s+/)][0];
+      if (groups?.title === 'custom') {
+        if (groups.tag === 'oz-retyped-from') {
+          retypedFrom = groups.args;
+        } else if (groups.tag === 'oz-renamed-from') {
+          renamedFrom = groups.args;
+        }
       }
     }
-    if (retyped || rename) {
-      return { rename: rename, retyped: retyped };
-    }
   }
-}
-
-function* execall(re: RegExp, text: string) {
-  re = new RegExp(re, re.flags + (re.sticky ? '' : 'y'));
-  while (true) {
-    const match = re.exec(text);
-    if (match && match[0] !== '') {
-      yield match;
-    } else {
-      break;
-    }
-  }
+  return { retypedFrom, renamedFrom };
 }
