@@ -104,17 +104,11 @@ export class StorageLayoutComparator {
     if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
       return false;
     } else if (original.slot && original.offset && updated.slot && updated.offset) {
-      const originalValues = {
-        slot: original.slot,
-        offset: original.offset,
-        numberOfBytes: original.type.item.numberOfBytes,
-      };
-      const updatedValues = {
-        slot: updated.slot,
-        offset: updated.offset,
-        numberOfBytes: updated.type.item.numberOfBytes,
-      };
-      return !(originalValues === updatedValues);
+      return (
+        original.slot !== updated.slot ||
+        original.offset !== updated.offset ||
+        original.type.item.numberOfBytes !== updated.type.item.numberOfBytes
+      );
     }
     return true;
   }
