@@ -17,6 +17,7 @@ export type EnumOperation = Operation<string, { kind: 'replace'; original: strin
 type StorageFieldChange<F extends StorageField> = (
   | { kind: 'replace' | 'rename' }
   | { kind: 'typechange'; change: TypeChange }
+  | { kind: 'layoutchange'}
 ) & {
   original: F;
   updated: F;
@@ -82,10 +83,10 @@ export class StorageLayoutComparator {
     const nameChange = !this.unsafeAllowRenames && original.label !== (updated.renameFrom ?? updated.label);
     const retypedFromOriginal = original.type.item.label === updated.retypedFrom?.trim();
     const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
-    const layoutChange = updated.retypedFrom ? this.getLayoutChange(original, updated) : false;
+    const layoutChange = this.getLayoutChange(original, updated);
 
     if (layoutChange) {
-      //return { kind: 'layoutchange', original, updated };
+      return { kind: 'layoutchange', original, updated };
     } else if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
     } else if (nameChange) {

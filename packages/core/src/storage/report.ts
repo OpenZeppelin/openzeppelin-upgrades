@@ -59,6 +59,9 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
     case 'replace':
       return `Replaced ${label(op.original)} with ${label(op.updated)} of incompatible type`;
 
+    case 'layoutchange':
+      return `Layout for ${label(op.original)} is incompatible with ${label(op.updated)} type`;
+
     default: {
       const title = explainBasicOperation(op, t => t.label);
       const hints = [];
