@@ -94,4 +94,3 @@ test('confusing retype', t => {
   t.false(report.ok);
   t.snapshot(report.explain());
 });
-
