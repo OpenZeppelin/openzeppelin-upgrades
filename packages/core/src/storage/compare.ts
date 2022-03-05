@@ -100,6 +100,10 @@ export class StorageLayoutComparator {
       return { kind: 'rename', original, updated };
     } else if (typeChange) {
       return { kind: 'typechange', change: typeChange, original, updated };
+    } else if (layoutChange && !layoutChange.uncertain) {
+      // Any layout change should be caught earlier as a type change, but we
+      // add this check as a safety fallback.
+      return { kind: 'layoutchange', original, updated, change: layoutChange };
     }
   }
 
