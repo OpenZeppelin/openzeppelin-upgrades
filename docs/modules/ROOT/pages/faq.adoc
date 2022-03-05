@@ -208,3 +208,34 @@ Some users who have already deployed proxies with structs and/or enums and who n
 Truffle artifacts (the JSON files in `build/contracts`) contain the AST (abstract syntax tree) for each of your contracts. Our plugin uses this information to validate that your contracts are [upgrade safe](#what-does-it-mean-for-a-contract-to-be-upgrade-safe).
 
 Truffle sometimes partially recompiles only the contracts that have changed. We will ask you to trigger a full recompilation either using `truffle compile --all` or deleting the `build/contracts` directory when this happens. The technical reason is that since Solidity does not produce deterministic ASTs, the plugins are unable to resolve references correctly if they are not from the same compiler run.
+
+[[how-to-rename]]
+== How can I rename a variable, or change its type?
+
+Renaming a variable is disallowed by default because there is a change that a renaming is actually an accidental reordering. For example if variables `uint a; uint b;` are upgraded to `uint b; uint a;`, if renaming was simply allowed this would not be seen as a mistake, but it could have been an accident, specially when multiple inheritance is involved.
+
+It is possible to disable this check by passing the option `unsafeAllowRenames: true`. A more granular approach is to use a docstring comment `/// @custom:oz-renamed-from <previous name>` right above the variable that is being renamed, for example:
+
+```
+contract V1 {
+    uint x;
+}
+contract V2 {
+    /// @custom:oz-renamed-from x
+    uint y;
+}
+```
+
+Changing the type of a variable is not allowed either, even in cases where the types have the same size and alignment, for the similar reason explained above. As long as we can guarantee that the rest of the layout is not affected by this type change, it is also possible to override this check by placing a docstring comment `/// @custom:oz-retyped-from <previous type>`.
+
+```
+contract V1 {
+    bool x;
+}
+contract V2 {
+    /// @custom:oz-retyped-from bool
+    uint8 x;
+}
+```
+
+Docstring comments don't yet work for struct members, due to a current Solidity limitation.
