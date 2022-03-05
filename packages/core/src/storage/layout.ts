@@ -29,7 +29,7 @@ export interface StorageItem<Type = string> {
 export interface TypeItem<Type = string> {
   label: string;
   members?: TypeItemMembers<Type>;
-  numberOfBytes?: number;
+  numberOfBytes?: string;
 }
 
 export type TypeItemMembers<Type = string> = StructMember<Type>[] | EnumMember[];
@@ -99,7 +99,7 @@ export function isStructMembers<T>(members: TypeItemMembers<T>): members is Stru
   return members.length === 0 || typeof members[0] === 'object';
 }
 
-type StorageFieldWithLayout = StorageField<ParsedTypeDetailed> &
+export type StorageFieldWithLayout = StorageField<ParsedTypeDetailed> &
   Required<Pick<StorageField, 'offset' | 'slot'>> & { type: { item: Required<Pick<TypeItem, 'numberOfBytes'>> } };
 
 export function hasLayout(field: StorageField<ParsedTypeDetailed>): field is StorageFieldWithLayout {

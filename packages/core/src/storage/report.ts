@@ -2,7 +2,7 @@ import _chalk from 'chalk';
 
 import type { BasicOperation } from '../levenshtein';
 import type { ParsedTypeDetailed } from './layout';
-import type { StorageOperation, StorageItem, StorageField, TypeChange, EnumOperation } from './compare';
+import type { StorageOperation, StorageItem, StorageField, TypeChange, EnumOperation, LayoutChange } from './compare';
 import { itemize, itemizeWith } from '../utils/itemize';
 import { indent } from '../utils/indent';
 import { assert } from '../utils/assert';
@@ -59,8 +59,13 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
     case 'replace':
       return `Replaced ${label(op.original)} with ${label(op.updated)} of incompatible type`;
 
-    case 'layoutchange':
-      return `Layout for ${label(op.original)} is incompatible with ${label(op.updated)} type`;
+    case 'layoutchange': {
+      return (
+        `Layout ${op.change.uncertain ? 'could have changed' : 'changed'} for ${label(op.updated)} ` +
+        `(${op.original.type.item.label} -> ${op.updated.type.item.label})\n` +
+        describeLayoutTransition(op.change)
+      ).trimEnd();
+    }
 
     default: {
       const title = explainBasicOperation(op, t => t.label);
@@ -216,6 +221,18 @@ function describeTransition(original: ParsedTypeDetailed, updated: ParsedTypeDet
   } else {
     return `from ${originalLabel} to ${updatedLabel}`;
   }
+}
+
+function describeLayoutTransition(change: LayoutChange): string {
+  const res = [];
+  for (const k of ['slot', 'offset', 'bytes'] as const) {
+    const ch = change[k];
+    if (ch) {
+      const label = (k === 'bytes' ? 'number of bytes' : k).replace(/^./, c => c.toUpperCase());
+      res.push(`${label} changed from ${ch.from} to ${ch.to}`);
+    }
+  }
+  return itemize(...res);
 }
 
 function label(variable: { label: string }): string {

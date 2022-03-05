@@ -17,7 +17,7 @@ export type EnumOperation = Operation<string, { kind: 'replace'; original: strin
 type StorageFieldChange<F extends StorageField> = (
   | { kind: 'replace' | 'rename' }
   | { kind: 'typechange'; change: TypeChange }
-  | { kind: 'layoutchange' }
+  | { kind: 'layoutchange'; change: LayoutChange }
 ) & {
   original: F;
   updated: F;
@@ -51,6 +51,13 @@ export type TypeChange = (
   original: ParsedTypeDetailed;
   updated: ParsedTypeDetailed;
 };
+
+export interface LayoutChange {
+  uncertain?: boolean;
+  slot?: Record<'from' | 'to', string>;
+  offset?: Record<'from' | 'to', number>;
+  bytes?: Record<'from' | 'to', string>;
+}
 
 export class StorageLayoutComparator {
   hasAllowedUncheckedCustomTypes = false;
@@ -86,7 +93,7 @@ export class StorageLayoutComparator {
     const layoutChange = this.getLayoutChange(original, updated);
 
     if (updated.retypedFrom && layoutChange) {
-      return { kind: 'layoutchange', original, updated };
+      return { kind: 'layoutchange', original, updated, change: layoutChange };
     } else if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
     } else if (nameChange) {
@@ -96,21 +103,22 @@ export class StorageLayoutComparator {
     }
   }
 
-  // Verify the original type and updated real type, not the reported one, are actually compatible
-  getLayoutChange(original: StorageField, updated: StorageField): boolean {
+  getLayoutChange(original: StorageField, updated: StorageField): LayoutChange | undefined {
     const validPair = ['uint8', 'bool'];
     const knownCompatibleTypes =
       validPair.includes(original.type.item.label) && validPair.includes(updated.type.item.label);
     if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
-      return false;
+      return undefined;
     } else if (hasLayout(original) && hasLayout(updated)) {
-      return (
-        original.slot !== updated.slot ||
-        original.offset !== updated.offset ||
-        original.type.item.numberOfBytes !== updated.type.item.numberOfBytes
-      );
+      const change = <T>(from: T, to: T) => (from === to ? undefined : { from, to });
+      const slot = change(original.slot, updated.slot);
+      const offset = change(original.offset, updated.offset);
+      const bytes = change(original.type.item.numberOfBytes, updated.type.item.numberOfBytes);
+      if (slot || offset || bytes) {
+        return { slot, offset, bytes };
+      }
     } else {
-      return true;
+      return { uncertain: true };
     }
   }
 
