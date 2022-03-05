@@ -40,3 +40,12 @@ contract ConfusingRetypeV2 {
     /// @custom:oz-retyped-from address
     uint8 x;
 }
+
+contract NonHardcodedRetypeV1 {
+    address a;
+}
+
+contract NonHardcodedRetypeV2 {
+    /// @custom:oz-retyped-from address
+    bytes20 a;
+}
