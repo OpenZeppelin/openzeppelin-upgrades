@@ -15,12 +15,12 @@ const test = _test as TestFn<Context>;
 
 const dummyDecodeSrc = () => 'file.sol:1';
 const testContracts = [
-  'contracts/test/ValidationsNatspec.sol:RenameV1',
-  'contracts/test/ValidationsNatspec.sol:RenameV2',
-  'contracts/test/ValidationsNatspec.sol:RetypeV1',
-  'contracts/test/ValidationsNatspec.sol:RetypeV2',
-  'contracts/test/ValidationsNatspec.sol:WronglyReportedRetypeV3',
-  'contracts/test/ValidationsNatspec.sol:MissmatchingTypeRetypeV4',
+  'contracts/test/RenamedRetyped.sol:RenameV1',
+  'contracts/test/RenamedRetyped.sol:RenameV2',
+  'contracts/test/RenamedRetyped.sol:RetypeV1',
+  'contracts/test/RenamedRetyped.sol:RetypeV2',
+  'contracts/test/RenamedRetyped.sol:WronglyReportedRetypeV3',
+  'contracts/test/RenamedRetyped.sol:MissmatchingTypeRetypeV4',
 ];
 
 test.before(async t => {
@@ -33,11 +33,11 @@ test.before(async t => {
       throw new Error(`Build info not found for contract ${contract}`);
     }
     const solcOutput = buildInfo.output;
-    for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/ValidationsNatspec.sol'].ast)) {
+    for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/RenamedRetyped.sol'].ast)) {
       contracts[def.name] = def;
       deref[def.name] = astDereferencer(solcOutput);
       storageLayout[def.name] = (
-        solcOutput.contracts['contracts/test/ValidationsNatspec.sol'][def.name] as any
+        solcOutput.contracts['contracts/test/RenamedRetyped.sol'][def.name] as any
       ).storageLayout;
     }
   }
