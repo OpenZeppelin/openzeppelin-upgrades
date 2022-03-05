@@ -21,6 +21,8 @@ const testContracts = [
   'contracts/test/RenamedRetyped.sol:RetypeV2',
   'contracts/test/RenamedRetyped.sol:WronglyReportedRetypeV3',
   'contracts/test/RenamedRetyped.sol:MissmatchingTypeRetypeV4',
+  'contracts/test/RenamedRetyped.sol:ConfusingRetypeV1',
+  'contracts/test/RenamedRetyped.sol:ConfusingRetypeV2',
 ];
 
 test.before(async t => {
@@ -84,3 +86,12 @@ test('rightly reported retype but incompatible new type', t => {
   t.false(report.ok);
   t.snapshot(report.explain());
 });
+
+test('confusing retype', t => {
+  const v1 = t.context.extractStorageLayout('ConfusingRetypeV1');
+  const v2 = t.context.extractStorageLayout('ConfusingRetypeV2');
+  const report = getReport(v1, v2);
+  t.false(report.ok);
+  t.snapshot(report.explain());
+});
+

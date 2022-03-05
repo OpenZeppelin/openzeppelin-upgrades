@@ -29,3 +29,14 @@ contract MissmatchingTypeRetypeV4 {
     /// @custom:oz-retyped-from bool
     bytes32 x;
 }
+
+contract ConfusingRetypeV1 {
+    address y;
+    bool x;
+}
+
+contract ConfusingRetypeV2 {
+    address y;
+    /// @custom:oz-retyped-from address
+    uint8 x;
+}
