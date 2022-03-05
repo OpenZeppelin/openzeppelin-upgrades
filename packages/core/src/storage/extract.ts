@@ -32,7 +32,9 @@ export function extractStorageLayout(
     layout.types = mapValues(storageLayout.types, m => {
       return {
         label: m.label,
-        members: m.members?.map(m => (typeof m === 'string' ? m : pick(m, ['label', 'type', 'offset', 'slot']))) as TypeItem['members'],
+        members: m.members?.map(m =>
+          typeof m === 'string' ? m : pick(m, ['label', 'type', 'offset', 'slot']),
+        ) as TypeItem['members'],
         numberOfBytes: m.numberOfBytes,
       };
     });
