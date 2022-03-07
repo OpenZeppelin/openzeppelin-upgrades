@@ -464,6 +464,12 @@ test('storage upgrade with enum key in mapping', t => {
   });
 });
 
+test('storage upgrade with embedded enum inside struct type', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_StructEnum_V2');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_StructEnum_V2');
+  t.deepEqual(getStorageUpgradeErrors(v1, v2), []);
+});
+
 function stabilizeStorageLayout(layout: StorageLayout) {
   return {
     storage: layout.storage.map(s => ({ ...s, type: stabilizeTypeIdentifier(s.type) })),

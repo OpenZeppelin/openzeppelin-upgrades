@@ -26,6 +26,7 @@ export function extractStorageLayout(
   deref: ASTDereferencer,
   storageLayout?: StorageLayout | undefined,
 ): StorageLayout {
+  console.log(contractDef.name);
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
     layout.types = mapValues(storageLayout.types, m => {
@@ -66,6 +67,7 @@ export function extractStorageLayout(
       }
     }
   }
+  console.log('full layout',layout.types);
   return layout;
 }
 
@@ -130,7 +132,7 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
 
   for (const typeName of typeNames.values()) {
     const { typeIdentifier, typeString: label } = typeDescriptions(typeName);
-
+    
     const type = normalizeTypeIdentifier(typeIdentifier);
     const hasMembers = /^t_(enum|struct)\b/.test(type);
     if (type in layout.types && (!hasMembers || layout.types[type].members !== undefined)) {
@@ -141,16 +143,17 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
 
     if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
       const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
+      
       members = getTypeMembers(typeDef);
       // Recursively look for the types referenced in this definition and add them to the queue.
-      for (const typeName of findTypeNames(typeDef)) {
+      for (const typeName of findTypeNames(typeDef)) {        
         const { typeIdentifier } = typeDescriptions(typeName);
         if (!typeNames.has(typeIdentifier)) {
           typeNames.set(typeIdentifier, typeName);
         }
       }
     }
-
+    
     layout.types[type] = { label, members };
   }
 }
