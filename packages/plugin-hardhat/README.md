@@ -24,6 +24,8 @@ import '@openzeppelin/hardhat-upgrades';
 
 ## Usage in scripts
 
+### Proxies
+
 You can use this plugin in a [Hardhat script](https://hardhat.org/guides/scripts.html) to deploy an upgradeable instance of one of your contracts via the `deployProxy` function:
 
 ```js
@@ -61,9 +63,52 @@ main();
 
 The plugin will take care of comparing `BoxV2` to the previous one to ensure they are compatible for the upgrade, deploy the new `BoxV2` implementation contract (unless there is one already from a previous deployment), and upgrade the existing proxy to the new implementation.
 
+### Beacon proxies
+
+You can also use this plugin to deploy an upgradeable beacon for your contract with the `deployBeacon` function, then deploy one or more beacon proxies that point to it by using the `deployBeaconProxy` function.
+
+```js
+// scripts/create-box.js
+const { ethers, upgrades } = require("hardhat");
+
+async function main() {
+  const Box = await ethers.getContractFactory("Box");
+
+  const beacon = await upgrades.deployBeacon(Box);
+  await beacon.deployed();
+  console.log("Beacon deployed to:", beacon.address);
+
+  const box = await upgrades.deployBeaconProxy(beacon, Box, [42]);
+  await box.deployed();
+  console.log("Box deployed to:", box.address);
+}
+
+main();
+```
+
+Then, in another script, you can use the `upgradeBeacon` function to upgrade the beacon to a new version. When the beacon is upgraded, all of the beacon proxies that point to it will use the new contract implementation.
+
+```js
+// scripts/upgrade-box.js
+const { ethers, upgrades } = require("hardhat");
+
+async function main() {
+  const BoxV2 = await ethers.getContractFactory("BoxV2");
+
+  await upgrades.upgradeBeacon(BEACON_ADDRESS, BoxV2);
+  console.log("Beacon upgraded");
+
+  const box = BoxV2.attach(BOX_ADDRESS);
+}
+
+main();
+```
+
 ## Usage in tests
 
-You can also use the `deployProxy` and `upgradeProxy` functions from your Hardhat tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in scripts.
+You can also use the plugin's functions from your Hardhat tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in scripts.
+
+### Proxies
 
 ```js
 const { expect } = require("chai");
@@ -75,6 +120,28 @@ describe("Box", function() {
   
     const instance = await upgrades.deployProxy(Box, [42]);
     const upgraded = await upgrades.upgradeProxy(instance.address, BoxV2);
+
+    const value = await upgraded.value();
+    expect(value.toString()).to.equal('42');
+  });
+});
+```
+
+### Beacon proxies
+
+```js
+const { expect } = require("chai");
+
+describe("Box", function() {
+  it('works', async () => {
+    const Box = await ethers.getContractFactory("Box");
+    const BoxV2 = await ethers.getContractFactory("BoxV2");
+
+    const beacon = await upgrades.deployBeacon(Box);
+    const instance = await upgrades.deployBeaconProxy(beacon, Box, [42]);
+    
+    await upgrades.upgradeBeacon(beacon, BoxV2);
+    const upgraded = BoxV2.attach(instance.address);
 
     const value = await upgraded.value();
     expect(value.toString()).to.equal('42');

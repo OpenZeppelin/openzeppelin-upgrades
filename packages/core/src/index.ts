@@ -1,9 +1,16 @@
 export * from './validate';
-export * from './impl-store';
+export { fetchOrDeploy, fetchOrDeployAdmin } from './impl-store';
 export * from './version';
-export * from './manifest';
 export * from './storage';
-export * from './eip-1967';
+export {
+  EIP1967BeaconNotFound,
+  EIP1967ImplementationNotFound,
+  getAdminAddress,
+  getBeaconAddress,
+  getImplementationAddress,
+  toEip1967Hash,
+  toFallbackEip1967Hash,
+} from './eip-1967';
 export * from './provider';
 export * from './src-decoder';
 export * from './solc-api';
@@ -11,18 +18,28 @@ export * from './deployment';
 export * from './link-refs';
 export * from './error';
 
+export {
+  ManifestData,
+  ImplDeployment,
+  ProxyDeployment,
+  Manifest,
+  migrateManifest,
+  DeploymentNotFound,
+} from './manifest';
+
 export { getStorageLayoutForAddress } from './manifest-storage-layout';
 
 export * from './scripts/migrate-oz-cli-project';
 
 export { logWarning } from './utils/log';
-export { setProxyKind, processProxyKind } from './proxy-kind';
+export { setProxyKind, processProxyKind, detectProxyKind } from './proxy-kind';
 
 export { UpgradeableContract } from './standalone';
 
 export { isTransparentOrUUPSProxy, isBeaconProxy } from './eip-1967-type';
 export { getImplementationAddressFromBeacon, getImplementationAddressFromProxy } from './impl-address';
 export { isBeacon } from './beacon';
+export { addProxyToManifest } from './add-proxy-to-manifest';
 
 export {
   BeaconProxyUnsupportedError,
@@ -31,5 +48,6 @@ export {
   DeployBeaconProxyUnsupportedError,
   DeployBeaconProxyImplUnknownError,
   DeployBeaconProxyKindError,
+  ForceImportUnsupportedError,
   assertNotProxy,
 } from './usage-error';

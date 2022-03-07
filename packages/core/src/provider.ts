@@ -71,7 +71,11 @@ export async function call(
 
 export async function hasCode(provider: EthereumProvider, address: string, block?: string): Promise<boolean> {
   const code = await getCode(provider, address, block);
-  return code !== '0x';
+  return !isEmpty(code);
+}
+
+export function isEmpty(code: string) {
+  return code.replace(/^0x/, '') === '';
 }
 
 export async function getTransactionByHash(

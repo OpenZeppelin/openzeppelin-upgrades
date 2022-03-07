@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.13.0 (2022-03-01)
+
+- Add `forceImport` function to import an existing proxy or beacon. ([#517](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/517))
+
+## 1.12.0 (2022-01-12)
+
+- Add support for beacon proxies. ([#342](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/342))
+
 ## 1.11.0 (2021-10-28)
 
 - Add support for `upgradeToAndCall` to batch a function call into the upgrade transaction. ([#443](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/443))

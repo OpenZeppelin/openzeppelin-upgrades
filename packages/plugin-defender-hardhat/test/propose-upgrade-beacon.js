@@ -25,7 +25,7 @@ test.beforeEach(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
   t.context.greeterBeacon = await upgrades.deployBeacon(t.context.Greeter);
-  t.context.greeter = await upgrades.deployBeaconProxy(t.context.greeterBeacon);
+  t.context.greeter = await upgrades.deployBeaconProxy(t.context.greeterBeacon, t.context.Greeter);
 });
 
 test.afterEach.always(() => {
@@ -65,7 +65,7 @@ test('block proposing an upgrade on generic contract', async t => {
   const title = 'My upgrade';
   const description = 'My contract upgrade';
   await t.throwsAsync(() => proposeUpgrade(genericContract.address, GreeterV2, { title, description }), {
-    message: /Contract at \S+ doesn't look like an administered ERC 1967 proxy/,
+    message: /Contract at \S+ doesn't look like an ERC 1967 proxy with a logic contract address/,
   });
 });
 

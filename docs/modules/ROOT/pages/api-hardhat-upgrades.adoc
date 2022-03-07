@@ -7,7 +7,7 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of https:/
 
 The following options are common to all functions.
 
-* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. Not applicable for Beacon proxies. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
+* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS]. Not applicable for Beacon proxies.
 * `unsafeAllow`: (`ValidationError[]`) Selectively disable one or more validation errors:
 ** `"external-library-linking"`: Allows a deployment with external libraries linked to the implementation contract. (External libraries are otherwise xref:faq.adoc#why-cant-i-use-external-libraries[not yet supported].)
 ** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.
@@ -18,6 +18,8 @@ The following options are common to all functions.
 ** `"missing-public-upgradeto"`: Allow UUPS implementations that do not contain a public `upgradeTo` function. Enabling this option is likely to cause a revert due to the built-in UUPS safety mechanism.
 * `unsafeAllowRenames`: (`boolean`) Configure storage layout check to allow variable renaming.
 * `constructorArgs`: (`unknown[]`) Provide arguments for the constructor of the implementation contract. Note that these are different from initializer arguments, and will be used in the deployment of the implementation contract itself. Can be used to initialize immutable variables.
+* `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `60000`. Use `0` to wait indefinitely. 
+* `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `5000`.
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -107,42 +109,35 @@ async function upgradeBeacon(
 [[deploy-beacon-proxy]]
 == deployBeaconProxy
 
-Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
+Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address and an ethers contract factory corresponding to the beacon's current implementation contract, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
 
 * `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization
-* `implementation`: an ethers contract factory corresponding to the beacon's current implementation contract. If not specified, attempts to find the implementation contract from a previous beacon deployment.
-* `signer`: an ethers signer to use for deploying the beacon proxy. If not specified, uses the signer from the `implementation` option if available, otherwise uses the https://hardhat.org/plugins/nomiclabs-hardhat-ethers.html#helpers[default signer from hardhat-ethers].
 
 [source,ts]
 ----
 async function deployBeaconProxy(
   beaconAddress: string,
+  attachTo: ethers.ContractFactory,
   args: unknown[] = [],
   opts: {
     initializer?: string | false,
-    implementation?: ethers.ContractFactory,
-    signer?: ethers.Signer,
   } = {},
 ): Promise<ethers.Contract>
 ----
 
-[[load-proxy]]
-== loadProxy
+[[force-import]]
+== forceImport
 
-Given a previously deployed UUPS, Transparent, or Beacon proxy contract instance or a combination of proxy address and signer, returns an updated contract instance with the proxy address and its current implementation interface.
+Forces the import of an existing proxy or beacon deployment to be used with this plugin. Provide the address of an existing proxy or beacon and the ethers contract factory of the implementation contract that was deployed. Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons.
 
-[source,ts]
-----
-async function loadProxy(
-  proxyInstance: ethers.Contract,
-): Promise<ethers.Contract>
-----
+* See <<common-options>>.
 
 [source,ts]
 ----
-async function loadProxy(
-  proxyAddress: string,
-  Signer: ethers.Signer,
+async function forceImport(
+  proxyOrBeaconAddress: string,
+  deployedImpl: ethers.ContractFactory,
+  opts: {} = {},
 ): Promise<ethers.Contract>
 ----
 

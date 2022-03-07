@@ -4,12 +4,16 @@ import debug from './utils/debug';
 import { makeNonEnumerable } from './utils/make-non-enumerable';
 import {
   EthereumProvider,
+  getCode,
   getTransactionByHash,
   getTransactionReceipt,
   hasCode,
   isDevelopmentNetwork,
+  isEmpty,
   isReceiptSuccessful,
 } from './provider';
+import { UpgradesError } from './error';
+import { deleteDeployment, ManifestField } from './impl-store';
 
 const sleep = promisify(setTimeout);
 
@@ -18,57 +22,134 @@ export interface Deployment {
   txHash?: string;
 }
 
+export interface DeployOpts {
+  /**
+   * Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Use `0` to wait indefinitely.
+   */
+  timeout?: number;
+
+  /**
+   * Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract.
+   */
+  pollingInterval?: number;
+}
+
+/**
+ * Resumes a deployment or deploys a new one, based on whether the cached deployment should continue to be used and is valid
+ * (has a valid txHash for the current network or has runtime bytecode).
+ * If a cached deployment is not valid, deletes it if using a development network, otherwise throws an InvalidDeployment error.
+ *
+ * @param provider the Ethereum provider
+ * @param cached the cached deployment
+ * @param deploy the function to deploy a new deployment if needed
+ * @param type the manifest lens type. If merge is true, used for the timeout message if a previous deployment is not
+ *   confirmed within the timeout period. Otherwise not used.
+ * @param opts polling timeout and interval options. If merge is true, used to check a previous deployment for confirmation.
+ *   Otherwise not used.
+ * @param deployment the manifest field for this deployment. Optional for backward compatibility.
+ *   If not provided, invalid deployments will not be deleted in a dev network (which is not a problem if merge is false,
+ *   since it will be overwritten with the new deployment).
+ * @param merge whether the cached deployment is intended to be merged with the new deployment. Defaults to false.
+ * @returns the cached deployment if it should be used, otherwise the new deployment from the deploy function
+ * @throws {InvalidDeployment} if the cached deployment is invalid and we are not on a dev network
+ */
 export async function resumeOrDeploy<T extends Deployment>(
   provider: EthereumProvider,
   cached: T | undefined,
   deploy: () => Promise<T>,
+  type?: string,
+  opts?: DeployOpts,
+  deployment?: ManifestField<T>,
+  merge?: boolean,
 ): Promise<T> {
+  const validated = await validateCached(cached, provider, type, opts, deployment, merge);
+  if (validated === undefined || merge) {
+    const deployment = await deploy();
+    debug('initiated deployment', 'transaction hash:', deployment.txHash, 'merge:', merge);
+    return deployment;
+  } else {
+    return validated;
+  }
+}
+
+async function validateCached<T extends Deployment>(
+  cached: T | undefined,
+  provider: EthereumProvider,
+  type?: string,
+  opts?: DeployOpts,
+  deployment?: ManifestField<T>,
+  merge?: boolean,
+): Promise<T | undefined> {
   if (cached !== undefined) {
-    const { txHash } = cached;
-    if (txHash === undefined) {
-      // Nothing to do here without a txHash.
-      // This is the case for deployments migrated from OpenZeppelin CLI.
-      return cached;
+    try {
+      await validateStoredDeployment(cached, provider, type, opts, merge);
+    } catch (e) {
+      if (e instanceof InvalidDeployment && (await isDevelopmentNetwork(provider))) {
+        debug('ignoring invalid deployment in development network', e.deployment.address);
+        if (deployment !== undefined) {
+          deleteDeployment(deployment);
+        }
+        return undefined;
+      } else {
+        throw e;
+      }
     }
+  }
+  return cached;
+}
+
+async function validateStoredDeployment<T extends Deployment>(
+  stored: T,
+  provider: EthereumProvider,
+  type?: string,
+  opts?: DeployOpts,
+  merge?: boolean,
+) {
+  const { txHash } = stored;
+  if (txHash !== undefined) {
     // If there is a deployment with txHash stored, we look its transaction up. If the
     // transaction is found, the deployment is reused.
     debug('found previous deployment', txHash);
     const tx = await getTransactionByHash(provider, txHash);
     if (tx !== null) {
       debug('resuming previous deployment', txHash);
-      return cached;
-    } else if (!(await isDevelopmentNetwork(provider))) {
+      if (merge) {
+        // If merging, wait for the existing deployment to be mined
+        waitAndValidateDeployment(provider, stored, type, opts);
+      }
+    } else {
       // If the transaction is not found we throw an error, except if we're in
       // a development network then we simply silently redeploy.
-      throw new InvalidDeployment(cached);
-    } else {
-      debug('ignoring invalid deployment in development network', txHash);
+      // This error should be caught by the caller to determine if we're in a dev network.
+      throw new InvalidDeployment(stored);
+    }
+  } else {
+    const existingBytecode = await getCode(provider, stored.address);
+    if (isEmpty(existingBytecode)) {
+      throw new InvalidDeployment(stored);
     }
   }
-
-  const deployment = await deploy();
-  debug('initiated deployment', deployment.txHash);
-  return deployment;
 }
 
-export async function waitAndValidateDeployment(provider: EthereumProvider, deployment: Deployment): Promise<void> {
+export async function waitAndValidateDeployment(
+  provider: EthereumProvider,
+  deployment: Deployment,
+  type?: string,
+  opts?: DeployOpts,
+): Promise<void> {
   const { txHash, address } = deployment;
 
-  // Poll for 60 seconds with a 5 second poll interval.
-  // TODO: Make these parameters configurable.
-  const pollTimeout = 60e3;
-  const pollInterval = 5e3;
+  // Poll for 60 seconds with a 5 second poll interval by default.
+  const pollTimeout = opts?.timeout ?? 60e3;
+  const pollInterval = opts?.pollingInterval ?? 5e3;
+
+  debug('polling timeout', pollTimeout, 'polling interval', pollInterval);
 
   if (txHash !== undefined) {
     const startTime = Date.now();
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime >= pollTimeout) {
-        // A timeout is NOT an InvalidDeployment
-        throw new TransactionMinedTimeout(deployment);
-      }
       debug('verifying deployment tx mined', txHash);
       const receipt = await getTransactionReceipt(provider, txHash);
       if (receipt && isReceiptSuccessful(receipt)) {
@@ -80,6 +161,13 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
       } else {
         debug('waiting for deployment tx mined', txHash);
         await sleep(pollInterval);
+      }
+      if (pollTimeout != 0) {
+        const elapsedTime = Date.now() - startTime;
+        if (elapsedTime >= pollTimeout) {
+          // A timeout is NOT an InvalidDeployment
+          throw new TransactionMinedTimeout(deployment, type, !!opts);
+        }
       }
     }
   }
@@ -96,9 +184,18 @@ export async function waitAndValidateDeployment(provider: EthereumProvider, depl
   debug('code in target address found', address);
 }
 
-export class TransactionMinedTimeout extends Error {
-  constructor(readonly deployment: Deployment) {
-    super(`Timed out waiting for transaction ${deployment.txHash}`);
+export class TransactionMinedTimeout extends UpgradesError {
+  constructor(readonly deployment: Deployment, type?: string, configurableTimeout?: boolean) {
+    super(
+      `Timed out waiting for ${type ? type + ' ' : ''}contract deployment to address ${
+        deployment.address
+      } with transaction ${deployment.txHash}`,
+      () =>
+        'Run the function again to continue waiting for the transaction confirmation.' +
+        (configurableTimeout
+          ? ' If the problem persists, adjust the polling parameters with the timeout and pollingInterval options.'
+          : ''),
+    );
   }
 }
 

@@ -1,5 +1,6 @@
 import test from 'ava';
 import { promisify } from 'util';
+import { TransactionMinedTimeout } from '.';
 
 import { Deployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import { stubProvider } from './stub-provider';
@@ -95,4 +96,28 @@ test('waits for a deployment to return contract code', async t => {
   t.is(result, timeout);
   provider.addContract(deployment.address);
   await waitAndValidateDeployment(provider, deployment);
+});
+
+test('tx mined timeout - no params', async t => {
+  const provider = stubProvider();
+  const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
+  try {
+    throw new TransactionMinedTimeout(deployment);
+  } catch (e: any) {
+    const EXPECTED =
+      /Timed out waiting for contract deployment to address \S+ with transaction \S+\n\nRun the function again to continue waiting for the transaction confirmation./;
+    t.true(EXPECTED.test(e.message), e.message);
+  }
+});
+
+test('tx mined timeout - params', async t => {
+  const provider = stubProvider();
+  const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
+  try {
+    throw new TransactionMinedTimeout(deployment, 'implementation', true);
+  } catch (e: any) {
+    const EXPECTED =
+      /Timed out waiting for implementation contract deployment to address \S+ with transaction \S+\n\nRun the function again to continue waiting for the transaction confirmation. If the problem persists, adjust the polling parameters with the timeout and pollingInterval options./;
+    t.true(EXPECTED.test(e.message), e.message);
+  }
 });

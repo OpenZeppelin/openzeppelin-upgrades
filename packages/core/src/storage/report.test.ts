@@ -1,4 +1,4 @@
-import _test, { TestInterface } from 'ava';
+import _test, { TestFn } from 'ava';
 import { ContractDefinition } from 'solidity-ast';
 import { findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
@@ -13,7 +13,7 @@ interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
 }
 
-const test = _test as TestInterface<Context>;
+const test = _test as TestFn<Context>;
 
 const dummyDecodeSrc = () => 'file.sol:1';
 

@@ -9,13 +9,17 @@ export interface StorageLayout {
   layoutVersion?: string;
   storage: StorageItem[];
   types: Record<string, TypeItem>;
+  flat?: boolean;
 }
 
 export interface StorageItem<Type = string> {
+  astId?: number;
   contract: string;
   label: string;
   type: Type;
   src: string;
+  offset?: number;
+  slot?: string;
 }
 
 export interface TypeItem<Type = string> {

@@ -32,7 +32,7 @@ interface DeployedBeaconImpl {
   impl: string;
 }
 
-interface DeployData {
+export interface DeployData {
   provider: EthereumProvider;
   validations: ValidationDataCurrent;
   unlinkedBytecode: string;
@@ -42,7 +42,7 @@ interface DeployData {
   fullOpts: Required<Options>;
 }
 
-async function getDeployData(
+export async function getDeployData(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: Options,
@@ -111,11 +111,16 @@ async function deployImpl(
     }
   }
 
-  const impl = await fetchOrDeploy(deployData.version, deployData.provider, async () => {
-    const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
-    const deployment = Object.assign({ abi }, await deploy(ImplFactory, ...deployData.fullOpts.constructorArgs));
-    return { ...deployment, layout };
-  });
+  const impl = await fetchOrDeploy(
+    deployData.version,
+    deployData.provider,
+    async () => {
+      const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
+      const deployment = Object.assign({ abi }, await deploy(ImplFactory, ...deployData.fullOpts.constructorArgs));
+      return { ...deployment, layout };
+    },
+    opts,
+  );
 
   return { impl, kind: opts.kind };
 }

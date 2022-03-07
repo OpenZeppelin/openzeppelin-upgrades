@@ -162,7 +162,12 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           ...getLinkingErrors(contractDef, bytecode),
         ];
 
-        validation[contractDef.name].layout = extractStorageLayout(contractDef, decodeSrc, deref);
+        validation[contractDef.name].layout = extractStorageLayout(
+          contractDef,
+          decodeSrc,
+          deref,
+          solcOutput.contracts[source][contractDef.name].storageLayout,
+        );
         validation[contractDef.name].methods = [...findAll('FunctionDefinition', contractDef)]
           .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
           .map(fnDef => getFunctionSignature(fnDef, deref));

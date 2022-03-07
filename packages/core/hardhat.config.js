@@ -8,6 +8,11 @@ const settings = {
     enabled: true,
     runs: 200,
   },
+  outputSelection: {
+    '*': {
+      '*': ['storageLayout'],
+    },
+  },
 };
 
 /**
@@ -28,6 +33,8 @@ module.exports = {
     ],
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {
+      mainnet: process.env.ETHERSCAN_API_KEY,
+    },
   },
 };

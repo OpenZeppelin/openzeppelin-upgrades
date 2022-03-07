@@ -1,7 +1,6 @@
-export default {
+module.exports = {
   files: ['test/*.js'],
   ignoredByWatcher: ['**/*.ts', '.openzeppelin'],
-  verbose: true,
   serial: true,
   failWithoutAssertions: false,
 };

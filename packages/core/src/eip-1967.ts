@@ -5,7 +5,6 @@ import { EthereumProvider, getStorageAt } from './provider';
 import { parseAddress } from './utils/address';
 
 export class EIP1967ImplementationNotFound extends UpgradesError {}
-
 export class EIP1967BeaconNotFound extends UpgradesError {}
 
 export async function getAdminAddress(provider: EthereumProvider, address: string): Promise<string> {
@@ -28,7 +27,9 @@ export async function getImplementationAddress(provider: EthereumProvider, addre
   );
 
   if (isEmptySlot(storage)) {
-    throw new EIP1967ImplementationNotFound(`Contract at ${address} doesn't look like an administered ERC 1967 proxy`);
+    throw new EIP1967ImplementationNotFound(
+      `Contract at ${address} doesn't look like an ERC 1967 proxy with a logic contract address`,
+    );
   }
 
   return parseAddressFromStorage(storage);
@@ -67,7 +68,7 @@ export function toEip1967Hash(label: string): string {
   return '0x' + bigNumber.toString(16);
 }
 
-function isEmptySlot(storage: string): boolean {
+export function isEmptySlot(storage: string): boolean {
   storage = storage.replace(/^0x/, '');
   return new BN(storage, 'hex').isZero();
 }

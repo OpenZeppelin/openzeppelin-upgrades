@@ -1,9 +1,10 @@
 import { EthereumProvider } from './provider';
 import { inferProxyKind, ValidationData, ValidationOptions } from './validate';
 import { Manifest, DeploymentNotFound, ProxyDeployment } from './manifest';
-import { isBeaconProxy } from './eip-1967-type';
+import { isBeaconProxy, isTransparentOrUUPSProxy, isTransparentProxy } from './eip-1967-type';
 import { Version } from './version';
 import { BeaconProxyUnsupportedError } from './usage-error';
+import { UpgradesError } from '.';
 
 export async function setProxyKind(
   provider: EthereumProvider,
@@ -56,4 +57,26 @@ export async function processProxyKind(
   if (opts.kind === 'beacon') {
     throw new BeaconProxyUnsupportedError();
   }
+}
+
+/**
+ * Detects the kind of proxy at an address by reading its ERC 1967 storage slots.
+ *
+ * @param provider the Ethereum provider
+ * @param proxyAddress the proxy address
+ * @returns the proxy kind
+ * @throws {UpgradesError} if the contract at address does not look like an ERC 1967 proxy
+ */
+export async function detectProxyKind(provider: EthereumProvider, proxyAddress: string) {
+  let importKind: ProxyDeployment['kind'];
+  if (await isTransparentProxy(provider, proxyAddress)) {
+    importKind = 'transparent';
+  } else if (await isTransparentOrUUPSProxy(provider, proxyAddress)) {
+    importKind = 'uups';
+  } else if (await isBeaconProxy(provider, proxyAddress)) {
+    importKind = 'beacon';
+  } else {
+    throw new UpgradesError(`Contract at ${proxyAddress} doesn't look like an ERC 1967 proxy`);
+  }
+  return importKind;
 }

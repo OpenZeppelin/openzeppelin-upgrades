@@ -50,7 +50,7 @@ test('produces network export data', async t => {
 
 test('deletes project file', async t => {
   const error = await t.throwsAsync(() => fs.access(PROJECT_FILE));
-  t.is(error.message, `ENOENT: no such file or directory, access '${PROJECT_FILE}'`);
+  t.is(error?.message, `ENOENT: no such file or directory, access '${PROJECT_FILE}'`);
 });
 
 test('export file contains networks and compiler data', async t => {

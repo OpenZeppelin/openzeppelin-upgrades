@@ -1,5 +1,5 @@
-export default {
-  verbose: true,
+module.exports = {
+  workerThreads: false, // required because of chdir in tests
   ignoredByWatcher: ['**/*.{ts,map,tsbuildinfo}', 'artifacts', 'cache'],
   typescript: {
     rewritePaths: { 'src/': 'dist/' },

@@ -22,7 +22,7 @@ export interface ManifestData {
 
 export interface ImplDeployment extends Deployment {
   layout: StorageLayout;
-  abi?: string[];
+  allAddresses?: string[];
 }
 
 export interface ProxyDeployment extends Deployment {
@@ -58,7 +58,10 @@ export class Manifest {
 
   async getDeploymentFromAddress(address: string): Promise<ImplDeployment> {
     const data = await this.read();
-    const deployment = Object.values(data.impls).find(d => d?.address === address);
+    const deployment = Object.values(data.impls).find(
+      d => d?.address === address || d?.allAddresses?.includes(address),
+    );
+
     if (deployment === undefined) {
       throw new DeploymentNotFound(`Deployment at address ${address} is not registered`);
     }
@@ -161,11 +164,12 @@ export function migrateManifest(data: ManifestData): ManifestData {
 
 export class DeploymentNotFound extends Error {}
 
-function normalizeManifestData(input: ManifestData): ManifestData {
+export function normalizeManifestData(input: ManifestData): ManifestData {
   return {
-    ...pick(input, ['manifestVersion', 'admin']),
+    manifestVersion: input.manifestVersion,
+    admin: input.admin && normalizeDeployment(input.admin),
     proxies: input.proxies.map(p => normalizeDeployment(p, ['kind'])),
-    impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout', 'abi'])),
+    impls: mapValues(input.impls, i => i && normalizeDeployment(i, ['layout', 'allAddresses'])),
   };
 }
 

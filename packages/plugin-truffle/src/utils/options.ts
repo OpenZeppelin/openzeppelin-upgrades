@@ -1,14 +1,17 @@
 import { Deployer, ContractClass, ContractInstance, getTruffleConfig } from './truffle';
-import { ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
+import { DeployOpts, ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
 
-export interface Options extends ValidationOptions {
-  deployer?: Deployer;
-  constructorArgs?: unknown[];
-}
+export type Options = ValidationOptions &
+  DeployOpts & {
+    deployer?: Deployer;
+    constructorArgs?: unknown[];
+  };
 
 export function withDefaults(opts: Options = {}): Required<Options> {
   return {
     deployer: opts.deployer ?? defaultDeployer,
+    timeout: opts.timeout ?? 60e3, // not used for Truffle, but include these anyways
+    pollingInterval: opts.pollingInterval ?? 5e3, // not used for Truffle, but include these anyways
     constructorArgs: opts.constructorArgs ?? [],
     ...withValidationDefaults(opts),
   };
@@ -16,11 +19,6 @@ export function withDefaults(opts: Options = {}): Required<Options> {
 
 export interface DeployProxyOptions extends Options {
   initializer?: string | false;
-}
-
-export interface DeployBeaconProxyOptions extends DeployProxyOptions {
-  initializer?: string | false;
-  implementation?: ContractClass;
 }
 
 export interface UpgradeOptions extends Options {

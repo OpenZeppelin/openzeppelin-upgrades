@@ -8,7 +8,7 @@ const GreeterV2 = artifacts.require('GreeterV2');
 contract('Greeter', function () {
   it('upgrade includes call with args', async function () {
     const beacon = await deployBeacon(Greeter);
-    const greeter = await deployBeaconProxy(beacon, ['Hello Truffle']);
+    const greeter = await deployBeaconProxy(beacon, Greeter, ['Hello Truffle']);
 
     assert.strictEqual(await greeter.greet(), 'Hello Truffle');
 
@@ -22,7 +22,7 @@ contract('Greeter', function () {
 
   it('upgrade includes call without args', async function () {
     const beacon = await deployBeacon(Greeter);
-    const greeter = await deployBeaconProxy(beacon, ['Hello Truffle']);
+    const greeter = await deployBeaconProxy(beacon, Greeter, ['Hello Truffle']);
 
     assert.strictEqual(await greeter.greet(), 'Hello Truffle');
 
