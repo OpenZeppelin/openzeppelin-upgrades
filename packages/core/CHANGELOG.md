@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.14.0
+
+- Add support for function types in storage layout. ([#529](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/529))
+
 ## 1.13.0 (2022-03-01)
 
 - Remove `admin.deployTransaction` field written to network manifest. ([#510](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/510))
