@@ -26,7 +26,6 @@ export function extractStorageLayout(
   deref: ASTDereferencer,
   storageLayout?: StorageLayout | undefined,
 ): StorageLayout {
-  console.log(contractDef.name);
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
   if (storageLayout !== undefined) {
     layout.types = mapValues(storageLayout.types, m => {
@@ -65,7 +64,6 @@ export function extractStorageLayout(
       }
     }
   }
-  console.log('full layout',layout.types);
   return layout;
 }
 
