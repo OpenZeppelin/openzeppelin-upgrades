@@ -80,12 +80,12 @@ export class StorageLayoutComparator {
   }
 
   getVisibilityChange(original: ParsedTypeDetailed, updated: ParsedTypeDetailed): TypeChange | undefined {
-    const re = /^t_function_(internal|external)/
+    const re = /^t_function_(internal|external)/;
     const originalVisibility = original.head.match(re);
     const updatedVisibility = updated.head.match(re);
     assert(originalVisibility && updatedVisibility);
     if (originalVisibility[0] !== updatedVisibility[0]) {
-      return { kind: 'visibility change', original, updated }
+      return { kind: 'visibility change', original, updated };
     }
   }
 

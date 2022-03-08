@@ -97,7 +97,7 @@ function explainTypeChange(ch: TypeChange): string {
     case 'struct members':
     case 'enum members':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}`;
-      
+
     case 'enum resize':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent representation sizes`;
 
