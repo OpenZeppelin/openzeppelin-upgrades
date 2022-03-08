@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.13.1 (2022-03-08)
 
 - Fix bug that caused missing members when using solc storageLayout. ([#534](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/534))
 
