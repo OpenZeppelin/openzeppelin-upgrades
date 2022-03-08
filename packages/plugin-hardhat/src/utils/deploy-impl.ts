@@ -20,7 +20,7 @@ import type { ContractFactory } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
-import { Options, withDefaults } from './options';
+import { Options, UpgradeProxyOptions, withDefaults } from './options';
 import { readValidations } from './validations';
 
 interface DeployedProxyImpl {
@@ -96,16 +96,19 @@ export async function deployBeaconImpl(
 async function deployImpl(
   deployData: DeployData,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: UpgradeProxyOptions,
   currentImplAddress?: string,
 ): Promise<any> {
   assertUpgradeSafe(deployData.validations, deployData.version, deployData.fullOpts);
+
   const layout = deployData.layout;
 
   if (currentImplAddress !== undefined) {
     const manifest = await Manifest.forNetwork(deployData.provider);
     const currentLayout = await getStorageLayoutForAddress(manifest, deployData.validations, currentImplAddress);
-    assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
+    if (opts.unsafeSkipStorageCheck !== true) {
+      assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
+    }
   }
 
   const impl = await fetchOrDeploy(

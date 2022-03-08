@@ -23,6 +23,7 @@ export interface DeployProxyOptions extends Options {
 
 export interface UpgradeOptions extends Options {
   call?: { fn: string; args?: unknown[] } | string;
+  unsafeSkipStorageCheck?: boolean;
 }
 
 const defaultDeployer: Deployer = {

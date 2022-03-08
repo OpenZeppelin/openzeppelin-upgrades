@@ -1,8 +1,9 @@
 # Changelog
 
-## 1.15.1
+## Unreleased
 
 - Use a lockfile when reading validations cache to avoid problems with parallel compilation in Hardhat 2.9.0. ([#530](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/530))
+- Add an option `unsafeSkipStorageCheck` to skip storage layout compatibility check during upgrades. ([#495](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/495))
 
 ## 1.15.0 (2022-03-01)
 

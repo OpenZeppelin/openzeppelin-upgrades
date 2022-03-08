@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add an option `unsafeSkipStorageCheck` to skip storage layout compatibility check during upgrades. ([#495](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/495))
+
 ## 1.13.0 (2022-03-01)
 
 - Add `forceImport` function to import an existing proxy or beacon. ([#517](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/517))

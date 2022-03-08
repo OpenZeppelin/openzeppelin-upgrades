@@ -17,6 +17,7 @@ The following options are common to all functions.
 ** `"delegatecall"`, `"selfdestruct"`: Allow the use of these operations. Incorrect use of this option can put funds at risk of permanent loss. See xref:faq.adoc#delegatecall-selfdestruct[Can I safely use `delegatecall` and `selfdestruct`?]
 ** `"missing-public-upgradeto"`: Allow UUPS implementations that do not contain a public `upgradeTo` function. Enabling this option is likely to cause a revert due to the built-in UUPS safety mechanism.
 * `unsafeAllowRenames`: (`boolean`) Configure storage layout check to allow variable renaming.
+* `unsafeSkipStorageCheck`: (`boolean`) upgrades the proxy or beacon without first checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
 * `constructorArgs`: (`unknown[]`) Provide arguments for the constructor of the implementation contract. Note that these are different from initializer arguments, and will be used in the deployment of the implementation contract itself. Can be used to initialize immutable variables.
 * `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `60000`. Use `0` to wait indefinitely. 
 * `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `5000`.
@@ -67,6 +68,7 @@ async function upgradeProxy(
   opts: {
     call: string | { fn: string; args?: unknown[] },
     unsafeAllow: ValidationError[],
+    unsafeSkipStorageCheck: boolean;
   } = {},
 ): Promise<ethers.Contract>
 ----
@@ -102,6 +104,7 @@ async function upgradeBeacon(
   Contract: ethers.ContractFactory,
   opts: {
     unsafeAllow: ValidationError[],
+    unsafeSkipStorageCheck: boolean;
   } = {},
 ): Promise<ethers.Contract>
 ----
@@ -155,6 +158,7 @@ async function prepareUpgrade(
   Contract: ethers.ContractFactory,
   opts: {
     unsafeAllow: ValidationError[],
+    unsafeSkipStorageCheck: boolean;
   } = {},
 ): Promise<string>
 ----
@@ -180,6 +184,7 @@ async function proposeUpgrade(
   ImplFactory: ContractFactory,
   opts: {
     unsafeAllow?: ValidationError[],
+    unsafeSkipStorageCheck?: boolean;
     title?: string,
     description?: string,
     multisig?: string,
