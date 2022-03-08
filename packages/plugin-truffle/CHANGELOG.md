@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.13.1
+## Unreleased
 
 - Add an option `unsafeSkipStorageCheck` to skip storage layout compatibility check during upgrades. ([#495](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/495))
 
