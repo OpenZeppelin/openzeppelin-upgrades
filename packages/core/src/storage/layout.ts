@@ -75,7 +75,7 @@ export function getDetailedLayout(layout: StorageLayout): StorageItem<ParsedType
     cache[parsed.id] = detailed;
 
     detailed.args = parsed.args?.map(addDetailsToParsedType);
-    detailed.rets = parsed.args?.map(addDetailsToParsedType);
+    detailed.rets = parsed.rets?.map(addDetailsToParsedType);
     detailed.item.members =
       item?.members && (isStructMembers(item?.members) ? item.members.map(parseWithDetails) : item?.members);
 
