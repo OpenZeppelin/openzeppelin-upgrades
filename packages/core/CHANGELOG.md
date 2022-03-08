@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix bug that caused missing members when using solc storageLayout. ([#534](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/534))
+
 ## 1.13.0 (2022-03-01)
 
 - Remove `admin.deployTransaction` field written to network manifest. ([#510](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/510))
