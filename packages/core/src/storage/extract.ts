@@ -100,11 +100,7 @@ function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['m
   }
 }
 
-function getOriginContract(
-  contract: ContractDefinition,
-  astId: number | undefined,
-  deref: ASTDereferencer,
-) {
+function getOriginContract(contract: ContractDefinition, astId: number | undefined, deref: ASTDereferencer) {
   for (const id of contract.linearizedBaseContracts.reverse()) {
     const parentContract = deref(['ContractDefinition'], id);
 
@@ -136,7 +132,7 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
       layout.types[type].members ??= getTypeMembers(typeDef);
 
       // Recursively look for the types referenced in this definition and add them to the queue.
-      for (const typeName of findTypeNames(typeDef)) {        
+      for (const typeName of findTypeNames(typeDef)) {
         const { typeIdentifier } = typeDescriptions(typeName);
         if (!typeNames.has(typeIdentifier)) {
           typeNames.set(typeIdentifier, typeName);

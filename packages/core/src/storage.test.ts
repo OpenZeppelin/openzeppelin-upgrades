@@ -26,10 +26,12 @@ test.before(async t => {
   const storageLayouts: Record<string, StorageLayout> = {};
   for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/Storage.sol'].ast)) {
     contracts[def.name] = def;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     storageLayouts[def.name] = solcOutput.contracts['contracts/test/Storage.sol'][def.name].storageLayout!;
   }
   const deref = astDereferencer(solcOutput);
-  t.context.extractStorageLayout = name => extractStorageLayout(contracts[name], dummyDecodeSrc, deref, storageLayouts[name]);
+  t.context.extractStorageLayout = name =>
+    extractStorageLayout(contracts[name], dummyDecodeSrc, deref, storageLayouts[name]);
 });
 
 const dummyDecodeSrc = () => 'file.sol:1';
