@@ -129,11 +129,11 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
   for (const typeName of typeNames.values()) {
     const { typeIdentifier, typeString: label } = typeDescriptions(typeName);
     const type = normalizeTypeIdentifier(typeIdentifier);
-    let members = layout.types[type]?.members;
+    layout.types[type] ??= { label };
 
     if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
       const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
-      members ??= getTypeMembers(typeDef);
+      layout.types[type].members ??= getTypeMembers(typeDef);
 
       // Recursively look for the types referenced in this definition and add them to the queue.
       for (const typeName of findTypeNames(typeDef)) {        
@@ -143,7 +143,5 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
         }
       }
     }
-    
-    layout.types[type] = { label, members };
   }
 }

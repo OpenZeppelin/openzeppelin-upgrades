@@ -23,11 +23,13 @@ test.before(async t => {
   }
   const solcOutput: SolcOutput = buildInfo.output;
   const contracts: Record<string, ContractDefinition> = {};
+  const storageLayouts: Record<string, StorageLayout> = {};
   for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/Storage.sol'].ast)) {
     contracts[def.name] = def;
+    storageLayouts[def.name] = solcOutput.contracts['contracts/test/Storage.sol'][def.name].storageLayout!;
   }
   const deref = astDereferencer(solcOutput);
-  t.context.extractStorageLayout = name => extractStorageLayout(contracts[name], dummyDecodeSrc, deref);
+  t.context.extractStorageLayout = name => extractStorageLayout(contracts[name], dummyDecodeSrc, deref, storageLayouts[name]);
 });
 
 const dummyDecodeSrc = () => 'file.sol:1';
