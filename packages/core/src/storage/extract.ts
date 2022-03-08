@@ -132,19 +132,13 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
 
   for (const typeName of typeNames.values()) {
     const { typeIdentifier, typeString: label } = typeDescriptions(typeName);
-    
     const type = normalizeTypeIdentifier(typeIdentifier);
-    const hasMembers = /^t_(enum|struct)\b/.test(type);
-    if (type in layout.types && (!hasMembers || layout.types[type].members !== undefined)) {
-      continue;
-    }
-
-    let members;
+    let members = layout.types[type]?.members;
 
     if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
       const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
-      
-      members = getTypeMembers(typeDef);
+      members ??= getTypeMembers(typeDef);
+
       // Recursively look for the types referenced in this definition and add them to the queue.
       for (const typeName of findTypeNames(typeDef)) {        
         const { typeIdentifier } = typeDescriptions(typeName);
