@@ -1,8 +1,12 @@
 # Changelog
 
-## 1.14.0
+## Unreleased
 
 - Add support for function types in storage layout. ([#529](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/529))
+
+## 1.13.1 (2022-03-08)
+
+- Fix bug that caused missing members when using solc storageLayout. ([#534](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/534))
 
 ## 1.13.0 (2022-03-01)
 

@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import lockfile from 'proper-lockfile';
 
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import {
@@ -9,28 +10,42 @@ import {
   isCurrentValidationData,
 } from '@openzeppelin/upgrades-core';
 
-export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunData: ValidationRunData): Promise<void> {
-  let storedData: ValidationDataCurrent | undefined;
-
-  try {
-    storedData = await readValidations(hre);
-  } catch (e) {
-    // If there is no previous data to append to, we ignore the error and write
-    // the file from scratch.
-    if (!(e instanceof ValidationsCacheNotFound)) {
-      throw e;
-    }
-  }
-
-  const validations = concatRunData(newRunData, storedData);
-
-  await fs.mkdir(hre.config.paths.cache, { recursive: true });
-  await fs.writeFile(getValidationsCachePath(hre), JSON.stringify(validations, null, 2));
+async function lock(file: string) {
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  return lockfile.lock(file, { retries: 3, realpath: false });
 }
 
-export async function readValidations(hre: HardhatRuntimeEnvironment): Promise<ValidationDataCurrent> {
+export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunData: ValidationRunData): Promise<void> {
   const cachePath = getValidationsCachePath(hre);
+  let releaseLock;
   try {
+    releaseLock = await lock(cachePath);
+    const storedData = await readValidations(hre, false).catch(e => {
+      // If there is no previous data to append to, we ignore the error and write
+      // the file from scratch.
+      if (e instanceof ValidationsCacheNotFound) {
+        return undefined;
+      } else {
+        throw e;
+      }
+    });
+    const validations = concatRunData(newRunData, storedData);
+    await fs.writeFile(cachePath, JSON.stringify(validations, null, 2));
+  } finally {
+    await releaseLock?.();
+  }
+}
+
+export async function readValidations(
+  hre: HardhatRuntimeEnvironment,
+  acquireLock = true,
+): Promise<ValidationDataCurrent> {
+  const cachePath = getValidationsCachePath(hre);
+  let releaseLock;
+  try {
+    if (acquireLock) {
+      releaseLock = await lock(cachePath);
+    }
     const data = JSON.parse(await fs.readFile(cachePath, 'utf8'));
     if (!isCurrentValidationData(data)) {
       await fs.unlink(cachePath);
@@ -43,6 +58,8 @@ export async function readValidations(hre: HardhatRuntimeEnvironment): Promise<V
     } else {
       throw e;
     }
+  } finally {
+    await releaseLock?.();
   }
 }
 

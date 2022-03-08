@@ -37,16 +37,14 @@ export function extractStorageLayout(
 
     for (const storage of storageLayout.storage) {
       const origin = getOriginContract(contractDef, storage.astId, deref);
-
-      if (origin) {
-        const [varDecl, contract] = origin;
-        // Solc layout doesn't bring members for enums so we get them using the ast method
-        loadLayoutType(varDecl, layout, deref);
-        const { label, offset, slot, type } = storage;
-        const src = decodeSrc(varDecl);
-        layout.storage.push({ label, offset, slot, type, contract, src });
-        layout.flat = true;
-      }
+      assert(origin, `Did not find variable declaration node for '${storage.label}'`);
+      const { varDecl, contract } = origin;
+      // Solc layout doesn't bring members for enums so we get them using the ast method
+      loadLayoutType(varDecl, layout, deref);
+      const { label, offset, slot, type } = storage;
+      const src = decodeSrc(varDecl);
+      layout.storage.push({ label, offset, slot, type, contract, src });
+      layout.flat = true;
     }
   } else {
     for (const varDecl of contractDef.nodes) {
@@ -102,17 +100,13 @@ function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['m
   }
 }
 
-function getOriginContract(
-  contract: ContractDefinition,
-  astId: number | undefined,
-  deref: ASTDereferencer,
-): undefined | [VariableDeclaration, string] {
+function getOriginContract(contract: ContractDefinition, astId: number | undefined, deref: ASTDereferencer) {
   for (const id of contract.linearizedBaseContracts.reverse()) {
     const parentContract = deref(['ContractDefinition'], id);
 
     const varDecl = parentContract.nodes.find(n => n.id == astId);
     if (varDecl && isNodeType('VariableDeclaration', varDecl)) {
-      return [varDecl, parentContract.name];
+      return { varDecl, contract: parentContract.name };
     }
   }
 }
@@ -130,18 +124,13 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
 
   for (const typeName of typeNames.values()) {
     const { typeIdentifier, typeString: label } = typeDescriptions(typeName);
-
     const type = normalizeTypeIdentifier(typeIdentifier);
-    const hasMembers = /^t_(enum|struct)\b/.test(type);
-    if (type in layout.types && (!hasMembers || layout.types[type].members !== undefined)) {
-      continue;
-    }
-
-    let members;
+    layout.types[type] ??= { label };
 
     if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
       const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
-      members = getTypeMembers(typeDef);
+      layout.types[type].members ??= getTypeMembers(typeDef);
+
       // Recursively look for the types referenced in this definition and add them to the queue.
       for (const typeName of findTypeNames(typeDef)) {
         const { typeIdentifier } = typeDescriptions(typeName);
@@ -150,7 +139,5 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
         }
       }
     }
-
-    layout.types[type] = { label, members };
   }
 }
