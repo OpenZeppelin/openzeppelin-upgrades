@@ -38,16 +38,14 @@ export function extractStorageLayout(
 
     for (const storage of storageLayout.storage) {
       const origin = getOriginContract(contractDef, storage.astId, deref);
-
-      if (origin) {
-        const [varDecl, contract] = origin;
-        // Solc layout doesn't bring members for enums so we get them using the ast method
-        loadLayoutType(varDecl, layout, deref);
-        const { label, offset, slot, type } = storage;
-        const src = decodeSrc(varDecl);
-        layout.storage.push({ label, offset, slot, type, contract, src });
-        layout.flat = true;
-      }
+      assert(origin, `Did not find variable declaration node for '${storage.label}'`);
+      const { varDecl, contract } = origin;
+      // Solc layout doesn't bring members for enums so we get them using the ast method
+      loadLayoutType(varDecl, layout, deref);
+      const { label, offset, slot, type } = storage;
+      const src = decodeSrc(varDecl);
+      layout.storage.push({ label, offset, slot, type, contract, src });
+      layout.flat = true;
     }
   } else {
     for (const varDecl of contractDef.nodes) {
@@ -108,13 +106,13 @@ function getOriginContract(
   contract: ContractDefinition,
   astId: number | undefined,
   deref: ASTDereferencer,
-): undefined | [VariableDeclaration, string] {
+) {
   for (const id of contract.linearizedBaseContracts.reverse()) {
     const parentContract = deref(['ContractDefinition'], id);
 
     const varDecl = parentContract.nodes.find(n => n.id == astId);
     if (varDecl && isNodeType('VariableDeclaration', varDecl)) {
-      return [varDecl, parentContract.name];
+      return { varDecl, contract: parentContract.name };
     }
   }
 }
