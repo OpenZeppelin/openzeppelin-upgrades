@@ -384,3 +384,37 @@ contract StorageUpgrade_MappingEnumKey_V2_Bad {
     mapping (E1 => uint) m3;
     mapping (uint => uint) m4;
 }
+
+contract StorageUpgrade_StructEnum_V1 {
+    enum MyEnum { State1, State2 }
+
+    struct MyStruct {
+        uint256 id;
+        string title;
+        string body;
+        uint256 votesFor;
+        uint256 votesAgainst;
+        address[] votesForAddr;
+        address[] votesAgainstAddr;
+        address owner;
+        MyEnum myEnum;
+    }
+    MyStruct[] public structs;
+}
+
+contract StorageUpgrade_StructEnum_V2 {
+    enum MyEnum { State1, State2 }
+
+    struct MyStruct {
+        uint256 id;
+        string title;
+        string body;
+        uint256 votesFor;
+        uint256 votesAgainst;
+        address[] votesForAddr;
+        address[] votesAgainstAddr;
+        address owner;
+        MyEnum myEnum;
+    }
+    MyStruct[] public structs;
+}

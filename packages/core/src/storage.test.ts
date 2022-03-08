@@ -23,11 +23,15 @@ test.before(async t => {
   }
   const solcOutput: SolcOutput = buildInfo.output;
   const contracts: Record<string, ContractDefinition> = {};
+  const storageLayouts: Record<string, StorageLayout> = {};
   for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/Storage.sol'].ast)) {
     contracts[def.name] = def;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    storageLayouts[def.name] = solcOutput.contracts['contracts/test/Storage.sol'][def.name].storageLayout!;
   }
   const deref = astDereferencer(solcOutput);
-  t.context.extractStorageLayout = name => extractStorageLayout(contracts[name], dummyDecodeSrc, deref);
+  t.context.extractStorageLayout = name =>
+    extractStorageLayout(contracts[name], dummyDecodeSrc, deref, storageLayouts[name]);
 });
 
 const dummyDecodeSrc = () => 'file.sol:1';
@@ -462,6 +466,12 @@ test('storage upgrade with enum key in mapping', t => {
       updated: { label: 'm4' },
     },
   });
+});
+
+test('storage upgrade with embedded enum inside struct type', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_StructEnum_V2');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_StructEnum_V2');
+  t.deepEqual(getStorageUpgradeErrors(v1, v2), []);
 });
 
 function stabilizeStorageLayout(layout: StorageLayout) {
