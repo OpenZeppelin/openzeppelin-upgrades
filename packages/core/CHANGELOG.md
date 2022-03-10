@@ -2,7 +2,17 @@
 
 ## Unreleased
 
+- Add support for function types in storage layout. ([#529](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/529))
+
+## 1.13.1 (2022-03-08)
+
+- Fix bug that caused missing members when using solc storageLayout. ([#534](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/534))
+
+## 1.13.0 (2022-03-01)
+
 - Remove `admin.deployTransaction` field written to network manifest. ([#510](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/510))
+- Add `forceImport` function to import an existing proxy or beacon. ([#517](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/517))
+- Extract and store more detailed information about storage layout. ([#519](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/519))
 
 ## 1.12.0 (2022-01-31)
 

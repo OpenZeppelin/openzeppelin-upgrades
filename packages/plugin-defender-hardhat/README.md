@@ -66,6 +66,6 @@ Note that `proposeUpgrade` will only deploy the implementation contract, but **w
 
 ## Learn more
 
-* Refer to the [API documentation](https://docs.openzeppelin.com/upgrades-plugins/api-hardhat).
+* Refer to the [API documentation](https://docs.openzeppelin.com/upgrades-plugins/api-hardhat-upgrades).
 * Also see the [main documentation](https://docs.openzeppelin.com/upgrades-plugins) for more info.
 * And check the [Defender Admin documentation](https://docs.openzeppelin.com/defender/admin) to learn more about managing your contracts with Defender.

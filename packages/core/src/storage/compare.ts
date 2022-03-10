@@ -29,6 +29,7 @@ export type TypeChange = (
         | 'obvious mismatch'
         | 'unknown'
         | 'array grow'
+        | 'visibility change'
         | 'array shrink'
         | 'array dynamic'
         | 'enum resize'
@@ -83,6 +84,16 @@ export class StorageLayoutComparator {
       return ops.filter(o => o.kind !== 'append');
     } else {
       return ops;
+    }
+  }
+
+  getVisibilityChange(original: ParsedTypeDetailed, updated: ParsedTypeDetailed): TypeChange | undefined {
+    const re = /^t_function_(internal|external)/;
+    const originalVisibility = original.head.match(re);
+    const updatedVisibility = updated.head.match(re);
+    assert(originalVisibility && updatedVisibility);
+    if (originalVisibility[0] !== updatedVisibility[0]) {
+      return { kind: 'visibility change', original, updated };
     }
   }
 
@@ -155,6 +166,10 @@ export class StorageLayoutComparator {
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
   ): TypeChange | undefined {
+    if (updated.head.startsWith('t_function')) {
+      return this.getVisibilityChange(original, updated);
+    }
+
     if (original.head !== updated.head) {
       return { kind: 'obvious mismatch', original, updated };
     }

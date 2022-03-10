@@ -18,7 +18,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
-import { Options, withDefaults } from './options';
+import { Options, UpgradeOptions, withDefaults } from './options';
 import { ContractClass, getTruffleConfig } from './truffle';
 import { validateArtifacts, getLinkedBytecode } from './validations';
 import { wrapProvider } from './wrap-provider';
@@ -32,7 +32,7 @@ interface DeployedBeaconImpl {
   impl: string;
 }
 
-interface DeployData {
+export interface DeployData {
   fullOpts: Required<Options>;
   validations: ValidationRunData;
   version: Version;
@@ -40,7 +40,7 @@ interface DeployData {
   layout: StorageLayout;
 }
 
-async function getDeployData(opts: Options, Contract: ContractClass): Promise<DeployData> {
+export async function getDeployData(opts: Options, Contract: ContractClass): Promise<DeployData> {
   const fullOpts = withDefaults(opts);
   const provider = wrapProvider(fullOpts.deployer.provider);
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
@@ -98,7 +98,7 @@ function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string
 async function deployImpl(
   deployData: DeployData,
   Contract: ContractClass,
-  opts: Options,
+  opts: UpgradeOptions,
   currentImplAddress?: string,
 ): Promise<any> {
   assertUpgradeSafe([deployData.validations], deployData.version, deployData.fullOpts);
@@ -107,7 +107,9 @@ async function deployImpl(
   if (currentImplAddress !== undefined) {
     const manifest = await Manifest.forNetwork(deployData.provider);
     const currentLayout = await getStorageLayoutForAddress(manifest, deployData.validations, currentImplAddress);
-    assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
+    if (opts.unsafeSkipStorageCheck !== true) {
+      assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
+    }
   }
 
   const impl = await fetchOrDeploy(deployData.version, deployData.provider, async () => {

@@ -59,6 +59,13 @@ test('obvious mismatch', t => {
   t.snapshot(report.explain());
 });
 
+test('function visibility change', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_FunctionType_Visibility_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_FunctionType_Visibility_V2_Bad');
+  const report = getReport(v1, v2);
+  t.snapshot(report.explain());
+});
+
 test('array', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Array_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Array_V2_Bad');

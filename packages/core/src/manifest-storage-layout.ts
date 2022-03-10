@@ -5,6 +5,7 @@ import { ValidationData } from './validate/data';
 import { findVersionWithoutMetadataMatches, unfoldStorageLayout } from './validate/query';
 import { stabilizeTypeIdentifier } from './utils/type-id';
 import { DeepArray, deepEqual } from './utils/deep-array';
+import { UpgradesError } from './error';
 
 export async function getStorageLayoutForAddress(
   manifest: Manifest,
@@ -12,9 +13,14 @@ export async function getStorageLayoutForAddress(
   implAddress: string,
 ): Promise<StorageLayout> {
   const data = await manifest.read();
-  const versionWithoutMetadata = Object.keys(data.impls).find(v => data.impls[v]?.address === implAddress);
+  const versionWithoutMetadata = Object.keys(data.impls).find(
+    v => data.impls[v]?.address === implAddress || data.impls[v]?.allAddresses?.includes(implAddress),
+  );
   if (versionWithoutMetadata === undefined) {
-    throw new Error(`Deployment at address ${implAddress} is not registered`);
+    throw new UpgradesError(
+      `Deployment at address ${implAddress} is not registered`,
+      () => 'To register a previously deployed proxy for upgrading, use the forceImport function.',
+    );
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { layout } = data.impls[versionWithoutMetadata]!;

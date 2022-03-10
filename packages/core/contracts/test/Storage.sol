@@ -313,6 +313,20 @@ contract StorageUpgrade_ObviousMismatch_V2_Bad {
     mapping (uint => uint) a1;
 }
 
+contract StorageUpgrade_FunctionType_Visibility_V1 {
+    struct S {
+        function () internal m;
+    }
+    S s1;
+}
+
+contract StorageUpgrade_FunctionType_Visibility_V2_Bad {
+    struct S {
+        function () external m;
+    }
+    S s1;
+}
+
 contract StorageUpgrade_Contract_V1 {
     StorageUpgrade_Contract_V1 data;
 }
@@ -383,4 +397,38 @@ contract StorageUpgrade_MappingEnumKey_V2_Bad {
     mapping (E2_Bad => uint) m2;
     mapping (E1 => uint) m3;
     mapping (uint => uint) m4;
+}
+
+contract StorageUpgrade_StructEnum_V1 {
+    enum MyEnum { State1, State2 }
+
+    struct MyStruct {
+        uint256 id;
+        string title;
+        string body;
+        uint256 votesFor;
+        uint256 votesAgainst;
+        address[] votesForAddr;
+        address[] votesAgainstAddr;
+        address owner;
+        MyEnum myEnum;
+    }
+    MyStruct[] public structs;
+}
+
+contract StorageUpgrade_StructEnum_V2 {
+    enum MyEnum { State1, State2 }
+
+    struct MyStruct {
+        uint256 id;
+        string title;
+        string body;
+        uint256 votesFor;
+        uint256 votesAgainst;
+        address[] votesForAddr;
+        address[] votesAgainstAddr;
+        address owner;
+        MyEnum myEnum;
+    }
+    MyStruct[] public structs;
 }

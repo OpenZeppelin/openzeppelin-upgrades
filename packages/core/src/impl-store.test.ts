@@ -6,9 +6,10 @@ import util from 'util';
 import path from 'path';
 import os from 'os';
 
-import { fetchOrDeploy } from './impl-store';
+import { fetchOrDeploy, mergeAddresses } from './impl-store';
 import { getVersion } from './version';
 import { stubProvider } from './stub-provider';
+import { ImplDeployment } from './manifest';
 
 const rimraf = util.promisify(rimrafAsync);
 
@@ -57,3 +58,34 @@ test('cleans up invalid deployment', async t => {
   // the failed deployment has been cleaned up
   await fetchOrDeploy(version1, provider2, provider2.deploy);
 });
+
+test('merge addresses', async t => {
+  const depl1 = { address: '0x1' } as ImplDeployment;
+  const depl2 = { address: '0x2' } as ImplDeployment;
+
+  const { address, allAddresses } = await mergeAddresses(depl1, depl2);
+  t.is(address, '0x1');
+  t.true(unorderedEqual(allAddresses, ['0x1', '0x2']), allAddresses.toString());
+});
+
+test('merge multiple existing addresses', async t => {
+  const depl1 = { address: '0x1', allAddresses: ['0x1a', '0x1b'] } as ImplDeployment;
+  const depl2 = { address: '0x2' } as ImplDeployment;
+
+  const { address, allAddresses } = await mergeAddresses(depl1, depl2);
+  t.is(address, '0x1');
+  t.true(unorderedEqual(allAddresses, ['0x1', '0x1a', '0x1b', '0x2']), allAddresses.toString());
+});
+
+test('merge all addresses', async t => {
+  const depl1 = { address: '0x1', allAddresses: ['0x1a', '0x1b'] } as ImplDeployment;
+  const depl2 = { address: '0x2', allAddresses: ['0x2a', '0x2b'] } as ImplDeployment;
+
+  const { address, allAddresses } = await mergeAddresses(depl1, depl2);
+  t.is(address, '0x1');
+  t.true(unorderedEqual(allAddresses, ['0x1', '0x1a', '0x1b', '0x2', '0x2a', '0x2b']), allAddresses.toString());
+});
+
+function unorderedEqual(arr1: string[], arr2: string[]) {
+  return arr1.every(i => arr2.includes(i)) && arr2.every(i => arr1.includes(i));
+}

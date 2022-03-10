@@ -11,10 +11,16 @@ test('incompatible storage', async t => {
   const { Greeter, GreeterStorageConflict } = t.context;
 
   const beacon = await upgrades.deployBeacon(Greeter);
-  const greeter = await upgrades.deployBeaconProxy(beacon, Greeter, ['Hola mundo!']);
   await t.throwsAsync(
-    () => upgrades.upgradeProxy(greeter, GreeterStorageConflict),
+    () => upgrades.upgradeBeacon(beacon, GreeterStorageConflict),
     undefined,
     'New storage layout is incompatible due to the following changes',
   );
+});
+
+test('incompatible storage - forced', async t => {
+  const { Greeter, GreeterStorageConflict } = t.context;
+
+  const beacon = await upgrades.deployBeacon(Greeter);
+  await upgrades.upgradeBeacon(beacon, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
 });
