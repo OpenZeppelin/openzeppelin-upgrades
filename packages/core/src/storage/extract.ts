@@ -13,6 +13,7 @@ import { SrcDecoder } from '../src-decoder';
 import { ASTDereferencer } from '../ast-dereferencer';
 import { mapValues } from '../utils/map-values';
 import { pick } from '../utils/pick';
+import { execall } from '../utils/execall';
 
 const currentLayoutVersion = '1.1';
 
@@ -31,7 +32,10 @@ export function extractStorageLayout(
     layout.types = mapValues(storageLayout.types, m => {
       return {
         label: m.label,
-        members: m.members?.map(m => (typeof m === 'string' ? m : pick(m, ['label', 'type']))) as TypeItem['members'],
+        members: m.members?.map(m =>
+          typeof m === 'string' ? m : pick(m, ['label', 'type', 'offset', 'slot']),
+        ) as TypeItem['members'],
+        numberOfBytes: m.numberOfBytes,
       };
     });
 
@@ -39,11 +43,12 @@ export function extractStorageLayout(
       const origin = getOriginContract(contractDef, storage.astId, deref);
       assert(origin, `Did not find variable declaration node for '${storage.label}'`);
       const { varDecl, contract } = origin;
+      const { renamedFrom, retypedFrom } = getRetypedRenamed(varDecl);
       // Solc layout doesn't bring members for enums so we get them using the ast method
       loadLayoutType(varDecl, layout, deref);
       const { label, offset, slot, type } = storage;
       const src = decodeSrc(varDecl);
-      layout.storage.push({ label, offset, slot, type, contract, src });
+      layout.storage.push({ label, offset, slot, type, contract, src, retypedFrom, renamedFrom });
       layout.flat = true;
     }
   } else {
@@ -51,12 +56,14 @@ export function extractStorageLayout(
       if (isNodeType('VariableDeclaration', varDecl)) {
         if (!varDecl.constant && varDecl.mutability !== 'immutable') {
           const type = normalizeTypeIdentifier(typeDescriptions(varDecl).typeIdentifier);
-
+          const { renamedFrom, retypedFrom } = getRetypedRenamed(varDecl);
           layout.storage.push({
             contract: contractDef.name,
             label: varDecl.name,
             type,
             src: decodeSrc(varDecl),
+            retypedFrom,
+            renamedFrom,
           });
 
           loadLayoutType(varDecl, layout, deref);
@@ -103,7 +110,6 @@ function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['m
 function getOriginContract(contract: ContractDefinition, astId: number | undefined, deref: ASTDereferencer) {
   for (const id of contract.linearizedBaseContracts.reverse()) {
     const parentContract = deref(['ContractDefinition'], id);
-
     const varDecl = parentContract.nodes.find(n => n.id == astId);
     if (varDecl && isNodeType('VariableDeclaration', varDecl)) {
       return { varDecl, contract: parentContract.name };
@@ -140,4 +146,24 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
       }
     }
   }
+}
+
+function getRetypedRenamed(varDecl: VariableDeclaration) {
+  let retypedFrom, renamedFrom;
+  if ('documentation' in varDecl) {
+    const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
+    for (const { groups } of execall(
+      /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
+      docs,
+    )) {
+      if (groups?.title === 'custom') {
+        if (groups.tag === 'oz-retyped-from') {
+          retypedFrom = groups.args;
+        } else if (groups.tag === 'oz-renamed-from') {
+          renamedFrom = groups.args;
+        }
+      }
+    }
+  }
+  return { retypedFrom, renamedFrom };
 }

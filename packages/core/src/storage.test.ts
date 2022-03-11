@@ -179,7 +179,7 @@ test('storage upgrade with structs', t => {
       change: {
         kind: 'struct members',
         ops: {
-          length: 1,
+          length: 2,
           0: { kind: 'delete' },
         },
       },

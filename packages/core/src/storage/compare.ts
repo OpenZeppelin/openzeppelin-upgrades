@@ -1,7 +1,7 @@
 import { levenshtein, Operation } from '../levenshtein';
-import { ParsedTypeDetailed, StorageItem as _StorageItem } from './layout';
+import { hasLayout, ParsedTypeDetailed, isEnumMembers, isStructMembers } from './layout';
 import { UpgradesError } from '../error';
-import { StructMember as _StructMember, isEnumMembers, isStructMembers } from './layout';
+import { StorageItem as _StorageItem, StructMember as _StructMember, StorageField as _StorageField } from './layout';
 import { LayoutCompatibilityReport } from './report';
 import { assert } from '../utils/assert';
 import { isValueType } from '../utils/is-value-type';
@@ -9,7 +9,7 @@ import { isValueType } from '../utils/is-value-type';
 export type StorageItem = _StorageItem<ParsedTypeDetailed>;
 type StructMember = _StructMember<ParsedTypeDetailed>;
 
-export type StorageField = StorageItem | StructMember;
+export type StorageField = _StorageField<ParsedTypeDetailed>;
 export type StorageOperation<F extends StorageField> = Operation<F, StorageFieldChange<F>>;
 
 export type EnumOperation = Operation<string, { kind: 'replace'; original: string; updated: string }>;
@@ -17,6 +17,7 @@ export type EnumOperation = Operation<string, { kind: 'replace'; original: strin
 type StorageFieldChange<F extends StorageField> = (
   | { kind: 'replace' | 'rename' }
   | { kind: 'typechange'; change: TypeChange }
+  | { kind: 'layoutchange'; change: LayoutChange }
 ) & {
   original: F;
   updated: F;
@@ -51,6 +52,13 @@ export type TypeChange = (
   original: ParsedTypeDetailed;
   updated: ParsedTypeDetailed;
 };
+
+export interface LayoutChange {
+  uncertain?: boolean;
+  slot?: Record<'from' | 'to', string>;
+  offset?: Record<'from' | 'to', number>;
+  bytes?: Record<'from' | 'to', string>;
+}
 
 export class StorageLayoutComparator {
   hasAllowedUncheckedCustomTypes = false;
@@ -90,15 +98,42 @@ export class StorageLayoutComparator {
   }
 
   getFieldChange<F extends StorageField>(original: F, updated: F): StorageFieldChange<F> | undefined {
-    const nameChange = !this.unsafeAllowRenames && original.label !== updated.label;
-    const typeChange = this.getTypeChange(original.type, updated.type, { allowAppend: false });
+    const nameChange = !this.unsafeAllowRenames && original.label !== (updated.renamedFrom ?? updated.label);
+    const retypedFromOriginal = original.type.item.label === updated.retypedFrom?.trim();
+    const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
+    const layoutChange = this.getLayoutChange(original, updated);
 
-    if (typeChange && nameChange) {
+    if (updated.retypedFrom && layoutChange) {
+      return { kind: 'layoutchange', original, updated, change: layoutChange };
+    } else if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
     } else if (nameChange) {
       return { kind: 'rename', original, updated };
     } else if (typeChange) {
       return { kind: 'typechange', change: typeChange, original, updated };
+    } else if (layoutChange && !layoutChange.uncertain) {
+      // Any layout change should be caught earlier as a type change, but we
+      // add this check as a safety fallback.
+      return { kind: 'layoutchange', original, updated, change: layoutChange };
+    }
+  }
+
+  getLayoutChange(original: StorageField, updated: StorageField): LayoutChange | undefined {
+    const validPair = ['uint8', 'bool'];
+    const knownCompatibleTypes =
+      validPair.includes(original.type.item.label) && validPair.includes(updated.type.item.label);
+    if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
+      return undefined;
+    } else if (hasLayout(original) && hasLayout(updated)) {
+      const change = <T>(from: T, to: T) => (from === to ? undefined : { from, to });
+      const slot = change(original.slot, updated.slot);
+      const offset = change(original.offset, updated.offset);
+      const bytes = change(original.type.item.numberOfBytes, updated.type.item.numberOfBytes);
+      if (slot || offset || bytes) {
+        return { slot, offset, bytes };
+      }
+    } else {
+      return { uncertain: true };
     }
   }
 
@@ -108,7 +143,6 @@ export class StorageLayoutComparator {
     { allowAppend }: { allowAppend: boolean },
   ): TypeChange | undefined {
     const key = JSON.stringify({ original: original.id, updated: updated.id, allowAppend });
-
     if (this.cache.has(key)) {
       return this.cache.get(key);
     }
