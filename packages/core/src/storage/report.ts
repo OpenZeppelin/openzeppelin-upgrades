@@ -21,16 +21,16 @@ export class LayoutCompatibilityReport {
   explain(color = true): string {
     const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
     const res = [];
-    let hasDelete = false;
 
-    for (const op of this.ops) {
+    for (const [i, op] of this.ops.entries()) {
       const src = 'updated' in op ? op.updated.src : op.original.contract;
-      if (!(hasDelete && op.kind === 'layoutchange')) {
-        res.push(
-          chalk.bold(src) + ':' + indent(explainStorageOperation(op, { kind: 'layout', allowAppend: true }), 2, 1),
-        );
-        hasDelete ||= op.kind === 'delete';
+      // Only print layoutchange if it's the first op, otherwise we assume it will be explained by previous ops.
+      if (op.kind === 'layoutchange' && i !== 0) {
+        continue;
       }
+      res.push(
+        chalk.bold(src) + ':' + indent(explainStorageOperation(op, { kind: 'layout', allowAppend: true }), 2, 1),
+      );
     }
 
     return res.join('\n\n');
@@ -183,17 +183,16 @@ function getAllTypeChanges(root: TypeChange): TypeChange[] {
 function explainTypeChangeDetails(ch: TypeChange): string | undefined {
   switch (ch.kind) {
     case 'struct members': {
-      let hasDelete = false;
       const { allowAppend } = ch;
       return (
         `In ${ch.updated.item.label}\n` +
         itemize(
-          ...ch.ops.map(op => {
-            if (hasDelete && op.kind === 'layoutchange') {
-              return '';
+          ...ch.ops.flatMap((op, i) => {
+            if (op.kind === 'layoutchange' && i !== 0) {
+              // Only print layoutchange if it's the first op, otherwise we assume it will be explained by previous ops.
+              return [];
             } else {
-              hasDelete ||= op.kind === 'delete';
-              return explainStorageOperation(op, { kind: 'struct', allowAppend });
+              return [explainStorageOperation(op, { kind: 'struct', allowAppend })];
             }
           }),
         )
