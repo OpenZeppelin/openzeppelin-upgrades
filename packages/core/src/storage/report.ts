@@ -21,12 +21,16 @@ export class LayoutCompatibilityReport {
   explain(color = true): string {
     const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
     const res = [];
+    let hasDelete = false;
 
     for (const op of this.ops) {
       const src = 'updated' in op ? op.updated.src : op.original.contract;
-      res.push(
-        chalk.bold(src) + ':' + indent(explainStorageOperation(op, { kind: 'layout', allowAppend: true }), 2, 1),
-      );
+      if (!(hasDelete && op.kind === 'layoutchange')) {
+        res.push(
+          chalk.bold(src) + ':' + indent(explainStorageOperation(op, { kind: 'layout', allowAppend: true }), 2, 1),
+        );
+        hasDelete = op.kind === 'delete';
+      }
     }
 
     return res.join('\n\n');
@@ -52,7 +56,6 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
           : [];
       return `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details);
     }
-
     case 'rename':
       return `Renamed ${label(op.original)} to ${label(op.updated)}`;
 
@@ -180,10 +183,20 @@ function getAllTypeChanges(root: TypeChange): TypeChange[] {
 function explainTypeChangeDetails(ch: TypeChange): string | undefined {
   switch (ch.kind) {
     case 'struct members': {
+      let hasDelete = false;
       const { allowAppend } = ch;
       return (
         `In ${ch.updated.item.label}\n` +
-        itemize(...ch.ops.map(op => explainStorageOperation(op, { kind: 'struct', allowAppend })))
+        itemize(
+          ...ch.ops.map(op => {
+            if (hasDelete) {
+              return '';
+            } else {
+              hasDelete = op.kind === 'delete';
+              return explainStorageOperation(op, { kind: 'struct', allowAppend });
+            }
+          }),
+        )
       );
     }
 
