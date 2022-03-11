@@ -29,7 +29,7 @@ export class LayoutCompatibilityReport {
         res.push(
           chalk.bold(src) + ':' + indent(explainStorageOperation(op, { kind: 'layout', allowAppend: true }), 2, 1),
         );
-        hasDelete = op.kind === 'delete';
+        hasDelete ||= op.kind === 'delete';
       }
     }
 
@@ -189,10 +189,10 @@ function explainTypeChangeDetails(ch: TypeChange): string | undefined {
         `In ${ch.updated.item.label}\n` +
         itemize(
           ...ch.ops.map(op => {
-            if (hasDelete) {
+            if (hasDelete && op.kind === 'layoutchange') {
               return '';
             } else {
-              hasDelete = op.kind === 'delete';
+              hasDelete ||= op.kind === 'delete';
               return explainStorageOperation(op, { kind: 'struct', allowAppend });
             }
           }),
