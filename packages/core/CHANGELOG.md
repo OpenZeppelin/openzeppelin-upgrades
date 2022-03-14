@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.14.0 (2022-03-14)
 
 - Add support for function types in storage layout. ([#529](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/529))
 - Add ability to change a variable type or name through `/// @custom:oz-renamed-from abc` and `/// @custom:oz-retyped-from bool`. ([#531](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/531))
