@@ -1,5 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract } from 'ethers';
+import type { ContractFactory } from 'ethers';
 
 import {
   Manifest,
@@ -20,11 +20,13 @@ import {
   getInitializerData,
 } from './utils';
 
-type InstanceOf<F extends ContractFactory> = ReturnType<F['attach']>;
+type ContractTypeOfFactory<F extends ContractFactory> = ReturnType<F['attach']>;
 
 export interface DeployFunction {
-  <F extends ContractFactory>(ImplFactory: F, args?: unknown[], opts?: DeployProxyOptions): Promise<InstanceOf<F>>;
-  <F extends ContractFactory>(ImplFactory: F, opts?: DeployProxyOptions): Promise<InstanceOf<F>>;
+  <F extends ContractFactory>(ImplFactory: F, args?: unknown[], opts?: DeployProxyOptions): Promise<
+    ContractTypeOfFactory<F>
+  >;
+  <F extends ContractFactory>(ImplFactory: F, opts?: DeployProxyOptions): Promise<ContractTypeOfFactory<F>>;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
@@ -32,7 +34,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
     ImplFactory: F,
     args: unknown[] | DeployProxyOptions = [],
     opts: DeployProxyOptions = {},
-  ): Promise<InstanceOf<F>> {
+  ): Promise<ContractTypeOfFactory<F>> {
     if (!Array.isArray(args)) {
       opts = args;
       args = [];
@@ -80,7 +82,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
 
     await manifest.addProxy(proxyDeployment);
 
-    const inst = ImplFactory.attach(proxyDeployment.address) as InstanceOf<F>;
+    const inst = ImplFactory.attach(proxyDeployment.address) as ContractTypeOfFactory<F>;
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = proxyDeployment.deployTransaction;
     return inst;
