@@ -12,7 +12,7 @@ import {
 
 async function lock(file: string) {
   await fs.mkdir(path.dirname(file), { recursive: true });
-  return lockfile.lock(file, { retries: 3, realpath: false });
+  return lockfile.lock(file, { retries: { minTimeout: 50, factor: 1.3 }, realpath: false });
 }
 
 export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunData: ValidationRunData): Promise<void> {
