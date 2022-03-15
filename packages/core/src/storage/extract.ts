@@ -108,7 +108,7 @@ function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['m
 }
 
 function getOriginContract(contract: ContractDefinition, astId: number | undefined, deref: ASTDereferencer) {
-  for (const id of contract.linearizedBaseContracts.reverse()) {
+  for (const id of contract.linearizedBaseContracts) {
     const parentContract = deref(['ContractDefinition'], id);
     const varDecl = parentContract.nodes.find(n => n.id == astId);
     if (varDecl && isNodeType('VariableDeclaration', varDecl)) {
