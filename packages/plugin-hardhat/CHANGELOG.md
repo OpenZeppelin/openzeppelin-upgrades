@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix lock file issue with validations cache when compiling a large number of contracts ([#537](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/537))
+
 ## 1.16.0 (2022-03-08)
 
 - Use a lockfile when reading validations cache to avoid problems with parallel compilation in Hardhat 2.9.0. ([#530](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/530))
