@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix interference with other Hardhat plugins that use the AST. ([#541](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/541))
+
 ## 1.14.0 (2022-03-14)
 
 - Add support for function types in storage layout. ([#529](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/529))
