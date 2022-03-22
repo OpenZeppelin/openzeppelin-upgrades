@@ -107,7 +107,7 @@ abstract contract OnlyDelegateCall {
     address private immutable self = address(this);
 
     function checkDelegateCall() private view {
-        require(address(this) != original);
+        require(address(this) != self);
     }
 
     modifier onlyDelegateCall() {
