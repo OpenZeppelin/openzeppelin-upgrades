@@ -18,6 +18,7 @@ test.before(async t => {
   t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
   t.context.GreeterV3Proxiable = await ethers.getContractFactory('GreeterV3Proxiable');
   t.context.CustomProxy = await ethers.getContractFactory('CustomProxy');
+  t.context.CustomProxyWithAdmin = await ethers.getContractFactory('CustomProxyWithAdmin');
 
   t.context.ProxyAdmin = await ethers.getContractFactory(ProxyAdmin.abi, ProxyAdmin.bytecode);
   t.context.TransparentUpgradableProxy = await ethers.getContractFactory(
@@ -172,12 +173,29 @@ test('ignore kind', async t => {
   t.true(e.message.startsWith(NOT_SUPPORTED_FUNCTION), e.message);
 });
 
-test('import custom proxy', async t => {
+test('import custom UUPS proxy', async t => {
   const { GreeterProxiable, GreeterV2Proxiable, CustomProxy } = t.context;
 
   const impl = await GreeterProxiable.deploy();
   await impl.deployed();
   const proxy = await CustomProxy.deploy(
+    impl.address,
+    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+  );
+  await proxy.deployed();
+
+  const greeter = await upgrades.forceImport(proxy.address, GreeterProxiable);
+  t.is(await greeter.greet(), 'Hello, Hardhat!');
+
+  await upgrades.upgradeProxy(greeter, GreeterV2Proxiable);
+});
+
+test('import custom UUPS proxy with admin', async t => {
+  const { GreeterProxiable, GreeterV2Proxiable, CustomProxyWithAdmin } = t.context;
+
+  const impl = await GreeterProxiable.deploy();
+  await impl.deployed();
+  const proxy = await CustomProxyWithAdmin.deploy(
     impl.address,
     getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
   );
