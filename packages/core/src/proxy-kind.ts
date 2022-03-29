@@ -62,6 +62,10 @@ export async function processProxyKind(
 /**
  * Detects the kind of proxy at an address by reading its ERC 1967 storage slots.
  *
+ * @deprecated Not reliable since UUPS proxies can have admin storage slot set, which causes
+ * this function to treat it as transparent.  Instead, if implementation contract signatures are
+ * available, infer the proxy kind using `inferProxyKind` instead.
+ *
  * @param provider the Ethereum provider
  * @param proxyAddress the proxy address
  * @returns the proxy kind
