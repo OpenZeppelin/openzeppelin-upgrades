@@ -24,7 +24,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^1.13.1",
+    "@openzeppelin/upgrades-core": "^1.14.1",
     "@truffle/contract": "^4.3.26",
     "chalk": "^4.1.0",
     "solidity-ast": "^0.4.15"
