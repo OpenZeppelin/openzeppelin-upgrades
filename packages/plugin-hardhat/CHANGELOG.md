@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.17.0 (2022-03-29)
 
 - Support specifying proxy kind for `forceImport`, fix importing UUPS proxy with admin ([#550](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/550))
 
