@@ -100,7 +100,7 @@ function checkForImportIdConsistency(
         //
         // The code below corresponds to scenario 2.
         let ignoreImport = false;
-        for (const sourceUnitPath of Object.keys(sourceUnitId) as Array<string>) {
+        for (const sourceUnitPath of Object.keys(sourceUnitId)) {
           if (
             path.basename(importDir.absolutePath) === path.basename(sourceUnitPath) &&
             importDir.absolutePath.startsWith('@openzeppelin/')
