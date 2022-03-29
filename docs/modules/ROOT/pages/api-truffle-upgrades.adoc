@@ -8,7 +8,7 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of https:/
 The following options are common to all functions.
 
 * `deployer`: Should be set to the Truffle migration deployer during migrations.
-* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS]. Not applicable for Beacon proxies.
+* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS]. Not applicable for Beacon proxies except for xref:#force-import[`forceImport`].
 * `unsafeAllow`: (`ValidationError[]`) Selectively disable one or more validation errors:
 ** `"external-library-linking"`: Allows a deployment with external libraries linked to the implementation contract. (External libraries are otherwise xref:faq.adoc#why-cant-i-use-external-libraries[not yet supported].)
 ** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.
@@ -136,6 +136,7 @@ async function deployBeaconProxy(
 
 Forces the import of an existing proxy or beacon deployment to be used with this plugin. Provide the address of an existing proxy or beacon and the Truffle contract class of the implementation contract that was deployed. Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons.
 
+* `kind`: (`"uups" | "transparent" | "beacon"`) forces a proxy to be treated as a UUPS, Transparent, or Beacon proxy. If not provided, the proxy kind will be automatically detected.
 * See <<common-options>>.
 
 [source,ts]
@@ -143,7 +144,9 @@ Forces the import of an existing proxy or beacon deployment to be used with this
 async function forceImport(
   proxyOrBeaconAddress: string,
   deployedImpl: ContractClass,
-  opts: {} = {},
+  opts: {
+    kind?: 'uups' | 'transparent' | 'beacon',
+  } = {},
 ): Promise<ContractInstance>
 ----
 

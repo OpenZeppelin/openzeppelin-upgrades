@@ -175,3 +175,14 @@ contract CustomProxy {
         }
     }
 }
+
+contract CustomProxyWithAdmin is CustomProxy {
+    bytes32 internal constant _ADMIN_SLOT = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
+
+    constructor(address _logic, bytes memory _data) CustomProxy(_logic, _data) public payable {
+        address sender = msg.sender;
+        assembly {
+            sstore(_ADMIN_SLOT, sender)
+        }
+    }
+}

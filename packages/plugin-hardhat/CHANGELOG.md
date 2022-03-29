@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support specifying proxy kind for `forceImport`, fix importing UUPS proxy with admin ([#550](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/550))
+
 ## 1.16.1 (2022-03-15)
 
 - Fix lock file issue with validations cache when compiling a large number of contracts ([#537](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/537))
