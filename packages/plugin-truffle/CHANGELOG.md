@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fix "The requested contract was not found" error when importing from an interface ([#549](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/549))
 - Support specifying proxy kind for `forceImport`, fix importing UUPS proxy with admin ([#550](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/550))
 
 ## 1.14.0 (2022-03-08)
