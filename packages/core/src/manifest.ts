@@ -1,5 +1,5 @@
 import path from 'path';
-import { promises as fs } from 'fs';
+import { promises as fs, renameSync, existsSync } from 'fs';
 import { EthereumProvider, getChainId, networkNames } from './provider';
 import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
@@ -48,7 +48,9 @@ export class Manifest {
   }
 
   constructor(readonly chainId: number) {
-    const name = networkNames[chainId] ?? `unknown-${chainId}`;
+    const fallbackFileName = `unknown-${chainId}`;
+    const name = networkNames[chainId] ?? fallbackFileName;
+    this.renameFileIfRequired(fallbackFileName, name);
     this.file = path.join(manifestDir, `${name}.json`);
   }
 
@@ -133,6 +135,21 @@ export class Manifest {
       await release();
       this.locked = false;
     };
+  }
+
+  private async renameFileIfRequired(oldName: string, newName: string){
+    if(oldName !== newName){
+      const oldPath = path.join(manifestDir, `${oldName}.json`);
+      const oldPathExists = existsSync(oldPath);
+      if(oldPathExists){
+        try{
+          const newPath = path.join(manifestDir, `${newName}.json`);
+          renameSync(oldPath, newPath);
+        }catch(error){
+          throw new Error(`Can't rename ${oldPath}`);
+        }
+      }
+    }
   }
 }
 
