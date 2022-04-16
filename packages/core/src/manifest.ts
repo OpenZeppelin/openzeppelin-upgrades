@@ -1,5 +1,5 @@
 import path from 'path';
-import { promises as fs, renameSync, existsSync } from 'fs';
+import { promises as fs } from 'fs';
 import { EthereumProvider, getChainId, networkNames } from './provider';
 import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
@@ -42,15 +42,19 @@ const manifestDir = '.openzeppelin';
 export class Manifest {
   readonly file: string;
   private locked = false;
+  readonly fallbackFilePath: string;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
-    return new Manifest(await getChainId(provider));
+    const manifest = new Manifest(await getChainId(provider));
+    await manifest.renameFileIfRequired(manifest.fallbackFilePath, manifest.file);
+    return manifest;
   }
 
+  // 1. New project => No old file, Always new file
   constructor(readonly chainId: number) {
     const fallbackFileName = `unknown-${chainId}`;
     const name = networkNames[chainId] ?? fallbackFileName;
-    this.renameFileIfRequired(fallbackFileName, name);
+    this.fallbackFilePath = path.join(manifestDir, `${fallbackFileName}.json`);
     this.file = path.join(manifestDir, `${name}.json`);
   }
 
@@ -115,11 +119,11 @@ export class Manifest {
     await fs.writeFile(this.file, JSON.stringify(normalized, null, 2) + '\n');
   }
 
-  async lockedRun<T>(cb: () => Promise<T>): Promise<T> {
+  async lockedRun<T>(cb: () => Promise<T>, filePathToLock?: string): Promise<T> {
     if (this.locked) {
       throw new Error('Manifest is already locked');
     }
-    const release = await this.lock();
+    const release = await this.lock(filePathToLock);
     try {
       return await cb();
     } finally {
@@ -127,9 +131,9 @@ export class Manifest {
     }
   }
 
-  private async lock() {
-    await fs.mkdir(path.dirname(this.file), { recursive: true });
-    const release = await lockfile.lock(this.file, { retries: 3, realpath: false });
+  private async lock(filePathToLock?: string) {
+    await fs.mkdir(path.dirname(filePathToLock ?? this.file), { recursive: true });
+    const release = await lockfile.lock(filePathToLock ?? this.file, { retries: 3, realpath: false });
     this.locked = true;
     return async () => {
       await release();
@@ -137,16 +141,25 @@ export class Manifest {
     };
   }
 
-  private async renameFileIfRequired(oldName: string, newName: string){
-    if(oldName !== newName){
-      const oldPath = path.join(manifestDir, `${oldName}.json`);
-      const oldPathExists = existsSync(oldPath);
-      if(oldPathExists){
-        try{
-          const newPath = path.join(manifestDir, `${newName}.json`);
-          renameSync(oldPath, newPath);
-        }catch(error){
-          throw new Error(`Can't rename ${oldPath}`);
+  private async renameFileIfRequired(oldFilePath: string, newFilePath: string) {
+    const areFilePathsDifferent = oldFilePath !== newFilePath;
+    if (areFilePathsDifferent) {
+      let shouldRenameFile = false;
+      try {
+        // Check if old file path exists and can be accessed
+        await fs.access(oldFilePath);
+        shouldRenameFile = true;
+      } catch (error) {
+        // Do nothing if old file path can't be accessed or doesn't exist in which case we don't need to rename
+      }
+      if (shouldRenameFile) {
+        try {
+          // Lock the old file and rename the old file path to new file path
+          await this.lockedRun(async () => {
+            await fs.rename(oldFilePath, newFilePath);
+          }, oldFilePath);
+        } catch (error) {
+          throw new Error(`Can't rename ${oldFilePath}`);
         }
       }
     }
