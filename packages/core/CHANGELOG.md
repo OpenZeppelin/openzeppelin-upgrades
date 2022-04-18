@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.14.1 (2022-03-16)
 
 - Fix interference with other Hardhat plugins that use the AST. ([#541](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/541))
 

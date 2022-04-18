@@ -20,7 +20,7 @@ jobs:
       run: echo "::set-output name=dir::$(yarn cache dir)"
 
     - name: Cache node modules
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ${{steps.yarn-cache-dir-path.outputs.dir}}
@@ -35,6 +35,6 @@ jobs:
     - name: Run coverage
       run: yarn coverage
 
-    - uses: codecov/codecov-action@v2
+    - uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos(
