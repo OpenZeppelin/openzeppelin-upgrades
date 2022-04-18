@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.8;
+pragma solidity ^0.8.2;
 
 contract StandaloneV1 {
     uint a;
@@ -21,4 +21,17 @@ contract StandaloneV2Bad {
     uint x;
     uint a;
     string b;
+}
+
+contract StandaloneRenameV1 {
+    uint x;
+}
+
+contract StandaloneRenameV2 {
+    /// @custom:oz-renamed-from x
+    uint y;
+}
+
+contract StandaloneRenameV3 is StandaloneRenameV2 {
+    uint z;
 }
