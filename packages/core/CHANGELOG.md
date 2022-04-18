@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.14.2 (2022-04-18)
 
 - Fix handling of rename annotations when unchanged from one version to the next. ([#558](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/558))
 
