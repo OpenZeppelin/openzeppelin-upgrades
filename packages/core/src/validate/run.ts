@@ -249,8 +249,16 @@ function* getStateVariableErrors(
 
 function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
   const implicitUsage = [...findAll('UsingForDirective', contractDef)].map(
-    usingForDirective => usingForDirective.libraryName.referencedDeclaration,
-  );
+    usingForDirective => {
+      if (usingForDirective.libraryName !== undefined) {
+        return usingForDirective.libraryName.referencedDeclaration;
+      } else if (usingForDirective.functionList !== undefined) {
+        return usingForDirective.functionList.map(func => func.function.referencedDeclaration);
+      } else {
+        throw new Error('Broken invariant: either UsingForDirective.libraryName or UsingForDirective.functionList should be defined');
+      }
+    }
+  ).flat();
 
   const explicitUsage = [...findAll('Identifier', contractDef)]
     .filter(identifier => identifier.typeDescriptions.typeString?.match(/^type\(library/))
