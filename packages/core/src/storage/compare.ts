@@ -61,7 +61,7 @@ export interface LayoutChange {
 }
 
 // StorageItem with slot and offset info. Needed for overlap detection
-type StorageItemFull = StorageItem & { slot: string, offset: number };
+type StorageItemFull = StorageItem & { slot: string; offset: number };
 
 function isFullInfo(entry: StorageField): entry is StorageItemFull {
   return entry.slot != undefined && entry.offset != undefined;
@@ -77,26 +77,17 @@ function storageItemEnd(entry: StorageItemFull): number {
 
 // Get a subset of `layout` that exactly covers the space from `begin` to `end`
 function subLayout(begin: number, end: number, layout: StorageItemFull[]): StorageItemFull[] | undefined {
-  if (begin == end) return [];
+  if (begin == end) {
+    return [];
+  }
 
   const sublayout = layout.filter(entry => begin <= storageItemBegin(entry) && storageItemEnd(entry) <= end);
-  return sublayout.length > 0
-    && begin == storageItemBegin(sublayout[0])
-    && (end == storageItemEnd(sublayout[sublayout.length - 1]) || end == Infinity)
+  return sublayout.length > 0 &&
+    begin == storageItemBegin(sublayout[0]) &&
+    (end == storageItemEnd(sublayout[sublayout.length - 1]) || end == Infinity)
     ? sublayout
     : undefined;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 export class StorageLayoutComparator {
   hasAllowedUncheckedCustomTypes = false;
@@ -109,16 +100,15 @@ export class StorageLayoutComparator {
 
   compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
     if (original.every(isFullInfo) && updated.every(isFullInfo)) {
-
       // We are going to cut the layout in sections following the original gaps.
-      let ptr: number = 0;
-      let sections: { begin: number, end: number }[] = [];
+      let ptr = 0;
+      const sections: { begin: number; end: number }[] = [];
 
       // For each gap in the original layout, we try to do a cut. Its that is possible, we isolate
       // the section that is before the cut and continue looking for other sections.
       for (const gap of original.filter(entry => entry.label == '__gap')) {
         const gapBegin = storageItemBegin(gap);
-        const gapEnd   = storageItemEnd(gap);
+        const gapEnd = storageItemEnd(gap);
 
         // gap start is not a valid cut in the updated layout
         if (!updated.some(entry => storageItemEnd(entry) == gapBegin)) {
@@ -145,8 +135,8 @@ export class StorageLayoutComparator {
       // Now that sections are isolated, we can compare them one by one
       const ops = sections.flatMap(({ begin, end }) => {
         const originalSection = subLayout(begin, end, original);
-        const updatedSection  = subLayout(begin, end, updated);
-        if (!originalSection || !updatedSection) { assert(false); } /* SHOULD NOT HAPPEN */
+        const updatedSection = subLayout(begin, end, updated);
+        assert(originalSection && updatedSection);
         return this.layoutLevenshtein(originalSection, updatedSection, { allowAppend: end == Infinity });
       });
 
