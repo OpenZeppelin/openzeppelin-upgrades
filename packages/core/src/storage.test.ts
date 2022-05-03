@@ -485,18 +485,21 @@ test('storage upgrade with gap', t => {
     length: 1,
     0: {
       kind: 'insert',
-      updated: { label: '__gap' },
+      updated: { label: 'c' },
     },
   });
 
   const v2_Bad2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad2');
   t.like(getStorageUpgradeErrors(v1, v2_Bad2), {
-    length: 1,
+    length: 2,
     0: {
-      kind: 'replace',
+      kind: 'delete',
       original: { label: 'b' },
-      updated: { label: '__gap' },
     },
+    1: {
+      kind: 'typechange',
+      change: { kind: 'array grow' },
+    }
   });
 });
 

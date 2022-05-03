@@ -60,9 +60,43 @@ export interface LayoutChange {
   bytes?: Record<'from' | 'to', string>;
 }
 
-function position(entry?: { slot: string, offset: number}): number {
-  return entry != undefined ? Number(entry.slot) * 32 + entry.offset : Infinity;
+// StorageItem with slot and offset info. Needed for overlap detection
+type StorageItemFull = StorageItem & { slot: string, offset: number };
+
+function isFullInfo(entry: StorageField): entry is StorageItemFull {
+  return entry.slot != undefined && entry.offset != undefined;
 }
+
+function storageItemBegin(entry: StorageItemFull): number {
+  return Number(entry.slot) * 32 + entry.offset;
+}
+
+function storageItemEnd(entry: StorageItemFull): number {
+  return storageItemBegin(entry) + Number(entry.type.item.numberOfBytes);
+}
+
+// Get a subset of `layout` that exactly covers the space from `begin` to `end`
+function subLayout(begin: number, end: number, layout: StorageItemFull[]): StorageItemFull[] | undefined {
+  if (begin == end) return [];
+
+  const sublayout = layout.filter(entry => begin <= storageItemBegin(entry) && storageItemEnd(entry) <= end);
+  return sublayout.length > 0
+    && begin == storageItemBegin(sublayout[0])
+    && (end == storageItemEnd(sublayout[sublayout.length - 1]) || end == Infinity)
+    ? sublayout
+    : undefined;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 export class StorageLayoutComparator {
   hasAllowedUncheckedCustomTypes = false;
@@ -74,32 +108,49 @@ export class StorageLayoutComparator {
   constructor(readonly unsafeAllowCustomTypes = false, readonly unsafeAllowRenames = false) {}
 
   compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
-    if (
-      original.every(entry => entry.slot != undefined && entry.offset != undefined)
-      &&
-      updated.every(entry => entry.slot != undefined && entry.offset != undefined)
-    ) {
-      // force type from if
-      const originalFull = original as (StorageItem & { slot: string, offset: number})[];
-      const updatedFull = updated  as (StorageItem & { slot: string, offset: number})[];
+    if (original.every(isFullInfo) && updated.every(isFullInfo)) {
 
-      // infer size from following slot
-      const originalFollowing = originalFull.map((entry, i, entries) => ({ ...entry, following: entries[i+1] }));
-      const updatedFollowing = updatedFull.map((entry, i, entries) => ({ ...entry, following: entries[i+1] }));
+      // We are going to cut the layout in sections following the original gaps.
+      let ptr: number = 0;
+      let sections: { begin: number, end: number }[] = [];
 
-      // identify original gaps we can put new stuff into
-      const gaps = originalFollowing.filter(entry => entry.label == '__gap');
+      // For each gap in the original layout, we try to do a cut. Its that is possible, we isolate
+      // the section that is before the cut and continue looking for other sections.
+      for (const gap of original.filter(entry => entry.label == '__gap')) {
+        const gapBegin = storageItemBegin(gap);
+        const gapEnd   = storageItemEnd(gap);
 
-      return new LayoutCompatibilityReport(this.layoutLevenshtein(
-        originalFollowing.filter(entry => entry.label != '__gap'),
-          // we remove all entry used to be part of a gap
-          updatedFollowing.filter(entry => !gaps.some(gap =>
-            position(gap) <= position(entry) // entryStart
-            &&
-            position(entry.following) <= position(gap.following) // gapEnd
-          )),
-        { allowAppend: true }
-      ));
+        // gap start is not a valid cut in the updated layout
+        if (!updated.some(entry => storageItemEnd(entry) == gapBegin)) {
+          continue;
+        }
+
+        // gap end must be a valid cut in the updated layout or gap must be the last element of the original layout
+        if (!updated.some(entry => storageItemBegin(entry) == gapEnd)) {
+          continue;
+        }
+
+        // If we are here, that means the gap in the original layout is a valid cut in the
+        // Note: 0 length sections are ok.
+        sections.push({ begin: ptr, end: gapBegin });
+        ptr = gapEnd;
+      }
+
+      // If there is more data in the original layout after the last gap, add ann additional section.
+      // There might me more data in the updated layout, but that is not an issue (appended data)
+      if (ptr < storageItemEnd(original[original.length - 1])) {
+        sections.push({ begin: ptr, end: Infinity });
+      }
+
+      // Now that sections are isolated, we can compare them one by one
+      const ops = sections.flatMap(({ begin, end }) => {
+        const originalSection = subLayout(begin, end, original);
+        const updatedSection  = subLayout(begin, end, updated);
+        if (!originalSection || !updatedSection) { assert(false); } /* SHOULD NOT HAPPEN */
+        return this.layoutLevenshtein(originalSection, updatedSection, { allowAppend: end == Infinity });
+      });
+
+      return new LayoutCompatibilityReport(ops);
     } else {
       return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
     }
