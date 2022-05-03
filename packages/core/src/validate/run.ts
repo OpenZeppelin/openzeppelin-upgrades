@@ -253,7 +253,7 @@ function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
       if (usingForDirective.libraryName !== undefined) {
         return usingForDirective.libraryName.referencedDeclaration;
       } else if (usingForDirective.functionList !== undefined) {
-        return usingForDirective.functionList.map(func => func.function.referencedDeclaration);
+        return [];
       } else {
         throw new Error(
           'Broken invariant: either UsingForDirective.libraryName or UsingForDirective.functionList should be defined',
