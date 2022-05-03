@@ -474,6 +474,32 @@ test('storage upgrade with embedded enum inside struct type', t => {
   t.deepEqual(getStorageUpgradeErrors(v1, v2), []);
 });
 
+test('storage upgrade with gap', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V1');
+
+  const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Ok');
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
+
+  const v2_Bad1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad1');
+  t.like(getStorageUpgradeErrors(v1, v2_Bad1), {
+    length: 1,
+    0: {
+      kind: 'insert',
+      updated: { label: '__gap' },
+    },
+  });
+
+  const v2_Bad2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad2');
+  t.like(getStorageUpgradeErrors(v1, v2_Bad2), {
+    length: 1,
+    0: {
+      kind: 'replace',
+      original: { label: 'b' },
+      updated: { label: '__gap' },
+    },
+  });
+});
+
 function stabilizeStorageLayout(layout: StorageLayout) {
   return {
     storage: layout.storage.map(s => ({ ...s, type: stabilizeTypeIdentifier(s.type) })),

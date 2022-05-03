@@ -248,9 +248,9 @@ function* getStateVariableErrors(
 }
 
 function getReferencedLibraryIds(contractDef: ContractDefinition): number[] {
-  const implicitUsage = [...findAll('UsingForDirective', contractDef)].map(
-    usingForDirective => usingForDirective.libraryName.referencedDeclaration,
-  );
+  const implicitUsage = [...findAll('UsingForDirective', contractDef)]
+    .map(usingForDirective => usingForDirective.libraryName?.referencedDeclaration)
+    .filter((ref): ref is number => ref != undefined);
 
   const explicitUsage = [...findAll('Identifier', contractDef)]
     .filter(identifier => identifier.typeDescriptions.typeString?.match(/^type\(library/))

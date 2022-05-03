@@ -60,6 +60,10 @@ export interface LayoutChange {
   bytes?: Record<'from' | 'to', string>;
 }
 
+function position(entry?: { slot: string, offset: number}): number {
+  return entry != undefined ? Number(entry.slot) * 32 + entry.offset : Infinity;
+}
+
 export class StorageLayoutComparator {
   hasAllowedUncheckedCustomTypes = false;
 
@@ -70,7 +74,35 @@ export class StorageLayoutComparator {
   constructor(readonly unsafeAllowCustomTypes = false, readonly unsafeAllowRenames = false) {}
 
   compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
-    return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
+    if (
+      original.every(entry => entry.slot != undefined && entry.offset != undefined)
+      &&
+      updated.every(entry => entry.slot != undefined && entry.offset != undefined)
+    ) {
+      // force type from if
+      const originalFull = original as (StorageItem & { slot: string, offset: number})[];
+      const updatedFull = updated  as (StorageItem & { slot: string, offset: number})[];
+
+      // infer size from following slot
+      const originalFollowing = originalFull.map((entry, i, entries) => ({ ...entry, following: entries[i+1] }));
+      const updatedFollowing = updatedFull.map((entry, i, entries) => ({ ...entry, following: entries[i+1] }));
+
+      // identify original gaps we can put new stuff into
+      const gaps = originalFollowing.filter(entry => entry.label == '__gap');
+
+      return new LayoutCompatibilityReport(this.layoutLevenshtein(
+        originalFollowing.filter(entry => entry.label != '__gap'),
+          // we remove all entry used to be part of a gap
+          updatedFollowing.filter(entry => !gaps.some(gap =>
+            position(gap) <= position(entry) // entryStart
+            &&
+            position(entry.following) <= position(gap.following) // gapEnd
+          )),
+        { allowAppend: true }
+      ));
+    } else {
+      return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
+    }
   }
 
   private layoutLevenshtein<F extends StorageField>(
