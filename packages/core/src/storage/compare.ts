@@ -106,17 +106,31 @@ export class StorageLayoutComparator {
 
       // For each gap in the original layout, we try to do a cut. Its that is possible, we isolate
       // the section that is before the cut and continue looking for other sections.
-      for (const gap of original.filter(entry => entry.label == '__gap')) {
-        const gapBegin = storageItemBegin(gap);
-        const gapEnd = storageItemEnd(gap);
+      const gaps = original.filter(entry => entry.label == '__gap');
+      for (let i = 0; i < gaps.length; ++i) {
+        // Begining of the gap(s) is the end of the previous section
+        const gapBegin = storageItemBegin(gaps[i]);
 
-        // gap start is not a valid cut in the updated layout
+        // Merge consecutive gaps
+        for (; i < gaps.length - 1; ++i) {
+          if (storageItemEnd(gaps[i]) != storageItemBegin(gaps[i + 1])) {
+            break;
+          }
+        }
+
+        // End of the gap(s) is the begining of the next section
+        const gapEnd = storageItemEnd(gaps[i]);
+
+        // if previous section end is not valid cut in the updated layout, don't do the cut
         if (!updated.some(entry => storageItemEnd(entry) == gapBegin)) {
           continue;
         }
 
-        // gap end must be a valid cut in the updated layout or gap must be the last element of the original layout
-        if (!updated.some(entry => storageItemBegin(entry) == gapEnd)) {
+        // if next session start is not be a valid cut in the updated layout and there are still items remaining, don't do the cut
+        if (
+          !updated.some(entry => storageItemBegin(entry) == gapEnd) &&
+          gapEnd < storageItemEnd(original[original.length - 1])
+        ) {
           continue;
         }
 
@@ -134,9 +148,8 @@ export class StorageLayoutComparator {
 
       // Now that sections are isolated, we can compare them one by one
       const ops = sections.flatMap(({ begin, end }) => {
-        const originalSection = subLayout(begin, end, original);
-        const updatedSection = subLayout(begin, end, updated);
-        assert(originalSection && updatedSection);
+        const originalSection = subLayout(begin, end, original) || [];
+        const updatedSection = subLayout(begin, end, updated) || [];
         return this.layoutLevenshtein(originalSection, updatedSection, { allowAppend: end == Infinity });
       });
 

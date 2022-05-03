@@ -461,3 +461,27 @@ contract StorageUpgrade_Gap_V2_Bad2 {
     uint256[49] __gap;
     uint256 z;
 }
+
+contract StorageUpgrade_EndGap_V1a {
+    uint256 a;
+    uint256[1] private __gap;
+}
+
+contract StorageUpgrade_EndGap_V1b is StorageUpgrade_EndGap_V1a {
+    uint256[2] private __gap;
+}
+
+contract StorageUpgrade_EndGap_V1c is StorageUpgrade_EndGap_V1b {
+    uint256 b;
+}
+
+contract StorageUpgrade_EndGap_V2a {
+    uint256 a;
+    uint256[10] big;
+}
+
+contract StorageUpgrade_EndGap_V2b {
+    uint256 a;
+    uint256[3] medium;
+    uint256 b;
+}

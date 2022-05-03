@@ -476,11 +476,11 @@ test('storage upgrade with embedded enum inside struct type', t => {
 
 test('storage upgrade with gap', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V1');
-
   const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Ok');
-  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
-
   const v2_Bad1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad1');
+  const v2_Bad2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad2');
+
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
   t.like(getStorageUpgradeErrors(v1, v2_Bad1), {
     length: 1,
     0: {
@@ -488,8 +488,6 @@ test('storage upgrade with gap', t => {
       updated: { label: 'c' },
     },
   });
-
-  const v2_Bad2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad2');
   t.like(getStorageUpgradeErrors(v1, v2_Bad2), {
     length: 2,
     0: {
@@ -501,6 +499,37 @@ test('storage upgrade with gap', t => {
       change: { kind: 'array grow' },
     }
   });
+});
+
+test('storage upgrade that expand into the gap and past it', t => {
+  const v1a = t.context.extractStorageLayout('StorageUpgrade_EndGap_V1a');
+  const v1b = t.context.extractStorageLayout('StorageUpgrade_EndGap_V1b');
+  const v1c = t.context.extractStorageLayout('StorageUpgrade_EndGap_V1c');
+  const v2a = t.context.extractStorageLayout('StorageUpgrade_EndGap_V2a');
+  const v2b = t.context.extractStorageLayout('StorageUpgrade_EndGap_V2b');
+
+  t.deepEqual(getStorageUpgradeErrors(v1a, v2a), []);
+  t.deepEqual(getStorageUpgradeErrors(v1b, v2a), []);
+  t.like(getStorageUpgradeErrors(v1c, v2a), {
+    length: 3,
+    0: {
+      kind: 'delete',
+      original: { label: '__gap' },
+    },
+    1: {
+      kind: 'delete',
+      original: { label: '__gap' },
+    },
+    2: {
+      kind: 'replace',
+      original: { label: 'b' },
+      updated: { label: 'big' },
+    },
+  });
+
+  t.deepEqual(getStorageUpgradeErrors(v1a, v2b), []);
+  t.deepEqual(getStorageUpgradeErrors(v1b, v2b), []);
+  t.deepEqual(getStorageUpgradeErrors(v1c, v2b), []);
 });
 
 function stabilizeStorageLayout(layout: StorageLayout) {
