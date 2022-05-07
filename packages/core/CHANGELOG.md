@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Support unsafeSkipStorageCheck option in ValidationOptions. ([#566](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/566))
+- Support `unsafeSkipStorageCheck` option in `ValidationOptions`. ([#566](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/566))
 
 ## 1.14.2 (2022-04-18)
 
