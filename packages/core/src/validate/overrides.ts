@@ -61,7 +61,14 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   const unsafeAllowRenames = opts.unsafeAllowRenames ?? false;
   const unsafeSkipStorageCheck = opts.unsafeSkipStorageCheck ?? false;
 
-  return { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, unsafeAllowRenames, unsafeSkipStorageCheck, unsafeAllow, kind };
+  return {
+    unsafeAllowCustomTypes,
+    unsafeAllowLinkedLibraries,
+    unsafeAllowRenames,
+    unsafeSkipStorageCheck,
+    unsafeAllow,
+    kind,
+  };
 }
 
 export function processExceptions(
