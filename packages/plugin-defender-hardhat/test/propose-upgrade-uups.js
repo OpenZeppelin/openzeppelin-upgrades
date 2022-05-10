@@ -138,6 +138,6 @@ test('fails if multisig address is missing from UUPS proxy', async t => {
   const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
   sinon.assert.notCalled(fakeClient.proposeUpgrade);
   await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), {
-    message: 'Multisig address is a required property for UUPS Proxies',
+    message: 'Multisig address is a required property for UUPS proxies',
   });
 });
