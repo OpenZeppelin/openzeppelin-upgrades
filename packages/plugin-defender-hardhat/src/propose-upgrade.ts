@@ -5,6 +5,8 @@ import {
   isBeacon,
   isBeaconProxy,
   ValidationOptions,
+  isTransparentProxy,
+  isTransparentOrUUPSProxy,
 } from '@openzeppelin/upgrades-core';
 import { AdminClient, ProposalResponse } from 'defender-admin-client';
 import type { ContractFactory } from 'ethers';
@@ -45,6 +47,12 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       throw new Error(`Beacon proxy is not currently supported with defender.proposeUpgrade()`);
     } else if (await isBeacon(hre.network.provider, proxyAddress)) {
       throw new Error(`Beacon is not currently supported with defender.proposeUpgrade()`);
+    } else if (
+      !multisig &&
+      (await isTransparentOrUUPSProxy(hre.network.provider, proxyAddress)) &&
+      !(await isTransparentProxy(hre.network.provider, proxyAddress))
+    ) {
+      throw new Error(`Multisig address is a required property for UUPS proxies`);
     } else {
       // try getting the implementation address so that it will give an error if it's not a transparent/uups proxy
       await getImplementationAddress(hre.network.provider, proxyAddress);

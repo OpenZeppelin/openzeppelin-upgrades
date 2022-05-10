@@ -36,7 +36,7 @@ export { setProxyKind, processProxyKind, detectProxyKind } from './proxy-kind';
 
 export { UpgradeableContract } from './standalone';
 
-export { isTransparentOrUUPSProxy, isBeaconProxy } from './eip-1967-type';
+export { isTransparentOrUUPSProxy, isBeaconProxy, isTransparentProxy } from './eip-1967-type';
 export { getImplementationAddressFromBeacon, getImplementationAddressFromProxy } from './impl-address';
 export { isBeacon } from './beacon';
 export { addProxyToManifest } from './add-proxy-to-manifest';
