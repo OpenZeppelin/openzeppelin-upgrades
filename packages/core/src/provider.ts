@@ -109,8 +109,8 @@ export async function isDevelopmentNetwork(provider: EthereumProvider): Promise<
   const chainId = await getChainId(provider);
   //  1337 => ganache and geth --dev
   // 31337 => hardhat network
-  console.debug("chain id = ", chainId)
-  if (chainId === 17 || chainId === 1337 || chainId === 31337) {
+  // 17 => openethereum --dev
+  if (chainId === 1337 || chainId === 31337 || chainId === 17) {
     return true;
   } else {
     const clientVersion = await getClientVersion(provider);
