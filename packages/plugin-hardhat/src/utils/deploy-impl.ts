@@ -116,6 +116,9 @@ async function deployImpl(
     deployData.provider,
     async () => {
       const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
+      if (opts.dryRun === true) {
+        return { abi, layout, address: currentImplAddress ?? '' };
+      }
       const deployment = Object.assign({ abi }, await deploy(ImplFactory, ...deployData.fullOpts.constructorArgs));
       return { ...deployment, layout };
     },

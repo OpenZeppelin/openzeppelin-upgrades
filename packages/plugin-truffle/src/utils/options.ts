@@ -4,12 +4,14 @@ import { DeployOpts, ValidationOptions, withValidationDefaults } from '@openzepp
 export type Options = ValidationOptions &
   DeployOpts & {
     deployer?: Deployer;
+    dryRun?: boolean;
     constructorArgs?: unknown[];
   };
 
 export function withDefaults(opts: Options = {}): Required<Options> {
   return {
     deployer: opts.deployer ?? defaultDeployer,
+    dryRun: opts.dryRun ?? false,
     timeout: opts.timeout ?? 60e3, // not used for Truffle, but include these anyways
     pollingInterval: opts.pollingInterval ?? 5e3, // not used for Truffle, but include these anyways
     constructorArgs: opts.constructorArgs ?? [],

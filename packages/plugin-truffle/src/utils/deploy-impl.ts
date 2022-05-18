@@ -114,6 +114,9 @@ async function deployImpl(
 
   const impl = await fetchOrDeploy(deployData.version, deployData.provider, async () => {
     const abi = (Contract as any).abi;
+    if (opts.dryRun === true) {
+      return { abi, layout, address: currentImplAddress ?? '' };
+    }
     const deployment = Object.assign(
       { abi },
       await deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs),
