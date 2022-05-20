@@ -26,7 +26,7 @@
     "compile:contracts": "hardhat compile && node scripts/copy-build-info.js",
     "prepare": "yarn clean && yarn compile",
     "prepublishOnly": "bash scripts/copy-artifacts.sh",
-    "test": "tsc -b && hardhat compile --force && ava",
+    "test": "tsc -b && hardhat compile --force && node scripts/copy-build-info.js && ava",
     "test:watch": "hardhat compile --force && fgbg 'ava --watch' 'tsc -b --watch' --",
     "version": "node ../../scripts/bump-changelog.js"
   },
