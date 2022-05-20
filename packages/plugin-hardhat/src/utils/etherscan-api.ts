@@ -4,7 +4,7 @@ import { UpgradesError } from '@openzeppelin/upgrades-core';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { EtherscanConfig } from '@nomiclabs/hardhat-etherscan/dist/src/types';
 
-import { Dispatcher } from 'undici';
+import { Dispatcher, request } from 'undici';
 
 import debug from './debug';
 
@@ -16,8 +16,6 @@ import debug from './debug';
  * @returns The Etherscan API response
  */
 export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params: any): Promise<EtherscanResponseBody> {
-  const { request } = await import('undici');
-
   const parameters = new URLSearchParams({ ...params, apikey: etherscanApi.key });
   const method: Dispatcher.HttpMethod = 'POST';
   const requestDetails = {
@@ -68,3 +66,5 @@ interface EtherscanResponseBody {
   message: string;
   result: any;
 }
+
+export const RESPONSE_OK = '1';
