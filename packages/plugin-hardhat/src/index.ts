@@ -2,7 +2,7 @@
 
 import '@nomiclabs/hardhat-ethers';
 import './type-extensions';
-import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
+import { subtask, extendEnvironment, extendConfig, task } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
 import { HardhatConfig } from 'hardhat/types';
@@ -15,6 +15,8 @@ import type { DeployBeaconProxyFunction } from './deploy-beacon-proxy';
 import type { UpgradeBeaconFunction } from './upgrade-beacon';
 import type { ForceImportFunction } from './force-import';
 import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction, GetInstanceFunction } from './admin';
+
+import { verify } from './verify-proxy';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -132,4 +134,8 @@ extendConfig((config: HardhatConfig) => {
       compiler.settings.outputSelection['*']['*'].push('storageLayout');
     }
   }
+});
+
+task('verify').setAction(async (args, hre, runSuper) => {
+  return await verify(args, hre, runSuper);
 });
