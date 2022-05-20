@@ -23,8 +23,8 @@
   "scripts": {
     "clean": "hardhat clean && rimraf dist *.tsbuildinfo",
     "compile": "tsc -b && yarn compile:contracts",
-    "compile:contracts": "hardhat compile",
-    "prepare": "yarn clean && yarn compile && node scripts/copy-build-info.js",
+    "compile:contracts": "hardhat compile && node scripts/copy-build-info.js",
+    "prepare": "yarn clean && yarn compile",
     "prepublishOnly": "bash scripts/copy-artifacts.sh",
     "test": "tsc -b && hardhat compile --force && ava",
     "test:watch": "hardhat compile --force && fgbg 'ava --watch' 'tsc -b --watch' --",
