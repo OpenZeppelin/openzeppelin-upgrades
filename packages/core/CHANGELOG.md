@@ -4,6 +4,7 @@
 
 - Support `unsafeSkipStorageCheck` option in `ValidationOptions`. ([#566](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/566))
 - Include OpenEthereum dev chain as a development network. ([#571](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/571))
+- Support verifying a proxy on Etherscan using Hardhat. ([#579](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/579))
 
 ## 1.14.2 (2022-04-18)
 
