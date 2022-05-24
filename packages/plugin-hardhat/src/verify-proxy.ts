@@ -429,20 +429,18 @@ export async function linkProxyWithImplementationAbi(etherscanApi: EtherscanAPIC
   if (responseBody.status === RESPONSE_OK) {
     // initial call was OK, but need to send a status request using the returned guid to get the actual verification status
     const guid = responseBody.result;
-    responseBody = await checkProxyVerificationStatus(etherscanApi, guid); 
-    
+    responseBody = await checkProxyVerificationStatus(etherscanApi, guid);
+
     while (responseBody.result === 'Pending in queue') {
       await delay(3000);
-      responseBody = await checkProxyVerificationStatus(etherscanApi, guid); 
+      responseBody = await checkProxyVerificationStatus(etherscanApi, guid);
     }
   }
 
   if (responseBody.status === RESPONSE_OK) {
     console.log('Successfully linked proxy to implementation.');
   } else {
-    recordError(
-      `Failed to link proxy ${proxyAddress} with its implementation. Etherscan returned with reason: ${responseBody.result}`,
-    );
+    recordError(`Failed to link proxy ${proxyAddress} with its implementation. Reason: ${responseBody.result}`);
   }
 }
 
