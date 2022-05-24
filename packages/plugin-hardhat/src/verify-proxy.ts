@@ -3,6 +3,7 @@ import {
   toVerifyRequest,
 } from '@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanVerifyContractRequest';
 import {
+  delay,
   getVerificationStatus,
   verifyContract,
 } from '@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanService';
@@ -144,6 +145,10 @@ function getVerificationErrors() {
  */
 function recordVerificationError(address: string, contractType: string, details: string) {
   const message = `Failed to verify ${contractType} contract at ${address}: ${details}`;
+  recordError(message);
+}
+
+function recordError(message: string) {
   console.error(message);
   errors.push(message);
 }
@@ -419,16 +424,36 @@ export async function linkProxyWithImplementationAbi(etherscanApi: EtherscanAPIC
     action: 'verifyproxycontract',
     address: proxyAddress,
   };
-  const responseBody = await callEtherscanApi(etherscanApi, params);
+  let responseBody = await callEtherscanApi(etherscanApi, params);
+
+  if (responseBody.status === RESPONSE_OK) {
+    // initial call was OK, but need to send a status request using the returned guid to get the actual verification status
+    const guid = responseBody.result;
+    responseBody = await checkProxyVerificationStatus(etherscanApi, guid); 
+    
+    while (responseBody.result === 'Pending in queue') {
+      await delay(3000);
+      responseBody = await checkProxyVerificationStatus(etherscanApi, guid); 
+    }
+  }
 
   if (responseBody.status === RESPONSE_OK) {
     console.log('Successfully linked proxy to implementation.');
   } else {
-    throw new UpgradesError(
-      `Failed to link proxy ${proxyAddress} with its implementation.`,
-      () => `Etherscan returned with reason: ${responseBody.result}`,
+    recordError(
+      `Failed to link proxy ${proxyAddress} with its implementation. Etherscan returned with reason: ${responseBody.result}`,
     );
   }
+}
+
+async function checkProxyVerificationStatus(etherscanApi: EtherscanAPIConfig, guid: string) {
+  const checkProxyVerificationParams = {
+    module: 'contract',
+    action: 'checkproxyverification',
+    apikey: etherscanApi.key,
+    guid: guid,
+  };
+  return await callEtherscanApi(etherscanApi, checkProxyVerificationParams);
 }
 
 /**
