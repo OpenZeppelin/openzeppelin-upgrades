@@ -95,7 +95,7 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
         'Define the plugins in the following order in hardhat.config.js:\n' +
         '  require("@nomiclabs/hardhat-etherscan");\n' +
         '  require("@openzeppelin/hardhat-upgrades");\n' +
-        'Or if you are using Typescript, define the plugins in the following order in hardhat.config.ts:\n' +
+        'Or if you are using TypeScript, define the plugins in the following order in hardhat.config.ts:\n' +
         '  import "@nomiclabs/hardhat-etherscan";\n' +
         '  import "@openzeppelin/hardhat-upgrades";\n',
     );

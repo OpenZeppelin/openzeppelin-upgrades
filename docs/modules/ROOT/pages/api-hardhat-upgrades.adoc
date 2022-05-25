@@ -257,7 +257,7 @@ function silenceWarnings()
 [[verify]]
 == verify
 
-Overrides https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html[hardhat-etherscan]'s `verify` task to completely verify a proxy on Etherscan.  This supports verifying proxy contracts that are deployed by the Hardhat Upgrades or Truffle Upgrades plugin.
+Overrides https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html[hardhat-etherscan]'s `verify` task to completely verify a proxy on Etherscan.  This supports verifying proxy contracts that were deployed by the Hardhat Upgrades or Truffle Upgrades plugin.
 
 The arguments are the same as for https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html[hardhat-etherscan]'s `verify` task.  If the provided address is a proxy, this task will verify the proxy's implementation contract, the proxy itself and any proxy-related contracts, as well as link the proxy to the implementation contract's ABI on Etherscan.  If the provided address is not a proxy, the regular `verify` task from `hardhat-etherscan` will be run on the address instead.
 
@@ -267,9 +267,6 @@ The following contracts will be verified when you run this task on your proxy ad
 * https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Proxy[ERC1967Proxy] or https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[TransparentUpgradeableProxy] or https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[BeaconProxy] (for UUPS, transparent, or beacon proxies, respectively)
 * https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[ProxyAdmin] (with transparent proxies)
 * https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[UpgradeableBeacon] (with beacon proxies)
-
-[[verify-usage]]
-=== Usage
 
 To use this task, ensure you have https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html[hardhat-etherscan] installed:
 [source,sh]
