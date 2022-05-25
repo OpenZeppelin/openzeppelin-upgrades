@@ -497,7 +497,7 @@ test('storage upgrade with gap', t => {
     1: {
       kind: 'typechange',
       change: { kind: 'array grow' },
-    }
+    },
   });
 });
 
