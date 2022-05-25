@@ -77,14 +77,14 @@ function storageItemEnd(entry: StorageItemFull): number {
 
 // Get a subset of `layout` that exactly covers the space from `begin` to `end`
 function subLayout(begin: number, end: number, layout: StorageItemFull[]): StorageItemFull[] | undefined {
-  if (begin == end) {
+  if (begin === end) {
     return [];
   }
 
   const sublayout = layout.filter(entry => begin <= storageItemBegin(entry) && storageItemEnd(entry) <= end);
   return sublayout.length > 0 &&
-    begin == storageItemBegin(sublayout[0]) &&
-    (end == storageItemEnd(sublayout[sublayout.length - 1]) || end == Infinity)
+    begin === storageItemBegin(sublayout[0]) &&
+    (end === storageItemEnd(sublayout[sublayout.length - 1]) || end === Infinity)
     ? sublayout
     : undefined;
 }
@@ -104,16 +104,16 @@ export class StorageLayoutComparator {
       let ptr = 0;
       const sections: { begin: number; end: number }[] = [];
 
-      // For each gap in the original layout, we try to do a cut. Its that is possible, we isolate
+      // For each gap in the original layout, we try to do a cut. If that is possible, we isolate
       // the section that is before the cut and continue looking for other sections.
-      const gaps = original.filter(entry => entry.label == '__gap');
+      const gaps = original.filter(entry => entry.label === '__gap');
       for (let i = 0; i < gaps.length; ++i) {
-        // Begining of the gap(s) is the end of the previous section
+        // Beginning of the gap(s) is the end of the previous section
         const gapBegin = storageItemBegin(gaps[i]);
 
         // Merge consecutive gaps
         for (; i < gaps.length - 1; ++i) {
-          if (storageItemEnd(gaps[i]) != storageItemBegin(gaps[i + 1])) {
+          if (storageItemEnd(gaps[i]) !== storageItemBegin(gaps[i + 1])) {
             break;
           }
         }
@@ -122,13 +122,13 @@ export class StorageLayoutComparator {
         const gapEnd = storageItemEnd(gaps[i]);
 
         // if previous section end is not valid cut in the updated layout, don't do the cut
-        if (!updated.some(entry => storageItemEnd(entry) == gapBegin)) {
+        if (!updated.some(entry => storageItemEnd(entry) === gapBegin)) {
           continue;
         }
 
-        // if next session start is not be a valid cut in the updated layout and there are still items remaining, don't do the cut
+        // if next section start is not a valid cut in the updated layout and there are still items remaining, don't do the cut
         if (
-          !updated.some(entry => storageItemBegin(entry) == gapEnd) &&
+          !updated.some(entry => storageItemBegin(entry) === gapEnd) &&
           gapEnd < storageItemEnd(original[original.length - 1])
         ) {
           continue;
@@ -140,8 +140,8 @@ export class StorageLayoutComparator {
         ptr = gapEnd;
       }
 
-      // If there is more data in the original layout after the last gap, add ann additional section.
-      // There might me more data in the updated layout, but that is not an issue (appended data)
+      // If there is more data in the original layout after the last gap, add an additional section.
+      // There might be more data in the updated layout, but that is not an issue (appended data)
       if (ptr < storageItemEnd(original[original.length - 1])) {
         sections.push({ begin: ptr, end: Infinity });
       }
@@ -150,7 +150,7 @@ export class StorageLayoutComparator {
       const ops = sections.flatMap(({ begin, end }) => {
         const originalSection = subLayout(begin, end, original) || [];
         const updatedSection = subLayout(begin, end, updated) || [];
-        return this.layoutLevenshtein(originalSection, updatedSection, { allowAppend: end == Infinity });
+        return this.layoutLevenshtein(originalSection, updatedSection, { allowAppend: end === Infinity });
       });
 
       return new LayoutCompatibilityReport(ops);
