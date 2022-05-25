@@ -9,6 +9,7 @@ export interface ValidationOptions {
   unsafeAllowCustomTypes?: boolean;
   unsafeAllowLinkedLibraries?: boolean;
   unsafeAllowRenames?: boolean;
+  unsafeSkipStorageCheck?: boolean;
   unsafeAllow?: ValidationError['kind'][];
   kind?: ProxyDeployment['kind'];
 }
@@ -58,8 +59,16 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   const kind = opts.kind ?? 'transparent';
 
   const unsafeAllowRenames = opts.unsafeAllowRenames ?? false;
+  const unsafeSkipStorageCheck = opts.unsafeSkipStorageCheck ?? false;
 
-  return { unsafeAllowCustomTypes, unsafeAllowLinkedLibraries, unsafeAllowRenames, unsafeAllow, kind };
+  return {
+    unsafeAllowCustomTypes,
+    unsafeAllowLinkedLibraries,
+    unsafeAllowRenames,
+    unsafeSkipStorageCheck,
+    unsafeAllow,
+    kind,
+  };
 }
 
 export function processExceptions(

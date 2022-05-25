@@ -190,11 +190,13 @@ contract MyContract {
 
 === Initializing the Implementation Contract
 
-Do not leave an implementation contract uninitialized. An uninitialized implementation contract can be taken over by an attacker, which may impact the proxy. You can either invoke the initializer manually, or you can include a constructor to automatically mark it as initialized when it is deployed:
+Do not leave an implementation contract uninitialized. An uninitialized implementation contract can be taken over by an attacker, which may impact the proxy. To prevent the implementation contract from being used, you should invoke the `_disableInitializers` function in the constructor to automatically lock it when it is deployed:
 
 ```
 /// @custom:oz-upgrades-unsafe-allow constructor
-constructor() initializer {}
+constructor() {
+    _disableInitializers();
+}
 ```
 
 [[creating-new-instances-from-your-contract-code]]
