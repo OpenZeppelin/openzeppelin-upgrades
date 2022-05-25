@@ -485,3 +485,67 @@ contract StorageUpgrade_EndGap_V2b {
     uint256[3] medium;
     uint256 b;
 }
+
+contract StorageUpgrade_Gap_Address_V1 {
+    address a;
+    address b;
+    uint256[48] __gap;
+    address z;
+}
+
+contract StorageUpgrade_Gap_Address_V2 {
+    address a;
+    address b;
+    address c;
+    uint256[47] __gap;
+    address z;
+}
+
+contract StorageUpgrade_Gap_Uint128_V1 {
+    uint128 a;
+    uint256[49] __gap;
+    uint128 z;
+}
+
+contract StorageUpgrade_Gap_Uint128_V2_Ok {
+    uint128 a; // half slot
+    uint128 b; // half slot
+    uint256[49] __gap;
+    uint128 z;
+}
+
+contract StorageUpgrade_Gap_Uint128_V2b_Ok {
+    uint128 a;
+    uint128 b;
+    uint128 c;
+    uint256[48] __gap;
+    uint128 z;
+}
+
+contract StorageUpgrade_Gap_Uint128_V2_Bad {
+    uint128 a;
+    uint128 b;
+    uint128 c;
+    uint256[49] __gap;
+    uint128 z;
+}
+
+contract StorageUpgrade_Gap_Array_V1 {
+    bool[2] a;
+    uint256[49] __gap;
+    bool z;
+}
+
+contract StorageUpgrade_Gap_Array_V2_Ok {
+    bool[2] a;
+    bool[62] b; // array starts at new storage slot, uses 2 slots
+    uint256[47] __gap;
+    bool z;
+}
+
+contract StorageUpgrade_Gap_Array_V2_Bad {
+    bool[2] a;
+    bool[62] b;
+    uint256[48] __gap; // only shrank 1 instead of 2 slots
+    bool z;
+}
