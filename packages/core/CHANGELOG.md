@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Support `unsafeSkipStorageCheck` option in `ValidationOptions`. ([#566](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/566))
+- Support storage layout gaps. ([#276](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/276))
 
 ## 1.14.2 (2022-04-18)
 
