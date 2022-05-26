@@ -406,7 +406,7 @@ Then the variable `base2` would be assigned the slot that `child` had in the pre
 
 Storage gaps are a convention for reserving storage slots in a base contract, allowing future versions of that contract to use up those slots without affecting the storage layout of child contracts.  OpenZeppelin Upgrades recognize storage gaps with the naming convention `__gaps`.
 
-To create a storage gap, declare a fixed-size array in the base contract with an initial number of slots:
+To create a storage gap, declare a fixed-size array in the base contract with an initial number of slots. This can be an array of `uint256` so that each element reserves a 32 byte slot:
 
 [source,solidity]
 ----
@@ -420,13 +420,36 @@ contract Child is Base {
 }
 ----
 
-If `Base` is later modified to add an extra variable, reduce the number of slots for the storage gap:
+If `Base` is later modified to add extra variable(s), reduce the appropriate number of slots from the storage gap, keeping in mind https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html#layout-of-state-variables-in-storage[Solidity's rules on how contiguous items are packed]. For example:
 
 [source,solidity]
 ----
 contract Base {
     uint256 base1;
-    uint256 base2;
+    uint256 base2; // 32 bytes
+    uint256[48] __gap;
+}
+----
+
+Or:
+
+[source,solidity]
+----
+contract Base {
+    uint256 base1;
+    address base2; // 20 bytes
+    uint256[48] __gap; // array always starts at a new slot
+}
+----
+
+Or:
+
+[source,solidity]
+----
+contract Base {
+    uint256 base1;
+    uint128 base2a; // 16 bytes
+    uint128 base2b; // 16 bytes - continues from the same slot as above
     uint256[48] __gap;
 }
 ----
