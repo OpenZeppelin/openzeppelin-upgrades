@@ -149,7 +149,7 @@ export class StorageLayoutComparator {
 
       // If there is more data in the original layout after the last gap, add an additional section.
       // There might be more data in the updated layout, but that is not an issue (appended data)
-      if (ptr < storageItemEnd(original[original.length - 1])) {
+      if (original.length > 0 && ptr < storageItemEnd(original[original.length - 1])) {
         sections.push({ begin: ptr, end: Infinity });
       }
 
