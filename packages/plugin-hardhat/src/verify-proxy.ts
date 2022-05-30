@@ -184,7 +184,7 @@ async function fullVerifyTransparentOrUUPS(
   const etherscanApi = await getEtherscanAPIConfig(hre);
 
   await verifyTransparentOrUUPS();
-  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress);
+  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress);
   // Either UUPS or Transparent proxy could have admin slot set, although typically this should only be for Transparent
   await verifyAdmin();
 
@@ -244,7 +244,7 @@ async function fullVerifyBeaconProxy(
 
   await verifyBeacon();
   await verifyBeaconProxy();
-  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress);
+  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress);
 
   async function verifyBeaconProxy() {
     console.log(`Verifying beacon proxy: ${proxyAddress}`);
@@ -416,13 +416,19 @@ export async function getContractCreationTxHash(
  *
  * @param etherscanApi The Etherscan API config
  * @param proxyAddress The proxy address
+ * @param implAddress The implementation address
  */
-export async function linkProxyWithImplementationAbi(etherscanApi: EtherscanAPIConfig, proxyAddress: string) {
+export async function linkProxyWithImplementationAbi(
+  etherscanApi: EtherscanAPIConfig,
+  proxyAddress: string,
+  implAddress: string,
+) {
   console.log(`Linking proxy ${proxyAddress} with implementation`);
   const params = {
     module: 'contract',
     action: 'verifyproxycontract',
     address: proxyAddress,
+    expectedimplementation: implAddress,
   };
   let responseBody = await callEtherscanApi(etherscanApi, params);
 
