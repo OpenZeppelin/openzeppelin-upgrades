@@ -7,7 +7,7 @@ function readJSON(path) {
 }
 
 function writeJSON(path, data) {
-  fs.writeFileSync(path, data);
+  fs.writeFileSync(path, JSON.stringify(data, null, 2));
 }
 
 const buildInfoField = readJSON('artifacts/@openzeppelin/contracts/proxy/Proxy.sol/Proxy.dbg.json').buildInfo;
@@ -15,4 +15,4 @@ const jsonRelativePath = `artifacts/@openzeppelin/contracts/proxy/Proxy.sol/${bu
 
 const buildInfo = readJSON(jsonRelativePath);
 const reducedInfo = { solcLongVersion: buildInfo.solcLongVersion, input: buildInfo.input };
-writeJSON('artifacts/build-info.json', JSON.stringify(reducedInfo));
+writeJSON('artifacts/build-info.json', reducedInfo);
