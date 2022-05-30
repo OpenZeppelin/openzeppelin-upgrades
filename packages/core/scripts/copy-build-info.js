@@ -12,7 +12,7 @@ function writeJSON(path, data) {
 }
 
 function hasProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
+  return prop in obj;
 }
 
 const buildInfoField = readJSON(
