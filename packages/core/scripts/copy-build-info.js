@@ -11,17 +11,23 @@ function writeJSON(path, data) {
   fs.writeFileSync(path, JSON.stringify(data, null, 2));
 }
 
-const buildInfoField = readJSON('artifacts/@openzeppelin/contracts/proxy/Proxy.sol/Proxy.dbg.json').buildInfo;
-const jsonRelativePath = `artifacts/@openzeppelin/contracts/proxy/Proxy.sol/${buildInfoField}`;
+function hasProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+const buildInfoField = readJSON(
+  'artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.dbg.json',
+).buildInfo;
+const jsonRelativePath = `artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/${buildInfoField}`;
 
 const buildInfo = readJSON(jsonRelativePath);
 const reducedInfo = { solcLongVersion: buildInfo.solcLongVersion, input: buildInfo.input };
 
 const sources = reducedInfo.input.sources;
-assert(sources.hasOwnProperty('@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol'));
-assert(sources.hasOwnProperty('@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol'));
-assert(sources.hasOwnProperty('@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol'));
-assert(sources.hasOwnProperty('@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol'));
-assert(sources.hasOwnProperty('@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol'));
+assert(hasProperty(sources, '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol'));
+assert(hasProperty(sources, '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol'));
+assert(hasProperty(sources, '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol'));
+assert(hasProperty(sources, '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol'));
+assert(hasProperty(sources, '@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol'));
 
 writeJSON('artifacts/build-info.json', reducedInfo);
