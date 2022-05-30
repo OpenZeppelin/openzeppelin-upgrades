@@ -4,7 +4,7 @@ import { UpgradesError } from '@openzeppelin/upgrades-core';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { EtherscanConfig, EtherscanNetworkEntry } from '@nomiclabs/hardhat-etherscan/dist/src/types';
 
-import { Dispatcher, request } from 'undici';
+import { request } from 'undici';
 
 import debug from './debug';
 
@@ -17,14 +17,12 @@ import debug from './debug';
  */
 export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params: any): Promise<EtherscanResponseBody> {
   const parameters = new URLSearchParams({ ...params, apikey: etherscanApi.key });
-  const method: Dispatcher.HttpMethod = 'POST';
-  const requestDetails = {
-    method,
+
+  const response = await request(etherscanApi.endpoints.urls.apiURL, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: parameters.toString(),
-  };
-
-  const response = await request(etherscanApi.endpoints.urls.apiURL, requestDetails);
+  });
 
   if (!(response.statusCode >= 200 && response.statusCode <= 299)) {
     const responseBodyText = await response.body.text();
