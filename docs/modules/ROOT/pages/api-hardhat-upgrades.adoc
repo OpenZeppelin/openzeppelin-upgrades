@@ -253,3 +253,45 @@ NOTE: This function is useful for tests, but its use in production deployment sc
 ----
 function silenceWarnings()
 ----
+
+[[verify]]
+== verify
+
+Overrides https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html[hardhat-etherscan]'s `verify` task to completely verify a proxy on Etherscan.  This supports verifying proxy contracts that were deployed by the Hardhat Upgrades or Truffle Upgrades plugin.
+
+The arguments are the same as for https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html[hardhat-etherscan]'s `verify` task.  If the provided address is a proxy, this task will verify the proxy's implementation contract, the proxy itself and any proxy-related contracts, as well as link the proxy to the implementation contract's ABI on Etherscan.  If the provided address is not a proxy, the regular `verify` task from `hardhat-etherscan` will be run on the address instead.
+
+The following contracts will be verified when you run this task on your proxy address:
+
+* Your implementation contract
+* https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Proxy[ERC1967Proxy] or https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[TransparentUpgradeableProxy] or https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[BeaconProxy] (for UUPS, transparent, or beacon proxies, respectively)
+* https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[ProxyAdmin] (with transparent proxies)
+* https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[UpgradeableBeacon] (with beacon proxies)
+
+To use this task, ensure you have https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html[hardhat-etherscan] installed:
+[source,sh]
+----
+npm install --save-dev @nomiclabs/hardhat-etherscan
+----
+
+Then import the `@nomiclabs/hardhat-etherscan` plugin before the `@openzeppelin/hardhat-upgrades` plugin in your Hardhat configuration.
+For example, if you are using JavaScript, import the plugins in the following order in `hardhat.config.js`:
+[source,js]
+----
+require("@nomiclabs/hardhat-etherscan");
+require("@openzeppelin/hardhat-upgrades");
+----
+Or if you are using TypeScript, import the plugins in the following order in `hardhat.config.ts`:
+[source,ts]
+----
+import "@nomiclabs/hardhat-etherscan";
+import "@openzeppelin/hardhat-upgrades";
+----
+
+Finally, follow https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html#usage[hardhat-etherscan's usage documentation] to configure your Etherscan API key and run the `verify` task using the proxy address, for example:
+[source]
+----
+npx hardhat verify --network mainnet PROXY_ADDRESS
+----
+
+Note that you do not need to include constructor arguments for the `verify` task if your implementation contract only uses initializers.  However, if your implementation contract has an actual constructor with arguments (such as to set immutable variables), then include constructor arguments in the command according to https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html#usage[hardhat-etherscan's usage documentation].

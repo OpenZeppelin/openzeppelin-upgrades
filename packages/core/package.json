@@ -17,15 +17,16 @@
     "/artifacts/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol",
     "/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
     "/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json ",
-    "/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json"
+    "/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json",
+    "/artifacts/build-info.json"
   ],
   "scripts": {
     "clean": "hardhat clean && rimraf dist *.tsbuildinfo",
     "compile": "tsc -b && yarn compile:contracts",
-    "compile:contracts": "hardhat compile",
+    "compile:contracts": "hardhat compile && node scripts/copy-build-info.js",
     "prepare": "yarn clean && yarn compile",
     "prepublishOnly": "bash scripts/copy-artifacts.sh",
-    "test": "tsc -b && hardhat compile --force && ava",
+    "test": "tsc -b && hardhat compile --force && node scripts/copy-build-info.js && ava",
     "test:watch": "hardhat compile --force && fgbg 'ava --watch' 'tsc -b --watch' --",
     "version": "node ../../scripts/bump-changelog.js"
   },
