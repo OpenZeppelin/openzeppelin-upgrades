@@ -193,7 +193,7 @@ async function fullVerifyTransparentOrUUPS(
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
       try {
-        await verifyContractWithCreationEvent(hre, etherscanApi, adminAddress, contractEventsMap.proxyAdmin);
+        await verifyContractWithCreationEvent(hre, etherscanApi, adminAddress, [contractEventsMap.proxyAdmin]);
       } catch (e: any) {
         if (e instanceof EventNotFound) {
           console.log(
@@ -206,18 +206,10 @@ async function fullVerifyTransparentOrUUPS(
 
   async function verifyTransparentOrUUPS() {
     console.log(`Verifying proxy: ${proxyAddress}`);
-    try {
-      await verifyContractWithCreationEvent(
-        hre,
-        etherscanApi,
-        proxyAddress,
-        contractEventsMap.transparentUpgradeableProxy,
-      );
-    } catch (e: any) {
-      if (e instanceof EventNotFound) {
-        await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, contractEventsMap.erc1967proxy);
-      }
-    }
+    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [
+      contractEventsMap.transparentUpgradeableProxy,
+      contractEventsMap.erc1967proxy,
+    ]);
   }
 }
 
@@ -248,12 +240,12 @@ async function fullVerifyBeaconProxy(
 
   async function verifyBeaconProxy() {
     console.log(`Verifying beacon proxy: ${proxyAddress}`);
-    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, contractEventsMap.beaconProxy);
+    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [contractEventsMap.beaconProxy]);
   }
 
   async function verifyBeacon() {
     console.log(`Verifying beacon: ${beaconAddress}`);
-    await verifyContractWithCreationEvent(hre, etherscanApi, beaconAddress, contractEventsMap.upgradeableBeacon);
+    await verifyContractWithCreationEvent(hre, etherscanApi, beaconAddress, [contractEventsMap.upgradeableBeacon]);
   }
 }
 
@@ -277,29 +269,58 @@ async function verifyImplementation(hardhatVerify: (address: string) => Promise<
 }
 
 /**
+ * Looks for any of the possible events (in array order) at the specified address using Etherscan API,
+ * and returns the corresponding ContractEventMapping and txHash for the first event found.
+ *
+ * @param etherscanApi The Etherscan API config
+ * @param address The contract address for which to look for events
+ * @param possibleEventMappings An array of possible contract artifacts to use for verification along
+ *  with the corresponding creation event expected in the logs.
+ * @returns the ContractEventMapping and txHash for the first event found
+ * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
+ */
+async function searchEvent(
+  etherscanApi: EtherscanAPIConfig,
+  address: string,
+  possibleEventMappings: ContractEventMapping[],
+) {
+  for (let i = 0; i < possibleEventMappings.length; i++) {
+    const contractEventMapping = possibleEventMappings[i];
+    const txHash = await getContractCreationTxHash(address, contractEventMapping.event, etherscanApi);
+    if (txHash !== undefined) {
+      return { contractEventMapping, txHash };
+    }
+  }
+
+  const events = possibleEventMappings.map(mapping => {
+    return mapping.event;
+  });
+  throw new EventNotFound(
+    `Could not find an event with any of the following topics in the logs for address ${address}: ${events.join(', ')}`,
+  );
+}
+
+/**
  * Verifies a contract by looking up an event that should have been logged during contract construction,
- * finds the txhash for that, and infers the constructor args to use for verification.
+ * finds the txHash for that, and infers the constructor args to use for verification.
+ *
+ * Iterates through each element of possibleEventMappings to look for that element's event, until an event is found.
  *
  * @param hre
  * @param etherscanApi The Etherscan API config
  * @param address The contract address to verify
- * @param contractEventMapping The contract artifact to use for verification along with the creation event expected in the logs.
- * @throws {EventNotFound} if the event was not found in the contract's logs according to Etherscan.
+ * @param possibleEventMappings An array of possible contract artifacts to use for verification along
+ *  with the corresponding creation event expected in the logs.
+ * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
 async function verifyContractWithCreationEvent(
   hre: HardhatRuntimeEnvironment,
   etherscanApi: EtherscanAPIConfig,
   address: string,
-  contractEventMapping: ContractEventMapping,
+  possibleEventMappings: ContractEventMapping[],
 ) {
+  const { contractEventMapping, txHash } = await searchEvent(etherscanApi, address, possibleEventMappings);
   debug(`verifying contract ${contractEventMapping.artifact.contractName} at ${address}`);
-
-  const txHash = await getContractCreationTxHash(address, contractEventMapping.event, etherscanApi);
-  if (txHash === undefined) {
-    throw new EventNotFound(
-      `Could not find an event with the topic ${contractEventMapping.event} in the logs for address ${address}`,
-    );
-  }
 
   const tx = await getTransactionByHash(hre.network.provider, txHash);
   if (tx === null) {
