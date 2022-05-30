@@ -74,8 +74,6 @@ const contractEventsMap: ContractEventsMap = {
   proxyAdmin: { artifact: ProxyAdmin, event: 'OwnershipTransferred(address,address)' },
 };
 
-const errors: string[] = [];
-
 /**
  * Overrides hardhat-etherscan's verify function to fully verify a proxy.
  *
@@ -103,18 +101,19 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
 
   const provider = hre.network.provider;
   const proxyAddress = args.address;
+  const errors: string[] = [];
 
   if (await isTransparentOrUUPSProxy(provider, proxyAddress)) {
-    await fullVerifyTransparentOrUUPS(hre, proxyAddress, hardhatVerify);
+    await fullVerifyTransparentOrUUPS(hre, proxyAddress, hardhatVerify, errors);
   } else if (await isBeaconProxy(provider, proxyAddress)) {
-    await fullVerifyBeaconProxy(hre, proxyAddress, hardhatVerify);
+    await fullVerifyBeaconProxy(hre, proxyAddress, hardhatVerify, errors);
   } else {
     // Doesn't look like a proxy, so just verify directly
     return hardhatVerify(proxyAddress);
   }
 
   if (errors.length > 0) {
-    throw new UpgradesError(getVerificationErrors());
+    throw new UpgradesError(getVerificationErrorSummary(errors));
   }
 
   console.info('\nProxy fully verified.');
@@ -125,9 +124,10 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
 }
 
 /**
+ * @param errors Accumulated verification errors
  * @returns Formatted summary of all of the verification errors that have been recorded.
  */
-function getVerificationErrors() {
+function getVerificationErrorSummary(errors: string[]) {
   let str = 'Verification completed with the following errors.';
   for (let i = 0; i < errors.length; i++) {
     const error = errors[i];
@@ -142,13 +142,14 @@ function getVerificationErrors() {
  * @param address The address that failed to verify
  * @param contractType The type or name of the contract
  * @param details The error details
+ * @param errors Accumulated verification errors
  */
-function recordVerificationError(address: string, contractType: string, details: string) {
+function recordVerificationError(address: string, contractType: string, details: string, errors: string[]) {
   const message = `Failed to verify ${contractType} contract at ${address}: ${details}`;
-  recordError(message);
+  recordError(message, errors);
 }
 
-function recordError(message: string) {
+function recordError(message: string, errors: string[]) {
   console.error(message);
   errors.push(message);
 }
@@ -171,20 +172,22 @@ class EventNotFound extends UpgradesError {}
  * @param hre
  * @param proxyAddress The transparent or UUPS proxy address
  * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
+ * @errors Accumulated verification errors
  */
 async function fullVerifyTransparentOrUUPS(
   hre: HardhatRuntimeEnvironment,
   proxyAddress: any,
   hardhatVerify: (address: string) => Promise<any>,
+  errors: string[],
 ) {
   const provider = hre.network.provider;
   const implAddress = await getImplementationAddress(provider, proxyAddress);
-  await verifyImplementation(hardhatVerify, implAddress);
+  await verifyImplementation(hardhatVerify, implAddress, errors);
 
   const etherscanApi = await getEtherscanAPIConfig(hre);
 
   await verifyTransparentOrUUPS();
-  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress);
+  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress, errors);
   // Either UUPS or Transparent proxy could have admin slot set, although typically this should only be for Transparent
   await verifyAdmin();
 
@@ -193,7 +196,7 @@ async function fullVerifyTransparentOrUUPS(
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
       try {
-        await verifyContractWithCreationEvent(hre, etherscanApi, adminAddress, [contractEventsMap.proxyAdmin]);
+        await verifyContractWithCreationEvent(hre, etherscanApi, adminAddress, [contractEventsMap.proxyAdmin], errors);
       } catch (e: any) {
         if (e instanceof EventNotFound) {
           console.log(
@@ -206,10 +209,13 @@ async function fullVerifyTransparentOrUUPS(
 
   async function verifyTransparentOrUUPS() {
     console.log(`Verifying proxy: ${proxyAddress}`);
-    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [
-      contractEventsMap.transparentUpgradeableProxy,
-      contractEventsMap.erc1967proxy,
-    ]);
+    await verifyContractWithCreationEvent(
+      hre,
+      etherscanApi,
+      proxyAddress,
+      [contractEventsMap.transparentUpgradeableProxy, contractEventsMap.erc1967proxy],
+      errors,
+    );
   }
 }
 
@@ -220,32 +226,40 @@ async function fullVerifyTransparentOrUUPS(
  * @param hre
  * @param proxyAddress The beacon proxy address
  * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
+ * @errors Accumulated verification errors
  */
 async function fullVerifyBeaconProxy(
   hre: HardhatRuntimeEnvironment,
   proxyAddress: any,
   hardhatVerify: (address: string) => Promise<any>,
+  errors: string[],
 ) {
   const provider = hre.network.provider;
   const beaconAddress = await getBeaconAddress(provider, proxyAddress);
 
   const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
-  await verifyImplementation(hardhatVerify, implAddress);
+  await verifyImplementation(hardhatVerify, implAddress, errors);
 
   const etherscanApi = await getEtherscanAPIConfig(hre);
 
   await verifyBeacon();
   await verifyBeaconProxy();
-  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress);
+  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress, errors);
 
   async function verifyBeaconProxy() {
     console.log(`Verifying beacon proxy: ${proxyAddress}`);
-    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [contractEventsMap.beaconProxy]);
+    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [contractEventsMap.beaconProxy], errors);
   }
 
   async function verifyBeacon() {
     console.log(`Verifying beacon: ${beaconAddress}`);
-    await verifyContractWithCreationEvent(hre, etherscanApi, beaconAddress, [contractEventsMap.upgradeableBeacon]);
+    await verifyContractWithCreationEvent(
+      hre,
+      etherscanApi,
+      beaconAddress,
+      [contractEventsMap.upgradeableBeacon],
+      errors,
+    );
   }
 }
 
@@ -254,8 +268,13 @@ async function fullVerifyBeaconProxy(
  *
  * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
  * @param implAddress The implementation address
+ * @param errors Accumulated verification errors
  */
-async function verifyImplementation(hardhatVerify: (address: string) => Promise<any>, implAddress: string) {
+async function verifyImplementation(
+  hardhatVerify: (address: string) => Promise<any>,
+  implAddress: string,
+  errors: string[],
+) {
   try {
     console.log(`Verifying implementation: ${implAddress}`);
     await hardhatVerify(implAddress);
@@ -263,7 +282,7 @@ async function verifyImplementation(hardhatVerify: (address: string) => Promise<
     if (e.message.toLowerCase().includes('already verified')) {
       console.log(`Implementation ${implAddress} already verified.`);
     } else {
-      recordVerificationError(implAddress, 'implementation', e.message);
+      recordVerificationError(implAddress, 'implementation', e.message, errors);
     }
   }
 }
@@ -311,6 +330,7 @@ async function searchEvent(
  * @param address The contract address to verify
  * @param possibleEventMappings An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
+ * @param errors Accumulated verification errors
  * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
 async function verifyContractWithCreationEvent(
@@ -318,6 +338,7 @@ async function verifyContractWithCreationEvent(
   etherscanApi: EtherscanAPIConfig,
   address: string,
   possibleEventMappings: ContractEventMapping[],
+  errors: string[],
 ) {
   const { contractEventMapping, txHash } = await searchEvent(etherscanApi, address, possibleEventMappings);
   debug(`verifying contract ${contractEventMapping.artifact.contractName} at ${address}`);
@@ -336,9 +357,16 @@ async function verifyContractWithCreationEvent(
       address,
       contractEventMapping.artifact.contractName,
       `Bytecode does not match with the current version of ${contractEventMapping.artifact.contractName} in the Hardhat Upgrades plugin.`,
+      errors,
     );
   } else {
-    await verifyContractWithConstructorArgs(etherscanApi, address, contractEventMapping.artifact, constructorArguments);
+    await verifyContractWithConstructorArgs(
+      etherscanApi,
+      address,
+      contractEventMapping.artifact,
+      constructorArguments,
+      errors,
+    );
   }
 }
 
@@ -355,6 +383,7 @@ async function verifyContractWithConstructorArgs(
   address: any,
   artifact: ContractArtifact,
   constructorArguments: string,
+  errors: string[],
 ) {
   debug(`verifying contract ${address} with constructor args ${constructorArguments}`);
 
@@ -380,13 +409,13 @@ async function verifyContractWithConstructorArgs(
     if (status.isVerificationSuccess()) {
       console.log(`Successfully verified contract ${artifact.contractName} at ${address}.`);
     } else {
-      recordVerificationError(address, artifact.contractName, status.message);
+      recordVerificationError(address, artifact.contractName, status.message, errors);
     }
   } catch (e: any) {
     if (e.message.toLowerCase().includes('already verified')) {
       console.log(`Contract at ${address} already verified.`);
     } else {
-      recordVerificationError(address, artifact.contractName, e.message);
+      recordVerificationError(address, artifact.contractName, e.message, errors);
     }
   }
 }
@@ -443,6 +472,7 @@ export async function linkProxyWithImplementationAbi(
   etherscanApi: EtherscanAPIConfig,
   proxyAddress: string,
   implAddress: string,
+  errors: string[],
 ) {
   console.log(`Linking proxy ${proxyAddress} with implementation`);
   const params = {
@@ -467,7 +497,7 @@ export async function linkProxyWithImplementationAbi(
   if (responseBody.status === RESPONSE_OK) {
     console.log('Successfully linked proxy to implementation.');
   } else {
-    recordError(`Failed to link proxy ${proxyAddress} with its implementation. Reason: ${responseBody.result}`);
+    recordError(`Failed to link proxy ${proxyAddress} with its implementation. Reason: ${responseBody.result}`, errors);
   }
 }
 
