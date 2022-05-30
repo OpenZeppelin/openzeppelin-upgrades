@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Require multisig address for `proposeUpgrade` with UUPS proxy. ([#568](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/568))
+
 ## 1.6.0 (2022-01-12)
 
 - Add support for beacon proxies. ([#342](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/342))
