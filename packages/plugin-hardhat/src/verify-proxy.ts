@@ -45,28 +45,17 @@ interface ContractArtifact {
 }
 
 /**
- * A mapping from a contract artifact to the event that it logs during construction.
+ * A contract artifact and the corresponding event that it logs during construction.
  */
-interface ContractEventMapping {
+interface VerifiableContractInfo {
   artifact: ContractArtifact;
   event: string;
 }
 
 /**
- * Types of proxy-related contracts and their corresponding events.
- */
-interface ContractEventsMap {
-  erc1967proxy: ContractEventMapping;
-  beaconProxy: ContractEventMapping;
-  upgradeableBeacon: ContractEventMapping;
-  transparentUpgradeableProxy: ContractEventMapping;
-  proxyAdmin: ContractEventMapping;
-}
-
-/**
  * The proxy-related contracts and their corresponding events that may have been deployed the current version of this plugin.
  */
-const contractEventsMap: ContractEventsMap = {
+const verifiableContracts = {
   erc1967proxy: { artifact: ERC1967Proxy, event: 'Upgraded(address)' },
   beaconProxy: { artifact: BeaconProxy, event: 'BeaconUpgraded(address)' },
   upgradeableBeacon: { artifact: UpgradeableBeacon, event: 'OwnershipTransferred(address,address)' },
@@ -196,7 +185,13 @@ async function fullVerifyTransparentOrUUPS(
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
       try {
-        await verifyContractWithCreationEvent(hre, etherscanApi, adminAddress, [contractEventsMap.proxyAdmin], errors);
+        await verifyContractWithCreationEvent(
+          hre,
+          etherscanApi,
+          adminAddress,
+          [verifiableContracts.proxyAdmin],
+          errors,
+        );
       } catch (e: any) {
         if (e instanceof EventNotFound) {
           console.log(
@@ -213,7 +208,7 @@ async function fullVerifyTransparentOrUUPS(
       hre,
       etherscanApi,
       proxyAddress,
-      [contractEventsMap.transparentUpgradeableProxy, contractEventsMap.erc1967proxy],
+      [verifiableContracts.transparentUpgradeableProxy, verifiableContracts.erc1967proxy],
       errors,
     );
   }
@@ -248,7 +243,7 @@ async function fullVerifyBeaconProxy(
 
   async function verifyBeaconProxy() {
     console.log(`Verifying beacon proxy: ${proxyAddress}`);
-    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [contractEventsMap.beaconProxy], errors);
+    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [verifiableContracts.beaconProxy], errors);
   }
 
   async function verifyBeacon() {
@@ -257,7 +252,7 @@ async function fullVerifyBeaconProxy(
       hre,
       etherscanApi,
       beaconAddress,
-      [contractEventsMap.upgradeableBeacon],
+      [verifiableContracts.upgradeableBeacon],
       errors,
     );
   }
@@ -289,30 +284,30 @@ async function verifyImplementation(
 
 /**
  * Looks for any of the possible events (in array order) at the specified address using Etherscan API,
- * and returns the corresponding ContractEventMapping and txHash for the first event found.
+ * and returns the corresponding VerifiableContractInfo and txHash for the first event found.
  *
  * @param etherscanApi The Etherscan API config
  * @param address The contract address for which to look for events
- * @param possibleEventMappings An array of possible contract artifacts to use for verification along
+ * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
- * @returns the ContractEventMapping and txHash for the first event found
+ * @returns the VerifiableContractInfo and txHash for the first event found
  * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
 async function searchEvent(
   etherscanApi: EtherscanAPIConfig,
   address: string,
-  possibleEventMappings: ContractEventMapping[],
+  possibleContractInfo: VerifiableContractInfo[],
 ) {
-  for (let i = 0; i < possibleEventMappings.length; i++) {
-    const contractEventMapping = possibleEventMappings[i];
-    const txHash = await getContractCreationTxHash(address, contractEventMapping.event, etherscanApi);
+  for (let i = 0; i < possibleContractInfo.length; i++) {
+    const contractInfo = possibleContractInfo[i];
+    const txHash = await getContractCreationTxHash(address, contractInfo.event, etherscanApi);
     if (txHash !== undefined) {
-      return { contractEventMapping, txHash };
+      return { contractInfo, txHash };
     }
   }
 
-  const events = possibleEventMappings.map(mapping => {
-    return mapping.event;
+  const events = possibleContractInfo.map(contractInfo => {
+    return contractInfo.event;
   });
   throw new EventNotFound(
     `Could not find an event with any of the following topics in the logs for address ${address}: ${events.join(', ')}`,
@@ -323,12 +318,12 @@ async function searchEvent(
  * Verifies a contract by looking up an event that should have been logged during contract construction,
  * finds the txHash for that, and infers the constructor args to use for verification.
  *
- * Iterates through each element of possibleEventMappings to look for that element's event, until an event is found.
+ * Iterates through each element of possibleContractInfo to look for that element's event, until an event is found.
  *
  * @param hre
  * @param etherscanApi The Etherscan API config
  * @param address The contract address to verify
- * @param possibleEventMappings An array of possible contract artifacts to use for verification along
+ * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
  * @param errors Accumulated verification errors
  * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
@@ -337,11 +332,11 @@ async function verifyContractWithCreationEvent(
   hre: HardhatRuntimeEnvironment,
   etherscanApi: EtherscanAPIConfig,
   address: string,
-  possibleEventMappings: ContractEventMapping[],
+  possibleContractInfo: VerifiableContractInfo[],
   errors: string[],
 ) {
-  const { contractEventMapping, txHash } = await searchEvent(etherscanApi, address, possibleEventMappings);
-  debug(`verifying contract ${contractEventMapping.artifact.contractName} at ${address}`);
+  const { contractInfo, txHash } = await searchEvent(etherscanApi, address, possibleContractInfo);
+  debug(`verifying contract ${contractInfo.artifact.contractName} at ${address}`);
 
   const tx = await getTransactionByHash(hre.network.provider, txHash);
   if (tx === null) {
@@ -349,24 +344,18 @@ async function verifyContractWithCreationEvent(
     throw new UpgradesError(`The transaction hash ${txHash} from the contract's logs was not found on the network`);
   }
 
-  const constructorArguments = inferConstructorArgs(tx.input, contractEventMapping.artifact.bytecode);
+  const constructorArguments = inferConstructorArgs(tx.input, contractInfo.artifact.bytecode);
   if (constructorArguments === undefined) {
     // The creation bytecode for the address does not match with the expected artifact.
     // This may be because a different version of the contract was deployed compared to what is in the plugins.
     recordVerificationError(
       address,
-      contractEventMapping.artifact.contractName,
-      `Bytecode does not match with the current version of ${contractEventMapping.artifact.contractName} in the Hardhat Upgrades plugin.`,
+      contractInfo.artifact.contractName,
+      `Bytecode does not match with the current version of ${contractInfo.artifact.contractName} in the Hardhat Upgrades plugin.`,
       errors,
     );
   } else {
-    await verifyContractWithConstructorArgs(
-      etherscanApi,
-      address,
-      contractEventMapping.artifact,
-      constructorArguments,
-      errors,
-    );
+    await verifyContractWithConstructorArgs(etherscanApi, address, contractInfo.artifact, constructorArguments, errors);
   }
 }
 
@@ -431,7 +420,7 @@ async function verifyContractWithConstructorArgs(
  *   the address is not a contract.
  * @throws {UpgradesError} if the Etherscan API returned with not OK status
  */
-export async function getContractCreationTxHash(
+async function getContractCreationTxHash(
   address: string,
   topic: string,
   etherscanApi: EtherscanAPIConfig,
@@ -468,7 +457,7 @@ export async function getContractCreationTxHash(
  * @param proxyAddress The proxy address
  * @param implAddress The implementation address
  */
-export async function linkProxyWithImplementationAbi(
+async function linkProxyWithImplementationAbi(
   etherscanApi: EtherscanAPIConfig,
   proxyAddress: string,
   implAddress: string,
