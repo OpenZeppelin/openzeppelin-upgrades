@@ -2,7 +2,7 @@ import { resolveEtherscanApiKey } from '@nomiclabs/hardhat-etherscan/dist/src/re
 
 import { UpgradesError } from '@openzeppelin/upgrades-core';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { EtherscanConfig } from '@nomiclabs/hardhat-etherscan/dist/src/types';
+import { EtherscanConfig, EtherscanNetworkEntry } from '@nomiclabs/hardhat-etherscan/dist/src/types';
 
 import { Dispatcher, request } from 'undici';
 
@@ -55,7 +55,7 @@ export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Pro
  */
 export interface EtherscanAPIConfig {
   key: string;
-  endpoints: any;
+  endpoints: EtherscanNetworkEntry;
 }
 
 /**
