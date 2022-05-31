@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.6.1 (2022-05-31)
 
 - Require multisig address for `proposeUpgrade` with UUPS proxy. ([#568](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/568))
 
