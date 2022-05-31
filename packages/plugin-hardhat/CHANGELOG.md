@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.18.0 (2022-05-31)
 
 - Support verifying a proxy on Etherscan using Hardhat. ([#579](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/579))
 
