@@ -2,7 +2,7 @@ import {
   assertNotProxy,
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
-  fetchOrDeploy,
+  fetchOrDeployGetDeployment,
   getImplementationAddress,
   getImplementationAddressFromBeacon,
   getStorageLayout,
@@ -16,7 +16,7 @@ import {
   ValidationOptions,
   Version,
 } from '@openzeppelin/upgrades-core';
-import type { ContractFactory } from 'ethers';
+import type { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
@@ -26,10 +26,12 @@ import { readValidations } from './validations';
 interface DeployedProxyImpl {
   impl: string;
   kind: NonNullable<ValidationOptions['kind']>;
+  deployTransaction?: ethers.providers.TransactionResponse;
 }
 
 interface DeployedBeaconImpl {
   impl: string;
+  deployTransaction?: ethers.providers.TransactionResponse;
 }
 
 export interface DeployData {
@@ -111,7 +113,7 @@ async function deployImpl(
     }
   }
 
-  const impl = await fetchOrDeploy(
+  const deployment = await fetchOrDeployGetDeployment(
     deployData.version,
     deployData.provider,
     async () => {
@@ -122,5 +124,5 @@ async function deployImpl(
     opts,
   );
 
-  return { impl, kind: opts.kind };
+  return { impl: deployment.address, kind: opts.kind, deployTransaction: (deployment as any).deployTransaction };
 }

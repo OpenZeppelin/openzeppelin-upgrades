@@ -9,10 +9,11 @@ import {
   isTransparentOrUUPSProxy,
 } from '@openzeppelin/upgrades-core';
 import { AdminClient, ProposalResponse } from 'defender-admin-client';
-import type { ContractFactory } from 'ethers';
-import { FormatTypes } from 'ethers/lib/utils';
+import type { ContractFactory, ethers } from 'ethers';
+import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { fromChainId } from 'defender-base-client';
+import { ProposalResponseWithUrl } from 'defender-admin-client/lib/api';
 
 export type ProposeUpgradeFunction = (
   proxyAddress: string,
@@ -58,18 +59,39 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       await getImplementationAddress(hre.network.provider, proxyAddress);
     }
 
-    const newImplementation = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory, moreOpts);
     const contract = { address: proxyAddress, network, abi: ImplFactory.interface.format(FormatTypes.json) as string };
-    return client.proposeUpgrade(
-      {
-        newImplementation,
-        title,
-        description,
-        proxyAdmin,
-        via: multisig,
-        viaType: multisigType,
-      },
-      contract,
-    );
+
+    const prepareUpgradeResult = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory, {
+      getTxResponse: true,
+      ...moreOpts,
+    });
+
+    if (typeof prepareUpgradeResult === 'string') {
+      return clientProposeUpgrade(prepareUpgradeResult);
+    } else {
+      const proposalResponse: ProposalResponseWithUrlAndTx = {
+        ...(await clientProposeUpgrade(getContractAddress(prepareUpgradeResult))),
+        txResponse: prepareUpgradeResult,
+      };
+      return proposalResponse;
+    }
+
+    async function clientProposeUpgrade(newImplementation: string) {
+      return client.proposeUpgrade(
+        {
+          newImplementation,
+          title,
+          description,
+          proxyAdmin,
+          via: multisig,
+          viaType: multisigType,
+        },
+        contract,
+      );
+    }
   };
+}
+
+export interface ProposalResponseWithUrlAndTx extends ProposalResponseWithUrl {
+  txResponse: ethers.providers.TransactionResponse;
 }
