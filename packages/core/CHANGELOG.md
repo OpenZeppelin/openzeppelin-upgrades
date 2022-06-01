@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Return ethers transaction response with `proposeUpgrade`. ([#554](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/554))
+
 ## 1.15.0 (2022-05-31)
 
 - Support `unsafeSkipStorageCheck` option in `ValidationOptions`. ([#566](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/566))
