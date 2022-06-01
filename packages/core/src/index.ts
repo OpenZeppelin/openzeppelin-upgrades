@@ -10,6 +10,7 @@ export {
   getImplementationAddress,
   toEip1967Hash,
   toFallbackEip1967Hash,
+  isEmptySlot,
 } from './eip-1967';
 export * from './provider';
 export * from './src-decoder';

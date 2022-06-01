@@ -14,6 +14,7 @@ export interface EthereumProvider {
 
 interface EthereumTransaction {
   blockHash: string | null;
+  input: string;
 }
 
 interface EthereumTransactionReceipt {
