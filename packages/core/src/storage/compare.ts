@@ -79,7 +79,7 @@ function storageItemEnd(entry: StorageItemFull): number {
  * Pad to nearest 32 bytes beyond the given number
  */
 function padBytes(numBytes: number): number {
-  return numBytes % 32 > 0 ? Math.floor(numBytes / 32) * 32 + 32 : numBytes;
+  return Math.floor((numBytes + 31) / 32) * 32;
 }
 
 // Get a subset of `layout` that exactly covers the space from `begin` to `end`
