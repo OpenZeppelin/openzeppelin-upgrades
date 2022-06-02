@@ -72,13 +72,13 @@ function storageItemBegin(entry: StorageItemFull): number {
 }
 
 function storageItemEnd(entry: StorageItemFull): number {
-  return storageItemBegin(entry) + padBytes(Number(entry.type.item.numberOfBytes));
+  return storageItemBegin(entry) + roundUpBytes(Number(entry.type.item.numberOfBytes));
 }
 
 /**
- * Pad to nearest 32 bytes beyond the given number
+ * Round up to nearest 32 bytes beyond the given number
  */
-function padBytes(numBytes: number): number {
+function roundUpBytes(numBytes: number): number {
   return Math.floor((numBytes + 31) / 32) * 32;
 }
 
