@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.6.2 (2022-06-03)
 
 - Fix version dependency. ([#590](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/590))
 
