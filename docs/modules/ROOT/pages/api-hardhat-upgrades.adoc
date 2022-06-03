@@ -274,14 +274,14 @@ To use this task, ensure you have https://hardhat.org/plugins/nomiclabs-hardhat-
 npm install --save-dev @nomiclabs/hardhat-etherscan
 ----
 
-Then import the `@nomiclabs/hardhat-etherscan` plugin before the `@openzeppelin/hardhat-upgrades` plugin in your Hardhat configuration.
-For example, if you are using JavaScript, import the plugins in the following order in `hardhat.config.js`:
+Then import the `@nomiclabs/hardhat-etherscan` plugin along with the `@openzeppelin/hardhat-upgrades` plugin in your Hardhat configuration.
+For example, if you are using JavaScript, import the plugins in `hardhat.config.js`:
 [source,js]
 ----
 require("@nomiclabs/hardhat-etherscan");
 require("@openzeppelin/hardhat-upgrades");
 ----
-Or if you are using TypeScript, import the plugins in the following order in `hardhat.config.ts`:
+Or if you are using TypeScript, import the plugins in `hardhat.config.ts`:
 [source,ts]
 ----
 import "@nomiclabs/hardhat-etherscan";

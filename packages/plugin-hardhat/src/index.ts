@@ -78,6 +78,11 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 });
 
 extendEnvironment(hre => {
+  task('verify').setAction(async (args, hre, runSuper) => {
+    const { verify } = await import('./verify-proxy');
+    return await verify(args, hre, runSuper);
+  });
+
   hre.upgrades = lazyObject((): HardhatUpgrades => {
     const {
       silenceWarnings,
@@ -132,9 +137,4 @@ extendConfig((config: HardhatConfig) => {
       compiler.settings.outputSelection['*']['*'].push('storageLayout');
     }
   }
-});
-
-task('verify').setAction(async (args, hre, runSuper) => {
-  const { verify } = await import('./verify-proxy');
-  return await verify(args, hre, runSuper);
 });
