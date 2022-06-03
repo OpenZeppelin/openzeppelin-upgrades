@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.18.1 (2022-06-03)
 
 - Fix task redefinition error with hardhat-etherscan. ([#586](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/586))
 
