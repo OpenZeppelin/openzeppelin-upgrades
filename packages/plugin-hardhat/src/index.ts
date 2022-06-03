@@ -134,21 +134,19 @@ extendConfig((config: HardhatConfig) => {
   }
 });
 
-overrideVerify();
+if (tryRequire('@nomiclabs/hardhat-etherscan')) {
+  task('verify').setAction(async (args, hre, runSuper) => {
+    const { verify } = await import('./verify-proxy');
+    return await verify(args, hre, runSuper);
+  });
+}
 
-function overrideVerify() {
-  let hardhatEtherscanLoaded = false;
+function tryRequire(id: string) {
   try {
-    require('@nomiclabs/hardhat-etherscan');
-    hardhatEtherscanLoaded = true;
+    require(id);
+    return true;
   } catch (e: any) {
     // do nothing
   }
-
-  if (hardhatEtherscanLoaded) {
-    task('verify').setAction(async (args, hre, runSuper) => {
-      const { verify } = await import('./verify-proxy');
-      return await verify(args, hre, runSuper);
-    });
-  }
+  return false;
 }
