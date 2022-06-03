@@ -79,7 +79,7 @@ function storageItemEnd(entry: StorageItemFull): number {
  * Round up to nearest 32 bytes beyond the given number
  */
 function roundUpBytes(numBytes: number): number {
-  return Math.floor((numBytes + 31) / 32) * 32;
+  return Math.ceil(numBytes / 32) * 32;
 }
 
 // Get a subset of `layout` that exactly covers the space from `begin` to `end`
