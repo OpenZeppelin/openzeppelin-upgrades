@@ -40,8 +40,8 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
       throw new PrepareUpgradeUnsupportedError(proxyOrBeaconAddress);
     }
 
-    if (opts.getTxResponse && deployedImpl.deployTransaction !== undefined) {
-      return deployedImpl.deployTransaction;
+    if (opts.getTxResponse && deployedImpl.txResponse !== undefined) {
+      return deployedImpl.txResponse;
     } else {
       return deployedImpl.impl;
     }

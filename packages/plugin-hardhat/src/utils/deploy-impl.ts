@@ -2,6 +2,7 @@ import {
   assertNotProxy,
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
+  Deployment,
   fetchOrDeployGetDeployment,
   getImplementationAddress,
   getImplementationAddressFromBeacon,
@@ -20,18 +21,18 @@ import type { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
-import { Options, UpgradeProxyOptions, withDefaults } from './options';
+import { Options, PrepareUpgradeOptions, withDefaults } from './options';
 import { readValidations } from './validations';
 
 interface DeployedProxyImpl {
   impl: string;
   kind: NonNullable<ValidationOptions['kind']>;
-  deployTransaction?: ethers.providers.TransactionResponse;
+  txResponse?: ethers.providers.TransactionResponse;
 }
 
 interface DeployedBeaconImpl {
   impl: string;
-  deployTransaction?: ethers.providers.TransactionResponse;
+  txResponse?: ethers.providers.TransactionResponse;
 }
 
 export interface DeployData {
@@ -75,7 +76,7 @@ export async function deployProxyImpl(
     currentImplAddress = await getImplementationAddress(deployData.provider, proxyAddress);
   }
 
-  return deployImpl(deployData, ImplFactory, opts, currentImplAddress);
+  return deployImpl(hre, deployData, ImplFactory, opts, currentImplAddress);
 }
 
 export async function deployBeaconImpl(
@@ -92,13 +93,14 @@ export async function deployBeaconImpl(
     await assertNotProxy(deployData.provider, beaconAddress);
     currentImplAddress = await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
   }
-  return deployImpl(deployData, ImplFactory, opts, currentImplAddress);
+  return deployImpl(hre, deployData, ImplFactory, opts, currentImplAddress);
 }
 
 async function deployImpl(
+  hre: HardhatRuntimeEnvironment,
   deployData: DeployData,
   ImplFactory: ContractFactory,
-  opts: UpgradeProxyOptions,
+  opts: Options,
   currentImplAddress?: string,
 ): Promise<any> {
   assertUpgradeSafe(deployData.validations, deployData.version, deployData.fullOpts);
@@ -124,5 +126,20 @@ async function deployImpl(
     opts,
   );
 
-  return { impl: deployment.address, kind: opts.kind, deployTransaction: (deployment as any).deployTransaction };
+  const txResponse = getTxResponse(hre, deployment, opts);
+
+  return { impl: deployment.address, kind: opts.kind, txResponse };
+}
+
+function getTxResponse(hre: HardhatRuntimeEnvironment, deployment: Deployment, opts: PrepareUpgradeOptions) {
+  let txResponse = undefined;
+  if (opts.getTxResponse) {
+    const deployTransaction = (deployment as any).deployTransaction;
+    if (deployTransaction !== undefined) {
+      txResponse = deployTransaction;
+    } else if (deployment.txHash !== undefined) {
+      txResponse = hre.ethers.provider.getTransaction(deployment.txHash);
+    }
+  }
+  return txResponse;
 }

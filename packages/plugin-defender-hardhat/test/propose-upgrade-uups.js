@@ -48,8 +48,11 @@ test('proposes an upgrade and get tx response', async t => {
   t.not(txReceipt.contractAddress, undefined);
 
   const proposal2 = await proposeUpgrade(greeter.address, GreeterV2, { title, description, multisig });
-  // not expecting a tx response since impl was already deployed in first proposal
-  t.is(proposal2.txResponse, undefined);
+
+  // even though impl was already deployed in first proposal, it should still provide a tx response for the same tx hash
+  t.is(proposal2.txResponse.hash, proposal.txResponse.hash);
+  const txReceipt2 = await proposal.txResponse.wait();
+  t.is(txReceipt2.contractAddress, txReceipt.contractAddress);
 });
 
 test('proposes an upgrade', async t => {
