@@ -134,7 +134,19 @@ extendConfig((config: HardhatConfig) => {
   }
 });
 
-task('verify').setAction(async (args, hre, runSuper) => {
-  const { verify } = await import('./verify-proxy');
-  return await verify(args, hre, runSuper);
-});
+if (tryRequire('@nomiclabs/hardhat-etherscan')) {
+  task('verify').setAction(async (args, hre, runSuper) => {
+    const { verify } = await import('./verify-proxy');
+    return await verify(args, hre, runSuper);
+  });
+}
+
+function tryRequire(id: string) {
+  try {
+    require(id);
+    return true;
+  } catch (e: any) {
+    // do nothing
+  }
+  return false;
+}

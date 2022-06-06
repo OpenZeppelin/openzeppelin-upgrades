@@ -4,6 +4,10 @@
 
 - Return ethers transaction response with `proposeUpgrade`. ([#554](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/554))
 
+## 1.6.2 (2022-06-03)
+
+- Fix version dependency. ([#590](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/590))
+
 ## 1.6.1 (2022-05-31)
 
 - Require multisig address for `proposeUpgrade` with UUPS proxy. ([#568](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/568))
