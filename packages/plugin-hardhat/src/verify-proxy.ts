@@ -3,7 +3,6 @@ import {
   toVerifyRequest,
 } from '@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanVerifyContractRequest';
 import {
-  delay,
   getVerificationStatus,
   verifyContract,
 } from '@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanService';
@@ -489,6 +488,10 @@ async function linkProxyWithImplementationAbi(
     console.log('Successfully linked proxy to implementation.');
   } else {
     recordError(`Failed to link proxy ${proxyAddress} with its implementation. Reason: ${responseBody.result}`, errors);
+  }
+
+  async function delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
