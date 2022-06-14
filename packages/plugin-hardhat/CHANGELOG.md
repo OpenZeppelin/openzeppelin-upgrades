@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update `verify` to be compatible with latest version of hardhat-etherscan. ([#592](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/592))
+
 ## 1.18.1 (2022-06-03)
 
 - Fix task redefinition error with hardhat-etherscan. ([#586](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/586))
