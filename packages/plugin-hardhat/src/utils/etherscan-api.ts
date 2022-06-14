@@ -44,7 +44,7 @@ export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params:
 export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Promise<EtherscanAPIConfig> {
   const endpoints = await hre.run('verify:get-etherscan-endpoint');
   const etherscanConfig: EtherscanConfig = (hre.config as any).etherscan;
-  const key = resolveEtherscanApiKey(etherscanConfig, endpoints.network);
+  const key = resolveEtherscanApiKey(etherscanConfig.apiKey, endpoints.network);
   return { key, endpoints };
 }
 
