@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.18.2 (2022-06-14)
 
 - Update `verify` to be compatible with latest version of hardhat-etherscan. ([#592](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/592))
 
