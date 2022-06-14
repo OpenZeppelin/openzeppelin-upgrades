@@ -13,13 +13,16 @@ import type { ContractFactory, ethers } from 'ethers';
 import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { fromChainId } from 'defender-base-client';
-import { ProposalResponseWithUrl } from 'defender-admin-client/lib/api';
+
+export interface ProposalResponseWithUrlAndTx extends ProposalResponse {
+  txResponse?: ethers.providers.TransactionResponse;
+}
 
 export type ProposeUpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
   opts?: ProposalOptions,
-) => Promise<ProposalResponse>;
+) => Promise<ProposalResponseWithUrlAndTx>;
 
 export interface ProposalOptions extends ValidationOptions {
   title?: string;
@@ -90,8 +93,4 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       );
     }
   };
-}
-
-export interface ProposalResponseWithUrlAndTx extends ProposalResponseWithUrl {
-  txResponse: ethers.providers.TransactionResponse;
 }
