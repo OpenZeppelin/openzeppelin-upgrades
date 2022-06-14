@@ -69,28 +69,30 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       ...moreOpts,
     });
 
+    let txResponse, newImplementation;
+
     if (typeof prepareUpgradeResult === 'string') {
-      return clientProposeUpgrade(prepareUpgradeResult);
+      newImplementation = prepareUpgradeResult;
     } else {
-      const proposalResponse: ProposalResponseWithUrlAndTx = {
-        ...(await clientProposeUpgrade(getContractAddress(prepareUpgradeResult))),
-        txResponse: prepareUpgradeResult,
-      };
-      return proposalResponse;
+      txResponse = prepareUpgradeResult;
+      newImplementation = getContractAddress(txResponse);
     }
 
-    async function clientProposeUpgrade(newImplementation: string) {
-      return client.proposeUpgrade(
-        {
-          newImplementation,
-          title,
-          description,
-          proxyAdmin,
-          via: multisig,
-          viaType: multisigType,
-        },
-        contract,
-      );
-    }
+    const proposalResponse = await client.proposeUpgrade(
+      {
+        newImplementation,
+        title,
+        description,
+        proxyAdmin,
+        via: multisig,
+        viaType: multisigType,
+      },
+      contract,
+    );
+
+    return {
+      ...proposalResponse,
+      txResponse,
+    };
   };
 }
