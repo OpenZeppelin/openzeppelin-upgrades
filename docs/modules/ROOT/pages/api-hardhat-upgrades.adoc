@@ -163,7 +163,7 @@ async function prepareUpgrade(
   opts: {
     unsafeAllow: ValidationError[],
     unsafeSkipStorageCheck: boolean,
-    getTxResponse? boolean,
+    getTxResponse?: boolean,
   } = {},
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
