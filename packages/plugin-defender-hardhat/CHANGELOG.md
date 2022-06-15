@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Return ethers transaction response with `proposeUpgrade`. ([#554](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/554))
+
 ## 1.6.2 (2022-06-03)
 
 - Fix version dependency. ([#590](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/590))

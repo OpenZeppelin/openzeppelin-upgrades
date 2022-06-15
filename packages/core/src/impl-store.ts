@@ -26,17 +26,17 @@ export interface ManifestField<T> {
  * @param deploy the deploy function
  * @param opts options containing the timeout and pollingInterval parameters. If undefined, assumes the timeout is not configurable and will not mention those parameters in the error message for TransactionMinedTimeout.
  * @param merge if true, adds a deployment to existing deployment by merging their addresses. Defaults to false.
- * @returns the deployment address
+ * @returns the deployment
  * @throws {InvalidDeployment} if the deployment is invalid
  * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
  */
-async function fetchOrDeployGeneric<T extends Deployment>(
+async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
   lens: ManifestLens<T>,
   provider: EthereumProvider,
-  deploy: () => Promise<T>,
+  deploy: () => Promise<U>,
   opts?: DeployOpts,
   merge?: boolean,
-): Promise<string> {
+): Promise<U | Deployment> {
   const manifest = await Manifest.forNetwork(provider);
 
   try {
@@ -69,7 +69,7 @@ async function fetchOrDeployGeneric<T extends Deployment>(
 
     await waitAndValidateDeployment(provider, deployment, lens.type, opts);
 
-    return deployment.address;
+    return deployment;
   } catch (e) {
     // If we run into a deployment error, we remove it from the manifest.
     if (e instanceof InvalidDeployment) {
@@ -105,6 +105,16 @@ export async function fetchOrDeploy(
   opts?: DeployOpts,
   merge?: boolean,
 ): Promise<string> {
+  return (await fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, opts, merge)).address;
+}
+
+export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
+  version: Version,
+  provider: EthereumProvider,
+  deploy: () => Promise<T>,
+  opts?: DeployOpts,
+  merge?: boolean,
+): Promise<T | Deployment> {
   return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, opts, merge);
 }
 
@@ -146,7 +156,7 @@ export async function fetchOrDeployAdmin(
   deploy: () => Promise<Deployment>,
   opts?: DeployOpts,
 ): Promise<string> {
-  return fetchOrDeployGeneric(adminLens, provider, deploy, opts);
+  return (await fetchOrDeployGeneric(adminLens, provider, deploy, opts)).address;
 }
 
 const adminLens = lens('proxy admin', 'proxy admin', data => ({

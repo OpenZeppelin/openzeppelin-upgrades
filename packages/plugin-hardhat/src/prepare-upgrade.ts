@@ -1,7 +1,13 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory } from 'ethers';
+import type { ContractFactory, ethers } from 'ethers';
 
-import { Options, ContractAddressOrInstance, getContractAddress, deployProxyImpl, deployBeaconImpl } from './utils';
+import {
+  ContractAddressOrInstance,
+  getContractAddress,
+  deployProxyImpl,
+  deployBeaconImpl,
+  PrepareUpgradeOptions,
+} from './utils';
 import {
   getBeaconAddress,
   isBeaconProxy,
@@ -13,11 +19,13 @@ import {
 export type PrepareUpgradeFunction = (
   proxyOrBeaconAddress: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
-  opts?: Options,
-) => Promise<string>;
+  opts?: PrepareUpgradeOptions,
+) => Promise<PrepareUpgradeResponse>;
+
+export type PrepareUpgradeResponse = string | ethers.providers.TransactionResponse;
 
 export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgradeFunction {
-  return async function prepareUpgrade(proxyOrBeacon, ImplFactory, opts: Options = {}) {
+  return async function prepareUpgrade(proxyOrBeacon, ImplFactory, opts: PrepareUpgradeOptions = {}) {
     const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
     const { provider } = hre.network;
     let deployedImpl;
@@ -31,6 +39,11 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
     } else {
       throw new PrepareUpgradeUnsupportedError(proxyOrBeaconAddress);
     }
-    return deployedImpl.impl;
+
+    if (opts.getTxResponse && deployedImpl.txResponse !== undefined) {
+      return deployedImpl.txResponse;
+    } else {
+      return deployedImpl.impl;
+    }
   };
 }

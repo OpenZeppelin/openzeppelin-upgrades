@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Return ethers transaction response with `proposeUpgrade`. ([#554](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/554))
+
 ## 1.18.3 (2022-06-14)
 
 - Fix dependency on hardhat-etherscan.
