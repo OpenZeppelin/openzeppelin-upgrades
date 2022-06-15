@@ -2,7 +2,6 @@ import {
   assertNotProxy,
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
-  Deployment,
   fetchOrDeployGetDeployment,
   getImplementationAddress,
   getImplementationAddressFromBeacon,
