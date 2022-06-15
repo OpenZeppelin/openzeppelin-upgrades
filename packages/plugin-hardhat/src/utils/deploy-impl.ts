@@ -100,7 +100,7 @@ async function deployImpl(
   hre: HardhatRuntimeEnvironment,
   deployData: DeployData,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: PrepareUpgradeOptions,
   currentImplAddress?: string,
 ): Promise<any> {
   assertUpgradeSafe(deployData.validations, deployData.version, deployData.fullOpts);
@@ -126,20 +126,14 @@ async function deployImpl(
     opts,
   );
 
-  const txResponse = getTxResponse(hre, deployment, opts);
-
-  return { impl: deployment.address, kind: opts.kind, txResponse };
-}
-
-function getTxResponse(hre: HardhatRuntimeEnvironment, deployment: Deployment, opts: PrepareUpgradeOptions) {
-  let txResponse = undefined;
+  let txResponse;
   if (opts.getTxResponse) {
-    const deployTransaction = (deployment as any).deployTransaction;
-    if (deployTransaction !== undefined) {
-      txResponse = deployTransaction;
+    if ('deployTransaction' in deployment) {
+      txResponse = deployment.deployTransaction;
     } else if (deployment.txHash !== undefined) {
       txResponse = hre.ethers.provider.getTransaction(deployment.txHash);
     }
   }
-  return txResponse;
+
+  return { impl: deployment.address, kind: opts.kind, txResponse };
 }

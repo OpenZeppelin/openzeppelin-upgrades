@@ -53,15 +53,15 @@ export interface DeployOpts {
  * @returns the cached deployment if it should be used, otherwise the new deployment from the deploy function
  * @throws {InvalidDeployment} if the cached deployment is invalid and we are not on a dev network
  */
-export async function resumeOrDeploy<T extends Deployment>(
+export async function resumeOrDeploy<T extends Deployment, U extends T = T>(
   provider: EthereumProvider,
   cached: T | undefined,
-  deploy: () => Promise<T>,
+  deploy: () => Promise<U>,
   type?: string,
   opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
-): Promise<T> {
+): Promise<T | U> {
   const validated = await validateCached(cached, provider, type, opts, deployment, merge);
   if (validated === undefined || merge) {
     const deployment = await deploy();

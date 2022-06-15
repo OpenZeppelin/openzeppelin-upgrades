@@ -30,13 +30,13 @@ export interface ManifestField<T> {
  * @throws {InvalidDeployment} if the deployment is invalid
  * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
  */
-async function fetchOrDeployGeneric<T extends Deployment>(
+async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
   lens: ManifestLens<T>,
   provider: EthereumProvider,
-  deploy: () => Promise<T>,
+  deploy: () => Promise<U>,
   opts?: DeployOpts,
   merge?: boolean,
-): Promise<Deployment> {
+): Promise<U | Deployment> {
   const manifest = await Manifest.forNetwork(provider);
 
   try {
@@ -108,13 +108,13 @@ export async function fetchOrDeploy(
   return (await fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, opts, merge)).address;
 }
 
-export async function fetchOrDeployGetDeployment(
+export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
   version: Version,
   provider: EthereumProvider,
-  deploy: () => Promise<ImplDeployment>,
+  deploy: () => Promise<T>,
   opts?: DeployOpts,
   merge?: boolean,
-): Promise<Deployment> {
+): Promise<T | Deployment> {
   return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, opts, merge);
 }
 
