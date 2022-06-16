@@ -34,7 +34,8 @@ export async function getImplementationAddressFromBeacon(
       !(
         e.message.includes('function selector was not recognized') ||
         e.message.includes('invalid opcode') ||
-        e.message.includes('revert')
+        e.message.includes('revert') ||
+        e.message.includes('execution error')
       )
     ) {
       throw e;
