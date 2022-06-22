@@ -154,11 +154,11 @@ export class StorageLayoutComparator {
       }
 
       // Now that sections are isolated, we can compare them one by one
-      const ops = sections.flatMap(({ begin, end }) => {
-        const originalSection = subLayout(begin, end, original) || [];
-        const updatedSection = subLayout(begin, end, updated) || [];
-        return this.layoutLevenshtein(originalSection, updatedSection, { allowAppend: end === Infinity });
-      });
+      const ops = sections.flatMap(({ begin, end }) => this.layoutLevenshtein(
+            subLayout(begin, end, original) || [],
+            subLayout(begin, end, updated) || [],
+            { allowAppend: end === Infinity },
+      ));
 
       return new LayoutCompatibilityReport(ops);
     } else {
