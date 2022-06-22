@@ -3,7 +3,6 @@ import {
   toVerifyRequest,
 } from '@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanVerifyContractRequest';
 import {
-  delay,
   getVerificationStatus,
   verifyContract,
 } from '@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanService';
@@ -311,6 +310,8 @@ async function searchEvent(
   });
   throw new EventNotFound(
     `Could not find an event with any of the following topics in the logs for address ${address}: ${events.join(', ')}`,
+    () =>
+      'If the proxy was recently deployed, the transaction may not be available on Etherscan yet. Try running the verify task again after waiting a few blocks.',
   );
 }
 
@@ -487,6 +488,10 @@ async function linkProxyWithImplementationAbi(
     console.log('Successfully linked proxy to implementation.');
   } else {
     recordError(`Failed to link proxy ${proxyAddress} with its implementation. Reason: ${responseBody.result}`, errors);
+  }
+
+  async function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 

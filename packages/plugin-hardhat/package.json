@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-upgrades",
-  "version": "1.18.0",
+  "version": "1.19.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
-    "@nomiclabs/hardhat-etherscan": "^3.0.3",
+    "@nomiclabs/hardhat-etherscan": "^3.1.0",
     "@types/mocha": "^7.0.2",
     "ava": "^4.0.0",
     "ethers": "^5.0.5",
@@ -32,13 +32,13 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^1.15.0",
+    "@openzeppelin/upgrades-core": "^1.16.0",
     "chalk": "^4.1.0",
     "proper-lockfile": "^4.1.1"
   },
   "peerDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
-    "@nomiclabs/hardhat-etherscan": "^3.0.3",
+    "@nomiclabs/hardhat-etherscan": "^3.1.0",
     "hardhat": "^2.0.2"
   },
   "peerDependenciesMeta": {
