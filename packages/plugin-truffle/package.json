@@ -27,6 +27,7 @@
     "@openzeppelin/upgrades-core": "^1.14.1",
     "@truffle/contract": "^4.3.26",
     "chalk": "^4.1.0",
+    "debug": "^4.1.1",
     "solidity-ast": "^0.4.15"
   },
   "peerDependencies": {
