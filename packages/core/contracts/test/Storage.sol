@@ -486,14 +486,38 @@ contract StorageUpgrade_EndGap_V2b {
     uint256 b;
 }
 
-contract StorageUpgrade_Gap_Address_V1 {
+contract StorageUpgrade_EndGap_Uint128_V1a {
+    uint128 a;
+    uint256[1] private __gap;
+}
+
+contract StorageUpgrade_EndGap_Uint128_V1b is StorageUpgrade_EndGap_Uint128_V1a {
+    uint256[2] private __gap;
+}
+
+contract StorageUpgrade_EndGap_Uint128_V1c is StorageUpgrade_EndGap_Uint128_V1b {
+    uint128 b;
+}
+
+contract StorageUpgrade_EndGap_Uint128_V2a {
+    uint128 a;
+    uint128[10] big;
+}
+
+contract StorageUpgrade_EndGap_Uint128_V2b {
+    uint128 a;
+    uint128[6] medium;
+    uint128 b;
+}
+
+contract StorageUpgrade_Uint256Gap_Address_V1 {
     address a;
     address b;
     uint256[48] __gap;
     address z;
 }
 
-contract StorageUpgrade_Gap_Address_V2 {
+contract StorageUpgrade_Uint256Gap_Address_V2 {
     address a;
     address b;
     address c;
@@ -501,51 +525,118 @@ contract StorageUpgrade_Gap_Address_V2 {
     address z;
 }
 
-contract StorageUpgrade_Gap_Uint128_V1 {
+contract StorageUpgrade_AddressGap_V1 {
+    address a;
+    address b;
+    address[48] __gap;
+    address z;
+}
+
+contract StorageUpgrade_AddressGap_V2 {
+    address a;
+    address b;
+    address c;
+    address[47] __gap;
+    address z;
+}
+
+contract StorageUpgrade_Uint128Gap_V1 {
     uint128 a;
-    uint256[49] __gap;
+    uint128[49] __gap;
     uint128 z;
 }
 
-contract StorageUpgrade_Gap_Uint128_V2_Ok {
+contract StorageUpgrade_Uint128Gap_V2_Ok {
     uint128 a; // half slot
     uint128 b; // half slot
-    uint256[49] __gap;
+    uint128[49] __gap;
     uint128 z;
 }
 
-contract StorageUpgrade_Gap_Uint128_V2b_Ok {
+contract StorageUpgrade_Uint128Gap_V2b_Ok {
     uint128 a;
     uint128 b;
     uint128 c;
-    uint256[48] __gap;
+    uint128[48] __gap;
     uint128 z;
 }
 
-contract StorageUpgrade_Gap_Uint128_V2_Bad {
+contract StorageUpgrade_Uint128Gap_V2_Bad {
     uint128 a;
     uint128 b;
     uint128 c;
-    uint256[49] __gap;
+    uint128[49] __gap;
     uint128 z;
 }
 
-contract StorageUpgrade_Gap_Array_V1 {
-    bool[2] a;
-    uint256[49] __gap;
+contract StorageUpgrade_BoolGap_V1 {
+    bool[32] a;
+    bool[32] b;
+    bool[32] __gap;
     bool z;
 }
 
-contract StorageUpgrade_Gap_Array_V2_Ok {
-    bool[2] a;
-    bool[62] b; // array starts at new storage slot, uses 2 slots
-    uint256[47] __gap;
+contract StorageUpgrade_BoolGap_V2_Ok {
+    bool[32] a;
+    bool[32] b;
+    bool[16] c; // does not use a full slot, but items before and after array are aligned to slots
     bool z;
 }
 
-contract StorageUpgrade_Gap_Array_V2_Bad {
-    bool[2] a;
-    bool[62] b;
-    uint256[48] __gap; // only shrank 1 instead of 2 slots
+contract StorageUpgrade_BoolGap_V2_Bad {
+    bool[32] a;
+    bool[32] b;
+    bool[16] c;
+    bool[16] __gap; // array starts at next slot
+    bool[32] z;
+}
+
+contract StorageUpgrade_Gap_One_Element_V1 {
+    uint256 a;
+    uint256 b;
+    uint256[1] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_One_Element_V2_Ok {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_One_Element_V2_Bad {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256[1] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_Bool_Not_Array_V1 {
+    bool a;
+    bool b;
+    bool __gap; // not a gap
     bool z;
+}
+
+contract StorageUpgrade_Gap_Bool_Not_Array_V2_Bad {
+    bool a;
+    bool b;
+    bool c;
+    bool z;
+}
+
+contract StorageUpgrade_Gap_Uint256_Not_Array_V1 {
+    uint256 a;
+    uint256 b;
+    uint256 __gap; // not a gap
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_Uint256_Not_Array_V2_Bad {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256 z;
 }
