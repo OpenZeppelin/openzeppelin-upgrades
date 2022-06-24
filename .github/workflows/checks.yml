@@ -10,6 +10,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up environment
+      uses: ./.github/actions/setup
+
+    - name: Run linter
+      run: yarn lint:path "packages/${{matrix.package}}"
+
   tests:
     strategy:
       matrix:
@@ -26,9 +38,6 @@ jobs:
 
     - name: Set up environment
       uses: ./.github/actions/setup
-
-    - name: Run linter
-      run: yarn lint:path "packages/${{matrix.package}}"
 
     - name: Run tests
       run: yarn --cwd "packages/${{matrix.package}}" run test
