@@ -1,0 +1,13 @@
+name: Setup
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14.x
+        cache: yarn
+
+    - name: Install dependencies
+      run: yarn --frozen-lockfile --prefer-offline
+      shell: bash
