@@ -5,6 +5,10 @@ on:
     branches: [master]
   pull_request: {}
 
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     strategy:
