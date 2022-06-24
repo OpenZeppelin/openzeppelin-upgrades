@@ -1,4 +1,3 @@
-import BN from 'bn.js';
 import { keccak256 } from 'ethereumjs-util';
 import { UpgradesError } from './error';
 import { EthereumProvider, getStorageAt } from './provider';
@@ -64,13 +63,12 @@ export function toFallbackEip1967Hash(label: string): string {
 
 export function toEip1967Hash(label: string): string {
   const hash = keccak256(Buffer.from(label));
-  const bigNumber = new BN(hash).sub(new BN(1));
+  const bigNumber = BigInt('0x' + hash.toString('hex')) - 1n;
   return '0x' + bigNumber.toString(16);
 }
 
 export function isEmptySlot(storage: string): boolean {
-  storage = storage.replace(/^0x/, '');
-  return new BN(storage, 'hex').isZero();
+  return BigInt(storage.replace(/^(0x)?/, '0x')) === 0n;
 }
 
 function parseAddressFromStorage(storage: string): string {
