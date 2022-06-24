@@ -2,7 +2,7 @@ import {
   assertNotProxy,
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
-  fetchOrDeploy,
+  fetchOrDeployGetDeployment,
   getImplementationAddress,
   getImplementationAddressFromBeacon,
   getStorageLayout,
@@ -16,20 +16,22 @@ import {
   ValidationOptions,
   Version,
 } from '@openzeppelin/upgrades-core';
-import type { ContractFactory } from 'ethers';
+import type { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
-import { Options, UpgradeProxyOptions, withDefaults } from './options';
+import { Options, PrepareUpgradeOptions, withDefaults } from './options';
 import { readValidations } from './validations';
 
 interface DeployedProxyImpl {
   impl: string;
   kind: NonNullable<ValidationOptions['kind']>;
+  txResponse?: ethers.providers.TransactionResponse;
 }
 
 interface DeployedBeaconImpl {
   impl: string;
+  txResponse?: ethers.providers.TransactionResponse;
 }
 
 export interface DeployData {
@@ -73,7 +75,7 @@ export async function deployProxyImpl(
     currentImplAddress = await getImplementationAddress(deployData.provider, proxyAddress);
   }
 
-  return deployImpl(deployData, ImplFactory, opts, currentImplAddress);
+  return deployImpl(hre, deployData, ImplFactory, opts, currentImplAddress);
 }
 
 export async function deployBeaconImpl(
@@ -90,13 +92,14 @@ export async function deployBeaconImpl(
     await assertNotProxy(deployData.provider, beaconAddress);
     currentImplAddress = await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
   }
-  return deployImpl(deployData, ImplFactory, opts, currentImplAddress);
+  return deployImpl(hre, deployData, ImplFactory, opts, currentImplAddress);
 }
 
 async function deployImpl(
+  hre: HardhatRuntimeEnvironment,
   deployData: DeployData,
   ImplFactory: ContractFactory,
-  opts: UpgradeProxyOptions,
+  opts: PrepareUpgradeOptions,
   currentImplAddress?: string,
 ): Promise<any> {
   assertUpgradeSafe(deployData.validations, deployData.version, deployData.fullOpts);
@@ -111,7 +114,7 @@ async function deployImpl(
     }
   }
 
-  const impl = await fetchOrDeploy(
+  const deployment = await fetchOrDeployGetDeployment(
     deployData.version,
     deployData.provider,
     async () => {
@@ -122,5 +125,14 @@ async function deployImpl(
     opts,
   );
 
-  return { impl, kind: opts.kind };
+  let txResponse;
+  if (opts.getTxResponse) {
+    if ('deployTransaction' in deployment) {
+      txResponse = deployment.deployTransaction;
+    } else if (deployment.txHash !== undefined) {
+      txResponse = hre.ethers.provider.getTransaction(deployment.txHash);
+    }
+  }
+
+  return { impl: deployment.address, kind: opts.kind, txResponse };
 }

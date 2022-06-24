@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.19.0 (2022-06-16)
+
+- Return ethers transaction response with `proposeUpgrade`. ([#554](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/554))
+
+## 1.18.3 (2022-06-14)
+
+- Fix dependency on hardhat-etherscan.
+
+## 1.18.2 (2022-06-14)
+
+- Update `verify` to be compatible with latest version of hardhat-etherscan. ([#592](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/592))
+
+## 1.18.1 (2022-06-03)
+
+- Fix task redefinition error with hardhat-etherscan. ([#586](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/586))
+
 ## 1.18.0 (2022-05-31)
 
 - Support verifying a proxy on Etherscan using Hardhat. ([#579](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/579))

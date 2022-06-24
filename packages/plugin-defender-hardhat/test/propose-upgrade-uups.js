@@ -33,6 +33,28 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test('proposes an upgrade and get tx response', async t => {
+  const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
+  fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
+
+  const title = 'My upgrade';
+  const description = 'My contract upgrade';
+  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { title, description, multisig });
+
+  t.is(proposal.url, proposalUrl);
+
+  t.not(proposal.txResponse.hash, undefined);
+  const txReceipt = await proposal.txResponse.wait();
+  t.not(txReceipt.contractAddress, undefined);
+
+  const proposal2 = await proposeUpgrade(greeter.address, GreeterV2, { title, description, multisig });
+
+  // even though impl was already deployed in first proposal, it should still provide a tx response for the same tx hash
+  t.is(proposal2.txResponse.hash, proposal.txResponse.hash);
+  const txReceipt2 = await proposal.txResponse.wait();
+  t.is(txReceipt2.contractAddress, txReceipt.contractAddress);
+});
+
 test('proposes an upgrade', async t => {
   const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
   fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
