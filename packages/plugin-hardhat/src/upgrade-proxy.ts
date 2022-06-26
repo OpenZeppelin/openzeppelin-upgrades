@@ -42,7 +42,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     const adminBytecode = await getCode(provider, adminAddress);
 
-    if (adminBytecode === '0x') {
+    if (adminAddress === '0x0000000000000000000000000000000000000000' || adminBytecode === '0x') {
       // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
       const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
       const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);
