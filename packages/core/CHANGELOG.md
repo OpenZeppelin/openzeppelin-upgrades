@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Remove BN.js in favor of native BigInt.
+
 ## 1.16.1 (2022-06-16)
 
 - Fix VM execution error in `proposeUpgrade` with Gnosis Chain. ([#597](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/597))

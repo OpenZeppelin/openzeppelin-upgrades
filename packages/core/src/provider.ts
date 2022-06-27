@@ -1,5 +1,3 @@
-import BN from 'bn.js';
-
 export interface EthereumProvider {
   send(method: 'web3_clientVersion', params: []): Promise<string>;
   send(method: 'net_version', params: []): Promise<string>;
@@ -33,7 +31,7 @@ export async function getNetworkId(provider: EthereumProvider): Promise<string> 
 
 export async function getChainId(provider: EthereumProvider): Promise<number> {
   const id = await provider.send('eth_chainId', []);
-  return new BN(id.replace(/^0x/, ''), 'hex').toNumber();
+  return parseInt(id.replace(/^0x/, ''), 16);
 }
 
 export async function getClientVersion(provider: EthereumProvider): Promise<string> {
