@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Improve check for admin contract in `upgradeProxy`. ([#604](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/604))
+
 ## 1.15.0 (2022-03-29)
 
 - Fix "The requested contract was not found" error when importing from an interface ([#549](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/549))
