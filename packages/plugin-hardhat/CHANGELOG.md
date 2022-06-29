@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Improve check for admin contract in `upgradeProxy`. ([#604](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/604))
+
 ## 1.19.0 (2022-06-16)
 
 - Return ethers transaction response with `proposeUpgrade`. ([#554](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/554))
