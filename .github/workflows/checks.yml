@@ -20,7 +20,7 @@ jobs:
       uses: ./.github/actions/setup
 
     - name: Run linter
-      run: yarn lint:path "packages/${{matrix.package}}"
+      run: yarn lint
 
   tests:
     strategy:
