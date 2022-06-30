@@ -78,7 +78,7 @@ function storageItemEnd(entry: StorageItemFull): number {
 /**
  * Aligns to the next storage slot by rounding up to nearest 32 bytes beyond the given number.
  */
-function alignToStorageSlot(numBytes: number): number {
+function alignToNextStorageSlot(numBytes: number): number {
   return Math.ceil(numBytes / 32) * 32;
 }
 
@@ -91,7 +91,7 @@ function subLayout(begin: number, end: number, layout: StorageItemFull[]): Stora
   const sublayout = layout.filter(entry => begin <= storageItemBegin(entry) && storageItemEnd(entry) <= end);
   return sublayout.length > 0 &&
     begin === storageItemBegin(sublayout[0]) &&
-    (end === alignToStorageSlot(storageItemEnd(sublayout[sublayout.length - 1])) || end === Infinity)
+    (end === alignToNextStorageSlot(storageItemEnd(sublayout[sublayout.length - 1])) || end === Infinity)
     ? sublayout
     : undefined;
 }
@@ -129,7 +129,7 @@ export class StorageLayoutComparator {
         const gapEnd = storageItemEnd(gaps[i]);
 
         // if previous section end (aligned to next slot) is not valid cut in the updated layout, don't do the cut
-        if (!updated.some(entry => alignToStorageSlot(storageItemEnd(entry)) === gapBegin)) {
+        if (!updated.some(entry => alignToNextStorageSlot(storageItemEnd(entry)) === gapBegin)) {
           continue;
         }
 
