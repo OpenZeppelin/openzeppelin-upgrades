@@ -8,7 +8,6 @@ import {
   addProxyToManifest,
   isBeacon,
   getImplementationAddressFromBeacon,
-  ForceImportUnsupportedError,
   inferProxyKind,
   isBeaconProxy,
   ProxyDeployment,
@@ -37,21 +36,22 @@ export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunc
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
+    const address = getContractAddress(proxyOrBeacon);
 
-    const implAddress = await getImplementationAddressFromProxy(provider, proxyOrBeaconAddress);
+    const implAddress = await getImplementationAddressFromProxy(provider, address);
     if (implAddress !== undefined) {
-      await importProxyToManifest(provider, hre, proxyOrBeaconAddress, implAddress, ImplFactory, opts, manifest);
+      await importProxyToManifest(provider, hre, address, implAddress, ImplFactory, opts, manifest);
 
-      return ImplFactory.attach(proxyOrBeaconAddress);
-    } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
-      const beaconImplAddress = await getImplementationAddressFromBeacon(provider, proxyOrBeaconAddress);
+      return ImplFactory.attach(address);
+    } else if (await isBeacon(provider, address)) {
+      const beaconImplAddress = await getImplementationAddressFromBeacon(provider, address);
       await addImplToManifest(hre, beaconImplAddress, ImplFactory, opts);
 
       const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
-      return UpgradeableBeaconFactory.attach(proxyOrBeaconAddress);
+      return UpgradeableBeaconFactory.attach(address);
     } else {
-      throw new ForceImportUnsupportedError(proxyOrBeaconAddress);
+      await addImplToManifest(hre, address, ImplFactory, opts);
+      return ImplFactory.attach(address);
     }
   };
 }

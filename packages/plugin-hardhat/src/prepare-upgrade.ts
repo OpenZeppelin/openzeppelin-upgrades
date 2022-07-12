@@ -1,12 +1,12 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, ethers } from 'ethers';
+import type { ContractFactory } from 'ethers';
 
 import {
   ContractAddressOrInstance,
   getContractAddress,
   deployProxyImpl,
   deployBeaconImpl,
-  PrepareUpgradeOptions,
+  DeployImplementationOptions,
 } from './utils';
 import {
   getBeaconAddress,
@@ -15,17 +15,16 @@ import {
   isBeacon,
   PrepareUpgradeUnsupportedError,
 } from '@openzeppelin/upgrades-core';
+import { DeployImplementationResponse } from './deploy-implementation';
 
 export type PrepareUpgradeFunction = (
   proxyOrBeaconAddress: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
-  opts?: PrepareUpgradeOptions,
-) => Promise<PrepareUpgradeResponse>;
-
-export type PrepareUpgradeResponse = string | ethers.providers.TransactionResponse;
+  opts?: DeployImplementationOptions,
+) => Promise<DeployImplementationResponse>;
 
 export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgradeFunction {
-  return async function prepareUpgrade(proxyOrBeacon, ImplFactory, opts: PrepareUpgradeOptions = {}) {
+  return async function prepareUpgrade(proxyOrBeacon, ImplFactory, opts: DeployImplementationOptions = {}) {
     const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
     const { provider } = hre.network;
     let deployedImpl;

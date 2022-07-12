@@ -46,6 +46,7 @@ export {
   BeaconProxyUnsupportedError,
   LoadProxyUnsupportedError,
   PrepareUpgradeUnsupportedError,
+  ValidateUpgradeUnsupportedError,
   DeployBeaconProxyUnsupportedError,
   DeployBeaconProxyImplUnknownError,
   DeployBeaconProxyKindError,
