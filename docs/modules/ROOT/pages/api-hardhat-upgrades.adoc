@@ -208,16 +208,16 @@ async function validateUpgrade(
 Validate upgrading an existing proxy to a new contract (replace `PROXY_ADDRESS` with the address of your proxy):
 [source,ts]
 ----
-const GreeterV2 = await ethers.getContractFactory('GreeterV2');
-await upgrades.validateUpgrade(PROXY_ADDRESS, GreeterV2);
+const BoxV2 = await ethers.getContractFactory('BoxV2');
+await upgrades.validateUpgrade(PROXY_ADDRESS, BoxV2);
 ----
 
 Validate upgrading between two contract implementations:
 [source,ts]
 ----
-const Greeter = await ethers.getContractFactory('Greeter');
-const GreeterV2 = await ethers.getContractFactory('GreeterV2');
-await upgrades.validateUpgrade(Greeter, GreeterV2);
+const Box = await ethers.getContractFactory('Box');
+const BoxV2 = await ethers.getContractFactory('BoxV2');
+await upgrades.validateUpgrade(Box, BoxV2);
 ----
 
 [[prepare-upgrade]]
