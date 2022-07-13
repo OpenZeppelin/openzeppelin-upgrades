@@ -203,7 +203,7 @@ async function validateUpgrade(
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
 
-Examples:
+*Examples*
 
 Validate upgrading an existing proxy to a new contract (replace `PROXY_ADDRESS` with the address of your proxy):
 [source,ts]
