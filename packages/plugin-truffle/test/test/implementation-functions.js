@@ -1,20 +1,7 @@
 const assert = require('assert');
-const { withDefaults } = require('@openzeppelin/truffle-upgrades/dist/utils/options.js');
-const {
-  getProxyFactory,
-  getTransparentUpgradeableProxyFactory,
-  getProxyAdminFactory,
-  getBeaconProxyFactory,
-  getUpgradeableBeaconFactory,
-} = require('@openzeppelin/truffle-upgrades/dist/utils/factories.js');
-const { getInitializerData } = require('@openzeppelin/truffle-upgrades/dist/utils/initializer-data');
 
 const {
-  forceImport,
   deployProxy,
-  upgradeProxy,
-  upgradeBeacon,
-  prepareUpgrade,
   deployBeacon,
   validateImplementation,
   deployImplementation,
@@ -22,11 +9,8 @@ const {
   erc1967,
 } = require('@openzeppelin/truffle-upgrades');
 
-const { deployer } = withDefaults({});
-
 const Greeter = artifacts.require('Greeter');
 const GreeterV2 = artifacts.require('GreeterV2');
-const GreeterV3 = artifacts.require('GreeterV3');
 const GreeterProxiable = artifacts.require('GreeterProxiable');
 const GreeterV2Proxiable = artifacts.require('GreeterV2Proxiable');
 const Invalid = artifacts.require('Invalid');
@@ -39,7 +23,9 @@ contract('Greeter', function () {
   });
 
   it('validate implementation - invalid', async function () {
-    await assert.rejects(validateImplementation(Invalid), error => error.message.includes('Contract `Invalid` is not upgrade safe'));
+    await assert.rejects(validateImplementation(Invalid), error =>
+      error.message.includes('Contract `Invalid` is not upgrade safe'),
+    );
   });
 
   it('deploy implementation - happy path', async function () {
@@ -70,7 +56,9 @@ contract('Greeter', function () {
   });
 
   it('deploy implementation - invalid', async function () {
-    await assert.rejects(deployImplementation(Invalid), error => error.message.includes('Contract `Invalid` is not upgrade safe'));
+    await assert.rejects(deployImplementation(Invalid), error =>
+      error.message.includes('Contract `Invalid` is not upgrade safe'),
+    );
   });
 
   it('validate upgrade beacon - happy path', async function () {
@@ -80,7 +68,9 @@ contract('Greeter', function () {
 
   it('validate upgrade beacon - incompatible storage', async function () {
     const beacon = await deployBeacon(Greeter);
-    await assert.rejects(validateUpgrade(beacon, GreeterStorageConflict), error => error.message.includes('New storage layout is incompatible'));
+    await assert.rejects(validateUpgrade(beacon, GreeterStorageConflict), error =>
+      error.message.includes('New storage layout is incompatible'),
+    );
   });
 
   it('validate upgrade beacon - incompatible storage - forced', async function () {
@@ -95,7 +85,9 @@ contract('Greeter', function () {
 
   it('validate upgrade transparent - incompatible storage', async function () {
     const greeter = await deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
-    await assert.rejects(validateUpgrade(greeter, GreeterStorageConflict), error => error.message.includes('New storage layout is incompatible'));
+    await assert.rejects(validateUpgrade(greeter, GreeterStorageConflict), error =>
+      error.message.includes('New storage layout is incompatible'),
+    );
   });
 
   it('validate upgrade transparent - incompatible storage - forced', async function () {
@@ -110,7 +102,9 @@ contract('Greeter', function () {
 
   it('validate upgrade uups - incompatible storage', async function () {
     const greeter = await deployProxy(GreeterProxiable, ['Hello, Hardhat!'], { kind: 'uups' });
-    await assert.rejects(validateUpgrade(greeter, GreeterStorageConflictProxiable), error => error.message.includes('New storage layout is incompatible'));
+    await assert.rejects(validateUpgrade(greeter, GreeterStorageConflictProxiable), error =>
+      error.message.includes('New storage layout is incompatible'),
+    );
   });
 
   it('validate upgrade uups - incompatible storage - forced', async function () {
@@ -123,12 +117,12 @@ contract('Greeter', function () {
   });
 
   it('validate upgrade - contracts only - incompatible storage', async function () {
-    await assert.rejects(validateUpgrade(Greeter, GreeterStorageConflict), error => error.message.includes('New storage layout is incompatible'));
+    await assert.rejects(validateUpgrade(Greeter, GreeterStorageConflict), error =>
+      error.message.includes('New storage layout is incompatible'),
+    );
   });
 
   it('validate upgrade - contracts only - incompatible storage - forced', async function () {
     await validateUpgrade(Greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
   });
-
 });
-

@@ -5,7 +5,6 @@ const { ethers, upgrades } = require('hardhat');
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
-  t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3');
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
   t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
@@ -22,11 +21,9 @@ test('validate implementation - happy path', async t => {
 test('validate implementation - invalid', async t => {
   const { Invalid } = t.context;
 
-  await t.throwsAsync(
-    () => upgrades.validateImplementation(Invalid),
-    undefined,
-    'Contract `Invalid` is not upgrade safe',
-  );
+  await t.throwsAsync(() => upgrades.validateImplementation(Invalid), {
+    message: /(Contract `Invalid` is not upgrade safe)/,
+  });
 });
 
 test('deploy implementation - happy path', async t => {
@@ -81,11 +78,9 @@ test('deploy implementation - with txresponse', async t => {
 test('deploy implementation - invalid', async t => {
   const { Invalid } = t.context;
 
-  await t.throwsAsync(
-    () => upgrades.deployImplementation(Invalid),
-    undefined,
-    'Contract `Invalid` is not upgrade safe',
-  );
+  await t.throwsAsync(() => upgrades.deployImplementation(Invalid), {
+    message: /(Contract `Invalid` is not upgrade safe)/,
+  });
 });
 
 test('validate upgrade beacon - happy path', async t => {
@@ -99,11 +94,9 @@ test('validate upgrade beacon - incompatible storage', async t => {
   const { Greeter, GreeterStorageConflict } = t.context;
 
   const beacon = await upgrades.deployBeacon(Greeter);
-  await t.throwsAsync(
-    () => upgrades.validateUpgrade(beacon, GreeterStorageConflict),
-    undefined,
-    'New storage layout is incompatible due to the following changes',
-  );
+  await t.throwsAsync(() => upgrades.validateUpgrade(beacon, GreeterStorageConflict), {
+    message: /(New storage layout is incompatible)/,
+  });
 });
 
 test('validate upgrade beacon - incompatible storage - forced', async t => {
@@ -124,11 +117,9 @@ test('validate upgrade transparent - incompatible storage', async t => {
   const { Greeter, GreeterStorageConflict } = t.context;
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!'], { kind: 'transparent' });
-  await t.throwsAsync(
-    () => upgrades.validateUpgrade(greeter, GreeterStorageConflict),
-    undefined,
-    'New storage layout is incompatible due to the following changes',
-  );
+  await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterStorageConflict), {
+    message: /(New storage layout is incompatible)/,
+  });
 });
 
 test('validate upgrade transparent - incompatible storage - forced', async t => {
@@ -149,11 +140,9 @@ test('validate upgrade uups - incompatible storage', async t => {
   const { GreeterProxiable, GreeterStorageConflictProxiable } = t.context;
 
   const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hola mundo!'], { kind: 'uups' });
-  await t.throwsAsync(
-    () => upgrades.validateUpgrade(greeter, GreeterStorageConflictProxiable),
-    undefined,
-    'New storage layout is incompatible due to the following changes',
-  );
+  await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterStorageConflictProxiable), {
+    message: /(New storage layout is incompatible)/,
+  });
 });
 
 test('validate upgrade uups - incompatible storage - forced', async t => {
@@ -172,11 +161,9 @@ test('validate upgrade - contracts only - happy path', async t => {
 test('validate upgrade - contracts only - incompatible storage', async t => {
   const { Greeter, GreeterStorageConflict } = t.context;
 
-  await t.throwsAsync(
-    () => upgrades.validateUpgrade(Greeter, GreeterStorageConflict),
-    undefined,
-    'New storage layout is incompatible due to the following changes',
-  );
+  await t.throwsAsync(() => upgrades.validateUpgrade(Greeter, GreeterStorageConflict), {
+    message: /(New storage layout is incompatible)/,
+  });
 });
 
 test('validate upgrade - contracts only - incompatible storage - forced', async t => {
