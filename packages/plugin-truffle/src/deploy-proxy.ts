@@ -1,10 +1,4 @@
-import {
-  Manifest,
-  fetchOrDeployAdmin,
-  logWarning,
-  ProxyDeployment,
-  BeaconProxyUnsupportedError,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, logWarning, ProxyDeployment, BeaconProxyUnsupportedError } from '@openzeppelin/upgrades-core';
 import { deployProxyAdmin } from './deploy-proxy-admin';
 
 import {
@@ -15,7 +9,6 @@ import {
   deployProxyImpl,
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
-  getProxyAdminFactory,
   DeployProxyOptions,
   withDefaults,
 } from './utils';
