@@ -6,7 +6,6 @@ import {
   addProxyToManifest,
   getImplementationAddressFromBeacon,
   isBeacon,
-  ForceImportUnsupportedError,
   ProxyDeployment,
   isBeaconProxy,
   inferProxyKind,
@@ -26,7 +25,7 @@ import {
 import { simulateDeployAdmin, simulateDeployImpl } from './utils/simulate-deploy';
 
 export async function forceImport(
-  proxyOrBeacon: ContractAddressOrInstance,
+  addressOrInstance: ContractAddressOrInstance,
   Contract: ContractClass,
   opts: Options = {},
 ): Promise<ContractInstance> {
@@ -34,21 +33,22 @@ export async function forceImport(
   const provider = wrapProvider(deployer.provider);
   const manifest = await Manifest.forNetwork(provider);
 
-  const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
+  const address = getContractAddress(addressOrInstance);
 
-  const implAddress = await getImplementationAddressFromProxy(provider, proxyOrBeaconAddress);
+  const implAddress = await getImplementationAddressFromProxy(provider, address);
   if (implAddress !== undefined) {
-    await importProxyToManifest(provider, proxyOrBeaconAddress, implAddress, Contract, opts, manifest);
+    await importProxyToManifest(provider, address, implAddress, Contract, opts, manifest);
 
-    return Contract.at(proxyOrBeaconAddress);
-  } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
-    const beaconImplAddress = await getImplementationAddressFromBeacon(provider, proxyOrBeaconAddress);
+    return Contract.at(address);
+  } else if (await isBeacon(provider, address)) {
+    const beaconImplAddress = await getImplementationAddressFromBeacon(provider, address);
     await addImplToManifest(beaconImplAddress, Contract, opts);
 
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(Contract);
-    return UpgradeableBeaconFactory.at(proxyOrBeaconAddress);
+    return UpgradeableBeaconFactory.at(address);
   } else {
-    throw new ForceImportUnsupportedError(proxyOrBeaconAddress);
+    await addImplToManifest(address, Contract, opts);
+    return Contract.at(address);
   }
 }
 

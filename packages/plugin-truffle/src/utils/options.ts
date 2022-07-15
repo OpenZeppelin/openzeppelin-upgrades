@@ -26,6 +26,10 @@ export interface UpgradeOptions extends Options {
   unsafeSkipStorageCheck?: boolean;
 }
 
+export interface DeployImplementationOptions extends Options {
+  useDeployedImplementation?: boolean;
+}
+
 const defaultDeployer: Deployer = {
   get provider() {
     return getTruffleConfig().provider;

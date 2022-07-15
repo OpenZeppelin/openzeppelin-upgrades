@@ -8,18 +8,18 @@ import {
 import {
   ContractClass,
   deployProxyImpl,
-  Options,
   ContractAddressOrInstance,
   getContractAddress,
   withDefaults,
   wrapProvider,
   deployBeaconImpl,
+  DeployImplementationOptions,
 } from './utils';
 
 export async function prepareUpgrade(
   proxyOrBeacon: ContractAddressOrInstance,
   Contract: ContractClass,
-  opts: Options = {},
+  opts: DeployImplementationOptions = {},
 ): Promise<string> {
   const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
   const { deployer } = withDefaults(opts);

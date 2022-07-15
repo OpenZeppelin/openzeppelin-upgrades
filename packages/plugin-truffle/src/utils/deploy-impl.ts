@@ -1,25 +1,20 @@
 import {
   assertUpgradeSafe,
-  assertStorageUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
   getVersion,
-  Manifest,
-  getImplementationAddress,
-  getStorageLayoutForAddress,
   ValidationOptions,
-  assertNotProxy,
-  getImplementationAddressFromBeacon,
   EthereumProvider,
   StorageLayout,
   ValidationRunData,
   Version,
-  processProxyKind,
+  UpgradesError,
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
-import { Options, UpgradeOptions, withDefaults } from './options';
+import { DeployImplementationOptions, Options, withDefaults } from './options';
 import { ContractClass, getTruffleConfig } from './truffle';
+import { validateBeaconImpl, validateProxyImpl, validateStandaloneImpl } from './validate-impl';
 import { validateArtifacts, getLinkedBytecode } from './validations';
 import { wrapProvider } from './wrap-provider';
 
@@ -52,38 +47,33 @@ export async function getDeployData(opts: Options, Contract: ContractClass): Pro
   return { fullOpts, validations, version, provider, layout };
 }
 
+export async function deployStandaloneImpl(
+  Contract: ContractClass,
+  opts: DeployImplementationOptions,
+): Promise<DeployedImpl> {
+  const deployData = await getDeployData(opts, Contract);
+  await validateStandaloneImpl(deployData, opts);
+  return await fetchOrDeployImpl(deployData, Contract, opts);
+}
+
 export async function deployProxyImpl(
   Contract: ContractClass,
-  opts: Options,
+  opts: DeployImplementationOptions,
   proxyAddress?: string,
 ): Promise<DeployedImpl> {
   const deployData = await getDeployData(opts, Contract);
-
-  await processProxyKind(deployData.provider, proxyAddress, opts, deployData.validations, deployData.version);
-
-  let currentImplAddress: string | undefined;
-  if (proxyAddress !== undefined) {
-    // upgrade scenario
-    currentImplAddress = await getImplementationAddress(deployData.provider, proxyAddress);
-  }
-
-  return deployImpl(deployData, Contract, opts, currentImplAddress);
+  await validateProxyImpl(deployData, opts, proxyAddress);
+  return fetchOrDeployImpl(deployData, Contract, opts);
 }
 
 export async function deployBeaconImpl(
   Contract: ContractClass,
-  opts: Options,
+  opts: DeployImplementationOptions,
   beaconAddress?: string,
 ): Promise<DeployedBeaconImpl> {
   const deployData = await getDeployData(opts, Contract);
-
-  let currentImplAddress;
-  if (beaconAddress !== undefined) {
-    // upgrade scenario
-    await assertNotProxy(deployData.provider, beaconAddress);
-    currentImplAddress = await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
-  }
-  return deployImpl(deployData, Contract, opts, currentImplAddress);
+  await validateBeaconImpl(deployData, opts, beaconAddress);
+  return await fetchOrDeployImpl(deployData, Contract, opts);
 }
 
 function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string {
@@ -95,29 +85,28 @@ function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string
   );
 }
 
-async function deployImpl(
+async function fetchOrDeployImpl(
   deployData: DeployData,
   Contract: ContractClass,
-  opts: UpgradeOptions,
-  currentImplAddress?: string,
+  opts: DeployImplementationOptions,
 ): Promise<any> {
   assertUpgradeSafe([deployData.validations], deployData.version, deployData.fullOpts);
   const layout = deployData.layout;
 
-  if (currentImplAddress !== undefined) {
-    const manifest = await Manifest.forNetwork(deployData.provider);
-    const currentLayout = await getStorageLayoutForAddress(manifest, deployData.validations, currentImplAddress);
-    if (opts.unsafeSkipStorageCheck !== true) {
-      assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
-    }
-  }
-
   const impl = await fetchOrDeploy(deployData.version, deployData.provider, async () => {
     const abi = (Contract as any).abi;
-    const deployment = Object.assign(
-      { abi },
-      await deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs),
-    );
+    const deployImpl = () => {
+      if (opts.useDeployedImplementation) {
+        throw new UpgradesError(
+          'The implementation contract was not previously deployed.',
+          () =>
+            'The useDeployedImplementation option was set to true but the implementation contract was not previously deployed on this network.',
+        );
+      } else {
+        return deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs);
+      }
+    };
+    const deployment = Object.assign({ abi }, await deployImpl());
     return { ...deployment, layout };
   });
 

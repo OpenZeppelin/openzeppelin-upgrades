@@ -1,14 +1,15 @@
 import {
-  assertNotProxy,
-  assertStorageUpgradeSafe,
   assertUpgradeSafe,
-  getImplementationAddress,
-  getImplementationAddressFromBeacon,
-  getStorageLayoutForAddress,
+  assertStorageUpgradeSafe,
   Manifest,
+  getImplementationAddress,
+  getStorageLayoutForAddress,
+  assertNotProxy,
+  getImplementationAddressFromBeacon,
   processProxyKind,
   ValidationOptions,
 } from '@openzeppelin/upgrades-core';
+
 import { DeployData } from './deploy-impl';
 
 async function processProxyImpl(deployData: DeployData, proxyAddress: string | undefined, opts: ValidationOptions) {
@@ -37,7 +38,7 @@ async function validateUpgradeImpl(
   opts: ValidationOptions,
   currentImplAddress?: string,
 ): Promise<void> {
-  assertUpgradeSafe(deployData.validations, deployData.version, deployData.fullOpts);
+  assertUpgradeSafe([deployData.validations], deployData.version, deployData.fullOpts);
 
   if (currentImplAddress !== undefined) {
     const manifest = await Manifest.forNetwork(deployData.provider);
