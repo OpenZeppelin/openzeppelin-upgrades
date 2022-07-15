@@ -10,6 +10,7 @@ export { forceImport } from './force-import';
 export { validateImplementation } from './validate-implementation';
 export { deployImplementation } from './deploy-implementation';
 export { validateUpgrade } from './validate-upgrade';
+export { deployProxyAdmin } from './deploy-proxy-admin';
 export { admin } from './admin';
 export { erc1967 } from './erc1967';
 export { beacon } from './beacon';
