@@ -279,7 +279,7 @@ async function proposeUpgrade(
 [[deploy-proxy-admin]]
 == deployProxyAdmin
 
-Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy admin] contract and returns its address if one was not already deployed on the current network, or just returns the address of the proxy admin if one was already deployed. Note that the upgrades plugins currently only supports using one proxy admin per network.
+Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy admin] contract and returns its address if one was not already deployed on the current network, or just returns the address of the proxy admin if one was already deployed. Note that this plugin currently only supports using one proxy admin per network.
 
 * See <<common-options>>.
 
