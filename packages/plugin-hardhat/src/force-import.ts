@@ -29,14 +29,14 @@ export interface ForceImportFunction {
 
 export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunction {
   return async function forceImport(
-    proxyOrBeacon: ContractAddressOrInstance,
+    addressOrInstance: ContractAddressOrInstance,
     ImplFactory: ContractFactory,
     opts: Options = {},
   ) {
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const address = getContractAddress(proxyOrBeacon);
+    const address = getContractAddress(addressOrInstance);
 
     const implAddress = await getImplementationAddressFromProxy(provider, address);
     if (implAddress !== undefined) {

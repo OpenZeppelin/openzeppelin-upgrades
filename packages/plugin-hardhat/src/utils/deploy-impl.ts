@@ -56,7 +56,7 @@ export async function getDeployData(
 export async function deployStandaloneImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: DeployImplementationOptions,
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateStandaloneImpl(deployData, opts);
@@ -66,7 +66,7 @@ export async function deployStandaloneImpl(
 export async function deployProxyImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: DeployImplementationOptions,
   proxyAddress?: string,
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
@@ -77,7 +77,7 @@ export async function deployProxyImpl(
 export async function deployBeaconImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: DeployImplementationOptions,
   beaconAddress?: string,
 ): Promise<DeployedBeaconImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);

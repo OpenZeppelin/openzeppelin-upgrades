@@ -7,11 +7,11 @@ import {
   getStorageLayoutForAddress,
   Manifest,
   processProxyKind,
+  ValidationOptions,
 } from '@openzeppelin/upgrades-core';
 import { DeployData } from './deploy-impl';
-import { Options, DeployImplementationOptions } from './options';
 
-async function processProxyImpl(deployData: DeployData, proxyAddress: string | undefined, opts: Options) {
+async function processProxyImpl(deployData: DeployData, proxyAddress: string | undefined, opts: ValidationOptions) {
   await processProxyKind(deployData.provider, proxyAddress, opts, deployData.validations, deployData.version);
 
   let currentImplAddress: string | undefined;
@@ -34,7 +34,7 @@ async function processBeaconImpl(beaconAddress: string | undefined, deployData: 
 
 async function validateUpgradeImpl(
   deployData: DeployData,
-  opts: DeployImplementationOptions,
+  opts: ValidationOptions,
   currentImplAddress?: string,
 ): Promise<void> {
   assertUpgradeSafe(deployData.validations, deployData.version, deployData.fullOpts);
@@ -48,16 +48,16 @@ async function validateUpgradeImpl(
   }
 }
 
-export async function validateStandaloneImpl(deployData: DeployData, opts: Options): Promise<void> {
+export async function validateStandaloneImpl(deployData: DeployData, opts: ValidationOptions): Promise<void> {
   return validateUpgradeImpl(deployData, opts);
 }
 
-export async function validateProxyImpl(deployData: DeployData, opts: Options, proxyAddress?: string): Promise<void> {
+export async function validateProxyImpl(deployData: DeployData, opts: ValidationOptions, proxyAddress?: string): Promise<void> {
   const currentImplAddress = await processProxyImpl(deployData, proxyAddress, opts);
   return validateUpgradeImpl(deployData, opts, currentImplAddress);
 }
 
-export async function validateBeaconImpl(deployData: DeployData, opts: Options, beaconAddress?: string): Promise<void> {
+export async function validateBeaconImpl(deployData: DeployData, opts: ValidationOptions, beaconAddress?: string): Promise<void> {
   const currentImplAddress = await processBeaconImpl(beaconAddress, deployData);
   return validateUpgradeImpl(deployData, opts, currentImplAddress);
 }
