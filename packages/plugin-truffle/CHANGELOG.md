@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Improve check for admin contract in `upgradeProxy`. ([#604](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/604))
+- Provide granular functions to allow more customizable deployments. ([#580](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/580))
 
 ## 1.15.0 (2022-03-29)
 
