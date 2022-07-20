@@ -69,7 +69,8 @@ async function upgradeProxy(
   opts: {
     call: string | { fn: string; args?: unknown[] },
     unsafeAllow: ValidationError[],
-    unsafeSkipStorageCheck: boolean;
+    unsafeAllowRenames: boolean,
+    unsafeSkipStorageCheck: boolean,
   } = {},
 ): Promise<ethers.Contract>
 ----
@@ -105,7 +106,8 @@ async function upgradeBeacon(
   Contract: ethers.ContractFactory,
   opts: {
     unsafeAllow: ValidationError[],
-    unsafeSkipStorageCheck: boolean;
+    unsafeAllowRenames: boolean,
+    unsafeSkipStorageCheck: boolean,
   } = {},
 ): Promise<ethers.Contract>
 ----
@@ -198,6 +200,7 @@ async function validateUpgrade(
   newImplFactory: ethers.ContractFactory,
   opts: {
     unsafeAllow: ValidationError[],
+    unsafeAllowRenames: boolean,
     unsafeSkipStorageCheck: boolean,
   } = {},
 ): Promise<void>
@@ -239,6 +242,7 @@ async function prepareUpgrade(
   Contract: ethers.ContractFactory,
   opts: {
     unsafeAllow: ValidationError[],
+    unsafeAllowRenames: boolean,
     unsafeSkipStorageCheck: boolean,
     getTxResponse?: boolean,
   } = {},
@@ -268,7 +272,8 @@ async function proposeUpgrade(
   ImplFactory: ContractFactory,
   opts: {
     unsafeAllow?: ValidationError[],
-    unsafeSkipStorageCheck?: boolean;
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
     title?: string,
     description?: string,
     multisig?: string,

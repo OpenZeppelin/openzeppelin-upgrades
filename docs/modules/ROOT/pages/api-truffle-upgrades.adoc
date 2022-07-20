@@ -72,7 +72,8 @@ async function upgradeProxy(
     deployer: Deployer,
     call: string | { fn: string; args?: unknown[] },
     unsafeAllow: ValidationError[],
-    unsafeSkipStorageCheck: boolean;
+    unsafeAllowRenames: boolean,
+    unsafeSkipStorageCheck: boolean,
   } = {},
 ): Promise<ContractInstance>
 ----
@@ -108,7 +109,8 @@ async function upgradeBeacon(
   Contract: ContractClass,
   opts: {
     unsafeAllow: ValidationError[],
-    unsafeSkipStorageCheck: boolean;
+    unsafeAllowRenames: boolean,
+    unsafeSkipStorageCheck: boolean,
   } = {},
 ): Promise<ContractInstance>
 ----
@@ -200,6 +202,7 @@ async function validateUpgrade(
   newContract: ContractClass,
   opts: {
     unsafeAllow: ValidationError[],
+    unsafeAllowRenames: boolean,
     unsafeSkipStorageCheck: boolean,
   } = {},
 ): Promise<void>
@@ -241,7 +244,8 @@ async function prepareUpgrade(
   opts: {
     deployer: Deployer,
     unsafeAllow: ValidationError[],
-    unsafeSkipStorageCheck: boolean;
+    unsafeAllowRenames: boolean,
+    unsafeSkipStorageCheck: boolean,
   } = {},
 ): Promise<string>
 ----
