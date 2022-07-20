@@ -1,6 +1,6 @@
 = OpenZeppelin Hardhat Upgrades API
 
-Both `deployProxy` and `upgradeProxy` functions will return instances of https://docs.ethers.io/v5/api/contract/contract[ethers.js contracts], and require https://docs.ethers.io/v5/api/contract/contract-factory[ethers.js contract factories] as arguments. For https://docs.openzeppelin.com/contracts/4.x/api/proxy#beacon[beacons], `deployBeacon` and `upgradeBeacon` will both return an upgradable beacon instance that can be used with a beacon proxy. All functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
+Both `deployProxy` and `upgradeProxy` functions will return instances of https://docs.ethers.io/v5/api/contract/contract[ethers.js contracts], and require https://docs.ethers.io/v5/api/contract/contract-factory[ethers.js contract factories] as arguments. For https://docs.openzeppelin.com/contracts/4.x/api/proxy#beacon[beacons], `deployBeacon` and `upgradeBeacon` will both return an upgradable beacon instance that can be used with a beacon proxy. All deploy and upgrade functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
 
 [[common-options]]
 == Common Options
@@ -132,7 +132,7 @@ async function deployBeaconProxy(
 [[force-import]]
 == forceImport
 
-Forces the import of an existing proxy, beacon, or implementation contract deployment to be used with this plugin. Provide the address of an existing proxy or beacon or implementation and the ethers contract factory of the implementation contract that was deployed. Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
+Forces the import of an existing proxy, beacon, or implementation contract deployment to be used with this plugin. Provide the address of an existing proxy, beacon or implementation, along with the ethers contract factory of the implementation contract that was deployed. Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
 
 * `kind`: (`"uups" | "transparent" | "beacon"`) forces a proxy to be treated as a UUPS, Transparent, or Beacon proxy. If not provided, the proxy kind will be automatically detected.
 * See <<common-options>>.
@@ -175,13 +175,13 @@ Validates and deploys an implementation contract, and returns its address.
 
 [source,ts]
 ----
-async function validateImplementation(
+async function deployImplementation(
   Contract: ethers.ContractFactory,
   opts: {
     unsafeAllow: ValidationError[],
     getTxResponse?: boolean,
   } = {},
-): Promise<string | ethers.providers.TransactionResponse>
+): Promise<void>
 ----
 
 [[validate-upgrade]]
@@ -200,7 +200,7 @@ async function validateUpgrade(
     unsafeAllow: ValidationError[],
     unsafeSkipStorageCheck: boolean,
   } = {},
-): Promise<string | ethers.providers.TransactionResponse>
+): Promise<void>
 ----
 
 *Examples*
@@ -208,6 +208,8 @@ async function validateUpgrade(
 Validate upgrading an existing proxy to a new contract (replace `PROXY_ADDRESS` with the address of your proxy):
 [source,ts]
 ----
+const { ethers, upgrades } = require('hardhat');
+
 const BoxV2 = await ethers.getContractFactory('BoxV2');
 await upgrades.validateUpgrade(PROXY_ADDRESS, BoxV2);
 ----
@@ -215,6 +217,8 @@ await upgrades.validateUpgrade(PROXY_ADDRESS, BoxV2);
 Validate upgrading between two contract implementations:
 [source,ts]
 ----
+const { ethers, upgrades } = require('hardhat');
+
 const Box = await ethers.getContractFactory('Box');
 const BoxV2 = await ethers.getContractFactory('BoxV2');
 await upgrades.validateUpgrade(Box, BoxV2);
