@@ -5,7 +5,7 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of https:/
 [[common-options]]
 == Common Options
 
-The following options are common to all functions.
+The following options are common to some functions.
 
 * `deployer`: Should be set to the Truffle migration deployer during migrations.
 * `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS]. Not applicable for Beacon proxies except for xref:#force-import[`forceImport`].
@@ -50,6 +50,8 @@ async function deployProxy(
     deployer: Deployer,
     initializer: string | false,
     unsafeAllow: ValidationError[],
+    timeout: number,
+    pollingInterval: number,
     kind: 'uups' | 'transparent',
   } = {},
 ): Promise<ContractInstance>
@@ -74,6 +76,8 @@ async function upgradeProxy(
     unsafeAllow: ValidationError[],
     unsafeAllowRenames: boolean,
     unsafeSkipStorageCheck: boolean,
+    timeout: number,
+    pollingInterval: number,
   } = {},
 ): Promise<ContractInstance>
 ----
@@ -91,6 +95,8 @@ async function deployBeacon(
   Contract: ContractClass,
   opts: {
     unsafeAllow: ValidationError[],
+    timeout: number,
+    pollingInterval: number,
   } = {},
 ): Promise<ContractInstance>
 ----
@@ -111,6 +117,8 @@ async function upgradeBeacon(
     unsafeAllow: ValidationError[],
     unsafeAllowRenames: boolean,
     unsafeSkipStorageCheck: boolean,
+    timeout: number,
+    pollingInterval: number,
   } = {},
 ): Promise<ContractInstance>
 ----
@@ -184,6 +192,8 @@ async function deployImplementation(
   opts: {
     deployer: Deployer,
     unsafeAllow: ValidationError[],
+    timeout: number,
+    pollingInterval: number,
   } = {},
 ): Promise<void>
 ----
@@ -246,6 +256,8 @@ async function prepareUpgrade(
     unsafeAllow: ValidationError[],
     unsafeAllowRenames: boolean,
     unsafeSkipStorageCheck: boolean,
+    timeout: number,
+    pollingInterval: number,
   } = {},
 ): Promise<string>
 ----
@@ -262,6 +274,8 @@ Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy
 async function deployProxyAdmin(
   opts: {
     deployer: Deployer,
+    timeout: number,
+    pollingInterval: number,
   } = {},
 ): Promise<string>
 ----
