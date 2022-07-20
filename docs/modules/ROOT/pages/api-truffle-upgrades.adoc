@@ -46,14 +46,14 @@ If you call `deployProxy` several times for the same implementation contract, se
 async function deployProxy(
   Contract: ContractClass,
   args: unknown[] = [],
-  opts: {
-    deployer: Deployer,
-    initializer: string | false,
-    unsafeAllow: ValidationError[],
-    timeout: number,
-    pollingInterval: number,
-    kind: 'uups' | 'transparent',
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    initializer?: string | false,
+    unsafeAllow?: ValidationError[],
+    timeout?: number,
+    pollingInterval?: number,
+    kind?: 'uups' | 'transparent',
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -70,15 +70,15 @@ Upgrades a UUPS or Transparent proxy at a specified address to a new implementat
 async function upgradeProxy(
   proxyAddress: string,
   Contract: ContractClass,
-  opts: {
-    deployer: Deployer,
-    call: string | { fn: string; args?: unknown[] },
-    unsafeAllow: ValidationError[],
-    unsafeAllowRenames: boolean,
-    unsafeSkipStorageCheck: boolean,
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    call?: string | { fn: string; args?: unknown[] },
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -93,11 +93,11 @@ Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeac
 ----
 async function deployBeacon(
   Contract: ContractClass,
-  opts: {
-    unsafeAllow: ValidationError[],
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -113,13 +113,13 @@ Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBea
 async function upgradeBeacon(
   beaconAddress: string,
   Contract: ContractClass,
-  opts: {
-    unsafeAllow: ValidationError[],
-    unsafeAllowRenames: boolean,
-    unsafeSkipStorageCheck: boolean,
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -136,9 +136,9 @@ async function deployBeaconProxy(
   beaconAddress: string,
   attachTo: ContractClass,
   args: unknown[] = [],
-  opts: {
+  opts?: {
     initializer?: string | false,
-  } = {},
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -155,9 +155,9 @@ Forces the import of an existing proxy, beacon, or implementation contract deplo
 async function forceImport(
   address: string,
   deployedImpl: ContractClass,
-  opts: {
+  opts?: {
     kind?: 'uups' | 'transparent' | 'beacon',
-  } = {},
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -172,9 +172,9 @@ Validates an implementation contract without deploying it.
 ----
 async function validateImplementation(
   Contract: ContractClass,
-  opts: {
-    unsafeAllow: ValidationError[],
-  } = {},
+  opts?: {
+    unsafeAllow?: ValidationError[],
+  },
 ): Promise<void>
 ----
 
@@ -189,12 +189,12 @@ Validates and deploys an implementation contract, and returns its address.
 ----
 async function deployImplementation(
   Contract: ContractClass,
-  opts: {
-    deployer: Deployer,
-    unsafeAllow: ValidationError[],
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    unsafeAllow?: ValidationError[],
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<void>
 ----
 
@@ -210,11 +210,11 @@ Validates a new implementation contract without deploying it and without actuall
 async function validateUpgrade(
   addressOrContract: string | ContractClass,
   newContract: ContractClass,
-  opts: {
-    unsafeAllow: ValidationError[],
-    unsafeAllowRenames: boolean,
-    unsafeSkipStorageCheck: boolean,
-  } = {},
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+  },
 ): Promise<void>
 ----
 
@@ -251,14 +251,14 @@ See <<common-options>>.
 async function prepareUpgrade(
   proxyOrBeaconAddress: string,
   Contract: ContractClass,
-  opts: {
-    deployer: Deployer,
-    unsafeAllow: ValidationError[],
-    unsafeAllowRenames: boolean,
-    unsafeSkipStorageCheck: boolean,
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<string>
 ----
 
@@ -272,11 +272,11 @@ Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy
 [source,ts]
 ----
 async function deployProxyAdmin(
-  opts: {
-    deployer: Deployer,
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<string>
 ----
 

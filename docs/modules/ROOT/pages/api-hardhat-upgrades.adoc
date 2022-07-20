@@ -45,13 +45,13 @@ If you call `deployProxy` several times for the same implementation contract, se
 async function deployProxy(
   Contract: ethers.ContractFactory,
   args: unknown[] = [],
-  opts: {
-    initializer: string | false,
-    unsafeAllow: ValidationError[],
-    timeout: number,
-    pollingInterval: number,
-    kind: 'uups' | 'transparent',
-  } = {},
+  opts?: {
+    initializer?: string | false,
+    unsafeAllow?: ValidationError[],
+    timeout?: number,
+    pollingInterval?: number,
+    kind?: 'uups' | 'transparent',
+  },
 ): Promise<ethers.Contract>
 ----
 
@@ -68,14 +68,14 @@ Upgrades a UUPS or Transparent proxy at a specified address to a new implementat
 async function upgradeProxy(
   proxyAddress: string,
   Contract: ethers.ContractFactory,
-  opts: {
-    call: string | { fn: string; args?: unknown[] },
-    unsafeAllow: ValidationError[],
-    unsafeAllowRenames: boolean,
-    unsafeSkipStorageCheck: boolean,
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    call?: string | { fn: string; args?: unknown[] },
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<ethers.Contract>
 ----
 
@@ -90,11 +90,11 @@ Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeac
 ----
 async function deployBeacon(
   Contract: ethers.ContractFactory,
-  opts: {
-    unsafeAllow: ValidationError[],
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<ethers.Contract>
 ----
 
@@ -110,13 +110,13 @@ Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBea
 async function upgradeBeacon(
   beaconAddress: string,
   Contract: ethers.ContractFactory,
-  opts: {
-    unsafeAllow: ValidationError[],
-    unsafeAllowRenames: boolean,
-    unsafeSkipStorageCheck: boolean,
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<ethers.Contract>
 ----
 
@@ -133,9 +133,9 @@ async function deployBeaconProxy(
   beaconAddress: string,
   attachTo: ethers.ContractFactory,
   args: unknown[] = [],
-  opts: {
+  opts?: {
     initializer?: string | false,
-  } = {},
+  },
 ): Promise<ethers.Contract>
 ----
 
@@ -152,9 +152,9 @@ Forces the import of an existing proxy, beacon, or implementation contract deplo
 async function forceImport(
   address: string,
   deployedImpl: ethers.ContractFactory,
-  opts: {
+  opts?: {
     kind?: 'uups' | 'transparent' | 'beacon',
-  } = {},
+  },
 ): Promise<ethers.Contract>
 ----
 
@@ -169,9 +169,9 @@ Validates an implementation contract without deploying it.
 ----
 async function validateImplementation(
   Contract: ethers.ContractFactory,
-  opts: {
-    unsafeAllow: ValidationError[],
-  } = {},
+  opts?: {
+    unsafeAllow?: ValidationError[],
+  },
 ): Promise<void>
 ----
 
@@ -187,12 +187,12 @@ Validates and deploys an implementation contract, and returns its address.
 ----
 async function deployImplementation(
   Contract: ethers.ContractFactory,
-  opts: {
-    unsafeAllow: ValidationError[],
-    timeout: number,
-    pollingInterval: number,
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    timeout?: number,
+    pollingInterval?: number,
     getTxResponse?: boolean,
-  } = {},
+  },
 ): Promise<void>
 ----
 
@@ -208,11 +208,11 @@ Validates a new implementation contract without deploying it and without actuall
 async function validateUpgrade(
   addressOrImplFactory: string | ethers.ContractFactory,
   newImplFactory: ethers.ContractFactory,
-  opts: {
-    unsafeAllow: ValidationError[],
-    unsafeAllowRenames: boolean,
-    unsafeSkipStorageCheck: boolean,
-  } = {},
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+  },
 ): Promise<void>
 ----
 
@@ -250,14 +250,14 @@ Validates and deploys a new implementation contract, and returns its address. Us
 async function prepareUpgrade(
   proxyOrBeaconAddress: string,
   Contract: ethers.ContractFactory,
-  opts: {
-    unsafeAllow: ValidationError[],
-    unsafeAllowRenames: boolean,
-    unsafeSkipStorageCheck: boolean,
-    timeout: number,
-    pollingInterval: number,
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    timeout?: number,
+    pollingInterval?: number,
     getTxResponse?: boolean,
-  } = {},
+  },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
 
@@ -282,7 +282,7 @@ Returns an object with the URL of the Defender proposal and the ethers transacti
 async function proposeUpgrade(
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts: {
+  opts?: {
     unsafeAllow?: ValidationError[],
     unsafeAllowRenames?: boolean,
     unsafeSkipStorageCheck?: boolean,
@@ -292,7 +292,7 @@ async function proposeUpgrade(
     description?: string,
     multisig?: string,
     proxyAdmin?: string,
-  } = {},
+  },
 ): Promise<{ 
     url: string, 
     txResponse?: ethers.providers.TransactionResponse,
@@ -310,10 +310,10 @@ Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy
 ----
 async function deployProxyAdmin(
   Signer?: ethers.Signer,
-  opts: {
-    timeout: number,
-    pollingInterval: number,
-  } = {},
+  opts?: {
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<string>
 ----
 
