@@ -195,7 +195,7 @@ async function deployImplementation(
     timeout?: number,
     pollingInterval?: number,
   },
-): Promise<void>
+): Promise<string>
 ----
 
 [[validate-upgrade]]

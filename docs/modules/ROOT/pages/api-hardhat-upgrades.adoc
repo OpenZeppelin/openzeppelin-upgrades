@@ -193,7 +193,7 @@ async function deployImplementation(
     pollingInterval?: number,
     getTxResponse?: boolean,
   },
-): Promise<void>
+): Promise<string | ethers.providers.TransactionResponse>
 ----
 
 [[validate-upgrade]]
