@@ -1,0 +1,57 @@
+name: checks
+
+on:
+  push:
+    branches: [master]
+  pull_request: {}
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up environment
+      uses: ./.github/actions/setup
+
+    - name: Run linter
+      run: yarn lint
+
+  tests:
+    strategy:
+      matrix:
+        package:
+          - core
+          - plugin-hardhat
+          - plugin-truffle
+          - plugin-defender-hardhat
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up environment
+      uses: ./.github/actions/setup
+
+    - name: Run tests
+      run: yarn --cwd "packages/${{matrix.package}}" run test
+
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up environment
+      uses: ./.github/actions/setup
+
+    - name: Run coverage
+      run: yarn coverage
+
+    - uses: codecov/codecov-action@v3

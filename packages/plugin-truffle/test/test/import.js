@@ -18,12 +18,13 @@ const GreeterV2 = artifacts.require('GreeterV2');
 const GreeterProxiable = artifacts.require('GreeterProxiable');
 const GreeterV2Proxiable = artifacts.require('GreeterV2Proxiable');
 const CustomProxy = artifacts.require('CustomProxy');
+const CustomProxyWithAdmin = artifacts.require('CustomProxyWithAdmin');
 
 const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the network manifest';
-const NOT_SUPPORTED_FUNCTION = 'Beacon proxies are not supported with the current function';
 const NOT_SUPPORTED_PROXY_OR_BEACON = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
 const ONLY_PROXY_OR_BEACON =
   'Only transparent, UUPS, or beacon proxies or beacons can be used with the forceImport() function.';
+const REQUESTED_UPGRADE_WRONG_KIND = 'Requested an upgrade of kind uups but proxy is transparent';
 
 contract('Greeter', function () {
   it('transparent happy path', async function () {
@@ -114,25 +115,42 @@ contract('Greeter', function () {
     assert.equal(await greeter2.greet(), 'Hello World');
   });
 
-  it('ignore kind', async function () {
-    const impl = await deployer.deploy(Greeter);
-    const beacon = await deployer.deploy(getUpgradeableBeaconFactory(), impl.address);
+  it('wrong kind', async function () {
+    const impl = await deployer.deploy(GreeterProxiable);
     const proxy = await deployer.deploy(
-      getBeaconProxyFactory(),
-      beacon.address,
+      getProxyFactory(),
+      impl.address,
       getInitializerData(GreeterProxiable, ['Hello, Truffle!']),
     );
 
-    // specify uups, but import should detect that it is a beacon proxy
-    const greeter = await forceImport(proxy.address, Greeter, { kind: 'uups' });
+    // specify wrong kind
+    const greeter = await forceImport(proxy.address, GreeterProxiable, { kind: 'transparent' });
+    assert.equal(await greeter.greet(), 'Hello, Truffle!');
 
-    await assert.rejects(upgradeProxy(greeter, GreeterV2), error => error.message.startsWith(NOT_SUPPORTED_FUNCTION));
+    // an error is expected since the user force imported the wrong kind
+    await assert.rejects(upgradeProxy(greeter, GreeterV2Proxiable), error =>
+      error.message.startsWith(REQUESTED_UPGRADE_WRONG_KIND),
+    );
   });
 
-  it('import custom proxy', async function () {
+  it('import custom UUPS proxy', async function () {
     const impl = await deployer.deploy(GreeterProxiable);
     const proxy = await deployer.deploy(
       CustomProxy,
+      impl.address,
+      getInitializerData(GreeterProxiable, ['Hello, Truffle!']),
+    );
+
+    const greeter = await forceImport(proxy.address, GreeterProxiable);
+    assert.equal(await greeter.greet(), 'Hello, Truffle!');
+
+    await upgradeProxy(greeter, GreeterV2Proxiable);
+  });
+
+  it('import custom UUPS proxy with admin', async function () {
+    const impl = await deployer.deploy(GreeterProxiable);
+    const proxy = await deployer.deploy(
+      CustomProxyWithAdmin,
       impl.address,
       getInitializerData(GreeterProxiable, ['Hello, Truffle!']),
     );

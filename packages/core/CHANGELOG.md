@@ -2,7 +2,25 @@
 
 ## Unreleased
 
+- Remove BN.js in favor of native BigInt. ([#602](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/602))
 - Add support for additional network names in network manifest. ([#547](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/547))
+
+## 1.16.1 (2022-06-16)
+
+- Fix VM execution error in `proposeUpgrade` with Gnosis Chain. ([#597](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/597))
+
+## 1.16.0 (2022-06-16)
+
+- Return ethers transaction response with `proposeUpgrade`. ([#554](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/554))
+
+## 1.15.0 (2022-05-31)
+
+- Support `unsafeSkipStorageCheck` option in `ValidationOptions`. ([#566](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/566))
+- Support verifying a proxy on Etherscan using Hardhat. ([#579](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/579))
+
+## 1.14.2 (2022-04-18)
+
+- Fix handling of rename annotations when unchanged from one version to the next. ([#558](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/558))
 
 ## 1.14.1 (2022-03-16)
 

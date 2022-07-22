@@ -6,8 +6,10 @@ import {
   addProxyToManifest,
   getImplementationAddressFromBeacon,
   isBeacon,
-  detectProxyKind,
   ForceImportUnsupportedError,
+  ProxyDeployment,
+  isBeaconProxy,
+  inferProxyKind,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -19,6 +21,7 @@ import {
   getContractAddress,
   getUpgradeableBeaconFactory,
   Options,
+  getDeployData,
 } from './utils';
 import { simulateDeployAdmin, simulateDeployImpl } from './utils/simulate-deploy';
 
@@ -58,7 +61,19 @@ async function importProxyToManifest(
   manifest: Manifest,
 ) {
   await addImplToManifest(implAddress, Contract, opts);
-  const importKind = await detectProxyKind(provider, proxyAddress);
+
+  let importKind: ProxyDeployment['kind'];
+  if (opts.kind === undefined) {
+    if (await isBeaconProxy(provider, proxyAddress)) {
+      importKind = 'beacon';
+    } else {
+      const deployData = await getDeployData(opts, Contract);
+      importKind = inferProxyKind(deployData.validations, deployData.version);
+    }
+  } else {
+    importKind = opts.kind;
+  }
+
   if (importKind === 'transparent') {
     await addAdminToManifest(provider, proxyAddress, Contract, opts);
   }

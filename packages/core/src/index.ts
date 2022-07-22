@@ -1,5 +1,5 @@
 export * from './validate';
-export { fetchOrDeploy, fetchOrDeployAdmin } from './impl-store';
+export { fetchOrDeploy, fetchOrDeployAdmin, fetchOrDeployGetDeployment } from './impl-store';
 export * from './version';
 export * from './storage';
 export {
@@ -10,6 +10,7 @@ export {
   getImplementationAddress,
   toEip1967Hash,
   toFallbackEip1967Hash,
+  isEmptySlot,
 } from './eip-1967';
 export * from './provider';
 export * from './src-decoder';
@@ -36,7 +37,7 @@ export { setProxyKind, processProxyKind, detectProxyKind } from './proxy-kind';
 
 export { UpgradeableContract } from './standalone';
 
-export { isTransparentOrUUPSProxy, isBeaconProxy } from './eip-1967-type';
+export { isTransparentOrUUPSProxy, isBeaconProxy, isTransparentProxy } from './eip-1967-type';
 export { getImplementationAddressFromBeacon, getImplementationAddressFromProxy } from './impl-address';
 export { isBeacon } from './beacon';
 export { addProxyToManifest } from './add-proxy-to-manifest';

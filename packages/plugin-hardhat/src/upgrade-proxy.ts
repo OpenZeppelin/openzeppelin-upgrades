@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
-import { Manifest, getAdminAddress, getCode } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress, getCode, isEmptySlot } from '@openzeppelin/upgrades-core';
 
 import {
   UpgradeProxyOptions,
@@ -42,7 +42,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment): UpgradeFunctio
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     const adminBytecode = await getCode(provider, adminAddress);
 
-    if (adminBytecode === '0x') {
+    if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
       // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
       const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
       const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);

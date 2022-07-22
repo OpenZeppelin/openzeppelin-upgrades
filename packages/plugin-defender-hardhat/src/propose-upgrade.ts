@@ -5,18 +5,24 @@ import {
   isBeacon,
   isBeaconProxy,
   ValidationOptions,
+  isTransparentProxy,
+  isTransparentOrUUPSProxy,
 } from '@openzeppelin/upgrades-core';
 import { AdminClient, ProposalResponse } from 'defender-admin-client';
-import type { ContractFactory } from 'ethers';
-import { FormatTypes } from 'ethers/lib/utils';
+import type { ContractFactory, ethers } from 'ethers';
+import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { fromChainId } from 'defender-base-client';
+
+export interface ProposalResponseWithUrlAndTx extends ProposalResponse {
+  txResponse?: ethers.providers.TransactionResponse;
+}
 
 export type ProposeUpgradeFunction = (
   proxyAddress: string,
   ImplFactory: ContractFactory,
   opts?: ProposalOptions,
-) => Promise<ProposalResponse>;
+) => Promise<ProposalResponseWithUrlAndTx>;
 
 export interface ProposalOptions extends ValidationOptions {
   title?: string;
@@ -45,14 +51,34 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       throw new Error(`Beacon proxy is not currently supported with defender.proposeUpgrade()`);
     } else if (await isBeacon(hre.network.provider, proxyAddress)) {
       throw new Error(`Beacon is not currently supported with defender.proposeUpgrade()`);
+    } else if (
+      !multisig &&
+      (await isTransparentOrUUPSProxy(hre.network.provider, proxyAddress)) &&
+      !(await isTransparentProxy(hre.network.provider, proxyAddress))
+    ) {
+      throw new Error(`Multisig address is a required property for UUPS proxies`);
     } else {
       // try getting the implementation address so that it will give an error if it's not a transparent/uups proxy
       await getImplementationAddress(hre.network.provider, proxyAddress);
     }
 
-    const newImplementation = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory, moreOpts);
     const contract = { address: proxyAddress, network, abi: ImplFactory.interface.format(FormatTypes.json) as string };
-    return client.proposeUpgrade(
+
+    const prepareUpgradeResult = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory, {
+      getTxResponse: true,
+      ...moreOpts,
+    });
+
+    let txResponse, newImplementation;
+
+    if (typeof prepareUpgradeResult === 'string') {
+      newImplementation = prepareUpgradeResult;
+    } else {
+      txResponse = prepareUpgradeResult;
+      newImplementation = getContractAddress(txResponse);
+    }
+
+    const proposalResponse = await client.proposeUpgrade(
       {
         newImplementation,
         title,
@@ -63,5 +89,10 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       },
       contract,
     );
+
+    return {
+      ...proposalResponse,
+      txResponse,
+    };
   };
 }

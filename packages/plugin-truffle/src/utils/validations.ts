@@ -11,6 +11,7 @@ import {
 import type { SolcInput, SolcOutput, SolcLinkReferences } from '@openzeppelin/upgrades-core/dist/solc-api';
 
 import { TruffleArtifact, ContractClass, NetworkObject } from './truffle';
+import debug from './debug';
 
 export async function validateArtifacts(artifactsPath: string, sourcesPath: string): Promise<ValidationRunData> {
   const artifacts = await readArtifacts(artifactsPath);
@@ -86,18 +87,41 @@ function checkForImportIdConsistency(
     for (const importDir of findAll('ImportDirective', ast)) {
       const importedUnitId = sourceUnitId[importDir.absolutePath];
       if (importedUnitId === undefined) {
-        // This can happen in two scenarios (I think):
+        // This can happen in three scenarios (we think):
         //
         // 1. There is more than one contract with the same name in different source files.
         //    Truffle only generates a single artifact.
         //    This scenario should have been detected before, and caused an error.
         //
-        // 2. A contract was imported from a dependency using artifacts.require.
+        // 2. An imported file has only other import statements without an actual contract/library/interface.
+        //    Truffle does not output the AST for this file.
+        //    If this looks like an OpenZeppelin interface that transitively imports an interface at a different path,
+        //    ignore this import.
+        //
+        // The code below corresponds to scenario 2.
+        let ignoreImport = false;
+        for (const sourceUnitPath of Object.keys(sourceUnitId)) {
+          if (
+            path.basename(importDir.absolutePath) === path.basename(sourceUnitPath) &&
+            importDir.absolutePath.startsWith('@openzeppelin/')
+          ) {
+            debug(
+              `Ignoring AST for import ${importDir.absolutePath} in ${source} since it has the same file name as the dependency ${sourceUnitPath}.`,
+            );
+            ignoreImport = true;
+            break;
+          }
+        }
+        if (ignoreImport) {
+          continue;
+        }
+
+        // 3. A contract was imported from a dependency using artifacts.require.
         //    Truffle copies the artifact over, and its dependencies are not available.
         //    We don't want to include this contract in the reconstructed solc output.
         //    People should create a Solidity file importing the contract they want.
         //
-        // The code below corresponds to scenario 2. We remove all transitive dependents
+        // The code below corresponds to scenario 3. We remove all transitive dependents
         // on this file.
         const queue = [ast.absolutePath];
         for (const source of queue) {

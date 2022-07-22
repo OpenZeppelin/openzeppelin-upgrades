@@ -65,7 +65,7 @@ contract MyContract is Initializable {
 }
 ----
 
-Another difference between a `constructor` and a regular function is that Solidity takes care of automatically invoking the constructors of all ancestors of a contract. When writing an initializer, you need to take special care to manually call the initializers of all parent contracts:
+Another difference between a `constructor` and a regular function is that Solidity takes care of automatically invoking the constructors of all ancestors of a contract. When writing an initializer, you need to take special care to manually call the initializers of all parent contracts. Note that the `initializer` modifier can only be called once even when using inheritance, so parent contracts should use the `onlyInitializing` modifier:
 
 [source,solidity]
 ----
@@ -78,7 +78,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 contract BaseContract is Initializable {
     uint256 public y;
 
-    function initialize() public initializer {
+    function initialize() public onlyInitializing {
         y = 42;
     }
 }
@@ -190,11 +190,13 @@ contract MyContract {
 
 === Initializing the Implementation Contract
 
-Do not leave an implementation contract uninitialized. An uninitialized implementation contract can be taken over by an attacker, which may impact the proxy. You can either invoke the initializer manually, or you can include a constructor to automatically mark it as initialized when it is deployed:
+Do not leave an implementation contract uninitialized. An uninitialized implementation contract can be taken over by an attacker, which may impact the proxy. To prevent the implementation contract from being used, you should invoke the `_disableInitializers` function in the constructor to automatically lock it when it is deployed:
 
 ```
 /// @custom:oz-upgrades-unsafe-allow constructor
-constructor() initializer {}
+constructor() {
+    _disableInitializers();
+}
 ```
 
 [[creating-new-instances-from-your-contract-code]]
