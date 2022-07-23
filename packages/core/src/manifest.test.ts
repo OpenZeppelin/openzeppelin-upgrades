@@ -1,9 +1,9 @@
 import test, { ExecutionContext } from 'ava';
 import { Manifest, ManifestData, normalizeManifestData } from './manifest';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 
-function writeTestManifest(file: string) {
+async function writeTestManifest(file: string) {
   const testManifest = {
     manifestVersion: '3.2',
     impls: {},
@@ -15,13 +15,13 @@ function writeTestManifest(file: string) {
       },
     ],
   };
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(testManifest, null, 2) + '\n');
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  await fs.writeFile(file, JSON.stringify(testManifest, null, 2) + '\n');
 }
 
-function deleteFile(t: ExecutionContext, file: string) {
+async function deleteFile(t: ExecutionContext, file: string) {
   try {
-    fs.unlinkSync(file);
+    await fs.unlink(file);
   } catch (e: any) {
     if (!e.message.includes('ENOENT')) {
       t.fail(e);
@@ -29,27 +29,27 @@ function deleteFile(t: ExecutionContext, file: string) {
   }
 }
 
-function assertOldName(t: ExecutionContext<unknown>, id: number) {
-  t.true(fs.existsSync(`.openzeppelin/unknown-${id}.json`));
-  t.false(fs.existsSync(`.openzeppelin/polygon-mumbai.json`));
+async function assertOldName(t: ExecutionContext<unknown>, id: number) {
+  await fs.access(`.openzeppelin/unknown-${id}.json`);
+  t.throwsAsync(fs.access(`.openzeppelin/polygon-mumbai.json`));
 }
 
-function assertNewName(t: ExecutionContext<unknown>, id: number) {
-  t.false(fs.existsSync(`.openzeppelin/unknown-${id}.json`));
-  t.true(fs.existsSync(`.openzeppelin/polygon-mumbai.json`));
+async function assertNewName(t: ExecutionContext<unknown>, id: number) {
+  t.throwsAsync(fs.access(`.openzeppelin/unknown-${id}.json`));
+  await fs.access(`.openzeppelin/polygon-mumbai.json`);
 }
 
-function deleteManifests(t: ExecutionContext<unknown>, id: number) {
-  deleteFile(t, `.openzeppelin/unknown-${id}.json`);
-  deleteFile(t, '.openzeppelin/polygon-mumbai.json');
+async function deleteManifests(t: ExecutionContext<unknown>, id: number) {
+  await deleteFile(t, `.openzeppelin/unknown-${id}.json`);
+  await deleteFile(t, '.openzeppelin/polygon-mumbai.json');
 }
 
 test.serial('multiple manifests', async t => {
   const id = 80001;
-  deleteManifests(t, id);
+  await deleteManifests(t, id);
 
-  writeTestManifest(`.openzeppelin/unknown-${id}.json`);
-  writeTestManifest(`.openzeppelin/polygon-mumbai.json`);
+  await writeTestManifest(`.openzeppelin/unknown-${id}.json`);
+  await writeTestManifest(`.openzeppelin/polygon-mumbai.json`);
 
   const manifest = new Manifest(id);
   await manifest.lockedRun(async () => {
@@ -60,23 +60,23 @@ test.serial('multiple manifests', async t => {
     });
   });
 
-  deleteManifests(t, id);
+  await deleteManifests(t, id);
 });
 
 test.serial('rename manifest', async t => {
   const id = 80001;
-  deleteManifests(t, id);
+  await deleteManifests(t, id);
 
-  writeTestManifest(`.openzeppelin/unknown-${id}.json`);
+  await writeTestManifest(`.openzeppelin/unknown-${id}.json`);
 
   const manifest = new Manifest(id);
   t.is(manifest.file, `.openzeppelin/polygon-mumbai.json`);
 
-  t.false(fs.existsSync(`.openzeppelin/chain-${id}.lock`));
+  t.throwsAsync(fs.access(`.openzeppelin/chain-${id}.lock`));
 
-  assertOldName(t, id);
+  await assertOldName(t, id);
   await manifest.lockedRun(async () => {
-    t.true(fs.existsSync(`.openzeppelin/chain-${id}.lock`));
+    await fs.access(`.openzeppelin/chain-${id}.lock`);
     const data = await manifest.read();
     data.proxies.push({
       address: '0x456',
@@ -84,23 +84,23 @@ test.serial('rename manifest', async t => {
       kind: 'uups',
     });
 
-    assertOldName(t, id);
+    await assertOldName(t, id);
     await manifest.write(data);
-    assertNewName(t, id);
+    await assertNewName(t, id);
   });
-  assertNewName(t, id);
+  await assertNewName(t, id);
 
-  t.false(fs.existsSync(`.openzeppelin/chain-${id}.lock`));
+  t.throwsAsync(fs.access(`.openzeppelin/chain-${id}.lock`));
 
   // check that the contents were persisted
   const data = await new Manifest(id).read();
   t.true(data.proxies[0].address === '0x123');
   t.true(data.proxies[1].address === '0x456');
-  assertNewName(t, id);
+  await assertNewName(t, id);
 
-  t.false(fs.existsSync(`.openzeppelin/chain-${id}.lock`));
+  t.throwsAsync(fs.access(`.openzeppelin/chain-${id}.lock`));
 
-  deleteManifests(t, id);
+  await deleteManifests(t, id);
 });
 
 test('manifest name for a known network', t => {
