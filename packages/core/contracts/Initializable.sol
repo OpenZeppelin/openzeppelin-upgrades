@@ -33,6 +33,9 @@ contract Initializable {
   modifier initializer() {
     require(initializing || isConstructor() || !initialized, "Contract instance has already been initialized");
 
+    // `isTopLevelCall` is used in combination with `initializing` to enable initializer functions
+    // to be called within other initializer functions.
+    // see https://stackoverflow.com/questions/70189923/why-are-initializing-and-istoplevelcall-variables-used-in-initializable-contrac
     bool isTopLevelCall = !initializing;
     if (isTopLevelCall) {
       initializing = true;
