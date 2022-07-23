@@ -8,6 +8,7 @@ import type { Deployment } from './deployment';
 import type { StorageLayout } from './storage';
 import { pick } from './utils/pick';
 import { mapValues } from './utils/map-values';
+import { UpgradesError } from './error';
 
 const currentManifestVersion = '3.2';
 
@@ -40,15 +41,23 @@ function defaultManifest(): ManifestData {
 const manifestDir = '.openzeppelin';
 
 export class Manifest {
+  readonly chainId: number;
   readonly file: string;
+  private readonly fallbackFile: string;
+
   private locked = false;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
     return new Manifest(await getChainId(provider));
   }
 
-  constructor(readonly chainId: number) {
-    const name = networkNames[chainId] ?? `unknown-${chainId}`;
+  constructor(chainId: number) {
+    this.chainId = chainId;
+
+    const fallbackName = `unknown-${this.chainId}`;
+    this.fallbackFile = path.join(manifestDir, `${fallbackName}.json`);
+
+    const name = networkNames[this.chainId] ?? fallbackName;
     this.file = path.join(manifestDir, `${name}.json`);
   }
 
@@ -89,10 +98,55 @@ export class Manifest {
     });
   }
 
+  private async exists(file: string): Promise<boolean> {
+    try {
+      await fs.access(file);
+      return true;
+    } catch (e: any) {
+      return false;
+    }
+  }
+
+  private async readFile(): Promise<string> {
+    if (this.file === this.fallbackFile) {
+      return await fs.readFile(this.file, 'utf8');
+    } else {
+      const fallbackExists = await this.exists(this.fallbackFile);
+      const fileExists = await this.exists(this.file);
+
+      if (fileExists && fallbackExists) {
+        throw new UpgradesError(
+          `Network files with different names ${this.fallbackFile} and ${this.file} were found for the same network.`,
+          () =>
+            `More than one network file was found for chain ID ${this.chainId}. Determine which file is the most up to date version, then take a backup of and delete the other file.`,
+        );
+      } else if (fallbackExists) {
+        return await fs.readFile(this.fallbackFile, 'utf8');
+      } else {
+        return await fs.readFile(this.file, 'utf8');
+      }
+    }
+  }
+
+  private async writeFile(content: string): Promise<void> {
+    await this.renameFileIfRequired();
+    await fs.writeFile(this.file, content);
+  }
+
+  private async renameFileIfRequired() {
+    if (this.file !== this.fallbackFile && (await this.exists(this.fallbackFile))) {
+      try {
+        await fs.rename(this.fallbackFile, this.file);
+      } catch (e: any) {
+        throw new Error(`Failed to rename network file from ${this.fallbackFile} to ${this.file}: ${e.message}`);
+      }
+    }
+  }
+
   async read(): Promise<ManifestData> {
     const release = this.locked ? undefined : await this.lock();
     try {
-      const data = JSON.parse(await fs.readFile(this.file, 'utf8')) as ManifestData;
+      const data = JSON.parse(await this.readFile()) as ManifestData;
       return validateOrUpdateManifestVersion(data);
     } catch (e: any) {
       if (e.code === 'ENOENT') {
@@ -110,7 +164,7 @@ export class Manifest {
       throw new Error('Manifest must be locked');
     }
     const normalized = normalizeManifestData(data);
-    await fs.writeFile(this.file, JSON.stringify(normalized, null, 2) + '\n');
+    await this.writeFile(JSON.stringify(normalized, null, 2) + '\n');
   }
 
   async lockedRun<T>(cb: () => Promise<T>): Promise<T> {
@@ -126,8 +180,10 @@ export class Manifest {
   }
 
   private async lock() {
-    await fs.mkdir(path.dirname(this.file), { recursive: true });
-    const release = await lockfile.lock(this.file, { retries: 3, realpath: false });
+    const lockfileName = path.join(manifestDir, `chain-${this.chainId}`);
+
+    await fs.mkdir(path.dirname(lockfileName), { recursive: true });
+    const release = await lockfile.lock(lockfileName, { retries: 3, realpath: false });
     this.locked = true;
     return async () => {
       await release();
