@@ -1,5 +1,5 @@
 import path from 'path';
-import { promises as fs, existsSync } from 'fs';
+import { promises as fs } from 'fs';
 import { EthereumProvider, getChainId, networkNames } from './provider';
 import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
@@ -98,12 +98,21 @@ export class Manifest {
     });
   }
 
+  private async exists(file: string): Promise<boolean> {
+    try {
+      await fs.access(file);
+      return true;
+    } catch (e: any) {
+      return false;
+    }
+  }
+
   private async readFile(): Promise<string> {
     if (this.file === this.fallbackFile) {
       return await fs.readFile(this.file, 'utf8');
     } else {
-      const fallbackExists = existsSync(this.fallbackFile);
-      const fileExists = existsSync(this.file);
+      const fallbackExists = await this.exists(this.fallbackFile);
+      const fileExists = await this.exists(this.file);
 
       if (fileExists && fallbackExists) {
         throw new UpgradesError(
@@ -125,7 +134,7 @@ export class Manifest {
   }
 
   private async renameFileIfRequired() {
-    if (this.file !== this.fallbackFile && existsSync(this.fallbackFile)) {
+    if (this.file !== this.fallbackFile && (await this.exists(this.fallbackFile))) {
       try {
         await fs.rename(this.fallbackFile, this.file);
       } catch (e: any) {
