@@ -6,7 +6,10 @@ pragma solidity >=0.4.24 <0.7.0;
 /**
  * @title Initializable
  *
- * @dev Helper contract to support initializer functions. To use it, replace
+ * @dev Deprecated. This contract is kept in the Upgrades Plugins for backwards compatibility purposes.
+ * Users should use openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol instead.
+ *
+ * Helper contract to support initializer functions. To use it, replace
  * the constructor with a function that has the `initializer` modifier.
  * WARNING: Unlike constructors, initializer functions must be manually
  * invoked. This applies both to deploying an Initializable contract, as well
