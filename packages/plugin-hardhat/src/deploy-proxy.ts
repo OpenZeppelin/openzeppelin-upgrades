@@ -12,7 +12,6 @@ import {
   deployProxyImpl,
   getInitializerData,
 } from './utils';
-import { makeDeployProxyAdmin } from './deploy-proxy-admin';
 
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployProxyOptions): Promise<Contract>;
@@ -59,7 +58,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
       }
 
       case 'transparent': {
-        const adminAddress = await makeDeployProxyAdmin(hre)(ImplFactory.signer, opts);
+        const adminAddress = await hre.upgrades.deployProxyAdmin(ImplFactory.signer, opts);
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
         proxyDeployment = Object.assign(
           { kind },
