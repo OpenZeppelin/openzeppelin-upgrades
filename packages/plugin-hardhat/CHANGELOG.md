@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.19.1 (2022-07-26)
 
 - Improve check for admin contract in `upgradeProxy`. ([#604](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/604))
 
