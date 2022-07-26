@@ -2,6 +2,7 @@
 
 ## 1.19.1 (2022-07-26)
 
+- Add dependencies on `debug` and `ethers`. ([#600](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/600))
 - Improve check for admin contract in `upgradeProxy`. ([#604](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/604))
 
 ## 1.19.0 (2022-06-16)
