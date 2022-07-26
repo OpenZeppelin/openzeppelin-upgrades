@@ -1,5 +1,4 @@
 import {
-  assertUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
   getVersion,
@@ -53,7 +52,7 @@ export async function deployStandaloneImpl(
 ): Promise<DeployedImpl> {
   const deployData = await getDeployData(opts, Contract);
   await validateStandaloneImpl(deployData, opts);
-  return await fetchOrDeployImpl(deployData, Contract, opts);
+  return await deployImpl(deployData, Contract, opts);
 }
 
 export async function deployProxyImpl(
@@ -63,7 +62,7 @@ export async function deployProxyImpl(
 ): Promise<DeployedImpl> {
   const deployData = await getDeployData(opts, Contract);
   await validateProxyImpl(deployData, opts, proxyAddress);
-  return fetchOrDeployImpl(deployData, Contract, opts);
+  return deployImpl(deployData, Contract, opts);
 }
 
 export async function deployBeaconImpl(
@@ -73,7 +72,7 @@ export async function deployBeaconImpl(
 ): Promise<DeployedBeaconImpl> {
   const deployData = await getDeployData(opts, Contract);
   await validateBeaconImpl(deployData, opts, beaconAddress);
-  return await fetchOrDeployImpl(deployData, Contract, opts);
+  return await deployImpl(deployData, Contract, opts);
 }
 
 function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string {
@@ -85,17 +84,16 @@ function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string
   );
 }
 
-async function fetchOrDeployImpl(
+async function deployImpl(
   deployData: DeployData,
   Contract: ContractClass,
   opts: DeployImplementationOptions,
 ): Promise<any> {
-  assertUpgradeSafe([deployData.validations], deployData.version, deployData.fullOpts);
   const layout = deployData.layout;
 
   const impl = await fetchOrDeploy(deployData.version, deployData.provider, async () => {
     const abi = (Contract as any).abi;
-    const deployImpl = () => {
+    const attemptDeploy = () => {
       if (opts.useDeployedImplementation) {
         throw new UpgradesError(
           'The implementation contract was not previously deployed.',
@@ -106,7 +104,7 @@ async function fetchOrDeployImpl(
         return deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs);
       }
     };
-    const deployment = Object.assign({ abi }, await deployImpl());
+    const deployment = Object.assign({ abi }, await attemptDeploy());
     return { ...deployment, layout };
   });
 

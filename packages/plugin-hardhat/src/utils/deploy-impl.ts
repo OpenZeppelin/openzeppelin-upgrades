@@ -60,7 +60,7 @@ export async function deployStandaloneImpl(
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateStandaloneImpl(deployData, opts);
-  return await fetchOrDeployImpl(deployData, ImplFactory, opts, hre);
+  return await deployImpl(deployData, ImplFactory, opts, hre);
 }
 
 export async function deployProxyImpl(
@@ -71,7 +71,7 @@ export async function deployProxyImpl(
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateProxyImpl(deployData, opts, proxyAddress);
-  return await fetchOrDeployImpl(deployData, ImplFactory, opts, hre);
+  return await deployImpl(deployData, ImplFactory, opts, hre);
 }
 
 export async function deployBeaconImpl(
@@ -82,10 +82,10 @@ export async function deployBeaconImpl(
 ): Promise<DeployedBeaconImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateBeaconImpl(deployData, opts, beaconAddress);
-  return await fetchOrDeployImpl(deployData, ImplFactory, opts, hre);
+  return await deployImpl(deployData, ImplFactory, opts, hre);
 }
 
-async function fetchOrDeployImpl(
+async function deployImpl(
   deployData: DeployData,
   ImplFactory: ContractFactory,
   opts: DeployImplementationOptions,
@@ -98,7 +98,7 @@ async function fetchOrDeployImpl(
     deployData.provider,
     async () => {
       const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
-      const deployImpl = () => {
+      const attemptDeploy = () => {
         if (opts.useDeployedImplementation) {
           throw new UpgradesError(
             'The implementation contract was not previously deployed.',
@@ -109,7 +109,7 @@ async function fetchOrDeployImpl(
           return deploy(ImplFactory, ...deployData.fullOpts.constructorArgs);
         }
       };
-      const deployment = Object.assign({ abi }, await deployImpl());
+      const deployment = Object.assign({ abi }, await attemptDeploy());
       return { ...deployment, layout };
     },
     opts,
