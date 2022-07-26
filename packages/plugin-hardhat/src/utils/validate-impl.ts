@@ -32,7 +32,7 @@ async function processBeaconImpl(beaconAddress: string | undefined, deployData: 
   return currentImplAddress;
 }
 
-async function validateUpgradeImpl(
+async function validateImpl(
   deployData: DeployData,
   opts: ValidationOptions,
   currentImplAddress?: string,
@@ -49,7 +49,7 @@ async function validateUpgradeImpl(
 }
 
 export async function validateStandaloneImpl(deployData: DeployData, opts: ValidationOptions): Promise<void> {
-  return validateUpgradeImpl(deployData, opts);
+  return validateImpl(deployData, opts);
 }
 
 export async function validateProxyImpl(
@@ -58,7 +58,7 @@ export async function validateProxyImpl(
   proxyAddress?: string,
 ): Promise<void> {
   const currentImplAddress = await processProxyImpl(deployData, proxyAddress, opts);
-  return validateUpgradeImpl(deployData, opts, currentImplAddress);
+  return validateImpl(deployData, opts, currentImplAddress);
 }
 
 export async function validateBeaconImpl(
@@ -67,5 +67,5 @@ export async function validateBeaconImpl(
   beaconAddress?: string,
 ): Promise<void> {
   const currentImplAddress = await processBeaconImpl(beaconAddress, deployData);
-  return validateUpgradeImpl(deployData, opts, currentImplAddress);
+  return validateImpl(deployData, opts, currentImplAddress);
 }
