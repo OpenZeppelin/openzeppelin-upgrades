@@ -60,7 +60,7 @@ export async function deployStandaloneImpl(
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateStandaloneImpl(deployData, opts);
-  return await deployImpl(deployData, ImplFactory, opts, hre);
+  return await deployImpl(hre, deployData, ImplFactory, opts);
 }
 
 export async function deployProxyImpl(
@@ -71,7 +71,7 @@ export async function deployProxyImpl(
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateProxyImpl(deployData, opts, proxyAddress);
-  return await deployImpl(deployData, ImplFactory, opts, hre);
+  return await deployImpl(hre, deployData, ImplFactory, opts);
 }
 
 export async function deployBeaconImpl(
@@ -82,14 +82,14 @@ export async function deployBeaconImpl(
 ): Promise<DeployedBeaconImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateBeaconImpl(deployData, opts, beaconAddress);
-  return await deployImpl(deployData, ImplFactory, opts, hre);
+  return await deployImpl(hre, deployData, ImplFactory, opts);
 }
 
 async function deployImpl(
+  hre: HardhatRuntimeEnvironment,
   deployData: DeployData,
   ImplFactory: ContractFactory,
   opts: DeployImplementationOptions,
-  hre: HardhatRuntimeEnvironment,
 ): Promise<any> {
   const layout = deployData.layout;
 

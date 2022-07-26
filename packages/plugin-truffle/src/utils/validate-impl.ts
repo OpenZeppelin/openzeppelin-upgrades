@@ -23,14 +23,10 @@ async function processProxyImpl(deployData: DeployData, proxyAddress: string | u
   return currentImplAddress;
 }
 
-async function processBeaconImpl(beaconAddress: string | undefined, deployData: DeployData) {
-  let currentImplAddress: string | undefined;
-  if (beaconAddress !== undefined) {
-    // upgrade scenario
-    await assertNotProxy(deployData.provider, beaconAddress);
-    currentImplAddress = await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
-  }
-  return currentImplAddress;
+async function processBeaconImpl(deployData: DeployData, beaconAddress: string) {
+  // upgrade scenario
+  await assertNotProxy(deployData.provider, beaconAddress);
+  return await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
 }
 
 async function validateImpl(
@@ -67,6 +63,7 @@ export async function validateBeaconImpl(
   opts: ValidationOptions,
   beaconAddress?: string,
 ): Promise<void> {
-  const currentImplAddress = await processBeaconImpl(beaconAddress, deployData);
+  const currentImplAddress =
+    beaconAddress !== undefined ? await processBeaconImpl(deployData, beaconAddress) : undefined;
   return validateImpl(deployData, opts, currentImplAddress);
 }
