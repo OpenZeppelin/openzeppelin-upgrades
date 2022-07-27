@@ -18,7 +18,7 @@ import {
 import { validateBeaconImpl, validateImpl, validateProxyImpl } from './utils/validate-impl';
 
 function isContractClass(object: any): object is ContractClass {
-  return 'bytecode' in object;
+  return typeof object !== 'string' && 'bytecode' in object;
 }
 
 export async function validateUpgrade(
