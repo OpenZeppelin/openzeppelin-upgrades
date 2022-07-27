@@ -11,6 +11,8 @@ import {
   inferProxyKind,
   isBeaconProxy,
   ProxyDeployment,
+  hasCode,
+  NoContractImportError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -50,6 +52,9 @@ export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunc
       const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
       return UpgradeableBeaconFactory.attach(address);
     } else {
+      if (!(await hasCode(provider, address))) {
+        throw new NoContractImportError(address);
+      }
       await addImplToManifest(hre, address, ImplFactory, opts);
       return ImplFactory.attach(address);
     }

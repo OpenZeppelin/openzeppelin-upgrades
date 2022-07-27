@@ -44,6 +44,12 @@ contract('Greeter', function () {
     assert.equal(await greeter.greet(), 'Hello, Truffle!');
   });
 
+  it('no contract', async function () {
+    await assert.rejects(forceImport('0x0000000000000000000000000000000000000001', GreeterProxiable), error =>
+      error.message.startsWith('No contract at address 0x0000000000000000000000000000000000000001'),
+    );
+  });
+
   it('transparent happy path', async function () {
     const impl = await deployer.deploy(Greeter);
     const admin = await deployer.deploy(getProxyAdminFactory());

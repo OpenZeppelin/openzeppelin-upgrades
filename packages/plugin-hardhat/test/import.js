@@ -57,6 +57,15 @@ test('implementation happy path', async t => {
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 });
 
+test('no contract', async t => {
+  const { GreeterProxiable } = t.context;
+
+  const e = await t.throwsAsync(() =>
+    upgrades.forceImport('0x0000000000000000000000000000000000000001', GreeterProxiable),
+  );
+  t.true(e.message.startsWith('No contract at address 0x0000000000000000000000000000000000000001'), e.message);
+});
+
 test('transparent happy path', async t => {
   const { Greeter, GreeterV2, ProxyAdmin, TransparentUpgradableProxy } = t.context;
 

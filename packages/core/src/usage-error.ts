@@ -63,6 +63,15 @@ export class ForceImportUnsupportedError extends UpgradesError {
   }
 }
 
+export class NoContractImportError extends UpgradesError {
+  constructor(address: string) {
+    super(
+      `No contract at address ${address}`,
+      () => `The address could not be imported because no contract was found at the address.`,
+    );
+  }
+}
+
 export async function assertNotProxy(provider: EthereumProvider, address: string) {
   if (await isTransparentOrUUPSProxy(provider, address)) {
     throw new UpgradesError(

@@ -9,6 +9,8 @@ import {
   ProxyDeployment,
   isBeaconProxy,
   inferProxyKind,
+  hasCode,
+  NoContractImportError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -47,6 +49,9 @@ export async function forceImport(
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(Contract);
     return UpgradeableBeaconFactory.at(address);
   } else {
+    if (!(await hasCode(provider, address))) {
+      throw new NoContractImportError(address);
+    }
     await addImplToManifest(address, Contract, opts);
     return Contract.at(address);
   }
