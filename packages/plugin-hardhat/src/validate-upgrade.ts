@@ -7,12 +7,11 @@ import {
   isBeaconProxy,
   isTransparentOrUUPSProxy,
   isBeacon,
-  ValidateUpgradeUnsupportedError,
   assertUpgradeSafe,
   assertStorageUpgradeSafe,
   ValidationOptions,
 } from '@openzeppelin/upgrades-core';
-import { validateBeaconImpl, validateProxyImpl } from './utils/validate-impl';
+import { validateBeaconImpl, validateImpl, validateProxyImpl } from './utils/validate-impl';
 import { getDeployData } from './utils/deploy-impl';
 
 export interface ValidateUpgradeFunction {
@@ -39,18 +38,18 @@ export function makeValidateUpgrade(hre: HardhatRuntimeEnvironment): ValidateUpg
         assertStorageUpgradeSafe(origDeployData.layout, newDeployData.layout, newDeployData.fullOpts);
       }
     } else {
-      const proxyOrBeaconAddress = getContractAddress(addressOrImplFactory);
+      const address = getContractAddress(addressOrImplFactory);
       const { provider } = hre.network;
       const deployData = await getDeployData(hre, newImplFactory, opts);
-      if (await isTransparentOrUUPSProxy(provider, proxyOrBeaconAddress)) {
-        await validateProxyImpl(deployData, opts, proxyOrBeaconAddress);
-      } else if (await isBeaconProxy(provider, proxyOrBeaconAddress)) {
-        const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
+      if (await isTransparentOrUUPSProxy(provider, address)) {
+        await validateProxyImpl(deployData, opts, address);
+      } else if (await isBeaconProxy(provider, address)) {
+        const beaconAddress = await getBeaconAddress(provider, address);
         await validateBeaconImpl(deployData, opts, beaconAddress);
-      } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
-        await validateBeaconImpl(deployData, opts, proxyOrBeaconAddress);
+      } else if (await isBeacon(provider, address)) {
+        await validateBeaconImpl(deployData, opts, address);
       } else {
-        throw new ValidateUpgradeUnsupportedError(proxyOrBeaconAddress);
+        await validateImpl(deployData, opts, address);
       }
     }
   };

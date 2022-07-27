@@ -14,7 +14,7 @@ import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
 import { Options, DeployImplementationOptions, withDefaults } from './options';
-import { validateBeaconImpl, validateProxyImpl, validateStandaloneImpl } from './validate-impl';
+import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { readValidations } from './validations';
 
 interface DeployedProxyImpl {
@@ -59,7 +59,7 @@ export async function deployStandaloneImpl(
   opts: DeployImplementationOptions,
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
-  await validateStandaloneImpl(deployData, opts);
+  await validateImpl(deployData, opts);
   return await deployImpl(hre, deployData, ImplFactory, opts);
 }
 

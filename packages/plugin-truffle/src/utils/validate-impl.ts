@@ -29,7 +29,7 @@ async function processBeaconImpl(deployData: DeployData, beaconAddress: string) 
   return await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
 }
 
-async function validateImpl(
+export async function validateImpl(
   deployData: DeployData,
   opts: ValidationOptions,
   currentImplAddress?: string,
@@ -43,10 +43,6 @@ async function validateImpl(
       assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
     }
   }
-}
-
-export async function validateStandaloneImpl(deployData: DeployData, opts: ValidationOptions): Promise<void> {
-  return validateImpl(deployData, opts);
 }
 
 export async function validateProxyImpl(

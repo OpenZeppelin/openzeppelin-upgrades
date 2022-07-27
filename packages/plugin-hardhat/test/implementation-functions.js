@@ -171,3 +171,26 @@ test('validate upgrade - contracts only - incompatible storage - forced', async 
 
   await upgrades.validateUpgrade(Greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
 });
+
+test('validate upgrade on deployed implementation - happy path', async t => {
+  const { Greeter, GreeterV2 } = t.context;
+
+  const greeter = await upgrades.deployImplementation(Greeter);
+  await upgrades.validateUpgrade(greeter, GreeterV2);
+});
+
+test('validate upgrade on deployed implementation - incompatible storage', async t => {
+  const { Greeter, GreeterStorageConflict } = t.context;
+
+  const greeter = await upgrades.deployImplementation(Greeter);
+  await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterStorageConflict), {
+    message: /(New storage layout is incompatible)/,
+  });
+});
+
+test('validate upgrade on deployed implementation - incompatible storage - forced', async t => {
+  const { Greeter, GreeterStorageConflict } = t.context;
+
+  const greeter = await upgrades.deployImplementation(Greeter);
+  await upgrades.validateUpgrade(greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
+});

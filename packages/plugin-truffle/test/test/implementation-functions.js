@@ -125,4 +125,21 @@ contract('Greeter', function () {
   it('validate upgrade - contracts only - incompatible storage - forced', async function () {
     await validateUpgrade(Greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
   });
+
+  it('validate upgrade on deployed implementation - happy path', async function () {
+    const greeter = await deployImplementation(Greeter);
+    await validateUpgrade(greeter, GreeterV2);
+  });
+
+  it('validate upgrade on deployed implementation - incompatible storage', async function () {
+    const greeter = await deployImplementation(Greeter);
+    await assert.rejects(validateUpgrade(greeter, GreeterStorageConflict), error =>
+      error.message.includes('New storage layout is incompatible'),
+    );
+  });
+
+  it('validate upgrade on deployed implementation - incompatible storage - forced', async function () {
+    const greeter = await deployImplementation(Greeter);
+    await validateUpgrade(greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
+  });
 });

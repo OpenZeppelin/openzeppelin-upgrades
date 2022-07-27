@@ -13,7 +13,7 @@ import {
 import { deploy } from './deploy';
 import { DeployImplementationOptions, Options, withDefaults } from './options';
 import { ContractClass, getTruffleConfig } from './truffle';
-import { validateBeaconImpl, validateProxyImpl, validateStandaloneImpl } from './validate-impl';
+import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { validateArtifacts, getLinkedBytecode } from './validations';
 import { wrapProvider } from './wrap-provider';
 
@@ -51,7 +51,7 @@ export async function deployStandaloneImpl(
   opts: DeployImplementationOptions,
 ): Promise<DeployedImpl> {
   const deployData = await getDeployData(opts, Contract);
-  await validateStandaloneImpl(deployData, opts);
+  await validateImpl(deployData, opts);
   return await deployImpl(deployData, Contract, opts);
 }
 
