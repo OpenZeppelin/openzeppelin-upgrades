@@ -79,6 +79,7 @@ async function upgradeProxy(
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent',
   },
 ): Promise<ethers.Contract>
 ----
@@ -179,6 +180,7 @@ async function validateImplementation(
   Contract: ethers.ContractFactory,
   opts?: {
     unsafeAllow?: ValidationError[],
+    kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<void>
 ----
@@ -202,6 +204,7 @@ async function deployImplementation(
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
     getTxResponse?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -222,6 +225,7 @@ async function validateUpgrade(
     unsafeAllow?: ValidationError[],
     unsafeAllowRenames?: boolean,
     unsafeSkipStorageCheck?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<void>
 ----
@@ -269,6 +273,7 @@ async function prepareUpgrade(
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
     getTxResponse?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -302,6 +307,7 @@ async function proposeUpgrade(
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
     title?: string,
     description?: string,
     multisig?: string,

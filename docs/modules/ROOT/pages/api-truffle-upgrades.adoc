@@ -82,6 +82,7 @@ async function upgradeProxy(
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent',
   },
 ): Promise<ContractInstance>
 ----
@@ -185,6 +186,7 @@ async function validateImplementation(
   Contract: ContractClass,
   opts?: {
     unsafeAllow?: ValidationError[],
+    kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<void>
 ----
@@ -207,6 +209,7 @@ async function deployImplementation(
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<string>
 ----
@@ -227,6 +230,7 @@ async function validateUpgrade(
     unsafeAllow?: ValidationError[],
     unsafeAllowRenames?: boolean,
     unsafeSkipStorageCheck?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<void>
 ----
@@ -273,6 +277,7 @@ async function prepareUpgrade(
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<string>
 ----
