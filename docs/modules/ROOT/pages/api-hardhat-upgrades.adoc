@@ -7,7 +7,7 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of https:/
 
 The following options are common to some functions.
 
-* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS]. Not applicable for Beacon proxies except for xref:#force-import[`forceImport`].
+* `kind`: (`"uups" | "transparent" | "beacon"`) The kind of proxy to deploy, upgrade or import, or the kind of proxy that the implementation will be used with. `deployProxy()` and `upgradeProxy()` only support the values `"uups" | "transparent"`. Defaults to `"transparent"`. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
 * `unsafeAllow`: (`ValidationError[]`) Selectively disable one or more validation errors:
 ** `"external-library-linking"`: Allows a deployment with external libraries linked to the implementation contract. (External libraries are otherwise xref:faq.adoc#why-cant-i-use-external-libraries[not yet supported].)
 ** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.

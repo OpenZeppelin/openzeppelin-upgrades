@@ -10,7 +10,7 @@ export { silenceWarnings } from '../utils/log';
  */
 export interface ProxyKindOption {
   /**
-   * The kind of proxy to deploy, upgrade or import, or the kind of proxy that the implementation will be used with.
+   * The kind of proxy to deploy, upgrade or import, or the kind of proxy that the implementation will be used with. Defaults to `"transparent"`.
    */
   kind?: ProxyDeployment['kind'];
 }
