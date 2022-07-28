@@ -10,7 +10,7 @@ export { silenceWarnings } from '../utils/log';
  */
 export interface ProxyKindOption {
   /**
-   * Choose between a `'uups'` or `'transparent'` proxy. Defaults to `'transparent'`. `'beacon'` is not applicable except when used with `forceImport()`.
+   * The kind of proxy to deploy, upgrade or import, or the kind of proxy that the implementation will be used with.
    */
   kind?: ProxyDeployment['kind'];
 }

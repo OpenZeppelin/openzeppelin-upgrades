@@ -12,10 +12,14 @@ test.before(async t => {
   t.context.GreeterStorageConflictProxiable = await ethers.getContractFactory('GreeterStorageConflictProxiable');
 });
 
-test('validate implementation - happy path', async t => {
-  const { Greeter } = t.context;
+test('validate implementation - happy paths', async t => {
+  const { Greeter, GreeterProxiable } = t.context;
 
   await upgrades.validateImplementation(Greeter);
+  await upgrades.validateImplementation(Greeter, { kind: 'transparent' });
+  await upgrades.validateImplementation(Greeter, { kind: 'beacon' });
+  await upgrades.validateImplementation(GreeterProxiable);
+  await upgrades.validateImplementation(GreeterProxiable, { kind: 'uups' });
 });
 
 test('validate implementation - invalid', async t => {
@@ -23,6 +27,14 @@ test('validate implementation - invalid', async t => {
 
   await t.throwsAsync(() => upgrades.validateImplementation(Invalid), {
     message: /(Contract `Invalid` is not upgrade safe)/,
+  });
+});
+
+test('validate implementation uups - no upgrade function', async t => {
+  const { Greeter } = t.context;
+
+  await t.throwsAsync(() => upgrades.validateImplementation(Greeter, { kind: 'uups' }), {
+    message: /(Contract `Greeter` is not upgrade safe)/,
   });
 });
 
@@ -80,6 +92,13 @@ test('deploy implementation - invalid', async t => {
 
   await t.throwsAsync(() => upgrades.deployImplementation(Invalid), {
     message: /(Contract `Invalid` is not upgrade safe)/,
+  });
+});
+
+test('deploy implementation uups - no upgrade function', async t => {
+  const { Greeter } = t.context;
+  await t.throwsAsync(() => upgrades.deployImplementation(Greeter, { kind: 'uups' }), {
+    message: /(Contract `Greeter` is not upgrade safe)/,
   });
 });
 
@@ -152,9 +171,29 @@ test('validate upgrade uups - incompatible storage - forced', async t => {
   await upgrades.validateUpgrade(greeter, GreeterStorageConflictProxiable, { unsafeSkipStorageCheck: true });
 });
 
-test('validate upgrade - contracts only - happy path', async t => {
+test('validate upgrade uups - wrong kind', async t => {
+  const { GreeterProxiable, GreeterV2 } = t.context;
+
+  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hola mundo!']);
+  await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterV2), {
+    message: /(Requested an upgrade of kind transparent but proxy is uups)/,
+  });
+});
+
+test('validate upgrade uups - no upgrade function', async t => {
+  const { GreeterProxiable, GreeterV2 } = t.context;
+
+  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hola mundo!']);
+  await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterV2, { kind: 'uups' }), {
+    message: /(Contract `GreeterV2` is not upgrade safe)/,
+  });
+});
+
+test('validate upgrade - contracts only - happy paths', async t => {
+  const { Greeter, GreeterV2 } = t.context;
   const { GreeterProxiable, GreeterV2Proxiable } = t.context;
 
+  await upgrades.validateUpgrade(Greeter, GreeterV2);
   await upgrades.validateUpgrade(GreeterProxiable, GreeterV2Proxiable);
 });
 
@@ -170,6 +209,14 @@ test('validate upgrade - contracts only - incompatible storage - forced', async 
   const { Greeter, GreeterStorageConflict } = t.context;
 
   await upgrades.validateUpgrade(Greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
+});
+
+test('validate upgrade - contracts only - uups - no upgrade function', async t => {
+  const { GreeterProxiable, GreeterV2 } = t.context;
+
+  await t.throwsAsync(() => upgrades.validateUpgrade(GreeterProxiable, GreeterV2, { kind: 'uups' }), {
+    message: /(Contract `GreeterV2` is not upgrade safe)/,
+  });
 });
 
 test('validate upgrade on deployed implementation - happy path', async t => {
@@ -193,4 +240,13 @@ test('validate upgrade on deployed implementation - incompatible storage - force
 
   const greeter = await upgrades.deployImplementation(Greeter);
   await upgrades.validateUpgrade(greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
+});
+
+test('validate upgrade on deployed implementation - uups - no upgrade function', async t => {
+  const { GreeterProxiable, GreeterV2 } = t.context;
+
+  const greeter = await upgrades.deployImplementation(GreeterProxiable);
+  await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterV2, { kind: 'uups' }), {
+    message: /(Contract `GreeterV2` is not upgrade safe)/,
+  });
 });
