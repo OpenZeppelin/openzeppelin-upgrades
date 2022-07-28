@@ -6,17 +6,17 @@ import {
   ContractAddressOrInstance,
   getUpgradeableBeaconFactory,
   deployBeaconImpl,
-  Options,
+  UpgradeBeaconOptions,
 } from './utils';
 
 export type UpgradeBeaconFunction = (
   beacon: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
-  opts?: Options,
+  opts?: UpgradeBeaconOptions,
 ) => Promise<Contract>;
 
 export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment): UpgradeBeaconFunction {
-  return async function upgradeBeacon(beacon, ImplFactory, opts: Options = {}) {
+  return async function upgradeBeacon(beacon, ImplFactory, opts: UpgradeBeaconOptions = {}) {
     const beaconAddress = getContractAddress(beacon);
     const { impl: nextImpl } = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
 

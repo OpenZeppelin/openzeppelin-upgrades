@@ -13,7 +13,7 @@ import type { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
-import { Options, DeployImplementationOptions, withDefaults } from './options';
+import { GetTxResponse, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
 import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { readValidations } from './validations';
 
@@ -35,13 +35,13 @@ export interface DeployData {
   encodedArgs: string;
   version: Version;
   layout: StorageLayout;
-  fullOpts: Required<Options>;
+  fullOpts: Required<UpgradeOptions>;
 }
 
 export async function getDeployData(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: UpgradeOptions,
 ): Promise<DeployData> {
   const { provider } = hre.network;
   const validations = await readValidations(hre);
@@ -56,7 +56,7 @@ export async function getDeployData(
 export async function deployStandaloneImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: DeployImplementationOptions,
+  opts: StandaloneOptions,
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateImpl(deployData, opts);
@@ -66,7 +66,7 @@ export async function deployStandaloneImpl(
 export async function deployProxyImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: DeployImplementationOptions,
+  opts: UpgradeOptions,
   proxyAddress?: string,
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
@@ -77,7 +77,7 @@ export async function deployProxyImpl(
 export async function deployBeaconImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: DeployImplementationOptions,
+  opts: UpgradeOptions,
   beaconAddress?: string,
 ): Promise<DeployedBeaconImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
@@ -89,7 +89,7 @@ async function deployImpl(
   hre: HardhatRuntimeEnvironment,
   deployData: DeployData,
   ImplFactory: ContractFactory,
-  opts: DeployImplementationOptions,
+  opts: UpgradeOptions & GetTxResponse,
 ): Promise<any> {
   const layout = deployData.layout;
 

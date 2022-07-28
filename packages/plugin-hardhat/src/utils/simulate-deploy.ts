@@ -3,7 +3,7 @@ import type { ContractFactory } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getDeployData } from './deploy-impl';
-import { Options } from './options';
+import { UpgradeOptions } from './options';
 
 // To import an already deployed contract we want to reuse fetchOrDeploy for its ability to validate
 // a deployment and record it in the network file. We are able to do this by "simulating" a deployment:
@@ -13,7 +13,7 @@ import { Options } from './options';
 export async function simulateDeployAdmin(
   hre: HardhatRuntimeEnvironment,
   ProxyAdminFactory: ContractFactory,
-  opts: Options,
+  opts: UpgradeOptions,
   adminAddress: string,
 ) {
   const { deployData, simulateDeploy } = await getSimulatedData(hre, ProxyAdminFactory, opts, adminAddress);
@@ -32,7 +32,7 @@ export async function simulateDeployAdmin(
 export async function simulateDeployImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: UpgradeOptions,
   implAddress: string,
 ) {
   const { deployData, simulateDeploy } = await getSimulatedData(hre, ImplFactory, opts, implAddress);
@@ -45,7 +45,7 @@ export async function simulateDeployImpl(
 async function getSimulatedData(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: UpgradeOptions,
   implAddress: string,
 ) {
   const deployData = await getDeployData(hre, ImplFactory, opts);

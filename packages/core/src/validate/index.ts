@@ -1,5 +1,5 @@
 export { validate, ValidationRunData, ContractValidation } from './run';
-export { ValidationOptions, withValidationDefaults } from './overrides';
+export { ProxyKindOption, StandaloneValidationOptions, ValidationOptions, withValidationDefaults } from './overrides';
 export { ValidationErrors } from './error';
 export { RunValidation, ValidationLog, Validation, ValidationResult } from './compat';
 export { ValidationData, ValidationDataCurrent, isCurrentValidationData, concatRunData } from './data';

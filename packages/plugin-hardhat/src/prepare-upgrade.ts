@@ -6,7 +6,7 @@ import {
   getContractAddress,
   deployProxyImpl,
   deployBeaconImpl,
-  DeployImplementationOptions,
+  PrepareUpgradeOptions,
 } from './utils';
 import {
   getBeaconAddress,
@@ -20,11 +20,11 @@ import { DeployImplementationResponse } from './deploy-implementation';
 export type PrepareUpgradeFunction = (
   proxyOrBeaconAddress: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
-  opts?: DeployImplementationOptions,
+  opts?: PrepareUpgradeOptions,
 ) => Promise<DeployImplementationResponse>;
 
 export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgradeFunction {
-  return async function prepareUpgrade(proxyOrBeacon, ImplFactory, opts: DeployImplementationOptions = {}) {
+  return async function prepareUpgrade(proxyOrBeacon, ImplFactory, opts: PrepareUpgradeOptions = {}) {
     const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
     const { provider } = hre.network;
     let deployedImpl;
