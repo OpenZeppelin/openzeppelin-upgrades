@@ -1,7 +1,7 @@
 import { fetchOrDeploy, logWarning, fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
 
 import { getDeployData } from './deploy-impl';
-import { Options } from './options';
+import { UpgradeOptions } from './options';
 import { ContractClass } from './truffle';
 
 // To import an already deployed contract we want to reuse fetchOrDeploy for its ability to validate
@@ -9,7 +9,11 @@ import { ContractClass } from './truffle';
 // for the "deploy" part we pass a function that simply returns the contract to be imported, rather than
 // actually deploying something.
 
-export async function simulateDeployAdmin(ProxyAdminFactory: ContractClass, opts: Options, adminAddress: string) {
+export async function simulateDeployAdmin(
+  ProxyAdminFactory: ContractClass,
+  opts: UpgradeOptions,
+  adminAddress: string,
+) {
   const { deployData, simulateDeploy } = await getSimulatedData(ProxyAdminFactory, opts, adminAddress);
   const manifestAdminAddress = await fetchOrDeployAdmin(deployData.provider, simulateDeploy, opts);
   if (adminAddress !== manifestAdminAddress) {
@@ -23,12 +27,12 @@ export async function simulateDeployAdmin(ProxyAdminFactory: ContractClass, opts
   }
 }
 
-export async function simulateDeployImpl(Contract: ContractClass, opts: Options, implAddress: string) {
+export async function simulateDeployImpl(Contract: ContractClass, opts: UpgradeOptions, implAddress: string) {
   const { deployData, simulateDeploy } = await getSimulatedData(Contract, opts, implAddress);
   await fetchOrDeploy(deployData.version, deployData.provider, simulateDeploy, opts, true);
 }
 
-async function getSimulatedData(Contract: ContractClass, opts: Options, implAddress: string) {
+async function getSimulatedData(Contract: ContractClass, opts: UpgradeOptions, implAddress: string) {
   const deployData = await getDeployData(opts, Contract);
   const simulateDeploy = async () => {
     return {

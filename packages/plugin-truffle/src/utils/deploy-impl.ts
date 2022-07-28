@@ -11,7 +11,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
-import { DeployImplementationOptions, Options, withDefaults } from './options';
+import { StandaloneOptions, UpgradeOptions, withDefaults } from './options';
 import { ContractClass, getTruffleConfig } from './truffle';
 import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { validateArtifacts, getLinkedBytecode } from './validations';
@@ -27,14 +27,14 @@ interface DeployedBeaconImpl {
 }
 
 export interface DeployData {
-  fullOpts: Required<Options>;
+  fullOpts: Required<UpgradeOptions>;
   validations: ValidationRunData;
   version: Version;
   provider: EthereumProvider;
   layout: StorageLayout;
 }
 
-export async function getDeployData(opts: Options, Contract: ContractClass): Promise<DeployData> {
+export async function getDeployData(opts: UpgradeOptions, Contract: ContractClass): Promise<DeployData> {
   const fullOpts = withDefaults(opts);
   const provider = wrapProvider(fullOpts.deployer.provider);
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
@@ -46,10 +46,7 @@ export async function getDeployData(opts: Options, Contract: ContractClass): Pro
   return { fullOpts, validations, version, provider, layout };
 }
 
-export async function deployStandaloneImpl(
-  Contract: ContractClass,
-  opts: DeployImplementationOptions,
-): Promise<DeployedImpl> {
+export async function deployStandaloneImpl(Contract: ContractClass, opts: StandaloneOptions): Promise<DeployedImpl> {
   const deployData = await getDeployData(opts, Contract);
   await validateImpl(deployData, opts);
   return await deployImpl(deployData, Contract, opts);
@@ -57,7 +54,7 @@ export async function deployStandaloneImpl(
 
 export async function deployProxyImpl(
   Contract: ContractClass,
-  opts: DeployImplementationOptions,
+  opts: UpgradeOptions,
   proxyAddress?: string,
 ): Promise<DeployedImpl> {
   const deployData = await getDeployData(opts, Contract);
@@ -67,7 +64,7 @@ export async function deployProxyImpl(
 
 export async function deployBeaconImpl(
   Contract: ContractClass,
-  opts: DeployImplementationOptions,
+  opts: UpgradeOptions,
   beaconAddress?: string,
 ): Promise<DeployedBeaconImpl> {
   const deployData = await getDeployData(opts, Contract);
@@ -84,11 +81,7 @@ function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string
   );
 }
 
-async function deployImpl(
-  deployData: DeployData,
-  Contract: ContractClass,
-  opts: DeployImplementationOptions,
-): Promise<any> {
+async function deployImpl(deployData: DeployData, Contract: ContractClass, opts: UpgradeOptions): Promise<any> {
   const layout = deployData.layout;
 
   const impl = await fetchOrDeploy(deployData.version, deployData.provider, async () => {

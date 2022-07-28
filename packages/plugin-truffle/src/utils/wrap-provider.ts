@@ -5,7 +5,7 @@ import { EthereumProvider } from '@openzeppelin/upgrades-core';
 
 import { TruffleProvider } from './truffle';
 
-import { Options, withDefaults } from '.';
+import { UpgradeOptions, withDefaults } from '.';
 
 export function wrapProvider(provider: TruffleProvider): EthereumProvider {
   const sendAsync = ('sendAsync' in provider ? provider.sendAsync : provider.send).bind(provider);
@@ -25,8 +25,8 @@ export function wrapProvider(provider: TruffleProvider): EthereumProvider {
 
 export function wrapWithProvider<A, R>(
   getter: (provider: EthereumProvider, args: A) => R,
-): (args: A, opts: Options) => R {
-  return (args: A, opts?: Options) => {
+): (args: A, opts: UpgradeOptions) => R {
+  return (args: A, opts?: UpgradeOptions) => {
     const { deployer } = withDefaults(opts);
     const provider = wrapProvider(deployer.provider);
     return getter(provider, args);

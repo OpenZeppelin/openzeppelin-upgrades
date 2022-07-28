@@ -7,7 +7,7 @@ import {
   deployProxyImpl,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
-  UpgradeOptions,
+  UpgradeProxyOptions,
   withDefaults,
   getContractAddress,
   ContractAddressOrInstance,
@@ -16,7 +16,7 @@ import {
 export async function upgradeProxy(
   proxy: ContractAddressOrInstance,
   Contract: ContractClass,
-  opts: UpgradeOptions = {},
+  opts: UpgradeProxyOptions = {},
 ): Promise<ContractInstance> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
@@ -64,7 +64,7 @@ async function getUpgrader(
   }
 }
 
-function encodeCall(factory: ContractClass, call: UpgradeOptions['call']): string | undefined {
+function encodeCall(factory: ContractClass, call: UpgradeProxyOptions['call']): string | undefined {
   if (!call) {
     return undefined;
   }
