@@ -50,6 +50,7 @@ async function deployProxy(
     unsafeAllow?: ValidationError[],
     timeout?: number,
     pollingInterval?: number,
+    useDeployedImplementation?: boolean,
     kind?: 'uups' | 'transparent',
   },
 ): Promise<ethers.Contract>
@@ -75,6 +76,7 @@ async function upgradeProxy(
     unsafeSkipStorageCheck?: boolean,
     timeout?: number,
     pollingInterval?: number,
+    useDeployedImplementation?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -94,6 +96,7 @@ async function deployBeacon(
     unsafeAllow?: ValidationError[],
     timeout?: number,
     pollingInterval?: number,
+    useDeployedImplementation?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -116,6 +119,7 @@ async function upgradeBeacon(
     unsafeSkipStorageCheck?: boolean,
     timeout?: number,
     pollingInterval?: number,
+    useDeployedImplementation?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -191,6 +195,7 @@ async function deployImplementation(
     unsafeAllow?: ValidationError[],
     timeout?: number,
     pollingInterval?: number,
+    useDeployedImplementation?: boolean,
     getTxResponse?: boolean,
   },
 ): Promise<string | ethers.providers.TransactionResponse>
@@ -256,6 +261,7 @@ async function prepareUpgrade(
     unsafeSkipStorageCheck?: boolean,
     timeout?: number,
     pollingInterval?: number,
+    useDeployedImplementation?: boolean,
     getTxResponse?: boolean,
   },
 ): Promise<string | ethers.providers.TransactionResponse>
@@ -288,6 +294,7 @@ async function proposeUpgrade(
     unsafeSkipStorageCheck?: boolean,
     timeout?: number,
     pollingInterval?: number,
+    useDeployedImplementation?: boolean,
     title?: string,
     description?: string,
     multisig?: string,
