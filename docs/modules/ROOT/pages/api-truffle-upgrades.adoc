@@ -50,6 +50,7 @@ async function deployProxy(
     deployer?: Deployer,
     initializer?: string | false,
     unsafeAllow?: ValidationError[],
+    constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
@@ -77,6 +78,7 @@ async function upgradeProxy(
     unsafeAllow?: ValidationError[],
     unsafeAllowRenames?: boolean,
     unsafeSkipStorageCheck?: boolean,
+    constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
@@ -96,7 +98,9 @@ Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeac
 async function deployBeacon(
   Contract: ContractClass,
   opts?: {
+    deployer?: Deployer,
     unsafeAllow?: ValidationError[],
+    constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
@@ -117,9 +121,11 @@ async function upgradeBeacon(
   beaconAddress: string,
   Contract: ContractClass,
   opts?: {
+    deployer?: Deployer,
     unsafeAllow?: ValidationError[],
     unsafeAllowRenames?: boolean,
     unsafeSkipStorageCheck?: boolean,
+    constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
@@ -141,6 +147,7 @@ async function deployBeaconProxy(
   attachTo: ContractClass,
   args: unknown[] = [],
   opts?: {
+    deployer?: Deployer,
     initializer?: string | false,
   },
 ): Promise<ContractInstance>
@@ -196,6 +203,7 @@ async function deployImplementation(
   opts?: {
     deployer?: Deployer,
     unsafeAllow?: ValidationError[],
+    constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
@@ -261,6 +269,7 @@ async function prepareUpgrade(
     unsafeAllow?: ValidationError[],
     unsafeAllowRenames?: boolean,
     unsafeSkipStorageCheck?: boolean,
+    constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
