@@ -165,3 +165,5 @@ function tryRequire(id: string) {
   }
   return false;
 }
+
+export { UpgradeOptions } from './utils/options';

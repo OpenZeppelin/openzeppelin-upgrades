@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/truffle-upgrades",
-  "version": "1.15.1",
+  "version": "1.16.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-truffle",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^1.14.1",
+    "@openzeppelin/upgrades-core": "^1.18.0",
     "@truffle/contract": "^4.3.26",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
