@@ -2,9 +2,11 @@ import {
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
   getBeaconAddress,
+  inferProxyKind,
   isBeacon,
   isBeaconProxy,
   isTransparentOrUUPSProxy,
+  ValidateUpdateRequiresKindError,
   ValidationOptions,
 } from '@openzeppelin/upgrades-core';
 import {
@@ -27,10 +29,14 @@ export async function validateUpgrade(
   opts: ValidationOptions = {},
 ): Promise<void> {
   if (isContractClass(addressOrContract)) {
+    const origDeployData = await getDeployData(opts, addressOrContract);
+    if (opts.kind === undefined) {
+      opts.kind = inferProxyKind(origDeployData.validations, origDeployData.version);
+    }
+
     const newDeployData = await getDeployData(opts, newContract);
     assertUpgradeSafe(newDeployData.validations, newDeployData.version, newDeployData.fullOpts);
 
-    const origDeployData = await getDeployData(opts, addressOrContract);
     if (opts.unsafeSkipStorageCheck !== true) {
       assertStorageUpgradeSafe(origDeployData.layout, newDeployData.layout, newDeployData.fullOpts);
     }
@@ -47,6 +53,9 @@ export async function validateUpgrade(
     } else if (await isBeacon(provider, address)) {
       await validateBeaconImpl(deployData, opts, address);
     } else {
+      if (opts.kind === undefined) {
+        throw new ValidateUpdateRequiresKindError();
+      }
       await validateImpl(deployData, opts, address);
     }
   }

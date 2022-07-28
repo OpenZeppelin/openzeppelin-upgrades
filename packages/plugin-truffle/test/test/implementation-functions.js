@@ -157,30 +157,46 @@ contract('Greeter', function () {
     await validateUpgrade(Greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
   });
 
+  it('validate upgrade - uups contracts only - uups inferred - no upgrade function', async function () {
+    await assert.rejects(validateUpgrade(GreeterProxiable, GreeterV2), error =>
+      error.message.includes('Contract `GreeterV2` is not upgrade safe'),
+    );
+  });
+
   it('validate upgrade - uups contracts only - uups - no upgrade function', async function () {
     await assert.rejects(validateUpgrade(GreeterProxiable, GreeterV2, { kind: 'uups' }), error =>
       error.message.includes('Contract `GreeterV2` is not upgrade safe'),
     );
   });
 
-  it('validate upgrade on deployed implementation - happy path', async function () {
+  it('validate upgrade on deployed implementation - happy paths', async function () {
     const greeter = await deployImplementation(Greeter);
-    await validateUpgrade(greeter, GreeterV2);
+    await validateUpgrade(greeter, GreeterV2, { kind: 'transparent' });
+
+    const greeterUUPS = await deployImplementation(GreeterProxiable);
+    await validateUpgrade(greeterUUPS, GreeterV2Proxiable, { kind: 'uups' });
   });
 
   it('validate upgrade on deployed implementation - incompatible storage', async function () {
     const greeter = await deployImplementation(Greeter);
-    await assert.rejects(validateUpgrade(greeter, GreeterStorageConflict), error =>
+    await assert.rejects(validateUpgrade(greeter, GreeterStorageConflict, { kind: 'transparent' }), error =>
       error.message.includes('New storage layout is incompatible'),
     );
   });
 
   it('validate upgrade on deployed implementation - incompatible storage - forced', async function () {
     const greeter = await deployImplementation(Greeter);
-    await validateUpgrade(greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
+    await validateUpgrade(greeter, GreeterStorageConflict, { kind: 'transparent', unsafeSkipStorageCheck: true });
   });
 
-  it('validate upgrade on deployed implementation - uups - no upgrade function', async function () {
+  it('validate upgrade on deployed implementation - no kind', async function () {
+    const greeter = await deployImplementation(GreeterProxiable);
+    await assert.rejects(validateUpgrade(greeter, GreeterV2), error =>
+      error.message.includes('The `kind` option must be provided'),
+    );
+  });
+
+  it('validate upgrade on deployed implementation - kind uups - no upgrade function', async function () {
     const greeter = await deployImplementation(GreeterProxiable);
     await assert.rejects(validateUpgrade(greeter, GreeterV2, { kind: 'uups' }), error =>
       error.message.includes('Contract `GreeterV2` is not upgrade safe'),

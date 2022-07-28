@@ -72,6 +72,16 @@ export class NoContractImportError extends UpgradesError {
   }
 }
 
+export class ValidateUpdateRequiresKindError extends UpgradesError {
+  constructor() {
+    super(
+      'The `kind` option must be provided',
+      () =>
+        'When validating an upgrade from an implementation address, pass in the `kind` option for the kind of proxy that you are using.',
+    );
+  }
+}
+
 export async function assertNotProxy(provider: EthereumProvider, address: string) {
   if (await isTransparentOrUUPSProxy(provider, address)) {
     throw new UpgradesError(

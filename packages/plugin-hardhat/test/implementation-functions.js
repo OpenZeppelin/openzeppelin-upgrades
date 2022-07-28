@@ -190,8 +190,7 @@ test('validate upgrade uups - no upgrade function', async t => {
 });
 
 test('validate upgrade - contracts only - happy paths', async t => {
-  const { Greeter, GreeterV2 } = t.context;
-  const { GreeterProxiable, GreeterV2Proxiable } = t.context;
+  const { Greeter, GreeterV2, GreeterProxiable, GreeterV2Proxiable } = t.context;
 
   await upgrades.validateUpgrade(Greeter, GreeterV2);
   await upgrades.validateUpgrade(GreeterProxiable, GreeterV2Proxiable);
@@ -211,6 +210,14 @@ test('validate upgrade - contracts only - incompatible storage - forced', async 
   await upgrades.validateUpgrade(Greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
 });
 
+test('validate upgrade - contracts only - uups inferred - no upgrade function', async t => {
+  const { GreeterProxiable, GreeterV2 } = t.context;
+
+  await t.throwsAsync(() => upgrades.validateUpgrade(GreeterProxiable, GreeterV2), {
+    message: /(Contract `GreeterV2` is not upgrade safe)/,
+  });
+});
+
 test('validate upgrade - contracts only - uups - no upgrade function', async t => {
   const { GreeterProxiable, GreeterV2 } = t.context;
 
@@ -219,18 +226,21 @@ test('validate upgrade - contracts only - uups - no upgrade function', async t =
   });
 });
 
-test('validate upgrade on deployed implementation - happy path', async t => {
-  const { Greeter, GreeterV2 } = t.context;
+test('validate upgrade on deployed implementation - happy paths', async t => {
+  const { Greeter, GreeterV2, GreeterProxiable, GreeterV2Proxiable } = t.context;
 
   const greeter = await upgrades.deployImplementation(Greeter);
-  await upgrades.validateUpgrade(greeter, GreeterV2);
+  await upgrades.validateUpgrade(greeter, GreeterV2, { kind: 'transparent' });
+
+  const greeterUUPS = await upgrades.deployImplementation(GreeterProxiable);
+  await upgrades.validateUpgrade(greeterUUPS, GreeterV2Proxiable, { kind: 'uups' });
 });
 
 test('validate upgrade on deployed implementation - incompatible storage', async t => {
   const { Greeter, GreeterStorageConflict } = t.context;
 
   const greeter = await upgrades.deployImplementation(Greeter);
-  await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterStorageConflict), {
+  await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterStorageConflict, { kind: 'transparent' }), {
     message: /(New storage layout is incompatible)/,
   });
 });
@@ -239,10 +249,22 @@ test('validate upgrade on deployed implementation - incompatible storage - force
   const { Greeter, GreeterStorageConflict } = t.context;
 
   const greeter = await upgrades.deployImplementation(Greeter);
-  await upgrades.validateUpgrade(greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
+  await upgrades.validateUpgrade(greeter, GreeterStorageConflict, {
+    kind: 'transparent',
+    unsafeSkipStorageCheck: true,
+  });
 });
 
-test('validate upgrade on deployed implementation - uups - no upgrade function', async t => {
+test('validate upgrade on deployed implementation - no kind', async t => {
+  const { GreeterProxiable, GreeterV2 } = t.context;
+
+  const greeter = await upgrades.deployImplementation(GreeterProxiable);
+  await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterV2), {
+    message: /(The `kind` option must be provided)/,
+  });
+});
+
+test('validate upgrade on deployed implementation - kind uups - no upgrade function', async t => {
   const { GreeterProxiable, GreeterV2 } = t.context;
 
   const greeter = await upgrades.deployImplementation(GreeterProxiable);

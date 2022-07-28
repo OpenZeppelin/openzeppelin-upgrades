@@ -10,6 +10,8 @@ import {
   assertUpgradeSafe,
   assertStorageUpgradeSafe,
   ValidationOptions,
+  inferProxyKind,
+  ValidateUpdateRequiresKindError,
 } from '@openzeppelin/upgrades-core';
 import { validateBeaconImpl, validateImpl, validateProxyImpl } from './utils/validate-impl';
 import { getDeployData } from './utils/deploy-impl';
@@ -30,10 +32,14 @@ export function makeValidateUpgrade(hre: HardhatRuntimeEnvironment): ValidateUpg
     opts: ValidationOptions = {},
   ) {
     if (addressOrImplFactory instanceof ContractFactory) {
+      const origDeployData = await getDeployData(hre, addressOrImplFactory, opts);
+      if (opts.kind === undefined) {
+        opts.kind = inferProxyKind(origDeployData.validations, origDeployData.version);
+      }
+
       const newDeployData = await getDeployData(hre, newImplFactory, opts);
       assertUpgradeSafe(newDeployData.validations, newDeployData.version, newDeployData.fullOpts);
 
-      const origDeployData = await getDeployData(hre, addressOrImplFactory, opts);
       if (opts.unsafeSkipStorageCheck !== true) {
         assertStorageUpgradeSafe(origDeployData.layout, newDeployData.layout, newDeployData.fullOpts);
       }
@@ -49,6 +55,9 @@ export function makeValidateUpgrade(hre: HardhatRuntimeEnvironment): ValidateUpg
       } else if (await isBeacon(provider, address)) {
         await validateBeaconImpl(deployData, opts, address);
       } else {
+        if (opts.kind === undefined) {
+          throw new ValidateUpdateRequiresKindError();
+        }
         await validateImpl(deployData, opts, address);
       }
     }
