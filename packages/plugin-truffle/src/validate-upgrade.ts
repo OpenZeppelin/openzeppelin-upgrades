@@ -41,22 +41,22 @@ export async function validateUpgrade(
       assertStorageUpgradeSafe(origDeployData.layout, newDeployData.layout, newDeployData.fullOpts);
     }
   } else {
-    const address = getContractAddress(addressOrContract);
+    const referenceAddress = getContractAddress(addressOrContract);
     const { deployer } = withDefaults(opts);
     const provider = wrapProvider(deployer.provider);
     const deployData = await getDeployData(opts, newContract);
-    if (await isTransparentOrUUPSProxy(provider, address)) {
-      await validateProxyImpl(deployData, opts, address);
-    } else if (await isBeaconProxy(provider, address)) {
-      const beaconAddress = await getBeaconAddress(provider, address);
+    if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
+      await validateProxyImpl(deployData, opts, referenceAddress);
+    } else if (await isBeaconProxy(provider, referenceAddress)) {
+      const beaconAddress = await getBeaconAddress(provider, referenceAddress);
       await validateBeaconImpl(deployData, opts, beaconAddress);
-    } else if (await isBeacon(provider, address)) {
-      await validateBeaconImpl(deployData, opts, address);
+    } else if (await isBeacon(provider, referenceAddress)) {
+      await validateBeaconImpl(deployData, opts, referenceAddress);
     } else {
       if (opts.kind === undefined) {
         throw new ValidateUpdateRequiresKindError();
       }
-      await validateImpl(deployData, opts, address);
+      await validateImpl(deployData, opts, referenceAddress);
     }
   }
 }
