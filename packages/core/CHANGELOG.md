@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Provide granular functions to allow more customizable deployments. ([#580](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/580))
+
 ## 1.17.0 (2022-07-26)
 
 - Remove BN.js in favor of native BigInt. ([#602](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/602))

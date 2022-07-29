@@ -1,30 +1,53 @@
 import { Deployer, ContractClass, ContractInstance, getTruffleConfig } from './truffle';
-import { DeployOpts, ValidationOptions, withValidationDefaults } from '@openzeppelin/upgrades-core';
+import {
+  DeployOpts,
+  ProxyKindOption,
+  StandaloneValidationOptions,
+  ValidationOptions,
+  withValidationDefaults,
+} from '@openzeppelin/upgrades-core';
 
-export type Options = ValidationOptions &
-  DeployOpts & {
-    deployer?: Deployer;
+type TruffleDeployer = {
+  deployer?: Deployer;
+};
+
+export type StandaloneOptions = StandaloneValidationOptions &
+  DeployOpts &
+  TruffleDeployer & {
     constructorArgs?: unknown[];
+    useDeployedImplementation?: boolean;
   };
 
-export function withDefaults(opts: Options = {}): Required<Options> {
+export type UpgradeOptions = ValidationOptions & StandaloneOptions;
+
+export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions> {
   return {
     deployer: opts.deployer ?? defaultDeployer,
     timeout: opts.timeout ?? 60e3, // not used for Truffle, but include these anyways
     pollingInterval: opts.pollingInterval ?? 5e3, // not used for Truffle, but include these anyways
     constructorArgs: opts.constructorArgs ?? [],
+    useDeployedImplementation: opts.useDeployedImplementation ?? true,
     ...withValidationDefaults(opts),
   };
 }
 
-export interface DeployProxyOptions extends Options {
+type Initializer = {
   initializer?: string | false;
-}
+};
 
-export interface UpgradeOptions extends Options {
+export type DeployBeaconProxyOptions = ProxyKindOption & Initializer & TruffleDeployer;
+export type DeployBeaconOptions = StandaloneOptions;
+export type DeployImplementationOptions = StandaloneOptions;
+export type DeployProxyAdminOptions = DeployOpts & TruffleDeployer;
+export type DeployProxyOptions = StandaloneOptions & Initializer;
+export type ForceImportOptions = ProxyKindOption;
+export type PrepareUpgradeOptions = UpgradeOptions;
+export type UpgradeBeaconOptions = UpgradeOptions;
+export type UpgradeProxyOptions = UpgradeOptions & {
   call?: { fn: string; args?: unknown[] } | string;
-  unsafeSkipStorageCheck?: boolean;
-}
+};
+export type ValidateImplementationOptions = StandaloneValidationOptions;
+export type ValidateUpgradeOptions = ValidationOptions;
 
 const defaultDeployer: Deployer = {
   get provider() {

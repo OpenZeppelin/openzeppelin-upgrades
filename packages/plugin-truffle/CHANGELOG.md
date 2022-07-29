@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Provide granular functions to allow more customizable deployments. ([#580](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/580))
+
 ## 1.15.1 (2022-07-26)
 
 - Add dependencies on `debug` and `ethers`. ([#600](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/600))

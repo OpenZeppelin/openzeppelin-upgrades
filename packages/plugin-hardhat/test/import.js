@@ -39,10 +39,32 @@ function getInitializerData(contractInterface, args) {
 }
 
 const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the network manifest';
-const NOT_SUPPORTED_PROXY_OR_BEACON = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
-const ONLY_PROXY_OR_BEACON =
-  'Only transparent, UUPS, or beacon proxies or beacons can be used with the forceImport() function.';
 const REQUESTED_UPGRADE_WRONG_KIND = 'Requested an upgrade of kind uups but proxy is transparent';
+
+test('implementation happy path', async t => {
+  const { GreeterProxiable } = t.context;
+
+  const impl = await GreeterProxiable.deploy();
+  await impl.deployed();
+
+  const contract = await upgrades.forceImport(impl.address, GreeterProxiable);
+  t.is(impl.address, contract.address);
+  t.is('', await contract.greet());
+
+  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!'], {
+    useDeployedImplementation: true,
+  });
+  t.is(await greeter.greet(), 'Hello, Hardhat!');
+});
+
+test('no contract', async t => {
+  const { GreeterProxiable } = t.context;
+
+  const e = await t.throwsAsync(() =>
+    upgrades.forceImport('0x0000000000000000000000000000000000000001', GreeterProxiable),
+  );
+  t.true(e.message.startsWith('No contract at address 0x0000000000000000000000000000000000000001'), e.message);
+});
 
 test('transparent happy path', async t => {
   const { Greeter, GreeterV2, ProxyAdmin, TransparentUpgradableProxy } = t.context;
@@ -122,16 +144,6 @@ test('beacon happy path', async t => {
   t.is(await beaconImported.implementation(), impl.address);
 
   await upgrades.upgradeBeacon(beacon, GreeterV2);
-});
-
-test('not proxy or beacon', async t => {
-  const { Greeter } = t.context;
-
-  const impl = await Greeter.deploy();
-  await impl.deployed();
-
-  const e = await t.throwsAsync(() => upgrades.forceImport(impl.address, Greeter));
-  t.true(NOT_SUPPORTED_PROXY_OR_BEACON.test(e.message) && e.message.includes(ONLY_PROXY_OR_BEACON), e.message);
 });
 
 test('import proxy using contract instance', async t => {

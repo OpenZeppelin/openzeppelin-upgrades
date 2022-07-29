@@ -12,7 +12,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import {
-  DeployProxyOptions,
+  DeployBeaconProxyOptions,
   deploy,
   DeployTransaction,
   getBeaconProxyFactory,
@@ -26,17 +26,17 @@ export interface DeployBeaconProxyFunction {
     beacon: ContractAddressOrInstance,
     attachTo: ContractFactory,
     args?: unknown[],
-    opts?: DeployProxyOptions,
+    opts?: DeployBeaconProxyOptions,
   ): Promise<Contract>;
-  (beacon: ContractAddressOrInstance, attachTo: ContractFactory, opts?: DeployProxyOptions): Promise<Contract>;
+  (beacon: ContractAddressOrInstance, attachTo: ContractFactory, opts?: DeployBeaconProxyOptions): Promise<Contract>;
 }
 
 export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBeaconProxyFunction {
   return async function deployBeaconProxy(
     beacon: ContractAddressOrInstance,
     attachTo: ContractFactory,
-    args: unknown[] | DeployProxyOptions = [],
-    opts: DeployProxyOptions = {},
+    args: unknown[] | DeployBeaconProxyOptions = [],
+    opts: DeployBeaconProxyOptions = {},
   ) {
     if (!(attachTo instanceof ContractFactory)) {
       throw new UpgradesError(

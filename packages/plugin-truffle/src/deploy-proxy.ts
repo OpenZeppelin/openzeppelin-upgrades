@@ -1,10 +1,5 @@
-import {
-  Manifest,
-  fetchOrDeployAdmin,
-  logWarning,
-  ProxyDeployment,
-  BeaconProxyUnsupportedError,
-} from '@openzeppelin/upgrades-core';
+import { Manifest, logWarning, ProxyDeployment, BeaconProxyUnsupportedError } from '@openzeppelin/upgrades-core';
+import { deployProxyAdmin } from './deploy-proxy-admin';
 
 import {
   ContractClass,
@@ -14,7 +9,6 @@ import {
   deployProxyImpl,
   getProxyFactory,
   getTransparentUpgradeableProxyFactory,
-  getProxyAdminFactory,
   DeployProxyOptions,
   withDefaults,
 } from './utils';
@@ -64,8 +58,7 @@ export async function deployProxy(
     }
 
     case 'transparent': {
-      const AdminFactory = getProxyAdminFactory(Contract);
-      const adminAddress = await fetchOrDeployAdmin(provider, () => deploy(deployer, AdminFactory));
+      const adminAddress = await deployProxyAdmin(opts);
       const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
       proxyDeployment = Object.assign(
         { kind },

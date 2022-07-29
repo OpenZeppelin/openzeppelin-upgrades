@@ -3,14 +3,14 @@ import type { ContractFactory, Contract } from 'ethers';
 
 import { Deployment } from '@openzeppelin/upgrades-core';
 
-import { Options, deploy, DeployTransaction, getUpgradeableBeaconFactory, deployBeaconImpl } from './utils';
+import { DeployBeaconOptions, deploy, DeployTransaction, getUpgradeableBeaconFactory, deployBeaconImpl } from './utils';
 
 export interface DeployBeaconFunction {
-  (ImplFactory: ContractFactory, opts?: Options): Promise<Contract>;
+  (ImplFactory: ContractFactory, opts?: DeployBeaconOptions): Promise<Contract>;
 }
 
 export function makeDeployBeacon(hre: HardhatRuntimeEnvironment): DeployBeaconFunction {
-  return async function deployBeacon(ImplFactory: ContractFactory, opts: Options = {}) {
+  return async function deployBeacon(ImplFactory: ContractFactory, opts: DeployBeaconOptions = {}) {
     const { impl } = await deployBeaconImpl(hre, ImplFactory, opts);
 
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);

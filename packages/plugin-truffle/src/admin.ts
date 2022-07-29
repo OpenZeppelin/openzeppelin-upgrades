@@ -1,11 +1,11 @@
 import chalk from 'chalk';
 import { EthereumProvider, getAdminAddress, Manifest } from '@openzeppelin/upgrades-core';
-import { ContractInstance, getProxyAdminFactory, wrapProvider, Options, withDefaults } from './utils';
+import { ContractInstance, getProxyAdminFactory, wrapProvider, UpgradeOptions, withDefaults } from './utils';
 
 const SUCCESS_CHECK = chalk.green('✔') + ' ';
 const FAILURE_CROSS = chalk.red('✘') + ' ';
 
-async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Options = {}): Promise<void> {
+async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: UpgradeOptions = {}): Promise<void> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
   const admin = await getManifestAdmin(provider);
@@ -18,7 +18,7 @@ async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Op
   }
 }
 
-async function transferProxyAdminOwnership(newOwner: string, opts: Options = {}): Promise<void> {
+async function transferProxyAdminOwnership(newOwner: string, opts: UpgradeOptions = {}): Promise<void> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
   const admin = await getManifestAdmin(provider);
@@ -35,7 +35,7 @@ async function transferProxyAdminOwnership(newOwner: string, opts: Options = {})
   }
 }
 
-async function getInstance(opts: Options = {}): Promise<ContractInstance> {
+async function getInstance(opts: UpgradeOptions = {}): Promise<ContractInstance> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
   return await getManifestAdmin(provider);

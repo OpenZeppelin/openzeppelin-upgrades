@@ -1,14 +1,14 @@
 = OpenZeppelin Truffle Upgrades API
 
-Both `deployProxy` and `upgradeProxy` functions will return instances of https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions[Truffle contracts], and require Truffle contract classes (retrieved via `artifacts.require`) as arguments. For https://docs.openzeppelin.com/contracts/4.x/api/proxy#beacon[beacons], `deployBeacon` and `upgradeBeacon` will both return an upgradable beacon instance that can be used with a beacon proxy. All functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
+Both `deployProxy` and `upgradeProxy` functions will return instances of https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions[Truffle contracts], and require Truffle contract classes (retrieved via `artifacts.require`) as arguments. For https://docs.openzeppelin.com/contracts/4.x/api/proxy#beacon[beacons], `deployBeacon` and `upgradeBeacon` will both return an upgradable beacon instance that can be used with a beacon proxy. All deploy and upgrade functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
 
 [[common-options]]
 == Common Options
 
-The following options are common to all functions.
+The following options are common to some functions.
 
 * `deployer`: Should be set to the Truffle migration deployer during migrations.
-* `kind`: (`"uups" | "transparent"`) Choose between a UUPS or Transparent proxy. Defaults to Transparent. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS]. Not applicable for Beacon proxies except for xref:#force-import[`forceImport`].
+* `kind`: (`"uups" | "transparent" | "beacon"`) The kind of proxy to deploy, upgrade or import, or the kind of proxy that the implementation will be used with. `deployProxy()` and `upgradeProxy()` only support the values `"uups" | "transparent"`. Defaults to `"transparent"`. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
 * `unsafeAllow`: (`ValidationError[]`) Selectively disable one or more validation errors:
 ** `"external-library-linking"`: Allows a deployment with external libraries linked to the implementation contract. (External libraries are otherwise xref:faq.adoc#why-cant-i-use-external-libraries[not yet supported].)
 ** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.
@@ -20,6 +20,7 @@ The following options are common to all functions.
 * `unsafeAllowRenames`: (`boolean`) Configure storage layout check to allow variable renaming.
 * `unsafeSkipStorageCheck`: (`boolean`) upgrades the proxy or beacon without first checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
 * `constructorArgs`: (`unknown[]`) Provide arguments for the constructor of the implementation contract. Note that these are different from initializer arguments, and will be used in the deployment of the implementation contract itself. Can be used to initialize immutable variables.
+* `useDeployedImplementation`: (`boolean`) Require the use of an existing deployed implementation. If this is set to `true` and the implementation contract was not previously deployed or is not found in the network file, an error will be thrown instead of deploying the implementation.
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -45,12 +46,16 @@ If you call `deployProxy` several times for the same implementation contract, se
 async function deployProxy(
   Contract: ContractClass,
   args: unknown[] = [],
-  opts: {
-    deployer: Deployer,
-    initializer: string | false,
-    unsafeAllow: ValidationError[],
-    kind: 'uups' | 'transparent',
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    initializer?: string | false,
+    unsafeAllow?: ValidationError[],
+    constructorArgs?: unknown[],
+    timeout?: number,
+    pollingInterval?: number,
+    useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent',
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -67,12 +72,18 @@ Upgrades a UUPS or Transparent proxy at a specified address to a new implementat
 async function upgradeProxy(
   proxyAddress: string,
   Contract: ContractClass,
-  opts: {
-    deployer: Deployer,
-    call: string | { fn: string; args?: unknown[] },
-    unsafeAllow: ValidationError[],
-    unsafeSkipStorageCheck: boolean;
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    call?: string | { fn: string; args?: unknown[] },
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    constructorArgs?: unknown[],
+    timeout?: number,
+    pollingInterval?: number,
+    useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent',
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -87,9 +98,14 @@ Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeac
 ----
 async function deployBeacon(
   Contract: ContractClass,
-  opts: {
-    unsafeAllow: ValidationError[],
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    unsafeAllow?: ValidationError[],
+    constructorArgs?: unknown[],
+    timeout?: number,
+    pollingInterval?: number,
+    useDeployedImplementation?: boolean,
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -105,10 +121,16 @@ Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBea
 async function upgradeBeacon(
   beaconAddress: string,
   Contract: ContractClass,
-  opts: {
-    unsafeAllow: ValidationError[],
-    unsafeSkipStorageCheck: boolean;
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    constructorArgs?: unknown[],
+    timeout?: number,
+    pollingInterval?: number,
+    useDeployedImplementation?: boolean,
+  },
 ): Promise<ContractInstance>
 ----
 
@@ -125,16 +147,17 @@ async function deployBeaconProxy(
   beaconAddress: string,
   attachTo: ContractClass,
   args: unknown[] = [],
-  opts: {
+  opts?: {
+    deployer?: Deployer,
     initializer?: string | false,
-  } = {},
+  },
 ): Promise<ContractInstance>
 ----
 
 [[force-import]]
 == forceImport
 
-Forces the import of an existing proxy or beacon deployment to be used with this plugin. Provide the address of an existing proxy or beacon and the Truffle contract class of the implementation contract that was deployed. Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons.
+Forces the import of an existing proxy, beacon, or implementation contract deployment to be used with this plugin. Provide the address of an existing proxy, beacon or implementation, along with the Truffle contract class of the implementation contract that was deployed. Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
 
 * `kind`: (`"uups" | "transparent" | "beacon"`) forces a proxy to be treated as a UUPS, Transparent, or Beacon proxy. If not provided, the proxy kind will be automatically detected.
 * See <<common-options>>.
@@ -142,12 +165,95 @@ Forces the import of an existing proxy or beacon deployment to be used with this
 [source,ts]
 ----
 async function forceImport(
-  proxyOrBeaconAddress: string,
+  address: string,
   deployedImpl: ContractClass,
-  opts: {
+  opts?: {
     kind?: 'uups' | 'transparent' | 'beacon',
-  } = {},
+  },
 ): Promise<ContractInstance>
+----
+
+[[validate-implementation]]
+== validateImplementation
+
+Validates an implementation contract without deploying it.
+
+* See <<common-options>>.
+
+[source,ts]
+----
+async function validateImplementation(
+  Contract: ContractClass,
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    kind?: 'uups' | 'transparent' | 'beacon',
+  },
+): Promise<void>
+----
+
+[[deploy-implementation]]
+== deployImplementation
+
+Validates and deploys an implementation contract, and returns its address.
+
+* See <<common-options>>.
+
+[source,ts]
+----
+async function deployImplementation(
+  Contract: ContractClass,
+  opts?: {
+    deployer?: Deployer,
+    unsafeAllow?: ValidationError[],
+    constructorArgs?: unknown[],
+    timeout?: number,
+    pollingInterval?: number,
+    useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
+  },
+): Promise<string>
+----
+
+[[validate-upgrade]]
+== validateUpgrade
+
+Validates a new implementation contract without deploying it and without actually upgrading to it. Compares the current implementation contract (given a proxy or beacon address that uses the current implementation, or an address or Truffle contract class corresponding to the current implementation) to the new implementation contract to check for storage layout compatibility errors. If `referenceAddressOrContract` is the current implementation address, the `kind` option is required. 
+
+* See <<common-options>>.
+
+[source,ts]
+----
+async function validateUpgrade(
+  referenceAddressOrContract: string | ContractClass,
+  newContract: ContractClass,
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
+  },
+): Promise<void>
+----
+
+*Examples*
+
+Validate upgrading an existing proxy to a new contract (replace `PROXY_ADDRESS` with the address of your proxy):
+[source,ts]
+----
+const { validateUpgrade } = require('@openzeppelin/truffle-upgrades');
+
+const BoxV2 = artifacts.require('BoxV2');
+await validateUpgrade(PROXY_ADDRESS, BoxV2);
+----
+
+Validate upgrading between two contract implementations:
+[source,ts]
+----
+const { validateUpgrade } = require('@openzeppelin/truffle-upgrades');
+
+const Box = artifacts.require('Box');
+const BoxV2 = artifacts.require('BoxV2');
+await validateUpgrade(Box, BoxV2);
 ----
 
 [[prepare-upgrade]]
@@ -162,11 +268,35 @@ See <<common-options>>.
 async function prepareUpgrade(
   proxyOrBeaconAddress: string,
   Contract: ContractClass,
-  opts: {
-    deployer: Deployer,
-    unsafeAllow: ValidationError[],
-    unsafeSkipStorageCheck: boolean;
-  } = {},
+  opts?: {
+    deployer?: Deployer,
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    constructorArgs?: unknown[],
+    timeout?: number,
+    pollingInterval?: number,
+    useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
+  },
+): Promise<string>
+----
+
+[[deploy-proxy-admin]]
+== deployProxyAdmin
+
+Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy admin] contract and returns its address if one was not already deployed on the current network, or just returns the address of the proxy admin if one was already deployed. Note that this plugin currently only supports using one proxy admin per network.
+
+* See <<common-options>>.
+
+[source,ts]
+----
+async function deployProxyAdmin(
+  opts?: {
+    deployer?: Deployer,
+    timeout?: number,
+    pollingInterval?: number,
+  },
 ): Promise<string>
 ----
 

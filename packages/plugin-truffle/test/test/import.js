@@ -9,7 +9,14 @@ const {
 } = require('@openzeppelin/truffle-upgrades/dist/utils/factories.js');
 const { getInitializerData } = require('@openzeppelin/truffle-upgrades/dist/utils/initializer-data');
 
-const { forceImport, upgradeProxy, upgradeBeacon, prepareUpgrade, erc1967 } = require('@openzeppelin/truffle-upgrades');
+const {
+  forceImport,
+  deployProxy,
+  upgradeProxy,
+  upgradeBeacon,
+  prepareUpgrade,
+  erc1967,
+} = require('@openzeppelin/truffle-upgrades');
 
 const { deployer } = withDefaults({});
 
@@ -21,12 +28,28 @@ const CustomProxy = artifacts.require('CustomProxy');
 const CustomProxyWithAdmin = artifacts.require('CustomProxyWithAdmin');
 
 const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the network manifest';
-const NOT_SUPPORTED_PROXY_OR_BEACON = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
-const ONLY_PROXY_OR_BEACON =
-  'Only transparent, UUPS, or beacon proxies or beacons can be used with the forceImport() function.';
 const REQUESTED_UPGRADE_WRONG_KIND = 'Requested an upgrade of kind uups but proxy is transparent';
 
 contract('Greeter', function () {
+  it('implementation happy path', async function () {
+    const impl = await deployer.deploy(GreeterProxiable);
+
+    const contract = await forceImport(impl.address, GreeterProxiable);
+    assert.equal(impl.address, contract.address);
+    assert.equal(await contract.greet(), '');
+
+    const greeter = await deployProxy(GreeterProxiable, ['Hello, Truffle!'], {
+      useDeployedImplementation: true,
+    });
+    assert.equal(await greeter.greet(), 'Hello, Truffle!');
+  });
+
+  it('no contract', async function () {
+    await assert.rejects(forceImport('0x0000000000000000000000000000000000000001', GreeterProxiable), error =>
+      error.message.startsWith('No contract at address 0x0000000000000000000000000000000000000001'),
+    );
+  });
+
   it('transparent happy path', async function () {
     const impl = await deployer.deploy(Greeter);
     const admin = await deployer.deploy(getProxyAdminFactory());
@@ -87,15 +110,6 @@ contract('Greeter', function () {
     assert.equal(await beaconImported.implementation(), impl.address);
 
     await upgradeBeacon(beacon, GreeterV2);
-  });
-
-  it('not proxy or beacon', async function () {
-    const impl = await deployer.deploy(Greeter);
-
-    await assert.rejects(
-      forceImport(impl.address, Greeter),
-      error => NOT_SUPPORTED_PROXY_OR_BEACON.test(error.message) && error.message.includes(ONLY_PROXY_OR_BEACON),
-    );
   });
 
   it('import proxy using contract instance', async function () {

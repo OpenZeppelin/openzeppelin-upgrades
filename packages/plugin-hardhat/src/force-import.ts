@@ -8,10 +8,11 @@ import {
   addProxyToManifest,
   isBeacon,
   getImplementationAddressFromBeacon,
-  ForceImportUnsupportedError,
   inferProxyKind,
   isBeaconProxy,
   ProxyDeployment,
+  hasCode,
+  NoContractImportError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -19,39 +20,43 @@ import {
   ContractAddressOrInstance,
   getContractAddress,
   getUpgradeableBeaconFactory,
-  Options,
+  ForceImportOptions,
 } from './utils';
 import { simulateDeployAdmin } from './utils/simulate-deploy';
 import { getDeployData } from './utils/deploy-impl';
 
 export interface ForceImportFunction {
-  (proxyAddress: string, ImplFactory: ContractFactory, opts?: Options): Promise<Contract>;
+  (proxyAddress: string, ImplFactory: ContractFactory, opts?: ForceImportOptions): Promise<Contract>;
 }
 
 export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunction {
   return async function forceImport(
-    proxyOrBeacon: ContractAddressOrInstance,
+    addressOrInstance: ContractAddressOrInstance,
     ImplFactory: ContractFactory,
-    opts: Options = {},
+    opts: ForceImportOptions = {},
   ) {
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
+    const address = getContractAddress(addressOrInstance);
 
-    const implAddress = await getImplementationAddressFromProxy(provider, proxyOrBeaconAddress);
+    const implAddress = await getImplementationAddressFromProxy(provider, address);
     if (implAddress !== undefined) {
-      await importProxyToManifest(provider, hre, proxyOrBeaconAddress, implAddress, ImplFactory, opts, manifest);
+      await importProxyToManifest(provider, hre, address, implAddress, ImplFactory, opts, manifest);
 
-      return ImplFactory.attach(proxyOrBeaconAddress);
-    } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
-      const beaconImplAddress = await getImplementationAddressFromBeacon(provider, proxyOrBeaconAddress);
+      return ImplFactory.attach(address);
+    } else if (await isBeacon(provider, address)) {
+      const beaconImplAddress = await getImplementationAddressFromBeacon(provider, address);
       await addImplToManifest(hre, beaconImplAddress, ImplFactory, opts);
 
       const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
-      return UpgradeableBeaconFactory.attach(proxyOrBeaconAddress);
+      return UpgradeableBeaconFactory.attach(address);
     } else {
-      throw new ForceImportUnsupportedError(proxyOrBeaconAddress);
+      if (!(await hasCode(provider, address))) {
+        throw new NoContractImportError(address);
+      }
+      await addImplToManifest(hre, address, ImplFactory, opts);
+      return ImplFactory.attach(address);
     }
   };
 }
@@ -62,7 +67,7 @@ async function importProxyToManifest(
   proxyAddress: string,
   implAddress: string,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: ForceImportOptions,
   manifest: Manifest,
 ) {
   await addImplToManifest(hre, implAddress, ImplFactory, opts);
@@ -89,7 +94,7 @@ async function addImplToManifest(
   hre: HardhatRuntimeEnvironment,
   implAddress: string,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: ForceImportOptions,
 ) {
   await simulateDeployImpl(hre, ImplFactory, opts, implAddress);
 }
@@ -99,7 +104,7 @@ async function addAdminToManifest(
   hre: HardhatRuntimeEnvironment,
   proxyAddress: string,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: ForceImportOptions,
 ) {
   const adminAddress = await getAdminAddress(provider, proxyAddress);
   await simulateDeployAdmin(hre, ImplFactory, opts, adminAddress);

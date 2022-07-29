@@ -1,17 +1,10 @@
 import {
-  assertNotProxy,
-  assertStorageUpgradeSafe,
-  assertUpgradeSafe,
   fetchOrDeployGetDeployment,
-  getImplementationAddress,
-  getImplementationAddressFromBeacon,
   getStorageLayout,
-  getStorageLayoutForAddress,
   getUnlinkedBytecode,
   getVersion,
-  Manifest,
-  processProxyKind,
   StorageLayout,
+  UpgradesError,
   ValidationDataCurrent,
   ValidationOptions,
   Version,
@@ -20,7 +13,8 @@ import type { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
-import { Options, PrepareUpgradeOptions, withDefaults } from './options';
+import { GetTxResponse, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
+import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { readValidations } from './validations';
 
 interface DeployedProxyImpl {
@@ -41,13 +35,13 @@ export interface DeployData {
   encodedArgs: string;
   version: Version;
   layout: StorageLayout;
-  fullOpts: Required<Options>;
+  fullOpts: Required<UpgradeOptions>;
 }
 
 export async function getDeployData(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: UpgradeOptions,
 ): Promise<DeployData> {
   const { provider } = hre.network;
   const validations = await readValidations(hre);
@@ -59,67 +53,63 @@ export async function getDeployData(
   return { provider, validations, unlinkedBytecode, encodedArgs, version, layout, fullOpts };
 }
 
+export async function deployStandaloneImpl(
+  hre: HardhatRuntimeEnvironment,
+  ImplFactory: ContractFactory,
+  opts: StandaloneOptions,
+): Promise<DeployedProxyImpl> {
+  const deployData = await getDeployData(hre, ImplFactory, opts);
+  await validateImpl(deployData, opts);
+  return await deployImpl(hre, deployData, ImplFactory, opts);
+}
+
 export async function deployProxyImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: UpgradeOptions,
   proxyAddress?: string,
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
-
-  await processProxyKind(deployData.provider, proxyAddress, opts, deployData.validations, deployData.version);
-
-  let currentImplAddress: string | undefined;
-  if (proxyAddress !== undefined) {
-    // upgrade scenario
-    currentImplAddress = await getImplementationAddress(deployData.provider, proxyAddress);
-  }
-
-  return deployImpl(hre, deployData, ImplFactory, opts, currentImplAddress);
+  await validateProxyImpl(deployData, opts, proxyAddress);
+  return await deployImpl(hre, deployData, ImplFactory, opts);
 }
 
 export async function deployBeaconImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
-  opts: Options,
+  opts: UpgradeOptions,
   beaconAddress?: string,
 ): Promise<DeployedBeaconImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
-
-  let currentImplAddress;
-  if (beaconAddress !== undefined) {
-    // upgrade scenario
-    await assertNotProxy(deployData.provider, beaconAddress);
-    currentImplAddress = await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
-  }
-  return deployImpl(hre, deployData, ImplFactory, opts, currentImplAddress);
+  await validateBeaconImpl(deployData, opts, beaconAddress);
+  return await deployImpl(hre, deployData, ImplFactory, opts);
 }
 
 async function deployImpl(
   hre: HardhatRuntimeEnvironment,
   deployData: DeployData,
   ImplFactory: ContractFactory,
-  opts: PrepareUpgradeOptions,
-  currentImplAddress?: string,
+  opts: UpgradeOptions & GetTxResponse,
 ): Promise<any> {
-  assertUpgradeSafe(deployData.validations, deployData.version, deployData.fullOpts);
-
   const layout = deployData.layout;
-
-  if (currentImplAddress !== undefined) {
-    const manifest = await Manifest.forNetwork(deployData.provider);
-    const currentLayout = await getStorageLayoutForAddress(manifest, deployData.validations, currentImplAddress);
-    if (opts.unsafeSkipStorageCheck !== true) {
-      assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
-    }
-  }
 
   const deployment = await fetchOrDeployGetDeployment(
     deployData.version,
     deployData.provider,
     async () => {
       const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
-      const deployment = Object.assign({ abi }, await deploy(ImplFactory, ...deployData.fullOpts.constructorArgs));
+      const attemptDeploy = () => {
+        if (opts.useDeployedImplementation) {
+          throw new UpgradesError(
+            'The implementation contract was not previously deployed.',
+            () =>
+              'The useDeployedImplementation option was set to true but the implementation contract was not previously deployed on this network.',
+          );
+        } else {
+          return deploy(ImplFactory, ...deployData.fullOpts.constructorArgs);
+        }
+      };
+      const deployment = Object.assign({ abi }, await attemptDeploy());
       return { ...deployment, layout };
     },
     opts,

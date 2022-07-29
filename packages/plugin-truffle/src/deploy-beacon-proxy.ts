@@ -17,26 +17,26 @@ import {
   getContractAddress,
   ContractAddressOrInstance,
   getBeaconProxyFactory,
-  DeployProxyOptions,
+  DeployBeaconProxyOptions,
 } from './utils';
 import { getInitializerData } from './utils/initializer-data';
 
 export async function deployBeaconProxy(
   beacon: ContractAddressOrInstance,
   attachTo: ContractClass,
-  opts?: DeployProxyOptions,
+  opts?: DeployBeaconProxyOptions,
 ): Promise<ContractInstance>;
 export async function deployBeaconProxy(
   beacon: ContractAddressOrInstance,
   attachTo: ContractClass,
   args?: unknown[],
-  opts?: DeployProxyOptions,
+  opts?: DeployBeaconProxyOptions,
 ): Promise<ContractInstance>;
 export async function deployBeaconProxy(
   beacon: ContractAddressOrInstance,
   attachTo: ContractClass,
-  args: unknown[] | DeployProxyOptions = [],
-  opts: DeployProxyOptions = {},
+  args: unknown[] | DeployBeaconProxyOptions = [],
+  opts: DeployBeaconProxyOptions = {},
 ): Promise<ContractInstance> {
   // infer attachTo's interface
   if (attachTo === undefined || !('bytecode' in attachTo)) {

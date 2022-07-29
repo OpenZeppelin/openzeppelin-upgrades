@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix type for options in `proposeUpgrade`. ([#609](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/609))
+
 ## 1.7.0 (2022-06-16)
 
 - Return ethers transaction response with `proposeUpgrade`. ([#554](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/554))
