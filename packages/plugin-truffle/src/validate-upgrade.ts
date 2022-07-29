@@ -24,12 +24,12 @@ function isContractClass(object: any): object is ContractClass {
 }
 
 export async function validateUpgrade(
-  addressOrContract: ContractAddressOrInstance | ContractClass,
+  referenceAddressOrContract: ContractAddressOrInstance | ContractClass,
   newContract: ContractClass,
   opts: ValidationOptions = {},
 ): Promise<void> {
-  if (isContractClass(addressOrContract)) {
-    const origDeployData = await getDeployData(opts, addressOrContract);
+  if (isContractClass(referenceAddressOrContract)) {
+    const origDeployData = await getDeployData(opts, referenceAddressOrContract);
     if (opts.kind === undefined) {
       opts.kind = inferProxyKind(origDeployData.validations, origDeployData.version);
     }
@@ -41,7 +41,7 @@ export async function validateUpgrade(
       assertStorageUpgradeSafe(origDeployData.layout, newDeployData.layout, newDeployData.fullOpts);
     }
   } else {
-    const referenceAddress = getContractAddress(addressOrContract);
+    const referenceAddress = getContractAddress(referenceAddressOrContract);
     const { deployer } = withDefaults(opts);
     const provider = wrapProvider(deployer.provider);
     const deployData = await getDeployData(opts, newContract);

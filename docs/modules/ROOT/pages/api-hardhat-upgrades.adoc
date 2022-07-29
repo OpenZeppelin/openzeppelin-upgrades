@@ -212,15 +212,15 @@ async function deployImplementation(
 [[validate-upgrade]]
 == validateUpgrade
 
-Validates a new implementation contract without deploying it and without actually upgrading to it, and compares it with the current implementation contract (given a proxy or beacon address that uses the current implementation, or an ethers contract factory corresponding to the current implementation) to check for storage layout compatibility errors.
+Validates a new implementation contract without deploying it and without actually upgrading to it. Compares the current implementation contract (given a proxy or beacon address that uses the current implementation, or an address or ethers contract factory corresponding to the current implementation) to the new implementation contract to check for storage layout compatibility errors. If `referenceAddressOrContract` is the current implementation address, the `kind` option is required. 
 
 * See <<common-options>>.
 
 [source,ts]
 ----
 async function validateUpgrade(
-  addressOrImplFactory: string | ethers.ContractFactory,
-  newImplFactory: ethers.ContractFactory,
+  referenceAddressOrContract: string | ethers.ContractFactory,
+  newContract: ethers.ContractFactory,
   opts?: {
     unsafeAllow?: ValidationError[],
     unsafeAllowRenames?: boolean,

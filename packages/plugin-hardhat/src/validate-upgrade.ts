@@ -27,12 +27,12 @@ export interface ValidateUpgradeFunction {
 
 export function makeValidateUpgrade(hre: HardhatRuntimeEnvironment): ValidateUpgradeFunction {
   return async function validateUpgrade(
-    addressOrImplFactory: ContractAddressOrInstance | ContractFactory,
+    referenceAddressOrImplFactory: ContractAddressOrInstance | ContractFactory,
     newImplFactory: ContractFactory,
     opts: ValidationOptions = {},
   ) {
-    if (addressOrImplFactory instanceof ContractFactory) {
-      const origDeployData = await getDeployData(hre, addressOrImplFactory, opts);
+    if (referenceAddressOrImplFactory instanceof ContractFactory) {
+      const origDeployData = await getDeployData(hre, referenceAddressOrImplFactory, opts);
       if (opts.kind === undefined) {
         opts.kind = inferProxyKind(origDeployData.validations, origDeployData.version);
       }
@@ -44,7 +44,7 @@ export function makeValidateUpgrade(hre: HardhatRuntimeEnvironment): ValidateUpg
         assertStorageUpgradeSafe(origDeployData.layout, newDeployData.layout, newDeployData.fullOpts);
       }
     } else {
-      const referenceAddress = getContractAddress(addressOrImplFactory);
+      const referenceAddress = getContractAddress(referenceAddressOrImplFactory);
       const { provider } = hre.network;
       const deployData = await getDeployData(hre, newImplFactory, opts);
       if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
