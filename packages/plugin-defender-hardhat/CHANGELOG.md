@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.1 (2022-08-08)
 
 - Fix type for options in `proposeUpgrade`. ([#609](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/609))
 

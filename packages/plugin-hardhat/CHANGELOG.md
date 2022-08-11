@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.20.0 (2022-08-08)
 
 - Provide granular functions to allow more customizable deployments. ([#580](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/580))
 
