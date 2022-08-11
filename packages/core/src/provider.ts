@@ -104,7 +104,7 @@ export const networkNames: { [chainId in number]?: string } = Object.freeze({
   42: 'kovan',
   137: 'polygon',
   80001: 'polygon-mumbai',
-  43113: 'fuji',
+  43113: 'avalanche-fuji',
   43114: 'avalanche',
 });
 
