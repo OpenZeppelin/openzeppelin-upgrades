@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for avalanche and avalanche-fuji to manifest file names. ([#622](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/622))
+
 ## 1.18.0 (2022-08-08)
 
 - Provide granular functions to allow more customizable deployments. ([#580](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/580))
