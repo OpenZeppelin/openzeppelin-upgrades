@@ -157,7 +157,11 @@ async function deployBeaconProxy(
 [[force-import]]
 == forceImport
 
-Forces the import of an existing proxy, beacon, or implementation contract deployment to be used with this plugin. Provide the address of an existing proxy, beacon or implementation, along with the Truffle contract class of the implementation contract that was deployed. Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
+Forces the import of an existing proxy, beacon, or implementation contract deployment to be used with this plugin. Provide the address of an existing proxy, beacon or implementation, along with the Truffle contract class of the implementation contract that was deployed.  
+
+CAUTION: When importing a proxy or beacon, the `deployedImpl` argument must be the contract class of the *current* implementation contract version that is being used, not the version that you are planning to upgrade to.  
+
+Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
 
 * `kind`: (`"uups" | "transparent" | "beacon"`) forces a proxy to be treated as a UUPS, Transparent, or Beacon proxy. If not provided, the proxy kind will be automatically detected.
 * See <<common-options>>.
