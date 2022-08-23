@@ -1,10 +1,11 @@
-import { levenshtein, Operation } from '../levenshtein';
+import { Cost, levenshtein, Operation } from '../levenshtein';
 import { hasLayout, ParsedTypeDetailed, isEnumMembers, isStructMembers } from './layout';
 import { UpgradesError } from '../error';
 import { StorageItem as _StorageItem, StructMember as _StructMember, StorageField as _StorageField } from './layout';
 import { LayoutCompatibilityReport } from './report';
 import { assert } from '../utils/assert';
 import { isValueType } from '../utils/is-value-type';
+import { endMatchesGap, isGap } from './gap';
 
 export type StorageItem = _StorageItem<ParsedTypeDetailed>;
 type StructMember = _StructMember<ParsedTypeDetailed>;
@@ -15,13 +16,14 @@ export type StorageOperation<F extends StorageField> = Operation<F, StorageField
 export type EnumOperation = Operation<string, { kind: 'replace'; original: string; updated: string }>;
 
 type StorageFieldChange<F extends StorageField> = (
-  | { kind: 'replace' | 'rename' }
+  | { kind: 'replace' | 'rename' | 'finishgap' }
   | { kind: 'typechange'; change: TypeChange }
   | { kind: 'layoutchange'; change: LayoutChange }
+  | { kind: 'shrinkgap'; change: TypeChange }
 ) & {
   original: F;
   updated: F;
-};
+} & Cost;
 
 export type TypeChange = (
   | {
@@ -60,41 +62,29 @@ export interface LayoutChange {
   bytes?: Record<'from' | 'to', string>;
 }
 
-// StorageItem with slot and offset info. Needed for overlap detection
-type StorageItemFull = StorageItem & { slot: string; offset: number };
-
-function isFullInfo(entry: StorageField): entry is StorageItemFull {
-  return entry.slot != undefined && entry.offset != undefined;
-}
-
-function storageItemBegin(entry: StorageItemFull): number {
-  return Number(entry.slot) * 32 + entry.offset;
-}
-
-function storageItemEnd(entry: StorageItemFull): number {
-  return storageItemBegin(entry) + Number(entry.type.item.numberOfBytes);
+/**
+ * Gets the storage field's begin position.
+ *
+ * @param field the storage field
+ * @returns the begin position, or NaN if the slot or offset is undefined
+ */
+export function storageFieldBegin(field: StorageField): number {
+  return Number(field.slot) * 32 + Number(field.offset);
 }
 
 /**
- * Aligns to the next storage slot by rounding up to nearest 32 bytes beyond the given number.
+ * Gets the storage field's end position.
+ *
+ * @param field the storage field
+ * @returns the end position, or NaN if the slot or offset or number of bytes is undefined
  */
-function alignToNextStorageSlot(numBytes: number): number {
-  return Math.ceil(numBytes / 32) * 32;
+export function storageFieldEnd(field: StorageField): number {
+  return storageFieldBegin(field) + Number(field.type.item.numberOfBytes);
 }
 
-// Get a subset of `layout` that exactly covers the space from `begin` to `end`
-function subLayout(begin: number, end: number, layout: StorageItemFull[]): StorageItemFull[] | undefined {
-  if (begin === end) {
-    return [];
-  }
-
-  const sublayout = layout.filter(entry => begin <= storageItemBegin(entry) && storageItemEnd(entry) <= end);
-  return sublayout.length > 0 &&
-    begin === storageItemBegin(sublayout[0]) &&
-    (end === alignToNextStorageSlot(storageItemEnd(sublayout[sublayout.length - 1])) || end === Infinity)
-    ? sublayout
-    : undefined;
-}
+const LAYOUTCHANGE_COST = 1;
+const FINISHGAP_COST = 1;
+const SHRINKGAP_COST = 0;
 
 export class StorageLayoutComparator {
   hasAllowedUncheckedCustomTypes = false;
@@ -106,64 +96,7 @@ export class StorageLayoutComparator {
   constructor(readonly unsafeAllowCustomTypes = false, readonly unsafeAllowRenames = false) {}
 
   compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
-    if (original.every(isFullInfo) && updated.every(isFullInfo)) {
-      // We are going to cut the layout in sections following the original gaps.
-      let ptr = 0;
-      const sections: { begin: number; end: number }[] = [];
-
-      // For each gap in the original layout, we try to do a cut. If that is possible, we isolate
-      // the section that is before the cut and continue looking for other sections.
-      const gaps = original.filter(entry => entry.label === '__gap' && entry.type.head === 't_array');
-      for (let i = 0; i < gaps.length; ++i) {
-        // Beginning of the gap(s) is the end of the previous section
-        const gapBegin = storageItemBegin(gaps[i]);
-
-        // Merge consecutive gaps
-        for (; i < gaps.length - 1; ++i) {
-          if (storageItemEnd(gaps[i]) !== storageItemBegin(gaps[i + 1])) {
-            break;
-          }
-        }
-
-        // End of the gap(s) is the begining of the next section
-        const gapEnd = storageItemEnd(gaps[i]);
-
-        // if previous section end (aligned to next slot) is not valid cut in the updated layout, don't do the cut
-        if (!updated.some(entry => alignToNextStorageSlot(storageItemEnd(entry)) === gapBegin)) {
-          continue;
-        }
-
-        // if next section start is not a valid cut in the updated layout and there are still items remaining, don't do the cut
-        if (
-          !updated.some(entry => storageItemBegin(entry) === gapEnd) &&
-          gapEnd < storageItemEnd(original[original.length - 1])
-        ) {
-          continue;
-        }
-
-        // If we are here, that means the gap in the original layout is a valid cut in the
-        // Note: 0 length sections are ok.
-        sections.push({ begin: ptr, end: gapBegin });
-        ptr = gapEnd;
-      }
-
-      // If there is more data in the original layout after the last gap, add an additional section.
-      // There might be more data in the updated layout, but that is not an issue (appended data)
-      if (original.length > 0 && ptr < storageItemEnd(original[original.length - 1])) {
-        sections.push({ begin: ptr, end: Infinity });
-      }
-
-      // Now that sections are isolated, we can compare them one by one
-      const ops = sections.flatMap(({ begin, end }) =>
-        this.layoutLevenshtein(subLayout(begin, end, original) || [], subLayout(begin, end, updated) || [], {
-          allowAppend: true, // allow append within sublayouts to use any empty space between a variable and a gap
-        }),
-      );
-
-      return new LayoutCompatibilityReport(ops);
-    } else {
-      return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
-    }
+    return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
   }
 
   private layoutLevenshtein<F extends StorageField>(
@@ -173,10 +106,44 @@ export class StorageLayoutComparator {
   ): StorageOperation<F>[] {
     const ops = levenshtein(original, updated, (a, b) => this.getFieldChange(a, b));
 
-    if (allowAppend) {
-      return ops.filter(o => o.kind !== 'append');
-    } else {
-      return ops;
+    // filter operations: the callback function returns true if operation is unsafe, false if safe
+    return ops.filter(o => {
+      if (o.kind === 'insert') {
+        const updatedStart = storageFieldBegin(o.updated);
+        const updatedEnd = storageFieldEnd(o.updated);
+        if (isNaN(updatedStart) || isNaN(updatedEnd)) {
+          // unable to get storage position, so treat this as unsafe
+          return true;
+        }
+
+        for (let i = 0; i < original.length; i++) {
+          const orig = original[i];
+          const origStart = storageFieldBegin(orig);
+          const origEnd = storageFieldEnd(orig);
+          if (isNaN(origStart) || isNaN(origEnd)) {
+            // unable to get storage position, so treat this as unsafe
+            return true;
+          }
+
+          // An insertion that overlaps with a non-gap in the original layout is not allowed
+          if (!isGap(orig) && overlaps(origStart, origEnd, updatedStart, updatedEnd)) {
+            return true;
+          }
+        }
+        // Otherwise the insertion is safe
+        return false;
+      } else if ((o.kind === 'shrinkgap' || o.kind === 'finishgap') && endMatchesGap(o.original, o.updated)) {
+        // Gap shrink or gap replacement that finishes on the same slot is safe
+        return false;
+      } else if (o.kind === 'append' && allowAppend) {
+        return false;
+      }
+      return true;
+    });
+
+    // https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+    function overlaps(startA: number, endA: number, startB: number, endB: number) {
+      return startA < endB && startB < endA;
     }
   }
 
@@ -201,7 +168,11 @@ export class StorageLayoutComparator {
     const layoutChange = this.getLayoutChange(original, updated);
 
     if (updated.retypedFrom && layoutChange) {
-      return { kind: 'layoutchange', original, updated, change: layoutChange };
+      return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
+    } else if (nameChange && endMatchesGap(original, updated)) {
+      return { kind: 'finishgap', original, updated, cost: FINISHGAP_COST };
+    } else if (typeChange && typeChange.kind === 'array shrink' && endMatchesGap(original, updated)) {
+      return { kind: 'shrinkgap', change: typeChange, original, updated, cost: SHRINKGAP_COST };
     } else if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
     } else if (nameChange) {
@@ -211,7 +182,7 @@ export class StorageLayoutComparator {
     } else if (layoutChange && !layoutChange.uncertain) {
       // Any layout change should be caught earlier as a type change, but we
       // add this check as a safety fallback.
-      return { kind: 'layoutchange', original, updated, change: layoutChange };
+      return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
     }
   }
 
@@ -219,7 +190,7 @@ export class StorageLayoutComparator {
     const validPair = ['uint8', 'bool'];
     const knownCompatibleTypes =
       validPair.includes(original.type.item.label) && validPair.includes(updated.type.item.label);
-    if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
+    if (knownCompatibleTypes) {
       return undefined;
     } else if (hasLayout(original) && hasLayout(updated)) {
       const change = <T>(from: T, to: T) => (from === to ? undefined : { from, to });

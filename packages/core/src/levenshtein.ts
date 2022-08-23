@@ -10,7 +10,9 @@ export type BasicOperation<T> =
 
 export type Operation<T, C> = C | BasicOperation<T>;
 
-type GetChangeOp<T, C> = (a: T, b: T) => C | undefined;
+export type Cost = { cost?: number };
+
+type GetChangeOp<T, C> = (a: T, b: T) => (C & Cost) | undefined;
 
 export function levenshtein<T, C>(a: T[], b: T[], getChangeOp: GetChangeOp<T, C>): Operation<T, C>[] {
   const matrix = buildMatrix(a, b, getChangeOp);
@@ -76,7 +78,7 @@ function buildMatrix<T, C>(a: T[], b: T[], getChangeOp: GetChangeOp<T, C>): Matr
     const predCost = predecessor.totalCost;
     const change = getChangeOp(original, updated);
     if (change !== undefined) {
-      return { kind: 'change', totalCost: predCost + CHANGE_COST, predecessor, change };
+      return { kind: 'change', totalCost: predCost + (change.cost ?? CHANGE_COST), predecessor, change };
     } else {
       return { kind: 'nop', totalCost: predCost, predecessor };
     }

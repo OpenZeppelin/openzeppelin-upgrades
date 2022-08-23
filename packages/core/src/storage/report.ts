@@ -6,6 +6,7 @@ import type { StorageOperation, StorageItem, StorageField, TypeChange, EnumOpera
 import { itemize, itemizeWith } from '../utils/itemize';
 import { indent } from '../utils/indent';
 import { assert } from '../utils/assert';
+import { isGap } from './gap';
 
 export class LayoutCompatibilityReport {
   constructor(readonly ops: StorageOperation<StorageItem>[]) {}
@@ -44,8 +45,9 @@ interface StorageOperationContext {
 
 function explainStorageOperation(op: StorageOperation<StorageField>, ctx: StorageOperationContext): string {
   switch (op.kind) {
+    case 'shrinkgap':
     case 'typechange': {
-      const basic = explainTypeChange(op.change);
+      const basic = explainTypeChange(op.change, op.original);
       const details =
         ctx.kind === 'layout' // explain details for layout only
           ? new Set(
@@ -56,6 +58,10 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
           : [];
       return `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details);
     }
+
+    case 'finishgap':
+      return `Converted end of storage gap ${label(op.original)} to ${label(op.updated)}`;
+
     case 'rename':
       return `Renamed ${label(op.original)} to ${label(op.updated)}`;
 
@@ -99,7 +105,7 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
   }
 }
 
-function explainTypeChange(ch: TypeChange): string {
+function explainTypeChange(ch: TypeChange, original: StorageField): string {
   switch (ch.kind) {
     case 'visibility change':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent visibility`;
@@ -113,19 +119,28 @@ function explainTypeChange(ch: TypeChange): string {
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent representation sizes`;
 
     case 'mapping key':
-      return `In key of ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner));
+      return `In key of ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner, original));
 
     case 'mapping value':
     case 'array value':
-      return `In ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner));
+      return `In ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner, original));
 
     case 'array shrink':
     case 'array grow': {
       assert(ch.original.tail && ch.updated.tail);
       const originalSize = parseInt(ch.original.tail, 10);
       const updatedSize = parseInt(ch.updated.tail, 10);
-      const note = ch.kind === 'array shrink' ? 'Size cannot decrease' : 'Size cannot increase here';
-      return `Bad array resize from ${originalSize} to ${updatedSize}\n${note}`;
+
+      if (original !== undefined && isGap(original)) {
+        const note =
+          ch.kind === 'array shrink'
+            ? 'Size decrease must match with corresponding variable inserts'
+            : 'Size cannot increase here';
+        return `Bad storage gap resize from ${originalSize} to ${updatedSize}\n${note}`;
+      } else {
+        const note = ch.kind === 'array shrink' ? 'Size cannot decrease' : 'Size cannot increase here';
+        return `Bad array resize from ${originalSize} to ${updatedSize}\n${note}`;
+      }
     }
 
     case 'array dynamic': {

@@ -448,6 +448,7 @@ contract StorageUpgrade_Gap_V2_Ok {
     uint256 z;
 }
 
+// insert var without shrink gap
 contract StorageUpgrade_Gap_V2_Bad1 {
     uint256 a;
     uint256 b;
@@ -456,10 +457,47 @@ contract StorageUpgrade_Gap_V2_Bad1 {
     uint256 z;
 }
 
+// delete var and expand gap
 contract StorageUpgrade_Gap_V2_Bad2 {
     uint256 a;
     uint256[49] __gap;
     uint256 z;
+}
+
+// shrink gap without adding var
+contract StorageUpgrade_Gap_V2_Bad3 {
+    uint256 a;
+    uint256 b;
+    uint256[47] __gap;
+    uint256 z;
+}
+
+// insert var and shrink gap too much
+contract StorageUpgrade_Gap_V2_Bad4 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256[46] __gap;
+    uint256 z;
+}
+
+// insert vars and shrink gap not enough
+contract StorageUpgrade_Gap_V2_Bad5 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256 d;
+    uint256[47] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_MultiConsumeGap_V1 {
+    uint256[2] __gap;
+}
+
+contract StorageUpgrade_MultiConsumeGap_V2_Ok {
+    uint256 a;
+    uint256 b;
 }
 
 contract StorageUpgrade_EndGap_V1a {
@@ -477,12 +515,12 @@ contract StorageUpgrade_EndGap_V1c is StorageUpgrade_EndGap_V1b {
 
 contract StorageUpgrade_EndGap_V2a {
     uint256 a;
-    uint256[10] big;
+    uint256[1] small;
 }
 
-contract StorageUpgrade_EndGap_V2b {
-    uint256 a;
-    uint256[3] medium;
+contract StorageUpgrade_EndGap_V2b is StorageUpgrade_EndGap_V2a {
+    uint256 inserted1;
+    uint256 inserted2;
     uint256 b;
 }
 
@@ -501,12 +539,11 @@ contract StorageUpgrade_EndGap_Uint128_V1c is StorageUpgrade_EndGap_Uint128_V1b 
 
 contract StorageUpgrade_EndGap_Uint128_V2a {
     uint128 a;
-    uint128[10] big;
+    uint128[1] small;
 }
 
-contract StorageUpgrade_EndGap_Uint128_V2b {
-    uint128 a;
-    uint128[6] medium;
+contract StorageUpgrade_EndGap_Uint128_V2b is StorageUpgrade_EndGap_Uint128_V2a {
+    uint128[4] medium;
     uint128 b;
 }
 
@@ -602,6 +639,13 @@ contract StorageUpgrade_Gap_One_Element_V2_Ok {
     uint256 a;
     uint256 b;
     uint256 c;
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_One_Element_V2b_Ok {
+    uint256 a;
+    uint256 b;
+    uint256[1] c;
     uint256 z;
 }
 
