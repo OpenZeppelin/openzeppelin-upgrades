@@ -1,25 +1,19 @@
 import {
-  assertUpgradeSafe,
-  assertStorageUpgradeSafe,
   getStorageLayout,
   fetchOrDeploy,
   getVersion,
-  Manifest,
-  getImplementationAddress,
-  getStorageLayoutForAddress,
   ValidationOptions,
-  assertNotProxy,
-  getImplementationAddressFromBeacon,
   EthereumProvider,
   StorageLayout,
   ValidationRunData,
   Version,
-  processProxyKind,
+  UpgradesError,
 } from '@openzeppelin/upgrades-core';
 
 import { deploy } from './deploy';
-import { Options, UpgradeOptions, withDefaults } from './options';
+import { StandaloneOptions, UpgradeOptions, withDefaults } from './options';
 import { ContractClass, getTruffleConfig } from './truffle';
+import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { validateArtifacts, getLinkedBytecode } from './validations';
 import { wrapProvider } from './wrap-provider';
 
@@ -33,14 +27,14 @@ interface DeployedBeaconImpl {
 }
 
 export interface DeployData {
-  fullOpts: Required<Options>;
+  fullOpts: Required<UpgradeOptions>;
   validations: ValidationRunData;
   version: Version;
   provider: EthereumProvider;
   layout: StorageLayout;
 }
 
-export async function getDeployData(opts: Options, Contract: ContractClass): Promise<DeployData> {
+export async function getDeployData(opts: UpgradeOptions, Contract: ContractClass): Promise<DeployData> {
   const fullOpts = withDefaults(opts);
   const provider = wrapProvider(fullOpts.deployer.provider);
   const { contracts_build_directory, contracts_directory } = getTruffleConfig();
@@ -52,38 +46,30 @@ export async function getDeployData(opts: Options, Contract: ContractClass): Pro
   return { fullOpts, validations, version, provider, layout };
 }
 
+export async function deployStandaloneImpl(Contract: ContractClass, opts: StandaloneOptions): Promise<DeployedImpl> {
+  const deployData = await getDeployData(opts, Contract);
+  await validateImpl(deployData, opts);
+  return await deployImpl(deployData, Contract, opts);
+}
+
 export async function deployProxyImpl(
   Contract: ContractClass,
-  opts: Options,
+  opts: UpgradeOptions,
   proxyAddress?: string,
 ): Promise<DeployedImpl> {
   const deployData = await getDeployData(opts, Contract);
-
-  await processProxyKind(deployData.provider, proxyAddress, opts, deployData.validations, deployData.version);
-
-  let currentImplAddress: string | undefined;
-  if (proxyAddress !== undefined) {
-    // upgrade scenario
-    currentImplAddress = await getImplementationAddress(deployData.provider, proxyAddress);
-  }
-
-  return deployImpl(deployData, Contract, opts, currentImplAddress);
+  await validateProxyImpl(deployData, opts, proxyAddress);
+  return deployImpl(deployData, Contract, opts);
 }
 
 export async function deployBeaconImpl(
   Contract: ContractClass,
-  opts: Options,
+  opts: UpgradeOptions,
   beaconAddress?: string,
 ): Promise<DeployedBeaconImpl> {
   const deployData = await getDeployData(opts, Contract);
-
-  let currentImplAddress;
-  if (beaconAddress !== undefined) {
-    // upgrade scenario
-    await assertNotProxy(deployData.provider, beaconAddress);
-    currentImplAddress = await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
-  }
-  return deployImpl(deployData, Contract, opts, currentImplAddress);
+  await validateBeaconImpl(deployData, opts, beaconAddress);
+  return await deployImpl(deployData, Contract, opts);
 }
 
 function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string {
@@ -95,29 +81,23 @@ function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string
   );
 }
 
-async function deployImpl(
-  deployData: DeployData,
-  Contract: ContractClass,
-  opts: UpgradeOptions,
-  currentImplAddress?: string,
-): Promise<any> {
-  assertUpgradeSafe([deployData.validations], deployData.version, deployData.fullOpts);
+async function deployImpl(deployData: DeployData, Contract: ContractClass, opts: UpgradeOptions): Promise<any> {
   const layout = deployData.layout;
-
-  if (currentImplAddress !== undefined) {
-    const manifest = await Manifest.forNetwork(deployData.provider);
-    const currentLayout = await getStorageLayoutForAddress(manifest, deployData.validations, currentImplAddress);
-    if (opts.unsafeSkipStorageCheck !== true) {
-      assertStorageUpgradeSafe(currentLayout, deployData.layout, deployData.fullOpts);
-    }
-  }
 
   const impl = await fetchOrDeploy(deployData.version, deployData.provider, async () => {
     const abi = (Contract as any).abi;
-    const deployment = Object.assign(
-      { abi },
-      await deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs),
-    );
+    const attemptDeploy = () => {
+      if (opts.useDeployedImplementation) {
+        throw new UpgradesError(
+          'The implementation contract was not previously deployed.',
+          () =>
+            'The useDeployedImplementation option was set to true but the implementation contract was not previously deployed on this network.',
+        );
+      } else {
+        return deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs);
+      }
+    };
+    const deployment = Object.assign({ abi }, await attemptDeploy());
     return { ...deployment, layout };
   });
 

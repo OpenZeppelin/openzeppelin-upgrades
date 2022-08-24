@@ -1,4 +1,4 @@
-import { Manifest, getAdminAddress, getCode, EthereumProvider } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress, getCode, EthereumProvider, isEmptySlot } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
@@ -7,7 +7,7 @@ import {
   deployProxyImpl,
   getTransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
-  UpgradeOptions,
+  UpgradeProxyOptions,
   withDefaults,
   getContractAddress,
   ContractAddressOrInstance,
@@ -16,7 +16,7 @@ import {
 export async function upgradeProxy(
   proxy: ContractAddressOrInstance,
   Contract: ContractClass,
-  opts: UpgradeOptions = {},
+  opts: UpgradeProxyOptions = {},
 ): Promise<ContractInstance> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
@@ -42,7 +42,7 @@ async function getUpgrader(
   const adminAddress = await getAdminAddress(provider, proxyAddress);
   const adminBytecode = await getCode(provider, adminAddress);
 
-  if (adminBytecode === '0x') {
+  if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
     // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
     const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(contractTemplate);
     const proxy = new TransparentUpgradeableProxyFactory(proxyAddress);
@@ -64,7 +64,7 @@ async function getUpgrader(
   }
 }
 
-function encodeCall(factory: ContractClass, call: UpgradeOptions['call']): string | undefined {
+function encodeCall(factory: ContractClass, call: UpgradeProxyOptions['call']): string | undefined {
   if (!call) {
     return undefined;
   }

@@ -2,8 +2,17 @@
 
 ## Unreleased
 
-- Remove BN.js in favor of native BigInt. ([#602](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/602))
+- Add support for avalanche and avalanche-fuji to manifest file names. ([#622](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/622))
 - Support storage layout gaps. ([#276](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/276))
+
+## 1.18.0 (2022-08-08)
+
+- Provide granular functions to allow more customizable deployments. ([#580](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/580))
+
+## 1.17.0 (2022-07-26)
+
+- Remove BN.js in favor of native BigInt. ([#602](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/602))
+- Add support for additional network names in network manifest. ([#547](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/547))
 
 ## 1.16.1 (2022-06-16)
 

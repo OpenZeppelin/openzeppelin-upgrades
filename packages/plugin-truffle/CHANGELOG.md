@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.16.0 (2022-08-08)
+
+- Provide granular functions to allow more customizable deployments. ([#580](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/580))
+
+## 1.15.1 (2022-07-26)
+
+- Add dependencies on `debug` and `ethers`. ([#600](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/600))
+- Improve check for admin contract in `upgradeProxy`. ([#604](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/604))
+
 ## 1.15.0 (2022-03-29)
 
 - Fix "The requested contract was not found" error when importing from an interface ([#549](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/549))

@@ -4,11 +4,11 @@ import {
   deploy,
   deployBeaconImpl,
   getUpgradeableBeaconFactory,
-  Options,
+  DeployBeaconOptions,
   withDefaults,
 } from './utils';
 
-export async function deployBeacon(Contract: ContractClass, opts: Options = {}): Promise<ContractInstance> {
+export async function deployBeacon(Contract: ContractClass, opts: DeployBeaconOptions = {}): Promise<ContractInstance> {
   const { impl } = await deployBeaconImpl(Contract, opts);
 
   const { deployer } = withDefaults(opts);

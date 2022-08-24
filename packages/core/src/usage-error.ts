@@ -51,11 +51,33 @@ export class PrepareUpgradeUnsupportedError extends UpgradesError {
   }
 }
 
+/**
+ * @deprecated No longer used since forceImport() supports importing any contract.
+ */
 export class ForceImportUnsupportedError extends UpgradesError {
   constructor(proxyOrBeaconAddress: string) {
     super(
       `Contract at address ${proxyOrBeaconAddress} doesn't look like a supported proxy or beacon`,
       () => `Only transparent, UUPS, or beacon proxies or beacons can be used with the forceImport() function.`,
+    );
+  }
+}
+
+export class NoContractImportError extends UpgradesError {
+  constructor(address: string) {
+    super(
+      `No contract at address ${address}`,
+      () => `The address could not be imported because no contract was found at the address.`,
+    );
+  }
+}
+
+export class ValidateUpdateRequiresKindError extends UpgradesError {
+  constructor() {
+    super(
+      'The `kind` option must be provided',
+      () =>
+        'When validating an upgrade from an implementation address, pass in the `kind` option for the kind of proxy that you are using.',
     );
   }
 }

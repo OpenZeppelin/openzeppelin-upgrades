@@ -4,7 +4,6 @@ import {
   getImplementationAddress,
   isBeacon,
   isBeaconProxy,
-  ValidationOptions,
   isTransparentProxy,
   isTransparentOrUUPSProxy,
 } from '@openzeppelin/upgrades-core';
@@ -13,6 +12,7 @@ import type { ContractFactory, ethers } from 'ethers';
 import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { fromChainId } from 'defender-base-client';
+import { UpgradeOptions } from '@openzeppelin/hardhat-upgrades';
 
 export interface ProposalResponseWithUrlAndTx extends ProposalResponse {
   txResponse?: ethers.providers.TransactionResponse;
@@ -24,7 +24,7 @@ export type ProposeUpgradeFunction = (
   opts?: ProposalOptions,
 ) => Promise<ProposalResponseWithUrlAndTx>;
 
-export interface ProposalOptions extends ValidationOptions {
+export interface ProposalOptions extends UpgradeOptions {
   title?: string;
   description?: string;
   proxyAdmin?: string;

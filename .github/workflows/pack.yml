@@ -10,27 +10,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 14.x
-        check-latest: true
 
-    - name: Get yarn cache directory
-      id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
-
-    - name: Cache node modules
-      uses: actions/cache@v3
-      with:
-        path: |
-          ${{steps.yarn-cache-dir-path.outputs.dir}}
-          ~/.cache/node-gyp-cache
-        key: ${{runner.os}}-yarn-${{env.cache-version}}-${{hashFiles('yarn.lock')}}
-      env:
-        cache-version: 2
-
-    - name: Install dependencies
-      run: yarn --frozen-lockfile
+    - name: Set up environment
+      uses: ./.github/actions/setup
 
     - name: Pack tarballs
       run: bash scripts/bundle-pack.sh

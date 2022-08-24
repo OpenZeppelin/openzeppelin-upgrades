@@ -18,6 +18,8 @@
  *
  */
 
+const ganache = require('ganache');
+
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
 //
@@ -73,9 +75,12 @@ module.exports = {
     // production: true    // Treats this network as if it was a public net. (default: false)
     // }
     test: {
-      miner: {
-        instamine: 'eager',
-      },
+      network_id: '*',
+      provider: ganache.provider({
+        logging: {
+          quiet: true,
+        },
+      }),
     },
   },
 
