@@ -178,8 +178,10 @@ export class StorageLayoutComparator {
     if (updated.retypedFrom && layoutChange) {
       return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
     } else if (nameChange && endMatchesGap(original, updated)) {
+      // original is a gap that was consumed by a non-gap ending at the same slot, which is safe
       return { kind: 'finishgap', original, updated, cost: FINISHGAP_COST };
     } else if (typeChange && typeChange.kind === 'array shrink' && endMatchesGap(original, updated)) {
+      // original and updated are a gap that was shrunk and ends at the same slot, which is safe
       return { kind: 'shrinkgap', change: typeChange, original, updated, cost: SHRINKGAP_COST };
     } else if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
