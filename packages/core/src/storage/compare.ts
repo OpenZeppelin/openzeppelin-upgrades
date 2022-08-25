@@ -90,7 +90,7 @@ export function storageFieldEnd(field: StorageField): bigint | undefined {
   return begin + BigInt(numberOfBytes);
 }
 
-const LAYOUTCHANGE_COST = 1;
+const LAYOUTCHANGE_COST = 0;
 const FINISHGAP_COST = 1;
 const SHRINKGAP_COST = 0;
 
