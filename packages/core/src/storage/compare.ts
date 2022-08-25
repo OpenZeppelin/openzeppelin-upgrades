@@ -93,6 +93,7 @@ export function storageFieldEnd(field: StorageField): bigint | undefined {
 const LAYOUTCHANGE_COST = 0;
 const FINISHGAP_COST = 1;
 const SHRINKGAP_COST = 0;
+const TYPECHANGE_COST = 0;
 
 export class StorageLayoutComparator {
   hasAllowedUncheckedCustomTypes = false;
@@ -188,7 +189,7 @@ export class StorageLayoutComparator {
     } else if (nameChange) {
       return { kind: 'rename', original, updated };
     } else if (typeChange) {
-      return { kind: 'typechange', change: typeChange, original, updated };
+      return { kind: 'typechange', change: typeChange, original, updated, cost: TYPECHANGE_COST };
     } else if (layoutChange && !layoutChange.uncertain) {
       // Any layout change should be caught earlier as a type change, but we
       // add this check as a safety fallback.

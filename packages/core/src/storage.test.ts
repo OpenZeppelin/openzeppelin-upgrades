@@ -580,13 +580,13 @@ test('storage upgrade with gap', t => {
     },
   });
 
-  // the report for this scenario is misleading
   t.like(getStorageUpgradeErrors(v1, v2_Bad5), {
     length: 2,
     0: {
-      kind: 'replace',
+      kind: 'typechange',
+      change: { kind: 'array shrink' },
       original: { label: '__gap' },
-      updated: { label: 'd' },
+      updated: { label: '__gap' },
     },
     1: {
       kind: 'layoutchange',
@@ -723,11 +723,18 @@ test('storage upgrade with different typed gaps', t => {
 
   t.deepEqual(getStorageUpgradeErrors(bool_v1, bool_v2_ok), []);
   t.like(getStorageUpgradeErrors(bool_v1, bool_v2_bad), {
-    length: 1,
+    length: 2,
     0: {
-      kind: 'replace',
-      original: { label: 'z' },
+      kind: 'typechange',
+      change: { kind: 'array shrink' },
+      original: { label: '__gap' },
       updated: { label: '__gap' },
+    },
+    1: {
+      kind: 'typechange',
+      change: { kind: 'obvious mismatch' },
+      original: { label: 'z' },
+      updated: { label: 'z' },
     },
   });
 });
