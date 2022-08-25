@@ -63,23 +63,31 @@ export interface LayoutChange {
 }
 
 /**
- * Gets the storage field's begin position.
+ * Gets the storage field's begin position as the number of bytes from 0.
  *
  * @param field the storage field
- * @returns the begin position, or NaN if the slot or offset is undefined
+ * @returns the begin position, or undefined if the slot or offset is undefined
  */
-export function storageFieldBegin(field: StorageField): number {
-  return Number(field.slot) * 32 + Number(field.offset);
+export function storageFieldBegin(field: StorageField): bigint | undefined {
+  if (field.slot === undefined || field.offset === undefined) {
+    return undefined;
+  }
+  return BigInt(field.slot) * 32n + BigInt(field.offset);
 }
 
 /**
- * Gets the storage field's end position.
+ * Gets the storage field's end position as the number of bytes from 0.
  *
  * @param field the storage field
- * @returns the end position, or NaN if the slot or offset or number of bytes is undefined
+ * @returns the end position, or undefined if the slot or offset or number of bytes is undefined
  */
-export function storageFieldEnd(field: StorageField): number {
-  return storageFieldBegin(field) + Number(field.type.item.numberOfBytes);
+export function storageFieldEnd(field: StorageField): bigint | undefined {
+  const begin = storageFieldBegin(field);
+  const numberOfBytes = field.type.item.numberOfBytes;
+  if (begin === undefined || numberOfBytes === undefined) {
+    return undefined;
+  }
+  return begin + BigInt(numberOfBytes);
 }
 
 const LAYOUTCHANGE_COST = 1;
@@ -111,7 +119,7 @@ export class StorageLayoutComparator {
       if (o.kind === 'insert') {
         const updatedStart = storageFieldBegin(o.updated);
         const updatedEnd = storageFieldEnd(o.updated);
-        if (isNaN(updatedStart) || isNaN(updatedEnd)) {
+        if (updatedStart === undefined || updatedEnd === undefined) {
           // unable to get storage position, so treat this as unsafe
           return true;
         }
@@ -120,7 +128,7 @@ export class StorageLayoutComparator {
           const orig = original[i];
           const origStart = storageFieldBegin(orig);
           const origEnd = storageFieldEnd(orig);
-          if (isNaN(origStart) || isNaN(origEnd)) {
+          if (origStart === undefined || origEnd === undefined) {
             // unable to get storage position, so treat this as unsafe
             return true;
           }
@@ -142,7 +150,7 @@ export class StorageLayoutComparator {
     });
 
     // https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
-    function overlaps(startA: number, endA: number, startB: number, endB: number) {
+    function overlaps(startA: bigint, endA: bigint, startB: bigint, endB: bigint) {
       return startA < endB && startB < endA;
     }
   }

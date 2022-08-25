@@ -19,5 +19,8 @@ export function isGap(field: StorageField): boolean {
  * @returns true if original is a gap and original and updated end at the same position, otherwise false
  */
 export function endMatchesGap(original: StorageField, updated: StorageField) {
-  return isGap(original) && storageFieldEnd(original) === storageFieldEnd(updated);
+  const originalEnd = storageFieldEnd(original);
+  const updatedEnd = storageFieldEnd(updated);
+
+  return isGap(original) && originalEnd !== undefined && updatedEnd !== undefined && originalEnd === updatedEnd;
 }
