@@ -12,6 +12,7 @@ const multisig = '0xc0889725c22e2e36c524F41AECfddF5650432464';
 
 test.beforeEach(async t => {
   t.context.fakeClient = sinon.createStubInstance(AdminClient);
+  t.context.fakeDefender = { verifyDeployment: sinon.stub() };
   t.context.fakeChainId = 'goerli';
   t.context.proposeUpgrade = proxyquire('../dist/propose-upgrade', {
     'defender-admin-client': {
@@ -22,7 +23,10 @@ test.beforeEach(async t => {
     'defender-base-client': {
       fromChainId: () => t.context.fakeChainId,
     },
-  }).makeProposeUpgrade(hre);
+  }).makeProposeUpgrade({
+    ...hre,
+    defender: t.context.fakeDefender,
+  });
 
   t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2Proxiable');
@@ -79,6 +83,48 @@ test('proposes an upgrade', async t => {
       network: 'goerli',
       abi: GreeterV2.interface.format(FormatTypes.json),
     },
+  );
+});
+
+test('proposes an upgrade and verifies bytecode', async t => {
+  const { proposeUpgrade, fakeClient, fakeDefender, greeter, GreeterV2 } = t.context;
+  fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
+  fakeDefender.verifyDeployment.resolves({ match: 'EXACT' });
+
+  const title = 'My upgrade';
+  const description = 'My contract upgrade';
+  const proposal = await proposeUpgrade(greeter.address, 'GreeterV2Proxiable', {
+    title,
+    description,
+    multisig,
+    bytecodeVerificationReferenceUrl: 'http://example.com',
+  });
+
+  t.is(proposal.url, proposalUrl);
+  t.is(proposal.verificationResponse.match, 'EXACT');
+
+  sinon.assert.calledWithExactly(
+    fakeClient.proposeUpgrade,
+    {
+      newImplementation: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
+      title,
+      description,
+      proxyAdmin: undefined,
+      via: multisig,
+      viaType: undefined,
+    },
+    {
+      address: greeter.address,
+      network: 'goerli',
+      abi: GreeterV2.interface.format(FormatTypes.json),
+    },
+  );
+
+  sinon.assert.calledWithExactly(
+    fakeDefender.verifyDeployment,
+    sinon.match(/^0x[A-Fa-f0-9]{40}$/),
+    'GreeterV2Proxiable',
+    'http://example.com',
   );
 });
 
