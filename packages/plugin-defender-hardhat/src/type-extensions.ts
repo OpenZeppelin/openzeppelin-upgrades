@@ -1,11 +1,11 @@
 import 'hardhat/types/runtime';
 import 'hardhat/types/config';
 
-import type { HardhatDefenderConfig, HardhatDefenderUpgrades } from '.';
+import type { HardhatDefenderConfig, HardhatDefender } from '.';
 
 declare module 'hardhat/types/runtime' {
   export interface HardhatRuntimeEnvironment {
-    defender: HardhatDefenderUpgrades;
+    defender: HardhatDefender;
   }
 }
 

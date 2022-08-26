@@ -8,21 +8,23 @@ import {
   isTransparentOrUUPSProxy,
 } from '@openzeppelin/upgrades-core';
 import { AdminClient, ProposalResponse } from 'defender-admin-client';
-import type { ContractFactory, ethers } from 'ethers';
+import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { fromChainId } from 'defender-base-client';
 import { UpgradeOptions } from '@openzeppelin/hardhat-upgrades';
+import type { VerificationResponse } from './verify-deployment';
 
-export interface ProposalResponseWithUrlAndTx extends ProposalResponse {
+export interface ExtendedProposalResponse extends ProposalResponse {
   txResponse?: ethers.providers.TransactionResponse;
+  verificationResponse?: VerificationResponse;
 }
 
 export type ProposeUpgradeFunction = (
   proxyAddress: string,
-  ImplFactory: ContractFactory,
+  contractNameOrImplFactory: string | ContractFactory,
   opts?: ProposalOptions,
-) => Promise<ProposalResponseWithUrlAndTx>;
+) => Promise<ExtendedProposalResponse>;
 
 export interface ProposalOptions extends UpgradeOptions {
   title?: string;
@@ -30,10 +32,11 @@ export interface ProposalOptions extends UpgradeOptions {
   proxyAdmin?: string;
   multisig?: string;
   multisigType?: 'Gnosis Safe' | 'Gnosis Multisig' | 'EOA';
+  bytecodeVerificationReferenceUrl?: string;
 }
 
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgradeFunction {
-  return async function proposeUpgrade(proxyAddress, ImplFactory, opts = {}) {
+  return async function proposeUpgrade(proxyAddress, contractNameOrImplFactory, opts = {}) {
     if (!hre.config.defender) {
       throw new Error(`Missing Defender API key and secret in hardhat config`);
     }
@@ -62,9 +65,14 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       await getImplementationAddress(hre.network.provider, proxyAddress);
     }
 
-    const contract = { address: proxyAddress, network, abi: ImplFactory.interface.format(FormatTypes.json) as string };
+    const implFactory =
+      typeof contractNameOrImplFactory === 'string'
+        ? await hre.ethers.getContractFactory(contractNameOrImplFactory)
+        : contractNameOrImplFactory;
+    const contractName = typeof contractNameOrImplFactory === 'string' ? contractNameOrImplFactory : undefined;
+    const contract = { address: proxyAddress, network, abi: implFactory.interface.format(FormatTypes.json) as string };
 
-    const prepareUpgradeResult = await hre.upgrades.prepareUpgrade(proxyAddress, ImplFactory, {
+    const prepareUpgradeResult = await hre.upgrades.prepareUpgrade(proxyAddress, implFactory, {
       getTxResponse: true,
       ...moreOpts,
     });
@@ -77,6 +85,11 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       txResponse = prepareUpgradeResult;
       newImplementation = getContractAddress(txResponse);
     }
+
+    const verificationResponse =
+      contractName && opts.bytecodeVerificationReferenceUrl
+        ? await hre.defender.verifyDeployment(newImplementation, contractName, opts.bytecodeVerificationReferenceUrl)
+        : undefined;
 
     const proposalResponse = await client.proposeUpgrade(
       {
@@ -93,6 +106,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
     return {
       ...proposalResponse,
       txResponse,
+      verificationResponse,
     };
   };
 }

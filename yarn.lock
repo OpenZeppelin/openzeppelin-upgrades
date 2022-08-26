@@ -3356,7 +3356,7 @@ async-limiter@~1.0.0:
   resolved "https://registry.yarnpkg.com/async-limiter/-/async-limiter-1.0.1.tgz#dd379e94f0db8310b08291f9d64c3209766617fd"
   integrity sha512-csOlWGAcRFJaI6m+F2WKdnMKr4HhdhFVBk0H/QbJFMCr+uO2kwohwXQPxw/9OCxp05r5ghVBFSyioixx3gfkNQ==
 
-async-retry@^1.2.1:
+async-retry@^1.2.1, async-retry@^1.3.3:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/async-retry/-/async-retry-1.3.3.tgz#0e7f36c04d8478e7a58bdbed80cedf977785f280"
   integrity sha512-wfr/jstw9xNi/0teMHrRW7dsz3Lt5ARhYNZ2ewpadnhaIp5mbALhOAP+EAdsC7t4Z6wqsDVv9+W6gm1Dk9mEyw==
@@ -4956,17 +4956,28 @@ defaults@^1.0.3:
   dependencies:
     clone "^1.0.2"
 
-defender-admin-client@^1.6.0-rc.0:
-  version "1.25.0"
-  resolved "https://registry.yarnpkg.com/defender-admin-client/-/defender-admin-client-1.25.0.tgz#bcc9841bebd24359adb0c999ecdf4d025f267962"
-  integrity sha512-XG8BJssvFmg0w53rXsqfQp2Pz+THPwN4J1oqUiNB8QvWXlTAL75A1xZxImm5DBKmwJ/5jwXEwkGOcaq4DFS2kA==
+defender-admin-client@^1.29.0-rc.1:
+  version "1.29.0-rc.1"
+  resolved "https://registry.yarnpkg.com/defender-admin-client/-/defender-admin-client-1.29.0-rc.1.tgz#3ef47652ff224d5dae740d101b777c6cbbebfa10"
+  integrity sha512-yHZ6GgKnM+zDBmVhFVe+c7m57z4LBpCvtkNxf98qfaFDfTp0mSZOB9LZeKVzh6gSr/ZhwVDODNXwt5ud3PVuyw==
   dependencies:
     axios "^0.21.2"
-    defender-base-client "1.25.0"
+    defender-base-client "1.28.1"
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-defender-base-client@1.25.0, defender-base-client@^1.3.1:
+defender-base-client@1.28.1:
+  version "1.28.1"
+  resolved "https://registry.yarnpkg.com/defender-base-client/-/defender-base-client-1.28.1.tgz#13b1a67025c2c21faf29df8adf95bda1ed38c3cb"
+  integrity sha512-N1h11DRoYkk35DaoVotHSr/b25TfQIF9yN8GURLXYvtcjgAxYTr1EZqnu88ylgrgbnztgteHlyoUWkiSCQqzBg==
+  dependencies:
+    amazon-cognito-identity-js "^4.3.3"
+    async-retry "^1.3.3"
+    axios "^0.21.2"
+    lodash "^4.17.19"
+    node-fetch "^2.6.0"
+
+defender-base-client@^1.3.1:
   version "1.25.0"
   resolved "https://registry.yarnpkg.com/defender-base-client/-/defender-base-client-1.25.0.tgz#7db9efc786391dbc3714bd411cfa18593400eb54"
   integrity sha512-42a9zEnif94mCkM1N19C+6k7R1QUqNq4FIaS/jVQ5kSJaSmv3FTmLT41/6qHXev76VYp87EyKqbDA9biGhgx/Q==
