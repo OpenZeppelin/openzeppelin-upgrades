@@ -2,6 +2,7 @@ import '@openzeppelin/hardhat-upgrades/dist/type-extensions';
 import { AdminClient, VerificationRequest } from 'defender-admin-client';
 import { Artifact, BuildInfo, CompilerOutputBytecode, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getAdminClient, getNetwork } from './utils';
+import { sha256FromString } from 'ethereumjs-util';
 
 export type VerificationResponse = Awaited<ReturnType<AdminClient['verifyDeployment']>>;
 
@@ -22,6 +23,8 @@ export type VerifyDeployWithUploadedArtifactFunction = (
 export type GetVerifyDeployArtifactFunction = (contractName: string) => Promise<ExtendedArtifact>;
 
 export type GetVerifyDeployBuildInfoFunction = (contractName: string) => Promise<BuildInfo>;
+
+export type GetBytecodeDigestFunction = (contractName: string) => Promise<string>;
 
 export function makeVerifyDeploy(hre: HardhatRuntimeEnvironment): VerifyDeployFunction {
   return async function verifyDeploy(address, contractName, referenceUri) {
@@ -77,6 +80,14 @@ export function makeGetVerifyDeployBuildInfo(hre: HardhatRuntimeEnvironment): Ge
       throw new Error(`Build info for ${fqn} not found`);
     }
     return buildInfo;
+  };
+}
+
+export function makeGetBytecodeDigest(hre: HardhatRuntimeEnvironment) {
+  return async function getBytecodeDigest(contractName: string): Promise<string> {
+    const artifact = await hre.artifacts.readArtifact(contractName);
+    const bytecode = artifact.deployedBytecode;
+    return sha256FromString(bytecode).toString('hex');
   };
 }
 

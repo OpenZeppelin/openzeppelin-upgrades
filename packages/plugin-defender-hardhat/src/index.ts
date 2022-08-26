@@ -5,13 +5,14 @@ import { extendConfig, extendEnvironment } from 'hardhat/config';
 import { lazyFunction, lazyObject } from 'hardhat/plugins';
 import { HardhatConfig, HardhatUserConfig } from 'hardhat/types';
 import type { ProposeUpgradeFunction } from './propose-upgrade';
-import './type-extensions';
-import {
+import type {
+  GetBytecodeDigestFunction,
   GetVerifyDeployArtifactFunction,
   GetVerifyDeployBuildInfoFunction,
   VerifyDeployFunction,
   VerifyDeployWithUploadedArtifactFunction,
 } from './verify-deployment';
+import './type-extensions';
 
 export interface HardhatDefender {
   proposeUpgrade: ProposeUpgradeFunction;
@@ -19,6 +20,7 @@ export interface HardhatDefender {
   verifyDeploymentWithUploadedArtifact: VerifyDeployWithUploadedArtifactFunction;
   getDeploymentArtifact: GetVerifyDeployArtifactFunction;
   getDeploymentBuildInfo: GetVerifyDeployBuildInfoFunction;
+  getBytecodeDigest: GetBytecodeDigestFunction;
 }
 
 export interface HardhatDefenderConfig {
@@ -43,6 +45,7 @@ extendEnvironment(hre => {
       makeVerifyDeployWithUploadedArtifact,
       makeGetVerifyDeployBuildInfo,
       makeGetVerifyDeployArtifact,
+      makeGetBytecodeDigest,
     } = require('./verify-deployment');
     return {
       // We wrap this one on a lazy function so we can delay the require of the upgrades plugin
@@ -54,6 +57,7 @@ extendEnvironment(hre => {
       verifyDeploymentWithUploadedArtifact: makeVerifyDeployWithUploadedArtifact(hre),
       getDeploymentArtifact: makeGetVerifyDeployArtifact(hre),
       getDeploymentBuildInfo: makeGetVerifyDeployBuildInfo(hre),
+      getBytecodeDigest: makeGetBytecodeDigest(hre),
     };
   });
 });

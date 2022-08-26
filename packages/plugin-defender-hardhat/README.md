@@ -84,7 +84,7 @@ async function main() {
 main();
 ```
 
-Alternatively, you can also upload the compilation artifact to a public URL and then have Defender retrieve the artifact from that location for verification, through the `verifyDeploymentWithUploadedArtifact` function. You can get the artifact to upload for a specific contract using `getDeploymentArtifact`, or an artifact that contains the build info for all your contracts using `getDeploymentBuildInfo`.
+Alternatively, you can also upload the compilation artifact to a public URL and then have Defender retrieve the artifact from that location for verification, through the `verifyDeploymentWithUploadedArtifact` function. You can get the artifact to upload for a specific contract using `getDeploymentArtifact`, or an artifact that contains the build info for all your contracts using `getDeploymentBuildInfo`. You can also get the hash of the artifact for a given contract using `getBytecodeDigest` to check for matches against a pre existing verification on Defender.
 
 ## Learn more
 
