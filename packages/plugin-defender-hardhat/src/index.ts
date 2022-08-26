@@ -1,15 +1,24 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 import '@nomiclabs/hardhat-ethers';
-import '@openzeppelin/hardhat-upgrades';
 import { extendConfig, extendEnvironment } from 'hardhat/config';
-import { lazyObject } from 'hardhat/plugins';
+import { lazyFunction, lazyObject } from 'hardhat/plugins';
 import { HardhatConfig, HardhatUserConfig } from 'hardhat/types';
-import { ProposeUpgradeFunction } from './propose-upgrade';
+import type { ProposeUpgradeFunction } from './propose-upgrade';
 import './type-extensions';
+import {
+  GetVerifyDeployArtifactFunction,
+  GetVerifyDeployBuildInfoFunction,
+  VerifyDeployFunction,
+  VerifyDeployWithUploadedArtifactFunction,
+} from './verify-deployment';
 
-export interface HardhatDefenderUpgrades {
+export interface HardhatDefender {
   proposeUpgrade: ProposeUpgradeFunction;
+  verifyDeployment: VerifyDeployFunction;
+  verifyDeploymentWithUploadedArtifact: VerifyDeployWithUploadedArtifactFunction;
+  getDeploymentArtifact: GetVerifyDeployArtifactFunction;
+  getDeploymentBuildInfo: GetVerifyDeployBuildInfoFunction;
 }
 
 export interface HardhatDefenderConfig {
@@ -28,10 +37,23 @@ extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) =>
 });
 
 extendEnvironment(hre => {
-  hre.defender = lazyObject((): HardhatDefenderUpgrades => {
-    const { makeProposeUpgrade } = require('./propose-upgrade');
+  hre.defender = lazyObject((): HardhatDefender => {
+    const {
+      makeVerifyDeploy,
+      makeVerifyDeployWithUploadedArtifact,
+      makeGetVerifyDeployBuildInfo,
+      makeGetVerifyDeployArtifact,
+    } = require('./verify-deployment');
     return {
-      proposeUpgrade: makeProposeUpgrade(hre),
+      // We wrap this one on a lazy function so we can delay the require of the upgrades plugin
+      proposeUpgrade: lazyFunction(() => {
+        const { makeProposeUpgrade } = require('./propose-upgrade');
+        return makeProposeUpgrade(hre);
+      }),
+      verifyDeployment: makeVerifyDeploy(hre),
+      verifyDeploymentWithUploadedArtifact: makeVerifyDeployWithUploadedArtifact(hre),
+      getDeploymentArtifact: makeGetVerifyDeployArtifact(hre),
+      getDeploymentBuildInfo: makeGetVerifyDeployBuildInfo(hre),
     };
   });
 });
