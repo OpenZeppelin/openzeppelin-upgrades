@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-defender",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "Hardhat plugin to propose smart contract upgrades on OpenZeppelin Defender",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-defender-hardhat",
   "license": "MIT",
