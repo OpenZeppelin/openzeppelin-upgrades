@@ -1,4 +1,4 @@
-import versions from 'compare-versions';
+import * as versions from 'compare-versions';
 
 import { ValidationRunData } from './run';
 
