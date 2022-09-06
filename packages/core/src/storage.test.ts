@@ -912,6 +912,32 @@ test('storage upgrade with uint256 non-array named as __gap', t => {
   });
 });
 
+test('storage upgrade with struct gap', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_StructGap_V1');
+  const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_StructGap_V2_Ok');
+  const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_StructGap_V2_Bad');
+
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
+  t.like(getStorageUpgradeErrors(v1, v2_Bad), {
+    length: 3,
+    0: {
+      kind: 'typechange',
+      original: { label: 'store_mapping' },
+      updated: { label: 'store_mapping' },
+    },
+    1: {
+      kind: 'typechange',
+      original: { label: 'store_fixed_array' },
+      updated: { label: 'store_fixed_array' },
+    },
+    2: {
+      kind: 'typechange',
+      original: { label: 'store_dynamic_array' },
+      updated: { label: 'store_dynamic_array' },
+    },
+  });
+});
+
 function stabilizeStorageLayout(layout: StorageLayout) {
   return {
     storage: layout.storage.map(s => ({ ...s, type: stabilizeTypeIdentifier(s.type) })),

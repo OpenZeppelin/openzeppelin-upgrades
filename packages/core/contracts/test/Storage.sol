@@ -742,3 +742,41 @@ contract StorageUpgrade_Gap_Uint256_Not_Array_V2_Bad {
     uint256 c;
     uint256 z;
 }
+
+contract StorageUpgrade_StructGap_V1 {
+    struct S {
+        uint256 a;
+        uint256 b;
+        bytes32[50] __gap;
+        uint256 d;
+    }
+    mapping(uint256 => S) store_mapping;
+    S[10] store_fixed_array;
+    S[] store_dynamic_array;
+}
+
+contract StorageUpgrade_StructGap_V2_Ok {
+    struct S {
+        uint256 a;
+        uint256 b;
+        uint256 c;
+        bytes32[49] __gap;
+        uint256 d;
+    }
+    mapping(uint256 => S) store_mapping;
+    S[10] store_fixed_array;
+    S[] store_dynamic_array;
+}
+
+contract StorageUpgrade_StructGap_V2_Bad {
+    struct S {
+        uint256 a;
+        uint256 b;
+        uint256 c;
+        bytes32[48] __gap;
+        uint256 d;
+    }
+    mapping(uint256 => S) store_mapping;
+    S[10] store_fixed_array;
+    S[] store_dynamic_array;
+}
