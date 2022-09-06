@@ -491,6 +491,64 @@ contract StorageUpgrade_Gap_V2_Bad5 {
     uint256 z;
 }
 
+contract StorageUpgrade_Bytes32Gap_V1 {
+    uint256 a;
+    uint256 b;
+    bytes32[48] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_Bytes32Gap_V2_Ok {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    bytes32[47] __gap;
+    uint256 z;
+}
+
+// insert var without shrink gap
+contract StorageUpgrade_Bytes32Gap_V2_Bad1 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    bytes32[48] __gap;
+    uint256 z;
+}
+
+// delete var and expand gap
+contract StorageUpgrade_Bytes32Gap_V2_Bad2 {
+    uint256 a;
+    bytes32[49] __gap;
+    uint256 z;
+}
+
+// shrink gap without adding var
+contract StorageUpgrade_Bytes32Gap_V2_Bad3 {
+    uint256 a;
+    uint256 b;
+    bytes32[47] __gap;
+    uint256 z;
+}
+
+// insert var and shrink gap too much
+contract StorageUpgrade_Bytes32Gap_V2_Bad4 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    bytes32[46] __gap;
+    uint256 z;
+}
+
+// insert vars and shrink gap not enough
+contract StorageUpgrade_Bytes32Gap_V2_Bad5 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256 d;
+    bytes32[47] __gap;
+    uint256 z;
+}
+
 contract StorageUpgrade_MultiConsumeGap_V1 {
     uint256[2] __gap;
 }
