@@ -120,27 +120,22 @@ export class StorageLayoutComparator {
       if (o.kind === 'insert') {
         const updatedStart = storageFieldBegin(o.updated);
         const updatedEnd = storageFieldEnd(o.updated);
-        if (updatedStart === undefined || updatedEnd === undefined) {
-          // unable to get storage position, so treat this as unsafe
-          return true;
-        }
-
-        for (let i = 0; i < original.length; i++) {
-          const orig = original[i];
-          const origStart = storageFieldBegin(orig);
-          const origEnd = storageFieldEnd(orig);
-          if (origStart === undefined || origEnd === undefined) {
-            // unable to get storage position, so treat this as unsafe
-            return true;
-          }
-
-          // An insertion that overlaps with a non-gap in the original layout is not allowed
-          if (!isGap(orig) && overlaps(origStart, origEnd, updatedStart, updatedEnd)) {
-            return true;
-          }
-        }
-        // Otherwise the insertion is safe
-        return false;
+        // If we cannot get the updated position, or if any entry in the original layout (that is not a gap) overlaps, then the insertion is unsafe.
+        return (
+          updatedStart === undefined ||
+          updatedEnd === undefined ||
+          original
+            .filter(entry => !isGap(entry))
+            .some(entry => {
+              const origStart = storageFieldBegin(entry);
+              const origEnd = storageFieldEnd(entry);
+              return (
+                origStart === undefined ||
+                origEnd === undefined ||
+                overlaps(origStart, origEnd, updatedStart, updatedEnd)
+              );
+            })
+        );
       } else if ((o.kind === 'shrinkgap' || o.kind === 'finishgap') && endMatchesGap(o.original, o.updated)) {
         // Gap shrink or gap replacement that finishes on the same slot is safe
         return false;
