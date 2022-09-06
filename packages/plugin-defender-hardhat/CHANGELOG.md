@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.0 (2022-08-29)
+
+- Add functions to verify that a compiled artifact matches code on chain. ([#642](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/642))
+
 ## 1.7.1 (2022-08-08)
 
 - Fix type for options in `proposeUpgrade`. ([#609](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/609))
