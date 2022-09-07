@@ -57,6 +57,7 @@ export type TypeChange = (
 
 export interface LayoutChange {
   uncertain?: boolean;
+  knownCompatible?: boolean;
   slot?: Record<'from' | 'to', string>;
   offset?: Record<'from' | 'to', number>;
   bytes?: Record<'from' | 'to', string>;
@@ -171,7 +172,7 @@ export class StorageLayoutComparator {
     const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = this.getLayoutChange(original, updated);
 
-    if (updated.retypedFrom && layoutChange) {
+    if (updated.retypedFrom && layoutChange && (!layoutChange.uncertain || !layoutChange.knownCompatible)) {
       return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
     } else if (nameChange && endMatchesGap(original, updated)) {
       // original is a gap that was consumed by a non-gap ending at the same slot, which is safe
@@ -193,12 +194,7 @@ export class StorageLayoutComparator {
   }
 
   getLayoutChange(original: StorageField, updated: StorageField): LayoutChange | undefined {
-    const validPair = ['uint8', 'bool'];
-    const knownCompatibleTypes =
-      validPair.includes(original.type.item.label) && validPair.includes(updated.type.item.label);
-    if (knownCompatibleTypes) {
-      return undefined;
-    } else if (hasLayout(original) && hasLayout(updated)) {
+    if (hasLayout(original) && hasLayout(updated)) {
       const change = <T>(from: T, to: T) => (from === to ? undefined : { from, to });
       const slot = change(original.slot, updated.slot);
       const offset = change(original.offset, updated.offset);
@@ -207,7 +203,11 @@ export class StorageLayoutComparator {
         return { slot, offset, bytes };
       }
     } else {
-      return { uncertain: true };
+      const validChanges = [['uint8', 'bool']];
+      const knownCompatible = validChanges.some(
+        group => group.includes(original.type.item.label) && group.includes(updated.type.item.label),
+      );
+      return { uncertain: true, knownCompatible };
     }
   }
 
