@@ -6,6 +6,7 @@ import { astDereferencer } from '../ast-dereferencer';
 import { extractStorageLayout } from './extract';
 import { StorageLayoutComparator } from './compare';
 import { StorageLayout, getDetailedLayout } from './layout';
+import { getStorageUpgradeErrors } from '.';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
@@ -25,6 +26,8 @@ const testContracts = [
   'contracts/test/RenamedRetyped.sol:ConfusingRetypeV2',
   'contracts/test/RenamedRetyped.sol:NonHardcodedRetypeV1',
   'contracts/test/RenamedRetyped.sol:NonHardcodedRetypeV2',
+  'contracts/test/RenamedRetyped.sol:LayoutChangeV1',
+  'contracts/test/RenamedRetyped.sol:LayoutChangeV2',
 ];
 
 test.before(async t => {
@@ -102,5 +105,29 @@ test('non-hardcoded retype', t => {
   const v2 = t.context.extractStorageLayout('NonHardcodedRetypeV2');
   const report = getReport(v1, v2);
   t.true(report.ok);
+  t.snapshot(report.explain());
+});
+
+test('retype with layout change', t => {
+  const v1 = t.context.extractStorageLayout('LayoutChangeV1');
+  const v2 = t.context.extractStorageLayout('LayoutChangeV2');
+
+  // ensure both variables' layout changes appear in the internal errors
+  t.like(getStorageUpgradeErrors(v1, v2), {
+    length: 2,
+    0: {
+      kind: 'layoutchange',
+      original: { label: 'a' },
+      updated: { label: 'a' },
+    },
+    1: {
+      kind: 'layoutchange',
+      original: { label: 'b' },
+      updated: { label: 'b' },
+    },
+  });
+
+  const report = getReport(v1, v2);
+  t.false(report.ok);
   t.snapshot(report.explain());
 });
