@@ -453,3 +453,5 @@ contract Base {
     uint256[48] __gap;
 }
 ----
+
+To determine the proper storage gap size in the new version of your contract, you can use the `validateUpgrade()` function in a xref:api-hardhat-upgrades.adoc#validate-upgrade[Hardhat] or xref:api-truffle-upgrades.adoc#validate-upgrade[Truffle] test. If a storage gap is not being reduced properly, you will see an error message indicating the expected size of the storage gap.
