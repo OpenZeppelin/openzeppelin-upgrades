@@ -58,6 +58,7 @@ test('shrinkgap', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Ok');
   const report = getReport(v1, v2);
+  t.true(report.ok);
   t.is(report.explain(), '');
 });
 
@@ -65,6 +66,7 @@ test('finishgap', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_MultiConsumeGap_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_MultiConsumeGap_V2_Ok');
   const report = getReport(v1, v2);
+  t.true(report.ok);
   t.is(report.explain(), '');
 });
 
@@ -72,6 +74,7 @@ test('insert var without shrink gap', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad1');
   const report = getReport(v1, v2);
+  t.false(report.ok);
   t.snapshot(report.explain());
 });
 
@@ -79,6 +82,7 @@ test('delete var and expand gap', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad2');
   const report = getReport(v1, v2);
+  t.false(report.ok);
   t.snapshot(report.explain());
 });
 
@@ -86,6 +90,7 @@ test('shrink gap without adding var', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad3');
   const report = getReport(v1, v2);
+  t.false(report.ok);
   t.snapshot(report.explain());
 });
 
@@ -93,13 +98,22 @@ test('insert var and shrink gap too much', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad4');
   const report = getReport(v1, v2);
+  t.false(report.ok);
   t.snapshot(report.explain());
 });
 
-// the message for this scenario is misleading
 test('insert vars and shrink gap not enough', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Gap_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Gap_V2_Bad5');
   const report = getReport(v1, v2);
+  t.false(report.ok);
+  t.snapshot(report.explain());
+});
+
+test('insert vars without shrink gap (uint128)', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_Uint128Gap_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_Uint128Gap_V2_Bad');
+  const report = getReport(v1, v2);
+  t.false(report.ok);
   t.snapshot(report.explain());
 });
