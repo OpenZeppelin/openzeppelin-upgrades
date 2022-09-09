@@ -454,4 +454,4 @@ contract Base {
 }
 ----
 
-To determine the proper storage gap size in the new version of your contract, you can use the `validateUpgrade()` function in a xref:api-hardhat-upgrades.adoc#validate-upgrade[Hardhat] or xref:api-truffle-upgrades.adoc#validate-upgrade[Truffle] test. If a storage gap is not being reduced properly, you will see an error message indicating the expected size of the storage gap.
+To help determine the proper storage gap size in the new version of your contract, you can write a test that uses the `validateUpgrade()` function from xref:api-hardhat-upgrades.adoc#validate-upgrade[Hardhat Upgrades] or xref:api-truffle-upgrades.adoc#validate-upgrade[Truffle Upgrades]. If a storage gap is not being reduced properly, you will see an error message indicating the expected size of the storage gap.
