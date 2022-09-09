@@ -61,19 +61,13 @@ function getExpectedGapSize(original: StorageField, updated: StorageField) {
   const origEnd = storageFieldEnd(original);
   const updatedStart = storageFieldBegin(updated);
   const origNumBytes = original.type.item.numberOfBytes;
-  const origArraySize = original.type.tail;
+  const origTail = original.type.tail;
 
-  if (
-    origEnd === undefined ||
-    updatedStart === undefined ||
-    origNumBytes === undefined ||
-    origArraySize === undefined
-  ) {
+  if (origEnd === undefined || updatedStart === undefined || origNumBytes === undefined || origTail === undefined) {
     return undefined;
   }
 
-  // use the floor since number of bytes may be larger than actual array (for non 32-byte types due to unused space after the array before the next slot)
-  const bytesPerItem = Math.floor(parseInt(origNumBytes) / parseInt(origArraySize, 10));
+  const bytesPerItem = BigInt(origNumBytes) / BigInt(parseInt(origTail, 10));
   const expectedSizeBytes = origEnd - updatedStart;
 
   return expectedSizeBytes / BigInt(bytesPerItem);
