@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fix missing module.
+- Fix missing module. ([#652](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/652))
 
 ## 1.19.0 (2022-09-10)
 
