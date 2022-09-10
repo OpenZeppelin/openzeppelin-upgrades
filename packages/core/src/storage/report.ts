@@ -70,7 +70,7 @@ function getExpectedGapSize(original: StorageField, updated: StorageField) {
   const bytesPerItem = BigInt(origNumBytes) / BigInt(parseInt(origTail, 10));
   const expectedSizeBytes = origEnd - updatedStart;
 
-  return expectedSizeBytes / BigInt(bytesPerItem);
+  return expectedSizeBytes / bytesPerItem;
 }
 
 function suggestGapSize(original: StorageField, updated: StorageField): string {
