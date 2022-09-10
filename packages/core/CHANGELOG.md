@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix missing module. ([#652](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/652))
+
 ## 1.19.0 (2022-09-10)
 
 - Add support for avalanche and avalanche-fuji to manifest file names. ([#622](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/622))
