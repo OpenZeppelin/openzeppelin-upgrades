@@ -1,10 +1,11 @@
-import { levenshtein, Operation } from '../levenshtein';
+import { Cost, levenshtein, Operation } from '../levenshtein';
 import { hasLayout, ParsedTypeDetailed, isEnumMembers, isStructMembers } from './layout';
 import { UpgradesError } from '../error';
 import { StorageItem as _StorageItem, StructMember as _StructMember, StorageField as _StorageField } from './layout';
 import { LayoutCompatibilityReport } from './report';
 import { assert } from '../utils/assert';
 import { isValueType } from '../utils/is-value-type';
+import { endMatchesGap, isGap } from './gap';
 
 export type StorageItem = _StorageItem<ParsedTypeDetailed>;
 type StructMember = _StructMember<ParsedTypeDetailed>;
@@ -15,13 +16,14 @@ export type StorageOperation<F extends StorageField> = Operation<F, StorageField
 export type EnumOperation = Operation<string, { kind: 'replace'; original: string; updated: string }>;
 
 type StorageFieldChange<F extends StorageField> = (
-  | { kind: 'replace' | 'rename' }
+  | { kind: 'replace' | 'rename' | 'finishgap' }
   | { kind: 'typechange'; change: TypeChange }
   | { kind: 'layoutchange'; change: LayoutChange }
+  | { kind: 'shrinkgap'; change: TypeChange }
 ) & {
   original: F;
   updated: F;
-};
+} & Cost;
 
 export type TypeChange = (
   | {
@@ -55,10 +57,44 @@ export type TypeChange = (
 
 export interface LayoutChange {
   uncertain?: boolean;
+  knownCompatible?: boolean;
   slot?: Record<'from' | 'to', string>;
   offset?: Record<'from' | 'to', number>;
   bytes?: Record<'from' | 'to', string>;
 }
+
+/**
+ * Gets the storage field's begin position as the number of bytes from 0.
+ *
+ * @param field the storage field
+ * @returns the begin position, or undefined if the slot or offset is undefined
+ */
+export function storageFieldBegin(field: StorageField): bigint | undefined {
+  if (field.slot === undefined || field.offset === undefined) {
+    return undefined;
+  }
+  return BigInt(field.slot) * 32n + BigInt(field.offset);
+}
+
+/**
+ * Gets the storage field's end position as the number of bytes from 0.
+ *
+ * @param field the storage field
+ * @returns the end position, or undefined if the slot or offset or number of bytes is undefined
+ */
+export function storageFieldEnd(field: StorageField): bigint | undefined {
+  const begin = storageFieldBegin(field);
+  const numberOfBytes = field.type.item.numberOfBytes;
+  if (begin === undefined || numberOfBytes === undefined) {
+    return undefined;
+  }
+  return begin + BigInt(numberOfBytes);
+}
+
+const LAYOUTCHANGE_COST = 0;
+const FINISHGAP_COST = 1;
+const SHRINKGAP_COST = 0;
+const TYPECHANGE_COST = 0;
 
 export class StorageLayoutComparator {
   hasAllowedUncheckedCustomTypes = false;
@@ -80,10 +116,39 @@ export class StorageLayoutComparator {
   ): StorageOperation<F>[] {
     const ops = levenshtein(original, updated, (a, b) => this.getFieldChange(a, b));
 
-    if (allowAppend) {
-      return ops.filter(o => o.kind !== 'append');
-    } else {
-      return ops;
+    // filter operations: the callback function returns true if operation is unsafe, false if safe
+    return ops.filter(o => {
+      if (o.kind === 'insert') {
+        const updatedStart = storageFieldBegin(o.updated);
+        const updatedEnd = storageFieldEnd(o.updated);
+        // If we cannot get the updated position, or if any entry in the original layout (that is not a gap) overlaps, then the insertion is unsafe.
+        return (
+          updatedStart === undefined ||
+          updatedEnd === undefined ||
+          original
+            .filter(entry => !isGap(entry))
+            .some(entry => {
+              const origStart = storageFieldBegin(entry);
+              const origEnd = storageFieldEnd(entry);
+              return (
+                origStart === undefined ||
+                origEnd === undefined ||
+                overlaps(origStart, origEnd, updatedStart, updatedEnd)
+              );
+            })
+        );
+      } else if ((o.kind === 'shrinkgap' || o.kind === 'finishgap') && endMatchesGap(o.original, o.updated)) {
+        // Gap shrink or gap replacement that finishes on the same slot is safe
+        return false;
+      } else if (o.kind === 'append' && allowAppend) {
+        return false;
+      }
+      return true;
+    });
+
+    // https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+    function overlaps(startA: bigint, endA: bigint, startB: bigint, endB: bigint) {
+      return startA < endB && startB < endA;
     }
   }
 
@@ -107,28 +172,29 @@ export class StorageLayoutComparator {
     const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = this.getLayoutChange(original, updated);
 
-    if (updated.retypedFrom && layoutChange) {
-      return { kind: 'layoutchange', original, updated, change: layoutChange };
+    if (updated.retypedFrom && layoutChange && (!layoutChange.uncertain || !layoutChange.knownCompatible)) {
+      return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
+    } else if (nameChange && endMatchesGap(original, updated)) {
+      // original is a gap that was consumed by a non-gap ending at the same slot, which is safe
+      return { kind: 'finishgap', original, updated, cost: FINISHGAP_COST };
+    } else if (typeChange && typeChange.kind === 'array shrink' && endMatchesGap(original, updated)) {
+      // original and updated are a gap that was shrunk and ends at the same slot, which is safe
+      return { kind: 'shrinkgap', change: typeChange, original, updated, cost: SHRINKGAP_COST };
     } else if (typeChange && nameChange) {
       return { kind: 'replace', original, updated };
     } else if (nameChange) {
       return { kind: 'rename', original, updated };
     } else if (typeChange) {
-      return { kind: 'typechange', change: typeChange, original, updated };
+      return { kind: 'typechange', change: typeChange, original, updated, cost: TYPECHANGE_COST };
     } else if (layoutChange && !layoutChange.uncertain) {
       // Any layout change should be caught earlier as a type change, but we
       // add this check as a safety fallback.
-      return { kind: 'layoutchange', original, updated, change: layoutChange };
+      return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
     }
   }
 
   getLayoutChange(original: StorageField, updated: StorageField): LayoutChange | undefined {
-    const validPair = ['uint8', 'bool'];
-    const knownCompatibleTypes =
-      validPair.includes(original.type.item.label) && validPair.includes(updated.type.item.label);
-    if (original.type.item.label == updated.type.item.label || knownCompatibleTypes) {
-      return undefined;
-    } else if (hasLayout(original) && hasLayout(updated)) {
+    if (hasLayout(original) && hasLayout(updated)) {
       const change = <T>(from: T, to: T) => (from === to ? undefined : { from, to });
       const slot = change(original.slot, updated.slot);
       const offset = change(original.offset, updated.offset);
@@ -137,7 +203,11 @@ export class StorageLayoutComparator {
         return { slot, offset, bytes };
       }
     } else {
-      return { uncertain: true };
+      const validChanges = [['uint8', 'bool']];
+      const knownCompatible = validChanges.some(
+        group => group.includes(original.type.item.label) && group.includes(updated.type.item.label),
+      );
+      return { uncertain: true, knownCompatible };
     }
   }
 

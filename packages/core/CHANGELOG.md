@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add support for avalanche and avalanche-fuji to manifest file names. ([#622](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/622))
+- Support storage layout gaps. ([#276](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/276))
 
 ## 1.18.0 (2022-08-08)
 

@@ -49,3 +49,16 @@ contract NonHardcodedRetypeV2 {
     /// @custom:oz-retyped-from address
     bytes20 a;
 }
+
+contract LayoutChangeV1 {
+    bool a;
+    bool b;
+}
+
+contract LayoutChangeV2 {
+    /// @custom:oz-retyped-from bool
+    uint16 a;
+
+    /// @custom:oz-retyped-from bool
+    uint8 b;
+}

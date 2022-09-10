@@ -399,4 +399,59 @@ contract Base {
 }
 ----
 
-Then the variable `base2` would be assigned the slot that `child` had in the previous version. A workaround for this is to declare unused variables on base contracts that you may want to extend in the future, as a means of "reserving" those slots. Note that this trick does not involve increased gas usage.
+Then the variable `base2` would be assigned the slot that `child` had in the previous version. A workaround for this is to declare unused variables or storage gaps in base contracts that you may want to extend in the future, as a means of "reserving" those slots. Note that this trick does not involve increased gas usage.
+
+[[storage-gaps]]
+=== Storage Gaps
+
+Storage gaps are a convention for reserving storage slots in a base contract, allowing future versions of that contract to use up those slots without affecting the storage layout of child contracts.
+
+To create a storage gap, declare a fixed-size array in the base contract with an initial number of slots. This can be an array of `uint256` so that each element reserves a 32 byte slot. Use the naming convention `__gap` so that OpenZeppelin Upgrades will recognize the gap:
+
+[source,solidity]
+----
+contract Base {
+    uint256 base1;
+    uint256[49] __gap;
+}
+
+contract Child is Base {
+    uint256 child;
+}
+----
+
+If `Base` is later modified to add extra variable(s), reduce the appropriate number of slots from the storage gap, keeping in mind https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html#layout-of-state-variables-in-storage[Solidity's rules on how contiguous items are packed]. For example:
+
+[source,solidity]
+----
+contract Base {
+    uint256 base1;
+    uint256 base2; // 32 bytes
+    uint256[48] __gap;
+}
+----
+
+Or:
+
+[source,solidity]
+----
+contract Base {
+    uint256 base1;
+    address base2; // 20 bytes
+    uint256[48] __gap; // array always starts at a new slot
+}
+----
+
+Or:
+
+[source,solidity]
+----
+contract Base {
+    uint256 base1;
+    uint128 base2a; // 16 bytes
+    uint128 base2b; // 16 bytes - continues from the same slot as above
+    uint256[48] __gap;
+}
+----
+
+To help determine the proper storage gap size in the new version of your contract, you can simply attempt an upgrade using `upgradeProxy` or just run the validations with `validateUpgrade` (see docs for xref:api-hardhat-upgrades.adoc[Hardhat] or xref:api-truffle-upgrades.adoc[Truffle]). If a storage gap is not being reduced properly, you will see an error message indicating the expected size of the storage gap.

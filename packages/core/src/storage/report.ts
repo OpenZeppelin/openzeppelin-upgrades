@@ -2,10 +2,20 @@ import _chalk from 'chalk';
 
 import type { BasicOperation } from '../levenshtein';
 import type { ParsedTypeDetailed } from './layout';
-import type { StorageOperation, StorageItem, StorageField, TypeChange, EnumOperation, LayoutChange } from './compare';
+import {
+  StorageOperation,
+  StorageItem,
+  StorageField,
+  TypeChange,
+  EnumOperation,
+  LayoutChange,
+  storageFieldEnd,
+  storageFieldBegin,
+} from './compare';
 import { itemize, itemizeWith } from '../utils/itemize';
 import { indent } from '../utils/indent';
 import { assert } from '../utils/assert';
+import { isGap } from './gap';
 
 export class LayoutCompatibilityReport {
   constructor(readonly ops: StorageOperation<StorageItem>[]) {}
@@ -42,10 +52,41 @@ interface StorageOperationContext {
   allowAppend: boolean;
 }
 
+interface WithHints {
+  title: string;
+  hints: string[];
+}
+
+function getExpectedGapSize(original: StorageField, updated: StorageField) {
+  const origEnd = storageFieldEnd(original);
+  const updatedStart = storageFieldBegin(updated);
+  const origNumBytes = original.type.item.numberOfBytes;
+  const origTail = original.type.tail;
+
+  if (origEnd === undefined || updatedStart === undefined || origNumBytes === undefined || origTail === undefined) {
+    return undefined;
+  }
+
+  const bytesPerItem = BigInt(origNumBytes) / BigInt(parseInt(origTail, 10));
+  const expectedSizeBytes = origEnd - updatedStart;
+
+  return expectedSizeBytes / bytesPerItem;
+}
+
+function suggestGapSize(original: StorageField, updated: StorageField): string {
+  const expectedSize = getExpectedGapSize(original, updated);
+  if (expectedSize !== undefined) {
+    return `Set __gap array to size ${expectedSize}`;
+  } else {
+    return '';
+  }
+}
+
 function explainStorageOperation(op: StorageOperation<StorageField>, ctx: StorageOperationContext): string {
   switch (op.kind) {
+    case 'shrinkgap':
     case 'typechange': {
-      const basic = explainTypeChange(op.change);
+      const basic = explainTypeChange(op.change, op.original, op.updated);
       const details =
         ctx.kind === 'layout' // explain details for layout only
           ? new Set(
@@ -54,8 +95,19 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
                 .filter((d?: string): d is string => d !== undefined),
             )
           : [];
-      return `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details);
+      const hints = [];
+      if (isGap(op.original) && op.change.kind === 'array shrink') {
+        hints.push(suggestGapSize(op.original, op.updated));
+      }
+      return printWithHints({
+        title: `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details),
+        hints,
+      });
     }
+
+    case 'finishgap':
+      return `Converted end of storage gap ${label(op.original)} to ${label(op.updated)}`;
+
     case 'rename':
       return `Renamed ${label(op.original)} to ${label(op.updated)}`;
 
@@ -63,11 +115,17 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
       return `Replaced ${label(op.original)} with ${label(op.updated)} of incompatible type`;
 
     case 'layoutchange': {
-      return (
+      const title =
         `Layout ${op.change.uncertain ? 'could have changed' : 'changed'} for ${label(op.updated)} ` +
         `(${op.original.type.item.label} -> ${op.updated.type.item.label})\n` +
-        describeLayoutTransition(op.change)
-      ).trimEnd();
+        describeLayoutTransition(op.change);
+      const hints = [];
+
+      if (isGap(op.original)) {
+        hints.push(suggestGapSize(op.original, op.updated));
+      }
+
+      return printWithHints({ title, hints });
     }
 
     default: {
@@ -94,12 +152,16 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
         }
       }
 
-      return title + '\n' + itemizeWith('>', ...hints);
+      return printWithHints({ title, hints });
     }
   }
 }
 
-function explainTypeChange(ch: TypeChange): string {
+function printWithHints(result: WithHints): string {
+  return (result.title + '\n' + itemizeWith('>', ...result.hints)).trimEnd();
+}
+
+function explainTypeChange(ch: TypeChange, original: StorageField, updated: StorageField): string {
   switch (ch.kind) {
     case 'visibility change':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent visibility`;
@@ -113,19 +175,28 @@ function explainTypeChange(ch: TypeChange): string {
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent representation sizes`;
 
     case 'mapping key':
-      return `In key of ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner));
+      return `In key of ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner, original, updated));
 
     case 'mapping value':
     case 'array value':
-      return `In ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner));
+      return `In ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner, original, updated));
 
     case 'array shrink':
     case 'array grow': {
       assert(ch.original.tail && ch.updated.tail);
       const originalSize = parseInt(ch.original.tail, 10);
       const updatedSize = parseInt(ch.updated.tail, 10);
-      const note = ch.kind === 'array shrink' ? 'Size cannot decrease' : 'Size cannot increase here';
-      return `Bad array resize from ${originalSize} to ${updatedSize}\n${note}`;
+
+      if (isGap(original)) {
+        const note =
+          ch.kind === 'array shrink'
+            ? 'Size decrease must match with corresponding variable inserts'
+            : 'Size cannot increase';
+        return `Bad storage gap resize from ${originalSize} to ${updatedSize}\n${note}`;
+      } else {
+        const note = ch.kind === 'array shrink' ? 'Size cannot decrease' : 'Size cannot increase here';
+        return `Bad array resize from ${originalSize} to ${updatedSize}\n${note}`;
+      }
     }
 
     case 'array dynamic': {

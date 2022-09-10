@@ -432,3 +432,351 @@ contract StorageUpgrade_StructEnum_V2 {
     }
     MyStruct[] public structs;
 }
+
+contract StorageUpgrade_Gap_V1 {
+    uint256 a;
+    uint256 b;
+    uint256[48] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_V2_Ok {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256[47] __gap;
+    uint256 z;
+}
+
+// insert var without shrink gap
+contract StorageUpgrade_Gap_V2_Bad1 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256[48] __gap;
+    uint256 z;
+}
+
+// delete var and expand gap
+contract StorageUpgrade_Gap_V2_Bad2 {
+    uint256 a;
+    uint256[49] __gap;
+    uint256 z;
+}
+
+// shrink gap without adding var
+contract StorageUpgrade_Gap_V2_Bad3 {
+    uint256 a;
+    uint256 b;
+    uint256[47] __gap;
+    uint256 z;
+}
+
+// insert var and shrink gap too much
+contract StorageUpgrade_Gap_V2_Bad4 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256[46] __gap;
+    uint256 z;
+}
+
+// insert vars and shrink gap not enough
+contract StorageUpgrade_Gap_V2_Bad5 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256 d;
+    uint256[47] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_Bytes32Gap_V1 {
+    uint256 a;
+    uint256 b;
+    bytes32[48] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_Bytes32Gap_V2_Ok {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    bytes32[47] __gap;
+    uint256 z;
+}
+
+// insert var without shrink gap
+contract StorageUpgrade_Bytes32Gap_V2_Bad1 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    bytes32[48] __gap;
+    uint256 z;
+}
+
+// delete var and expand gap
+contract StorageUpgrade_Bytes32Gap_V2_Bad2 {
+    uint256 a;
+    bytes32[49] __gap;
+    uint256 z;
+}
+
+// shrink gap without adding var
+contract StorageUpgrade_Bytes32Gap_V2_Bad3 {
+    uint256 a;
+    uint256 b;
+    bytes32[47] __gap;
+    uint256 z;
+}
+
+// insert var and shrink gap too much
+contract StorageUpgrade_Bytes32Gap_V2_Bad4 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    bytes32[46] __gap;
+    uint256 z;
+}
+
+// insert vars and shrink gap not enough
+contract StorageUpgrade_Bytes32Gap_V2_Bad5 {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256 d;
+    bytes32[47] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_MultiConsumeGap_V1 {
+    uint256[2] __gap;
+}
+
+contract StorageUpgrade_MultiConsumeGap_V2_Ok {
+    uint256 a;
+    uint256 b;
+}
+
+contract StorageUpgrade_EndGap_V1a {
+    uint256 a;
+    uint256[1] private __gap;
+}
+
+contract StorageUpgrade_EndGap_V1b is StorageUpgrade_EndGap_V1a {
+    uint256[2] private __gap;
+}
+
+contract StorageUpgrade_EndGap_V1c is StorageUpgrade_EndGap_V1b {
+    uint256 b;
+}
+
+contract StorageUpgrade_EndGap_V2a {
+    uint256 a;
+    uint256[1] small;
+}
+
+contract StorageUpgrade_EndGap_V2b is StorageUpgrade_EndGap_V2a {
+    uint256 inserted1;
+    uint256 inserted2;
+    uint256 b;
+}
+
+contract StorageUpgrade_EndGap_Uint128_V1a {
+    uint128 a;
+    uint256[1] private __gap;
+}
+
+contract StorageUpgrade_EndGap_Uint128_V1b is StorageUpgrade_EndGap_Uint128_V1a {
+    uint256[2] private __gap;
+}
+
+contract StorageUpgrade_EndGap_Uint128_V1c is StorageUpgrade_EndGap_Uint128_V1b {
+    uint128 b;
+}
+
+contract StorageUpgrade_EndGap_Uint128_V2a {
+    uint128 a;
+    uint128[1] small;
+}
+
+contract StorageUpgrade_EndGap_Uint128_V2b is StorageUpgrade_EndGap_Uint128_V2a {
+    uint128[4] medium;
+    uint128 b;
+}
+
+contract StorageUpgrade_Uint256Gap_Address_V1 {
+    address a;
+    address b;
+    uint256[48] __gap;
+    address z;
+}
+
+contract StorageUpgrade_Uint256Gap_Address_V2 {
+    address a;
+    address b;
+    address c;
+    uint256[47] __gap;
+    address z;
+}
+
+contract StorageUpgrade_AddressGap_V1 {
+    address a;
+    address b;
+    address[48] __gap;
+    address z;
+}
+
+contract StorageUpgrade_AddressGap_V2 {
+    address a;
+    address b;
+    address c;
+    address[47] __gap;
+    address z;
+}
+
+contract StorageUpgrade_Uint128Gap_V1 {
+    uint128 a;
+    uint128[49] __gap;
+    uint128 z;
+}
+
+contract StorageUpgrade_Uint128Gap_V2_Ok {
+    uint128 a; // half slot
+    uint128 b; // half slot
+    uint128[49] __gap;
+    uint128 z;
+}
+
+contract StorageUpgrade_Uint128Gap_V2b_Ok {
+    uint128 a;
+    uint128 b;
+    uint128 c;
+    uint128[48] __gap;
+    uint128 z;
+}
+
+contract StorageUpgrade_Uint128Gap_V2_Bad {
+    uint128 a;
+    uint128 b;
+    uint128 c;
+    uint128[49] __gap;
+    uint128 z;
+}
+
+contract StorageUpgrade_BoolGap_V1 {
+    bool[32] a;
+    bool[32] b;
+    bool[32] __gap;
+    bool z;
+}
+
+contract StorageUpgrade_BoolGap_V2_Ok {
+    bool[32] a;
+    bool[32] b;
+    bool[16] c; // does not use a full slot, but items before and after array are aligned to slots
+    bool z;
+}
+
+contract StorageUpgrade_BoolGap_V2_Bad {
+    bool[32] a;
+    bool[32] b;
+    bool[16] c;
+    bool[16] __gap; // array starts at next slot
+    bool[32] z;
+}
+
+contract StorageUpgrade_Gap_One_Element_V1 {
+    uint256 a;
+    uint256 b;
+    uint256[1] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_One_Element_V2_Ok {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_One_Element_V2b_Ok {
+    uint256 a;
+    uint256 b;
+    uint256[1] c;
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_One_Element_V2_Bad {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256[1] __gap;
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_Bool_Not_Array_V1 {
+    bool a;
+    bool b;
+    bool __gap; // not a gap
+    bool z;
+}
+
+contract StorageUpgrade_Gap_Bool_Not_Array_V2_Bad {
+    bool a;
+    bool b;
+    bool c;
+    bool z;
+}
+
+contract StorageUpgrade_Gap_Uint256_Not_Array_V1 {
+    uint256 a;
+    uint256 b;
+    uint256 __gap; // not a gap
+    uint256 z;
+}
+
+contract StorageUpgrade_Gap_Uint256_Not_Array_V2_Bad {
+    uint256 a;
+    uint256 b;
+    uint256 c;
+    uint256 z;
+}
+
+contract StorageUpgrade_StructGap_V1 {
+    struct S {
+        uint256 a;
+        uint256 b;
+        bytes32[50] __gap;
+        uint256 d;
+    }
+    mapping(uint256 => S) store_mapping;
+    S[10] store_fixed_array;
+    S[] store_dynamic_array;
+}
+
+contract StorageUpgrade_StructGap_V2_Ok {
+    struct S {
+        uint256 a;
+        uint256 b;
+        uint256 c;
+        bytes32[49] __gap;
+        uint256 d;
+    }
+    mapping(uint256 => S) store_mapping;
+    S[10] store_fixed_array;
+    S[] store_dynamic_array;
+}
+
+contract StorageUpgrade_StructGap_V2_Bad {
+    struct S {
+        uint256 a;
+        uint256 b;
+        uint256 c;
+        bytes32[48] __gap;
+        uint256 d;
+    }
+    mapping(uint256 => S) store_mapping;
+    S[10] store_fixed_array;
+    S[] store_dynamic_array;
+}
