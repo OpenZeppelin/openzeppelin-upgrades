@@ -34,7 +34,7 @@ export type TypeChange = (
         | 'visibility change'
         | 'array shrink'
         | 'array dynamic'
-        | 'enum resize'
+        | 'type resize'
         | 'missing members';
     }
   | {
@@ -292,7 +292,7 @@ export class StorageLayoutComparator {
         }
         assert(isEnumMembers(originalMembers) && isEnumMembers(updatedMembers));
         if (enumSize(originalMembers.length) !== enumSize(updatedMembers.length)) {
-          return { kind: 'enum resize', original, updated };
+          return { kind: 'type resize', original, updated };
         } else {
           const ops = levenshtein(originalMembers, updatedMembers, (a, b) =>
             a === b ? undefined : { kind: 'replace' as const, original: a, updated: b },
@@ -356,6 +356,17 @@ export class StorageLayoutComparator {
 
         if (inner) {
           return { kind: 'array value', inner, original, updated };
+        } else {
+          return undefined;
+        }
+      }
+
+      case 't_userDefinedValueType': {
+        if (original.item.numberOfBytes === undefined || updated.item.numberOfBytes === undefined) {
+          return { kind: 'unknown', original, updated };
+        }
+        if (original.item.numberOfBytes !== updated.item.numberOfBytes) {
+          return { kind: 'type resize', original, updated };
         } else {
           return undefined;
         }

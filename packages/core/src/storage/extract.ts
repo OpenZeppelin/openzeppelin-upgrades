@@ -119,7 +119,7 @@ function getOriginContract(contract: ContractDefinition, astId: number | undefin
 
 function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, deref: ASTDereferencer) {
   // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
-  const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition']);
+  const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition', 'UserDefinedValueTypeDefinition']);
 
   assert(varDecl.typeName != null);
 
@@ -135,7 +135,10 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
 
     if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
       const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
-      layout.types[type].members ??= getTypeMembers(typeDef);
+
+      if (typeDef.nodeType !== 'UserDefinedValueTypeDefinition') {
+        layout.types[type].members ??= getTypeMembers(typeDef);
+      }
 
       // Recursively look for the types referenced in this definition and add them to the queue.
       for (const typeName of findTypeNames(typeDef)) {
