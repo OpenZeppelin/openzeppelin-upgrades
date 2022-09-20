@@ -12,5 +12,3 @@ contract Storage089_V2 {
 
   uint x;
 }
-
-
