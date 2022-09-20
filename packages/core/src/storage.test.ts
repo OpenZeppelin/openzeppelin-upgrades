@@ -6,7 +6,7 @@ import { artifacts } from 'hardhat';
 import { SolcOutput } from './solc-api';
 import { astDereferencer } from './ast-dereferencer';
 import { getStorageUpgradeErrors } from './storage';
-import { StorageLayout, isEnumMembers } from './storage/layout';
+import { StorageLayout } from './storage/layout';
 import { extractStorageLayout } from './storage/extract';
 import { stabilizeTypeIdentifier } from './utils/type-id';
 import { stabilizeStorageLayout } from './utils/stabilize-layout';

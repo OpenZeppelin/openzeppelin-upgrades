@@ -1,12 +1,10 @@
 import _test, { TestFn } from 'ava';
-import { ContractDefinition } from 'solidity-ast';
 import { findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
 
 import { SolcOutput } from './solc-api';
 import { astDereferencer } from './ast-dereferencer';
 import { getStorageUpgradeErrors } from './storage';
-import { StorageLayout, isEnumMembers } from './storage/layout';
 import { extractStorageLayout } from './storage/extract';
 import { BuildInfo } from 'hardhat/types';
 import { stabilizeStorageLayout } from './utils/stabilize-layout';
@@ -22,8 +20,10 @@ test.before(async t => {
   t.context.extractStorageLayout = async contract => {
     const [file] = contract.split('_');
     const source = `contracts/test/${file}.sol`;
-    const buildInfo = buildInfoCache[source] ??= await artifacts.getBuildInfo(`${source}:${contract}`);
-    if (buildInfo === undefined) throw new Error(`Build info for ${source} not found`);
+    const buildInfo = (buildInfoCache[source] ??= await artifacts.getBuildInfo(`${source}:${contract}`));
+    if (buildInfo === undefined) {
+      throw new Error(`Build info for ${source} not found`);
+    }
     const solcOutput: SolcOutput = buildInfo.output;
     for (const def of findAll('ContractDefinition', solcOutput.sources[source].ast)) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -33,7 +33,7 @@ test.before(async t => {
       }
     }
     throw new Error(`Contract ${contract} not found in ${source}`);
-  }
+  };
 });
 
 const dummyDecodeSrc = () => 'file.sol:1';
@@ -61,7 +61,7 @@ test('rejects storage upgrade from 0.8.8 to 0.8.9', async t => {
       },
       original: { label: 'my_user_value' },
       updated: { label: 'my_user_value' },
-    }
+    },
   });
 });
 
