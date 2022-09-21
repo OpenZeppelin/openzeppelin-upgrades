@@ -22,6 +22,7 @@ test.before(async t => {
     'contracts/test/Validations.sol:HasEmptyConstructor',
     'contracts/test/ValidationsNatspec.sol:HasNonEmptyConstructorNatspec1',
     'contracts/test/Proxiable.sol:ChildOfProxiable',
+    'contracts/test/ValidationsUDVT.sol:ValidationsUDVT',
   ];
 
   t.context.validation = {} as RunValidation;
