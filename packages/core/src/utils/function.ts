@@ -56,5 +56,7 @@ function serializeTypeName(typeName: TypeName, deref: ASTDereferencer): string {
 }
 
 export function getFunctionSignature(fnDef: FunctionDefinition, deref: ASTDereferencer): string {
-  return `${fnDef.name}(${fnDef.parameters.parameters.map(parameter => serializeParameterType(parameter, deref)).join()})`;
+  return `${fnDef.name}(${fnDef.parameters.parameters
+    .map(parameter => serializeParameterType(parameter, deref))
+    .join()})`;
 }
