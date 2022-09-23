@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Override `verify:verify` subtask from hardhat-etherscan. ([#619](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/619))
+
 ## 1.20.0 (2022-08-08)
 
 - Provide granular functions to allow more customizable deployments. ([#580](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/580))
