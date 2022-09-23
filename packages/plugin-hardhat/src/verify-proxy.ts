@@ -63,7 +63,7 @@ const verifiableContracts = {
 };
 
 /**
- * Overrides hardhat-etherscan's verify function to fully verify a proxy.
+ * Overrides hardhat-etherscan's verify:verify subtask to fully verify a proxy.
  *
  * Verifies the contract at an address. If the address is an ERC-1967 compatible proxy, verifies the proxy and associated proxy contracts,
  * as well as the implementation. Otherwise, calls hardhat-etherscan's verify function directly.
