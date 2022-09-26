@@ -6,9 +6,10 @@ import { artifacts } from 'hardhat';
 import { SolcOutput } from './solc-api';
 import { astDereferencer } from './ast-dereferencer';
 import { getStorageUpgradeErrors } from './storage';
-import { StorageLayout, isEnumMembers } from './storage/layout';
+import { StorageLayout } from './storage/layout';
 import { extractStorageLayout } from './storage/extract';
 import { stabilizeTypeIdentifier } from './utils/type-id';
+import { stabilizeStorageLayout } from './utils/stabilize-layout';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
@@ -331,7 +332,7 @@ test('storage upgrade with enums', t => {
     },
     3: {
       kind: 'typechange',
-      change: { kind: 'enum resize' },
+      change: { kind: 'type resize' },
       original: { label: 'data4' },
       updated: { label: 'data4' },
     },
@@ -937,17 +938,3 @@ test('storage upgrade with struct gap', t => {
     },
   });
 });
-
-function stabilizeStorageLayout(layout: StorageLayout) {
-  return {
-    storage: layout.storage.map(s => ({ ...s, type: stabilizeTypeIdentifier(s.type) })),
-    types: Object.entries(layout.types).map(([type, item]) => {
-      const members =
-        item.members &&
-        (isEnumMembers(item.members)
-          ? item.members
-          : item.members.map(m => ({ ...m, type: stabilizeTypeIdentifier(m.type) })));
-      return [stabilizeTypeIdentifier(type), { ...item, members }];
-    }),
-  };
-}

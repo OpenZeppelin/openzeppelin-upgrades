@@ -1,8 +1,8 @@
-import type { FunctionDefinition, VariableDeclaration } from 'solidity-ast';
+import type { FunctionDefinition, TypeName, VariableDeclaration } from 'solidity-ast';
 import { ASTDereferencer } from '../ast-dereferencer';
 import { assert, assertUnreachable } from './assert';
 
-function serializeTypeName(parameter: VariableDeclaration, deref: ASTDereferencer): string {
+function serializeParameterType(parameter: VariableDeclaration, deref: ASTDereferencer): string {
   const { typeName, storageLocation } = parameter;
   assert(!!typeName);
 
@@ -11,6 +11,10 @@ function serializeTypeName(parameter: VariableDeclaration, deref: ASTDereference
     return typeName.typeDescriptions.typeString.replace(/^struct /, '') + ' storage';
   }
 
+  return serializeTypeName(typeName, deref);
+}
+
+function serializeTypeName(typeName: TypeName, deref: ASTDereferencer): string {
   switch (typeName.nodeType) {
     case 'ArrayTypeName':
     case 'ElementaryTypeName': {
@@ -20,12 +24,12 @@ function serializeTypeName(parameter: VariableDeclaration, deref: ASTDereference
 
     case 'UserDefinedTypeName': {
       const userDefinedType = deref(
-        ['StructDefinition', 'EnumDefinition', 'ContractDefinition'],
+        ['StructDefinition', 'EnumDefinition', 'ContractDefinition', 'UserDefinedValueTypeDefinition'],
         typeName.referencedDeclaration,
       );
       switch (userDefinedType.nodeType) {
         case 'StructDefinition':
-          return '(' + userDefinedType.members.map(member => serializeTypeName(member, deref)) + ')';
+          return '(' + userDefinedType.members.map(member => serializeParameterType(member, deref)) + ')';
 
         case 'EnumDefinition':
           assert(userDefinedType.members.length < 256);
@@ -33,6 +37,9 @@ function serializeTypeName(parameter: VariableDeclaration, deref: ASTDereference
 
         case 'ContractDefinition':
           return 'address';
+
+        case 'UserDefinedValueTypeDefinition':
+          return serializeTypeName(userDefinedType.underlyingType, deref);
 
         default:
           return assertUnreachable(userDefinedType);
@@ -49,5 +56,7 @@ function serializeTypeName(parameter: VariableDeclaration, deref: ASTDereference
 }
 
 export function getFunctionSignature(fnDef: FunctionDefinition, deref: ASTDereferencer): string {
-  return `${fnDef.name}(${fnDef.parameters.parameters.map(parameter => serializeTypeName(parameter, deref)).join()})`;
+  return `${fnDef.name}(${fnDef.parameters.parameters
+    .map(parameter => serializeParameterType(parameter, deref))
+    .join()})`;
 }

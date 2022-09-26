@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support user defined value types. ([#658](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/658))
+
 ## 1.19.1 (2022-09-10)
 
 - Fix missing module. ([#652](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/652))

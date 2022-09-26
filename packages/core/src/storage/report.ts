@@ -171,7 +171,7 @@ function explainTypeChange(ch: TypeChange, original: StorageField, updated: Stor
     case 'enum members':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}`;
 
-    case 'enum resize':
+    case 'type resize':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent representation sizes`;
 
     case 'mapping key':
@@ -237,7 +237,7 @@ function getAllTypeChanges(root: TypeChange): TypeChange[] {
       // We mention all other kinds explicitly to review any future new kinds
       case 'obvious mismatch':
       case 'enum members':
-      case 'enum resize':
+      case 'type resize':
       case 'mapping key':
       case 'array shrink':
       case 'array grow':
