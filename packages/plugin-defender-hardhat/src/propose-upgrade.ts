@@ -1,20 +1,18 @@
+import { UpgradeOptions } from '@openzeppelin/hardhat-upgrades';
 import '@openzeppelin/hardhat-upgrades/dist/type-extensions';
 import {
-  getChainId,
   getImplementationAddress,
   isBeacon,
   isBeaconProxy,
-  isTransparentProxy,
   isTransparentOrUUPSProxy,
+  isTransparentProxy,
 } from '@openzeppelin/upgrades-core';
 import { ProposalResponse } from 'defender-admin-client';
 import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { fromChainId } from 'defender-base-client';
-import { UpgradeOptions } from '@openzeppelin/hardhat-upgrades';
+import { getAdminClient, getNetwork } from './utils';
 import type { VerificationResponse } from './verify-deployment';
-import { getAdminClient } from './utils';
 
 export interface ExtendedProposalResponse extends ProposalResponse {
   txResponse?: ethers.providers.TransactionResponse;
@@ -39,11 +37,7 @@ export interface ProposalOptions extends UpgradeOptions {
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgradeFunction {
   return async function proposeUpgrade(proxyAddress, contractNameOrImplFactory, opts = {}) {
     const client = getAdminClient(hre);
-    const chainId = await getChainId(hre.network.provider);
-    const network = fromChainId(chainId);
-    if (network === undefined) {
-      throw new Error(`Network ${chainId} is not supported in Defender Admin`);
-    }
+    const network = await getNetwork(hre);
 
     const { title, description, proxyAdmin, multisig, multisigType, ...moreOpts } = opts;
 
