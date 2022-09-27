@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Silence warning about missing Defender configuration unless it is required. ([#663](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/663))
+
 ## 1.8.0 (2022-08-29)
 
 - Add functions to verify that a compiled artifact matches code on chain. ([#642](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/642))
