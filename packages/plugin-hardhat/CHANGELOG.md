@@ -8,7 +8,7 @@
 
 - Override `verify:verify` subtask from hardhat-etherscan. ([#619](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/619))
 
-**Breaking change**: To verify a proxy programmatically from a Hardhat script, call `verify:verify` instead of `verify`:
+**Breaking change**: To verify a proxy on Etherscan programmatically from a Hardhat script, call `verify:verify` instead of `verify`:
 ```
 await hre.run("verify:verify", {
   address: PROXY_ADDRESS,
