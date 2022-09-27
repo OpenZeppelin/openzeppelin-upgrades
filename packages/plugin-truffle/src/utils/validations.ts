@@ -55,7 +55,7 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): {
     if (!versionMatch) {
       throw new UpgradesError('Unknown or nightly compiler version');
     }
-    const [artifactSolcVersion] = versionMatch;
+    const artifactSolcVersion = versionMatch[1];
 
     if (solcVersion === undefined) {
       solcVersion = artifactSolcVersion;
