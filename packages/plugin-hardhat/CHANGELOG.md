@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Include solc version in storage layouts in manifest files. ([#662](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/662))
+
 ## 1.20.1 (2022-09-26)
 
 - Override `verify:verify` subtask from hardhat-etherscan. ([#619](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/619))

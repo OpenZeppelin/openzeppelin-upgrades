@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Include solc version in storage layouts in manifest files. ([#662](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/662))
+
 ## 1.16.0 (2022-08-08)
 
 - Provide granular functions to allow more customizable deployments. ([#580](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/580))

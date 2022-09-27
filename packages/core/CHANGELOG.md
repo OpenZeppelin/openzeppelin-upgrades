@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Support user defined value types. ([#658](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/658))
+- Include solc version in storage layouts in manifest files. ([#662](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/662))
 
 ## 1.19.1 (2022-09-10)
 
