@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.8.1 (2022-09-27)
 
 - Silence warning about missing Defender configuration unless it is required. ([#663](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/663))
 
