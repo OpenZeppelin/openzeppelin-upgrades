@@ -33,7 +33,7 @@ extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) =>
     if (!userConfig.defender || !userConfig.defender.apiKey || !userConfig.defender.apiSecret) {
       const sampleConfig = JSON.stringify({ apiKey: 'YOUR_API_KEY', apiSecret: 'YOUR_API_SECRET' }, null, 2);
       console.warn(
-        `Defender API key and secret are not set. Add the following to your hardhat.config.js exported configuration:\n${sampleConfig}\n`,
+        `Defender API key and secret are not set. Add the following to your hardhat.config.js exported configuration:\ndefender: ${sampleConfig}\n`,
       );
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
