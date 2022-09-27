@@ -15,13 +15,9 @@ test.beforeEach(async t => {
   t.context.fakeDefender = { verifyDeployment: sinon.stub() };
   t.context.fakeChainId = 'goerli';
   t.context.proposeUpgrade = proxyquire('../dist/propose-upgrade', {
-    'defender-admin-client': {
-      AdminClient: function () {
-        return t.context.fakeClient;
-      },
-    },
-    'defender-base-client': {
-      fromChainId: () => t.context.fakeChainId,
+    './utils': {
+      getNetwork: () => t.context.fakeChainId,
+      getAdminClient: () => t.context.fakeClient,
     },
   }).makeProposeUpgrade({
     ...hre,
@@ -182,24 +178,6 @@ test('proposes an upgrade reusing prepared implementation', async t => {
       abi: GreeterV2.interface.format(FormatTypes.json),
     },
   );
-});
-
-test('fails if chain id is not accepted', async t => {
-  const { proposeUpgrade, greeter, GreeterV2 } = t.context;
-  t.context.fakeChainId = undefined;
-
-  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), { message: /Network \d+ is not supported/ });
-});
-
-test('fails if defender config is missing', async t => {
-  const { proposeUpgrade, greeter, GreeterV2 } = t.context;
-  const { defender } = hre.config;
-  delete hre.config.defender;
-
-  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), {
-    message: 'Missing Defender API key and secret in hardhat config',
-  });
-  hre.config.defender = defender;
 });
 
 test('fails if multisig address is missing from UUPS proxy', async t => {

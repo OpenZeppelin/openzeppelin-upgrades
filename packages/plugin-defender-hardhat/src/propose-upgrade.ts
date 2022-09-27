@@ -1,18 +1,17 @@
+import { UpgradeOptions } from '@openzeppelin/hardhat-upgrades';
 import '@openzeppelin/hardhat-upgrades/dist/type-extensions';
 import {
-  getChainId,
   getImplementationAddress,
   isBeacon,
   isBeaconProxy,
-  isTransparentProxy,
   isTransparentOrUUPSProxy,
+  isTransparentProxy,
 } from '@openzeppelin/upgrades-core';
-import { AdminClient, ProposalResponse } from 'defender-admin-client';
+import { ProposalResponse } from 'defender-admin-client';
 import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { fromChainId } from 'defender-base-client';
-import { UpgradeOptions } from '@openzeppelin/hardhat-upgrades';
+import { getAdminClient, getNetwork } from './utils';
 import type { VerificationResponse } from './verify-deployment';
 
 export interface ExtendedProposalResponse extends ProposalResponse {
@@ -37,16 +36,8 @@ export interface ProposalOptions extends UpgradeOptions {
 
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgradeFunction {
   return async function proposeUpgrade(proxyAddress, contractNameOrImplFactory, opts = {}) {
-    if (!hre.config.defender) {
-      throw new Error(`Missing Defender API key and secret in hardhat config`);
-    }
-    const client = new AdminClient(hre.config.defender);
-
-    const chainId = await getChainId(hre.network.provider);
-    const network = fromChainId(chainId);
-    if (network === undefined) {
-      throw new Error(`Network ${chainId} is not supported in Defender Admin`);
-    }
+    const client = getAdminClient(hre);
+    const network = await getNetwork(hre);
 
     const { title, description, proxyAdmin, multisig, multisigType, ...moreOpts } = opts;
 
