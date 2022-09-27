@@ -7,13 +7,14 @@ import {
   isTransparentProxy,
   isTransparentOrUUPSProxy,
 } from '@openzeppelin/upgrades-core';
-import { AdminClient, ProposalResponse } from 'defender-admin-client';
+import { ProposalResponse } from 'defender-admin-client';
 import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { fromChainId } from 'defender-base-client';
 import { UpgradeOptions } from '@openzeppelin/hardhat-upgrades';
 import type { VerificationResponse } from './verify-deployment';
+import { getAdminClient } from './utils';
 
 export interface ExtendedProposalResponse extends ProposalResponse {
   txResponse?: ethers.providers.TransactionResponse;
@@ -37,11 +38,7 @@ export interface ProposalOptions extends UpgradeOptions {
 
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgradeFunction {
   return async function proposeUpgrade(proxyAddress, contractNameOrImplFactory, opts = {}) {
-    if (!hre.config.defender) {
-      throw new Error(`Missing Defender API key and secret in hardhat config`);
-    }
-    const client = new AdminClient(hre.config.defender);
-
+    const client = getAdminClient(hre);
     const chainId = await getChainId(hre.network.provider);
     const network = fromChainId(chainId);
     if (network === undefined) {

@@ -3,10 +3,14 @@ import { fromChainId, Network } from 'defender-base-client';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 export function getAdminClient(hre: HardhatRuntimeEnvironment): AdminClient {
-  if (!hre.config.defender) {
-    throw new Error(`Missing Defender API key and secret in hardhat config`);
+  const cfg = hre.config.defender;
+  if (!cfg || !cfg.apiKey || !cfg.apiSecret) {
+    const sampleConfig = JSON.stringify({ apiKey: 'YOUR_API_KEY', apiSecret: 'YOUR_API_SECRET' }, null, 2);
+    throw new Error(
+      `Missing Defender API key and secret in hardhat config. Add the following to your hardhat.config.js configuration:\ndefender: ${sampleConfig}\n`,
+    );
   }
-  return new AdminClient(hre.config.defender);
+  return new AdminClient(cfg);
 }
 
 export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Network> {
