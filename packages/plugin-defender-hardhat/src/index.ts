@@ -29,13 +29,16 @@ export interface HardhatDefenderConfig {
 }
 
 extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
-  if (!userConfig.defender || !userConfig.defender.apiKey || !userConfig.defender.apiSecret) {
-    const sampleConfig = JSON.stringify({ apiKey: 'YOUR_API_KEY', apiSecret: 'YOUR_API_SECRET' }, null, 2);
-    console.warn(
-      `Defender API key and secret are not set. Add the following to your hardhat.config.js exported configuration:\n\n${sampleConfig}\n`,
-    );
-  }
-  config.defender = userConfig.defender;
+  config.defender = lazyObject((): HardhatDefenderConfig => {
+    if (!userConfig.defender || !userConfig.defender.apiKey || !userConfig.defender.apiSecret) {
+      const sampleConfig = JSON.stringify({ apiKey: 'YOUR_API_KEY', apiSecret: 'YOUR_API_SECRET' }, null, 2);
+      console.warn(
+        `Defender API key and secret are not set. Add the following to your hardhat.config.js exported configuration:\n${sampleConfig}\n`,
+      );
+    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return userConfig.defender!;
+  });
 });
 
 extendEnvironment(hre => {
