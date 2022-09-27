@@ -23,6 +23,7 @@ export interface ContractValidation {
   linkReferences: LinkReference[];
   errors: ValidationError[];
   layout: StorageLayout;
+  solcVersion?: string;
 }
 
 const errorKinds = [
@@ -113,7 +114,7 @@ function skipCheck(error: string, node: Node): boolean {
   return getAllowed(node).includes(error);
 }
 
-export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): ValidationRunData {
+export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVersion?: string): ValidationRunData {
   const validation: ValidationRunData = {};
   const fromId: Record<number, string> = {};
   const inheritIds: Record<string, number[]> = {};
@@ -139,6 +140,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder): Validat
           storage: [],
           types: {},
         },
+        solcVersion,
       };
     }
 
