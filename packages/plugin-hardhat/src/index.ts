@@ -50,6 +50,7 @@ export interface HardhatUpgrades {
 
 interface RunCompilerArgs {
   input: SolcInput;
+  solcVersion: string;
 }
 
 subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) => {
@@ -78,7 +79,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
   const { isFullSolcOutput } = await import('./utils/is-full-solc-output');
   if (isFullSolcOutput(output)) {
     const decodeSrc = solcInputOutputDecoder(args.input, output);
-    const validations = validate(output, decodeSrc);
+    const validations = validate(output, decodeSrc, args.solcVersion);
     await writeValidations(hre, validations);
   }
 

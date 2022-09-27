@@ -119,7 +119,7 @@ test('normalize manifest', t => {
     address: '0x1234',
     txHash: '0x1234',
     kind: 'uups' as const,
-    layout: { types: {}, storage: [] },
+    layout: { solcVersion: '0.8.9', types: {}, storage: [] },
     deployTransaction: {},
   };
   const input: ManifestData = {

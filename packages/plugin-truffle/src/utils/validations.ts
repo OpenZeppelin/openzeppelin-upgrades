@@ -7,6 +7,7 @@ import {
   EthereumProvider,
   getNetworkId,
   ValidationRunData,
+  UpgradesError,
 } from '@openzeppelin/upgrades-core';
 import type { SolcInput, SolcOutput, SolcLinkReferences } from '@openzeppelin/upgrades-core/dist/solc-api';
 
@@ -15,9 +16,9 @@ import debug from './debug';
 
 export async function validateArtifacts(artifactsPath: string, sourcesPath: string): Promise<ValidationRunData> {
   const artifacts = await readArtifacts(artifactsPath);
-  const { input, output } = reconstructSolcInputOutput(artifacts);
+  const { input, output, solcVersion } = reconstructSolcInputOutput(artifacts);
   const srcDecoder = solcInputOutputDecoder(input, output, sourcesPath);
-  return validate(output, srcDecoder);
+  return validate(output, srcDecoder, solcVersion);
 }
 
 async function readArtifacts(artifactsPath: string): Promise<TruffleArtifact[]> {
@@ -29,9 +30,14 @@ async function readArtifacts(artifactsPath: string): Promise<TruffleArtifact[]> 
   return artifactContents.map(c => JSON.parse(c));
 }
 
-function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: SolcInput; output: SolcOutput } {
+function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): {
+  input: SolcInput;
+  output: SolcOutput;
+  solcVersion?: string;
+} {
   const output: SolcOutput = { contracts: {}, sources: {} };
   const input: SolcInput = { sources: {} };
+  let solcVersion;
 
   const sourceUnitId: Partial<Record<string, number>> = {};
 
@@ -40,6 +46,21 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
       // Artifact does not contain AST. It may be from a dependency.
       // We ignore it. If the contract is needed by the user it will fail later.
       continue;
+    }
+    if (artifact.compiler.name !== 'solc') {
+      continue;
+    }
+
+    const versionMatch = artifact.compiler.version.match(/^([0-9.]+)\+commit/);
+    if (!versionMatch) {
+      throw new UpgradesError('Unknown or nightly compiler version');
+    }
+    const artifactSolcVersion = versionMatch[1];
+
+    if (solcVersion === undefined) {
+      solcVersion = artifactSolcVersion;
+    } else if (solcVersion !== artifactSolcVersion) {
+      throw new UpgradesError('Multiple Solidity versions found');
     }
 
     const { contractName, ast } = artifact;
@@ -71,7 +92,7 @@ function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: Solc
 
   checkForImportIdConsistency(sourceUnitId, input, output);
 
-  return { input, output };
+  return { input, output, solcVersion };
 }
 
 function checkForImportIdConsistency(
@@ -132,7 +153,7 @@ function checkForImportIdConsistency(
         }
         break;
       } else if (importedUnitId !== importDir.sourceUnit) {
-        throw new Error(
+        throw new UpgradesError(
           `Artifacts are from different compiler runs\n` +
             `    Run a full recompilation using \`truffle compile --all\`\n` +
             `    https://zpl.in/upgrades/truffle-recompile-all`,

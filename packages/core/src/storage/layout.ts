@@ -7,6 +7,7 @@ import { parseTypeId, ParsedTypeId } from '../utils/parse-type-id';
 
 export interface StorageLayout {
   layoutVersion?: string;
+  solcVersion?: string;
   storage: StorageItem[];
   types: Record<string, TypeItem>;
   flat?: boolean;
