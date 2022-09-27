@@ -30,7 +30,11 @@ async function readArtifacts(artifactsPath: string): Promise<TruffleArtifact[]> 
   return artifactContents.map(c => JSON.parse(c));
 }
 
-function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): { input: SolcInput; output: SolcOutput; solcVersion?: string } {
+function reconstructSolcInputOutput(artifacts: TruffleArtifact[]): {
+  input: SolcInput;
+  output: SolcOutput;
+  solcVersion?: string;
+} {
   const output: SolcOutput = { contracts: {}, sources: {} };
   const input: SolcInput = { sources: {} };
   let solcVersion;
