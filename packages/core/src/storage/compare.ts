@@ -168,7 +168,7 @@ export class StorageLayoutComparator {
       original.label !== updated.renamedFrom &&
       (updated.label !== original.label ||
         (updated.renamedFrom !== undefined && updated.renamedFrom !== original.renamedFrom));
-    const retypedFromOriginal = original.type.item.label === updated.retypedFrom;
+    const retypedFromOriginal = original.type.item.label === updated.retypedFrom?.trim();
     const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = this.getLayoutChange(original, updated);
 
