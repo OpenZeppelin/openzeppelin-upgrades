@@ -170,13 +170,13 @@ NOTE: In some cases immutable variables are upgrade safe. The plugins cannot cur
 [[why-cant-i-use-external-libraries]]
 == Why can't I use external libraries?
 
-At the moment the plugins only have partial support for upgradeable contracts linked to external libraries. This is because it's not known at compile time what implementation is going to be linked thus making it very difficult to guarantee the safety of the upgrade operation.
+At the moment, the plugins only have partial support for upgradeable contracts linked to external libraries. This is because it's not known at compile time what implementation is going to be linked, thus making it very difficult to guarantee the safety of the upgrade operation.
 
 There are plans to add this functionality in the near future with certain constraints that make the issue easier to address like assuming that the external library's source code is either present in the codebase or that it's been deployed and mined so it can be fetched from the blockchain for analysis.
 
-In the meantime you can deploy upgradeable contracts linked to external libraries by setting the `unsafeAllowLinkedLibraries` flag to true in the `deployProxy` or `upgradeProxy` calls, or including `'external-library-linking'` in the `unsafeAllow` array. Keep in mind the plugins will not verify that the linked libraries are upgrade safe. This has to be done manually for now until the full support for external libraries is implemented.
+In the meantime, you can deploy upgradeable contracts linked to external libraries by setting the `unsafeAllowLinkedLibraries` flag to true in the `deployProxy` or `upgradeProxy` calls, or including `'external-library-linking'` in the `unsafeAllow` array. Keep in mind the plugins will not verify that the linked libraries are upgrade safe. This has to be done manually for now until the full support for external libraries is implemented.
 
-You can follow or contribute to https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52[this issue in Github].
+You can follow or contribute to https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52[this issue in GitHub].
 
 [[why-public-upgradeto]]
 == Why do I need a public `upgradeTo` function?
@@ -212,7 +212,7 @@ Truffle sometimes partially recompiles only the contracts that have changed. We 
 [[how-to-rename]]
 == How can I rename a variable, or change its type?
 
-Renaming a variable is disallowed by default because there is a change that a renaming is actually an accidental reordering. For example if variables `uint a; uint b;` are upgraded to `uint b; uint a;`, if renaming was simply allowed this would not be seen as a mistake, but it could have been an accident, specially when multiple inheritance is involved.
+Renaming a variable is disallowed by default because there is a change that a renaming is actually an accidental reordering. For example, if variables `uint a; uint b;` are upgraded to `uint b; uint a;`, if renaming was simply allowed this would not be seen as a mistake, but it could have been an accident, especially when multiple inheritance is involved.
 
 It is possible to disable this check by passing the option `unsafeAllowRenames: true`. A more granular approach is to use a docstring comment `/// @custom:oz-renamed-from <previous name>` right above the variable that is being renamed, for example:
 
