@@ -35,7 +35,7 @@ export function normalizeTypeIdentifier(typeIdentifier: string): string {
 // identifier by removing all AST ids.
 export function stabilizeTypeIdentifier(typeIdentifier: string): string {
   let decoded = decodeTypeIdentifier(typeIdentifier);
-  const re = /(t_struct|t_enum|t_contract)\(/g;
+  const re = /(t_struct|t_enum|t_contract|t_userDefinedValueType)\(/g;
   let match;
   while ((match = re.exec(decoded))) {
     let i;
