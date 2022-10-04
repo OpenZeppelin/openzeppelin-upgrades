@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix treatment of type ids for user defined value types. ([#671](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/671))
+
 ## 1.20.0 (2022-09-27)
 
 - Support user defined value types. ([#658](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/658))
