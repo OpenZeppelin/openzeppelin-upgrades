@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix parsing of renamed/retyped annotations. ([#666](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/666))
+- Fix treatment of type ids for user defined value types. ([#671](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/671))
 
 ## 1.20.0 (2022-09-27)
 
