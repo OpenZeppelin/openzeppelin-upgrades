@@ -161,9 +161,9 @@ function getRetypedRenamed(varDecl: VariableDeclaration) {
     )) {
       if (groups?.title === 'custom') {
         if (groups.tag === 'oz-retyped-from') {
-          retypedFrom = groups.args;
+          retypedFrom = groups.args.trim();
         } else if (groups.tag === 'oz-renamed-from') {
-          renamedFrom = groups.args;
+          renamedFrom = groups.args.trim();
         }
       }
     }

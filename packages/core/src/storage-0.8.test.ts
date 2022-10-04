@@ -110,3 +110,8 @@ test('user defined value types - no layout info - bad upgrade', async t => {
     },
   });
 });
+
+test('renamed retyped - extraction', async t => {
+  const layout = await t.context.extractStorageLayout('StorageRenamedRetyped');
+  t.snapshot(stabilizeStorageLayout(layout));
+});
