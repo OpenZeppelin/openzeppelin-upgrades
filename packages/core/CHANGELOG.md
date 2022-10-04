@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix parsing of renamed/retyped annotations. ([#666](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/666))
+
 ## 1.20.0 (2022-09-27)
 
 - Support user defined value types. ([#658](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/658))
