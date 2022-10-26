@@ -15,7 +15,7 @@ import { mapValues } from '../utils/map-values';
 import { pick } from '../utils/pick';
 import { execall } from '../utils/execall';
 
-const currentLayoutVersion = '1.1';
+const currentLayoutVersion = '1.2';
 
 export function isCurrentLayoutVersion(layout: StorageLayout): boolean {
   return layout?.layoutVersion === currentLayoutVersion;
