@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.20.2 (2022-10-26)
 
 - Add underlying type of user defined value types in the storage layout.
 
