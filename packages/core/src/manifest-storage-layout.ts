@@ -66,6 +66,9 @@ export function getUpdatedStorageLayout(
     if (updatedLayout.storage.length !== layout.storage.length) {
       continue;
     }
+    if (updatedLayout.solcVersion !== layout.solcVersion) {
+      continue;
+    }
     for (const [i, item] of layout.storage.entries()) {
       const updatedItem = updatedLayout.storage[i];
       if (item.label !== updatedItem.label) {

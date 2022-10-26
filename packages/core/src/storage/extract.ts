@@ -15,7 +15,7 @@ import { mapValues } from '../utils/map-values';
 import { pick } from '../utils/pick';
 import { execall } from '../utils/execall';
 
-const currentLayoutVersion = '1.1';
+const currentLayoutVersion = '1.2';
 
 export function isCurrentLayoutVersion(layout: StorageLayout): boolean {
   return layout?.layoutVersion === currentLayoutVersion;
@@ -136,7 +136,9 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
     if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
       const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
 
-      if (typeDef.nodeType !== 'UserDefinedValueTypeDefinition') {
+      if (typeDef.nodeType === 'UserDefinedValueTypeDefinition') {
+        layout.types[type].underlying = typeDef.underlyingType.typeDescriptions.typeIdentifier ?? undefined;
+      } else {
         layout.types[type].members ??= getTypeMembers(typeDef);
       }
 

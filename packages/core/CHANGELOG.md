@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add underlying type of user defined value types in the storage layout.
+
 ## 1.20.1 (2022-10-04)
 
 - Fix parsing of renamed/retyped annotations. ([#666](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/666))
