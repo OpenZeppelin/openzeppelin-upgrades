@@ -31,6 +31,7 @@ export interface TypeItem<Type = string> {
   label: string;
   members?: TypeItemMembers<Type>;
   numberOfBytes?: string;
+  underlying?: Type;
 }
 
 export type TypeItemMembers<Type = string> = StructMember<Type>[] | EnumMember[];
@@ -56,12 +57,15 @@ type Replace<T, K extends string, V> = Omit<T, K> & Record<K, V>;
 
 export function getDetailedLayout(layout: StorageLayout): StorageItem<ParsedTypeDetailed>[] {
   const cache: Record<string, ParsedTypeDetailed> = {};
-  return layout.storage.map(parseWithDetails);
+  return layout.storage.map(parseItemWithDetails);
 
-  function parseWithDetails<I extends { type: string }>(item: I): Replace<I, 'type', ParsedTypeDetailed> {
-    const parsed = parseTypeId(item.type);
-    const withDetails = addDetailsToParsedType(parsed);
-    return { ...item, type: withDetails };
+  function parseItemWithDetails<I extends { type: string }>(item: I): Replace<I, 'type', ParsedTypeDetailed> {
+    return { ...item, type: parseIdWithDetails(item.type) };
+  }
+
+  function parseIdWithDetails(typeId: string): ParsedTypeDetailed {
+    const parsed = parseTypeId(typeId);
+    return addDetailsToParsedType(parsed);
   }
 
   function addDetailsToParsedType(parsed: ParsedTypeId): ParsedTypeDetailed {
@@ -77,6 +81,7 @@ export function getDetailedLayout(layout: StorageLayout): StorageItem<ParsedType
       item: {
         ...item,
         members: undefined,
+        underlying: undefined,
       },
     };
 
@@ -86,7 +91,8 @@ export function getDetailedLayout(layout: StorageLayout): StorageItem<ParsedType
     detailed.args = parsed.args?.map(addDetailsToParsedType);
     detailed.rets = parsed.rets?.map(addDetailsToParsedType);
     detailed.item.members =
-      item?.members && (isStructMembers(item?.members) ? item.members.map(parseWithDetails) : item?.members);
+      item?.members && (isStructMembers(item?.members) ? item.members.map(parseItemWithDetails) : item?.members);
+    detailed.item.underlying = item?.underlying === undefined ? undefined : parseIdWithDetails(item.underlying);
 
     return detailed;
   }

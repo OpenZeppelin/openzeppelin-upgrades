@@ -136,7 +136,9 @@ function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, der
     if ('referencedDeclaration' in typeName && !/^t_contract\b/.test(type)) {
       const typeDef = derefUserDefinedType(typeName.referencedDeclaration);
 
-      if (typeDef.nodeType !== 'UserDefinedValueTypeDefinition') {
+      if (typeDef.nodeType === 'UserDefinedValueTypeDefinition') {
+        layout.types[type].underlying = typeDef.underlyingType.typeDescriptions.typeIdentifier ?? undefined;
+      } else {
         layout.types[type].members ??= getTypeMembers(typeDef);
       }
 
