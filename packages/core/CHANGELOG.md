@@ -2,7 +2,7 @@
 
 ## 1.20.2 (2022-10-26)
 
-- Add underlying type of user defined value types in the storage layout.
+- Add underlying type of user defined value types in the storage layout. ([#681](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/681))
 
 ## 1.20.1 (2022-10-04)
 
