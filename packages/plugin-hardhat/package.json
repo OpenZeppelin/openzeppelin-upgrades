@@ -24,7 +24,7 @@
     "@nomiclabs/hardhat-ethers": "^2.0.0",
     "@nomiclabs/hardhat-etherscan": "^3.1.0",
     "@types/mocha": "^7.0.2",
-    "ava": "^4.0.0",
+    "ava": "^5.0.0",
     "fgbg": "^0.1.4",
     "hardhat": "^2.0.2",
     "promisified": "^0.5.0",
