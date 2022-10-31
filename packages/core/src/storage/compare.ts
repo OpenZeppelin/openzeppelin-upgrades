@@ -171,7 +171,7 @@ export class StorageLayoutComparator {
     const retypedFromOriginal = original.type.item.label === updated.retypedFrom?.trim();
     const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = this.getLayoutChange(original, updated);
-    
+
     if (updated.retypedFrom && layoutChange && (!layoutChange.uncertain || !layoutChange.knownCompatible)) {
       return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
     } else if (nameChange && endMatchesGap(original, updated)) {
