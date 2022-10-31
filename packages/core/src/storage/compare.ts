@@ -362,9 +362,15 @@ export class StorageLayoutComparator {
       }
 
       case 't_userDefinedValueType': {
-        const underlyingMatch = original.item.underlying && updated.item.underlying && original.item.underlying.id == updated.item.underlying.id;
-        
-        if ((original.item.numberOfBytes === undefined || updated.item.numberOfBytes === undefined) && !underlyingMatch) {
+        const underlyingMatch =
+          original.item.underlying &&
+          updated.item.underlying &&
+          original.item.underlying.id == updated.item.underlying.id;
+
+        if (
+          (original.item.numberOfBytes === undefined || updated.item.numberOfBytes === undefined) &&
+          !underlyingMatch
+        ) {
           return { kind: 'unknown', original, updated };
         }
         if (original.item.numberOfBytes !== updated.item.numberOfBytes) {
