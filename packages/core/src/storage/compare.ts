@@ -171,7 +171,7 @@ export class StorageLayoutComparator {
     const retypedFromOriginal = original.type.item.label === updated.retypedFrom?.trim();
     const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = this.getLayoutChange(original, updated);
-
+    
     if (updated.retypedFrom && layoutChange && (!layoutChange.uncertain || !layoutChange.knownCompatible)) {
       return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
     } else if (nameChange && endMatchesGap(original, updated)) {
@@ -362,6 +362,9 @@ export class StorageLayoutComparator {
       }
 
       case 't_userDefinedValueType': {
+        if(original.item.underlying && updated.item.underlying && original.item.underlying.id == updated.item.underlying.id){
+          return undefined;
+        }
         if (original.item.numberOfBytes === undefined || updated.item.numberOfBytes === undefined) {
           return { kind: 'unknown', original, updated };
         }
