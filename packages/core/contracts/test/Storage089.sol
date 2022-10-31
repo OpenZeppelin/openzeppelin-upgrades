@@ -12,3 +12,10 @@ contract Storage089_V2 {
 
   uint x;
 }
+
+contract Storage089_V3 {
+  type MyUserValueType is uint8;
+  MyUserValueType my_user_value;
+
+  uint x;
+}
