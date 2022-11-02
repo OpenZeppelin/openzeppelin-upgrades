@@ -12,6 +12,10 @@ test.before(async t => {
   t.context.GreeterStorageConflictProxiable = await ethers.getContractFactory('GreeterStorageConflictProxiable');
 });
 
+function getUpgradeUnsafeRegex(contractName) {
+  return new RegExp(`Contract \`.*:${contractName}\` is not upgrade safe`);
+}
+
 test('validate implementation - happy paths', async t => {
   const { Greeter, GreeterProxiable } = t.context;
 
@@ -26,7 +30,7 @@ test('validate implementation - invalid', async t => {
   const { Invalid } = t.context;
 
   await t.throwsAsync(() => upgrades.validateImplementation(Invalid), {
-    message: /(Contract `Invalid` is not upgrade safe)/,
+    message: getUpgradeUnsafeRegex('Invalid'),
   });
 });
 
@@ -34,7 +38,7 @@ test('validate implementation uups - no upgrade function', async t => {
   const { Greeter } = t.context;
 
   await t.throwsAsync(() => upgrades.validateImplementation(Greeter, { kind: 'uups' }), {
-    message: /(Contract `Greeter` is not upgrade safe)/,
+    message: getUpgradeUnsafeRegex('Greeter'),
   });
 });
 
@@ -91,14 +95,14 @@ test('deploy implementation - invalid', async t => {
   const { Invalid } = t.context;
 
   await t.throwsAsync(() => upgrades.deployImplementation(Invalid), {
-    message: /(Contract `Invalid` is not upgrade safe)/,
+    message: getUpgradeUnsafeRegex('Invalid'),
   });
 });
 
 test('deploy implementation uups - no upgrade function', async t => {
   const { Greeter } = t.context;
   await t.throwsAsync(() => upgrades.deployImplementation(Greeter, { kind: 'uups' }), {
-    message: /(Contract `Greeter` is not upgrade safe)/,
+    message: getUpgradeUnsafeRegex('Greeter'),
   });
 });
 
@@ -185,7 +189,7 @@ test('validate upgrade uups - no upgrade function', async t => {
 
   const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hola mundo!']);
   await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterV2, { kind: 'uups' }), {
-    message: /(Contract `GreeterV2` is not upgrade safe)/,
+    message: getUpgradeUnsafeRegex('GreeterV2'),
   });
 });
 
@@ -214,7 +218,7 @@ test('validate upgrade - contracts only - uups inferred - no upgrade function', 
   const { GreeterProxiable, GreeterV2 } = t.context;
 
   await t.throwsAsync(() => upgrades.validateUpgrade(GreeterProxiable, GreeterV2), {
-    message: /(Contract `GreeterV2` is not upgrade safe)/,
+    message: getUpgradeUnsafeRegex('GreeterV2'),
   });
 });
 
@@ -222,7 +226,7 @@ test('validate upgrade - contracts only - uups - no upgrade function', async t =
   const { GreeterProxiable, GreeterV2 } = t.context;
 
   await t.throwsAsync(() => upgrades.validateUpgrade(GreeterProxiable, GreeterV2, { kind: 'uups' }), {
-    message: /(Contract `GreeterV2` is not upgrade safe)/,
+    message: getUpgradeUnsafeRegex('GreeterV2'),
   });
 });
 
@@ -269,6 +273,6 @@ test('validate upgrade on deployed implementation - kind uups - no upgrade funct
 
   const greeter = await upgrades.deployImplementation(GreeterProxiable);
   await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterV2, { kind: 'uups' }), {
-    message: /(Contract `GreeterV2` is not upgrade safe)/,
+    message: getUpgradeUnsafeRegex('GreeterV2'),
   });
 });

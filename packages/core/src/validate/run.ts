@@ -114,6 +114,10 @@ function skipCheck(error: string, node: Node): boolean {
   return getAllowed(node).includes(error);
 }
 
+function getFullyQualifiedName(source: string, contractName: string) {
+  return `${source}:${contractName}`;
+}
+
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVersion?: string): ValidationRunData {
   const validation: ValidationRunData = {};
   const fromId: Record<number, string> = {};
@@ -128,7 +132,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
       const version = bytecode.object === '' ? undefined : getVersion(bytecode.object);
       const linkReferences = extractLinkReferences(bytecode);
 
-      validation[contractName] = {
+      validation[getFullyQualifiedName(source, contractName)] = {
         src: contractName,
         version,
         inherit: [],
@@ -145,17 +149,19 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
     }
 
     for (const contractDef of findAll('ContractDefinition', solcOutput.sources[source].ast)) {
-      fromId[contractDef.id] = contractDef.name;
+      const key = getFullyQualifiedName(source, contractDef.name);
+
+      fromId[contractDef.id] = key;
 
       // May be undefined in case of duplicate contract names in Truffle
       const bytecode = solcOutput.contracts[source][contractDef.name]?.evm.bytecode;
 
-      if (contractDef.name in validation && bytecode !== undefined) {
-        inheritIds[contractDef.name] = contractDef.linearizedBaseContracts.slice(1);
-        libraryIds[contractDef.name] = getReferencedLibraryIds(contractDef);
+      if (key in validation && bytecode !== undefined) {
+        inheritIds[key] = contractDef.linearizedBaseContracts.slice(1);
+        libraryIds[key] = getReferencedLibraryIds(contractDef);
 
-        validation[contractDef.name].src = decodeSrc(contractDef);
-        validation[contractDef.name].errors = [
+        validation[key].src = decodeSrc(contractDef);
+        validation[key].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
           ...getOpcodeErrors(contractDef, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
@@ -164,25 +170,25 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
           ...getLinkingErrors(contractDef, bytecode),
         ];
 
-        validation[contractDef.name].layout = extractStorageLayout(
+        validation[key].layout = extractStorageLayout(
           contractDef,
           decodeSrc,
           deref,
           solcOutput.contracts[source][contractDef.name].storageLayout,
         );
-        validation[contractDef.name].methods = [...findAll('FunctionDefinition', contractDef)]
+        validation[key].methods = [...findAll('FunctionDefinition', contractDef)]
           .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
           .map(fnDef => getFunctionSignature(fnDef, deref));
       }
     }
   }
 
-  for (const contractName in inheritIds) {
-    validation[contractName].inherit = inheritIds[contractName].map(id => fromId[id]);
+  for (const key in inheritIds) {
+    validation[key].inherit = inheritIds[key].map(id => fromId[id]);
   }
 
-  for (const contractName in libraryIds) {
-    validation[contractName].libraries = libraryIds[contractName].map(id => fromId[id]);
+  for (const key in libraryIds) {
+    validation[key].libraries = libraryIds[key].map(id => fromId[id]);
   }
 
   return validation;

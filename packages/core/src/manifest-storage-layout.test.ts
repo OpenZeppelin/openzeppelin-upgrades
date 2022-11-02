@@ -28,7 +28,7 @@ test.before(async t => {
 });
 
 test('getStorageLayoutForAddress - update layout', async t => {
-  const { version } = t.context.validationRun['ManifestMigrateUnique'];
+  const { version } = t.context.validationRun['contracts/test/ManifestMigrate.sol:ManifestMigrateUnique'];
   assert(version !== undefined);
   const updatedLayout = getStorageLayout(t.context.validationData, version);
   const outdatedLayout = removeStorageLayoutMembers(updatedLayout);
@@ -60,7 +60,7 @@ test('getStorageLayoutForAddress - update layout', async t => {
 });
 
 test('getUpdatedLayout - unique layout match', async t => {
-  const { version } = t.context.validationRun['ManifestMigrateUnique'];
+  const { version } = t.context.validationRun['contracts/test/ManifestMigrate.sol:ManifestMigrateUnique'];
   assert(version !== undefined);
   const targetLayout = getStorageLayout(t.context.validationData, version);
   const outdatedLayout = removeStorageLayoutMembers(targetLayout);
@@ -69,8 +69,10 @@ test('getUpdatedLayout - unique layout match', async t => {
 });
 
 test('getUpdatedLayout - multiple unambiguous layout matches', async t => {
-  const { version: version1 } = t.context.validationRun['ManifestMigrateUnambiguous1'];
-  const { version: version2 } = t.context.validationRun['ManifestMigrateUnambiguous2'];
+  const { version: version1 } =
+    t.context.validationRun['contracts/test/ManifestMigrate.sol:ManifestMigrateUnambiguous1'];
+  const { version: version2 } =
+    t.context.validationRun['contracts/test/ManifestMigrate.sol:ManifestMigrateUnambiguous2'];
   assert(version1 !== undefined && version2 !== undefined);
   t.is(version1.withoutMetadata, version2.withoutMetadata, 'version is meant to be ambiguous');
   t.not(version1.withMetadata, version2.withMetadata, 'version with metadata should be different');
@@ -81,8 +83,8 @@ test('getUpdatedLayout - multiple unambiguous layout matches', async t => {
 });
 
 test('getUpdatedLayout - multiple ambiguous layout matches', async t => {
-  const { version: version1 } = t.context.validationRun['ManifestMigrateAmbiguous1'];
-  const { version: version2 } = t.context.validationRun['ManifestMigrateAmbiguous2'];
+  const { version: version1 } = t.context.validationRun['contracts/test/ManifestMigrate.sol:ManifestMigrateAmbiguous1'];
+  const { version: version2 } = t.context.validationRun['contracts/test/ManifestMigrate.sol:ManifestMigrateAmbiguous2'];
   assert(version1 !== undefined && version2 !== undefined);
   t.is(version1.withoutMetadata, version2.withoutMetadata, 'version is meant to be ambiguous');
   t.not(version1.withMetadata, version2.withMetadata, 'version with metadata should be different');
