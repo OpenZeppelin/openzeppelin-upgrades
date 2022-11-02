@@ -362,7 +362,15 @@ export class StorageLayoutComparator {
       }
 
       case 't_userDefinedValueType': {
-        if (original.item.numberOfBytes === undefined || updated.item.numberOfBytes === undefined) {
+        const underlyingMatch =
+          original.item.underlying !== undefined &&
+          updated.item.underlying !== undefined &&
+          original.item.underlying.id === updated.item.underlying.id;
+
+        if (
+          (original.item.numberOfBytes === undefined || updated.item.numberOfBytes === undefined) &&
+          !underlyingMatch
+        ) {
           return { kind: 'unknown', original, updated };
         }
         if (original.item.numberOfBytes !== updated.item.numberOfBytes) {

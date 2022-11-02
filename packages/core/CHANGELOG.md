@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+ - Use underlying type of user defined value types in the storage layout for layout comparison. ([#682](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/682))
+
 ## 1.20.2 (2022-10-26)
 
 - Add underlying type of user defined value types in the storage layout. ([#681](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/681))

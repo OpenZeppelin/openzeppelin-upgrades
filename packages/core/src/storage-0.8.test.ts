@@ -77,26 +77,23 @@ test('user defined value types - no layout info', async t => {
   t.snapshot(stabilizeStorageLayout(layout));
 });
 
-test('user defined value types - no layout info - bad upgrade from 0.8.8 to 0.8.9', async t => {
+test('user defined value types - no layout info - from 0.8.8 to 0.8.9', async t => {
   const v1 = await t.context.extractStorageLayout('Storage088', false);
   const v2 = await t.context.extractStorageLayout('Storage089', false);
   const comparison = getStorageUpgradeErrors(v1, v2);
-  t.like(comparison, {
-    length: 1,
-    0: {
-      kind: 'typechange',
-      change: {
-        kind: 'unknown',
-      },
-      original: { label: 'my_user_value' },
-      updated: { label: 'my_user_value' },
-    },
-  });
+  t.deepEqual(comparison, []);
 });
 
-test('user defined value types - no layout info - bad upgrade', async t => {
+test('user defined value types comparison - no layout info', async t => {
   const v1 = await t.context.extractStorageLayout('Storage089', false);
   const v2 = await t.context.extractStorageLayout('Storage089_V2', false);
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, []);
+});
+
+test('user defined value types - no layout info - bad underlying type', async t => {
+  const v1 = await t.context.extractStorageLayout('Storage089', false);
+  const v2 = await t.context.extractStorageLayout('Storage089_V3', false);
   const comparison = getStorageUpgradeErrors(v1, v2);
   t.like(comparison, {
     length: 1,
