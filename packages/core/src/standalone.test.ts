@@ -27,6 +27,17 @@ test('reports unsafe operation', t => {
   t.true(report.errors[0].kind === 'delegatecall');
 });
 
+test('reports unsafe operation - fully qualified name', t => {
+  const impl = new UpgradeableContract(
+    'contracts/test/Standalone.sol:StandaloneV1',
+    t.context.solcInput,
+    t.context.solcOutput,
+  );
+  const report = impl.getErrorReport();
+  t.false(report.ok);
+  t.true(report.errors[0].kind === 'delegatecall');
+});
+
 test('reports storage upgrade errors', t => {
   const v1 = new UpgradeableContract('StandaloneV1', t.context.solcInput, t.context.solcOutput);
 
