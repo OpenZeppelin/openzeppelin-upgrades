@@ -363,8 +363,8 @@ export class StorageLayoutComparator {
 
       case 't_userDefinedValueType': {
         const underlyingMatch =
-          original.item.underlying &&
-          updated.item.underlying &&
+          original.item.underlying !== undefined &&
+          updated.item.underlying !== undefined &&
           original.item.underlying.id === updated.item.underlying.id;
 
         if (
