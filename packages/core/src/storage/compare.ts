@@ -365,7 +365,7 @@ export class StorageLayoutComparator {
         const underlyingMatch =
           original.item.underlying &&
           updated.item.underlying &&
-          original.item.underlying.id == updated.item.underlying.id;
+          original.item.underlying.id === updated.item.underlying.id;
 
         if (
           (original.item.numberOfBytes === undefined || updated.item.numberOfBytes === undefined) &&
