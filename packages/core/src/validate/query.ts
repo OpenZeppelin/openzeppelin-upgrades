@@ -33,11 +33,7 @@ export function getContractVersion(runData: ValidationRunData, contractName: str
   if (contractName.includes(':')) {
     version = runData[contractName].version;
   } else {
-    const foundNames = Object.keys(runData).filter(element => {
-      if (element.endsWith(`:${contractName}`)) {
-        return true;
-      }
-    });
+    const foundNames = Object.keys(runData).filter(element => element.endsWith(`:${contractName}`));
     if (foundNames.length > 1) {
       throw new Error(`Contract ${contractName} is ambiguous. Use one of the following:\n${foundNames.join('\n')}`);
     } else if (foundNames.length === 1) {
