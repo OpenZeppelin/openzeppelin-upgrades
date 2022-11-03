@@ -133,3 +133,16 @@ testValid('UsesExplicitSafeExternalLibraryNatspec', 'transparent', true);
 testValid('UsesExplicitUnsafeInternalLibraryNatspec', 'transparent', true);
 testValid('UsesExplicitUnsafeExternalLibraryNatspec', 'transparent', true);
 testValid('TransitiveLibraryIsUnsafe', 'transparent', false);
+
+testValid('contracts/test/ValidationsSameNameSafe.sol:SameName', 'transparent', true);
+testValid('contracts/test/ValidationsSameNameUnsafe.sol:SameName', 'transparent', false);
+
+test('ambiguous name', t => {
+  const error = t.throws(() => getContractVersion(t.context.validation, 'SameName'));
+  t.is(
+    error?.message,
+    'Contract SameName is ambiguous. Use one of the following:\n' +
+      'contracts/test/ValidationsSameNameSafe.sol:SameName\n' +
+      'contracts/test/ValidationsSameNameUnsafe.sol:SameName',
+  );
+});

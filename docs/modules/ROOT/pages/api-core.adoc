@@ -18,6 +18,8 @@ This class represents the implementation for an upgradeable contract and gives a
 new UpgradeableContract(name, solcInput, solcOutput, opts?);
 ```
 
+`name` is the name of the implementation contract as either a fully qualified name or contract name. If multiple contracts have the same name, you must use the fully qualified name e.g., `contracts/Bar.sol:Bar`.
+
 `opts` is an object with options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options].
 
 TIP: In Hardhat, `solcInput` and `solcOutput` can be obtained from the Build Info file, which itself can be retrieved with `hre.artifacts.getBuildInfo`.

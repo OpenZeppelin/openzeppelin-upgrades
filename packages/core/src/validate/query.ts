@@ -11,54 +11,81 @@ const upgradeToSignature = 'upgradeTo(address)';
 
 export function assertUpgradeSafe(data: ValidationData, version: Version, opts: ValidationOptions): void {
   const dataV3 = normalizeValidationData(data);
-  const [contractName] = getContractNameAndRunValidation(dataV3, version);
+  const [fullContractName] = getContractNameAndRunValidation(dataV3, version);
 
   const errors = getErrors(dataV3, version, opts);
 
   if (errors.length > 0) {
-    throw new ValidationErrors(contractName, errors);
+    throw new ValidationErrors(fullContractName, errors);
   }
 }
 
+/**
+ * Gets the contract version object from the given validation run data and contract name (either fully qualified or simple contract name).
+ *
+ * @param runData The validation run data
+ * @param contractName Fully qualified or simple contract name
+ * @returns contract version object
+ * @throws {Error} if the given contract name is not found or is ambiguous
+ */
 export function getContractVersion(runData: ValidationRunData, contractName: string): Version {
-  const { version } = runData[contractName];
+  let version = undefined;
+  if (contractName.includes(':')) {
+    version = runData[contractName].version;
+  } else {
+    const foundNames = Object.keys(runData).filter(element => element.endsWith(`:${contractName}`));
+    if (foundNames.length > 1) {
+      throw new Error(`Contract ${contractName} is ambiguous. Use one of the following:\n${foundNames.join('\n')}`);
+    } else if (foundNames.length === 1) {
+      version = runData[foundNames[0]].version;
+    }
+  }
+
   if (version === undefined) {
     throw new Error(`Contract ${contractName} is abstract`);
   }
+
   return version;
 }
 
+/**
+ * Gets the fully qualified contract name and validation run data.
+ *
+ * @param data The validation data
+ * @param version The contract Version
+ * @returns fully qualified contract name and validation run data
+ */
 export function getContractNameAndRunValidation(data: ValidationData, version: Version): [string, ValidationRunData] {
   const dataV3 = normalizeValidationData(data);
 
   let runValidation;
-  let contractName;
+  let fullContractName;
 
   for (const validation of dataV3.log) {
-    contractName = Object.keys(validation).find(
+    fullContractName = Object.keys(validation).find(
       name => validation[name].version?.withMetadata === version.withMetadata,
     );
-    if (contractName !== undefined) {
+    if (fullContractName !== undefined) {
       runValidation = validation;
       break;
     }
   }
 
-  if (contractName === undefined || runValidation === undefined) {
+  if (fullContractName === undefined || runValidation === undefined) {
     throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
   }
 
-  return [contractName, runValidation];
+  return [fullContractName, runValidation];
 }
 
 export function getStorageLayout(data: ValidationData, version: Version): StorageLayout {
   const dataV3 = normalizeValidationData(data);
-  const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
-  return unfoldStorageLayout(runValidation, contractName);
+  const [fullContractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
+  return unfoldStorageLayout(runValidation, fullContractName);
 }
 
-export function unfoldStorageLayout(runData: ValidationRunData, contractName: string): StorageLayout {
-  const c = runData[contractName];
+export function unfoldStorageLayout(runData: ValidationRunData, fullContractName: string): StorageLayout {
+  const c = runData[fullContractName];
   const { solcVersion } = c;
   if (c.layout.flat) {
     return {
@@ -68,7 +95,7 @@ export function unfoldStorageLayout(runData: ValidationRunData, contractName: st
     };
   } else {
     const layout: StorageLayout = { solcVersion, storage: [], types: {} };
-    for (const name of [contractName].concat(c.inherit)) {
+    for (const name of [fullContractName].concat(c.inherit)) {
       layout.storage.unshift(...runData[name].layout.storage);
       Object.assign(layout.types, runData[name].layout.types);
     }
@@ -113,12 +140,14 @@ export function getUnlinkedBytecode(data: ValidationData, bytecode: string): str
 
 export function getErrors(data: ValidationData, version: Version, opts: ValidationOptions = {}): ValidationError[] {
   const dataV3 = normalizeValidationData(data);
-  const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
-  const c = runValidation[contractName];
+  const [fullContractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
+  const c = runValidation[fullContractName];
 
-  const errors = getUsedContractsAndLibraries(contractName, runValidation).flatMap(name => runValidation[name].errors);
+  const errors = getUsedContractsAndLibraries(fullContractName, runValidation).flatMap(
+    name => runValidation[name].errors,
+  );
 
-  const selfAndInheritedMethods = getAllMethods(runValidation, contractName);
+  const selfAndInheritedMethods = getAllMethods(runValidation, fullContractName);
 
   if (!selfAndInheritedMethods.includes(upgradeToSignature)) {
     errors.push({
@@ -127,11 +156,11 @@ export function getErrors(data: ValidationData, version: Version, opts: Validati
     });
   }
 
-  return processExceptions(contractName, errors, opts);
+  return processExceptions(fullContractName, errors, opts);
 }
 
-function getAllMethods(runValidation: ValidationRunData, contractName: string): string[] {
-  const c = runValidation[contractName];
+function getAllMethods(runValidation: ValidationRunData, fullContractName: string): string[] {
+  const c = runValidation[fullContractName];
   return c.methods.concat(...c.inherit.map(name => runValidation[name].methods));
 }
 
@@ -155,8 +184,8 @@ export function isUpgradeSafe(data: ValidationData, version: Version): boolean {
 
 export function inferProxyKind(data: ValidationData, version: Version): ProxyDeployment['kind'] {
   const dataV3 = normalizeValidationData(data);
-  const [contractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
-  const methods = getAllMethods(runValidation, contractName);
+  const [fullContractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
+  const methods = getAllMethods(runValidation, fullContractName);
   if (methods.includes(upgradeToSignature)) {
     return 'uups';
   } else {
