@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.20.4 (2022-11-03)
 
 - Support multiple contracts with same name. ([#263](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/263))
 
