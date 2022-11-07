@@ -96,57 +96,56 @@ contract MyContract is BaseContract {
 [[use-upgradeable-libraries]]
 === Using Upgradeable Smart Contract Libraries
 
-Keep in mind that this restriction affects not only your contracts, but also the contracts you import from a library. Consider for example https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.3.0/contracts/token/ERC20/ERC20.sol[`ERC20`] from OpenZeppelin Contracts: the contract initializes the token's name, symbol and decimals in its constructor.
+Keep in mind that this restriction affects not only your contracts, but also the contracts you import from a library. Consider for example https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.7.3/contracts/token/ERC20/ERC20.sol[`ERC20`] from OpenZeppelin Contracts: the contract initializes the token's name and symbol in its constructor.
 
 [source,solidity]
 ----
 // @openzeppelin/contracts/token/ERC20/ERC20.sol
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
-  ...
+...
 
 contract ERC20 is Context, IERC20 {
 
-  ...
+    ...
 
     string private _name;
     string private _symbol;
-    uint8 private _decimals;
 
-    constructor (string memory name, string memory symbol) public {
-        _name = name;
-        _symbol = symbol;
-        _decimals = 18;
+    constructor(string memory name_, string memory symbol_) {
+        _name = name_;
+        _symbol = symbol_;
     }
 
-  ...
+    ...
 }
 ----
 
-This means you should not be using these contracts in your OpenZeppelin Upgrades project. Instead, make sure to use `@openzeppelin/contracts-upgradeable`, which is an official fork of OpenZeppelin Contracts that has been modified to use initializers instead of constructors. Take a look at what https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/v3.3.0/contracts/token/ERC20/ERC20Upgradeable.sol[ERC20Upgradeable] looks like in `@openzeppelin/contracts-upgradeable`:
+This means you should not be using these contracts in your OpenZeppelin Upgrades project. Instead, make sure to use `@openzeppelin/contracts-upgradeable`, which is an official fork of OpenZeppelin Contracts that has been modified to use initializers instead of constructors. Take a look at what https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/v4.7.3/contracts/token/ERC20/ERC20Upgradeable.sol[ERC20Upgradeable] looks like in `@openzeppelin/contracts-upgradeable`:
 
 [source,solidity]
 ----
 // @openzeppelin/contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol
-pragma solidity ^0.6.0;
-  ...
+pragma solidity ^0.8.0;
+
+...
+
 contract ERC20Upgradeable is Initializable, ContextUpgradeable, IERC20Upgradeable {
-  ...
+    ...
+
     string private _name;
     string private _symbol;
-    uint8 private _decimals;
 
-    function __ERC20_init(string memory name, string memory symbol) internal initializer {
-        __Context_init_unchained();
-        __ERC20_init_unchained(name, symbol);
+    function __ERC20_init(string memory name_, string memory symbol_) internal onlyInitializing {
+        __ERC20_init_unchained(name_, symbol_);
     }
 
-    function __ERC20_init_unchained(string memory name, string memory symbol) internal initializer {
-        _name = name;
-        _symbol = symbol;
-        _decimals = 18;
+    function __ERC20_init_unchained(string memory name_, string memory symbol_) internal onlyInitializing {
+        _name = name_;
+        _symbol = symbol_;
     }
-  ...
+
+    ...
 }
 ----
 
