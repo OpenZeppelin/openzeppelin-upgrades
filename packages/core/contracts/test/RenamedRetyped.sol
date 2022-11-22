@@ -62,35 +62,3 @@ contract LayoutChangeV2 {
     /// @custom:oz-retyped-from bool
     uint8 b;
 }
-
-interface Type1 {}
-interface Type2 {}
-
-contract RetypeInterfaceAddressV1 {
-    Type1 private a;
-    address private b;
-    Type1 private c;
-}
-
-contract RetypeInterfaceAddressV2 {
-    address private a;
-    Type2 private b;
-    Type2 private c;
-}
-
-contract RetypeInterfaceAddressMappingV1 {
-    mapping(uint8 => Type1) a;
-    mapping(uint8 => address) b;
-    mapping(uint8 => Type1) c;
-}
-
-contract RetypeInterfaceAddressMappingV2 {
-    /// @custom:oz-renamed-from a
-    mapping(uint8 => address) private _a;
-
-    /// @custom:oz-renamed-from b
-    mapping(uint8 => Type2) private _b;
-
-    /// @custom:oz-renamed-from c
-    mapping(uint8 => Type2) private _c;
-}

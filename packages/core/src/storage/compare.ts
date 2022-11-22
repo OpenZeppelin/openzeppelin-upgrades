@@ -168,8 +168,9 @@ export class StorageLayoutComparator {
       original.label !== updated.renamedFrom &&
       (updated.label !== original.label ||
         (updated.renamedFrom !== undefined && updated.renamedFrom !== original.renamedFrom));
-    const retypedFromOriginal = original.type.item.label === updated.retypedFrom?.trim();
-    const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
+    const typeChange =
+      !this.isRetypedFromOriginal(original, updated) &&
+      this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = this.getLayoutChange(original, updated);
 
     if (updated.retypedFrom && layoutChange && (!layoutChange.uncertain || !layoutChange.knownCompatible)) {
@@ -191,6 +192,13 @@ export class StorageLayoutComparator {
       // add this check as a safety fallback.
       return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
     }
+  }
+
+  private isRetypedFromOriginal(original: StorageField, updated: StorageField) {
+    const originalLabel = stripContractPrefix(original.type.item.label);
+    const updatedLabel = stripContractPrefix(updated.retypedFrom?.trim());
+
+    return originalLabel === updatedLabel;
   }
 
   getLayoutChange(original: StorageField, updated: StorageField): LayoutChange | undefined {
@@ -398,4 +406,17 @@ export class StorageLayoutComparator {
 
 function enumSize(memberCount: number): number {
   return Math.ceil(Math.log2(Math.max(2, memberCount)) / 8);
+}
+
+function stripContractPrefix(label?: string) {
+  if (label === undefined) {
+    return label;
+  }
+
+  const CONTRACT_PREFIX = 'contract ';
+  if (label.startsWith(CONTRACT_PREFIX)) {
+    return label.substring(CONTRACT_PREFIX.length);
+  } else {
+    return label;
+  }
 }
