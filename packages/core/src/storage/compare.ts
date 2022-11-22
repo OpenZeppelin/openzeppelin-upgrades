@@ -244,6 +244,15 @@ export class StorageLayoutComparator {
       return this.getVisibilityChange(original, updated);
     }
 
+    if (
+      (original.head === 't_contract' && updated.head === 't_address') ||
+      (original.head === 't_address' && updated.head === 't_contract')
+    ) {
+      // changing contract to address or address to contract
+      // equivalent to just addresses
+      return undefined;
+    }
+
     if (original.head !== updated.head) {
       return { kind: 'obvious mismatch', original, updated };
     }
@@ -256,6 +265,7 @@ export class StorageLayoutComparator {
 
     switch (original.head) {
       case 't_contract':
+        // changing contract to contract
         // no storage layout errors can be introduced here since it is just an address
         return undefined;
 

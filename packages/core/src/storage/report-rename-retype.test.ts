@@ -131,3 +131,19 @@ test('retype with layout change', t => {
   t.false(report.ok);
   t.snapshot(report.explain());
 });
+
+test('retype interface with address', t => {
+  const v1 = t.context.extractStorageLayout('RetypeInterfaceAddressV1');
+  const v2 = t.context.extractStorageLayout('RetypeInterfaceAddressV2');
+  const report = getReport(v1, v2);
+  t.true(report.ok, report.explain());
+  t.snapshot(report.explain());
+});
+
+test('retype interface with address in mapping', t => {
+  const v1 = t.context.extractStorageLayout('RetypeInterfaceAddressMappingV1');
+  const v2 = t.context.extractStorageLayout('RetypeInterfaceAddressMappingV2');
+  const report = getReport(v1, v2);
+  t.true(report.ok, report.explain());
+  t.snapshot(report.explain());
+});
