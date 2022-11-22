@@ -408,7 +408,7 @@ function enumSize(memberCount: number): number {
   return Math.ceil(Math.log2(Math.max(2, memberCount)) / 8);
 }
 
-function stripContractSubstrings(label?: string) {
+export function stripContractSubstrings(label?: string) {
   if (label === undefined) {
     return label;
   }

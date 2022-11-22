@@ -4,7 +4,7 @@ import { ASTDereferencer, findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
 import { astDereferencer } from '../ast-dereferencer';
 import { extractStorageLayout } from './extract';
-import { StorageLayoutComparator } from './compare';
+import { StorageLayoutComparator, stripContractSubstrings } from './compare';
 import { StorageLayout, getDetailedLayout } from './layout';
 
 interface Context {
@@ -99,4 +99,15 @@ test('implicit retype mapping', t => {
   const v2 = t.context.extractStorageLayout('ImplicitRetypeMappingV2');
   const report = getReport(v1, v2);
   t.true(report.ok, report.explain());
+});
+
+test('strip contract substrings', t => {
+  t.is(stripContractSubstrings(undefined), undefined);
+  t.is(stripContractSubstrings('address'), 'address');
+  t.is(stripContractSubstrings('CustomContract'), 'CustomContract');
+  t.is(stripContractSubstrings('contract CustomContract'), 'CustomContract');
+  t.is(stripContractSubstrings('mapping(uint8 => CustomContract)'), 'mapping(uint8 => CustomContract)');
+  t.is(stripContractSubstrings('mapping(uint8 => contract CustomContract)'), 'mapping(uint8 => CustomContract)');
+  t.is(stripContractSubstrings('mapping(contract CustomContract => uint8)'), 'mapping(CustomContract => uint8)');
+  t.is(stripContractSubstrings('mapping(contract A => contract B)'), 'mapping(A => B)');
 });
