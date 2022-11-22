@@ -61,7 +61,7 @@ function getReport(original: StorageLayout, updated: StorageLayout) {
 
 test('retype contract to uint', t => {
   const v1 = t.context.extractStorageLayout('RetypeContractToUintV1');
-  const v2 = t.context.extractStorageLayout('RetypeContractToUintV1');
+  const v2 = t.context.extractStorageLayout('RetypeContractToUintV2');
   const report = getReport(v1, v2);
   t.true(report.ok, report.explain());
 });
@@ -82,7 +82,7 @@ test('retype contract to uint mapping', t => {
 
 test('retype uint to contract mapping', t => {
   const v1 = t.context.extractStorageLayout('RetypeUintToContractMappingV1');
-  const v2 = t.context.extractStorageLayout('RetypeUintToContractMappingV1');
+  const v2 = t.context.extractStorageLayout('RetypeUintToContractMappingV2');
   const report = getReport(v1, v2);
   t.true(report.ok, report.explain());
 });

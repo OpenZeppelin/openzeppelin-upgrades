@@ -57,8 +57,8 @@ contract RetypeContractToUintMappingV2 {
 contract RetypeUintToContractMappingV1 {
     mapping(uint8 => uint160) a;
     mapping(uint8 => uint160) b;
-    mapping(uint8 => uint160) c;
-    mapping(uint8 => uint160) d;
+    mapping(uint160 => uint160) c;
+    mapping(uint160 => uint160) d;
 }
 
 contract RetypeUintToContractMappingV2 {
