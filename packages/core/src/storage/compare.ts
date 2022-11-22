@@ -195,8 +195,8 @@ export class StorageLayoutComparator {
   }
 
   private isRetypedFromOriginal(original: StorageField, updated: StorageField) {
-    const originalLabel = stripContractPrefix(original.type.item.label);
-    const updatedLabel = stripContractPrefix(updated.retypedFrom?.trim());
+    const originalLabel = stripContractSubstrings(original.type.item.label);
+    const updatedLabel = stripContractSubstrings(updated.retypedFrom?.trim());
 
     return originalLabel === updatedLabel;
   }
@@ -408,15 +408,11 @@ function enumSize(memberCount: number): number {
   return Math.ceil(Math.log2(Math.max(2, memberCount)) / 8);
 }
 
-function stripContractPrefix(label?: string) {
+function stripContractSubstrings(label?: string) {
   if (label === undefined) {
     return label;
   }
 
-  const CONTRACT_PREFIX = 'contract ';
-  if (label.startsWith(CONTRACT_PREFIX)) {
-    return label.substring(CONTRACT_PREFIX.length);
-  } else {
-    return label;
-  }
+  const regex = /contract /g;
+  return label.replace(regex, '');
 }
