@@ -111,5 +111,8 @@ test('strip contract substrings', t => {
   t.is(stripContractSubstrings('mapping(contract CustomContract => uint8)'), 'mapping(CustomContract => uint8)');
   t.is(stripContractSubstrings('mapping(contract A => contract B)'), 'mapping(A => B)');
   t.is(stripContractSubstrings('mapping(Substringcontract => address)'), 'mapping(Substringcontract => address)');
-  t.is(stripContractSubstrings('mapping(contract Substringcontract => address)'), 'mapping(Substringcontract => address)');
+  t.is(
+    stripContractSubstrings('mapping(contract Substringcontract => address)'),
+    'mapping(Substringcontract => address)',
+  );
 });
