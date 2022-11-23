@@ -413,6 +413,6 @@ export function stripContractSubstrings(label?: string) {
     return label;
   }
 
-  const regex = /contract /g;
+  const regex = /\bcontract /g;
   return label.replace(regex, '');
 }
