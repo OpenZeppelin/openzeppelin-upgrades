@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix incompatible type error when upgrading from mapping with strings ([#689](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/689))
+
 ## 1.20.4 (2022-11-03)
 
 - Support multiple contracts with same name. ([#263](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/263))

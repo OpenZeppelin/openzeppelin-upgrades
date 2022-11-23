@@ -244,7 +244,7 @@ export class StorageLayoutComparator {
       return this.getVisibilityChange(original, updated);
     }
 
-    if (original.head !== updated.head) {
+    if (normalizeMemoryPointer(original.head) !== normalizeMemoryPointer(updated.head)) {
       return { kind: 'obvious mismatch', original, updated };
     }
 
@@ -388,4 +388,8 @@ export class StorageLayoutComparator {
 
 function enumSize(memberCount: number): number {
   return Math.ceil(Math.log2(Math.max(2, memberCount)) / 8);
+}
+
+function normalizeMemoryPointer(typeIdentifier: string): string {
+  return typeIdentifier.replace(/_memory_ptr\b/g, '_memory');
 }
