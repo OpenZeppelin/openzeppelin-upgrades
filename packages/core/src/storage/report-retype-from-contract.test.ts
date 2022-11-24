@@ -15,14 +15,14 @@ const test = _test as TestFn<Context>;
 
 const dummyDecodeSrc = () => 'file.sol:1';
 const testContracts = [
-  'contracts/test/RetypeFromContract.sol:RetypeContractToUintV1',
-  'contracts/test/RetypeFromContract.sol:RetypeContractToUintV2',
-  'contracts/test/RetypeFromContract.sol:RetypeUintToContractV1',
-  'contracts/test/RetypeFromContract.sol:RetypeUintToContractV2',
-  'contracts/test/RetypeFromContract.sol:RetypeContractToUintMappingV1',
-  'contracts/test/RetypeFromContract.sol:RetypeContractToUintMappingV2',
-  'contracts/test/RetypeFromContract.sol:RetypeUintToContractMappingV1',
-  'contracts/test/RetypeFromContract.sol:RetypeUintToContractMappingV2',
+  'contracts/test/RetypeFromContract.sol:RetypeContractToUint160V1',
+  'contracts/test/RetypeFromContract.sol:RetypeContractToUint160V2',
+  'contracts/test/RetypeFromContract.sol:RetypeUint160ToContractV1',
+  'contracts/test/RetypeFromContract.sol:RetypeUint160ToContractV2',
+  'contracts/test/RetypeFromContract.sol:RetypeContractToUint160MappingV1',
+  'contracts/test/RetypeFromContract.sol:RetypeContractToUint160MappingV2',
+  'contracts/test/RetypeFromContract.sol:RetypeUint160ToContractMappingV1',
+  'contracts/test/RetypeFromContract.sol:RetypeUint160ToContractMappingV2',
   'contracts/test/RetypeFromContract.sol:ImplicitRetypeV1',
   'contracts/test/RetypeFromContract.sol:ImplicitRetypeV2',
   'contracts/test/RetypeFromContract.sol:ImplicitRetypeMappingV1',
@@ -59,30 +59,30 @@ function getReport(original: StorageLayout, updated: StorageLayout) {
   return comparator.compareLayouts(originalDetailed, updatedDetailed);
 }
 
-test('retype contract to uint', t => {
-  const v1 = t.context.extractStorageLayout('RetypeContractToUintV1');
-  const v2 = t.context.extractStorageLayout('RetypeContractToUintV2');
+test('retype contract to uint160', t => {
+  const v1 = t.context.extractStorageLayout('RetypeContractToUint160V1');
+  const v2 = t.context.extractStorageLayout('RetypeContractToUint160V2');
   const report = getReport(v1, v2);
   t.true(report.ok, report.explain());
 });
 
-test('retype uint to contract', t => {
-  const v1 = t.context.extractStorageLayout('RetypeUintToContractV1');
-  const v2 = t.context.extractStorageLayout('RetypeUintToContractV2');
+test('retype uint160 to contract', t => {
+  const v1 = t.context.extractStorageLayout('RetypeUint160ToContractV1');
+  const v2 = t.context.extractStorageLayout('RetypeUint160ToContractV2');
   const report = getReport(v1, v2);
   t.true(report.ok, report.explain());
 });
 
-test('retype contract to uint mapping', t => {
-  const v1 = t.context.extractStorageLayout('RetypeContractToUintMappingV1');
-  const v2 = t.context.extractStorageLayout('RetypeContractToUintMappingV2');
+test('retype contract to uint160 mapping', t => {
+  const v1 = t.context.extractStorageLayout('RetypeContractToUint160MappingV1');
+  const v2 = t.context.extractStorageLayout('RetypeContractToUint160MappingV2');
   const report = getReport(v1, v2);
   t.true(report.ok, report.explain());
 });
 
-test('retype uint to contract mapping', t => {
-  const v1 = t.context.extractStorageLayout('RetypeUintToContractMappingV1');
-  const v2 = t.context.extractStorageLayout('RetypeUintToContractMappingV2');
+test('retype uint160 to contract mapping', t => {
+  const v1 = t.context.extractStorageLayout('RetypeUint160ToContractMappingV1');
+  const v2 = t.context.extractStorageLayout('RetypeUint160ToContractMappingV2');
   const report = getReport(v1, v2);
   t.true(report.ok, report.explain());
 });

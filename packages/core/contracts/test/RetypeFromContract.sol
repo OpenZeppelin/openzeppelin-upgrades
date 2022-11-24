@@ -7,12 +7,12 @@ contract CustomContract {}
 interface CustomInterface2 {}
 contract CustomContract2 {}
 
-contract RetypeContractToUintV1 {
+contract RetypeContractToUint160V1 {
     CustomInterface a;
     CustomContract b;
 }
 
-contract RetypeContractToUintV2 {
+contract RetypeContractToUint160V2 {
     /// @custom:oz-retyped-from CustomInterface
     uint160 a;
 
@@ -20,12 +20,12 @@ contract RetypeContractToUintV2 {
     uint160 b;
 }
 
-contract RetypeUintToContractV1 {
+contract RetypeUint160ToContractV1 {
     uint160 a;
     uint160 b;
 }
 
-contract RetypeUintToContractV2 {
+contract RetypeUint160ToContractV2 {
     /// @custom:oz-retyped-from uint160
     CustomInterface private a;
 
@@ -33,14 +33,14 @@ contract RetypeUintToContractV2 {
     CustomContract private b;
 }
 
-contract RetypeContractToUintMappingV1 {
+contract RetypeContractToUint160MappingV1 {
     mapping(uint8 => CustomInterface) a;
     mapping(uint8 => CustomContract) b;
     mapping(CustomInterface => CustomInterface) c;
     mapping(CustomContract => CustomContract) d;
 }
 
-contract RetypeContractToUintMappingV2 {
+contract RetypeContractToUint160MappingV2 {
     /// @custom:oz-retyped-from mapping(uint8 => CustomInterface)
     mapping(uint8 => uint160) a;
 
@@ -54,14 +54,14 @@ contract RetypeContractToUintMappingV2 {
     mapping(uint160 => uint160) d;
 }
 
-contract RetypeUintToContractMappingV1 {
+contract RetypeUint160ToContractMappingV1 {
     mapping(uint8 => uint160) a;
     mapping(uint8 => uint160) b;
     mapping(uint160 => uint160) c;
     mapping(uint160 => uint160) d;
 }
 
-contract RetypeUintToContractMappingV2 {
+contract RetypeUint160ToContractMappingV2 {
     /// @custom:oz-retyped-from mapping(uint8 => uint160)
     mapping(uint8 => CustomInterface) a;
 
