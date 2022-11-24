@@ -409,10 +409,7 @@ function enumSize(memberCount: number): number {
 }
 
 export function stripContractSubstrings(label?: string) {
-  if (label === undefined) {
-    return label;
+  if (label !== undefined) {
+    return label.replace(/\bcontract /g, '');
   }
-
-  const regex = /\bcontract /g;
-  return label.replace(regex, '');
 }
