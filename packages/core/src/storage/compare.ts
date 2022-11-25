@@ -415,6 +415,7 @@ export function stripContractSubstrings(label?: string) {
       .replace(/\bstruct /g, '')
       .replace(/\benum /g, '');
   }
+}
 
 /**
  * Some versions of Solidity use type ids with _memory_ptr suffix while other versions use _memory suffix.
