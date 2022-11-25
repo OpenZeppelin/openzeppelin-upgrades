@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix incompatible type error when upgrading from mapping with strings ([#689](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/689))
+- Support retype from contract, interface, struct or enum to address. ([#687](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/687))
 
 ## 1.20.4 (2022-11-03)
 

@@ -168,8 +168,9 @@ export class StorageLayoutComparator {
       original.label !== updated.renamedFrom &&
       (updated.label !== original.label ||
         (updated.renamedFrom !== undefined && updated.renamedFrom !== original.renamedFrom));
-    const retypedFromOriginal = original.type.item.label === updated.retypedFrom?.trim();
-    const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
+    const typeChange =
+      !this.isRetypedFromOriginal(original, updated) &&
+      this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = this.getLayoutChange(original, updated);
 
     if (updated.retypedFrom && layoutChange && (!layoutChange.uncertain || !layoutChange.knownCompatible)) {
@@ -191,6 +192,13 @@ export class StorageLayoutComparator {
       // add this check as a safety fallback.
       return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
     }
+  }
+
+  private isRetypedFromOriginal(original: StorageField, updated: StorageField) {
+    const originalLabel = stripContractSubstrings(original.type.item.label);
+    const updatedLabel = stripContractSubstrings(updated.retypedFrom?.trim());
+
+    return originalLabel === updatedLabel;
   }
 
   getLayoutChange(original: StorageField, updated: StorageField): LayoutChange | undefined {
@@ -244,6 +252,15 @@ export class StorageLayoutComparator {
       return this.getVisibilityChange(original, updated);
     }
 
+    if (
+      (original.head === 't_contract' && updated.head === 't_address') ||
+      (original.head === 't_address' && updated.head === 't_contract')
+    ) {
+      // changing contract to address or address to contract
+      // equivalent to just addresses
+      return undefined;
+    }
+
     if (normalizeMemoryPointer(original.head) !== normalizeMemoryPointer(updated.head)) {
       return { kind: 'obvious mismatch', original, updated };
     }
@@ -256,6 +273,7 @@ export class StorageLayoutComparator {
 
     switch (original.head) {
       case 't_contract':
+        // changing contract to contract
         // no storage layout errors can be introduced here since it is just an address
         return undefined;
 
@@ -388,6 +406,12 @@ export class StorageLayoutComparator {
 
 function enumSize(memberCount: number): number {
   return Math.ceil(Math.log2(Math.max(2, memberCount)) / 8);
+}
+
+export function stripContractSubstrings(label?: string) {
+  if (label !== undefined) {
+    return label.replace(/\b(contract|struct|enum) /g, '');
+  }
 }
 
 /**
