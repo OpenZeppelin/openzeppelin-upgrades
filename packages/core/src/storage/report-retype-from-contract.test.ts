@@ -122,6 +122,10 @@ test('strip contract substrings', t => {
     stripContractSubstrings('mapping(contract Substringcontract => address)'),
     'mapping(Substringcontract => address)',
   );
+  t.is(stripContractSubstrings('Mystruct'), 'Mystruct');
+  t.is(stripContractSubstrings('struct Mystruct'), 'Mystruct');
+  t.is(stripContractSubstrings('Myenum'), 'Myenum');
+  t.is(stripContractSubstrings('enum Myenum'), 'Myenum');
 });
 
 test('retype from struct', t => {
