@@ -261,7 +261,7 @@ export class StorageLayoutComparator {
       return undefined;
     }
 
-    if (original.head !== updated.head) {
+    if (normalizeMemoryPointer(original.head) !== normalizeMemoryPointer(updated.head)) {
       return { kind: 'obvious mismatch', original, updated };
     }
 
@@ -415,4 +415,11 @@ export function stripContractSubstrings(label?: string) {
       .replace(/\bstruct /g, '')
       .replace(/\benum /g, '');
   }
+
+/**
+ * Some versions of Solidity use type ids with _memory_ptr suffix while other versions use _memory suffix.
+ * Normalize these for type comparison purposes only.
+ */
+function normalizeMemoryPointer(typeIdentifier: string): string {
+  return typeIdentifier.replace(/_memory_ptr\b/g, '_memory');
 }
