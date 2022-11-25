@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.20.5 (2022-11-25)
 
 - Fix incompatible type error when upgrading from mapping with strings ([#689](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/689))
 - Support retype from contract, interface, struct or enum to address. ([#687](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/687))
