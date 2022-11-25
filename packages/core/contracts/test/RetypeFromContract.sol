@@ -130,3 +130,38 @@ contract ImplicitRetypeMappingV2 {
     mapping(uint8 => CustomContract2) g;
     mapping(uint8 => CustomInterface) h;
 }
+
+struct StructUint256 {
+    uint256 a;
+    uint256 b;
+}
+
+contract RetypeStructV1 {
+    StructUint256 x;
+}
+
+contract RetypeStructV2 {
+    /// @custom:oz-retyped-from StructUint256
+    uint256[2] x;
+}
+
+contract RetypeStructV2Bad {
+    /// @custom:oz-retyped-from StructUint256
+    uint256[3] x;
+}
+
+enum MyEnums { ONE, TWO }
+
+contract RetypeEnumV1 {
+    MyEnums x;
+}
+
+contract RetypeEnumV2 {
+    /// @custom:oz-retyped-from MyEnums
+    uint8 x;
+}
+
+contract RetypeEnumV2Bad {
+    /// @custom:oz-retyped-from MyEnums
+    uint16 x;
+}

@@ -6,6 +6,7 @@ import { astDereferencer } from '../ast-dereferencer';
 import { extractStorageLayout } from './extract';
 import { StorageLayoutComparator, stripContractSubstrings } from './compare';
 import { StorageLayout, getDetailedLayout } from './layout';
+import { getStorageUpgradeErrors } from '.';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
@@ -27,6 +28,12 @@ const testContracts = [
   'contracts/test/RetypeFromContract.sol:ImplicitRetypeV2',
   'contracts/test/RetypeFromContract.sol:ImplicitRetypeMappingV1',
   'contracts/test/RetypeFromContract.sol:ImplicitRetypeMappingV2',
+  'contracts/test/RetypeFromContract.sol:RetypeStructV1',
+  'contracts/test/RetypeFromContract.sol:RetypeStructV2',
+  'contracts/test/RetypeFromContract.sol:RetypeStructV2Bad',
+  'contracts/test/RetypeFromContract.sol:RetypeEnumV1',
+  'contracts/test/RetypeFromContract.sol:RetypeEnumV2',
+  'contracts/test/RetypeFromContract.sol:RetypeEnumV2Bad',
 ];
 
 test.before(async t => {
@@ -115,4 +122,44 @@ test('strip contract substrings', t => {
     stripContractSubstrings('mapping(contract Substringcontract => address)'),
     'mapping(Substringcontract => address)',
   );
+});
+
+test('retype from struct', t => {
+  const v1 = t.context.extractStorageLayout('RetypeStructV1');
+  const v2 = t.context.extractStorageLayout('RetypeStructV2');
+  const report = getReport(v1, v2);
+  t.true(report.ok, report.explain());
+});
+
+test('bad retype from struct', t => {
+  const v1 = t.context.extractStorageLayout('RetypeStructV1');
+  const v2 = t.context.extractStorageLayout('RetypeStructV2Bad');
+  t.like(getStorageUpgradeErrors(v1, v2), {
+    length: 1,
+    0: {
+      kind: 'layoutchange',
+      original: { label: 'x' },
+      updated: { label: 'x' },
+    },
+  });
+});
+
+test('retype from enum', t => {
+  const v1 = t.context.extractStorageLayout('RetypeEnumV1');
+  const v2 = t.context.extractStorageLayout('RetypeEnumV2');
+  const report = getReport(v1, v2);
+  t.true(report.ok, report.explain());
+});
+
+test('bad retype from enum', t => {
+  const v1 = t.context.extractStorageLayout('RetypeEnumV1');
+  const v2 = t.context.extractStorageLayout('RetypeEnumV2Bad');
+  t.like(getStorageUpgradeErrors(v1, v2), {
+    length: 1,
+    0: {
+      kind: 'layoutchange',
+      original: { label: 'x' },
+      updated: { label: 'x' },
+    },
+  });
 });
