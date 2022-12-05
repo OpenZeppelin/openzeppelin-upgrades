@@ -15,6 +15,7 @@ import {
   UpgradesError,
   getAdminAddress,
   isTransparentOrUUPSProxy,
+  isBeacon,
   isBeaconProxy,
   isEmptySlot,
 } from '@openzeppelin/upgrades-core';
@@ -63,7 +64,7 @@ const verifiableContracts = {
 };
 
 /**
- * Overrides hardhat-etherscan's verify:verify subtask to fully verify a proxy.
+ * Overrides hardhat-etherscan's verify:verify subtask to fully verify a proxy or beacon.
  *
  * Verifies the contract at an address. If the address is an ERC-1967 compatible proxy, verifies the proxy and associated proxy contracts,
  * as well as the implementation. Otherwise, calls hardhat-etherscan's verify function directly.
@@ -95,6 +96,9 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
     await fullVerifyTransparentOrUUPS(hre, proxyAddress, hardhatVerify, errors);
   } else if (await isBeaconProxy(provider, proxyAddress)) {
     await fullVerifyBeaconProxy(hre, proxyAddress, hardhatVerify, errors);
+  } else if (await isBeacon(provider, proxyAddress)) {
+    const etherscanApi = await getEtherscanAPIConfig(hre);
+    await fullVerifyBeacon(hre, proxyAddress, hardhatVerify, etherscanApi, errors);
   } else {
     // Doesn't look like a proxy, so just verify directly
     return hardhatVerify(proxyAddress);
@@ -230,13 +234,10 @@ async function fullVerifyBeaconProxy(
 ) {
   const provider = hre.network.provider;
   const beaconAddress = await getBeaconAddress(provider, proxyAddress);
-
   const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
-  await verifyImplementation(hardhatVerify, implAddress, errors);
-
   const etherscanApi = await getEtherscanAPIConfig(hre);
 
-  await verifyBeacon();
+  await fullVerifyBeacon(hre, beaconAddress, hardhatVerify, etherscanApi, errors);
   await verifyBeaconProxy();
   await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress, errors);
 
@@ -244,6 +245,29 @@ async function fullVerifyBeaconProxy(
     console.log(`Verifying beacon proxy: ${proxyAddress}`);
     await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [verifiableContracts.beaconProxy], errors);
   }
+}
+
+/**
+ * Verifies all contracts resulting from a beacon deployment: implementation, beacon
+ *
+ * @param hre
+ * @param beaconAddress The beacon address
+ * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
+ * @param etherscanApi Configuration for the Etherscan API
+ * @errors Accumulated verification errors
+ */
+async function fullVerifyBeacon(
+  hre: HardhatRuntimeEnvironment,
+  beaconAddress: any,
+  hardhatVerify: (address: string) => Promise<any>,
+  etherscanApi: EtherscanAPIConfig,
+  errors: string[],
+) {
+  const provider = hre.network.provider;
+
+  const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
+  await verifyImplementation(hardhatVerify, implAddress, errors);
+  await verifyBeacon();
 
   async function verifyBeacon() {
     console.log(`Verifying beacon: ${beaconAddress}`);
