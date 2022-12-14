@@ -73,12 +73,10 @@ function getExpectedGapSize(original: StorageField, updated: StorageField) {
   return expectedSizeBytes / bytesPerItem;
 }
 
-function suggestGapSize(original: StorageField, updated: StorageField): string {
+function suggestGapSize(original: StorageField, updated: StorageField): string | undefined {
   const expectedSize = getExpectedGapSize(original, updated);
   if (expectedSize !== undefined) {
     return `Set __gap array to size ${expectedSize}`;
-  } else {
-    return '';
   }
 }
 
@@ -97,7 +95,10 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
           : [];
       const hints = [];
       if (isGap(op.original) && op.change.kind === 'array shrink') {
-        hints.push(suggestGapSize(op.original, op.updated));
+        const suggestion = suggestGapSize(op.original, op.updated);
+        if (suggestion) {
+          hints.push(suggestion);
+        }
       }
       return printWithHints({
         title: `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details),
@@ -122,7 +123,10 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
       const hints = [];
 
       if (isGap(op.original)) {
-        hints.push(suggestGapSize(op.original, op.updated));
+        const suggestion = suggestGapSize(op.original, op.updated);
+        if (suggestion) {
+          hints.push(suggestion);
+        }
       }
 
       return printWithHints({ title, hints });

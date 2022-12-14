@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix display issue in storage layout reports. ([#699](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/699))
+
 ## 1.20.5 (2022-11-25)
 
 - Fix incompatible type error when upgrading from mapping with strings ([#689](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/689))
