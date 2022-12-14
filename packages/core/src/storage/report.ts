@@ -123,7 +123,10 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
       const hints = [];
 
       if (isGap(op.original)) {
-        hints.push(suggestGapSize(op.original, op.updated));
+        const suggestion = suggestGapSize(op.original, op.updated);
+        if (suggestion) {
+          hints.push(suggestion);
+        }
       }
 
       return printWithHints({ title, hints });
