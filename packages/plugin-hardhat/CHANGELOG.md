@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.22.0 (2022-12-15)
 
 - Enable `verify` to verify beacons. ([#695](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/695))
 
