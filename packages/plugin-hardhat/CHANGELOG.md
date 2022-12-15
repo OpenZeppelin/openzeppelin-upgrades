@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Enable `verify` to verify beacons. ([#695](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/695))
+
 ## 1.21.0 (2022-09-27)
 
 - Include solc version in storage layouts in manifest files. ([#662](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/662))
