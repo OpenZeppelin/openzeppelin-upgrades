@@ -38,6 +38,7 @@ test.before(async t => {
     'contracts/test/ignore-errors/AllowChildCallTransitive.sol:AllowChildCallTransitive',
     'contracts/test/ignore-errors/AllowChildSelfReachable.sol:AllowChildSelfReachable',
     'contracts/test/ignore-errors/SafeRecursion.sol:SafeRecursion',
+    'contracts/test/ignore-errors/UnsafeRecursion.sol:UnsafeRecursion',
   ];
 
   t.context.validation = {} as RunValidation;
@@ -104,3 +105,4 @@ testValid('AllowChildCallTransitive', 'transparent', true);
 testValid('AllowChildSelfReachable', 'transparent', true);
 
 testValid('SafeRecursion', 'transparent', true);
+testValid('UnsafeRecursion', 'transparent', false);
