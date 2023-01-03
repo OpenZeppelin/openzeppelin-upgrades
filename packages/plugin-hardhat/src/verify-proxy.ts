@@ -467,7 +467,7 @@ async function getContractCreationTxHash(
   if (responseBody.status === RESPONSE_OK) {
     const result = responseBody.result;
     return result[0].transactionHash; // get the txhash from the first instance of this event
-  } else if (responseBody.message === 'No records found') {
+  } else if (responseBody.message === 'No records found' || responseBody.message === 'No logs found') {
     debug(`no result found for event topic ${topic} at address ${address}`);
     return undefined;
   } else {
