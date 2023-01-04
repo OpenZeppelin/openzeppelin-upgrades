@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for celo and celo-alfajores to manifest file names. ([#710](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/710))
+
 ## 1.20.6 (2022-12-15)
 
 - Fix display issue in storage layout reports. ([#699](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/699))
