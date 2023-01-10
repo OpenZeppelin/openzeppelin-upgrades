@@ -268,11 +268,11 @@ function* getFunctionOpcodeErrors(
   skipInternal: boolean,
   visitedNodeIds: Set<number>,
 ): Generator<ValidationErrorOpcode> {
-  const parentNode = getParentNode(deref, contractOrFunctionDef);
-  if (parentNode === undefined || !skipCheck(opcode.kind, parentNode)) {
+  const parentContractDef = getParentDefinition(deref, contractOrFunctionDef);
+  if (parentContractDef === undefined || !skipCheck(opcode.kind, parentContractDef)) {
     yield* getDirectFunctionOpcodeErrors(contractOrFunctionDef, decodeSrc, opcode, skipInternal);
   }
-  if (parentNode === undefined || !skipCheckReachable(opcode.kind, parentNode)) {
+  if (parentContractDef === undefined || !skipCheckReachable(opcode.kind, parentContractDef)) {
     yield* getReferencedFunctionOpcodeErrors(
       contractOrFunctionDef,
       deref,
@@ -351,7 +351,7 @@ function* getInheritedContractOpcodeErrors(
   }
 }
 
-function getParentNode(deref: ASTDereferencer, contractOrFunctionDef: ContractDefinition | FunctionDefinition) {
+function getParentDefinition(deref: ASTDereferencer, contractOrFunctionDef: ContractDefinition | FunctionDefinition) {
   const parentNode = deref(['ContractDefinition', 'SourceUnit'], contractOrFunctionDef.scope);
   if (parentNode.nodeType === 'ContractDefinition') {
     return parentNode;
