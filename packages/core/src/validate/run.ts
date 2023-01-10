@@ -331,7 +331,8 @@ function* getReferencedFunctionOpcodeErrors(
     node => skipCheckReachable(opcode.kind, node) || skipInternalFunctions(skipInternal, node),
   )) {
     const fn = fnCall.expression;
-    if ('referencedDeclaration' in fn && fn.referencedDeclaration) {
+    if ('referencedDeclaration' in fn && fn.referencedDeclaration && fn.referencedDeclaration > 0) {
+      // non-positive references refer to built-in functions
       try {
         const referencedNode = deref(['FunctionDefinition'], fn.referencedDeclaration);
         if (!visitedNodeIds.has(referencedNode.id)) {
