@@ -305,7 +305,7 @@ function* getDirectFunctionOpcodeErrors(
   for (const fnCall of findAll(
     'FunctionCall',
     contractOrFunctionDef,
-    node => skipCheck(opcode.kind, node) || skipInternalFunctions(skipInternal, node),
+    node => skipCheck(opcode.kind, node) || (skipInternal && isInternalFunction(node)),
   )) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(opcode.pattern)) {
@@ -328,7 +328,7 @@ function* getReferencedFunctionOpcodeErrors(
   for (const fnCall of findAll(
     'FunctionCall',
     contractOrFunctionDef,
-    node => skipCheckReachable(opcode.kind, node) || skipInternalFunctions(skipInternal, node),
+    node => skipCheckReachable(opcode.kind, node) || (skipInternal && isInternalFunction(node)),
   )) {
     const fn = fnCall.expression;
     if ('referencedDeclaration' in fn && fn.referencedDeclaration && fn.referencedDeclaration > 0) {
@@ -370,12 +370,8 @@ function getParentNode(deref: ASTDereferencer, contractOrFunctionDef: ContractDe
   }
 }
 
-function skipInternalFunctions(skipInternal: boolean, node: Node) {
-  return (
-    skipInternal &&
-    node.nodeType === 'FunctionDefinition' &&
-    (node.visibility === 'internal' || node.visibility === 'private')
-  );
+function isInternalFunction(node: Node) {
+  return node.nodeType === 'FunctionDefinition' && (node.visibility === 'internal' || node.visibility === 'private');
 }
 
 function* getStateVariableErrors(
