@@ -73,7 +73,7 @@ interface OpcodePattern {
   pattern: RegExp;
 }
 
-export function isOpcodeError(error: ValidationErrorBase) {
+export function isOpcodeError(error: ValidationErrorBase): error is ValidationErrorOpcode {
   return error.kind === 'delegatecall' || error.kind === 'selfdestruct';
 }
 
