@@ -187,12 +187,10 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
         inheritIds[key] = contractDef.linearizedBaseContracts.slice(1);
         libraryIds[key] = getReferencedLibraryIds(contractDef);
 
-        const opcodeErrors = [...getOpcodeErrors(contractDef, deref, decodeSrc)];
-
         validation[key].src = decodeSrc(contractDef);
         validation[key].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
-          ...opcodeErrors,
+          ...getOpcodeErrors(contractDef, deref, decodeSrc),
           ...getStateVariableErrors(contractDef, decodeSrc),
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
