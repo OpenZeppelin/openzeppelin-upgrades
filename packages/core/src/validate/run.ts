@@ -321,17 +321,23 @@ function* getReferencedFunctionOpcodeErrors(
     const fn = fnCall.expression;
     if ('referencedDeclaration' in fn && fn.referencedDeclaration && fn.referencedDeclaration > 0) {
       // non-positive references refer to built-in functions
-      try {
-        const referencedNode = deref(['FunctionDefinition'], fn.referencedDeclaration);
+      const referencedNode = tryDerefFunction(deref, fn.referencedDeclaration);
+      if (referencedNode !== undefined) {
         if (!visitedNodeIds.has(referencedNode.id)) {
           visitedNodeIds.add(referencedNode.id);
           yield* getFunctionOpcodeErrors(referencedNode, deref, decodeSrc, opcode, false, visitedNodeIds);
         }
-      } catch (e: any) {
-        if (!e.message.includes('No node with id')) {
-          throw e;
-        }
       }
+    }
+  }
+}
+
+function tryDerefFunction(deref: ASTDereferencer, referencedDeclaration: number): FunctionDefinition | undefined {
+  try {
+    return deref(['FunctionDefinition'], referencedDeclaration);
+  } catch (e: any) {
+    if (!e.message.includes('No node with id')) {
+      throw e;
     }
   }
 }
