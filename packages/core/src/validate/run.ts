@@ -138,7 +138,7 @@ function skipCheckReachable(error: string, node: Node): boolean {
 
 function skipCheck(error: string, node: Node): boolean {
   // skip both allow and allow-reachable errors in the lexical scope
-  return [...getAllowed(node, false), ...getAllowed(node, true)].includes(error);
+  return getAllowed(node, false).includes(error) || getAllowed(node, true).includes(error);
 }
 
 function getFullyQualifiedName(source: string, contractName: string) {
