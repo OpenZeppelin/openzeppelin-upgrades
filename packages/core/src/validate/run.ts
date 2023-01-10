@@ -251,6 +251,7 @@ function* getContractOpcodeErrors(
   visitedNodeIds = new Set<number>(),
 ): Generator<ValidationErrorOpcode> {
   if (visitedNodeIds.has(contractDef.id)) {
+    // We return early here, but the errors from this node were emitted when the node was marked as visited.
     return;
   } else {
     visitedNodeIds.add(contractDef.id);
