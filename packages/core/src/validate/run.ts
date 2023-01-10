@@ -73,6 +73,17 @@ interface OpcodePattern {
   pattern: RegExp;
 }
 
+const OPCODES = {
+  delegatecall: {
+    kind: 'delegatecall',
+    pattern: /^t_function_baredelegatecall_/,
+  } as OpcodePattern,
+  selfdestruct: {
+    kind: 'selfdestruct',
+    pattern: /^t_function_selfdestruct_/,
+  } as OpcodePattern,
+};
+
 export function isOpcodeError(error: ValidationErrorBase): error is ValidationErrorOpcode {
   return error.kind === 'delegatecall' || error.kind === 'selfdestruct';
 }
@@ -225,32 +236,12 @@ function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDe
 }
 
 function* getOpcodeErrors(
-  contractOrFunctionDef: ContractDefinition,
+  contractDef: ContractDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationErrorOpcode> {
-  yield* getContractOpcodeErrors(
-    contractOrFunctionDef,
-    deref,
-    decodeSrc,
-    {
-      kind: 'delegatecall',
-      pattern: /^t_function_baredelegatecall_/,
-    },
-    false,
-    new Set<number>(),
-  );
-  yield* getContractOpcodeErrors(
-    contractOrFunctionDef,
-    deref,
-    decodeSrc,
-    {
-      kind: 'selfdestruct',
-      pattern: /^t_function_selfdestruct_/,
-    },
-    false,
-    new Set<number>(),
-  );
+  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.delegatecall, false);
+  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.selfdestruct, false);
 }
 
 function* getContractOpcodeErrors(
@@ -259,7 +250,7 @@ function* getContractOpcodeErrors(
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
   skipInternal: boolean,
-  visitedNodeIds: Set<number>,
+  visitedNodeIds = new Set<number>(),
 ): Generator<ValidationErrorOpcode> {
   if (visitedNodeIds.has(contractDef.id)) {
     return;
