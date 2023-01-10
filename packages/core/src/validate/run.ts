@@ -331,10 +331,9 @@ function* getReferencedFunctionOpcodeErrors(
     node => skipCheckReachable(opcode.kind, node) || skipInternalFunctions(skipInternal, node),
   )) {
     const fn = fnCall.expression;
-    const fnReference = (fn as any).referencedDeclaration;
-    if (fnReference !== undefined && fnReference > 0) {
+    if ('referencedDeclaration' in fn && fn.referencedDeclaration) {
       try {
-        const referencedNode = deref(['FunctionDefinition'], fnReference);
+        const referencedNode = deref(['FunctionDefinition'], fn.referencedDeclaration);
         if (!visitedNodeIds.has(referencedNode.id)) {
           visitedNodeIds.add(referencedNode.id);
           yield* getFunctionOpcodeErrors(referencedNode, deref, decodeSrc, opcode, false, visitedNodeIds);
