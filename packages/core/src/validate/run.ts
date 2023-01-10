@@ -164,8 +164,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
       };
     }
 
-    const allContractDefs = findAll('ContractDefinition', solcOutput.sources[source].ast);
-    for (const contractDef of allContractDefs) {
+    for (const contractDef of findAll('ContractDefinition', solcOutput.sources[source].ast)) {
       const key = getFullyQualifiedName(source, contractDef.name);
 
       fromId[contractDef.id] = key;
