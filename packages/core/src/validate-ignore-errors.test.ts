@@ -19,6 +19,7 @@ test.before(async t => {
     'contracts/test/ignore-errors/SafeContractWithLibraryUsingFor.sol:SafeContractWithLibraryUsingFor',
     'contracts/test/ignore-errors/SafeContractWithTransitiveLibraryCall.sol:SafeContractWithTransitiveLibraryCall',
     'contracts/test/ignore-errors/SafeContractWithParentCall.sol:SafeContractWithParentCall',
+    'contracts/test/ignore-errors/RiskyParentContract.sol:RiskyParentContract',
     'contracts/test/ignore-errors/UnsafeContract.sol:UnsafeContract',
     'contracts/test/ignore-errors/UnsafeContractWithFreeFunctionCall.sol:UnsafeContractWithFreeFunctionCall',
     'contracts/test/ignore-errors/UnsafeContractWithLibraryCall.sol:UnsafeContractWithLibraryCall',
@@ -80,6 +81,8 @@ testValid('SafeContractWithLibraryImport', 'transparent', true);
 testValid('SafeContractWithLibraryUsingFor', 'transparent', true);
 testValid('SafeContractWithTransitiveLibraryCall', 'transparent', true);
 testValid('SafeContractWithParentCall', 'transparent', true);
+
+testValid('RiskyParentContract', 'transparent', false);
 
 testValid('UnsafeContract', 'transparent', false);
 testValid('UnsafeContractWithFreeFunctionCall', 'transparent', false);
