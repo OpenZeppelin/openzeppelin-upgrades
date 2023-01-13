@@ -28,7 +28,7 @@
     "fgbg": "^0.1.4",
     "hardhat": "^2.0.2",
     "promisified": "^0.5.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^4.0.0"
   },
   "dependencies": {
     "@openzeppelin/upgrades-core": "^1.20.0",
