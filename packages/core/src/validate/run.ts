@@ -238,27 +238,39 @@ function* getOpcodeErrors(
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationErrorOpcode> {
-  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.delegatecall, false);
-  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.selfdestruct, false);
+  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.delegatecall, 'main');
+  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.selfdestruct, 'main');
 }
+
+/**
+ * Whether this node is being visited as part of a main contract, or as an inherited contract or function
+ */
+type Scope = 'main' | 'inherited';
 
 function* getContractOpcodeErrors(
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
-  skipInternal: boolean,
-  visitedNodeIds = new Set<number>(),
+  scope: Scope,
+  visitedNodeIds = new Map<number, Scope>(),
 ): Generator<ValidationErrorOpcode> {
-  if (visitedNodeIds.has(contractDef.id)) {
+  if (wasVisited(contractDef.id, scope, visitedNodeIds)) {
     // We return early here, but the errors from this node were emitted when the node was marked as visited.
     return;
   } else {
-    visitedNodeIds.add(contractDef.id);
+    visitedNodeIds.set(contractDef.id, scope);
   }
 
-  yield* getFunctionOpcodeErrors(contractDef, deref, decodeSrc, opcode, skipInternal, visitedNodeIds);
+  yield* getFunctionOpcodeErrors(contractDef, deref, decodeSrc, opcode, scope, visitedNodeIds);
   yield* getInheritedContractOpcodeErrors(contractDef, deref, decodeSrc, opcode, visitedNodeIds);
+}
+
+function wasVisited(key: number, scope: Scope, visitedNodeIds: Map<number, Scope>) {
+  return (
+    (scope === 'inherited' && visitedNodeIds.has(key)) || // looking up an inherited contract, and it was previously checked as a main contract OR inherited contract
+    (scope === 'main' && visitedNodeIds.get(key) === 'main') // looking up a main contract, and it was previously checked as a main contract
+  );
 }
 
 function* getFunctionOpcodeErrors(
@@ -266,22 +278,15 @@ function* getFunctionOpcodeErrors(
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
-  skipInternal: boolean,
-  visitedNodeIds: Set<number>,
+  scope: Scope,
+  visitedNodeIds: Map<number, Scope>,
 ): Generator<ValidationErrorOpcode> {
   const parentContractDef = getParentDefinition(deref, contractOrFunctionDef);
   if (parentContractDef === undefined || !skipCheck(opcode.kind, parentContractDef)) {
-    yield* getDirectFunctionOpcodeErrors(contractOrFunctionDef, decodeSrc, opcode, skipInternal);
+    yield* getDirectFunctionOpcodeErrors(contractOrFunctionDef, decodeSrc, opcode, scope);
   }
   if (parentContractDef === undefined || !skipCheckReachable(opcode.kind, parentContractDef)) {
-    yield* getReferencedFunctionOpcodeErrors(
-      contractOrFunctionDef,
-      deref,
-      decodeSrc,
-      opcode,
-      skipInternal,
-      visitedNodeIds,
-    );
+    yield* getReferencedFunctionOpcodeErrors(contractOrFunctionDef, deref, decodeSrc, opcode, scope, visitedNodeIds);
   }
 }
 
@@ -289,12 +294,12 @@ function* getDirectFunctionOpcodeErrors(
   contractOrFunctionDef: ContractDefinition | FunctionDefinition,
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
-  skipInternal: boolean,
+  scope: Scope,
 ) {
   for (const fnCall of findAll(
     'FunctionCall',
     contractOrFunctionDef,
-    node => skipCheck(opcode.kind, node) || (skipInternal && isInternalFunction(node)),
+    node => skipCheck(opcode.kind, node) || (scope === 'inherited' && isInternalFunction(node)),
   )) {
     const fn = fnCall.expression;
     if (fn.typeDescriptions.typeIdentifier?.match(opcode.pattern)) {
@@ -311,22 +316,22 @@ function* getReferencedFunctionOpcodeErrors(
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
-  skipInternal: boolean,
-  visitedNodeIds: Set<number>,
+  scope: Scope,
+  visitedNodeIds: Map<number, Scope>,
 ) {
   for (const fnCall of findAll(
     'FunctionCall',
     contractOrFunctionDef,
-    node => skipCheckReachable(opcode.kind, node) || (skipInternal && isInternalFunction(node)),
+    node => skipCheckReachable(opcode.kind, node) || (scope === 'inherited' && isInternalFunction(node)),
   )) {
     const fn = fnCall.expression;
     if ('referencedDeclaration' in fn && fn.referencedDeclaration && fn.referencedDeclaration > 0) {
       // non-positive references refer to built-in functions
       const referencedNode = tryDerefFunction(deref, fn.referencedDeclaration);
       if (referencedNode !== undefined) {
-        if (!visitedNodeIds.has(referencedNode.id)) {
-          visitedNodeIds.add(referencedNode.id);
-          yield* getFunctionOpcodeErrors(referencedNode, deref, decodeSrc, opcode, false, visitedNodeIds);
+        if (!wasVisited(referencedNode.id, scope, visitedNodeIds)) {
+          visitedNodeIds.set(referencedNode.id, scope);
+          yield* getFunctionOpcodeErrors(referencedNode, deref, decodeSrc, opcode, scope, visitedNodeIds);
         }
       }
     }
@@ -348,12 +353,12 @@ function* getInheritedContractOpcodeErrors(
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
-  visitedNodeIds: Set<number>,
+  visitedNodeIds: Map<number, Scope>,
 ) {
   if (!skipCheckReachable(opcode.kind, contractDef)) {
     for (const base of contractDef.baseContracts) {
       const referencedContract = deref('ContractDefinition', base.baseName.referencedDeclaration);
-      yield* getContractOpcodeErrors(referencedContract, deref, decodeSrc, opcode, true, visitedNodeIds);
+      yield* getContractOpcodeErrors(referencedContract, deref, decodeSrc, opcode, 'inherited', visitedNodeIds);
     }
   }
 }
