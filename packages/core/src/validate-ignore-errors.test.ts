@@ -49,6 +49,8 @@ test.before(async t => {
     'contracts/test/ignore-errors/Constructors.sol:UnsafeAllowChild7',
     'contracts/test/ignore-errors/Constructors.sol:AllowReachableChild8',
     'contracts/test/ignore-errors/Constructors.sol:UnsafeChild9',
+    // 'contracts/test/ignore-errors/Modifiers.sol:ModifierNotUsed',
+    'contracts/test/ignore-errors/Modifiers.sol:ModifierUsed',
   ];
 
   t.context.validation = {} as RunValidation;
@@ -128,3 +130,8 @@ testValid('AllowChild6', 'transparent', true);
 testValid('UnsafeAllowChild7', 'transparent', false);
 testValid('AllowReachableChild8', 'transparent', true);
 testValid('UnsafeChild9', 'transparent', false);
+
+// TODO: do not throw an error in this case
+// testValid('ModifierNotUsed', 'transparent', true);
+
+testValid('ModifierUsed', 'transparent', false);
