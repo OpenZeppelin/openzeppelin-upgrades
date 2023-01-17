@@ -371,7 +371,11 @@ function getParentDefinition(deref: ASTDereferencer, contractOrFunctionDef: Cont
 }
 
 function isInternalFunction(node: Node) {
-  return node.nodeType === 'FunctionDefinition' && (node.visibility === 'internal' || node.visibility === 'private');
+  return (
+    node.nodeType === 'FunctionDefinition' &&
+    node.kind !== 'constructor' && // do not consider constructors as internal, because they are always called by children contracts' constructors
+    (node.visibility === 'internal' || node.visibility === 'private')
+  );
 }
 
 function* getStateVariableErrors(

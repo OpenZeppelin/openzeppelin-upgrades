@@ -40,6 +40,15 @@ test.before(async t => {
     'contracts/test/ignore-errors/AllowChildSelfReachable.sol:AllowChildSelfReachable',
     'contracts/test/ignore-errors/SafeRecursion.sol:SafeRecursion',
     'contracts/test/ignore-errors/UnsafeRecursion.sol:UnsafeRecursion',
+    'contracts/test/ignore-errors/Constructors.sol:UnsafeChild1',
+    'contracts/test/ignore-errors/Constructors.sol:UnsafeChild2',
+    'contracts/test/ignore-errors/Constructors.sol:UnsafeChild3',
+    'contracts/test/ignore-errors/Constructors.sol:UnsafeChild4',
+    'contracts/test/ignore-errors/Constructors.sol:AllowChild5',
+    'contracts/test/ignore-errors/Constructors.sol:AllowChild6',
+    'contracts/test/ignore-errors/Constructors.sol:UnsafeAllowChild7',
+    'contracts/test/ignore-errors/Constructors.sol:AllowReachableChild8',
+    'contracts/test/ignore-errors/Constructors.sol:UnsafeChild9',
   ];
 
   t.context.validation = {} as RunValidation;
@@ -109,3 +118,13 @@ testValid('AllowChildSelfReachable', 'transparent', true);
 
 testValid('SafeRecursion', 'transparent', true);
 testValid('UnsafeRecursion', 'transparent', false);
+
+testValid('UnsafeChild1', 'transparent', false);
+testValid('UnsafeChild2', 'transparent', false);
+testValid('UnsafeChild3', 'transparent', false);
+testValid('UnsafeChild4', 'transparent', false);
+testValid('AllowChild5', 'transparent', true);
+testValid('AllowChild6', 'transparent', true);
+testValid('UnsafeAllowChild7', 'transparent', false);
+testValid('AllowReachableChild8', 'transparent', true);
+testValid('UnsafeChild9', 'transparent', false);
