@@ -107,29 +107,37 @@ function* execall(re: RegExp, text: string) {
 function getAllowed(node: Node, reachable: boolean): string[] {
   if ('documentation' in node) {
     const tag = `oz-upgrades-unsafe-allow${reachable ? '-reachable' : ''}`;
-
     const doc = typeof node.documentation === 'string' ? node.documentation : node.documentation?.text ?? '';
-
-    const result: string[] = [];
-    for (const { groups } of execall(
-      /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
-      doc,
-    )) {
-      if (groups && groups.title === 'custom' && groups.tag === tag) {
-        result.push(...groups.args.split(/\s+/));
-      }
-    }
-
-    result.forEach(arg => {
-      if (!(errorKinds as readonly string[]).includes(arg)) {
-        throw new Error(`NatSpec: ${tag} argument not recognized: ${arg}`);
-      }
-    });
-
-    return result;
+    return getAnnotationArgs(doc, tag);
   } else {
     return [];
   }
+}
+
+/**
+ * Get args from the doc string matching the given tag
+ */
+export function getAnnotationArgs(doc: string, tag: string) {
+  const result: string[] = [];
+  for (const { groups } of execall(
+    /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
+    doc,
+  )) {
+    if (groups && groups.title === 'custom' && groups.tag === tag) {
+      const trimmedArgs = groups.args.trim();
+      if (trimmedArgs.length > 0) {
+        result.push(...trimmedArgs.split(/\s+/));
+      }
+    }
+  }
+
+  result.forEach(arg => {
+    if (!(errorKinds as readonly string[]).includes(arg)) {
+      throw new Error(`NatSpec: ${tag} argument not recognized: ${arg}`);
+    }
+  });
+
+  return result;
 }
 
 function skipCheckReachable(error: string, node: Node): boolean {
