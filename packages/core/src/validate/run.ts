@@ -77,12 +77,12 @@ const OPCODES = {
   delegatecall: {
     kind: 'delegatecall',
     pattern: /^t_function_baredelegatecall_/,
-  } as OpcodePattern,
+  },
   selfdestruct: {
     kind: 'selfdestruct',
     pattern: /^t_function_selfdestruct_/,
-  } as OpcodePattern,
-};
+  },
+} as const;
 
 export function isOpcodeError(error: ValidationErrorBase): error is ValidationErrorOpcode {
   return error.kind === 'delegatecall' || error.kind === 'selfdestruct';
