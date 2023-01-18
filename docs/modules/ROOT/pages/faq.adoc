@@ -93,7 +93,7 @@ contract SomeOtherContract {
 }
 ----
 
-You can also use the following to allow errors in reachable code, which includes any referenced contracts, functions, and libraries:
+You can also use the following to allow specific errors in reachable code, which includes any referenced contracts, functions, and libraries:
 
   * `/// @custom:oz-upgrades-unsafe-allow-reachable delegatecall`
   * `/// @custom:oz-upgrades-unsafe-allow-reachable selfdestruct`
