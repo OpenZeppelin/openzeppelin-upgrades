@@ -19,7 +19,7 @@ export function solcInputOutputDecoder(solcInput: SolcInput, solcOutput: SolcOut
       if (sourcePath === undefined) {
         throw new Error(`Source file not available`);
       }
-      const content = solcInput.sources[sourcePath].content;
+      const content = solcInput.sources[sourcePath]?.content;
       const name = path.relative(basePath, sourcePath);
       if (content === undefined) {
         throw new Error(`Content for ${name} not available`);
