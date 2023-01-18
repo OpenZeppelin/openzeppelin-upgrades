@@ -40,3 +40,10 @@ test('getAnnotationArgs multiline with spaces and comments', t => {
   t.deepEqual(getAnnotationArgs(doc, 'oz-upgrades-unsafe-allow'), ['constructor', 'selfdestruct']);
   t.deepEqual(getAnnotationArgs(doc, 'oz-upgrades-unsafe-allow-reachable'), ['delegatecall']);
 });
+
+test('getAnnotationArgs multiline multiple preceding spaces', t => {
+  const doc =
+    ' @custom:oz-upgrades-unsafe-allow constructor selfdestruct \n         @custom:oz-upgrades-unsafe-allow-reachable delegatecall    ';
+  t.deepEqual(getAnnotationArgs(doc, 'oz-upgrades-unsafe-allow'), ['constructor', 'selfdestruct']);
+  t.deepEqual(getAnnotationArgs(doc, 'oz-upgrades-unsafe-allow-reachable'), ['delegatecall']);
+});

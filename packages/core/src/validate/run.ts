@@ -120,7 +120,7 @@ function getAllowed(node: Node, reachable: boolean): string[] {
 export function getAnnotationArgs(doc: string, tag: string) {
   const result: string[] = [];
   for (const { groups } of execall(
-    /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
+    /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s*@\w+)[^])*)/m,
     doc,
   )) {
     if (groups && groups.title === 'custom' && groups.tag === tag) {
