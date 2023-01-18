@@ -6,7 +6,6 @@
 - Only consider errors from functions in use. Validate free functions. ([#702](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/702))
 - Improve handling of NatSpec comments. ([#717](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/717))
 
-
 ## 1.20.6 (2022-12-15)
 
 - Fix display issue in storage layout reports. ([#699](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/699))
