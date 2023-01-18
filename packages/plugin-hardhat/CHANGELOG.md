@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.22.1 (2023-01-18)
 
 - Handle getLogs error for Blockscout explorer. ([#706](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/706))
 
