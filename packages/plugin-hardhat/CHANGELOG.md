@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Handle getLogs error for Blockscout explorer. ([#706](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/706))
+
 ## 1.22.0 (2022-12-15)
 
 - Enable `verify` to verify beacons. ([#695](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/695))

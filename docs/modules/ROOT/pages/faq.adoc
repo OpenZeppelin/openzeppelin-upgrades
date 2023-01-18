@@ -60,7 +60,7 @@ For example, in order to upgrade to an implementation that contains a delegate c
 await upgradeProxy(proxyAddress, implementationFactory, { unsafeAllow: ['delegatecall'] });
 ----
 
-Additionally, it is possible to precisely disable checks directly from the Solidity source code using natspec comments. This requires Solidity >=0.8.2.
+Additionally, it is possible to precisely disable checks directly from the Solidity source code using NatSpec comments. This requires Solidity >=0.8.2.
 
 [source,solidity]
 ----
@@ -92,6 +92,11 @@ contract SomeOtherContract {
   uint256 immutable x = 1;
 }
 ----
+
+You can also use the following to allow specific errors in reachable code, which includes any referenced contracts, functions, and libraries:
+
+  * `/// @custom:oz-upgrades-unsafe-allow-reachable delegatecall`
+  * `/// @custom:oz-upgrades-unsafe-allow-reachable selfdestruct`
 
 [[delegatecall-selfdestruct]]
 == Can I safely use `delegatecall` and `selfdestruct`?
