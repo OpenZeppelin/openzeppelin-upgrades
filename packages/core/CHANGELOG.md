@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add support for celo and celo-alfajores to manifest file names. ([#710](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/710))
+- Only consider errors from functions in use. Validate free functions. ([#702](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/702))
 
 ## 1.20.6 (2022-12-15)
 

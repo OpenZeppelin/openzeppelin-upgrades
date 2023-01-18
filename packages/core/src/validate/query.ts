@@ -1,5 +1,5 @@
 import { Version, getVersion } from '../version';
-import { ValidationRunData, ValidationError } from './run';
+import { ValidationRunData, ValidationError, isOpcodeError } from './run';
 import { StorageLayout } from '../storage/layout';
 import { unlinkBytecode } from '../link-refs';
 import { ValidationOptions, processExceptions } from './overrides';
@@ -143,9 +143,7 @@ export function getErrors(data: ValidationData, version: Version, opts: Validati
   const [fullContractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
   const c = runValidation[fullContractName];
 
-  const errors = getUsedContractsAndLibraries(fullContractName, runValidation).flatMap(
-    name => runValidation[name].errors,
-  );
+  const errors = getAllErrors(runValidation, fullContractName);
 
   const selfAndInheritedMethods = getAllMethods(runValidation, fullContractName);
 
@@ -159,21 +157,27 @@ export function getErrors(data: ValidationData, version: Version, opts: Validati
   return processExceptions(fullContractName, errors, opts);
 }
 
+function getAllErrors(runValidation: ValidationRunData, fullContractName: string) {
+  // add self's opcode errors only, since opcode errors already include parents
+  const opcodeErrors = runValidation[fullContractName].errors.filter(error => isOpcodeError(error));
+
+  // add other errors from self and inherited contracts
+  const otherErrors = getUsedContracts(fullContractName, runValidation)
+    .flatMap(name => runValidation[name].errors)
+    .filter(error => !isOpcodeError(error));
+
+  return [...opcodeErrors, ...otherErrors];
+}
+
 function getAllMethods(runValidation: ValidationRunData, fullContractName: string): string[] {
   const c = runValidation[fullContractName];
   return c.methods.concat(...c.inherit.map(name => runValidation[name].methods));
 }
 
-function getUsedContractsAndLibraries(contractName: string, runValidation: ValidationRunData) {
+function getUsedContracts(contractName: string, runValidation: ValidationRunData) {
   const c = runValidation[contractName];
   // Add current contract and all of its parents
   const res = new Set([contractName, ...c.inherit]);
-  // Add used libraries transitively until no more are found
-  for (const c1 of res) {
-    for (const c2 of runValidation[c1].libraries) {
-      res.add(c2);
-    }
-  }
   return Array.from(res);
 }
 
