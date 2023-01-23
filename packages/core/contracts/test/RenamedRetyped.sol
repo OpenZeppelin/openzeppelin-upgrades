@@ -63,7 +63,6 @@ contract LayoutChangeV2 {
     uint8 b;
 }
 
-
 contract RenameStructV1 {
     struct History {
         Checkpoint[] _checkpoints;
