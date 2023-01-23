@@ -28,6 +28,9 @@ const testContracts = [
   'contracts/test/RenamedRetyped.sol:NonHardcodedRetypeV2',
   'contracts/test/RenamedRetyped.sol:LayoutChangeV1',
   'contracts/test/RenamedRetyped.sol:LayoutChangeV2',
+  'contracts/test/RenamedRetyped.sol:RenameStructV1',
+  'contracts/test/RenamedRetyped.sol:RenameStructV2a',
+  'contracts/test/RenamedRetyped.sol:RenameStructV2b',
 ];
 
 test.before(async t => {
@@ -130,4 +133,13 @@ test('retype with layout change', t => {
   const report = getReport(v1, v2);
   t.false(report.ok);
   t.snapshot(report.explain());
+});
+
+test('storage upgrade with struct renaming/replacing', t => {
+  const v1 = t.context.extractStorageLayout('RenameStructV1');
+  const v2a = t.context.extractStorageLayout('RenameStructV2a');
+  const v2b = t.context.extractStorageLayout('RenameStructV2b');
+
+  t.deepEqual(getStorageUpgradeErrors(v1, v2a), []);
+  t.deepEqual(getStorageUpgradeErrors(v1, v2b), []);
 });

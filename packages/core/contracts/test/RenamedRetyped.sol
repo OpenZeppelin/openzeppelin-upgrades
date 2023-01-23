@@ -62,3 +62,44 @@ contract LayoutChangeV2 {
     /// @custom:oz-retyped-from bool
     uint8 b;
 }
+
+
+contract RenameStructV1 {
+    struct History {
+        Checkpoint[] _checkpoints;
+    }
+
+    struct Checkpoint {
+        uint32 _blockNumber;
+        uint224 _value;
+    }
+
+    History history;
+}
+
+contract RenameStructV2a {
+    struct Trace224 {
+        Checkpoint224[] _checkpoints;
+    }
+
+    struct Checkpoint224 {
+        uint32 _blockNumber;
+        uint224 _value;
+    }
+
+    Trace224 history;
+}
+
+contract RenameStructV2b {
+    struct Trace224 {
+        Checkpoint224[] _checkpoints;
+    }
+
+    struct Checkpoint224 {
+        /// @custom:oz-renamed-from _blockNumber
+        uint32 _key;
+        uint224 _value;
+    }
+
+    Trace224 history;
+}
