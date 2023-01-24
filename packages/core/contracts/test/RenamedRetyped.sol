@@ -95,11 +95,11 @@ contract RenameStructV2b {
     }
 
     struct Checkpoint224 {
-        /// @custom:oz-renamed-from _blockNumber
         uint32 _key;
         uint224 _value;
     }
 
+    /// @custom:oz-retyped-from RenameStructV1.History
     Trace224 history;
 }
 
