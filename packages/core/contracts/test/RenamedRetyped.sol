@@ -102,3 +102,38 @@ contract RenameStructV2b {
 
     Trace224 history;
 }
+
+contract InnerRetypeV1 {
+    struct ProposalCore {
+        BlockNumber key;
+        bool flag;
+    }
+
+    struct BlockNumber {
+        uint32 blockNumber;
+    }
+
+    ProposalCore core;
+}
+
+contract InnerRetypeV2Good {
+    struct ProposalCore {
+        uint256 blockNumber;
+        bool flag;
+    }
+
+    /// @custom:oz-retyped-from InnerRetypeV1.ProposalCore
+    ProposalCore core;
+}
+
+contract InnerRetypeV2Bad {
+    struct ProposalCore {
+        uint16 a;
+        uint224 b;
+        uint16 c;
+        bool flag;
+    }
+
+    /// @custom:oz-retyped-from InnerRetypeV1.ProposalCore
+    ProposalCore core;
+}

@@ -31,6 +31,9 @@ const testContracts = [
   'contracts/test/RenamedRetyped.sol:RenameStructV1',
   'contracts/test/RenamedRetyped.sol:RenameStructV2a',
   'contracts/test/RenamedRetyped.sol:RenameStructV2b',
+  'contracts/test/RenamedRetyped.sol:InnerRetypeV1',
+  'contracts/test/RenamedRetyped.sol:InnerRetypeV2Good',
+  'contracts/test/RenamedRetyped.sol:InnerRetypeV2Bad',
 ];
 
 test.before(async t => {
@@ -142,4 +145,16 @@ test('storage upgrade with struct renaming/replacing', t => {
 
   t.deepEqual(getStorageUpgradeErrors(v1, v2a), []);
   t.deepEqual(getStorageUpgradeErrors(v1, v2b), []);
+});
+
+test('storage upgrade with internal struct changes', t => {
+  const v1 = t.context.extractStorageLayout('InnerRetypeV1');
+  const v2Good = t.context.extractStorageLayout('InnerRetypeV2Good');
+  const v2Bad = t.context.extractStorageLayout('InnerRetypeV2Bad');
+
+  t.deepEqual(getStorageUpgradeErrors(v1, v2Good), []);
+
+  t.like(getStorageUpgradeErrors(v1, v2Bad), {
+    length: 1,
+  });
 });
