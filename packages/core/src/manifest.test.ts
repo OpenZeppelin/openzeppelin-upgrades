@@ -114,6 +114,19 @@ test('manifest name for an unknown network', t => {
   t.is(manifest.file, `.openzeppelin/unknown-${id}.json`);
 });
 
+test('manifest name for a Hardhat network', t => {
+  const chainId = 55555;
+  const instanceId = '0x12345';
+  const manifest = new Manifest(chainId, instanceId);
+  t.is(manifest.file, `.openzeppelin/unknown-${chainId}-${instanceId}.json`);
+});
+
+test('manifest name for a Hardhat network with named network id', t => {
+  const chainId = 1;
+  const instanceId = '0x12345';
+  t.throws(() => new Manifest(chainId, instanceId));
+});
+
 test('normalize manifest', t => {
   const deployment = {
     address: '0x1234',
