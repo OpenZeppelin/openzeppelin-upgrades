@@ -49,7 +49,7 @@ The naming of the file will be `<network_name>.json`, but note that `<network_na
 
 There is a limited set of public chains; Chains not on the list such as Ethereum Classic will have network files named `unknown-<chain_id>.json`.
 
-Hardhat development networks will have files named `unknown-<chain_id>-<instance_id>.json`, where `<instance_id>` is a 0x-prefixed hex id that uniquiely identifies an instance/run of the Hardhat network. Files matching this `unknown-<chain_id>-<instance_id>.json` pattern can be safely deleted when the corresponding instance of the Hardhat network is no longer active, for example after Hardhat tests have finished.
+Hardhat development networks will have files named `unknown-<chain_id>-<instance_id>.json`, where `<instance_id>` is a 0x-prefixed hex id that uniquiely identifies an instance/run of the Hardhat network. Files matching this `unknown-<chain_id>-<instance_id>.json` pattern can be safely deleted when their corresponding Hardhat network instance is no longer active, for example after Hardhat tests have finished.
 
 [[configuration-files-in-version-control]]
 == Configuration Files in Version Control
