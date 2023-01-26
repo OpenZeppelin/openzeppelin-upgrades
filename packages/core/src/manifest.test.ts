@@ -114,17 +114,29 @@ test('manifest name for an unknown network', t => {
   t.is(manifest.file, `.openzeppelin/unknown-${id}.json`);
 });
 
-test('manifest name for a Hardhat network', t => {
+test('manifest name for a development network instance', t => {
   const chainId = 55555;
   const instanceId = '0x12345';
   const manifest = new Manifest(chainId, instanceId);
   t.is(manifest.file, `.openzeppelin/unknown-${chainId}-${instanceId}.json`);
 });
 
-test('manifest name for a Hardhat network with named network id', t => {
+test('manifest name for a development network instance with network id name clash', t => {
   const chainId = 1;
   const instanceId = '0x12345';
   t.throws(() => new Manifest(chainId, instanceId));
+});
+
+test('manifest lock file name for a development network instance', async t => {
+  const chainId = 55555;
+  const instanceId = '0x12345';
+
+  const manifest = new Manifest(chainId, instanceId);
+
+  await manifest.lockedRun(async () => {
+    t.throwsAsync(fs.access(`.openzeppelin/chain-${chainId}.lock`));
+    await fs.access(`.openzeppelin/chain-${chainId}-${instanceId}.lock`);
+  });
 });
 
 test('normalize manifest', t => {
