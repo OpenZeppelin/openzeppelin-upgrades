@@ -1,6 +1,6 @@
 import path from 'path';
 import { promises as fs } from 'fs';
-import { EthereumProvider, getChainId, networkNames } from './provider';
+import { EthereumProvider, getChainId, getHardhatMetadata, networkNames } from './provider';
 import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
 
@@ -40,24 +40,45 @@ function defaultManifest(): ManifestData {
 
 const manifestDir = '.openzeppelin';
 
+async function getDevelopmentInstanceId(provider: EthereumProvider): Promise<string | undefined> {
+  return (await getHardhatMetadata(provider))?.instanceId;
+}
+
+function getSuffix(chainId: number, devInstanceId?: string) {
+  if (devInstanceId !== undefined) {
+    return `${chainId}-${devInstanceId}`;
+  } else {
+    return chainId;
+  }
+}
+
 export class Manifest {
   readonly chainId: number;
+  readonly devInstanceId: string | undefined;
   readonly file: string;
   private readonly fallbackFile: string;
 
   private locked = false;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
-    return new Manifest(await getChainId(provider));
+    return new Manifest(await getChainId(provider), await getDevelopmentInstanceId(provider));
   }
 
-  constructor(chainId: number) {
+  constructor(chainId: number, devInstanceId?: string) {
     this.chainId = chainId;
+    this.devInstanceId = devInstanceId;
 
-    const fallbackName = `unknown-${this.chainId}`;
+    const fallbackName = `unknown-${getSuffix(chainId, devInstanceId)}`;
     this.fallbackFile = path.join(manifestDir, `${fallbackName}.json`);
 
-    const name = networkNames[this.chainId] ?? fallbackName;
+    const networkName = networkNames[this.chainId];
+    if (networkName !== undefined && devInstanceId !== undefined) {
+      throw new Error(
+        `Broken invariant: development instance id ${devInstanceId} not expected for named network ${networkName}`,
+      );
+    }
+
+    const name = networkName ?? fallbackName;
     this.file = path.join(manifestDir, `${name}.json`);
   }
 
@@ -180,7 +201,7 @@ export class Manifest {
   }
 
   private async lock() {
-    const lockfileName = path.join(manifestDir, `chain-${this.chainId}`);
+    const lockfileName = path.join(manifestDir, `chain-${getSuffix(this.chainId, this.devInstanceId)}`);
 
     await fs.mkdir(path.dirname(lockfileName), { recursive: true });
     const release = await lockfile.lock(lockfileName, { retries: 3, realpath: false });

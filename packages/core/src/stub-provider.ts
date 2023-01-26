@@ -111,6 +111,8 @@ export function stubProvider(chainId = genChainId(), clientVersion = defaultClie
         } else {
           return null;
         }
+      } else if (method === 'hardhat_metadata') {
+        return undefined;
       } else {
         throw new Error(`Method ${method} not stubbed`);
       }

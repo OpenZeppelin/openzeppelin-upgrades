@@ -1,13 +1,20 @@
 export interface EthereumProvider {
+  send(method: 'hardhat_metadata', params: []): Promise<HardhatMetadata | undefined>;
   send(method: 'web3_clientVersion', params: []): Promise<string>;
   send(method: 'net_version', params: []): Promise<string>;
   send(method: 'eth_chainId', params: []): Promise<string>;
+  send(method: 'eth_instanceId', params: []): Promise<string>;
   send(method: 'eth_getCode', params: [string, string]): Promise<string>;
   send(method: 'eth_call', params: unknown[]): Promise<string>;
   send(method: 'eth_getStorageAt', params: [string, string, string]): Promise<string>;
   send(method: 'eth_getTransactionByHash', params: [string]): Promise<null | EthereumTransaction>;
   send(method: 'eth_getTransactionReceipt', params: [string]): Promise<null | EthereumTransactionReceipt>;
   send(method: string, params: unknown[]): Promise<unknown>;
+}
+
+interface HardhatMetadata {
+  chainId: number;
+  instanceId: string;
 }
 
 interface EthereumTransaction {
@@ -36,6 +43,10 @@ export async function getChainId(provider: EthereumProvider): Promise<number> {
 
 export async function getClientVersion(provider: EthereumProvider): Promise<string> {
   return provider.send('web3_clientVersion', []);
+}
+
+export async function getHardhatMetadata(provider: EthereumProvider): Promise<HardhatMetadata | undefined> {
+  return provider.send('hardhat_metadata', []);
 }
 
 export async function getStorageAt(
