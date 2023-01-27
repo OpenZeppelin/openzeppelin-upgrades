@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for Binance Smart Chain to manifest file names. ([#729](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/729))
+
 ## 1.21.0 (2023-01-18)
 
 - Add support for celo and celo-alfajores to manifest file names. ([#710](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/710))
