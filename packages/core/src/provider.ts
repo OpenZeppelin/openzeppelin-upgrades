@@ -45,6 +45,10 @@ export async function getClientVersion(provider: EthereumProvider): Promise<stri
   return provider.send('web3_clientVersion', []);
 }
 
+/**
+ * Gets Hardhat metadata when used with Hardhat 2.12.3 or later.
+ * The underlying provider will throw an error if this RPC method is not available.
+ */
 export async function getHardhatMetadata(provider: EthereumProvider): Promise<HardhatMetadata> {
   return provider.send('hardhat_metadata', []);
 }
