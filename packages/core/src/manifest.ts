@@ -41,17 +41,26 @@ function defaultManifest(): ManifestData {
 const manifestDir = '.openzeppelin';
 
 async function getDevelopmentInstanceId(provider: EthereumProvider, chainId: number): Promise<string | undefined> {
-  const hardhatMetadata = await getHardhatMetadata(provider);
-  if (hardhatMetadata !== undefined) {
-    if (hardhatMetadata.chainId !== chainId) {
-      throw new Error(
-        `Broken invariant: Hardhat metadata's chainId ${hardhatMetadata.chainId} does not match eth_chainId ${chainId}`,
-      );
+  let hardhatMetadata;
+
+  try {
+    hardhatMetadata = await getHardhatMetadata(provider);
+  } catch (e: unknown) {
+    if (e instanceof Error && (e.message.includes('Method') || e.message.includes('method'))) {
+      // method not found
+      return undefined;
+    } else {
+      throw e;
     }
-    return hardhatMetadata.instanceId;
-  } else {
-    return undefined;
   }
+
+  if (hardhatMetadata.chainId !== chainId) {
+    throw new Error(
+      `Broken invariant: Hardhat metadata's chainId ${hardhatMetadata.chainId} does not match eth_chainId ${chainId}`,
+    );
+  }
+
+  return hardhatMetadata.instanceId;
 }
 
 function getSuffix(chainId: number, devInstanceId?: string) {

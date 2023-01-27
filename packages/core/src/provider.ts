@@ -1,5 +1,5 @@
 export interface EthereumProvider {
-  send(method: 'hardhat_metadata', params: []): Promise<HardhatMetadata | undefined>;
+  send(method: 'hardhat_metadata', params: []): Promise<HardhatMetadata>;
   send(method: 'web3_clientVersion', params: []): Promise<string>;
   send(method: 'net_version', params: []): Promise<string>;
   send(method: 'eth_chainId', params: []): Promise<string>;
@@ -45,7 +45,7 @@ export async function getClientVersion(provider: EthereumProvider): Promise<stri
   return provider.send('web3_clientVersion', []);
 }
 
-export async function getHardhatMetadata(provider: EthereumProvider): Promise<HardhatMetadata | undefined> {
+export async function getHardhatMetadata(provider: EthereumProvider): Promise<HardhatMetadata> {
   return provider.send('hardhat_metadata', []);
 }
 
