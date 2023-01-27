@@ -108,34 +108,64 @@ test('manifest name for a known network', t => {
   t.is(manifest.file, '.openzeppelin/mainnet.json');
 });
 
+test('manifest name for a known network, tmp dir', t => {
+  const manifest = new Manifest(1, undefined, '/tmp/openzeppelin');
+  t.is(manifest.file, '/tmp/openzeppelin/mainnet.json');
+});
+
 test('manifest name for an unknown network', t => {
   const id = 55555;
   const manifest = new Manifest(id);
   t.is(manifest.file, `.openzeppelin/unknown-${id}.json`);
 });
 
+test('manifest name for an unknown network, tmp dir', t => {
+  const id = 55555;
+  const manifest = new Manifest(id, undefined, '/tmp/openzeppelin');
+  t.is(manifest.file, `/tmp/openzeppelin/unknown-${id}.json`);
+});
+
 test('manifest name for a development network instance', t => {
   const chainId = 55555;
-  const instanceId = '0x12345';
+  const instanceId = '0x11111';
   const manifest = new Manifest(chainId, instanceId);
   t.is(manifest.file, `.openzeppelin/unknown-${chainId}-${instanceId}.json`);
 });
 
+test('manifest name for a development network instance, tmp dir', t => {
+  const chainId = 55555;
+  const instanceId = '0x22222';
+  const manifest = new Manifest(chainId, instanceId, '/tmp/openzeppelin');
+  t.is(manifest.file, `/tmp/openzeppelin/unknown-${chainId}-${instanceId}.json`);
+});
+
 test('manifest name for a development network instance with network id name clash', t => {
   const chainId = 1;
-  const instanceId = '0x12345';
+  const instanceId = '0x33333';
   t.throws(() => new Manifest(chainId, instanceId));
 });
 
 test('manifest lock file name for a development network instance', async t => {
   const chainId = 55555;
-  const instanceId = '0x12345';
+  const instanceId = '0x44444';
 
   const manifest = new Manifest(chainId, instanceId);
 
   await manifest.lockedRun(async () => {
     t.throwsAsync(fs.access(`.openzeppelin/chain-${chainId}.lock`));
     await fs.access(`.openzeppelin/chain-${chainId}-${instanceId}.lock`);
+  });
+});
+
+test('manifest lock file name for a development network instance, tmp dir', async t => {
+  const chainId = 55555;
+  const instanceId = '0x55555';
+
+  const manifest = new Manifest(chainId, instanceId, '/tmp/openzeppelin');
+
+  await manifest.lockedRun(async () => {
+    t.throwsAsync(fs.access(`/tmp/openzeppelin/chain-${chainId}.lock`));
+    await fs.access(`/tmp/openzeppelin/chain-${chainId}-${instanceId}.lock`);
   });
 });
 
