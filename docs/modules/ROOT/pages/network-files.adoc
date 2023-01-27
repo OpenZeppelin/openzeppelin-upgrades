@@ -49,8 +49,6 @@ The naming of the file will be `<network_name>.json`, but note that `<network_na
 
 There is a limited set of public chains; Chains not on the list such as Ethereum Classic will have network files named `unknown-<chain_id>.json`.
 
-Hardhat development networks with Hardhat version 2.12.3 or later will have files named `unknown-<chain_id>-<instance_id>.json`, where `<instance_id>` is a 0x-prefixed hex id that uniquiely identifies an instance/run of the Hardhat network. Files matching this `unknown-<chain_id>-<instance_id>.json` pattern can be safely deleted when their corresponding Hardhat network instance is no longer active, for example after Hardhat tests have finished.
-
 [[configuration-files-in-version-control]]
 == Configuration Files in Version Control
 
@@ -66,3 +64,14 @@ An example `.gitignore` file could contain the following entries:
 # OpenZeppelin
 .openzeppelin/unknown-*.json
 ----
+
+[[temporary-files]]
+== Temporary Files
+
+Hardhat development networks using Hardhat version 2.12.3 or later will have network files written to an `openzeppelin` folder under the operating system's temporary directory. These files are named `unknown-<chain_id>-<instance_id>.json`, where `<instance_id>` is a 0x-prefixed hex id that uniquiely identifies an instance/run of the Hardhat network. Files in this temporary folder can be safely deleted when their corresponding Hardhat network instance is no longer active, for example after Hardhat tests have finished.
+
+You can determine the location of a temporary network file by doing the following:
+
+. Run `export DEBUG=@openzeppelin:*` to enable debug logging.
+. Run your Hardhat test or script.
+. Find the log message containing the text `manifest file:`.
