@@ -1,3 +1,4 @@
+import os from 'os';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { EthereumProvider, getChainId, getHardhatMetadata, networkNames } from './provider';
@@ -9,6 +10,7 @@ import type { StorageLayout } from './storage';
 import { pick } from './utils/pick';
 import { mapValues } from './utils/map-values';
 import { UpgradesError } from './error';
+import debug from './utils/debug';
 
 const currentManifestVersion = '3.2';
 
@@ -38,7 +40,8 @@ function defaultManifest(): ManifestData {
   };
 }
 
-const manifestDir = '.openzeppelin';
+const MANIFEST_DEFAULT_DIR = '.openzeppelin';
+const MANIFEST_TEMP_DIR = 'openzeppelin';
 
 async function getDevelopmentInstanceId(provider: EthereumProvider, chainId: number): Promise<string | undefined> {
   let hardhatMetadata;
@@ -71,25 +74,37 @@ function getSuffix(chainId: number, devInstanceId?: string) {
   }
 }
 
+async function makeAndGetTempDir() {
+  const tempDir = path.join(os.tmpdir(), MANIFEST_TEMP_DIR);
+  await fs.mkdir(tempDir, { recursive: true });
+  return tempDir;
+}
+
 export class Manifest {
   readonly chainId: number;
   readonly devInstanceId: string | undefined;
   readonly file: string;
+  readonly manifestDir: string;
   private readonly fallbackFile: string;
 
   private locked = false;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
     const chainId = await getChainId(provider);
-    return new Manifest(chainId, await getDevelopmentInstanceId(provider, chainId));
+    const devInstanceId = await getDevelopmentInstanceId(provider, chainId);
+    const dir = devInstanceId !== undefined ? await makeAndGetTempDir() : undefined;
+
+    return new Manifest(chainId, devInstanceId, dir);
   }
 
-  constructor(chainId: number, devInstanceId?: string) {
+  constructor(chainId: number, devInstanceId?: string, dir?: string) {
     this.chainId = chainId;
     this.devInstanceId = devInstanceId;
+    this.manifestDir = dir ?? MANIFEST_DEFAULT_DIR;
+    debug('manifest dir:', this.manifestDir);
 
     const fallbackName = `unknown-${getSuffix(chainId, devInstanceId)}`;
-    this.fallbackFile = path.join(manifestDir, `${fallbackName}.json`);
+    this.fallbackFile = path.join(this.manifestDir, `${fallbackName}.json`);
 
     const networkName = networkNames[this.chainId];
     if (networkName !== undefined && devInstanceId !== undefined) {
@@ -99,7 +114,8 @@ export class Manifest {
     }
 
     const name = networkName ?? fallbackName;
-    this.file = path.join(manifestDir, `${name}.json`);
+    this.file = path.join(this.manifestDir, `${name}.json`);
+    debug('manifest file:', this.file, 'fallback file:', this.fallbackFile);
   }
 
   async getAdmin(): Promise<Deployment | undefined> {
@@ -221,7 +237,7 @@ export class Manifest {
   }
 
   private async lock() {
-    const lockfileName = path.join(manifestDir, `chain-${getSuffix(this.chainId, this.devInstanceId)}`);
+    const lockfileName = path.join(this.manifestDir, `chain-${getSuffix(this.chainId, this.devInstanceId)}`);
 
     await fs.mkdir(path.dirname(lockfileName), { recursive: true });
     const release = await lockfile.lock(lockfileName, { retries: 3, realpath: false });
