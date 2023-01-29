@@ -5,7 +5,7 @@ abstract contract UnsafeParent {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(bytes memory data) {
        (bool result,)= msg.sender.delegatecall(data);
-        require(result == true, "delegatecall failed");
+        require(result, "delegatecall failed");
     }
 }
 
@@ -24,7 +24,7 @@ abstract contract UnsafeParentNoArgs {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
        (bool result,)= msg.sender.delegatecall('');
-        require(result == true, "delegatecall failed");
+        require(result, "delegatecall failed");
     }
 }
 
@@ -45,8 +45,8 @@ contract UnsafeChild4 is UnsafeParentNoArgs {
 abstract contract AllowParentNoArgs {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-         (bool result,)= msg.sender.delegatecall('');
-        require(result == true, "delegatecall failed");
+        (bool result,)= msg.sender.delegatecall('');
+        require(result, "delegatecall failed");
     }
 }
 
@@ -80,7 +80,7 @@ contract AllowReachableChild8 is UnsafeParentNoArgs {
 abstract contract UnsafeFunctions {
     function unsafe() internal {
         (bool result,)= msg.sender.delegatecall('');
-        require(result == true, "delegatecall failed");
+        require(result, "delegatecall failed");
     }
 }
 
