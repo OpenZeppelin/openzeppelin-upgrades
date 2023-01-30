@@ -6,7 +6,7 @@ import './Storage.sol';
 
 contract SameName {
   function d() public {
-    (bool s, ) = msg.sender.delegatecall("");
+    (bool s,) = msg.sender.delegatecall("");
     require(s, "delegatecall failed");
   }
 }

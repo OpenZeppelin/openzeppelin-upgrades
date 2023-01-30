@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 abstract contract UnsafeParent {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(bytes memory data) {
-       (bool result,)= msg.sender.delegatecall(data);
+        (bool result,) = msg.sender.delegatecall(data);
         require(result, "delegatecall failed");
     }
 }
@@ -23,7 +23,7 @@ contract UnsafeChild2 is UnsafeParent('') {
 abstract contract UnsafeParentNoArgs {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-       (bool result,)= msg.sender.delegatecall('');
+        (bool result,) = msg.sender.delegatecall('');
         require(result, "delegatecall failed");
     }
 }
@@ -45,7 +45,7 @@ contract UnsafeChild4 is UnsafeParentNoArgs {
 abstract contract AllowParentNoArgs {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-        (bool result,)= msg.sender.delegatecall('');
+        (bool result,) = msg.sender.delegatecall('');
         require(result, "delegatecall failed");
     }
 }
@@ -79,7 +79,7 @@ contract AllowReachableChild8 is UnsafeParentNoArgs {
 
 abstract contract UnsafeFunctions {
     function unsafe() internal {
-        (bool result,)= msg.sender.delegatecall('');
+        (bool result,) = msg.sender.delegatecall('');
         require(result, "delegatecall failed");
     }
 }

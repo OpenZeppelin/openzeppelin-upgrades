@@ -87,7 +87,7 @@ contract HasSelfDestructNatspec3 {
 /// @custom:oz-upgrades-unsafe-allow delegatecall
 contract HasDelegateCallNatspec1 {
   function d() public {
-    (bool s, ) = msg.sender.delegatecall("");
+    (bool s,) = msg.sender.delegatecall("");
     require(s, "delegatecall failed");
   }
 }
@@ -95,7 +95,7 @@ contract HasDelegateCallNatspec1 {
 contract HasDelegateCallNatspec2 {
   /// @custom:oz-upgrades-unsafe-allow delegatecall
   function d() public {
-    (bool s, ) = msg.sender.delegatecall("");
+    (bool s,) = msg.sender.delegatecall("");
     require(s, "delegatecall failed");
   }
 }
@@ -103,7 +103,7 @@ contract HasDelegateCallNatspec2 {
 contract HasDelegateCallNatspec3 {
   function d() public {
     /// @custom:oz-upgrades-unsafe-allow delegatecall
-    (bool s, ) = msg.sender.delegatecall("");
+    (bool s,) = msg.sender.delegatecall("");
     require(s, "delegatecall failed");
   }
 }
