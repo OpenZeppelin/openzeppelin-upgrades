@@ -248,14 +248,12 @@ function initOpcodeCache(): OpcodeCache {
   return {
     mainContractErrors: new Map(),
     inheritedContractErrors: new Map(),
-    visitedNodeIds: new Map(),
   };
 }
 
 interface OpcodeCache {
   mainContractErrors: Map<number, ValidationErrorOpcode[]>;
   inheritedContractErrors: Map<number, ValidationErrorOpcode[]>;
-  visitedNodeIds: Map<number, Scope>;
 }
 
 function* getOpcodeErrors(
@@ -282,28 +280,22 @@ function* getContractOpcodeErrors(
   scope: Scope,
   cache: OpcodeCache,
 ): Generator<ValidationErrorOpcode, void, undefined> {
-  if (wasVisited(contractDef.id, scope, cache.visitedNodeIds)) {
-    yield* getCachedOpcodes(contractDef.id, scope, cache);
+  const cached = getCachedOpcodes(contractDef.id, scope, cache);
+  if (cached !== undefined) {
+    yield* cached;
   } else {
-    cache.visitedNodeIds.set(contractDef.id, scope);
-    const result = [
+    const errors: ValidationErrorOpcode[] = [];
+    setCachedOpcodes(contractDef.id, scope, cache, errors);
+    errors.push(
       ...getFunctionOpcodeErrors(contractDef, deref, decodeSrc, opcode, scope, cache),
       ...getInheritedContractOpcodeErrors(contractDef, deref, decodeSrc, opcode, cache),
-    ];
-    cacheOpcodes(contractDef.id, scope, cache, result);
-    yield* result;
+    );
+    yield* errors;
   }
 }
 
-function* getCachedOpcodes(key: number, scope: string, cache: OpcodeCache) {
-  const cached = scope === 'main' ? cache.mainContractErrors.get(key) : cache.inheritedContractErrors.get(key);
-  if (cached !== undefined) {
-    yield* cached;
-  } // else the node is currently being visited at a shallower level of recursion, so no need to report its errors at this level
-}
-
-function wasVisited(key: number, scope: Scope, visitedNodeIds: Map<number, Scope>) {
-  return scope === visitedNodeIds.get(key);
+function getCachedOpcodes(key: number, scope: string, cache: OpcodeCache) {
+  return scope === 'main' ? cache.mainContractErrors.get(key) : cache.inheritedContractErrors.get(key);
 }
 
 function* getFunctionOpcodeErrors(
@@ -362,24 +354,25 @@ function* getReferencedFunctionOpcodeErrors(
       // non-positive references refer to built-in functions
       const referencedNode = tryDerefFunction(deref, fn.referencedDeclaration);
       if (referencedNode !== undefined) {
-        if (wasVisited(referencedNode.id, scope, cache.visitedNodeIds)) {
-          yield* getCachedOpcodes(referencedNode.id, scope, cache);
+        const cached = getCachedOpcodes(referencedNode.id, scope, cache);
+        if (cached !== undefined) {
+          yield* cached;
         } else {
-          cache.visitedNodeIds.set(referencedNode.id, scope);
-          const result = [...getFunctionOpcodeErrors(referencedNode, deref, decodeSrc, opcode, scope, cache)];
-          cacheOpcodes(referencedNode.id, scope, cache, result);
-          yield* result;
+          const errors: ValidationErrorOpcode[] = [];
+          setCachedOpcodes(referencedNode.id, scope, cache, errors);
+          errors.push(...getFunctionOpcodeErrors(referencedNode, deref, decodeSrc, opcode, scope, cache));
+          yield* errors;
         }
       }
     }
   }
 }
 
-function cacheOpcodes(key: number, scope: string, cache: OpcodeCache, result: ValidationErrorOpcode[]) {
+function setCachedOpcodes(key: number, scope: string, cache: OpcodeCache, errors: ValidationErrorOpcode[]) {
   if (scope === 'main') {
-    cache.mainContractErrors.set(key, result);
+    cache.mainContractErrors.set(key, errors);
   } else {
-    cache.inheritedContractErrors.set(key, result);
+    cache.inheritedContractErrors.set(key, errors);
   }
 }
 
