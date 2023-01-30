@@ -302,9 +302,7 @@ function* getContractOpcodeErrors(
 function* getCached(key: number, scope: string, cache: Cache) {
   const cached = scope === 'main' ? cache.mainContractErrors.get(key) : cache.inheritedContractErrors.get(key);
   if (cached !== undefined) {
-    for (const r of cached) {
-      yield r;
-    }
+    yield* cached;
   } // else the node is currently being visited at a shallower level of recursion, so no need to report its errors at this level
 }
 
@@ -386,9 +384,7 @@ function* cacheAndYieldResult(key: number, scope: string, cache: Cache, result: 
   } else {
     cache.inheritedContractErrors.set(key, result);
   }
-  for (const r of result) {
-    yield r;
-  }
+  yield* result;
 }
 
 function tryDerefFunction(deref: ASTDereferencer, referencedDeclaration: number): FunctionDefinition | undefined {
