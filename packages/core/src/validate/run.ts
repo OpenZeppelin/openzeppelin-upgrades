@@ -161,7 +161,8 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
 
   const deref = astDereferencer(solcOutput);
 
-  const { delegateCallCache, selfDestructCache } = initCaches();
+  const delegateCallCache = initOpcodeCache();
+  const selfDestructCache = initOpcodeCache();
 
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
@@ -243,21 +244,15 @@ function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDe
   }
 }
 
-function initCaches() {
-  const delegateCallCache: Cache = {
-    mainContractErrors: new Map<number, ValidationErrorOpcode[]>(),
-    inheritedContractErrors: new Map<number, ValidationErrorOpcode[]>(),
-    visitedNodeIds: new Map<number, Scope>(),
+function initOpcodeCache(): OpcodeCache {
+  return {
+    mainContractErrors: new Map(),
+    inheritedContractErrors: new Map(),
+    visitedNodeIds: new Map(),
   };
-  const selfDestructCache: Cache = {
-    mainContractErrors: new Map<number, ValidationErrorOpcode[]>(),
-    inheritedContractErrors: new Map<number, ValidationErrorOpcode[]>(),
-    visitedNodeIds: new Map<number, Scope>(),
-  };
-  return { delegateCallCache, selfDestructCache };
 }
 
-interface Cache {
+interface OpcodeCache {
   mainContractErrors: Map<number, ValidationErrorOpcode[]>;
   inheritedContractErrors: Map<number, ValidationErrorOpcode[]>;
   visitedNodeIds: Map<number, Scope>;
@@ -267,8 +262,8 @@ function* getOpcodeErrors(
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
-  delegateCallCache: Cache,
-  selfDestructCache: Cache,
+  delegateCallCache: OpcodeCache,
+  selfDestructCache: OpcodeCache,
 ): Generator<ValidationErrorOpcode> {
   yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.delegatecall, 'main', delegateCallCache);
   yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.selfdestruct, 'main', selfDestructCache);
@@ -285,7 +280,7 @@ function* getContractOpcodeErrors(
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
   scope: Scope,
-  cache: Cache,
+  cache: OpcodeCache,
 ): Generator<ValidationErrorOpcode> {
   if (wasVisited(contractDef.id, scope, cache.visitedNodeIds)) {
     yield* getCached(contractDef.id, scope, cache);
@@ -299,7 +294,7 @@ function* getContractOpcodeErrors(
   }
 }
 
-function* getCached(key: number, scope: string, cache: Cache) {
+function* getCached(key: number, scope: string, cache: OpcodeCache) {
   const cached = scope === 'main' ? cache.mainContractErrors.get(key) : cache.inheritedContractErrors.get(key);
   if (cached !== undefined) {
     yield* cached;
@@ -316,7 +311,7 @@ function* getFunctionOpcodeErrors(
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
   scope: Scope,
-  cache: Cache,
+  cache: OpcodeCache,
 ): Generator<ValidationErrorOpcode> {
   const parentContractDef = getParentDefinition(deref, contractOrFunctionDef);
   if (parentContractDef === undefined || !skipCheck(opcode.kind, parentContractDef)) {
@@ -354,7 +349,7 @@ function* getReferencedFunctionOpcodeErrors(
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
   scope: Scope,
-  cache: Cache,
+  cache: OpcodeCache,
 ) {
   for (const fnCall of findAll(
     'FunctionCall',
@@ -378,7 +373,7 @@ function* getReferencedFunctionOpcodeErrors(
   }
 }
 
-function* cacheAndYieldResult(key: number, scope: string, cache: Cache, result: ValidationErrorOpcode[]) {
+function* cacheAndYieldResult(key: number, scope: string, cache: OpcodeCache, result: ValidationErrorOpcode[]) {
   if (scope === 'main') {
     cache.mainContractErrors.set(key, result);
   } else {
@@ -402,7 +397,7 @@ function* getInheritedContractOpcodeErrors(
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
-  cache: Cache,
+  cache: OpcodeCache,
 ) {
   if (!skipCheckReachable(opcode.kind, contractDef)) {
     for (const base of contractDef.baseContracts) {
