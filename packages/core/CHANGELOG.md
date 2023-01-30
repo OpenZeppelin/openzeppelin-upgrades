@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add support for Binance Smart Chain to manifest file names. ([#729](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/729))
+- Improve compilation performance for validations. ([#724](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/724))
 
 ## 1.21.0 (2023-01-18)
 

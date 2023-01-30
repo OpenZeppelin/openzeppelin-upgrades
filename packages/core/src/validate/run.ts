@@ -161,6 +161,9 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
 
   const deref = astDereferencer(solcOutput);
 
+  const delegateCallCache = initOpcodeCache();
+  const selfDestructCache = initOpcodeCache();
+
   for (const source in solcOutput.contracts) {
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.bytecode;
@@ -198,7 +201,7 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
         validation[key].src = decodeSrc(contractDef);
         validation[key].errors = [
           ...getConstructorErrors(contractDef, decodeSrc),
-          ...getOpcodeErrors(contractDef, deref, decodeSrc),
+          ...getOpcodeErrors(contractDef, deref, decodeSrc, delegateCallCache, selfDestructCache),
           ...getStateVariableErrors(contractDef, decodeSrc),
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
@@ -241,13 +244,27 @@ function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDe
   }
 }
 
+function initOpcodeCache(): OpcodeCache {
+  return {
+    mainContractErrors: new Map(),
+    inheritedContractErrors: new Map(),
+  };
+}
+
+interface OpcodeCache {
+  mainContractErrors: Map<number, ValidationErrorOpcode[]>;
+  inheritedContractErrors: Map<number, ValidationErrorOpcode[]>;
+}
+
 function* getOpcodeErrors(
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
-): Generator<ValidationErrorOpcode> {
-  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.delegatecall, 'main');
-  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.selfdestruct, 'main');
+  delegateCallCache: OpcodeCache,
+  selfDestructCache: OpcodeCache,
+): Generator<ValidationErrorOpcode, void, undefined> {
+  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.delegatecall, 'main', delegateCallCache);
+  yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.selfdestruct, 'main', selfDestructCache);
 }
 
 /**
@@ -261,24 +278,24 @@ function* getContractOpcodeErrors(
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
   scope: Scope,
-  visitedNodeIds = new Map<number, Scope>(),
-): Generator<ValidationErrorOpcode> {
-  if (wasVisited(contractDef.id, scope, visitedNodeIds)) {
-    // We return early here, but the errors from this node were emitted when the node was marked as visited.
-    return;
+  cache: OpcodeCache,
+): Generator<ValidationErrorOpcode, void, undefined> {
+  const cached = getCachedOpcodes(contractDef.id, scope, cache);
+  if (cached !== undefined) {
+    yield* cached;
   } else {
-    visitedNodeIds.set(contractDef.id, scope);
+    const errors: ValidationErrorOpcode[] = [];
+    setCachedOpcodes(contractDef.id, scope, cache, errors);
+    errors.push(
+      ...getFunctionOpcodeErrors(contractDef, deref, decodeSrc, opcode, scope, cache),
+      ...getInheritedContractOpcodeErrors(contractDef, deref, decodeSrc, opcode, cache),
+    );
+    yield* errors;
   }
-
-  yield* getFunctionOpcodeErrors(contractDef, deref, decodeSrc, opcode, scope, visitedNodeIds);
-  yield* getInheritedContractOpcodeErrors(contractDef, deref, decodeSrc, opcode, visitedNodeIds);
 }
 
-function wasVisited(key: number, scope: Scope, visitedNodeIds: Map<number, Scope>) {
-  return (
-    (scope === 'inherited' && visitedNodeIds.has(key)) || // looking up an inherited contract, and it was previously checked as a main contract OR inherited contract
-    (scope === 'main' && visitedNodeIds.get(key) === 'main') // looking up a main contract, and it was previously checked as a main contract
-  );
+function getCachedOpcodes(key: number, scope: string, cache: OpcodeCache) {
+  return scope === 'main' ? cache.mainContractErrors.get(key) : cache.inheritedContractErrors.get(key);
 }
 
 function* getFunctionOpcodeErrors(
@@ -287,14 +304,14 @@ function* getFunctionOpcodeErrors(
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
   scope: Scope,
-  visitedNodeIds: Map<number, Scope>,
-): Generator<ValidationErrorOpcode> {
+  cache: OpcodeCache,
+): Generator<ValidationErrorOpcode, void, undefined> {
   const parentContractDef = getParentDefinition(deref, contractOrFunctionDef);
   if (parentContractDef === undefined || !skipCheck(opcode.kind, parentContractDef)) {
     yield* getDirectFunctionOpcodeErrors(contractOrFunctionDef, decodeSrc, opcode, scope);
   }
   if (parentContractDef === undefined || !skipCheckReachable(opcode.kind, parentContractDef)) {
-    yield* getReferencedFunctionOpcodeErrors(contractOrFunctionDef, deref, decodeSrc, opcode, scope, visitedNodeIds);
+    yield* getReferencedFunctionOpcodeErrors(contractOrFunctionDef, deref, decodeSrc, opcode, scope, cache);
   }
 }
 
@@ -325,7 +342,7 @@ function* getReferencedFunctionOpcodeErrors(
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
   scope: Scope,
-  visitedNodeIds: Map<number, Scope>,
+  cache: OpcodeCache,
 ) {
   for (const fnCall of findAll(
     'FunctionCall',
@@ -337,12 +354,25 @@ function* getReferencedFunctionOpcodeErrors(
       // non-positive references refer to built-in functions
       const referencedNode = tryDerefFunction(deref, fn.referencedDeclaration);
       if (referencedNode !== undefined) {
-        if (!wasVisited(referencedNode.id, scope, visitedNodeIds)) {
-          visitedNodeIds.set(referencedNode.id, scope);
-          yield* getFunctionOpcodeErrors(referencedNode, deref, decodeSrc, opcode, scope, visitedNodeIds);
+        const cached = getCachedOpcodes(referencedNode.id, scope, cache);
+        if (cached !== undefined) {
+          yield* cached;
+        } else {
+          const errors: ValidationErrorOpcode[] = [];
+          setCachedOpcodes(referencedNode.id, scope, cache, errors);
+          errors.push(...getFunctionOpcodeErrors(referencedNode, deref, decodeSrc, opcode, scope, cache));
+          yield* errors;
         }
       }
     }
+  }
+}
+
+function setCachedOpcodes(key: number, scope: string, cache: OpcodeCache, errors: ValidationErrorOpcode[]) {
+  if (scope === 'main') {
+    cache.mainContractErrors.set(key, errors);
+  } else {
+    cache.inheritedContractErrors.set(key, errors);
   }
 }
 
@@ -361,12 +391,12 @@ function* getInheritedContractOpcodeErrors(
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
   opcode: OpcodePattern,
-  visitedNodeIds: Map<number, Scope>,
+  cache: OpcodeCache,
 ) {
   if (!skipCheckReachable(opcode.kind, contractDef)) {
     for (const base of contractDef.baseContracts) {
       const referencedContract = deref('ContractDefinition', base.baseName.referencedDeclaration);
-      yield* getContractOpcodeErrors(referencedContract, deref, decodeSrc, opcode, 'inherited', visitedNodeIds);
+      yield* getContractOpcodeErrors(referencedContract, deref, decodeSrc, opcode, 'inherited', cache);
     }
   }
 }
