@@ -283,18 +283,19 @@ function* getContractOpcodeErrors(
   cache: OpcodeCache,
 ): Generator<ValidationErrorOpcode, void, undefined> {
   if (wasVisited(contractDef.id, scope, cache.visitedNodeIds)) {
-    yield* getCached(contractDef.id, scope, cache);
+    yield* getCachedOpcodes(contractDef.id, scope, cache);
   } else {
     cache.visitedNodeIds.set(contractDef.id, scope);
     const result = [
       ...getFunctionOpcodeErrors(contractDef, deref, decodeSrc, opcode, scope, cache),
       ...getInheritedContractOpcodeErrors(contractDef, deref, decodeSrc, opcode, cache),
     ];
-    yield* cacheAndYieldResult(contractDef.id, scope, cache, result);
+    cacheOpcodes(contractDef.id, scope, cache, result);
+    yield* result;
   }
 }
 
-function* getCached(key: number, scope: string, cache: OpcodeCache) {
+function* getCachedOpcodes(key: number, scope: string, cache: OpcodeCache) {
   const cached = scope === 'main' ? cache.mainContractErrors.get(key) : cache.inheritedContractErrors.get(key);
   if (cached !== undefined) {
     yield* cached;
@@ -362,24 +363,24 @@ function* getReferencedFunctionOpcodeErrors(
       const referencedNode = tryDerefFunction(deref, fn.referencedDeclaration);
       if (referencedNode !== undefined) {
         if (wasVisited(referencedNode.id, scope, cache.visitedNodeIds)) {
-          yield* getCached(referencedNode.id, scope, cache);
+          yield* getCachedOpcodes(referencedNode.id, scope, cache);
         } else {
           cache.visitedNodeIds.set(referencedNode.id, scope);
           const result = [...getFunctionOpcodeErrors(referencedNode, deref, decodeSrc, opcode, scope, cache)];
-          yield* cacheAndYieldResult(referencedNode.id, scope, cache, result);
+          cacheOpcodes(referencedNode.id, scope, cache, result);
+          yield* result;
         }
       }
     }
   }
 }
 
-function* cacheAndYieldResult(key: number, scope: string, cache: OpcodeCache, result: ValidationErrorOpcode[]) {
+function cacheOpcodes(key: number, scope: string, cache: OpcodeCache, result: ValidationErrorOpcode[]) {
   if (scope === 'main') {
     cache.mainContractErrors.set(key, result);
   } else {
     cache.inheritedContractErrors.set(key, result);
   }
-  yield* result;
 }
 
 function tryDerefFunction(deref: ASTDereferencer, referencedDeclaration: number): FunctionDefinition | undefined {
