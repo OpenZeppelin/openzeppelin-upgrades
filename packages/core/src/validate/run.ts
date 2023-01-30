@@ -264,7 +264,7 @@ function* getOpcodeErrors(
   decodeSrc: SrcDecoder,
   delegateCallCache: OpcodeCache,
   selfDestructCache: OpcodeCache,
-): Generator<ValidationErrorOpcode> {
+): Generator<ValidationErrorOpcode, void, undefined> {
   yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.delegatecall, 'main', delegateCallCache);
   yield* getContractOpcodeErrors(contractDef, deref, decodeSrc, OPCODES.selfdestruct, 'main', selfDestructCache);
 }
@@ -281,7 +281,7 @@ function* getContractOpcodeErrors(
   opcode: OpcodePattern,
   scope: Scope,
   cache: OpcodeCache,
-): Generator<ValidationErrorOpcode> {
+): Generator<ValidationErrorOpcode, void, undefined> {
   if (wasVisited(contractDef.id, scope, cache.visitedNodeIds)) {
     yield* getCached(contractDef.id, scope, cache);
   } else {
@@ -312,7 +312,7 @@ function* getFunctionOpcodeErrors(
   opcode: OpcodePattern,
   scope: Scope,
   cache: OpcodeCache,
-): Generator<ValidationErrorOpcode> {
+): Generator<ValidationErrorOpcode, void, undefined> {
   const parentContractDef = getParentDefinition(deref, contractOrFunctionDef);
   if (parentContractDef === undefined || !skipCheck(opcode.kind, parentContractDef)) {
     yield* getDirectFunctionOpcodeErrors(contractOrFunctionDef, decodeSrc, opcode, scope);
