@@ -781,22 +781,27 @@ contract StorageUpgrade_StructGap_V2_Bad {
     S[] store_dynamic_array;
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_V1 {
+contract StorageUpgrade_ConsumeAndAddGap_Parent1 {
+    string[5] s;
+    uint256[45] private __gap;
+}
+
+contract StorageUpgrade_ConsumeAndAddGap_Parent2 {
     uint256[50] private __gap;
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_Parent {
+contract StorageUpgrade_ConsumeAndAddGap_V1 is StorageUpgrade_ConsumeAndAddGap_Parent1 {
     uint256[50] private __gap;
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_V2 is StorageUpgrade_ConsumeAndAddGap_Parent {
+contract StorageUpgrade_ConsumeAndAddGap_V2 is StorageUpgrade_ConsumeAndAddGap_Parent1, StorageUpgrade_ConsumeAndAddGap_Parent2 {
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_V3 is StorageUpgrade_ConsumeAndAddGap_Parent {
+contract StorageUpgrade_ConsumeAndAddGap_V3 is StorageUpgrade_ConsumeAndAddGap_Parent1, StorageUpgrade_ConsumeAndAddGap_Parent2 {
     uint256 a;
     uint256[49] private __gap;
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_V3b is StorageUpgrade_ConsumeAndAddGap_Parent {
+contract StorageUpgrade_ConsumeAndAddGap_V3b is StorageUpgrade_ConsumeAndAddGap_Parent1, StorageUpgrade_ConsumeAndAddGap_Parent2 {
     uint256[50] private __gap;
 }
