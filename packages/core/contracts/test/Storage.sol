@@ -802,11 +802,24 @@ contract StorageUpgrade_CustomGap_V2_Ok {
     uint256 z;
 }
 
-// insert var without shrink gaps
+// insert var, did not shrink gaps
 contract StorageUpgrade_CustomGap_V2_Bad {
     uint256 a;
     uint256 a1;
     uint256[24] __gap_part1;
+    uint256 b;
+    uint256 c;
+    uint256 c1;
+    uint256 c2;
+    uint256[23] __gap_part2;
+    uint256 z;
+}
+
+// insert var, shrank only first gap
+contract StorageUpgrade_CustomGap_V2_Bad2 {
+    uint256 a;
+    uint256 a1;
+    uint256[23] __gap_part1;
     uint256 b;
     uint256 c;
     uint256 c1;
