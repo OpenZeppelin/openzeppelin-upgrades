@@ -76,7 +76,7 @@ function getExpectedGapSize(original: StorageField, updated: StorageField) {
 function suggestGapSize(original: StorageField, updated: StorageField): string | undefined {
   const expectedSize = getExpectedGapSize(original, updated);
   if (expectedSize !== undefined) {
-    return `Set __gap array to size ${expectedSize}`;
+    return `Set ${updated.label} array to size ${expectedSize}`;
   }
 }
 

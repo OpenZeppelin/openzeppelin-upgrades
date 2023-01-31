@@ -24,6 +24,9 @@ const testContracts = [
   'contracts/test/Storage.sol:StorageUpgrade_Gap_V2_Bad5',
   'contracts/test/Storage.sol:StorageUpgrade_MultiConsumeGap_V1',
   'contracts/test/Storage.sol:StorageUpgrade_MultiConsumeGap_V2_Ok',
+  'contracts/test/Storage.sol:StorageUpgrade_CustomGap_V1',
+  'contracts/test/Storage.sol:StorageUpgrade_CustomGap_V2_Ok',
+  'contracts/test/Storage.sol:StorageUpgrade_CustomGap_V2_Bad',
 ];
 
 test.before(async t => {
@@ -113,6 +116,22 @@ test('insert vars and shrink gap not enough', t => {
 test('insert vars without shrink gap (uint128)', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Uint128Gap_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Uint128Gap_V2_Bad');
+  const report = getReport(v1, v2);
+  t.false(report.ok);
+  t.snapshot(report.explain());
+});
+
+test('custom gap - shrinkgap', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_CustomGap_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_CustomGap_V2_Ok');
+  const report = getReport(v1, v2);
+  t.true(report.ok);
+  t.is(report.explain(), '');
+});
+
+test('custom gap - insert var without shrink gap', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_CustomGap_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_CustomGap_V2_Bad');
   const report = getReport(v1, v2);
   t.false(report.ok);
   t.snapshot(report.explain());
