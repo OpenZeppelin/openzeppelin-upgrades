@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support storage gaps named with `__gap_*`. ([#732](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/732))
+
 ## 1.22.0 (2023-01-31)
 
 - Add support for Binance Smart Chain to manifest file names. ([#729](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/729))
