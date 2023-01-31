@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 abstract contract UnsafeParentModifier {
     modifier unsafe(bytes memory data) {
         _;
-        (bool s, ) = msg.sender.delegatecall("");
+        (bool s, ) = msg.sender.delegatecall(data);
         s;
     }
 }
