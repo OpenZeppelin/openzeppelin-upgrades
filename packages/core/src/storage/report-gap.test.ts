@@ -30,6 +30,7 @@ const testContracts = [
   'contracts/test/Storage.sol:StorageUpgrade_CustomGap_V2_Bad2',
   'contracts/test/Storage.sol:StorageUpgrade_CustomGap_V2_Ok_Switched_Gaps',
   'contracts/test/Storage.sol:StorageUpgrade_CustomGap_V2_Bad_Switched_Gaps',
+  'contracts/test/Storage.sol:StorageUpgrade_CustomGap_V2_Bad_Changed_Gap_Name',
 ];
 
 test.before(async t => {
@@ -159,6 +160,14 @@ test('custom gap - switched gaps', t => {
 test('custom gap - insert var, did not shrink gaps, switched gaps', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_CustomGap_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_CustomGap_V2_Bad_Switched_Gaps');
+  const report = getReport(v1, v2);
+  t.false(report.ok);
+  t.snapshot(report.explain());
+});
+
+test('custom gap - insert var, did not shrink gaps, changed first gap name', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_CustomGap_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_CustomGap_V2_Bad_Changed_Gap_Name');
   const report = getReport(v1, v2);
   t.false(report.ok);
   t.snapshot(report.explain());
