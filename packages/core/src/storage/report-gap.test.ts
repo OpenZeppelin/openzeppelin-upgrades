@@ -28,6 +28,8 @@ const testContracts = [
   'contracts/test/Storage.sol:StorageUpgrade_ConsumeAndAddGap_V2',
   'contracts/test/Storage.sol:StorageUpgrade_ConsumeAndAddGap_V3',
   'contracts/test/Storage.sol:StorageUpgrade_ConsumeAndAddGap_V3b',
+  'contracts/test/Storage.sol:StorageUpgrade_ConsumeAndAddGap_Storage_V1',
+  'contracts/test/Storage.sol:StorageUpgrade_ConsumeAndAddGap_Storage_V2',
 ];
 
 test.before(async t => {
@@ -135,4 +137,12 @@ test('consume entire gap and add new gap', t => {
 
   t.true(getReport(v2, v3b).ok);
   t.true(getReport(v1, v3b).ok);
+});
+
+test('consume partial gap and add new gap, storage contract pattern', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_ConsumeAndAddGap_Storage_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_ConsumeAndAddGap_Storage_V2');
+
+  const report = getReport(v1, v2);
+  t.true(report.ok, report.explain());
 });

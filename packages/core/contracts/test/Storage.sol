@@ -781,27 +781,42 @@ contract StorageUpgrade_StructGap_V2_Bad {
     S[] store_dynamic_array;
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_Parent1 {
+contract Parent1 {
     string[5] s;
     uint256[45] private __gap;
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_Parent2 {
+contract Parent2 {
     uint256[50] private __gap;
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_V1 is StorageUpgrade_ConsumeAndAddGap_Parent1 {
+contract StorageUpgrade_ConsumeAndAddGap_V1 is Parent1 {
     uint256[50] private __gap;
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_V2 is StorageUpgrade_ConsumeAndAddGap_Parent1, StorageUpgrade_ConsumeAndAddGap_Parent2 {
+contract StorageUpgrade_ConsumeAndAddGap_V2 is Parent1, Parent2 {
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_V3 is StorageUpgrade_ConsumeAndAddGap_Parent1, StorageUpgrade_ConsumeAndAddGap_Parent2 {
+contract StorageUpgrade_ConsumeAndAddGap_V3 is Parent1, Parent2 {
     uint256 a;
     uint256[49] private __gap;
 }
 
-contract StorageUpgrade_ConsumeAndAddGap_V3b is StorageUpgrade_ConsumeAndAddGap_Parent1, StorageUpgrade_ConsumeAndAddGap_Parent2 {
+contract StorageUpgrade_ConsumeAndAddGap_V3b is Parent1, Parent2 {
     uint256[50] private __gap;
+}
+
+contract V1Storage {
+    uint256[50] private __gap;
+}
+
+contract StorageUpgrade_ConsumeAndAddGap_Storage_V1 is V1Storage, Parent1 {
+}
+
+contract V2Storage {
+    uint256 abc;
+    uint256[49] private __gap;
+}
+
+contract StorageUpgrade_ConsumeAndAddGap_Storage_V2 is V2Storage, Parent1, Parent2 {
 }
