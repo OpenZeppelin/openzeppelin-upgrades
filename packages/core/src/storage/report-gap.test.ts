@@ -24,6 +24,10 @@ const testContracts = [
   'contracts/test/Storage.sol:StorageUpgrade_Gap_V2_Bad5',
   'contracts/test/Storage.sol:StorageUpgrade_MultiConsumeGap_V1',
   'contracts/test/Storage.sol:StorageUpgrade_MultiConsumeGap_V2_Ok',
+  'contracts/test/Storage.sol:StorageUpgrade_ConsumeAndAddGap_V1',
+  'contracts/test/Storage.sol:StorageUpgrade_ConsumeAndAddGap_V2',
+  'contracts/test/Storage.sol:StorageUpgrade_ConsumeAndAddGap_V3',
+  'contracts/test/Storage.sol:StorageUpgrade_ConsumeAndAddGap_V3b',
 ];
 
 test.before(async t => {
@@ -116,4 +120,19 @@ test('insert vars without shrink gap (uint128)', t => {
   const report = getReport(v1, v2);
   t.false(report.ok);
   t.snapshot(report.explain());
+});
+
+test('consume entire gap and add new gap', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_ConsumeAndAddGap_V1');
+  const v2 = t.context.extractStorageLayout('StorageUpgrade_ConsumeAndAddGap_V2');
+  const v3 = t.context.extractStorageLayout('StorageUpgrade_ConsumeAndAddGap_V3');
+  const v3b = t.context.extractStorageLayout('StorageUpgrade_ConsumeAndAddGap_V3b');
+
+  t.true(getReport(v1, v2).ok);
+
+  t.true(getReport(v2, v3).ok);
+  t.true(getReport(v1, v3).ok);
+
+  t.true(getReport(v2, v3b).ok);
+  t.true(getReport(v1, v3b).ok);
 });
