@@ -787,7 +787,8 @@ contract Parent1 {
 }
 
 contract Parent2 {
-    uint256[50] private __gap;
+    bool b;
+    uint256[49] private __gap;
 }
 
 contract StorageUpgrade_ConsumeAndAddGap_V1 is Parent1 {
