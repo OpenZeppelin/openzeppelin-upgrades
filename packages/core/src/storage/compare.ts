@@ -94,7 +94,7 @@ export function storageFieldEnd(field: StorageField): bigint | undefined {
 const LAYOUTCHANGE_COST = 1;
 const FINISHGAP_COST = 1;
 const SHRINKGAP_COST = 0;
-const TYPECHANGE_COST = 0;
+const TYPECHANGE_COST = 1;
 
 export class StorageLayoutComparator {
   hasAllowedUncheckedCustomTypes = false;

@@ -131,9 +131,7 @@ test('consume entire gap and add new gap of different size', t => {
 
   t.true(getReport(v1, v2).ok);
   t.true(getReport(v2, v3).ok);
-
-  const report = getReport(v1, v3);
-  t.true(report.ok, report.explain());
+  t.true(getReport(v1, v3).ok);
 });
 
 test('consume entire gap and add new gap of same size', t => {
@@ -142,15 +140,12 @@ test('consume entire gap and add new gap of same size', t => {
   const v3b = t.context.extractStorageLayout('StorageUpgrade_ConsumeAndAddGap_V3b');
 
   t.true(getReport(v2, v3b).ok);
-
-  const report = getReport(v1, v3b);
-  t.true(report.ok, report.explain());
+  t.true(getReport(v1, v3b).ok);
 });
 
 test('consume partial gap and add new gap, storage contract pattern', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_ConsumeAndAddGap_Storage_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_ConsumeAndAddGap_Storage_V2');
 
-  const report = getReport(v1, v2);
-  t.true(report.ok, report.explain());
+  t.true(getReport(v1, v2).ok);
 });
