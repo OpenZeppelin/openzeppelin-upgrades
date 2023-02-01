@@ -105,6 +105,8 @@ async function deployBeacon(
 ): Promise<ethers.Contract>
 ----
 
+* Since: `@openzeppelin/hardhat-upgrades@1.13.0`
+
 [[upgrade-beacon]]
 == upgradeBeacon
 
@@ -129,6 +131,8 @@ async function upgradeBeacon(
 ): Promise<ethers.Contract>
 ----
 
+* Since: `@openzeppelin/hardhat-upgrades@1.13.0`
+
 [[deploy-beacon-proxy]]
 == deployBeaconProxy
 
@@ -147,6 +151,8 @@ async function deployBeaconProxy(
   },
 ): Promise<ethers.Contract>
 ----
+
+* Since: `@openzeppelin/hardhat-upgrades@1.13.0`
 
 [[force-import]]
 == forceImport
@@ -171,6 +177,8 @@ async function forceImport(
 ): Promise<ethers.Contract>
 ----
 
+* Since: `@openzeppelin/hardhat-upgrades@1.15.0`
+
 [[validate-implementation]]
 == validateImplementation
 
@@ -188,6 +196,8 @@ async function validateImplementation(
   },
 ): Promise<void>
 ----
+
+* Since: `@openzeppelin/hardhat-upgrades@1.20.0`
 
 [[deploy-implementation]]
 == deployImplementation
@@ -212,6 +222,8 @@ async function deployImplementation(
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
+
+* Since: `@openzeppelin/hardhat-upgrades@1.20.0`
 
 [[validate-upgrade]]
 == validateUpgrade
@@ -254,6 +266,8 @@ const Box = await ethers.getContractFactory('Box');
 const BoxV2 = await ethers.getContractFactory('BoxV2');
 await upgrades.validateUpgrade(Box, BoxV2);
 ----
+
+* Since: `@openzeppelin/hardhat-upgrades@1.20.0`
 
 [[prepare-upgrade]]
 == prepareUpgrade
@@ -341,6 +355,8 @@ async function deployProxyAdmin(
 ): Promise<string>
 ----
 
+* Since: `@openzeppelin/hardhat-upgrades@1.20.0`
+
 [[admin-change-proxy-admin]]
 == admin.changeProxyAdmin
 
@@ -387,6 +403,8 @@ This module provides a convenience function to get the implementation address fr
 ----
 async function beacon.getImplementationAddress(beaconAddress: string): Promise<string>;
 ----
+
+* Since: `@openzeppelin/hardhat-upgrades@1.13.0`
 
 == silenceWarnings
 
@@ -447,3 +465,5 @@ await hre.run("verify:verify", {
 ----
 
 Note that you do not need to include constructor arguments when verifying if your implementation contract only uses initializers.  However, if your implementation contract has an actual constructor with arguments (such as to set immutable variables), then include constructor arguments according to the usage information for the https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan#usage[task] or https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan#using-programmatically[subtask].
+
+* Since: `@openzeppelin/hardhat-upgrades@1.18.0`

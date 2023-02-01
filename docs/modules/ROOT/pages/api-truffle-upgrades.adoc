@@ -109,6 +109,8 @@ async function deployBeacon(
 ): Promise<ContractInstance>
 ----
 
+* Since: `@openzeppelin/truffle-upgrades@1.12.0`
+
 [[upgrade-beacon]]
 == upgradeBeacon
 
@@ -134,6 +136,8 @@ async function upgradeBeacon(
 ): Promise<ContractInstance>
 ----
 
+* Since: `@openzeppelin/truffle-upgrades@1.12.0`
+
 [[deploy-beacon-proxy]]
 == deployBeaconProxy
 
@@ -153,6 +157,8 @@ async function deployBeaconProxy(
   },
 ): Promise<ContractInstance>
 ----
+
+* Since: `@openzeppelin/truffle-upgrades@1.12.0`
 
 [[force-import]]
 == forceImport
@@ -177,6 +183,8 @@ async function forceImport(
 ): Promise<ContractInstance>
 ----
 
+* Since: `@openzeppelin/truffle-upgrades@1.13.0`
+
 [[validate-implementation]]
 == validateImplementation
 
@@ -194,6 +202,8 @@ async function validateImplementation(
   },
 ): Promise<void>
 ----
+
+* Since: `@openzeppelin/truffle-upgrades@1.16.0`
 
 [[deploy-implementation]]
 == deployImplementation
@@ -217,6 +227,8 @@ async function deployImplementation(
   },
 ): Promise<string>
 ----
+
+* Since: `@openzeppelin/truffle-upgrades@1.16.0`
 
 [[validate-upgrade]]
 == validateUpgrade
@@ -259,6 +271,8 @@ const Box = artifacts.require('Box');
 const BoxV2 = artifacts.require('BoxV2');
 await validateUpgrade(Box, BoxV2);
 ----
+
+* Since: `@openzeppelin/truffle-upgrades@1.16.0`
 
 [[prepare-upgrade]]
 == prepareUpgrade
@@ -303,6 +317,8 @@ async function deployProxyAdmin(
   },
 ): Promise<string>
 ----
+
+* Since: `@openzeppelin/truffle-upgrades@1.16.0`
 
 [[admin-change-proxy-admin]]
 == admin.changeProxyAdmin
@@ -350,6 +366,8 @@ This module provides a convenience function to get the implementation address fr
 ----
 async function beacon.getImplementationAddress(beaconAddress: string): Promise<string>;
 ----
+
+* Since: `@openzeppelin/truffle-upgrades@1.12.0`
 
 == silenceWarnings
 
