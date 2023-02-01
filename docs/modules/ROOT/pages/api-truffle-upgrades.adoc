@@ -32,15 +32,6 @@ The following options have been deprecated.
 [[deploy-proxy]]
 == deployProxy
 
-Creates a UUPS or Transparent proxy given a Truffle contract class to use as implementation, and returns a contract instance with the proxy address and the implementation interface. During a migration, the proxy address will be stored in the implementation contract's artifact, so you can use Truffle's https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions#-code-mycontract-deployed-code-[`deployed()`] function to load it.
-
-If `args` is set, will call an initializer function `initialize` with the supplied `args` during proxy deployment.
-
-If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
-
-* `initializer`: set a different initializer function to call, or specify `false` to disable initialization
-* See <<common-options>>.
-
 [source,ts]
 ----
 async function deployProxy(
@@ -59,13 +50,19 @@ async function deployProxy(
 ): Promise<ContractInstance>
 ----
 
+Creates a UUPS or Transparent proxy given a Truffle contract class to use as implementation, and returns a contract instance with the proxy address and the implementation interface. During a migration, the proxy address will be stored in the implementation contract's artifact, so you can use Truffle's https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions#-code-mycontract-deployed-code-[`deployed()`] function to load it.
+
+If `args` is set, will call an initializer function `initialize` with the supplied `args` during proxy deployment.
+
+If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
+
+*Options:*
+
+* `initializer`: set a different initializer function to call, or specify `false` to disable initialization
+* See <<common-options>>.
+
 [[upgrade-proxy]]
 == upgradeProxy
-
-Upgrades a UUPS or Transparent proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
-
-* `call`: enables the execution of an arbitrary function call during the upgrade process. This call is described using a function name or signature and optional arguments. It is batched into the upgrade transaction, making it safe to call migration initializing functions.
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -87,12 +84,15 @@ async function upgradeProxy(
 ): Promise<ContractInstance>
 ----
 
+Upgrades a UUPS or Transparent proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
+
+*Options:*
+
+* `call`: enables the execution of an arbitrary function call during the upgrade process. This call is described using a function name or signature and optional arguments. It is batched into the upgrade transaction, making it safe to call migration initializing functions.
+* See <<common-options>>.
+
 [[deploy-beacon]]
 == deployBeacon
-
-Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] given a Truffle contract class to use as implementation, and returns the beacon contract instance.
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -109,14 +109,18 @@ async function deployBeacon(
 ): Promise<ContractInstance>
 ----
 
-* Since: `@openzeppelin/truffle-upgrades@1.12.0`
+Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] given a Truffle contract class to use as implementation, and returns the beacon contract instance.
+
+*Options:*
+
+* See <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/truffle-upgrades@1.12.0`
 
 [[upgrade-beacon]]
 == upgradeBeacon
-
-Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] at a specified address to a new implementation contract, and returns the beacon contract instance.
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -136,14 +140,18 @@ async function upgradeBeacon(
 ): Promise<ContractInstance>
 ----
 
-* Since: `@openzeppelin/truffle-upgrades@1.12.0`
+Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] at a specified address to a new implementation contract, and returns the beacon contract instance.
+
+*Options:*
+
+* See <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/truffle-upgrades@1.12.0`
 
 [[deploy-beacon-proxy]]
 == deployBeaconProxy
-
-Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address and a Truffle contract class corresponding to the beacon's current implementation contract, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
-
-* `initializer`: set a different initializer function to call, or specify `false` to disable initialization
 
 [source,ts]
 ----
@@ -158,19 +166,18 @@ async function deployBeaconProxy(
 ): Promise<ContractInstance>
 ----
 
-* Since: `@openzeppelin/truffle-upgrades@1.12.0`
+Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address and a Truffle contract class corresponding to the beacon's current implementation contract, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
+
+*Options:*
+
+* `initializer`: set a different initializer function to call, or specify `false` to disable initialization
+
+*Since:*
+
+* `@openzeppelin/truffle-upgrades@1.12.0`
 
 [[force-import]]
 == forceImport
-
-Forces the import of an existing proxy, beacon, or implementation contract deployment to be used with this plugin. Provide the address of an existing proxy, beacon or implementation, along with the Truffle contract class of the implementation contract that was deployed.  
-
-CAUTION: When importing a proxy or beacon, the `deployedImpl` argument must be the contract class of the *current* implementation contract version that is being used, not the version that you are planning to upgrade to.  
-
-Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
-
-* `kind`: (`"uups" | "transparent" | "beacon"`) forces a proxy to be treated as a UUPS, Transparent, or Beacon proxy. If not provided, the proxy kind will be automatically detected.
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -183,14 +190,23 @@ async function forceImport(
 ): Promise<ContractInstance>
 ----
 
-* Since: `@openzeppelin/truffle-upgrades@1.13.0`
+Forces the import of an existing proxy, beacon, or implementation contract deployment to be used with this plugin. Provide the address of an existing proxy, beacon or implementation, along with the Truffle contract class of the implementation contract that was deployed.
+
+CAUTION: When importing a proxy or beacon, the `deployedImpl` argument must be the contract class of the *current* implementation contract version that is being used, not the version that you are planning to upgrade to.
+
+Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
+
+*Options:*
+
+* `kind`: (`"uups" | "transparent" | "beacon"`) forces a proxy to be treated as a UUPS, Transparent, or Beacon proxy. If not provided, the proxy kind will be automatically detected.
+* See <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/truffle-upgrades@1.13.0`
 
 [[validate-implementation]]
 == validateImplementation
-
-Validates an implementation contract without deploying it.
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -203,14 +219,18 @@ async function validateImplementation(
 ): Promise<void>
 ----
 
-* Since: `@openzeppelin/truffle-upgrades@1.16.0`
+Validates an implementation contract without deploying it.
+
+*Options:*
+
+* See <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/truffle-upgrades@1.16.0`
 
 [[deploy-implementation]]
 == deployImplementation
-
-Validates and deploys an implementation contract, and returns its address.
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -228,14 +248,18 @@ async function deployImplementation(
 ): Promise<string>
 ----
 
-* Since: `@openzeppelin/truffle-upgrades@1.16.0`
+Validates and deploys an implementation contract, and returns its address.
+
+*Options:*
+
+* See <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/truffle-upgrades@1.16.0`
 
 [[validate-upgrade]]
 == validateUpgrade
-
-Validates a new implementation contract without deploying it and without actually upgrading to it. Compares the current implementation contract (given a proxy or beacon address that uses the current implementation, or an address or Truffle contract class corresponding to the current implementation) to the new implementation contract to check for storage layout compatibility errors. If `referenceAddressOrContract` is the current implementation address, the `kind` option is required. 
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -251,7 +275,17 @@ async function validateUpgrade(
 ): Promise<void>
 ----
 
-*Examples*
+Validates a new implementation contract without deploying it and without actually upgrading to it. Compares the current implementation contract (given a proxy or beacon address that uses the current implementation, or an address or Truffle contract class corresponding to the current implementation) to the new implementation contract to check for storage layout compatibility errors. If `referenceAddressOrContract` is the current implementation address, the `kind` option is required.
+
+*Options:*
+
+* See <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/truffle-upgrades@1.16.0`
+
+*Examples:*
 
 Validate upgrading an existing proxy to a new contract (replace `PROXY_ADDRESS` with the address of your proxy):
 [source,ts]
@@ -272,14 +306,8 @@ const BoxV2 = artifacts.require('BoxV2');
 await validateUpgrade(Box, BoxV2);
 ----
 
-* Since: `@openzeppelin/truffle-upgrades@1.16.0`
-
 [[prepare-upgrade]]
 == prepareUpgrade
-
-Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Truffle. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons.
-
-See <<common-options>>.
 
 [source,ts]
 ----
@@ -300,12 +328,14 @@ async function prepareUpgrade(
 ): Promise<string>
 ----
 
-[[deploy-proxy-admin]]
-== deployProxyAdmin
+Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Truffle. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons.
 
-Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy admin] contract and returns its address if one was not already deployed on the current network, or just returns the address of the proxy admin if one was already deployed. Note that this plugin currently only supports using one proxy admin per network.
+*Options:*
 
 * See <<common-options>>.
+
+[[deploy-proxy-admin]]
+== deployProxyAdmin
 
 [source,ts]
 ----
@@ -318,12 +348,18 @@ async function deployProxyAdmin(
 ): Promise<string>
 ----
 
-* Since: `@openzeppelin/truffle-upgrades@1.16.0`
+Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy admin] contract and returns its address if one was not already deployed on the current network, or just returns the address of the proxy admin if one was already deployed. Note that this plugin currently only supports using one proxy admin per network.
+
+*Options:*
+
+* See <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/truffle-upgrades@1.16.0`
 
 [[admin-change-proxy-admin]]
 == admin.changeProxyAdmin
-
-Changes the admin for a specific proxy. Receives the address of the proxy to change, and the new admin address.
 
 [source,ts]
 ----
@@ -333,10 +369,10 @@ async function changeProxyAdmin(
 ): Promise<void>
 ----
 
+Changes the admin for a specific proxy. Receives the address of the proxy to change, and the new admin address.
+
 [[admin-transfer-proxy-admin-ownership]]
 == admin.transferProxyAdminOwnership
-
-Changes the owner of the proxy admin contract, which is the default admin for upgrade rights over all proxies. Receives the new admin address.
 
 [source,ts]
 ----
@@ -345,10 +381,10 @@ async function transferProxyAdminOwnership(
 ): Promise<void>
 ----
 
+Changes the owner of the proxy admin contract, which is the default admin for upgrade rights over all proxies. Receives the new admin address.
+
 [[erc1967]]
 == erc1967
-
-Functions in this module provide access to the https://eips.ethereum.org/EIPS/eip-1967[ERC1967] variables of a proxy contract.
 
 [source,ts]
 ----
@@ -357,25 +393,29 @@ async function erc1967.getBeaconAddress(proxyAddress: string): Promise<string>;
 async function erc1967.getAdminAddress(proxyAddress: string): Promise<string>;
 ----
 
+Functions in this module provide access to the https://eips.ethereum.org/EIPS/eip-1967[ERC1967] variables of a proxy contract.
+
 [[beacon]]
 == beacon
-
-This module provides a convenience function to get the implementation address from a beacon contract.
 
 [source,ts]
 ----
 async function beacon.getImplementationAddress(beaconAddress: string): Promise<string>;
 ----
 
-* Since: `@openzeppelin/truffle-upgrades@1.12.0`
+This module provides a convenience function to get the implementation address from a beacon contract.
+
+*Since:*
+
+* `@openzeppelin/truffle-upgrades@1.12.0`
 
 == silenceWarnings
-
-Silences all subsequent warnings about the use of unsafe flags. Prints a last warning before doing so.
-
-NOTE: This function is useful for tests, but its use in production deployment scripts is discouraged.
 
 [source,ts]
 ----
 function silenceWarnings()
 ----
+
+NOTE: This function is useful for tests, but its use in production deployment scripts is discouraged.
+
+Silences all subsequent warnings about the use of unsafe flags. Prints a last warning before doing so.

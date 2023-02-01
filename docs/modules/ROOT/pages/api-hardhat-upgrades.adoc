@@ -455,9 +455,9 @@ This module provides a convenience function to get the implementation address fr
 function silenceWarnings()
 ----
 
-Silences all subsequent warnings about the use of unsafe flags. Prints a last warning before doing so.
-
 NOTE: This function is useful for tests, but its use in production deployment scripts is discouraged.
+
+Silences all subsequent warnings about the use of unsafe flags. Prints a last warning before doing so.
 
 [[verify]]
 == verify
