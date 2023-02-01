@@ -477,7 +477,7 @@ The following contracts will be verified when you run this task on your proxy ad
 
 * `@openzeppelin/hardhat-upgrades@1.18.0`
 
-*Examples:*
+*Usage:*
 
 To use this task, ensure you have hardhat-etherscan installed:
 [source,sh]
