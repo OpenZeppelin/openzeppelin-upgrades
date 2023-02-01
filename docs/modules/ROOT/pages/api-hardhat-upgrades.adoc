@@ -54,9 +54,19 @@ Creates a UUPS or Transparent proxy given an ethers contract factory to use as i
 
 If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
 
+*Parameters:*
+
+* `Contract` - an ethers contract factory to use as the implementation.
+* `args` - arguments for the initializer function.
+* `opts` - the options below.
+
+*Returns:*
+
+* a contract instance with the proxy address and the implementation interface.
+
 *Options:*
 
-* `initializer`: set a different initializer function to call (see link:++https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments++[Specifying Fragments]), or specify `false` to disable initialization
+* `initializer`: set a different initializer function to call (see link:++https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments++[Specifying Fragments]), or specify `false` to disable initialization.
 * See <<common-options>>.
 
 [[upgrade-proxy]]
@@ -65,7 +75,7 @@ If you call `deployProxy` several times for the same implementation contract, se
 [source,ts]
 ----
 async function upgradeProxy(
-  proxyAddress: string,
+  proxy: string | ethers.Contract,
   Contract: ethers.ContractFactory,
   opts?: {
     call?: string | { fn: string; args?: unknown[] },
@@ -82,6 +92,16 @@ async function upgradeProxy(
 ----
 
 Upgrades a UUPS or Transparent proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
+
+*Parameters:*
+
+* `proxy` - the proxy address or proxy contract instance.
+* `Contract` - an ethers contract factory to use as the new implementation.
+* `opts` - the options below.
+
+*Returns:*
+
+* a contract instance with the proxy address and the new implementation interface.
 
 *Options:*
 
@@ -107,6 +127,15 @@ async function deployBeacon(
 
 Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] given an ethers contract factory to use as implementation, and returns the beacon contract instance.
 
+*Parameters:*
+
+* `Contract` - an ethers contract factory to use as the implementation.
+* `opts` - the options below.
+
+*Returns:*
+
+* the beacon contract instance.
+
 *Options:*
 
 * See <<common-options>>.
@@ -121,7 +150,7 @@ Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeac
 [source,ts]
 ----
 async function upgradeBeacon(
-  beaconAddress: string,
+  beacon: string | ethers.Contract,
   Contract: ethers.ContractFactory,
   opts?: {
     unsafeAllow?: ValidationError[],
@@ -137,6 +166,16 @@ async function upgradeBeacon(
 
 Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] at a specified address to a new implementation contract, and returns the beacon contract instance.
 
+*Parameters:*
+
+* `beacon` - the beacon address or beacon contract instance.
+* `Contract` - an ethers contract factory to use as the new implementation.
+* `opts` - the options below.
+
+*Returns:*
+
+* the beacon contract instance.
+
 *Options:*
 
 * See <<common-options>>.
@@ -151,7 +190,7 @@ Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBea
 [source,ts]
 ----
 async function deployBeaconProxy(
-  beaconAddress: string,
+  beacon: string,
   attachTo: ethers.ContractFactory,
   args: unknown[] = [],
   opts?: {
@@ -161,6 +200,17 @@ async function deployBeaconProxy(
 ----
 
 Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address and an ethers contract factory corresponding to the beacon's current implementation contract, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
+
+*Parameters:*
+
+* `beacon` - the beacon address or beacon contract instance.
+* `attachTo` - an ethers contract factory corresponding to the beacon's current implementation contract.
+* `args` - arguments for the initializer function.
+* `opts` - the options below.
+
+*Returns:*
+
+* a contract instance with the beacon proxy address and the implementation interface.
 
 *Options:*
 
