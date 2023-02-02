@@ -289,14 +289,14 @@ Validates and deploys an implementation contract, and returns its address.
 
 *Parameters:*
 
-* `Contract` - the ethers contract factory of the implementation contract.
+* `Contract` - an ethers contract factory to use as the implementation.
 * `opts` - an object with options:
 ** `getTxResponse`: if set to `true`, causes this function to return an ethers transaction response corresponding to the deployment of the new implementation contract instead of its address. Note that if the new implementation contract was originally imported as a result of `forceImport`, only the address will be returned.
 ** See <<common-options>>.
 
 *Returns:*
 
-* the address or an ethers transaction response corresponding to the deployment of the new implementation contract.
+* the address or an ethers transaction response corresponding to the deployment of the implementation contract.
 
 *Since:*
 
@@ -359,7 +359,7 @@ await upgrades.validateUpgrade(Box, BoxV2);
 [source,ts]
 ----
 async function prepareUpgrade(
-  proxyOrBeaconAddress: string | ethers.Contract,
+  proxyOrBeacon: string | ethers.Contract,
   Contract: ethers.ContractFactory,
   opts?: {
     unsafeAllow?: ValidationError[],
@@ -379,7 +379,7 @@ Validates and deploys a new implementation contract, and returns its address. Us
 
 *Parameters:*
 
-* `proxyOrBeaconAddress` - the proxy or beacon address or contract instance.
+* `proxyOrBeacon` - the proxy or beacon address or contract instance.
 * `Contract` - the new implementation contract.
 * `opts` - an object with options:
 ** `getTxResponse`: if set to `true`, causes this function to return an ethers transaction response corresponding to the deployment of the new implementation contract instead of its address. Note that if the new implementation contract was originally imported as a result of `forceImport`, only the address will be returned.
