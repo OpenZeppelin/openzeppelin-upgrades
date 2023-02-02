@@ -178,7 +178,7 @@ Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBea
 [source,ts]
 ----
 async function deployBeaconProxy(
-  beacon: string,
+  beacon: string | ethers.Contract,
   attachTo: ethers.ContractFactory,
   args: unknown[] = [],
   opts?: {
@@ -195,7 +195,7 @@ Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beac
 * `attachTo` - an ethers contract factory corresponding to the beacon's current implementation contract.
 * `args` - arguments for the initializer function.
 * `opts` - an object with options:
-** `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization
+** `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization.
 
 *Returns:*
 
