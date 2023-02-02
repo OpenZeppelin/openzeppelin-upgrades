@@ -58,7 +58,7 @@ If you call `deployProxy` several times for the same implementation contract, se
 
 *Parameters:*
 
-* `Contract` - an Truffle contract class to use as the implementation.
+* `Contract` - a Truffle contract class to use as the implementation.
 * `args` - arguments for the initializer function.
 * `opts` - an object with options:
 ** `initializer`: set a different initializer function to call, or specify `false` to disable initialization
@@ -198,7 +198,7 @@ Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beac
 *Parameters:*
 
 * `beacon` - the beacon address or beacon contract instance.
-* `attachTo` - an ethers contract factory corresponding to the beacon's current implementation contract.
+* `attachTo` - a Truffle contract class corresponding to the beacon's current implementation contract.
 * `args` - arguments for the initializer function.
 * `opts` - an object with options:
 ** `initializer`: set a different initializer function to call, or specify `false` to disable initialization
@@ -234,7 +234,7 @@ Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plug
 *Parameters:*
 
 * `address` - the address of an existing proxy, beacon or implementation.
-* `deployedImpl` - the ethers contract factory of the implementation contract that was deployed.
+* `deployedImpl` - the Truffle contract class of the implementation contract that was deployed.
 * `opts` - an object with options:
 ** `kind`: (`"uups" | "transparent" | "beacon"`) forces a proxy to be treated as a UUPS, Transparent, or Beacon proxy. If not provided, the proxy kind will be automatically detected.
 
@@ -264,7 +264,7 @@ Validates an implementation contract without deploying it.
 
 *Parameters:*
 
-* `Contract` - the ethers contract factory of the implementation contract.
+* `Contract` - the Truffle contract class of the implementation contract.
 * `opts` - an object with options:
 ** See <<common-options>>.
 
@@ -295,7 +295,7 @@ Validates and deploys an implementation contract, and returns its address.
 
 *Parameters:*
 
-* `Contract` - a Truffle contract class representing the implementation contract.
+* `Contract` - a Truffle contract class to use as the implementation.
 * `opts` - an object with options:
 ** See <<common-options>>.
 
