@@ -405,7 +405,7 @@ Then the variable `base2` would be assigned the slot that `child` had in the pre
 
 Storage gaps are a convention for reserving storage slots in a base contract, allowing future versions of that contract to use up those slots without affecting the storage layout of child contracts.
 
-To create a storage gap, declare a fixed-size array in the base contract with an initial number of slots. This can be an array of `uint256` so that each element reserves a 32 byte slot. Use the naming convention `__gap` so that OpenZeppelin Upgrades will recognize the gap:
+To create a storage gap, declare a fixed-size array in the base contract with an initial number of slots. This can be an array of `uint256` so that each element reserves a 32 byte slot. Use the name `__gap` or a name starting with `__gap_` for the array so that OpenZeppelin Upgrades will recognize the gap:
 
 [source,solidity]
 ----
