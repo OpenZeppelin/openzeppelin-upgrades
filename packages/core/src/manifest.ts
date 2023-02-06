@@ -96,7 +96,7 @@ export class Manifest {
     this.chainId = chainId;
     this.devInstanceId = devInstanceId;
     this.manifestDir = dir ?? MANIFEST_DEFAULT_DIR;
-    debug('manifest dir:', this.manifestDir);
+    debug('manifest directory:', this.manifestDir);
 
     const fallbackName = `unknown-${getSuffix(chainId, devInstanceId)}`;
     this.fallbackFile = path.join(this.manifestDir, `${fallbackName}.json`);
