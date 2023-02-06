@@ -15,6 +15,10 @@ export interface EthereumProvider {
 interface HardhatMetadata {
   chainId: number;
   instanceId: string;
+  forkedNetwork?: {
+    // The chainId of the network that is being forked
+    chainId: number;
+  };
 }
 
 interface EthereumTransaction {
