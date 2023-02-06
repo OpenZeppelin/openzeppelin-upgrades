@@ -43,7 +43,7 @@ TIP: In Hardhat, `solcInput` and `solcOutput` can be obtained from the Build Inf
 === .getErrorReport
 [source,ts]
 ----
-.getErrorReport(): Report
+getErrorReport(): Report
 ----
 
 **Returns:**
@@ -53,7 +53,7 @@ TIP: In Hardhat, `solcInput` and `solcOutput` can be obtained from the Build Inf
 === .getStorageUpgradeReport
 [source,ts]
 ----
-.getStorageUpgradeReport(
+getStorageUpgradeReport(
   upgradedContract: UpgradeableContract,
   opts?: {
     unsafeAllow?: ValidationError[],
