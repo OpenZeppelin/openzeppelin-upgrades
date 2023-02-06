@@ -41,7 +41,7 @@ function defaultManifest(): ManifestData {
 }
 
 const MANIFEST_DEFAULT_DIR = '.openzeppelin';
-const MANIFEST_TEMP_DIR = 'openzeppelin';
+const MANIFEST_TEMP_DIR = 'openzeppelin-upgrades';
 
 async function getDevelopmentInstanceId(provider: EthereumProvider, chainId: number): Promise<string | undefined> {
   let hardhatMetadata;
