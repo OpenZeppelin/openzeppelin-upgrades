@@ -13,39 +13,50 @@ import { UpgradeableContract } from '@openzeppelin/upgrades-core';
 
 This class represents the implementation for an upgradeable contract and gives access to error reports.
 
+=== new UpgradeableContract
 [.hljs-theme-light.nopadding]
 ```javascript
 new UpgradeableContract(name, solcInput, solcOutput, opts?);
 ```
 
-`name` is the name of the implementation contract as either a fully qualified name or contract name. If multiple contracts have the same name, you must use the fully qualified name e.g., `contracts/Bar.sol:Bar`.
+Creates a new instance of `UpgradeableContract`.
 
-`opts` is an object with options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options].
+*Parameters:*
+
+* `name` - the name of the implementation contract as either a fully qualified name or contract name. If multiple contracts have the same name, you must use the fully qualified name e.g., `contracts/Bar.sol:Bar`.
+* `solcInput` - the Solidity input JSON object for the implementation contract.
+* `solcOutput` - the Solidity output JSON object for the implementation contract.
+* `opts` - an object with options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options].
 
 TIP: In Hardhat, `solcInput` and `solcOutput` can be obtained from the Build Info file, which itself can be retrieved with `hre.artifacts.getBuildInfo`.
 
 === getErrorReport
-
-Returns a report about errors pertaining to proxied contracts, e.g. the use of `selfdestruct`.
-
 [.hljs-theme-light.nopadding]
 ```javascript
 contract.getErrorReport()
 ```
 
+**Returns:**
+
+* a report about errors pertaining to proxied contracts, e.g. the use of `selfdestruct`.
+
 === getStorageUpgradeReport
-
-Compares the storage layout of an upgradeable contract with that of a proposed upgrade. Receives as an argument another instance of `UpgradeableContract`.
-
 [.hljs-theme-light.nopadding]
 ```javascript
 contract.getStorageUpgradeReport(upgradedContract)
 ```
 
+Compares the storage layout of an upgradeable contract with that of a proposed upgrade.
+
+*Parameters:*
+
+* `upgradedContract` - another instance of `UpgradeableContract` representing the proposed upgrade.
+
+**Returns:**
+
+* a report about errors pertaining to proxied contracts, e.g. the use of `selfdestruct`, and storage layout conflicts.
+
 == Report
-
-An object that represents the results of an analysis.
-
 [.hljs-theme-light.nopadding]
 ```typescript
 interface Report {
@@ -54,7 +65,11 @@ interface Report {
 }
 ```
 
-The field `ok` is `false` if any errors were found, and `true` otherwise.
+An object that represents the results of an analysis.
 
-The method `explain()` will return a message explaining the errors in detail, if any.
+**Members:**
+
+* `ok` - `false` if any errors were found, otherwise `true`.
+
+* `explain()` - returns a message explaining the errors in detail, if any.
 
