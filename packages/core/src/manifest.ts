@@ -49,12 +49,7 @@ async function getDevelopmentInstanceId(provider: EthereumProvider, chainId: num
   try {
     hardhatMetadata = await getHardhatMetadata(provider);
   } catch (e: unknown) {
-    if (e instanceof Error && (e.message.includes('Method') || e.message.includes('method'))) {
-      // method not found
-      return undefined;
-    } else {
-      throw e;
-    }
+    return undefined;
   }
 
   if (hardhatMetadata.chainId !== chainId) {
