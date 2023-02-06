@@ -54,7 +54,7 @@ Creates a UUPS or Transparent proxy given an ethers contract factory to use as i
 
 If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
 
-==== Parameters:
+*Parameters:*
 
 * `Contract` - an ethers contract factory to use as the implementation.
 * `args` - arguments for the initializer function.
