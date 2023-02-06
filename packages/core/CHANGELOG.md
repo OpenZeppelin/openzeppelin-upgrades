@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Support storage gaps named with `__gap_*`. ([#732](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/732))
 - Support Hardhat tests in --parallel mode when using Hardhat version 2.12.3 or later. ([#726](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/726))
 
 ## 1.22.0 (2023-01-31)

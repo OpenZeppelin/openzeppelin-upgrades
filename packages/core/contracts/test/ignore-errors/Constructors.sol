@@ -4,7 +4,8 @@ pragma solidity ^0.8.9;
 abstract contract UnsafeParent {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(bytes memory data) {
-        msg.sender.delegatecall(data);
+        (bool s, ) = msg.sender.delegatecall(data);
+        s;
     }
 }
 
@@ -22,7 +23,8 @@ contract UnsafeChild2 is UnsafeParent('') {
 abstract contract UnsafeParentNoArgs {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-        msg.sender.delegatecall('');
+        (bool s, ) = msg.sender.delegatecall("");
+        s;
     }
 }
 
@@ -43,7 +45,8 @@ contract UnsafeChild4 is UnsafeParentNoArgs {
 abstract contract AllowParentNoArgs {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-        msg.sender.delegatecall('');
+        (bool s, ) = msg.sender.delegatecall("");
+        s;
     }
 }
 
@@ -76,7 +79,8 @@ contract AllowReachableChild8 is UnsafeParentNoArgs {
 
 abstract contract UnsafeFunctions {
     function unsafe() internal {
-        msg.sender.delegatecall('');
+        (bool s, ) = msg.sender.delegatecall("");
+        s;
     }
 }
 
