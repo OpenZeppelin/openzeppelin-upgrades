@@ -77,7 +77,7 @@ async function makeAndGetTempDir() {
 
 export class Manifest {
   readonly chainId: number;
-  readonly devInstanceId: string | undefined;
+  readonly devInstanceId?: string;
   readonly file: string;
   readonly manifestDir: string;
   private readonly fallbackFile: string;
