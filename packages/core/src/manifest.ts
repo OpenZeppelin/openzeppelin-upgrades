@@ -62,7 +62,7 @@ async function getDevInstanceMetadata(
     );
   }
 
-  return { instanceId: hardhatMetadata.instanceId, forkedNetwork: hardhatMetadata.forkedNetwork };
+  return { networkName: 'hardhat', instanceId: hardhatMetadata.instanceId, forkedNetwork: hardhatMetadata.forkedNetwork };
 }
 
 function getSuffix(chainId: number, devInstanceMetadata?: DevInstanceMetadata) {
@@ -74,6 +74,7 @@ function getSuffix(chainId: number, devInstanceMetadata?: DevInstanceMetadata) {
 }
 
 interface DevInstanceMetadata {
+  networkName: string;
   instanceId: string;
   forkedNetwork?: {
     // The chainId of the network that is being forked
@@ -114,7 +115,7 @@ export class Manifest {
       this.devDir = path.join(osTmpDir, MANIFEST_TEMP_DIR);
       debug('development manifest directory:', this.devDir);
 
-      const devName = `dev-${getSuffix(chainId, devInstanceMetadata)}`;
+      const devName = `${devInstanceMetadata.networkName}-${getSuffix(chainId, devInstanceMetadata)}`;
       this.devFile = path.join(this.devDir, `${devName}.json`);
       debug('development manifest file:', this.devFile);
 
