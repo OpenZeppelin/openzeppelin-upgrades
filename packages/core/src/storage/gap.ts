@@ -7,7 +7,7 @@ import { StorageField, storageFieldEnd } from './compare';
  * @returns true if field is a gap, otherwise false
  */
 export function isGap(field: StorageField): boolean {
-  return field.label === '__gap' && field.type.head === 't_array';
+  return field.type.head === 't_array' && (field.label === '__gap' || field.label.startsWith('__gap_'));
 }
 
 /**

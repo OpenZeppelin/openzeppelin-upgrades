@@ -4,57 +4,92 @@ The core logic to check for upgrade safety as well as storage layout compatibili
 
 The package exports a standalone interface that works with https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description[Solidity input and output JSON objects].
 
-[.hljs-theme-light.nopadding]
-```javascript
+[source,ts]
+----
 import { UpgradeableContract } from '@openzeppelin/upgrades-core';
-```
+----
 
 == UpgradeableContract
 
 This class represents the implementation for an upgradeable contract and gives access to error reports.
 
-[.hljs-theme-light.nopadding]
-```javascript
-new UpgradeableContract(name, solcInput, solcOutput, opts?);
-```
+=== constructor UpgradeableContract
+[source,ts]
+----
+constructor UpgradeableContract(
+  name: string,
+  solcInput: SolcInput,
+  solcOutput: SolcOutput,
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
+  },
+): UpgradeableContract
+----
 
-`name` is the name of the implementation contract as either a fully qualified name or contract name. If multiple contracts have the same name, you must use the fully qualified name e.g., `contracts/Bar.sol:Bar`.
+Creates a new instance of `UpgradeableContract`.
 
-`opts` is an object with options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options].
+*Parameters:*
+
+* `name` - the name of the implementation contract as either a fully qualified name or contract name. If multiple contracts have the same name, you must use the fully qualified name e.g., `contracts/Bar.sol:Bar`.
+* `solcInput` - the Solidity input JSON object for the implementation contract.
+* `solcOutput` - the Solidity output JSON object for the implementation contract.
+* `opts` - an object with options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options].
 
 TIP: In Hardhat, `solcInput` and `solcOutput` can be obtained from the Build Info file, which itself can be retrieved with `hre.artifacts.getBuildInfo`.
 
-=== getErrorReport
+=== .getErrorReport
+[source,ts]
+----
+getErrorReport(): Report
+----
 
-Returns a report about errors pertaining to proxied contracts, e.g. the use of `selfdestruct`.
+**Returns:**
 
-[.hljs-theme-light.nopadding]
-```javascript
-contract.getErrorReport()
-```
+* a report about errors pertaining to proxied contracts, e.g. the use of `selfdestruct`.
 
-=== getStorageUpgradeReport
+=== .getStorageUpgradeReport
+[source,ts]
+----
+getStorageUpgradeReport(
+  upgradedContract: UpgradeableContract,
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
+  },
+): Report
+----
 
-Compares the storage layout of an upgradeable contract with that of a proposed upgrade. Receives as an argument another instance of `UpgradeableContract`.
+Compares the storage layout of an upgradeable contract with that of a proposed upgrade.
 
-[.hljs-theme-light.nopadding]
-```javascript
-contract.getStorageUpgradeReport(upgradedContract)
-```
+*Parameters:*
+
+* `upgradedContract` - another instance of `UpgradeableContract` representing the proposed upgrade.
+
+* `opts` - an object with options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options].
+
+**Returns:**
+
+* a report about errors pertaining to proxied contracts, e.g. the use of `selfdestruct`, and storage layout conflicts.
 
 == Report
-
-An object that represents the results of an analysis.
-
-[.hljs-theme-light.nopadding]
-```typescript
+[source,ts]
+----
 interface Report {
   ok: boolean;
   explain(color?: boolean): string;
 }
-```
+----
 
-The field `ok` is `false` if any errors were found, and `true` otherwise.
+An object that represents the results of an analysis.
 
-The method `explain()` will return a message explaining the errors in detail, if any.
+**Members:**
+
+* `ok` - `false` if any errors were found, otherwise `true`.
+
+* `explain()` - returns a message explaining the errors in detail, if any.
 

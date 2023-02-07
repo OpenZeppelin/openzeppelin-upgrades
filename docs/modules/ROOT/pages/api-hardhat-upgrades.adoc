@@ -33,13 +33,6 @@ The following options have been deprecated.
 [[deploy-proxy]]
 == deployProxy
 
-Creates a UUPS or Transparent proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
-
-If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
-
-* `initializer`: set a different initializer function to call (see link:++https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments++[Specifying Fragments]), or specify `false` to disable initialization
-* See <<common-options>>.
-
 [source,ts]
 ----
 async function deployProxy(
@@ -57,18 +50,29 @@ async function deployProxy(
 ): Promise<ethers.Contract>
 ----
 
+Creates a UUPS or Transparent proxy given an ethers contract factory to use as implementation, and returns a contract instance with the proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
+
+If you call `deployProxy` several times for the same implementation contract, several proxies will be deployed, but only one implementation contract will be used.
+
+*Parameters:*
+
+* `Contract` - an ethers contract factory to use as the implementation.
+* `args` - arguments for the initializer function.
+* `opts` - an object with options:
+** `initializer`: set a different initializer function to call (see link:++https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments++[Specifying Fragments]), or specify `false` to disable initialization.
+** See <<common-options>>.
+
+*Returns:*
+
+* a contract instance with the proxy address and the implementation interface.
+
 [[upgrade-proxy]]
 == upgradeProxy
-
-Upgrades a UUPS or Transparent proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
-
-* `call`: enables the execution of an arbitrary function call during the upgrade process. This call is described using a function name, signature, or selector (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), and optional arguments. It is batched into the upgrade transaction, making it safe to call migration initializing functions.
-* See <<common-options>>.
 
 [source,ts]
 ----
 async function upgradeProxy(
-  proxyAddress: string,
+  proxy: string | ethers.Contract,
   Contract: ethers.ContractFactory,
   opts?: {
     call?: string | { fn: string; args?: unknown[] },
@@ -84,12 +88,22 @@ async function upgradeProxy(
 ): Promise<ethers.Contract>
 ----
 
+Upgrades a UUPS or Transparent proxy at a specified address to a new implementation contract, and returns a contract instance with the proxy address and the new implementation interface.
+
+*Parameters:*
+
+* `proxy` - the proxy address or proxy contract instance.
+* `Contract` - an ethers contract factory to use as the new implementation.
+* `opts` - an object with options:
+** `call`: enables the execution of an arbitrary function call during the upgrade process. This call is described using a function name, signature, or selector (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), and optional arguments. It is batched into the upgrade transaction, making it safe to call migration initializing functions.
+** See <<common-options>>.
+
+*Returns:*
+
+* a contract instance with the proxy address and the new implementation interface.
+
 [[deploy-beacon]]
 == deployBeacon
-
-Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] given an ethers contract factory to use as implementation, and returns the beacon contract instance.
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -105,17 +119,29 @@ async function deployBeacon(
 ): Promise<ethers.Contract>
 ----
 
+Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] given an ethers contract factory to use as implementation, and returns the beacon contract instance.
+
+*Parameters:*
+
+* `Contract` - an ethers contract factory to use as the implementation.
+* `opts` - an object with options:
+** See <<common-options>>.
+
+*Returns:*
+
+* the beacon contract instance.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.13.0`
+
 [[upgrade-beacon]]
 == upgradeBeacon
-
-Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] at a specified address to a new implementation contract, and returns the beacon contract instance.
-
-* See <<common-options>>.
 
 [source,ts]
 ----
 async function upgradeBeacon(
-  beaconAddress: string,
+  beacon: string | ethers.Contract,
   Contract: ethers.ContractFactory,
   opts?: {
     unsafeAllow?: ValidationError[],
@@ -129,17 +155,30 @@ async function upgradeBeacon(
 ): Promise<ethers.Contract>
 ----
 
+Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[upgradable beacon] at a specified address to a new implementation contract, and returns the beacon contract instance.
+
+*Parameters:*
+
+* `beacon` - the beacon address or beacon contract instance.
+* `Contract` - an ethers contract factory to use as the new implementation.
+* `opts` - an object with options:
+** See <<common-options>>.
+
+*Returns:*
+
+* the beacon contract instance.
+
+*Since*:
+
+* `@openzeppelin/hardhat-upgrades@1.13.0`
+
 [[deploy-beacon-proxy]]
 == deployBeaconProxy
-
-Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address and an ethers contract factory corresponding to the beacon's current implementation contract, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
-
-* `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization
 
 [source,ts]
 ----
 async function deployBeaconProxy(
-  beaconAddress: string,
+  beacon: string | ethers.Contract,
   attachTo: ethers.ContractFactory,
   args: unknown[] = [],
   opts?: {
@@ -148,17 +187,26 @@ async function deployBeaconProxy(
 ): Promise<ethers.Contract>
 ----
 
+Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beacon proxy] given an existing beacon contract address and an ethers contract factory corresponding to the beacon's current implementation contract, and returns a contract instance with the beacon proxy address and the implementation interface. If `args` is set, will call an initializer function `initialize` with the supplied args during proxy deployment.
+
+*Parameters:*
+
+* `beacon` - the beacon address or beacon contract instance.
+* `attachTo` - an ethers contract factory corresponding to the beacon's current implementation contract.
+* `args` - arguments for the initializer function.
+* `opts` - an object with options:
+** `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization.
+
+*Returns:*
+
+* a contract instance with the beacon proxy address and the implementation interface.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.13.0`
+
 [[force-import]]
 == forceImport
-
-Forces the import of an existing proxy, beacon, or implementation contract deployment to be used with this plugin. Provide the address of an existing proxy, beacon or implementation, along with the ethers contract factory of the implementation contract that was deployed.  
-
-CAUTION: When importing a proxy or beacon, the `deployedImpl` argument must be the contract factory of the *current* implementation contract version that is being used, not the version that you are planning to upgrade to.
-
-Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
-
-* `kind`: (`"uups" | "transparent" | "beacon"`) forces a proxy to be treated as a UUPS, Transparent, or Beacon proxy. If not provided, the proxy kind will be automatically detected.
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -171,12 +219,29 @@ async function forceImport(
 ): Promise<ethers.Contract>
 ----
 
+Forces the import of an existing proxy, beacon, or implementation contract deployment to be used with this plugin. Provide the address of an existing proxy, beacon or implementation, along with the ethers contract factory of the implementation contract that was deployed.
+
+CAUTION: When importing a proxy or beacon, the `deployedImpl` argument must be the contract factory of the *current* implementation contract version that is being used, not the version that you are planning to upgrade to.
+
+Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
+
+*Parameters:*
+
+* `address` - the address of an existing proxy, beacon or implementation.
+* `deployedImpl` - the ethers contract factory of the implementation contract that was deployed.
+* `opts` - an object with options:
+** `kind`: (`"uups" | "transparent" | "beacon"`) forces a proxy to be treated as a UUPS, Transparent, or Beacon proxy. If not provided, the proxy kind will be automatically detected.
+
+*Returns:*
+
+* a contract instance representing the imported proxy, beacon or implementation.
+
+*Since*
+
+* `@openzeppelin/hardhat-upgrades@1.15.0`
+
 [[validate-implementation]]
 == validateImplementation
-
-Validates an implementation contract without deploying it.
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -189,13 +254,20 @@ async function validateImplementation(
 ): Promise<void>
 ----
 
+Validates an implementation contract without deploying it.
+
+*Parameters:*
+
+* `Contract` - the ethers contract factory of the implementation contract.
+* `opts` - an object with options:
+** See <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.20.0`
+
 [[deploy-implementation]]
 == deployImplementation
-
-Validates and deploys an implementation contract, and returns its address.
-
-* `getTxResponse`: if set to `true`, causes this function to return an ethers transaction response corresponding to the deployment of the new implementation contract instead of its address. Note that if the new implementation contract was originally imported as a result of `forceImport`, only the address will be returned.
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -213,12 +285,25 @@ async function deployImplementation(
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
 
+Validates and deploys an implementation contract, and returns its address.
+
+*Parameters:*
+
+* `Contract` - an ethers contract factory to use as the implementation.
+* `opts` - an object with options:
+** `getTxResponse`: if set to `true`, causes this function to return an ethers transaction response corresponding to the deployment of the new implementation contract instead of its address. Note that if the new implementation contract was originally imported as a result of `forceImport`, only the address will be returned.
+** See <<common-options>>.
+
+*Returns:*
+
+* the address or an ethers transaction response corresponding to the deployment of the implementation contract.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.20.0`
+
 [[validate-upgrade]]
 == validateUpgrade
-
-Validates a new implementation contract without deploying it and without actually upgrading to it. Compares the current implementation contract (given a proxy or beacon address that uses the current implementation, or an address or ethers contract factory corresponding to the current implementation) to the new implementation contract to check for storage layout compatibility errors. If `referenceAddressOrContract` is the current implementation address, the `kind` option is required. 
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -234,7 +319,20 @@ async function validateUpgrade(
 ): Promise<void>
 ----
 
-*Examples*
+Validates a new implementation contract without deploying it and without actually upgrading to it. Compares the current implementation contract to the new implementation contract to check for storage layout compatibility errors. If `referenceAddressOrContract` is the current implementation address, the `kind` option is required.
+
+*Parameters:*
+
+* `referenceAddressOrContract` - a proxy or beacon address that uses the current implementation, or an address or ethers contract factory corresponding to the current implementation.
+* `newContract` - the new implementation contract.
+* `opts` - an object with options:
+** See <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.20.0`
+
+*Examples:*
 
 Validate upgrading an existing proxy to a new contract (replace `PROXY_ADDRESS` with the address of your proxy):
 [source,ts]
@@ -258,15 +356,10 @@ await upgrades.validateUpgrade(Box, BoxV2);
 [[prepare-upgrade]]
 == prepareUpgrade
 
-Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Hardhat. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons.
-
-* `getTxResponse`: if set to `true`, causes this function to return an ethers transaction response corresponding to the deployment of the new implementation contract instead of its address. Note that if the new implementation contract was originally imported as a result of `forceImport`, only the address will be returned.
-* See <<common-options>>.
-
 [source,ts]
 ----
 async function prepareUpgrade(
-  proxyOrBeaconAddress: string,
+  proxyOrBeacon: string | ethers.Contract,
   Contract: ethers.ContractFactory,
   opts?: {
     unsafeAllow?: ValidationError[],
@@ -282,21 +375,22 @@ async function prepareUpgrade(
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
 
+Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Hardhat. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons.
+
+*Parameters:*
+
+* `proxyOrBeacon` - the proxy or beacon address or contract instance.
+* `Contract` - the new implementation contract.
+* `opts` - an object with options:
+** `getTxResponse`: if set to `true`, causes this function to return an ethers transaction response corresponding to the deployment of the new implementation contract instead of its address. Note that if the new implementation contract was originally imported as a result of `forceImport`, only the address will be returned.
+** See <<common-options>>.
+
+*Returns:*
+
+* the address or an ethers transaction response corresponding to the deployment of the new implementation contract.
+
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
-
-NOTE: This method requires the https://www.npmjs.com/package/@openzeppelin/hardhat-defender[`@openzeppelin/hardhat-defender`] package, as well as configuring a Defender Team API Key.
-
-Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in https://docs.openzeppelin.com/defender/admin[Defender Admin], for review and approval by the upgrade administrators. Supported for UUPS or Transparent proxies. Not currently supported for beacon proxies or beacons. For beacons, use `prepareUpgrade` along with a custom action in Defender Admin to upgrade the beacon to the deployed implementation.
-
-Returns an object with the URL of the Defender proposal and the ethers transaction response corresponding to the deployment of the new implementation contract. Note that if the new implementation contract was originally imported as a result of `forceImport`, the ethers transaction response will be undefined.
-
-* `title`: title of the upgrade proposal as seen in Defender Admin, defaults to `Upgrade to 0x12345678` (using the first 8 digits of the new implementation address)
-* `description`: description of the upgrade proposal as seen in Defender Admin, defaults to the full implementation address.
-* `multisig`: address of the multisignature wallet contract with the rights to execute the upgrade. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]). Both Gnosis Safe and Gnosis MultisigWallet multisigs are supported.
-* `proxyAdmin`: address of the https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[`ProxyAdmin`] contract that manages the proxy, if exists. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]), though UUPS proxies typically do not require the usage of a ProxyAdmin.
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -323,12 +417,27 @@ async function proposeUpgrade(
   }>
 ----
 
+NOTE: This method requires the https://www.npmjs.com/package/@openzeppelin/hardhat-defender[`@openzeppelin/hardhat-defender`] package, as well as configuring a Defender Team API Key.
+
+Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in https://docs.openzeppelin.com/defender/admin[Defender Admin], for review and approval by the upgrade administrators. Supported for UUPS or Transparent proxies. Not currently supported for beacon proxies or beacons. For beacons, use `prepareUpgrade` along with a custom action in Defender Admin to upgrade the beacon to the deployed implementation.
+
+*Parameters:*
+
+* `proxyAddress` - the proxy address.
+* `ImplFactory` - the new implementation contract.
+* `opts` - an object with options:
+** `title`: title of the upgrade proposal as seen in Defender Admin, defaults to `Upgrade to 0x12345678` (using the first 8 digits of the new implementation address)
+** `description`: description of the upgrade proposal as seen in Defender Admin, defaults to the full implementation address.
+** `multisig`: address of the multisignature wallet contract with the rights to execute the upgrade. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]). Both Gnosis Safe and Gnosis MultisigWallet multisigs are supported.
+** `proxyAdmin`: address of the https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[`ProxyAdmin`] contract that manages the proxy, if exists. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]), though UUPS proxies typically do not require the usage of a ProxyAdmin.
+** See <<common-options>>.
+
+*Returns:*
+
+* an object with the URL of the Defender proposal, and the ethers transaction response corresponding to the deployment of the new implementation contract. Note that if the new implementation contract was originally imported as a result of `forceImport`, the ethers transaction response will be undefined.
+
 [[deploy-proxy-admin]]
 == deployProxyAdmin
-
-Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy admin] contract and returns its address if one was not already deployed on the current network, or just returns the address of the proxy admin if one was already deployed. Note that this plugin currently only supports using one proxy admin per network.
-
-* See <<common-options>>.
 
 [source,ts]
 ----
@@ -341,10 +450,24 @@ async function deployProxyAdmin(
 ): Promise<string>
 ----
 
+Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy admin] contract and returns its address if one was not already deployed on the current network, or just returns the address of the proxy admin if one was already deployed. Note that this plugin currently only supports using one proxy admin per network.
+
+*Parameters:*
+
+* `Signer` - the signer to use for deployment.
+* `opts` - an object with options:
+** See <<common-options>>.
+
+*Returns:*
+
+* the address of the proxy admin.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.20.0`
+
 [[admin-change-proxy-admin]]
 == admin.changeProxyAdmin
-
-Changes the admin for a specific proxy. Receives the address of the proxy to change, and the new admin address.
 
 [source,ts]
 ----
@@ -354,10 +477,15 @@ async function changeProxyAdmin(
 ): Promise<void>
 ----
 
+Changes the admin for a specific proxy.
+
+*Parameters:*
+
+* `proxyAddress` - the address of the proxy to change.
+* `newAdmin` - the new admin address.
+
 [[admin-transfer-proxy-admin-ownership]]
 == admin.transferProxyAdminOwnership
-
-Changes the owner of the proxy admin contract, which is the default admin for upgrade rights over all proxies. Receives the new admin address.
 
 [source,ts]
 ----
@@ -366,10 +494,14 @@ async function transferProxyAdminOwnership(
 ): Promise<void>
 ----
 
+Changes the owner of the proxy admin contract, which is the default admin for upgrade rights over all proxies.
+
+*Parameters:*
+
+* `newAdmin` - the new admin address.
+
 [[erc1967]]
 == erc1967
-
-Functions in this module provide access to the https://eips.ethereum.org/EIPS/eip-1967[ERC1967] variables of a proxy contract.
 
 [source,ts]
 ----
@@ -378,26 +510,48 @@ async function erc1967.getBeaconAddress(proxyAddress: string): Promise<string>;
 async function erc1967.getAdminAddress(proxyAddress: string): Promise<string>;
 ----
 
+Functions in this module provide access to the https://eips.ethereum.org/EIPS/eip-1967[ERC1967] variables of a proxy contract.
+
+*Parameters:*
+
+* `proxyAddress` - the proxy address.
+
+*Returns:*
+
+* the implementation, beacon, or admin address depending on the function called.
+
 [[beacon]]
 == beacon
-
-This module provides a convenience function to get the implementation address from a beacon contract.
 
 [source,ts]
 ----
 async function beacon.getImplementationAddress(beaconAddress: string): Promise<string>;
 ----
 
+This module provides a convenience function to get the implementation address from a beacon contract.
+
+*Parameters:*
+
+* `beaconAddress` - the beacon address.
+
+*Returns:*
+
+* the implementation address.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.13.0`
+
 == silenceWarnings
-
-Silences all subsequent warnings about the use of unsafe flags. Prints a last warning before doing so.
-
-NOTE: This function is useful for tests, but its use in production deployment scripts is discouraged.
 
 [source,ts]
 ----
 function silenceWarnings()
 ----
+
+NOTE: This function is useful for tests, but its use in production deployment scripts is discouraged.
+
+Silences all subsequent warnings about the use of unsafe flags. Prints a last warning before doing so.
 
 [[verify]]
 == verify
@@ -412,6 +566,12 @@ The following contracts will be verified when you run this task on your proxy ad
 * https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Proxy[ERC1967Proxy] or https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[TransparentUpgradeableProxy] or https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[BeaconProxy] (for UUPS, transparent, or beacon proxies, respectively)
 * https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[ProxyAdmin] (with transparent proxies)
 * https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[UpgradeableBeacon] (with beacon proxies)
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.18.0`
+
+*Usage:*
 
 To use this task, ensure you have hardhat-etherscan installed:
 [source,sh]
