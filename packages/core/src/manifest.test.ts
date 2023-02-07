@@ -232,6 +232,47 @@ test.serial('forked chain without existing manifest', async t => {
   await deleteFile(t, `${os.tmpdir()}/openzeppelin-upgrades/dev-${devId}-${instanceId}.json`);
 });
 
+test.serial('dev instance with known network id', async t => {
+  const devId = 80001;
+
+  await deleteManifests(t, devId);
+
+  // dev instance without forking, so this real manifest should not be actually used
+  await writeTestManifest(`.openzeppelin/polygon-mumbai.json`);
+
+  const instanceId = '0xc';
+  const devInstanceMetadata = { instanceId: instanceId };
+
+  const manifest = new Manifest(devId, devInstanceMetadata, os.tmpdir());
+
+  await manifest.lockedRun(async () => {
+    await fs.access(`${os.tmpdir()}/openzeppelin-upgrades/chain-${devId}-${instanceId}.lock`);
+    const data = await manifest.read();
+    data.proxies.push({
+      address: '0x456',
+      txHash: '0x0',
+      kind: 'uups',
+    });
+
+    await manifest.write(data);
+  });
+  t.throwsAsync(fs.access(`${os.tmpdir()}/openzeppelin-upgrades/chain-${devId}-${instanceId}.lock`));
+  await fs.access(`${os.tmpdir()}/openzeppelin-upgrades/dev-${devId}-${instanceId}.json`);
+
+  // check that the contents were NOT persisted to original manifest
+  const orig = await new Manifest(devId).read();
+  t.true(orig.proxies.length === 1);
+  t.true(orig.proxies[0].address === '0x123');
+
+  // check that the contents were persisted to dev manifest without original contents
+  const dev = await new Manifest(devId, devInstanceMetadata, os.tmpdir()).read();
+  t.true(dev.proxies.length === 1);
+  t.true(dev.proxies[0].address === '0x456');
+
+  await deleteManifests(t, devId);
+  await deleteFile(t, `${os.tmpdir()}/openzeppelin-upgrades/dev-${devId}-${instanceId}.json`);
+});
+
 test('manifest name for a known network', t => {
   const manifest = new Manifest(1);
   t.is(manifest.file, '.openzeppelin/mainnet.json');

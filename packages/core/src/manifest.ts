@@ -90,6 +90,8 @@ export class Manifest {
   readonly devDir?: string;
   readonly devFile?: string;
 
+  private readonly forked: boolean = false;
+
   private locked = false;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
@@ -119,6 +121,8 @@ export class Manifest {
       if (devInstanceMetadata.forkedNetwork !== undefined) {
         forkedChainId = devInstanceMetadata.forkedNetwork.chainId;
         debug('forked network chain id:', forkedChainId);
+
+        this.forked = true;
       }
     }
 
@@ -177,7 +181,7 @@ export class Manifest {
   }
 
   private async readFile(): Promise<string> {
-    if (this.devFile !== undefined && (await this.exists(this.devFile))) {
+    if (this.devFile !== undefined && (!this.forked || await this.exists(this.devFile))) {
       return await fs.readFile(this.devFile, 'utf8');
     } else if (this.file === this.fallbackFile) {
       return await fs.readFile(this.file, 'utf8');
