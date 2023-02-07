@@ -62,7 +62,11 @@ async function getDevInstanceMetadata(
     );
   }
 
-  return { networkName: 'hardhat', instanceId: hardhatMetadata.instanceId, forkedNetwork: hardhatMetadata.forkedNetwork };
+  return {
+    networkName: 'hardhat',
+    instanceId: hardhatMetadata.instanceId,
+    forkedNetwork: hardhatMetadata.forkedNetwork,
+  };
 }
 
 function getSuffix(chainId: number, devInstanceMetadata?: DevInstanceMetadata) {
@@ -182,7 +186,7 @@ export class Manifest {
   }
 
   private async readFile(): Promise<string> {
-    if (this.devFile !== undefined && (!this.forked || await this.exists(this.devFile))) {
+    if (this.devFile !== undefined && (!this.forked || (await this.exists(this.devFile)))) {
       return await fs.readFile(this.devFile, 'utf8');
     } else if (this.file === this.fallbackFile) {
       return await fs.readFile(this.file, 'utf8');
