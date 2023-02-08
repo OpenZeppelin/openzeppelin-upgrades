@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Support storage gaps named with `__gap_*`. ([#732](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/732))
+- Improve detection of storage gap usage. ([#731](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/731))
 
 ## 1.22.0 (2023-01-31)
 
