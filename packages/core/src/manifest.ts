@@ -92,7 +92,7 @@ export class Manifest {
   readonly fallbackFile: string;
 
   private readonly devInstanceMetadata?: DevInstanceMetadata;
-  readonly devDir?: string;
+  private readonly devDir?: string;
   private readonly parent?: Manifest;
 
   private locked = false;
