@@ -93,9 +93,7 @@ export class Manifest {
 
   private readonly devInstanceMetadata?: DevInstanceMetadata;
   readonly devDir?: string;
-  readonly devFile?: string;
-
-  private readonly forked: boolean;
+  private readonly parent?: Manifest;
 
   private locked = false;
 
@@ -113,7 +111,6 @@ export class Manifest {
     this.devInstanceMetadata = devInstanceMetadata;
 
     let forkedChainId = undefined;
-    this.forked = false;
 
     if (devInstanceMetadata !== undefined) {
       assert(osTmpDir !== undefined);
@@ -121,23 +118,26 @@ export class Manifest {
       debug('development manifest directory:', this.devDir);
 
       const devName = `${devInstanceMetadata.networkName}-${getSuffix(chainId, devInstanceMetadata)}`;
-      this.devFile = path.join(this.devDir, `${devName}.json`);
-      debug('development manifest file:', this.devFile);
+      const devFile = path.join(this.devDir, `${devName}.json`);
+      debug('development manifest file:', devFile);
+
+      this.fallbackFile = devFile;
+      this.file = devFile;
 
       if (devInstanceMetadata.forkedNetwork !== undefined) {
         forkedChainId = devInstanceMetadata.forkedNetwork.chainId;
         debug('forked network chain id:', forkedChainId);
 
-        this.forked = true;
+        this.parent = new Manifest(forkedChainId);
       }
+    } else {
+      const networkName = networkNames[forkedChainId ?? chainId];
+      const fallbackName = `unknown-${forkedChainId ?? chainId}`;
+      this.fallbackFile = path.join(MANIFEST_DEFAULT_DIR, `${fallbackName}.json`);
+      this.file = path.join(MANIFEST_DEFAULT_DIR, `${networkName ?? fallbackName}.json`);
+
+      debug('manifest file:', this.file, 'fallback file:', this.fallbackFile);
     }
-
-    const networkName = networkNames[forkedChainId ?? chainId];
-    const fallbackName = `unknown-${forkedChainId ?? chainId}`;
-    this.fallbackFile = path.join(MANIFEST_DEFAULT_DIR, `${fallbackName}.json`);
-    this.file = path.join(MANIFEST_DEFAULT_DIR, `${networkName ?? fallbackName}.json`);
-
-    debug('manifest file:', this.file, 'fallback file:', this.fallbackFile);
   }
 
   async getAdmin(): Promise<Deployment | undefined> {
@@ -187,9 +187,7 @@ export class Manifest {
   }
 
   private async readFile(): Promise<string> {
-    if (this.devFile !== undefined && (!this.forked || (await this.exists(this.devFile)))) {
-      return await fs.readFile(this.devFile, 'utf8');
-    } else if (this.file === this.fallbackFile) {
+    if (this.file === this.fallbackFile) {
       return await fs.readFile(this.file, 'utf8');
     } else {
       const fallbackExists = await this.exists(this.fallbackFile);
@@ -210,12 +208,8 @@ export class Manifest {
   }
 
   private async writeFile(content: string): Promise<void> {
-    if (this.devFile !== undefined) {
-      await fs.writeFile(this.devFile, content);
-    } else {
-      await this.renameFileIfRequired();
-      await fs.writeFile(this.file, content);
-    }
+    await this.renameFileIfRequired();
+    await fs.writeFile(this.file, content);
   }
 
   private async renameFileIfRequired() {
@@ -235,6 +229,9 @@ export class Manifest {
       return validateOrUpdateManifestVersion(data);
     } catch (e: any) {
       if (e.code === 'ENOENT') {
+        if (this.parent !== undefined) {
+          return await this.parent.read();
+        }
         return defaultManifest();
       } else {
         throw e;
