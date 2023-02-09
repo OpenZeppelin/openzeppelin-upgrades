@@ -95,7 +95,7 @@ export class Manifest {
   readonly devDir?: string;
   readonly devFile?: string;
 
-  private readonly forked = false;
+  private readonly forked: boolean;
 
   private locked = false;
 
@@ -113,6 +113,7 @@ export class Manifest {
     this.devInstanceMetadata = devInstanceMetadata;
 
     let forkedChainId = undefined;
+    this.forked = false;
 
     if (devInstanceMetadata !== undefined) {
       assert(osTmpDir !== undefined);
