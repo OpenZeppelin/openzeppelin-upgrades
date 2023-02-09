@@ -859,3 +859,44 @@ contract StorageUpgrade_CustomGap_V2_Bad_Changed_Gap_Name {
     uint256[23] __gap_part2; // name stayed the same
     uint256 z;
 }
+
+contract Parent1 {
+    string[5] s;
+    uint256[45] private __gap;
+}
+
+contract Parent2 {
+    bool b;
+    uint256[49] private __gap;
+}
+
+contract StorageUpgrade_ConsumeAndAddGap_V1 is Parent1 {
+    uint256[50] private __gap;
+}
+
+contract StorageUpgrade_ConsumeAndAddGap_V2 is Parent1, Parent2 {
+}
+
+contract StorageUpgrade_ConsumeAndAddGap_V3 is Parent1, Parent2 {
+    uint256 a;
+    uint256[49] private __gap;
+}
+
+contract StorageUpgrade_ConsumeAndAddGap_V3b is Parent1, Parent2 {
+    uint256[50] private __gap;
+}
+
+contract V1Storage {
+    uint256[50] private __gap;
+}
+
+contract StorageUpgrade_ConsumeAndAddGap_Storage_V1 is V1Storage, Parent1 {
+}
+
+contract V2Storage {
+    uint256 abc;
+    uint256[49] private __gap;
+}
+
+contract StorageUpgrade_ConsumeAndAddGap_Storage_V2 is V2Storage, Parent1, Parent2 {
+}

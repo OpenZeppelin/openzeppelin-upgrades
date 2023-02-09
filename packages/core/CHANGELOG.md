@@ -2,8 +2,13 @@
 
 ## Unreleased
 
-- Support storage gaps named with `__gap_*`. ([#732](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/732))
 - Support Hardhat tests in --parallel mode when using Hardhat version 2.12.3 or later. ([#726](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/726))
+
+## 1.23.0 (2023-02-09)
+
+- Support storage gaps named with `__gap_*`. ([#732](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/732))
+- Improve detection of storage gap usage. ([#731](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/731))
+- Add support for Optimism to manifest filenames. ([#740](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/740))
 
 ## 1.22.0 (2023-01-31)
 
