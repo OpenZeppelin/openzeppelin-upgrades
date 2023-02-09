@@ -95,7 +95,7 @@ export class Manifest {
   readonly devDir?: string;
   readonly devFile?: string;
 
-  private readonly forked: boolean = false;
+  private readonly forked = false;
 
   private locked = false;
 
