@@ -90,9 +90,9 @@ export class Manifest {
   readonly chainId: number;
   readonly file: string;
   readonly fallbackFile: string;
+  private readonly dir: string;
 
   private readonly devInstanceMetadata?: DevInstanceMetadata;
-  private readonly devDir?: string;
   private readonly parent?: Manifest;
 
   private locked = false;
@@ -115,11 +115,11 @@ export class Manifest {
 
     if (devInstanceMetadata !== undefined) {
       assert(osTmpDir !== undefined);
-      this.devDir = path.join(osTmpDir, MANIFEST_TEMP_DIR);
-      debug('development manifest directory:', this.devDir);
+      this.dir = path.join(osTmpDir, MANIFEST_TEMP_DIR);
+      debug('development manifest directory:', this.dir);
 
       const devName = `${devInstanceMetadata.networkName}-${getSuffix(chainId, devInstanceMetadata)}`;
-      const devFile = path.join(this.devDir, `${devName}.json`);
+      const devFile = path.join(this.dir, `${devName}.json`);
       debug('development manifest file:', devFile);
 
       this.fallbackFile = devFile;
@@ -132,6 +132,7 @@ export class Manifest {
         this.parent = new Manifest(forkedChainId);
       }
     } else {
+      this.dir = MANIFEST_DEFAULT_DIR;
       const networkName = networkNames[forkedChainId ?? chainId];
       const fallbackName = `unknown-${forkedChainId ?? chainId}`;
       this.fallbackFile = path.join(MANIFEST_DEFAULT_DIR, `${fallbackName}.json`);
@@ -264,10 +265,7 @@ export class Manifest {
   }
 
   private async lock() {
-    const lockfileName = path.join(
-      this.dir,
-      `chain-${getSuffix(this.chainId, this.devInstanceMetadata)}`,
-    );
+    const lockfileName = path.join(this.dir, `chain-${getSuffix(this.chainId, this.devInstanceMetadata)}`);
 
     await fs.mkdir(path.dirname(lockfileName), { recursive: true });
     const release = await lockfile.lock(lockfileName, { retries: 3, realpath: false });
