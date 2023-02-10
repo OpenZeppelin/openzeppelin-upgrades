@@ -102,8 +102,9 @@ export class Manifest {
     const devInstanceMetadata = await getDevInstanceMetadata(provider, chainId);
     if (devInstanceMetadata !== undefined) {
       return new Manifest(chainId, devInstanceMetadata, os.tmpdir());
+    } else {
+      return new Manifest(chainId);
     }
-    return new Manifest(chainId);
   }
 
   constructor(chainId: number, devInstanceMetadata?: DevInstanceMetadata, osTmpDir?: string) {
