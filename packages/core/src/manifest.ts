@@ -231,8 +231,9 @@ export class Manifest {
       if (e.code === 'ENOENT') {
         if (this.parent !== undefined) {
           return await this.parent.read();
+        } else {
+          return defaultManifest();
         }
-        return defaultManifest();
       } else {
         throw e;
       }
