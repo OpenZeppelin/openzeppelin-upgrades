@@ -111,8 +111,6 @@ export class Manifest {
     this.chainId = chainId;
     this.chainIdSuffix = getSuffix(chainId, devInstanceMetadata);
 
-    let forkedChainId = undefined;
-
     if (devInstanceMetadata !== undefined) {
       assert(osTmpDir !== undefined);
       this.dir = path.join(osTmpDir, MANIFEST_TEMP_DIR);
@@ -126,15 +124,15 @@ export class Manifest {
       this.file = devFile;
 
       if (devInstanceMetadata.forkedNetwork !== undefined) {
-        forkedChainId = devInstanceMetadata.forkedNetwork.chainId;
+        const forkedChainId = devInstanceMetadata.forkedNetwork.chainId;
         debug('forked network chain id:', forkedChainId);
 
         this.parent = new Manifest(forkedChainId);
       }
     } else {
       this.dir = MANIFEST_DEFAULT_DIR;
-      const networkName = networkNames[forkedChainId ?? chainId];
-      const fallbackName = `unknown-${forkedChainId ?? chainId}`;
+      const networkName = networkNames[chainId];
+      const fallbackName = `unknown-${chainId}`;
       this.fallbackFile = path.join(MANIFEST_DEFAULT_DIR, `${fallbackName}.json`);
       this.file = path.join(MANIFEST_DEFAULT_DIR, `${networkName ?? fallbackName}.json`);
 
