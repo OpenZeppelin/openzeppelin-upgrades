@@ -208,7 +208,7 @@ test.serial('forked chain, real manifest already locked', async t => {
 
   try {
     await realManifest.lockedRun(async () => {
-      await devManifest.read();
+      await devManifest.read(0);
     });
     t.fail();
   } catch (e: any) {

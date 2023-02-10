@@ -222,15 +222,15 @@ export class Manifest {
     }
   }
 
-  async read(): Promise<ManifestData> {
-    const release = this.locked ? undefined : await this.lock();
+  async read(retries?: number): Promise<ManifestData> {
+    const release = this.locked ? undefined : await this.lock(retries);
     try {
       const data = JSON.parse(await this.readFile()) as ManifestData;
       return validateOrUpdateManifestVersion(data);
     } catch (e: any) {
       if (e.code === 'ENOENT') {
         if (this.parent !== undefined) {
-          return await this.parent.read();
+          return await this.parent.read(retries);
         } else {
           return defaultManifest();
         }
@@ -262,11 +262,11 @@ export class Manifest {
     }
   }
 
-  private async lock() {
+  private async lock(retries = 3) {
     const lockfileName = path.join(this.dir, `chain-${this.chainIdSuffix}`);
 
     await fs.mkdir(path.dirname(lockfileName), { recursive: true });
-    const release = await lockfile.lock(lockfileName, { retries: 3, realpath: false });
+    const release = await lockfile.lock(lockfileName, { retries, realpath: false });
     this.locked = true;
     return async () => {
       await release();
