@@ -1,13 +1,24 @@
 export interface EthereumProvider {
+  send(method: 'hardhat_metadata', params: []): Promise<HardhatMetadata>;
   send(method: 'web3_clientVersion', params: []): Promise<string>;
   send(method: 'net_version', params: []): Promise<string>;
   send(method: 'eth_chainId', params: []): Promise<string>;
+  send(method: 'eth_instanceId', params: []): Promise<string>;
   send(method: 'eth_getCode', params: [string, string]): Promise<string>;
   send(method: 'eth_call', params: unknown[]): Promise<string>;
   send(method: 'eth_getStorageAt', params: [string, string, string]): Promise<string>;
   send(method: 'eth_getTransactionByHash', params: [string]): Promise<null | EthereumTransaction>;
   send(method: 'eth_getTransactionReceipt', params: [string]): Promise<null | EthereumTransactionReceipt>;
   send(method: string, params: unknown[]): Promise<unknown>;
+}
+
+interface HardhatMetadata {
+  chainId: number;
+  instanceId: string;
+  forkedNetwork?: {
+    // The chainId of the network that is being forked
+    chainId: number;
+  };
 }
 
 interface EthereumTransaction {
@@ -36,6 +47,14 @@ export async function getChainId(provider: EthereumProvider): Promise<number> {
 
 export async function getClientVersion(provider: EthereumProvider): Promise<string> {
   return provider.send('web3_clientVersion', []);
+}
+
+/**
+ * Gets Hardhat metadata when used with Hardhat 2.12.3 or later.
+ * The underlying provider will throw an error if this RPC method is not available.
+ */
+export async function getHardhatMetadata(provider: EthereumProvider): Promise<HardhatMetadata> {
+  return provider.send('hardhat_metadata', []);
 }
 
 export async function getStorageAt(

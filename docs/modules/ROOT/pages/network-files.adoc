@@ -64,3 +64,14 @@ An example `.gitignore` file could contain the following entries:
 # OpenZeppelin
 .openzeppelin/unknown-*.json
 ----
+
+[[temporary-files]]
+== Temporary Files
+
+Hardhat development networks using Hardhat version 2.12.3 or later will have network files written to an `openzeppelin-upgrades` folder under the operating system's temporary directory. These files are named `hardhat-<chain_id>-<instance_id>.json`, where `<instance_id>` is a 0x-prefixed hex id that uniquely identifies an instance/run of the Hardhat network. Files in this temporary folder can be safely deleted when their corresponding Hardhat network instance is no longer active, for example after Hardhat tests have finished.
+
+You can determine the location of a temporary network file by doing the following:
+
+. Run `export DEBUG=@openzeppelin:*` to enable debug logging.
+. Run your Hardhat test or script.
+. Find the log message containing the text `development manifest file:`.

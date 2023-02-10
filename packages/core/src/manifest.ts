@@ -1,6 +1,7 @@
+import os from 'os';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { EthereumProvider, getChainId, networkNames } from './provider';
+import { EthereumProvider, getChainId, getHardhatMetadata, networkNames } from './provider';
 import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
 
@@ -9,6 +10,8 @@ import type { StorageLayout } from './storage';
 import { pick } from './utils/pick';
 import { mapValues } from './utils/map-values';
 import { UpgradesError } from './error';
+import debug from './utils/debug';
+import { assert } from './utils/assert';
 
 const currentManifestVersion = '3.2';
 
@@ -38,27 +41,103 @@ function defaultManifest(): ManifestData {
   };
 }
 
-const manifestDir = '.openzeppelin';
+const MANIFEST_DEFAULT_DIR = '.openzeppelin';
+const MANIFEST_TEMP_DIR = 'openzeppelin-upgrades';
+
+async function getDevInstanceMetadata(
+  provider: EthereumProvider,
+  chainId: number,
+): Promise<DevInstanceMetadata | undefined> {
+  let hardhatMetadata;
+
+  try {
+    hardhatMetadata = await getHardhatMetadata(provider);
+  } catch (e: unknown) {
+    return undefined;
+  }
+
+  if (hardhatMetadata.chainId !== chainId) {
+    throw new Error(
+      `Broken invariant: Hardhat metadata's chainId ${hardhatMetadata.chainId} does not match eth_chainId ${chainId}`,
+    );
+  }
+
+  return {
+    networkName: 'hardhat',
+    instanceId: hardhatMetadata.instanceId,
+    forkedNetwork: hardhatMetadata.forkedNetwork,
+  };
+}
+
+function getSuffix(chainId: number, devInstanceMetadata?: DevInstanceMetadata) {
+  if (devInstanceMetadata !== undefined) {
+    return `${chainId}-${devInstanceMetadata.instanceId}`;
+  } else {
+    return `${chainId}`;
+  }
+}
+
+interface DevInstanceMetadata {
+  networkName: string;
+  instanceId: string;
+  forkedNetwork?: {
+    // The chainId of the network that is being forked
+    chainId: number;
+  };
+}
 
 export class Manifest {
   readonly chainId: number;
   readonly file: string;
-  private readonly fallbackFile: string;
+  readonly fallbackFile: string;
+  private readonly dir: string;
+
+  private readonly chainIdSuffix: string;
+  private readonly parent?: Manifest;
 
   private locked = false;
 
   static async forNetwork(provider: EthereumProvider): Promise<Manifest> {
-    return new Manifest(await getChainId(provider));
+    const chainId = await getChainId(provider);
+    const devInstanceMetadata = await getDevInstanceMetadata(provider, chainId);
+    if (devInstanceMetadata !== undefined) {
+      return new Manifest(chainId, devInstanceMetadata, os.tmpdir());
+    } else {
+      return new Manifest(chainId);
+    }
   }
 
-  constructor(chainId: number) {
+  constructor(chainId: number, devInstanceMetadata?: DevInstanceMetadata, osTmpDir?: string) {
     this.chainId = chainId;
+    this.chainIdSuffix = getSuffix(chainId, devInstanceMetadata);
 
-    const fallbackName = `unknown-${this.chainId}`;
-    this.fallbackFile = path.join(manifestDir, `${fallbackName}.json`);
+    if (devInstanceMetadata !== undefined) {
+      assert(osTmpDir !== undefined);
+      this.dir = path.join(osTmpDir, MANIFEST_TEMP_DIR);
+      debug('development manifest directory:', this.dir);
 
-    const name = networkNames[this.chainId] ?? fallbackName;
-    this.file = path.join(manifestDir, `${name}.json`);
+      const devName = `${devInstanceMetadata.networkName}-${this.chainIdSuffix}`;
+      const devFile = path.join(this.dir, `${devName}.json`);
+      debug('development manifest file:', devFile);
+
+      this.fallbackFile = devFile;
+      this.file = devFile;
+
+      if (devInstanceMetadata.forkedNetwork !== undefined) {
+        const forkedChainId = devInstanceMetadata.forkedNetwork.chainId;
+        debug('forked network chain id:', forkedChainId);
+
+        this.parent = new Manifest(forkedChainId);
+      }
+    } else {
+      this.dir = MANIFEST_DEFAULT_DIR;
+      const networkName = networkNames[chainId];
+      const fallbackName = `unknown-${chainId}`;
+      this.fallbackFile = path.join(MANIFEST_DEFAULT_DIR, `${fallbackName}.json`);
+      this.file = path.join(MANIFEST_DEFAULT_DIR, `${networkName ?? fallbackName}.json`);
+
+      debug('manifest file:', this.file, 'fallback file:', this.fallbackFile);
+    }
   }
 
   async getAdmin(): Promise<Deployment | undefined> {
@@ -143,14 +222,18 @@ export class Manifest {
     }
   }
 
-  async read(): Promise<ManifestData> {
-    const release = this.locked ? undefined : await this.lock();
+  async read(retries?: number): Promise<ManifestData> {
+    const release = this.locked ? undefined : await this.lock(retries);
     try {
       const data = JSON.parse(await this.readFile()) as ManifestData;
       return validateOrUpdateManifestVersion(data);
     } catch (e: any) {
       if (e.code === 'ENOENT') {
-        return defaultManifest();
+        if (this.parent !== undefined) {
+          return await this.parent.read(retries);
+        } else {
+          return defaultManifest();
+        }
       } else {
         throw e;
       }
@@ -179,11 +262,11 @@ export class Manifest {
     }
   }
 
-  private async lock() {
-    const lockfileName = path.join(manifestDir, `chain-${this.chainId}`);
+  private async lock(retries = 3) {
+    const lockfileName = path.join(this.dir, `chain-${this.chainIdSuffix}`);
 
     await fs.mkdir(path.dirname(lockfileName), { recursive: true });
-    const release = await lockfile.lock(lockfileName, { retries: 3, realpath: false });
+    const release = await lockfile.lock(lockfileName, { retries, realpath: false });
     this.locked = true;
     return async () => {
       await release();
