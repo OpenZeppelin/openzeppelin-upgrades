@@ -265,7 +265,7 @@ export class Manifest {
 
   private async lock() {
     const lockfileName = path.join(
-      this.devDir ?? MANIFEST_DEFAULT_DIR,
+      this.dir,
       `chain-${getSuffix(this.chainId, this.devInstanceMetadata)}`,
     );
 
