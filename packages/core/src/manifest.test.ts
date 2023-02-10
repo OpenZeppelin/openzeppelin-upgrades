@@ -359,6 +359,18 @@ test('manifest name for an unknown network, development instance, non hardhat', 
   t.is(manifest.fallbackFile, expectedPath);
 });
 
+test('manifest name for an unknown network, development instance, hardhat', t => {
+  const chainId = 31337;
+  const instanceId = '0x22223';
+  const devInstanceMetadata = { networkName: 'dev', instanceId: instanceId };
+
+  const manifest = new Manifest(chainId, devInstanceMetadata, '/tmp');
+
+  const expectedPath = `/tmp/openzeppelin-upgrades/dev-${chainId}-${instanceId}.json`;
+  t.is(manifest.file, expectedPath);
+  t.is(manifest.fallbackFile, `.openzeppelin/unknown-${chainId}.json`);
+});
+
 test('manifest dev instance without tmp dir param', t => {
   const chainId = 1;
   const instanceId = '0x33333';
