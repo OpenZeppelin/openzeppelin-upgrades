@@ -111,6 +111,8 @@ export class Manifest {
     this.chainId = chainId;
     this.chainIdSuffix = getSuffix(chainId, devInstanceMetadata);
 
+    const defaultFallbackName = `unknown-${chainId}`;
+
     if (devInstanceMetadata !== undefined) {
       assert(osTmpDir !== undefined);
       this.dir = path.join(osTmpDir, MANIFEST_TEMP_DIR);
@@ -118,10 +120,14 @@ export class Manifest {
 
       const devName = `${devInstanceMetadata.networkName}-${this.chainIdSuffix}`;
       const devFile = path.join(this.dir, `${devName}.json`);
-      debug('development manifest file:', devFile);
 
-      this.fallbackFile = devFile;
       this.file = devFile;
+      if (chainId === 31337) {
+        this.fallbackFile = path.join(MANIFEST_DEFAULT_DIR, `${defaultFallbackName}.json`);
+      } else {
+        this.fallbackFile = devFile;
+      }
+      debug('development manifest file:', this.file, 'fallback file:', this.fallbackFile);
 
       if (devInstanceMetadata.forkedNetwork !== undefined) {
         const forkedChainId = devInstanceMetadata.forkedNetwork.chainId;
@@ -131,10 +137,10 @@ export class Manifest {
       }
     } else {
       this.dir = MANIFEST_DEFAULT_DIR;
+
       const networkName = networkNames[chainId];
-      const fallbackName = `unknown-${chainId}`;
-      this.fallbackFile = path.join(MANIFEST_DEFAULT_DIR, `${fallbackName}.json`);
-      this.file = path.join(MANIFEST_DEFAULT_DIR, `${networkName ?? fallbackName}.json`);
+      this.file = path.join(MANIFEST_DEFAULT_DIR, `${networkName ?? defaultFallbackName}.json`);
+      this.fallbackFile = path.join(MANIFEST_DEFAULT_DIR, `${defaultFallbackName}.json`);
 
       debug('manifest file:', this.file, 'fallback file:', this.fallbackFile);
     }
