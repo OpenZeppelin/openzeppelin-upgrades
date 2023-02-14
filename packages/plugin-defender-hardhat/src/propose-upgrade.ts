@@ -2,7 +2,6 @@ import { UpgradeOptions } from '@openzeppelin/hardhat-upgrades';
 import '@openzeppelin/hardhat-upgrades/dist/type-extensions';
 import {
   getImplementationAddress,
-  isBeacon,
   isBeaconProxy,
   isTransparentOrUUPSProxy,
   isTransparentProxy,
@@ -43,8 +42,6 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
 
     if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
       throw new Error(`Beacon proxy is not currently supported with defender.proposeUpgrade()`);
-    } else if (await isBeacon(hre.network.provider, proxyAddress)) {
-      throw new Error(`Beacon is not currently supported with defender.proposeUpgrade()`);
     } else if (
       !multisig &&
       (await isTransparentOrUUPSProxy(hre.network.provider, proxyAddress)) &&
