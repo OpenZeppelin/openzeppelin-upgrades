@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.24.0 (2023-02-14)
 
 - Support Hardhat tests in --parallel mode when using Hardhat version 2.12.3 or later. ([#726](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/726))
 - Support Hardhat forked networks when using Hardhat version 2.12.3 or later. ([#726](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/726))
