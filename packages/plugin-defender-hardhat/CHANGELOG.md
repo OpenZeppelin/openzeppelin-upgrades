@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Remove check for beacon in `proposeUpgrade`. ([#745](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/745))
+
 ## 1.8.1 (2022-09-27)
 
 - Silence warning about missing Defender configuration unless it is required. ([#663](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/663))
