@@ -2,7 +2,6 @@ import { UpgradeOptions } from '@openzeppelin/hardhat-upgrades';
 import '@openzeppelin/hardhat-upgrades/dist/type-extensions';
 import {
   getImplementationAddress,
-  isBeacon,
   isBeaconProxy,
   isTransparentOrUUPSProxy,
   isTransparentProxy,
