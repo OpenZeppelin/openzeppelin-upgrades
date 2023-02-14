@@ -142,7 +142,7 @@ export async function isDevelopmentNetwork(provider: EthereumProvider): Promise<
   } else {
     const clientVersion = await getClientVersion(provider);
     const [name] = clientVersion.split('/', 1);
-    return name === 'HardhatNetwork' || name === 'EthereumJS TestRPC';
+    return name === 'HardhatNetwork' || name === 'EthereumJS TestRPC' || name === 'anvil';
   }
 }
 

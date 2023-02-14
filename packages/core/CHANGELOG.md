@@ -4,6 +4,7 @@
 
 - Support Hardhat tests in --parallel mode when using Hardhat version 2.12.3 or later. ([#726](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/726))
 - Support Hardhat forked networks when using Hardhat version 2.12.3 or later. ([#726](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/726))
+- Add Foundry's anvil as a development network. ([#744](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/744))
 
 ## 1.23.0 (2023-02-09)
 
