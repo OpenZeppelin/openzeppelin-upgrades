@@ -15,6 +15,12 @@ function hasProperty(obj, prop) {
   return prop in obj;
 }
 
+function hasPropertyStartsWith(obj, prefix) {
+  return Object.keys(obj).some(item => {
+    return typeof item === "string" && item.startsWith(prefix);
+  });
+}
+
 const buildInfoField = readJSON(
   'artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.dbg.json',
 ).buildInfo;
@@ -29,5 +35,6 @@ assert(hasProperty(sources, '@openzeppelin/contracts/proxy/beacon/BeaconProxy.so
 assert(hasProperty(sources, '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol'));
 assert(hasProperty(sources, '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol'));
 assert(hasProperty(sources, '@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol'));
+assert(!hasPropertyStartsWith(sources, 'contracts/test'));
 
 writeJSON('artifacts/build-info.json', reducedInfo);
