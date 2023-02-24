@@ -3,9 +3,7 @@
 // compilation artifact file.
 
 const { task } = require('hardhat/config');
-const {
-  TASK_COMPILE_SOLIDITY_GET_COMPILATION_JOB_FOR_FILE,
-} = require('hardhat/builtin-tasks/task-names');
+const { TASK_COMPILE_SOLIDITY_GET_COMPILATION_JOB_FOR_FILE } = require('hardhat/builtin-tasks/task-names');
 
 const marker = Symbol('test');
 const markedCache = new WeakMap();

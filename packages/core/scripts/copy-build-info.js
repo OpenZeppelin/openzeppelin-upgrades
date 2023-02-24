@@ -17,7 +17,7 @@ function hasProperty(obj, prop) {
 
 function hasPropertyStartsWith(obj, prefix) {
   return Object.keys(obj).some(item => {
-    return typeof item === "string" && item.startsWith(prefix);
+    return typeof item === 'string' && item.startsWith(prefix);
   });
 }
 
