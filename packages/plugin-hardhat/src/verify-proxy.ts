@@ -19,15 +19,23 @@ import {
   isBeaconProxy,
   isEmptySlot,
 } from '@openzeppelin/upgrades-core';
-import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info.json';
 
 import { HardhatRuntimeEnvironment, RunSuperFunction } from 'hardhat/types';
 
 import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
+import ERC1967ProxyBuildInfo from '@openzeppelin/upgrades-core/artifacts/proxy-build-info/ERC1967Proxy.json';
+
 import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
+import BeaconProxyBuildInfo from '@openzeppelin/upgrades-core/artifacts/proxy-build-info/BeaconProxy.json';
+
 import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
+import UpgradeableBeaconBuildInfo from '@openzeppelin/upgrades-core/artifacts/proxy-build-info/UpgradeableBeacon.json';
+
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
+import TransparentUpgradeableProxyBuildInfo from '@openzeppelin/upgrades-core/artifacts/proxy-build-info/TransparentUpgradeableProxy.json';
+
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
+import ProxyAdminBuildInfo from '@openzeppelin/upgrades-core/artifacts/proxy-build-info/ProxyAdmin.json';
 
 import { keccak256 } from 'ethereumjs-util';
 
@@ -50,17 +58,34 @@ interface ContractArtifact {
 interface VerifiableContractInfo {
   artifact: ContractArtifact;
   event: string;
+  buildInfo: BuildInfo;
+}
+
+/**
+ * Hardhat build info file content
+ */
+interface BuildInfo {
+  solcLongVersion: string;
+  input: any;
 }
 
 /**
  * The proxy-related contracts and their corresponding events that may have been deployed the current version of this plugin.
  */
 const verifiableContracts = {
-  erc1967proxy: { artifact: ERC1967Proxy, event: 'Upgraded(address)' },
-  beaconProxy: { artifact: BeaconProxy, event: 'BeaconUpgraded(address)' },
-  upgradeableBeacon: { artifact: UpgradeableBeacon, event: 'OwnershipTransferred(address,address)' },
-  transparentUpgradeableProxy: { artifact: TransparentUpgradeableProxy, event: 'AdminChanged(address,address)' },
-  proxyAdmin: { artifact: ProxyAdmin, event: 'OwnershipTransferred(address,address)' },
+  erc1967proxy: { artifact: ERC1967Proxy, event: 'Upgraded(address)', buildInfo: ERC1967ProxyBuildInfo },
+  beaconProxy: { artifact: BeaconProxy, event: 'BeaconUpgraded(address)', buildInfo: BeaconProxyBuildInfo },
+  upgradeableBeacon: {
+    artifact: UpgradeableBeacon,
+    event: 'OwnershipTransferred(address,address)',
+    buildInfo: UpgradeableBeaconBuildInfo,
+  },
+  transparentUpgradeableProxy: {
+    artifact: TransparentUpgradeableProxy,
+    event: 'AdminChanged(address,address)',
+    buildInfo: TransparentUpgradeableProxyBuildInfo,
+  },
+  proxyAdmin: { artifact: ProxyAdmin, event: 'OwnershipTransferred(address,address)', buildInfo: ProxyAdminBuildInfo },
 };
 
 /**
@@ -383,7 +408,7 @@ async function verifyContractWithCreationEvent(
       errors,
     );
   } else {
-    await verifyContractWithConstructorArgs(etherscanApi, address, contractInfo.artifact, constructorArguments, errors);
+    await verifyContractWithConstructorArgs(etherscanApi, address, contractInfo, constructorArguments, errors);
   }
 }
 
@@ -392,25 +417,28 @@ async function verifyContractWithCreationEvent(
  *
  * @param etherscanApi The Etherscan API config
  * @param address The address of the contract to verify
- * @param artifact The contract artifact to use for verification.
+ * @param contractInfo The contract info to use for verification.
  * @param constructorArguments The constructor arguments to use for verification.
  */
 async function verifyContractWithConstructorArgs(
   etherscanApi: EtherscanAPIConfig,
   address: any,
-  artifact: ContractArtifact,
+  contractInfo: VerifiableContractInfo,
   constructorArguments: string,
   errors: string[],
 ) {
   debug(`verifying contract ${address} with constructor args ${constructorArguments}`);
 
+  const buildInfo = contractInfo.buildInfo;
+  const artifact = contractInfo.artifact;
+
   const params = {
     apiKey: etherscanApi.key,
     contractAddress: address,
-    sourceCode: JSON.stringify(artifactsBuildInfo.input),
+    sourceCode: JSON.stringify(buildInfo.input),
     sourceName: artifact.sourceName,
     contractName: artifact.contractName,
-    compilerVersion: `v${artifactsBuildInfo.solcLongVersion}`,
+    compilerVersion: `v${buildInfo.solcLongVersion}`,
     constructorArguments: constructorArguments,
   };
 
