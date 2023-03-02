@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const assert = require('assert');
+const path = require('path');
 
 function readJSON(path) {
   return JSON.parse(fs.readFileSync(path, 'utf8'));
@@ -11,55 +12,60 @@ function writeJSON(path, data) {
   fs.writeFileSync(path, JSON.stringify(data, null, 2));
 }
 
-function hasProperty(obj, prop) {
-  return prop in obj;
-}
-
 function hasPropertyStartsWith(obj, prefix) {
   return Object.keys(obj).some(item => {
     return typeof item === 'string' && item.startsWith(prefix);
   });
 }
 
-const buildInfoField = readJSON(
-  'artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.dbg.json',
-).buildInfo;
-const jsonRelativePath = `artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/${buildInfoField}`;
+function getBuildInfoFile(contractArtifactSol, contractName) {
+  const buildInfoRelativePath = readJSON(`${contractArtifactSol}/${contractName}.dbg.json`).buildInfo;
+  return `${contractArtifactSol}/${buildInfoRelativePath}`;
+}
 
-// Assert that all deployable proxy artifacts use the same build-info file
-assert(
-  buildInfoField ===
-    readJSON('artifacts/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.dbg.json').buildInfo,
+function copyMinimalBuildInfo(fromFile, toFile) {
+  const buildInfo = readJSON(fromFile);
+
+  const reducedInfo = { solcLongVersion: buildInfo.solcLongVersion, input: buildInfo.input };
+  const sources = reducedInfo.input.sources;
+
+  // Assert that the build-info file does NOT contain test contracts
+  assert(!hasPropertyStartsWith(sources, 'contracts/test'));
+
+  writeJSON(toFile, reducedInfo);
+}
+
+const BeaconProxy = getBuildInfoFile('artifacts/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol', 'BeaconProxy');
+const UpgradeableBeacon = getBuildInfoFile(
+  'artifacts/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol',
+  'UpgradeableBeacon',
 );
-assert(
-  buildInfoField ===
-    readJSON('artifacts/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.dbg.json')
-      .buildInfo,
+const ERC1967Proxy = getBuildInfoFile(
+  'artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol',
+  'ERC1967Proxy',
 );
-assert(
-  buildInfoField ===
-    readJSON(
-      'artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.dbg.json',
-    ).buildInfo,
-);
-assert(
-  buildInfoField ===
-    readJSON('artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.dbg.json').buildInfo,
+const ProxyAdmin = getBuildInfoFile('artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol', 'ProxyAdmin');
+const TransparentUpgradeableProxy = getBuildInfoFile(
+  'artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol',
+  'TransparentUpgradeableProxy',
 );
 
-const buildInfo = readJSON(jsonRelativePath);
-const reducedInfo = { solcLongVersion: buildInfo.solcLongVersion, input: buildInfo.input };
+// Assert that each proxy artifact's build-info file is different
+const set = new Set();
+set.add(path.parse(BeaconProxy).base);
+set.add(path.parse(UpgradeableBeacon).base);
+set.add(path.parse(ERC1967Proxy).base);
+set.add(path.parse(ProxyAdmin).base);
+set.add(path.parse(TransparentUpgradeableProxy).base);
+assert(set.size === 5);
 
-const sources = reducedInfo.input.sources;
-
-// Assert that all deployable proxy artifacts exist in ERC1967's build-info file
-assert(hasProperty(sources, '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol'));
-assert(hasProperty(sources, '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol'));
-assert(hasProperty(sources, '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol'));
-assert(hasProperty(sources, '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol'));
-assert(hasProperty(sources, '@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol'));
-
-// Assert that the build-info file does NOT contain test contracts
-assert(!hasPropertyStartsWith(sources, 'contracts/test'));
-
-writeJSON('artifacts/build-info.json', reducedInfo);
+fs.mkdir('artifacts/proxy-build-info', { recursive: true }, err => {
+  if (err) {
+    throw err;
+  }
+});
+copyMinimalBuildInfo(BeaconProxy, 'artifacts/proxy-build-info/BeaconProxy.json');
+copyMinimalBuildInfo(UpgradeableBeacon, 'artifacts/proxy-build-info/UpgradeableBeacon.json');
+copyMinimalBuildInfo(ERC1967Proxy, 'artifacts/proxy-build-info/ERC1967Proxy.json');
+copyMinimalBuildInfo(ProxyAdmin, 'artifacts/proxy-build-info/ProxyAdmin.json');
+copyMinimalBuildInfo(TransparentUpgradeableProxy, 'artifacts/proxy-build-info/TransparentUpgradeableProxy.json');
