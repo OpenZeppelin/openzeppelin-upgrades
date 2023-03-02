@@ -1,7 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+
 require('dotenv/config');
 
 require('@nomiclabs/hardhat-ethers');
 require('@nomiclabs/hardhat-etherscan');
+
+for (const f of fs.readdirSync(path.join(__dirname, 'hardhat'))) {
+  require(path.join(__dirname, 'hardhat', f));
+}
 
 const settings = {
   optimizer: {

@@ -6,6 +6,7 @@ module.exports = {
   extends: ['eslint:recommended', 'plugin:prettier/recommended'],
   env: {
     node: true,
+    es2022: true,
   },
   plugins: ['unicorn'],
   rules: {
