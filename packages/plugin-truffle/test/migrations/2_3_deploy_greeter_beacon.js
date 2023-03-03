@@ -8,6 +8,7 @@ module.exports = async function (deployer) {
   const beacon = await deployBeacon(GreeterBeaconImpl, { deployer });
 
   const proxy = await deployBeaconProxy(beacon, GreeterBeaconImpl, ['Hello Truffle'], { deployer });
+
   assert.equal(GreeterBeaconImpl.address, proxy.address);
   assert.equal(GreeterBeaconImpl.transactionHash, proxy.transactionHash);
 

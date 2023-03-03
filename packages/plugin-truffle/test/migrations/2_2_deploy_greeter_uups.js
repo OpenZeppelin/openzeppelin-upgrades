@@ -6,8 +6,12 @@ const assert = require('assert');
 
 module.exports = async function (deployer) {
   const g = await deployProxy(Greeter, ['Hello Truffle'], { deployer, kind: 'uups' });
+
   assert.equal(Greeter.address, g.address);
   assert.equal(Greeter.transactionHash, g.transactionHash);
 
   await upgradeProxy(g, GreeterV2, { deployer });
+
+  assert.equal(GreeterV2.address, Greeter.address);
+  assert.notEqual(GreeterV2.transactionHash, Greeter.transactionHash);
 };
