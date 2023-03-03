@@ -14,7 +14,7 @@ The following options are common to some functions.
 ** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.
 ** `"state-variable-assignment"`: Allows assigning state variables in a contract even though they will be stored in the implementation.
 ** `"state-variable-immutable"`: Allows use of immutable variables, which are not unsafe
-** `"constructor"`: Allows defining a constructor. Note that constructor arguments are not supported regardless of this option.
+** `"constructor"`: Allows defining a constructor. See `constructorArgs`.
 ** `"delegatecall"`, `"selfdestruct"`: Allow the use of these operations. Incorrect use of this option can put funds at risk of permanent loss. See xref:faq.adoc#delegatecall-selfdestruct[Can I safely use `delegatecall` and `selfdestruct`?]
 ** `"missing-public-upgradeto"`: Allow UUPS implementations that do not contain a public `upgradeTo` function. Enabling this option is likely to cause a revert due to the built-in UUPS safety mechanism.
 * `unsafeAllowRenames`: (`boolean`) Configure storage layout check to allow variable renaming.
