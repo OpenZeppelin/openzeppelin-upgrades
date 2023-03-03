@@ -71,6 +71,7 @@ export async function deployProxy(
   await manifest.addProxy(proxyDeployment);
 
   Contract.address = proxyDeployment.address;
+  Contract.transactionHash = proxyDeployment.txHash;
   const contract = new Contract(proxyDeployment.address);
   contract.transactionHash = proxyDeployment.txHash;
   return contract;

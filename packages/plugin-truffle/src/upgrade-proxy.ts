@@ -26,13 +26,16 @@ export async function upgradeProxy(
   const upgradeTo = await getUpgrader(provider, Contract, proxyAddress);
   const { impl: nextImpl } = await deployProxyImpl(Contract, opts, proxyAddress);
   const call = encodeCall(Contract, opts.call);
-  await upgradeTo(nextImpl, call);
+  const { tx: txHash } = await upgradeTo(nextImpl, call);
 
   Contract.address = proxyAddress;
-  return new Contract(proxyAddress);
+  Contract.transactionHash = txHash;
+  const contract = new Contract(proxyAddress);
+  contract.transactionHash = txHash;
+  return contract;
 }
 
-type Upgrader = (nextImpl: string, call?: string) => Promise<void>;
+type Upgrader = (nextImpl: string, call?: string) => Promise<{ tx: string }>;
 
 async function getUpgrader(
   provider: EthereumProvider,
@@ -47,7 +50,9 @@ async function getUpgrader(
     const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(contractTemplate);
     const proxy = new TransparentUpgradeableProxyFactory(proxyAddress);
 
-    return (nextImpl, call) => (call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl));
+    return (nextImpl, call) => {
+      return call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl);
+    };
   } else {
     // Admin contract: redirect upgrade call through it
     const manifest = await Manifest.forNetwork(provider);
@@ -59,8 +64,9 @@ async function getUpgrader(
       throw new Error('Proxy admin is not the one registered in the network manifest');
     }
 
-    return (nextImpl, call) =>
-      call ? admin.upgradeAndCall(proxyAddress, nextImpl, call) : admin.upgrade(proxyAddress, nextImpl);
+    return (nextImpl, call) => {
+      return call ? admin.upgradeAndCall(proxyAddress, nextImpl, call) : admin.upgrade(proxyAddress, nextImpl);
+    };
   }
 }
 
