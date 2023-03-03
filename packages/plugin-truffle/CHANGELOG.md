@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.17.1 (2023-03-03)
 
 - Use proxy transaction hash for implementation contract abstraction. ([#737](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/737))
 
