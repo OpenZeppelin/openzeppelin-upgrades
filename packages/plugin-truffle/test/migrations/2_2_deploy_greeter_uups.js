@@ -10,8 +10,9 @@ module.exports = async function (deployer) {
   assert.equal(Greeter.address, g.address);
   assert.equal(Greeter.transactionHash, g.transactionHash);
 
-  await upgradeProxy(g, GreeterV2, { deployer });
+  const upgraded = await upgradeProxy(g, GreeterV2, { deployer });
 
-  assert.equal(GreeterV2.address, Greeter.address);
+  assert.equal(GreeterV2.address, upgraded.address);
+  assert.equal(GreeterV2.transactionHash, upgraded.transactionHash);
   assert.notEqual(GreeterV2.transactionHash, Greeter.transactionHash);
 };
