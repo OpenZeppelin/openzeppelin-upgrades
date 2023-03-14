@@ -33,11 +33,11 @@ assembly {
   let ptr := mload(0x40)
 
   // (1) copy incoming call data
-  calldatacopy(ptr, 0, calldatasize)
+  calldatacopy(ptr, 0, calldatasize())
 
   // (2) forward call to logic contract
-  let result := delegatecall(gas, _impl, ptr, calldatasize, 0, 0)
-  let size := returndatasize
+  let result := delegatecall(gas(), _impl.slot, ptr, calldatasize(), 0, 0)
+  let size := returndatasize()
 
   // (3) retrieve return data
   returndatacopy(ptr, 0, size)
