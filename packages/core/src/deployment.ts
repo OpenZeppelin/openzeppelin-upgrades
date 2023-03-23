@@ -20,6 +20,9 @@ const sleep = promisify(setTimeout);
 export interface Deployment {
   address: string;
   txHash?: string;
+}
+
+export interface DeploymentId {
   deploymentId?: string;
 }
 
@@ -139,7 +142,7 @@ export interface DeploymentResponse {
 
 export async function waitAndValidateDeployment(
   provider: EthereumProvider,
-  deployment: Deployment,
+  deployment: Deployment & DeploymentId,
   type?: string,
   opts?: DeployOpts,
   getDeploymentResponse?: (deploymentId: string) => Promise<DeploymentResponse>,
@@ -173,7 +176,7 @@ export async function waitAndValidateDeployment(
         break;
       } else if (status === 'failed') {
         debug(`tx hash ${response.txHash} was reverted for deployment id ${deploymentId}`);
-        throw new InvalidDeployment({ address, txHash: response.txHash, deploymentId });
+        throw new InvalidDeployment({ address, txHash: response.txHash });
       } else if (status === 'submitted') {
         debug('waiting for deployment id to be completed', deploymentId);
         await sleep(pollInterval);
@@ -230,7 +233,7 @@ export async function waitAndValidateDeployment(
 }
 
 export class TransactionMinedTimeout extends UpgradesError {
-  constructor(readonly deployment: Deployment, type?: string, configurableTimeout?: boolean) {
+  constructor(readonly deployment: Deployment & DeploymentId, type?: string, configurableTimeout?: boolean) {
     super(
       `Timed out waiting for ${type ? type + ' ' : ''}contract deployment to address ${deployment.address} with ${
         deployment.deploymentId ? `deployment id ${deployment.deploymentId}` : `transaction ${deployment.txHash}`

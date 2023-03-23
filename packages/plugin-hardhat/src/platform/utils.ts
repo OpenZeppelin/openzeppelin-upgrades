@@ -105,7 +105,7 @@ export async function waitForDeployment(
       break;
     } else if (status === 'failed') {
       debug('deployment id failed', deploymentId);
-      throw new InvalidDeployment({ address, txHash: response.txHash, deploymentId });
+      throw new InvalidDeployment({ address, txHash: response.txHash });
     } else if (status === 'submitted') {
       debug('waiting for deployment id to be completed', deploymentId);
       await sleep(pollingInterval);

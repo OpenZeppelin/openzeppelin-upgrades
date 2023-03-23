@@ -2,7 +2,7 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 import assert from 'assert';
 
-import { Manifest, logWarning, ProxyDeployment, BeaconProxyUnsupportedError } from '@openzeppelin/upgrades-core';
+import { Manifest, logWarning, ProxyDeployment, BeaconProxyUnsupportedError, DeploymentId } from '@openzeppelin/upgrades-core';
 
 import {
   DeployProxyOptions,
@@ -50,7 +50,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
       }
     }
 
-    let proxyDeployment: ProxyDeployment & DeployTransaction;
+    let proxyDeployment: Required<ProxyDeployment & DeployTransaction> & DeploymentId;
     switch (kind) {
       case 'beacon': {
         throw new BeaconProxyUnsupportedError();
