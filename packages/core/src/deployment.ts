@@ -89,7 +89,7 @@ async function validateCached<T extends Deployment>(
 ): Promise<T | undefined> {
   if (cached !== undefined) {
     try {
-      await validateStoredDeployment(cached, provider, type, opts, merge, getDeploymentResponse);
+      return await validateStoredDeployment(cached, provider, type, opts, merge, getDeploymentResponse);
     } catch (e) {
       if (e instanceof InvalidDeployment && (await isDevelopmentNetwork(provider))) {
         debug('ignoring invalid deployment in development network', e.deployment.address);
@@ -101,8 +101,9 @@ async function validateCached<T extends Deployment>(
         throw e;
       }
     }
+  } else {
+    return undefined;
   }
-  return cached;
 }
 
 async function validateStoredDeployment<T extends Deployment & DeploymentId>(
@@ -112,8 +113,10 @@ async function validateStoredDeployment<T extends Deployment & DeploymentId>(
   opts?: DeployOpts,
   merge?: boolean,
   getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
-) {
+): Promise<T> {
   const { txHash, deploymentId } = stored;
+  let deployment = stored;
+
   if (txHash !== undefined) {
     // If there is a deployment with txHash stored, we look its transaction up. If the
     // transaction is found, the deployment is reused.
@@ -127,6 +130,10 @@ async function validateStoredDeployment<T extends Deployment & DeploymentId>(
       const response = await getDeploymentResponse(deploymentId, true);
       if (response !== undefined) {
         foundDeployment = deploymentId;
+
+        // update the stored tx hash
+        deployment = { ...stored, txHash: response.txHash };
+        debug('updating previous deployment to tx hash ', response.txHash);
       }
     }
 
@@ -134,20 +141,21 @@ async function validateStoredDeployment<T extends Deployment & DeploymentId>(
       debug('resuming previous deployment', foundDeployment);
       if (merge) {
         // If merging, wait for the existing deployment to be mined
-        waitAndValidateDeployment(provider, stored, type, opts, getDeploymentResponse);
+        waitAndValidateDeployment(provider, deployment, type, opts, getDeploymentResponse);
       }
     } else {
       // If the transaction is not found we throw an error, except if we're in
       // a development network then we simply silently redeploy.
       // This error should be caught by the caller to determine if we're in a dev network.
-      throw new InvalidDeployment(stored);
+      throw new InvalidDeployment(deployment);
     }
   } else {
-    const existingBytecode = await getCode(provider, stored.address);
+    const existingBytecode = await getCode(provider, deployment.address);
     if (isEmpty(existingBytecode)) {
-      throw new InvalidDeployment(stored);
+      throw new InvalidDeployment(deployment);
     }
   }
+  return deployment;
 }
 
 export interface DeploymentResponse {

@@ -3,6 +3,7 @@ import { Manifest, ManifestData, ImplDeployment } from './manifest';
 import { EthereumProvider, isDevelopmentNetwork } from './provider';
 import {
   Deployment,
+  DeploymentId,
   DeploymentResponse,
   InvalidDeployment,
   resumeOrDeploy,
@@ -195,7 +196,7 @@ function lens<T>(description: string, type: string, fn: (data: ManifestData) => 
 async function checkForAddressClash(
   provider: EthereumProvider,
   data: ManifestData,
-  updated: Deployment,
+  updated: Deployment & DeploymentId,
   checkAllAddresses: boolean,
 ): Promise<void> {
   const clash = lookupDeployment(data, updated.address, checkAllAddresses);
@@ -204,11 +205,15 @@ async function checkForAddressClash(
       debug('deleting a previous deployment at address', updated.address);
       clash.set(undefined);
     } else {
-      throw new Error(
-        `The following deployment clashes with an existing one at ${updated.address}\n\n` +
-          JSON.stringify(updated, null, 2) +
-          `\n\n`,
-      );
+      const existing = clash.get();
+      // it's a clash if there is no deployment id or if deployment ids don't match
+      if (existing !== undefined && (existing.deploymentId === undefined || existing.deploymentId !== updated.deploymentId)) {
+        throw new Error(
+          `The following deployment clashes with an existing one at ${updated.address}\n\n` +
+            JSON.stringify(updated, null, 2) +
+            `\n\n`,
+        );
+      }
     }
   }
 }
@@ -217,7 +222,7 @@ function lookupDeployment(
   data: ManifestData,
   address: string,
   checkAllAddresses: boolean,
-): ManifestField<Deployment> | undefined {
+): ManifestField<Deployment & DeploymentId> | undefined {
   if (data.admin?.address === address) {
     return adminLens(data);
   }
