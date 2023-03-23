@@ -207,7 +207,10 @@ async function checkForAddressClash(
     } else {
       const existing = clash.get();
       // it's a clash if there is no deployment id or if deployment ids don't match
-      if (existing !== undefined && (existing.deploymentId === undefined || existing.deploymentId !== updated.deploymentId)) {
+      if (
+        existing !== undefined &&
+        (existing.deploymentId === undefined || existing.deploymentId !== updated.deploymentId)
+      ) {
         throw new Error(
           `The following deployment clashes with an existing one at ${updated.address}\n\n` +
             JSON.stringify(updated, null, 2) +
