@@ -6,7 +6,6 @@ import {
   DeployBeaconProxyUnsupportedError,
   DeployBeaconProxyKindError,
   UpgradesError,
-  BaseDeployment,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -75,7 +74,7 @@ export async function deployBeaconProxy(
 
   const BeaconProxyFactory = getBeaconProxyFactory(attachTo);
 
-  const proxyDeployment: Required<BaseDeployment> & ProxyDeployment = Object.assign(
+  const proxyDeployment: Required<ProxyDeployment> = Object.assign(
     { kind: opts.kind },
     await deploy(deployer, BeaconProxyFactory, beaconAddress, data),
   );
