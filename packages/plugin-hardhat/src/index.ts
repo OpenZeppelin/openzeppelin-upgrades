@@ -163,21 +163,21 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
   return {
     silenceWarnings,
     deployProxy: makeDeployProxy(hre, platform),
-    upgradeProxy: makeUpgradeProxy(hre, platform), // block
+    upgradeProxy: makeUpgradeProxy(hre, platform), // block on platform
     validateImplementation: makeValidateImplementation(hre),
     validateUpgrade: makeValidateUpgrade(hre),
     deployImplementation: makeDeployImplementation(hre, platform),
     deployContract: makeDeployContract(hre, platform),
     prepareUpgrade: makePrepareUpgrade(hre, platform),
-    deployBeacon: makeDeployBeacon(hre, platform), // block
+    deployBeacon: makeDeployBeacon(hre, platform), // block on platform
     deployBeaconProxy: makeDeployBeaconProxy(hre, platform),
-    upgradeBeacon: makeUpgradeBeacon(hre, platform), // block
-    deployProxyAdmin: makeDeployProxyAdmin(hre, platform), // block
+    upgradeBeacon: makeUpgradeBeacon(hre, platform), // block on platform
+    deployProxyAdmin: makeDeployProxyAdmin(hre, platform), // block on platform
     forceImport: makeForceImport(hre),
     admin: {
       getInstance: makeGetInstanceFunction(hre),
-      changeProxyAdmin: makeChangeProxyAdmin(hre, platform), // block
-      transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre, platform), // block
+      changeProxyAdmin: makeChangeProxyAdmin(hre, platform), // block on platform
+      transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre, platform), // block on platform
     },
     erc1967: {
       getAdminAddress: (proxyAddress: string) => getAdminAddress(hre.network.provider, proxyAddress),
