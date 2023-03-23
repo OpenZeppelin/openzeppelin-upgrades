@@ -319,7 +319,10 @@ export function normalizeManifestData(input: ManifestData): ManifestData {
 }
 
 function normalizeDeployment<D extends Deployment & DeploymentId>(input: D): Deployment & DeploymentId;
-function normalizeDeployment<D extends Deployment & DeploymentId, K extends keyof D>(input: D, include: K[]): Deployment & DeploymentId & Pick<D, K>;
+function normalizeDeployment<D extends Deployment & DeploymentId, K extends keyof D>(
+  input: D,
+  include: K[],
+): Deployment & DeploymentId & Pick<D, K>;
 function normalizeDeployment<D extends Deployment & DeploymentId, K extends keyof D>(
   input: D,
   include: K[] = [],

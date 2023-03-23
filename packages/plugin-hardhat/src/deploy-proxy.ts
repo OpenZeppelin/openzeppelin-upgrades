@@ -2,7 +2,13 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 import assert from 'assert';
 
-import { Manifest, logWarning, ProxyDeployment, BeaconProxyUnsupportedError, DeploymentId } from '@openzeppelin/upgrades-core';
+import {
+  Manifest,
+  logWarning,
+  ProxyDeployment,
+  BeaconProxyUnsupportedError,
+  DeploymentId,
+} from '@openzeppelin/upgrades-core';
 
 import {
   DeployProxyOptions,
