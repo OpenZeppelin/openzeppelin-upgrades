@@ -47,10 +47,48 @@ assert(
     readJSON('artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.dbg.json').buildInfo,
 );
 
-const buildInfo = readJSON(jsonRelativePath);
-const reducedInfo = { solcLongVersion: buildInfo.solcLongVersion, input: buildInfo.input };
+let buildInfo = readJSON(jsonRelativePath);
 
-const sources = reducedInfo.input.sources;
+// Keep only relevant sections of output.contracts
+const contractFiles = buildInfo.output.contracts;
+for (const contractFile in contractFiles) {
+  const contractNames = contractFiles[contractFile];
+  for (const contractName in contractNames) {
+    contractNames[contractName] = {
+      abi: contractNames[contractName].abi,
+      evm: contractNames[contractName].evm,
+      metadata: contractNames[contractName].metadata, // metadata is needed to determine the license type
+    };
+  }
+}
+
+// Adjust correponding output selection
+const input = buildInfo.input;
+
+const origSelection = input.settings.outputSelection['*']['*'];
+assert(origSelection.includes('abi'));
+assert(origSelection.includes('evm.bytecode'));
+assert(origSelection.includes('evm.deployedBytecode'));
+assert(origSelection.includes('evm.methodIdentifiers'));
+assert(origSelection.includes('metadata'));
+
+input.settings.outputSelection['*'] = {
+  '*': ['abi', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers', 'metadata'],
+};
+
+// Keep only relevant sections of build info
+buildInfo = {
+  _format: buildInfo._format,
+  id: buildInfo.id,
+  solcVersion: buildInfo.solcVersion,
+  solcLongVersion: buildInfo.solcLongVersion,
+  input: input,
+  output: {
+    contracts: contractFiles,
+  },
+};
+
+const sources = input.sources;
 
 // Assert that all deployable proxy artifacts exist in ERC1967's build-info file
 assert(hasProperty(sources, '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol'));
@@ -62,4 +100,4 @@ assert(hasProperty(sources, '@openzeppelin/contracts/proxy/transparent/ProxyAdmi
 // Assert that the build-info file does NOT contain test contracts
 assert(!hasPropertyStartsWith(sources, 'contracts/test'));
 
-writeJSON('artifacts/build-info.json', reducedInfo);
+writeJSON('artifacts/build-info.json', buildInfo);

@@ -1,7 +1,13 @@
 import debug from './utils/debug';
 import { Manifest, ManifestData, ImplDeployment } from './manifest';
 import { EthereumProvider, isDevelopmentNetwork } from './provider';
-import { Deployment, InvalidDeployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
+import {
+  Deployment,
+  DeploymentResponse,
+  InvalidDeployment,
+  resumeOrDeploy,
+  waitAndValidateDeployment,
+} from './deployment';
 import { Version } from './version';
 import assert from 'assert';
 import { DeployOpts } from '.';
@@ -36,6 +42,7 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
   deploy: () => Promise<U>,
   opts?: DeployOpts,
   merge?: boolean,
+  getDeploymentResponse?: (deploymentId: string) => Promise<DeploymentResponse>,
 ): Promise<U | Deployment> {
   const manifest = await Manifest.forNetwork(provider);
 
@@ -67,7 +74,7 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
       return updated;
     });
 
-    await waitAndValidateDeployment(provider, deployment, lens.type, opts);
+    await waitAndValidateDeployment(provider, deployment, lens.type, opts, getDeploymentResponse);
 
     return deployment;
   } catch (e) {
@@ -114,8 +121,16 @@ export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
   deploy: () => Promise<T>,
   opts?: DeployOpts,
   merge?: boolean,
+  getDeploymentResponse?: (deploymentId: string) => Promise<DeploymentResponse>,
 ): Promise<T | Deployment> {
-  return fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, opts, merge);
+  return fetchOrDeployGeneric(
+    implLens(version.linkedWithoutMetadata),
+    provider,
+    deploy,
+    opts,
+    merge,
+    getDeploymentResponse,
+  );
 }
 
 const implLens = (versionWithoutMetadata: string) =>

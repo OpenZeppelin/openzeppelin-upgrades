@@ -32,16 +32,29 @@ type Initializer = {
   initializer?: string | false;
 };
 
-export type DeployBeaconProxyOptions = ProxyKindOption & Initializer;
-export type DeployBeaconOptions = StandaloneOptions;
-export type DeployImplementationOptions = StandaloneOptions & GetTxResponse;
-export type DeployProxyAdminOptions = DeployOpts;
-export type DeployProxyOptions = StandaloneOptions & Initializer;
+export type Platform = {
+  platform?: boolean;
+};
+
+export type PlatformSupportedOptions = Platform & {
+  verifySourceCode?: boolean;
+};
+
+export type DeployBeaconProxyOptions = DeployOpts & ProxyKindOption & Initializer & PlatformSupportedOptions;
+export type DeployBeaconOptions = StandaloneOptions & Platform;
+export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & PlatformSupportedOptions;
+export type DeployContractOptions = StandaloneOptions &
+  GetTxResponse &
+  PlatformSupportedOptions & {
+    unsafeAllowDeployContract?: boolean;
+  };
+export type DeployProxyAdminOptions = DeployOpts & Platform;
+export type DeployProxyOptions = StandaloneOptions & Initializer & PlatformSupportedOptions;
 export type ForceImportOptions = ProxyKindOption;
-export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse;
-export type UpgradeBeaconOptions = UpgradeOptions;
+export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & PlatformSupportedOptions;
+export type UpgradeBeaconOptions = UpgradeOptions & Platform;
 export type UpgradeProxyOptions = UpgradeOptions & {
   call?: { fn: string; args?: unknown[] } | string;
-};
+} & Platform;
 export type ValidateImplementationOptions = StandaloneValidationOptions;
 export type ValidateUpgradeOptions = ValidationOptions;

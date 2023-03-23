@@ -23,8 +23,12 @@ export type PrepareUpgradeFunction = (
   opts?: PrepareUpgradeOptions,
 ) => Promise<DeployImplementationResponse>;
 
-export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgradeFunction {
+export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, platformModule: boolean): PrepareUpgradeFunction {
   return async function prepareUpgrade(proxyOrBeacon, ImplFactory, opts: PrepareUpgradeOptions = {}) {
+    if (platformModule && opts.platform === undefined) {
+      opts.platform = true;
+    }
+
     const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
     const { provider } = hre.network;
     let deployedImpl;

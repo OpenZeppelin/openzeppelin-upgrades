@@ -20,6 +20,7 @@ const sleep = promisify(setTimeout);
 export interface Deployment {
   address: string;
   txHash?: string;
+  deploymentId?: string;
 }
 
 export interface DeployOpts {
@@ -131,13 +132,19 @@ async function validateStoredDeployment<T extends Deployment>(
   }
 }
 
+export interface DeploymentResponse {
+  status: string;
+  txHash: string;
+}
+
 export async function waitAndValidateDeployment(
   provider: EthereumProvider,
   deployment: Deployment,
   type?: string,
   opts?: DeployOpts,
+  getDeploymentResponse?: (deploymentId: string) => Promise<DeploymentResponse>,
 ): Promise<void> {
-  const { txHash, address } = deployment;
+  const { txHash, address, deploymentId } = deployment;
 
   // Poll for 60 seconds with a 5 second poll interval by default.
   const pollTimeout = opts?.timeout ?? 60e3;
@@ -145,7 +152,43 @@ export async function waitAndValidateDeployment(
 
   debug('polling timeout', pollTimeout, 'polling interval', pollInterval);
 
-  if (txHash !== undefined) {
+  let foundCode = false;
+
+  if (deploymentId !== undefined && getDeploymentResponse !== undefined) {
+    const startTime = Date.now();
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      if (await hasCode(provider, address)) {
+        debug('code in target address found', address);
+        foundCode = true;
+        break;
+      }
+
+      debug('verifying deployment id', deploymentId);
+      const response = await getDeploymentResponse(deploymentId);
+      const status = response.status;
+      if (status === 'completed') {
+        debug('succeeded verifying deployment id completed', deploymentId);
+        break;
+      } else if (status === 'failed') {
+        debug(`tx hash ${response.txHash} was reverted for deployment id ${deploymentId}`);
+        throw new InvalidDeployment({ address, txHash: response.txHash, deploymentId });
+      } else if (status === 'submitted') {
+        debug('waiting for deployment id to be completed', deploymentId);
+        await sleep(pollInterval);
+      } else {
+        throw new Error(`Broken invariant: Unrecognized status ${status} for deployment id ${deploymentId}`);
+      }
+      if (pollTimeout != 0) {
+        const elapsedTime = Date.now() - startTime;
+        if (elapsedTime >= pollTimeout) {
+          // A timeout is NOT an InvalidDeployment
+          throw new TransactionMinedTimeout(deployment, type, !!opts);
+        }
+      }
+    }
+  } else if (txHash !== undefined) {
     const startTime = Date.now();
 
     // eslint-disable-next-line no-constant-condition
@@ -172,24 +215,26 @@ export async function waitAndValidateDeployment(
     }
   }
 
-  debug('verifying code in target address', address);
-  const startTime = Date.now();
-  while (!(await hasCode(provider, address))) {
-    const elapsedTime = Date.now() - startTime;
-    if (elapsedTime >= pollTimeout || txHash === undefined) {
-      throw new InvalidDeployment(deployment);
+  if (!foundCode) {
+    debug('verifying code in target address', address);
+    const startTime = Date.now();
+    while (!(await hasCode(provider, address))) {
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime >= pollTimeout || txHash === undefined) {
+        throw new InvalidDeployment(deployment);
+      }
+      await sleep(pollInterval);
     }
-    await sleep(pollInterval);
+    debug('code in target address found', address);
   }
-  debug('code in target address found', address);
 }
 
 export class TransactionMinedTimeout extends UpgradesError {
   constructor(readonly deployment: Deployment, type?: string, configurableTimeout?: boolean) {
     super(
-      `Timed out waiting for ${type ? type + ' ' : ''}contract deployment to address ${
-        deployment.address
-      } with transaction ${deployment.txHash}`,
+      `Timed out waiting for ${type ? type + ' ' : ''}contract deployment to address ${deployment.address} with ${
+        deployment.deploymentId ? `deployment id ${deployment.deploymentId}` : `transaction ${deployment.txHash}`
+      }`,
       () =>
         'Run the function again to continue waiting for the transaction confirmation.' +
         (configurableTimeout

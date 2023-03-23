@@ -1,5 +1,6 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Contract, ContractFactory } from 'ethers';
+import assert from 'assert';
 
 import {
   Manifest,
@@ -20,6 +21,7 @@ import {
   getContractAddress,
   getInitializerData,
 } from './utils';
+import { setPlatformDefaults, waitForDeployment } from './platform/utils';
 
 export interface DeployBeaconProxyFunction {
   (
@@ -31,7 +33,10 @@ export interface DeployBeaconProxyFunction {
   (beacon: ContractAddressOrInstance, attachTo: ContractFactory, opts?: DeployBeaconProxyOptions): Promise<Contract>;
 }
 
-export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBeaconProxyFunction {
+export function makeDeployBeaconProxy(
+  hre: HardhatRuntimeEnvironment,
+  platformModule: boolean,
+): DeployBeaconProxyFunction {
   return async function deployBeaconProxy(
     beacon: ContractAddressOrInstance,
     attachTo: ContractFactory,
@@ -48,6 +53,8 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
       opts = args;
       args = [];
     }
+
+    setPlatformDefaults(platformModule, opts);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
@@ -72,9 +79,9 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
     }
 
     const BeaconProxyFactory = await getBeaconProxyFactory(hre, attachTo.signer);
-    const proxyDeployment: Required<ProxyDeployment & DeployTransaction> = Object.assign(
+    const proxyDeployment: ProxyDeployment & DeployTransaction = Object.assign(
       { kind: opts.kind },
-      await deploy(BeaconProxyFactory, beaconAddress, data),
+      await deploy(hre, opts, BeaconProxyFactory, beaconAddress, data),
     );
 
     await manifest.addProxy(proxyDeployment);
@@ -82,6 +89,13 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
     const inst = attachTo.attach(proxyDeployment.address);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = proxyDeployment.deployTransaction;
+    if (opts.platform && proxyDeployment.deploymentId !== undefined) {
+      inst.deployed = async () => {
+        assert(proxyDeployment.deploymentId !== undefined);
+        await waitForDeployment(hre, opts, inst.address, proxyDeployment.deploymentId);
+        return inst;
+      };
+    }
     return inst;
   };
 }

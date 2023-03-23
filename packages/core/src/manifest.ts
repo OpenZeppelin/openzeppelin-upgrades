@@ -324,5 +324,5 @@ function normalizeDeployment<D extends Deployment, K extends keyof D>(
   input: D,
   include: K[] = [],
 ): Deployment & Pick<D, K> {
-  return pick(input, ['address', 'txHash', ...include]);
+  return pick(input, ['address', 'txHash', 'deploymentId', ...include]);
 }

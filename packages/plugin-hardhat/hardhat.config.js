@@ -17,4 +17,8 @@ module.exports = {
       },
     ],
   },
+  platform: {
+    apiKey: 'KEY',
+    apiSecret: 'SECRET',
+  },
 };
