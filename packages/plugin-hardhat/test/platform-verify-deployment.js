@@ -19,6 +19,7 @@ test.beforeEach(async t => {
 
   const verifyDeploymentModule = proxyquire('../dist/platform/verify-deployment', {
     './utils': {
+      ...require('../dist/platform/utils'),
       getNetwork: () => t.context.fakeChainId,
       getAdminClient: () => t.context.fakeClient,
     },

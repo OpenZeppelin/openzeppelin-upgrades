@@ -13,6 +13,7 @@ test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
   t.context.proposeUpgrade = proxyquire('../dist/platform/propose-upgrade', {
     './utils': {
+      ...require('../dist/platform/utils'),
       getNetwork: () => t.context.fakeChainId,
       getAdminClient: () => t.context.fakeClient,
     },
