@@ -42,7 +42,7 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
   deploy: () => Promise<U>,
   opts?: DeployOpts,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string) => Promise<DeploymentResponse>,
+  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<U | Deployment> {
   const manifest = await Manifest.forNetwork(provider);
 
@@ -58,7 +58,16 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
       }
 
       const stored = deployment.get();
-      const updated = await resumeOrDeploy(provider, stored, deploy, lens.type, opts, deployment, merge);
+      const updated = await resumeOrDeploy(
+        provider,
+        stored,
+        deploy,
+        lens.type,
+        opts,
+        deployment,
+        merge,
+        getDeploymentResponse,
+      );
       if (updated !== stored) {
         if (merge && deployment.merge) {
           // only check primary addresses for clashes, since the address could already exist in an allAddresses field
@@ -121,7 +130,7 @@ export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
   deploy: () => Promise<T>,
   opts?: DeployOpts,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string) => Promise<DeploymentResponse>,
+  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<T | Deployment> {
   return fetchOrDeployGeneric(
     implLens(version.linkedWithoutMetadata),

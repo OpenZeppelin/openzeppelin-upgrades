@@ -77,9 +77,18 @@ function getPlatformClient(hre: HardhatRuntimeEnvironment) {
 export async function getDeploymentResponse(
   hre: HardhatRuntimeEnvironment,
   deploymentId: string,
-): Promise<DeploymentResponse> {
+  catchIfNotfound: boolean,
+): Promise<DeploymentResponse | undefined> {
   const client = getPlatformClient(hre);
-  return await client.Deployment.get(deploymentId);
+  try {
+    return await client.Deployment.get(deploymentId);
+  } catch (e) {
+    const message = (e as any).response?.data?.message;
+    if (catchIfNotfound && message !== undefined && message.match(/deployment with id .* not found\./)) {
+      return undefined;
+    }
+    throw e;
+  }
 }
 
 export async function waitForDeployment(
@@ -98,7 +107,11 @@ export async function waitForDeployment(
     const pollingInterval = opts.pollingInterval ?? 5e3;
 
     debug('verifying deployment id', deploymentId);
-    const response = await getDeploymentResponse(hre, deploymentId);
+    const response = await getDeploymentResponse(hre, deploymentId, false);
+    if (response === undefined) {
+      throw new Error(`Broken invariant: Response not found for deployment id ${deploymentId}`);
+    }
+
     const status = response.status;
     if (status === 'completed') {
       debug('succeeded verifying deployment id completed', deploymentId);

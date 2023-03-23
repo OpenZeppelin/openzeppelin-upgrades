@@ -115,8 +115,8 @@ async function deployImpl(
     },
     opts,
     undefined,
-    async (deploymentId: string) => {
-      return await getDeploymentResponse(hre, deploymentId);
+    async (deploymentId: string, catchIfNotFound: boolean) => {
+      return await getDeploymentResponse(hre, deploymentId, catchIfNotFound);
     },
   );
 

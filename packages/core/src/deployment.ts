@@ -54,6 +54,7 @@ export interface DeployOpts {
  *   If not provided, invalid deployments will not be deleted in a dev network (which is not a problem if merge is false,
  *   since it will be overwritten with the new deployment).
  * @param merge whether the cached deployment is intended to be merged with the new deployment. Defaults to false.
+ * @param getDeploymentResponse a function to get the deployment response by id.
  * @returns the cached deployment if it should be used, otherwise the new deployment from the deploy function
  * @throws {InvalidDeployment} if the cached deployment is invalid and we are not on a dev network
  */
@@ -65,8 +66,9 @@ export async function resumeOrDeploy<T extends Deployment, U extends T = T>(
   opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
+  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<T | U> {
-  const validated = await validateCached(cached, provider, type, opts, deployment, merge);
+  const validated = await validateCached(cached, provider, type, opts, deployment, merge, getDeploymentResponse);
   if (validated === undefined || merge) {
     const deployment = await deploy();
     debug('initiated deployment', 'transaction hash:', deployment.txHash, 'merge:', merge);
@@ -83,10 +85,11 @@ async function validateCached<T extends Deployment>(
   opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
+  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<T | undefined> {
   if (cached !== undefined) {
     try {
-      await validateStoredDeployment(cached, provider, type, opts, merge);
+      await validateStoredDeployment(cached, provider, type, opts, merge, getDeploymentResponse);
     } catch (e) {
       if (e instanceof InvalidDeployment && (await isDevelopmentNetwork(provider))) {
         debug('ignoring invalid deployment in development network', e.deployment.address);
@@ -102,24 +105,36 @@ async function validateCached<T extends Deployment>(
   return cached;
 }
 
-async function validateStoredDeployment<T extends Deployment>(
+async function validateStoredDeployment<T extends Deployment & DeploymentId>(
   stored: T,
   provider: EthereumProvider,
   type?: string,
   opts?: DeployOpts,
   merge?: boolean,
+  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
 ) {
-  const { txHash } = stored;
+  const { txHash, deploymentId } = stored;
   if (txHash !== undefined) {
     // If there is a deployment with txHash stored, we look its transaction up. If the
     // transaction is found, the deployment is reused.
     debug('found previous deployment', txHash);
     const tx = await getTransactionByHash(provider, txHash);
+    let foundDeployment = undefined;
     if (tx !== null) {
-      debug('resuming previous deployment', txHash);
+      foundDeployment = txHash;
+    } else if (deploymentId !== undefined && getDeploymentResponse !== undefined) {
+      // If the transaction is not found, try checking the deployment id since the transaction may have been replaced
+      const response = await getDeploymentResponse(deploymentId, true);
+      if (response !== undefined) {
+        foundDeployment = deploymentId;
+      }
+    }
+
+    if (foundDeployment) {
+      debug('resuming previous deployment', foundDeployment);
       if (merge) {
         // If merging, wait for the existing deployment to be mined
-        waitAndValidateDeployment(provider, stored, type, opts);
+        waitAndValidateDeployment(provider, stored, type, opts, getDeploymentResponse);
       }
     } else {
       // If the transaction is not found we throw an error, except if we're in
@@ -145,7 +160,7 @@ export async function waitAndValidateDeployment(
   deployment: Deployment & DeploymentId,
   type?: string,
   opts?: DeployOpts,
-  getDeploymentResponse?: (deploymentId: string) => Promise<DeploymentResponse>,
+  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<void> {
   const { txHash, address, deploymentId } = deployment;
 
@@ -169,7 +184,11 @@ export async function waitAndValidateDeployment(
       }
 
       debug('verifying deployment id', deploymentId);
-      const response = await getDeploymentResponse(deploymentId);
+      const response = await getDeploymentResponse(deploymentId, false);
+      if (response === undefined) {
+        throw new Error(`Broken invariant: Response not found for deployment id ${deploymentId}`);
+      }
+
       const status = response.status;
       if (status === 'completed') {
         debug('succeeded verifying deployment id completed', deploymentId);
