@@ -17,9 +17,12 @@ import { deleteDeployment, ManifestField } from './impl-store';
 
 const sleep = promisify(setTimeout);
 
-export interface Deployment {
+export interface BaseDeployment {
   address: string;
   txHash?: string;
+}
+
+export interface Deployment extends BaseDeployment {
   deploymentId?: string;
 }
 

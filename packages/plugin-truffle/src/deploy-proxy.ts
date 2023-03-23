@@ -1,4 +1,4 @@
-import { Manifest, logWarning, ProxyDeployment, BeaconProxyUnsupportedError } from '@openzeppelin/upgrades-core';
+import { Manifest, logWarning, ProxyDeployment, BeaconProxyUnsupportedError, BaseDeployment } from '@openzeppelin/upgrades-core';
 import { deployProxyAdmin } from './deploy-proxy-admin';
 
 import {
@@ -45,7 +45,7 @@ export async function deployProxy(
     }
   }
 
-  let proxyDeployment: Required<ProxyDeployment>;
+  let proxyDeployment: Required<BaseDeployment> & ProxyDeployment;
   switch (kind) {
     case 'beacon': {
       throw new BeaconProxyUnsupportedError();
