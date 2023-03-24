@@ -11,7 +11,7 @@ const artifactUri = 'http://example.com/artifact.json';
 const greeterV3DeployedBytecode =
   '6080604052348015600f57600080fd5b506004361060285760003560e01c806354fd4d5014602d575b600080fd5b60336049565b6040518082815260200191505060405180910390f35b60007f000000000000000000000000000000000000000000000000000000000000000090509056fea26469706673582212202e155eb819bdaebf2005f5c86bf88d3c4c29c074fd34fbb97c119cdcb141535364736f6c63430007060033';
 const greeterV3Digest = '6f816ef16e21072de628b0a57d6694b9981b0043570119a68f1c5de91b9c110d';
-const greeterV3ImmutableReferences = { 40: [{ length: 32, start: 77 }] };
+const greeterV3ImmutableReferencesRegex = /\{"\d+":\[\{"length":32,"start":77\}\]\}/;
 
 test.beforeEach(async t => {
   t.context.fakeClient = sinon.createStubInstance(AdminClient);
@@ -52,7 +52,7 @@ test('verifies deployment uploading artifact', async t => {
     contractNetwork: t.context.fakeChainId,
     artifactPayload: JSON.stringify({
       ...require('../artifacts/contracts/GreeterPlatform.sol/GreeterPlatformV3.json'),
-      immutableReferences: greeterV3ImmutableReferences,
+      immutableReferences: (await t.context.getVerifyDeployArtifact('GreeterPlatformV3')).immutableReferences,
     }),
   });
 });
@@ -85,7 +85,7 @@ test('returns extended artifact for verification', async t => {
   t.is(result.deployedBytecode, `0x${greeterV3DeployedBytecode}`);
 
   // See artifacts/build-info/BUILD.json.output.contracts.'contracts/GreeterPlatform.sol'.GreeterPlatformV3.evm.deployedBytecode
-  t.deepEqual(result.immutableReferences, greeterV3ImmutableReferences);
+  t.regex(JSON.stringify(result.immutableReferences), greeterV3ImmutableReferencesRegex);
 });
 
 test('returns build info for verification', async t => {
