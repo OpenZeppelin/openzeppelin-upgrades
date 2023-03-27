@@ -54,7 +54,7 @@ class PlatformUnsupportedError extends UpgradesError {
 }
 
 export function setPlatformDefaults(hre: HardhatRuntimeEnvironment, platformModule: boolean, opts: Platform) {
-  if ((hre.config.platform?.enabled || platformModule) && opts.platform === undefined) {
+  if ((hre.config.platform?.deploy || platformModule) && opts.platform === undefined) {
     opts.platform = true;
   }
 }
