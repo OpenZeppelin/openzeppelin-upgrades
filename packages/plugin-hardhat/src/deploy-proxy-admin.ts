@@ -4,7 +4,7 @@ import { fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
 
 import { deploy, DeployProxyAdminOptions, getProxyAdminFactory } from './utils';
 import { Signer } from 'ethers';
-import { assertNotPlatform, setPlatformDefaults } from './platform/utils';
+import { assertNotPlatform } from './platform/utils';
 
 export interface DeployAdminFunction {
   (signer?: Signer, opts?: DeployProxyAdminOptions): Promise<string>;
