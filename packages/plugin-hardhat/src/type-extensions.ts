@@ -12,6 +12,7 @@ declare module 'hardhat/types/runtime' {
 export interface HardhatPlatformConfig {
   apiKey: string;
   apiSecret: string;
+  enabled?: boolean;
 }
 
 declare module 'hardhat/types/config' {

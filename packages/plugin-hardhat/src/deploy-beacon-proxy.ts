@@ -55,7 +55,7 @@ export function makeDeployBeaconProxy(
       args = [];
     }
 
-    setPlatformDefaults(platformModule, opts);
+    setPlatformDefaults(hre, platformModule, opts);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);

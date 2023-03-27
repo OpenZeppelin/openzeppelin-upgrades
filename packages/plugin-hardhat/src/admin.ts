@@ -15,6 +15,7 @@ export type GetInstanceFunction = () => Promise<Contract>;
 export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, platformModule: boolean): ChangeAdminFunction {
   return async function changeProxyAdmin(proxyAddress, newAdmin) {
     assertNotPlatform(
+      hre,
       platformModule,
       undefined,
       changeProxyAdmin.name,
@@ -38,6 +39,7 @@ export function makeTransferProxyAdminOwnership(
 ): TransferProxyAdminOwnershipFunction {
   return async function transferProxyAdminOwnership(newOwner) {
     assertNotPlatform(
+      hre,
       platformModule,
       undefined,
       transferProxyAdminOwnership.name,

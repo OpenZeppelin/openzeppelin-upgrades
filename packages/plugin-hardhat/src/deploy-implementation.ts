@@ -17,7 +17,7 @@ export function makeDeployImplementation(
   platformModule: boolean,
 ): DeployImplementationFunction {
   return async function deployImplementation(ImplFactory, opts: DeployImplementationOptions = {}) {
-    setPlatformDefaults(platformModule, opts);
+    setPlatformDefaults(hre, platformModule, opts);
 
     const deployedImpl = await deployStandaloneImpl(hre, ImplFactory, opts);
 

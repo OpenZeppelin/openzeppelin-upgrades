@@ -35,7 +35,7 @@ export interface ProposalOptions extends UpgradeOptions, PlatformSupportedOption
 
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModule: boolean): ProposeUpgradeFunction {
   return async function proposeUpgrade(proxyAddress, contractNameOrImplFactory, opts = {}) {
-    setPlatformDefaults(platformModule, opts);
+    setPlatformDefaults(hre, platformModule, opts);
 
     const client = getAdminClient(hre);
     const network = await getNetwork(hre);

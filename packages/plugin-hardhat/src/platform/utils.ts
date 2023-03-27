@@ -53,19 +53,21 @@ class PlatformUnsupportedError extends UpgradesError {
   }
 }
 
-export function setPlatformDefaults(platformModule: boolean, opts: Platform) {
-  if (platformModule && opts.platform === undefined) {
+export function setPlatformDefaults(hre: HardhatRuntimeEnvironment, platformModule: boolean, opts: Platform) {
+  if ((hre.config.platform?.enabled || platformModule) && opts.platform === undefined) {
     opts.platform = true;
   }
 }
 
 export function assertNotPlatform(
+  hre: HardhatRuntimeEnvironment,
   platformModule: boolean,
-  opts: Platform | undefined,
+  opts: Platform = {},
   unsupportedFunction: string,
   details?: string,
 ) {
-  if (platformModule || opts?.platform) {
+  setPlatformDefaults(hre, platformModule, opts);
+  if (opts?.platform) {
     throw new PlatformUnsupportedError(unsupportedFunction, details);
   }
 }
