@@ -131,6 +131,8 @@ export const networkNames: { [chainId in number]?: string } = Object.freeze({
   43114: 'avalanche',
   42220: 'celo',
   44787: 'celo-alfajores',
+  1337803: 'zhejiang',
+  11155111: 'sepolia',
 });
 
 export async function isDevelopmentNetwork(provider: EthereumProvider): Promise<boolean> {
