@@ -3,7 +3,7 @@
 
 ## Unreleased
 
-- Add sepolia testnet in networkNames ([#766](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/766))
+- Add Sepolia testnet to manifest file names. ([#766](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/766))
 
 ## 1.24.1 (2023-03-02)
 
