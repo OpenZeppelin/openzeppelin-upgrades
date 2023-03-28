@@ -1,5 +1,10 @@
 # Changelog
 
+
+## Unreleased
+
+- Add Sepolia testnet to manifest file names. ([#766](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/766))
+
 ## 1.24.1 (2023-03-02)
 
 - Remove test contracts from source code verification. ([#751](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/751))
