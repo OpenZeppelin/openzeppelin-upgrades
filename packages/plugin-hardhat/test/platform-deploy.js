@@ -67,21 +67,28 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
-test('calls platform deploy', async t => {
-  const { stub, deploy, fakeHre, fakeChainId } = t.context;
+async function deployAndAssert(
+  contractName,
+  deploy,
+  fakeHre,
+  contractPath,
+  stub,
+  fakeChainId,
+  t,
+  constructorArgs,
+  licenseType,
+) {
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.platformDeploy(fakeHre, factory, {}, ...constructorArgs);
 
-  const Greeter = await ethers.getContractFactory('Greeter');
-
-  const result = await deploy.platformDeploy(fakeHre, Greeter, {});
-
-  const buildInfo = await hre.artifacts.getBuildInfo('contracts/Greeter.sol:Greeter');
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(stub, {
-    contractName: 'Greeter',
-    contractPath: 'contracts/Greeter.sol',
+    contractName: contractName,
+    contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: undefined,
-    constructorInputs: [],
+    licenseType: licenseType,
+    constructorInputs: constructorArgs,
     verifySourceCode: true,
   });
 
@@ -91,4 +98,31 @@ test('calls platform deploy', async t => {
     deployTransaction: transactionResponse,
     deploymentId: deploymentId,
   });
+}
+
+test('calls platform deploy', async t => {
+  const { stub, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Greeter.sol';
+  const contractName = 'Greeter';
+
+  await deployAndAssert(contractName, deploy, fakeHre, contractPath, stub, fakeChainId, t, [], undefined);
+});
+
+test('calls platform deploy with license', async t => {
+  const { stub, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/WithLicense.sol';
+  const contractName = 'WithLicense';
+
+  await deployAndAssert(contractName, deploy, fakeHre, contractPath, stub, fakeChainId, t, [], 'MIT');
+});
+
+test('calls platform deploy with constructor args', async t => {
+  const { stub, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Constructor.sol';
+  const contractName = 'WithConstructor';
+
+  await deployAndAssert(contractName, deploy, fakeHre, contractPath, stub, fakeChainId, t, [10], 'MIT');
 });
