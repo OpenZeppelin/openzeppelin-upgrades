@@ -13,9 +13,7 @@ test.before(async t => {
   t.context.IsInitializable = await ethers.getContractFactory('IsInitializable');
   t.context.IsInitializableUpgradeable = await ethers.getContractFactory('IsInitializableUpgradeable');
   t.context.IsUUPS = await ethers.getContractFactory('IsUUPS');
-});
 
-test.beforeEach(async t => {
   t.context.deployContract = proxyquire('../dist/deploy-contract', {
     './platform/deploy': {
       platformDeploy: async () => {
@@ -33,8 +31,8 @@ test.beforeEach(async t => {
 
 test('deploy contract', async t => {
   const { deployContract, NonUpgradeable } = t.context;
-  const addr = await deployContract(NonUpgradeable);
-  t.is(addr.address, ADDR);
+  const inst = await deployContract(NonUpgradeable);
+  t.is(inst.address, ADDR);
 });
 
 test('deploy contract - platform false', async t => {
@@ -45,8 +43,8 @@ test('deploy contract - platform false', async t => {
 
 test('deploy contract - constructor', async t => {
   const { deployContract, WithConstructor } = t.context;
-  const addr = await deployContract(WithConstructor, [10]);
-  t.is(addr.address, ADDR);
+  const inst = await deployContract(WithConstructor, [10]);
+  t.is(inst.address, ADDR);
 });
 
 test('deploy contract - constructor using opts', async t => {
@@ -83,6 +81,30 @@ test('deploy contract - is uups', async t => {
 
 test('deploy contract - allow unsafe', async t => {
   const { deployContract, IsUUPS } = t.context;
-  const addr = await deployContract(IsUUPS, { unsafeAllowDeployContract: true });
-  t.is(addr.address, ADDR);
+  const inst = await deployContract(IsUUPS, { unsafeAllowDeployContract: true });
+  t.is(inst.address, ADDR);
+});
+
+test('await deployed contract', async t => {
+  const { NonUpgradeable } = t.context;
+
+  const precreated = await NonUpgradeable.deploy();
+
+  const deployContract = proxyquire('../dist/deploy-contract', {
+    './platform/deploy': {
+      platformDeploy: async () => {
+        return {
+          address: precreated.address,
+          txHash: precreated.txHash,
+          deployTransaction: precreated.deployTransaction,
+          deploymentId: 'abc',
+        };
+      },
+      '@global': true,
+    },
+  }).makeDeployContract(hre, true);
+
+  const inst = await deployContract(NonUpgradeable);
+  t.is(inst.address, precreated.address);
+  await inst.deployed();
 });
