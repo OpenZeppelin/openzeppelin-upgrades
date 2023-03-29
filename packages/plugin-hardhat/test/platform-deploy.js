@@ -16,7 +16,13 @@ test.beforeEach(async t => {
 
   t.context.fakePlatformClient = {
     Deployment: {
-      deploy: () => 'to be stubbed',
+      deploy: () => {
+        return {
+          txHash: TX_HASH,
+          deploymentId: DEPLOYMENT_ID,
+          address: ADDRESS,
+        };
+      },
     },
     DeploymentConfig: {},
     BlockExplorerApiKey: {
@@ -26,13 +32,7 @@ test.beforeEach(async t => {
       },
     },
   };
-  const stub = sinon.stub(t.context.fakePlatformClient.Deployment, 'deploy');
-  stub.returns({
-    txHash: TX_HASH,
-    deploymentId: DEPLOYMENT_ID,
-    address: ADDRESS,
-  });
-  t.context.stub = stub;
+  t.context.spy = sinon.spy(t.context.fakePlatformClient.Deployment, 'deploy');
 
   t.context.deploy = proxyquire('../dist/platform/deploy', {
     './utils': {
@@ -79,7 +79,7 @@ function assertResult(t, result) {
 }
 
 test('calls platform deploy', async t => {
-  const { stub, deploy, fakeHre, fakeChainId } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
@@ -88,7 +88,7 @@ test('calls platform deploy', async t => {
   const result = await deploy.platformDeploy(fakeHre, factory, {});
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
-  sinon.assert.calledWithExactly(stub, {
+  sinon.assert.calledWithExactly(spy, {
     contractName: contractName,
     contractPath: contractPath,
     network: fakeChainId,
@@ -102,7 +102,7 @@ test('calls platform deploy', async t => {
 });
 
 test('calls platform deploy with license', async t => {
-  const { stub, deploy, fakeHre, fakeChainId } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/WithLicense.sol';
   const contractName = 'WithLicense';
@@ -111,7 +111,7 @@ test('calls platform deploy with license', async t => {
   const result = await deploy.platformDeploy(fakeHre, factory, {});
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
-  sinon.assert.calledWithExactly(stub, {
+  sinon.assert.calledWithExactly(spy, {
     contractName: contractName,
     contractPath: contractPath,
     network: fakeChainId,
@@ -125,7 +125,7 @@ test('calls platform deploy with license', async t => {
 });
 
 test('calls platform deploy with constructor args', async t => {
-  const { stub, deploy, fakeHre, fakeChainId } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Constructor.sol';
   const contractName = 'WithConstructor';
@@ -134,7 +134,7 @@ test('calls platform deploy with constructor args', async t => {
   const result = await deploy.platformDeploy(fakeHre, factory, {}, 10);
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
-  sinon.assert.calledWithExactly(stub, {
+  sinon.assert.calledWithExactly(spy, {
     contractName: contractName,
     contractPath: contractPath,
     network: fakeChainId,
@@ -148,7 +148,7 @@ test('calls platform deploy with constructor args', async t => {
 });
 
 test('calls platform deploy with verify true', async t => {
-  const { stub, fakePlatformClient, deploy, fakeHre, fakeChainId } = t.context;
+  const { spy, fakePlatformClient, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
@@ -161,7 +161,7 @@ test('calls platform deploy with verify true', async t => {
   const result = await deploy.platformDeploy(fakeHre, factory, { verifySourceCode: true });
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
-  sinon.assert.calledWithExactly(stub, {
+  sinon.assert.calledWithExactly(spy, {
     contractName: contractName,
     contractPath: contractPath,
     network: fakeChainId,
@@ -179,7 +179,7 @@ test('calls platform deploy with verify true', async t => {
 });
 
 test('calls platform deploy with verify false', async t => {
-  const { stub, fakePlatformClient, deploy, fakeHre, fakeChainId } = t.context;
+  const { spy, fakePlatformClient, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
@@ -191,7 +191,7 @@ test('calls platform deploy with verify false', async t => {
   const result = await deploy.platformDeploy(fakeHre, factory, { verifySourceCode: false });
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
-  sinon.assert.calledWithExactly(stub, {
+  sinon.assert.calledWithExactly(spy, {
     contractName: contractName,
     contractPath: contractPath,
     network: fakeChainId,
@@ -209,7 +209,7 @@ test('calls platform deploy with verify false', async t => {
 });
 
 test('calls platform deploy with verify true, create API key', async t => {
-  const { stub, deploy, fakePlatformClient, fakeHre, fakeChainId } = t.context;
+  const { spy, deploy, fakePlatformClient, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
@@ -224,7 +224,7 @@ test('calls platform deploy with verify true, create API key', async t => {
   const result = await deploy.platformDeploy(fakeHre, factory, {});
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
-  sinon.assert.calledWithExactly(stub, {
+  sinon.assert.calledWithExactly(spy, {
     contractName: contractName,
     contractPath: contractPath,
     network: fakeChainId,
