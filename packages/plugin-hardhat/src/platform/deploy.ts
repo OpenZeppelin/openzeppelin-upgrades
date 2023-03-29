@@ -1,7 +1,7 @@
 import type { ethers, ContractFactory } from 'ethers';
 import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from 'hardhat/types';
 
-import { BlockExplorerApiKeyClient, PlatformClient, SourceCodeLicense } from 'platform-deploy-client';
+import { BlockExplorerApiKeyClient, SourceCodeLicense } from 'platform-deploy-client';
 import { Network } from 'defender-base-client';
 import { Deployment, DeploymentId, getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
 
@@ -13,7 +13,7 @@ import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppel
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
-import { getNetwork, getPlatformApiKey, getPlatformClient } from './utils';
+import { getNetwork, getPlatformClient } from './utils';
 import { DeployTransaction, PlatformSupportedOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getEtherscanAPIConfig } from '../utils/etherscan-api';
