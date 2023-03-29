@@ -13,7 +13,7 @@ import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppel
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
-import { getNetwork, getPlatformApiKey } from './utils';
+import { getNetwork, getPlatformApiKey, getPlatformClient } from './utils';
 import { DeployTransaction, PlatformSupportedOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getEtherscanAPIConfig } from '../utils/etherscan-api';
@@ -48,10 +48,6 @@ interface ContractInfo {
 type CompilerOutputWithMetadata = CompilerOutputContract & {
   metadata?: string;
 };
-
-function getPlatformClient(hre: HardhatRuntimeEnvironment) {
-  return PlatformClient(getPlatformApiKey(hre));
-}
 
 export async function platformDeploy(
   hre: HardhatRuntimeEnvironment,

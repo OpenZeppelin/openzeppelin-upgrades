@@ -10,7 +10,7 @@ import {
 
 import { Network, fromChainId } from 'defender-base-client';
 import { AdminClient } from 'defender-admin-client';
-import { PlatformClient } from 'platform-deploy-client';
+import { BlockExplorerApiKeyClient, DeploymentClient, DeploymentConfigClient, PlatformClient } from 'platform-deploy-client';
 
 import { HardhatPlatformConfig } from '../type-extensions';
 import { Platform } from '../utils';
@@ -72,7 +72,13 @@ export function assertNotPlatform(
   }
 }
 
-function getPlatformClient(hre: HardhatRuntimeEnvironment) {
+interface PlatformClient {
+  Deployment: DeploymentClient;
+  DeploymentConfig: DeploymentConfigClient;
+  BlockExplorerApiKey: BlockExplorerApiKeyClient;
+}
+
+export function getPlatformClient(hre: HardhatRuntimeEnvironment): PlatformClient {
   return PlatformClient(getPlatformApiKey(hre));
 }
 
