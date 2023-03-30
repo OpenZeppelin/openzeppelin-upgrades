@@ -77,6 +77,18 @@ export function assertNotPlatform(
   }
 }
 
+export function disablePlatform(
+  hre: HardhatRuntimeEnvironment,
+  platformModule: boolean,
+  opts: Platform = {},
+  unsupportedFunction: string,
+) {
+  if (hre.config.platform?.deploy || platformModule || opts.platform) {
+    debug(`The function ${unsupportedFunction} is not supported with \`platform\`. Using Hardhat signer instead.`);
+    opts.platform = false;
+  }
+}
+
 interface PlatformClient {
   Deployment: DeploymentClient;
   DeploymentConfig: DeploymentConfigClient;
