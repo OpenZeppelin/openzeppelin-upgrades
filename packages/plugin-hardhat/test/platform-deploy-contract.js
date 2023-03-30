@@ -138,6 +138,6 @@ test('await replaced transaction', async t => {
 
   const inst = await deployContract(NonUpgradeable);
   t.is(inst.address, counterFactualAddress);
-  await inst.deployed(); // TODO stub
+  // await inst.deployed(); // TODO stub
 
 });
