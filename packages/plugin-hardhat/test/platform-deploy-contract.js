@@ -1,11 +1,12 @@
 const test = require('ava');
 const proxyquire = require('proxyquire').noCallThru();
+const { getContractAddress } = require('ethers/lib/utils');
 
 const hre = require('hardhat');
 const { ethers } = hre;
 
 const ADDR = '0x1';
-const TX_HASH = '0x7f3d2f5323ee16badc279ea6090cb7a090e3b767843e60f693c693fe50e15c21';
+const TX_HASH = '0x0000000000000000000000000000000000000000000000000000000000000002';
 
 test.before(async t => {
   t.context.NonUpgradeable = await ethers.getContractFactory('NonUpgradeable');
@@ -107,4 +108,36 @@ test('await deployed contract', async t => {
   const inst = await deployContract(NonUpgradeable);
   t.is(inst.address, precreated.address);
   await inst.deployed();
+});
+
+test('await replaced transaction', async t => {
+  const { NonUpgradeable } = t.context;
+
+  const nonce = await hre.ethers.provider.getTransactionCount(await NonUpgradeable.signer.getAddress());
+  const counterFactualAddress = getContractAddress({
+    from: await NonUpgradeable.signer.getAddress(),
+    nonce: nonce,
+  });
+
+  // const precreated = await NonUpgradeable.deploy();
+  // console.log("pre " + precreated.address);
+
+  const deployContract = proxyquire('../dist/deploy-contract', {
+    './platform/deploy': {
+      platformDeploy: async () => {
+        return {
+          address: counterFactualAddress,
+          txHash: TX_HASH,
+          deployTransaction: undefined,
+          deploymentId: 'abc',
+        };
+      },
+      '@global': true,
+    },
+  }).makeDeployContract(hre, true);
+
+  const inst = await deployContract(NonUpgradeable);
+  t.is(inst.address, counterFactualAddress);
+  await inst.deployed(); // TODO stub
+
 });
