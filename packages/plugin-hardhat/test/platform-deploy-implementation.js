@@ -4,6 +4,8 @@ const proxyquire = require('proxyquire').noCallThru();
 const hre = require('hardhat');
 const { ethers } = hre;
 
+const manifest = require('@openzeppelin/upgrades-core/dist/manifest');
+
 test.before(async t => {
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
@@ -27,6 +29,13 @@ test('deploy contract', async t => {
 
   const inst = await deployImplementation(GreeterProxiable);
   t.not(inst, undefined);
+
+  // check that manifest has deployment id
+  const m = await manifest.Manifest.forNetwork(ethers.provider);
+  await m.lockedRun(async () => {
+    const deployment = await m.getDeploymentFromAddress(inst);
+    t.is(deployment.deploymentId, 'abc');
+  });
 });
 
 test('deploy contract - unsafe', async t => {
