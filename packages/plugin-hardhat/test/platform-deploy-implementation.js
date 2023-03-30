@@ -15,7 +15,7 @@ test.before(async t => {
         opts.platform = false;
         return {
           // just do regular deploy but add a deployment id
-          ...(await (require('../dist/utils/deploy').deploy(hre, opts, factory, ...args))),
+          ...(await require('../dist/utils/deploy').deploy(hre, opts, factory, ...args)),
           deploymentId: 'abc',
         };
       },
