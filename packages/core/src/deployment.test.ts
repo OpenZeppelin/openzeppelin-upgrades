@@ -130,8 +130,7 @@ test('tx mined timeout - params', async t => {
 test('platform - resumes existing deployment id and replaces tx hash', async t => {
   const provider = stubProvider();
 
-  const getDeploymentResponse = sinon.stub();
-  getDeploymentResponse.onCall(0).returns({
+  const getDeploymentResponse = sinon.stub().returns({
     status: 'submitted',
     txHash: '0x2',
   });
@@ -187,8 +186,7 @@ test('platform - resumes existing deployment id and uses tx hash', async t => {
 test('platform - errors if tx is not found', async t => {
   const provider = stubProvider();
 
-  const getDeploymentResponse = sinon.stub();
-  getDeploymentResponse.onCall(0).returns(undefined);
+  const getDeploymentResponse = sinon.stub().returns(undefined);
 
   const fakeDeployment: Deployment & DeploymentId = {
     address: '0x1aec6468218510f19bb19f52c4767996895ce711',
@@ -209,4 +207,32 @@ test('platform - errors if tx is not found', async t => {
     ),
   );
   t.true(getDeploymentResponse.calledOnceWithExactly('abc', true));
+});
+
+test('platform - fails deployment fast if deployment id failed', async t => {
+  const provider = stubProvider();
+
+  const getDeploymentResponse = sinon.stub().returns({
+    status: 'failed',
+    txHash: '0x2',
+  });
+
+  const fakeDeployment: Deployment & DeploymentId = {
+    address: '0x1aec6468218510f19bb19f52c4767996895ce711',
+    txHash: '0xc48e21ac9c051922f5ccf1b47b62000f567ef9bbc108d274848b44351a6872cb',
+    deploymentId: 'abc',
+  };
+
+  const deployment = await resumeOrDeploy(
+    provider,
+    fakeDeployment,
+    provider.deployPending,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    getDeploymentResponse,
+  );
+  t.true(getDeploymentResponse.calledOnceWithExactly('abc', true));
+  await t.throwsAsync(waitAndValidateDeployment(provider, deployment, undefined, undefined, getDeploymentResponse));
 });
