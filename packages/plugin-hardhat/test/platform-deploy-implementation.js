@@ -24,7 +24,7 @@ test.before(async t => {
   }).makeDeployImplementation(hre, true);
 });
 
-test('deploy contract', async t => {
+test('deploy implementation', async t => {
   const { deployImplementation, GreeterProxiable } = t.context;
 
   const inst = await deployImplementation(GreeterProxiable);
@@ -38,7 +38,7 @@ test('deploy contract', async t => {
   });
 });
 
-test('deploy contract - unsafe', async t => {
+test('deploy implementation - unsafe', async t => {
   const { deployImplementation, Invalid } = t.context;
 
   await t.throwsAsync(() => deployImplementation(Invalid), undefined, 'Contract `Invalid` is not upgrade safe');

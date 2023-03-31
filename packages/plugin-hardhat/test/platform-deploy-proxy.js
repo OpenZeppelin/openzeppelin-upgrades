@@ -31,6 +31,10 @@ test.before(async t => {
   }).makeDeployProxy(hre, true);
 });
 
+test.afterEach.always(() => {
+  sinon.restore();
+});
+
 test('deploy proxy', async t => {
   const { deployProxy, GreeterProxiable } = t.context;
 
