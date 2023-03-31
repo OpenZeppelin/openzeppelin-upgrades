@@ -183,3 +183,30 @@ test('platform - resumes existing deployment id and uses tx hash', async t => {
   await waitAndValidateDeployment(provider, second);
   t.is(provider.getMethodCount('eth_getTransactionReceipt'), 1);
 });
+
+test('platform - errors if tx is not found', async t => {
+  const provider = stubProvider();
+
+  const getDeploymentResponse = sinon.stub();
+  getDeploymentResponse.onCall(0).returns(undefined);
+
+  const fakeDeployment: Deployment & DeploymentId = {
+    address: '0x1aec6468218510f19bb19f52c4767996895ce711',
+    txHash: '0xc48e21ac9c051922f5ccf1b47b62000f567ef9bbc108d274848b44351a6872cb',
+    deploymentId: 'abc',
+  };
+
+  await t.throwsAsync(
+    resumeOrDeploy(
+      provider,
+      fakeDeployment,
+      provider.deploy,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      getDeploymentResponse,
+    ),
+  );
+  t.true(getDeploymentResponse.calledOnceWithExactly('abc', true));
+});
