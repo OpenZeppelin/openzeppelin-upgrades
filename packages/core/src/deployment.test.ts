@@ -1,8 +1,9 @@
 import test from 'ava';
 import { promisify } from 'util';
 import { TransactionMinedTimeout } from '.';
+import sinon from 'sinon';
 
-import { Deployment, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
+import { Deployment, DeploymentId, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import { stubProvider } from './stub-provider';
 
 const sleep = promisify(setTimeout);
@@ -120,4 +121,52 @@ test('tx mined timeout - params', async t => {
       /Timed out waiting for implementation contract deployment to address \S+ with transaction \S+\n\nRun the function again to continue waiting for the transaction confirmation. If the problem persists, adjust the polling parameters with the timeout and pollingInterval options./;
     t.true(EXPECTED.test(e.message), e.message);
   }
+});
+
+test('platform - resumes existing deployment with deployment id', async t => {
+  const provider = stubProvider();
+
+  const getDeploymentResponse = sinon.stub();
+  getDeploymentResponse.onCall(0).returns({
+    status: 'submitted',
+    txHash: '0x2',
+  });
+  getDeploymentResponse.onCall(1).returns({
+    status: 'completed',
+    txHash: '0x3',
+  });
+
+  const first: Deployment & DeploymentId = await resumeOrDeploy(provider, undefined, provider.deployPending);
+  first.txHash = '0x1';
+  first.deploymentId = 'abc';
+
+  const second: Deployment & DeploymentId = await resumeOrDeploy(
+    provider,
+    first,
+    provider.deployPending,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    getDeploymentResponse,
+  );
+  t.is(second.address, first.address);
+  t.is(second.deploymentId, first.deploymentId);
+  t.is(second.txHash, '0x2');
+  t.is(provider.deployCount, 1);
+
+  const third: Deployment & DeploymentId = await resumeOrDeploy(
+    provider,
+    second,
+    provider.deployPending,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    getDeploymentResponse,
+  );
+  t.is(third.address, second.address);
+  t.is(third.deploymentId, second.deploymentId);
+  t.is(third.txHash, '0x3');
+  t.is(provider.deployCount, 1);
 });
