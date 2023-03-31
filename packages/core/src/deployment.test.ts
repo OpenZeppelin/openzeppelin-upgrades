@@ -183,7 +183,7 @@ test('platform - resumes existing deployment id and uses tx hash', async t => {
   t.is(provider.getMethodCount('eth_getTransactionReceipt'), 1);
 });
 
-test('platform - errors if tx is not found', async t => {
+test('platform - errors if tx and deployment id are not found', async t => {
   const provider = stubProvider();
 
   const getDeploymentResponse = sinon.stub().returns(undefined);
@@ -207,6 +207,42 @@ test('platform - errors if tx is not found', async t => {
     ),
   );
   t.true(getDeploymentResponse.calledOnceWithExactly('abc', true));
+});
+
+test('platform - waits for a deployment to be completed', async t => {
+  const timeout = Symbol('timeout');
+  const provider = stubProvider();
+
+  const deployment: Deployment & DeploymentId = await provider.deployPending();
+  deployment.deploymentId = 'abc';
+  provider.removeContract(deployment.address);
+
+  const getDeploymentResponse = sinon.stub();
+  getDeploymentResponse.onCall(0).returns({
+    status: 'submitted',
+    txHash: deployment.txHash,
+  });
+  getDeploymentResponse.onCall(1).returns({
+    status: 'completed',
+    txHash: deployment.txHash,
+  });
+
+  // checks that status is completed but code not at address yet
+  const result = await Promise.race([
+    waitAndValidateDeployment(provider, deployment, undefined, { pollingInterval: 0 }, getDeploymentResponse),
+    sleep(100).then(() => timeout),
+  ]);
+  t.is(result, timeout);
+  t.is(getDeploymentResponse.callCount, 2);
+
+  // code mined to address
+  provider.addContract(deployment.address);
+  provider.mine();
+
+  // checks that the code is at address
+  await waitAndValidateDeployment(provider, deployment, undefined, { pollingInterval: 0 }, getDeploymentResponse);
+
+  t.is(getDeploymentResponse.callCount, 2);
 });
 
 test('platform - fails deployment fast if deployment id failed', async t => {
