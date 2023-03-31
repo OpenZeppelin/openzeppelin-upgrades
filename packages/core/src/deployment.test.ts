@@ -272,3 +272,33 @@ test('platform - fails deployment fast if deployment id failed', async t => {
   t.true(getDeploymentResponse.calledOnceWithExactly('abc', true));
   await t.throwsAsync(waitAndValidateDeployment(provider, deployment, undefined, undefined, getDeploymentResponse));
 });
+
+test('platform - deployment id timeout - no params', async t => {
+  const fakeDeployment: Deployment & DeploymentId = {
+    address: '0x1aec6468218510f19bb19f52c4767996895ce711',
+    txHash: '0xc48e21ac9c051922f5ccf1b47b62000f567ef9bbc108d274848b44351a6872cb',
+    deploymentId: 'abc',
+  };
+  try {
+    throw new TransactionMinedTimeout(fakeDeployment);
+  } catch (e: any) {
+    const EXPECTED =
+      /Timed out waiting for contract deployment to address \S+ with deployment id abc\n\nRun the function again to continue waiting for the transaction confirmation./;
+    t.true(EXPECTED.test(e.message), e.message);
+  }
+});
+
+test('platform - deployment id timeout - params', async t => {
+  const fakeDeployment: Deployment & DeploymentId = {
+    address: '0x1aec6468218510f19bb19f52c4767996895ce711',
+    txHash: '0xc48e21ac9c051922f5ccf1b47b62000f567ef9bbc108d274848b44351a6872cb',
+    deploymentId: 'abc',
+  };
+  try {
+    throw new TransactionMinedTimeout(fakeDeployment, 'implementation', true);
+  } catch (e: any) {
+    const EXPECTED =
+      /Timed out waiting for implementation contract deployment to address \S+ with deployment id abc+\n\nRun the function again to continue waiting for the transaction confirmation. If the problem persists, adjust the polling parameters with the timeout and pollingInterval options./;
+    t.true(EXPECTED.test(e.message), e.message);
+  }
+});
