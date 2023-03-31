@@ -1,5 +1,6 @@
 const test = require('ava');
 const proxyquire = require('proxyquire').noCallThru();
+const sinon = require('sinon');
 
 const hre = require('hardhat');
 const { ethers } = hre;
@@ -27,6 +28,10 @@ test.before(async t => {
       '@global': true,
     },
   }).makeDeployContract(hre, true);
+});
+
+test.afterEach.always(() => {
+  sinon.restore();
 });
 
 test('deploy contract', async t => {
@@ -107,4 +112,37 @@ test('await deployed contract', async t => {
   const inst = await deployContract(NonUpgradeable);
   t.is(inst.address, precreated.address);
   await inst.deployed();
+});
+
+test('deployed calls wait for deployment', async t => {
+  const { NonUpgradeable } = t.context;
+
+  const stub = sinon.stub();
+
+  const deployContract = proxyquire('../dist/deploy-contract', {
+    './platform/deploy': {
+      platformDeploy: async () => {
+        return {
+          address: ADDR,
+          txHash: TX_HASH,
+          deployTransaction: undefined,
+          deploymentId: 'abc',
+        };
+      },
+      '@global': true,
+    },
+    './platform/utils': {
+      waitForDeployment: stub,
+      setPlatformDefaults: (hre, platformModule, opts) => {
+        opts.platform = true;
+      },
+      '@global': true,
+    },
+  }).makeDeployContract(hre, true);
+
+  const inst = await deployContract(NonUpgradeable);
+  t.is(inst.address, ADDR);
+  await inst.deployed();
+
+  t.is(stub.callCount, 1);
 });
