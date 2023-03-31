@@ -8,6 +8,10 @@ import { stubProvider } from './stub-provider';
 
 const sleep = promisify(setTimeout);
 
+test.afterEach.always(() => {
+  sinon.restore();
+});
+
 test('deploys new contract', async t => {
   const provider = stubProvider();
   const deployment = await resumeOrDeploy(provider, undefined, provider.deploy);
@@ -123,17 +127,13 @@ test('tx mined timeout - params', async t => {
   }
 });
 
-test('platform - resumes existing deployment with deployment id', async t => {
+test('platform - resumes existing deployment id and replaces tx hash', async t => {
   const provider = stubProvider();
 
   const getDeploymentResponse = sinon.stub();
   getDeploymentResponse.onCall(0).returns({
     status: 'submitted',
     txHash: '0x2',
-  });
-  getDeploymentResponse.onCall(1).returns({
-    status: 'completed',
-    txHash: '0x3',
   });
 
   const first: Deployment & DeploymentId = await resumeOrDeploy(provider, undefined, provider.deployPending);
@@ -154,10 +154,20 @@ test('platform - resumes existing deployment with deployment id', async t => {
   t.is(second.deploymentId, first.deploymentId);
   t.is(second.txHash, '0x2');
   t.is(provider.deployCount, 1);
+});
 
-  const third: Deployment & DeploymentId = await resumeOrDeploy(
+test('platform - resumes existing deployment id and uses tx hash', async t => {
+  const provider = stubProvider();
+
+  const getDeploymentResponse = sinon.stub().throws();
+
+  const first: Deployment & DeploymentId = await resumeOrDeploy(provider, undefined, provider.deploy);
+  // tx hash was mined
+  first.deploymentId = 'abc';
+
+  const second: Deployment & DeploymentId = await resumeOrDeploy(
     provider,
-    second,
+    first,
     provider.deployPending,
     undefined,
     undefined,
@@ -165,8 +175,11 @@ test('platform - resumes existing deployment with deployment id', async t => {
     undefined,
     getDeploymentResponse,
   );
-  t.is(third.address, second.address);
-  t.is(third.deploymentId, second.deploymentId);
-  t.is(third.txHash, '0x3');
+  t.is(second.address, first.address);
+  t.is(second.txHash, first.txHash);
+  t.is(second.deploymentId, first.deploymentId);
   t.is(provider.deployCount, 1);
+
+  await waitAndValidateDeployment(provider, second);
+  t.is(provider.getMethodCount('eth_getTransactionReceipt'), 1);
 });
