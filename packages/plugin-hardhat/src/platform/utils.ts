@@ -1,12 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import {
-  getChainId,
-  hasCode,
-  InvalidDeployment,
-  UpgradesError,
-  DeploymentResponse,
-  DeployOpts,
-} from '@openzeppelin/upgrades-core';
+import { getChainId, hasCode, InvalidDeployment, DeploymentResponse, DeployOpts } from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from 'defender-base-client';
 import { AdminClient } from 'defender-admin-client';
@@ -49,31 +42,9 @@ export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Networ
   return network;
 }
 
-class PlatformUnsupportedError extends UpgradesError {
-  constructor(functionName: string, details?: string) {
-    super(
-      `The function ${functionName} is not supported with \`platform\``,
-      () => details ?? `Call the upgrades.${functionName} function without the \`platform\` option.`,
-    );
-  }
-}
-
 export function setPlatformDefaults(hre: HardhatRuntimeEnvironment, platformModule: boolean, opts: Platform) {
   if ((hre.config.platform?.deploy || platformModule) && opts.platform === undefined) {
     opts.platform = true;
-  }
-}
-
-export function assertNotPlatform(
-  hre: HardhatRuntimeEnvironment,
-  platformModule: boolean,
-  opts: Platform = {},
-  unsupportedFunction: string,
-  details?: string,
-) {
-  setPlatformDefaults(hre, platformModule, opts);
-  if (opts?.platform) {
-    throw new PlatformUnsupportedError(unsupportedFunction, details);
   }
 }
 
