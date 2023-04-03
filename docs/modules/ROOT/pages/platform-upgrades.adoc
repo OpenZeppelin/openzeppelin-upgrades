@@ -25,6 +25,7 @@ When using the xref:api-hardhat-upgrades.adoc[Hardhat Upgrades API functions], y
 NOTE: Only the functions that have the `platform` option in its API reference support deployments through the OpenZeppelin Platform. If you use any of the following approaches on functions that do not support `platform`, the functions will deploy using ethers.js as usual.
 
 - Use the `platform` module instead of `upgrades` from the Hardhat Runtime Environment. For example:
+
 [source,js]
 ----
 // scripts/create-box.js
@@ -41,6 +42,7 @@ main();
 ----
 
 - In `hardhat.config.js` or `hardhat.config.ts`, set `deploy: true` under `platform`. For example:
+
 [source,js]
 ----
 module.exports = {
@@ -68,6 +70,7 @@ main();
 ----
 
 - Use the `platform` common option. Setting this option overrides the above for specific functions. For example:
+
 [source,js]
 ----
 // scripts/create-box.js
