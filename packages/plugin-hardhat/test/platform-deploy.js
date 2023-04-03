@@ -5,6 +5,9 @@ const proxyquire = require('proxyquire').noCallThru();
 const hre = require('hardhat');
 const { ethers } = hre;
 
+const { getProxyFactory } = require('../dist/utils/factories');
+const artifactsBuildInfo = require('@openzeppelin/upgrades-core/artifacts/build-info.json');
+
 const TX_HASH = '0x1';
 const DEPLOYMENT_ID = 'abc';
 const ADDRESS = '0x2';
@@ -240,4 +243,30 @@ test('calls platform deploy with verify true, create API key', async t => {
   sinon.assert.calledOnce(list);
   sinon.assert.calledOnce(create);
   sinon.assert.calledWithExactly(create, { key: ETHERSCAN_API_KEY, network: fakeChainId });
+});
+
+test('calls platform deploy with proxy', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
+  const contractName = 'ERC1967Proxy';
+
+  const factory = await getProxyFactory(hre);
+
+  const logic = '0x0000000000000000000000000000000000000001';
+  const data = '0x02';
+
+  const result = await deploy.platformDeploy(fakeHre, factory, {}, logic, data);
+
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorInputs: [logic, data],
+    verifySourceCode: true,
+  });
+
+  assertResult(t, result);
 });
