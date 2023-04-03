@@ -40,6 +40,7 @@ async function deployProxy(
   Contract: ethers.ContractFactory,
   args: unknown[] = [],
   opts?: {
+    platform?: boolean,
     initializer?: string | false,
     unsafeAllow?: ValidationError[],
     constructorArgs?: unknown[],
@@ -183,6 +184,7 @@ async function deployBeaconProxy(
   attachTo: ethers.ContractFactory,
   args: unknown[] = [],
   opts?: {
+    platform?: boolean,
     initializer?: string | false,
   },
 ): Promise<ethers.Contract>
@@ -197,6 +199,7 @@ Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beac
 * `args` - arguments for the initializer function.
 * `opts` - an object with options:
 ** `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization.
+** See <<common-options>>.
 
 *Returns:*
 
@@ -275,6 +278,7 @@ Validates an implementation contract without deploying it.
 async function deployImplementation(
   Contract: ethers.ContractFactory,
   opts?: {
+    platform?: boolean,
     unsafeAllow?: ValidationError[],
     constructorArgs?: unknown[],
     timeout?: number,
@@ -399,6 +403,7 @@ async function prepareUpgrade(
   proxyOrBeacon: string | ethers.Contract,
   Contract: ethers.ContractFactory,
   opts?: {
+    platform?: boolean,
     unsafeAllow?: ValidationError[],
     unsafeAllowRenames?: boolean,
     unsafeSkipStorageCheck?: boolean,
@@ -435,6 +440,7 @@ async function proposeUpgrade(
   proxyAddress: string,
   ImplFactory: ContractFactory,
   opts?: {
+    platform?: boolean,
     unsafeAllow?: ValidationError[],
     unsafeAllowRenames?: boolean,
     unsafeSkipStorageCheck?: boolean,
@@ -454,7 +460,7 @@ async function proposeUpgrade(
   }>
 ----
 
-Identical to <<defender-propose-upgrade>> but requires configuring an OpenZeppelin Platform Team API key.
+Same as <<defender-propose-upgrade>> but supports deploying the new implementation contract using the OpenZeppelin Platform if this function is called as `platform.proposeUpgrade` or if the `platform` option is set to `true`. Requires configuring an OpenZeppelin Platform Team API Key.
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
