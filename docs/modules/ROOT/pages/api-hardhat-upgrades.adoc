@@ -304,7 +304,7 @@ Validates and deploys an implementation contract, and returns its address.
 * `@openzeppelin/hardhat-upgrades@1.20.0`
 
 [[deploy-contract]]
-== platform.deployContract
+== deployContract
 
 [source,ts]
 ----
@@ -425,6 +425,36 @@ Validates and deploys a new implementation contract, and returns its address. Us
 *Returns:*
 
 * the address or an ethers transaction response corresponding to the deployment of the new implementation contract.
+
+[[propose-upgrade]]
+== proposeUpgrade
+
+[source,ts]
+----
+async function proposeUpgrade(
+  proxyAddress: string,
+  ImplFactory: ContractFactory,
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    constructorArgs?: unknown[],
+    timeout?: number,
+    pollingInterval?: number,
+    useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
+    title?: string,
+    description?: string,
+    multisig?: string,
+    proxyAdmin?: string,
+  },
+): Promise<{
+    url: string,
+    txResponse?: ethers.providers.TransactionResponse,
+  }>
+----
+
+Identical to <<defender-propose-upgrade>> but requires configuring an OpenZeppelin Platform Team API key.
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
