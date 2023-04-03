@@ -20,7 +20,7 @@ module.exports = {
 [[usage]]
 == Usage
 
-When using the xref:api-hardhat-upgrades.adoc[Hardhat Upgrades API functions], you can enable OpenZeppelin Platform deployments using any of the ways below.
+When using the xref:api-hardhat-upgrades.adoc[Hardhat Upgrades API functions], enable OpenZeppelin Platform deployments using any of the ways below.
 
 NOTE: Only functions that have the `platform` option in their API reference support deployments through the OpenZeppelin Platform. If you enable the following but use functions that do not support `platform`, those functions will deploy using ethers.js.
 
