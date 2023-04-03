@@ -22,7 +22,7 @@ The following options are common to some functions.
 * `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `60000`. Use `0` to wait indefinitely. 
 * `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `5000`.
 * `useDeployedImplementation`: (`boolean`) Require the use of an existing deployed implementation. If this is set to `true` and the implementation contract was not previously deployed or is not found in the network file, an error will be thrown instead of deploying the implementation.
-* `platform`: Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-upgrades.adoc[Using with OpenZeppelin Platform].
+* `platform`: Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform].
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -333,7 +333,7 @@ CAUTION: Do not use this function to deploy implementations of upgradeable contr
 * `opts` - an object with options:
 ** `unsafeAllowDeployContract`: if set to `true`, allows the contract to be deployed even if it looks like an implementation contract. Defaults to `false`.
 ** `pollingInterval`: polling interval in milliseconds between checks for the transaction confirmation when calling `.deployed()` on the resulting contract instance. Defaults to `5000`.
-** `platform`: to use this function, you must enable OpenZeppelin Platform deployments using any of the ways described in xref:platform-upgrades.adoc[Using with OpenZeppelin Platform] in order to set this to `true`. This function does not support `false`.
+** `platform`: to use this function, you must enable OpenZeppelin Platform deployments using any of the ways described in xref:platform-deploy.adoc[Using with OpenZeppelin Platform] in order to set this to `true`. This function does not support `false`.
 
 *Returns:*
 
@@ -460,7 +460,7 @@ async function proposeUpgrade(
   }>
 ----
 
-Same as <<defender-propose-upgrade>> but supports deploying the new implementation contract using the OpenZeppelin Platform. See xref:platform-upgrades.adoc[Using with OpenZeppelin Platform].
+Same as <<defender-propose-upgrade>> but supports deploying the new implementation contract using the OpenZeppelin Platform. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform].
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
