@@ -66,7 +66,7 @@ export async function resumeOrDeploy<T extends Deployment, U extends T = T>(
   opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
+  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<T | U> {
   const validated = await validateCached(cached, provider, type, opts, deployment, merge, getDeploymentResponse);
   if (validated === undefined || merge) {
@@ -85,7 +85,7 @@ async function validateCached<T extends Deployment>(
   opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
+  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<T | undefined> {
   if (cached !== undefined) {
     try {
@@ -112,7 +112,7 @@ async function validateStoredDeployment<T extends Deployment & DeploymentId>(
   type?: string,
   opts?: DeployOpts,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
+  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<T> {
   const { txHash, deploymentId } = stored;
   let deployment = stored;
@@ -168,7 +168,7 @@ export async function waitAndValidateDeployment(
   deployment: Deployment & DeploymentId,
   type?: string,
   opts?: DeployOpts,
-  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
+  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<void> {
   const { txHash, address, deploymentId } = deployment;
 
@@ -191,8 +191,8 @@ export async function waitAndValidateDeployment(
         break;
       }
 
-      const completed = await isDeploymentCompleted(address, deploymentId, catchIfNotFound =>
-        getDeploymentResponse(deploymentId, catchIfNotFound),
+      const completed = await isDeploymentCompleted(address, deploymentId, allowUndefined =>
+        getDeploymentResponse(deploymentId, allowUndefined),
       );
       if (completed) {
         break;
@@ -294,7 +294,7 @@ export class InvalidDeployment extends Error {
 export async function isDeploymentCompleted(
   address: string,
   deploymentId: string,
-  getDeploymentResponse: (catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
+  getDeploymentResponse: (allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<boolean> {
   debug('verifying deployment id', deploymentId);
   const response = await getDeploymentResponse(false);

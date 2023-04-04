@@ -43,7 +43,7 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
   deploy: () => Promise<U>,
   opts?: DeployOpts,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
+  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<U | Deployment> {
   const manifest = await Manifest.forNetwork(provider);
 
@@ -131,7 +131,7 @@ export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
   deploy: () => Promise<T>,
   opts?: DeployOpts,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
+  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
 ): Promise<T | Deployment> {
   return fetchOrDeployGeneric(
     implLens(version.linkedWithoutMetadata),

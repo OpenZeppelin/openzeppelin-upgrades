@@ -76,17 +76,26 @@ export function getPlatformClient(hre: HardhatRuntimeEnvironment): PlatformClien
   return PlatformClient(getPlatformApiKey(hre));
 }
 
+/**
+ * Gets the deployment response for the given id.
+ *
+ * @param hre The Hardhat runtime environment
+ * @param deploymentId The deployment id.
+ * @param allowUndefined If the deployment id is not found, returns undefined if this is true, or throws an error if this is false.
+ * @returns The deployment response, or undefined if allowUndefined is true and the deployment is not found.
+ * @throws Error if the deployment response could not be retrieved, or if allowUndefined is false and the deployment is not found.
+ */
 export async function getDeploymentResponse(
   hre: HardhatRuntimeEnvironment,
   deploymentId: string,
-  catchIfNotfound: boolean,
+  allowUndefined: boolean,
 ): Promise<DeploymentResponse | undefined> {
   const client = getPlatformClient(hre);
   try {
     return await client.Deployment.get(deploymentId);
   } catch (e) {
     const message = (e as any).response?.data?.message;
-    if (catchIfNotfound && message !== undefined && message.match(/deployment with id .* not found\./)) {
+    if (allowUndefined && message !== undefined && message.match(/deployment with id .* not found\./)) {
       return undefined;
     }
     throw e;
@@ -94,7 +103,7 @@ export async function getDeploymentResponse(
 }
 
 /**
- * Wait indefinitely for the deployment until it is completed or failed.
+ * Waits indefinitely for the deployment until it is completed or failed.
  */
 export async function waitForDeployment(
   hre: HardhatRuntimeEnvironment,
@@ -111,8 +120,8 @@ export async function waitForDeployment(
       break;
     }
 
-    const completed = await isDeploymentCompleted(address, deploymentId, catchIfNotFound =>
-      getDeploymentResponse(hre, deploymentId, catchIfNotFound),
+    const completed = await isDeploymentCompleted(address, deploymentId, allowUndefined =>
+      getDeploymentResponse(hre, deploymentId, allowUndefined),
     );
     if (completed) {
       break;
