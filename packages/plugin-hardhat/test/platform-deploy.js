@@ -5,7 +5,11 @@ const proxyquire = require('proxyquire').noCallThru();
 const hre = require('hardhat');
 const { ethers } = hre;
 
-const { getProxyFactory } = require('../dist/utils/factories');
+const {
+  getProxyFactory,
+  getBeaconProxyFactory,
+  getTransparentUpgradeableProxyFactory,
+} = require('../dist/utils/factories');
 const artifactsBuildInfo = require('@openzeppelin/upgrades-core/artifacts/build-info.json');
 
 const TX_HASH = '0x1';
@@ -13,6 +17,10 @@ const DEPLOYMENT_ID = 'abc';
 const ADDRESS = '0x2';
 const TX_RESPONSE = 'mocked response';
 const ETHERSCAN_API_KEY = 'fakeKey';
+
+const LOGIC_ADDRESS = '0x0000000000000000000000000000000000000003';
+const ADMIN_ADDRESS = '0x0000000000000000000000000000000000000004';
+const DATA = '0x05';
 
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
@@ -245,18 +253,15 @@ test('calls platform deploy with verify true, create API key', async t => {
   sinon.assert.calledWithExactly(create, { key: ETHERSCAN_API_KEY, network: fakeChainId });
 });
 
-test('calls platform deploy with proxy', async t => {
+test('calls platform deploy with ERC1967Proxy', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
   const contractName = 'ERC1967Proxy';
-
   const factory = await getProxyFactory(hre);
 
-  const logic = '0x0000000000000000000000000000000000000001';
-  const data = '0x02';
-
-  const result = await deploy.platformDeploy(fakeHre, factory, {}, logic, data);
+  const result = await deploy.platformDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, DATA);
+  assertResult(t, result);
 
   sinon.assert.calledWithExactly(spy, {
     contractName: contractName,
@@ -264,9 +269,49 @@ test('calls platform deploy with proxy', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(artifactsBuildInfo),
     licenseType: 'MIT',
-    constructorInputs: [logic, data],
+    constructorInputs: [LOGIC_ADDRESS, DATA],
     verifySourceCode: true,
   });
+});
 
+test('calls platform deploy with BeaconProxy', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
+  const contractName = 'BeaconProxy';
+  const factory = await getBeaconProxyFactory(hre);
+
+  const result = await deploy.platformDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, DATA);
   assertResult(t, result);
+
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorInputs: [LOGIC_ADDRESS, DATA],
+    verifySourceCode: true,
+  });
+});
+
+test('calls platform deploy with TransparentUpgradeableProxy', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
+  const contractName = 'TransparentUpgradeableProxy';
+  const factory = await getTransparentUpgradeableProxyFactory(hre);
+
+  const result = await deploy.platformDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, ADMIN_ADDRESS, DATA);
+  assertResult(t, result);
+
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorInputs: [LOGIC_ADDRESS, ADMIN_ADDRESS, DATA],
+    verifySourceCode: true,
+  });
 });
