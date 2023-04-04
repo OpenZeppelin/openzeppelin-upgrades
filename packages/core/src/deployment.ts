@@ -191,24 +191,13 @@ export async function waitAndValidateDeployment(
         break;
       }
 
-      debug('verifying deployment id', deploymentId);
-      const response = await getDeploymentResponse(deploymentId, false);
-      if (response === undefined) {
-        throw new Error(`Broken invariant: Response not found for deployment id ${deploymentId}`);
-      }
-
-      const status = response.status;
-      if (status === 'completed') {
-        debug('succeeded verifying deployment id completed', deploymentId);
+      const completed = await isDeploymentCompleted(address, deploymentId, catchIfNotFound =>
+        getDeploymentResponse(deploymentId, catchIfNotFound),
+      );
+      if (completed) {
         break;
-      } else if (status === 'failed') {
-        debug(`tx hash ${response.txHash} was reverted for deployment id ${deploymentId}`);
-        throw new InvalidDeployment({ address, txHash: response.txHash });
-      } else if (status === 'submitted') {
-        debug('waiting for deployment id to be completed', deploymentId);
-        await sleep(pollInterval);
       } else {
-        throw new Error(`Broken invariant: Unrecognized status ${status} for deployment id ${deploymentId}`);
+        await sleep(pollInterval);
       }
       if (pollTimeout != 0) {
         const elapsedTime = Date.now() - startTime;
@@ -290,5 +279,40 @@ export class InvalidDeployment extends Error {
       msg += ' (Removed from manifest)';
     }
     return msg;
+  }
+}
+
+/**
+ * Checks if the deployment id is completed.
+ *
+ * @param address The expected address of the deployment.
+ * @param deploymentId The deployment id.
+ * @param getDeploymentResponse A function to get the deployment response.
+ * @returns true if the deployment id is completed, false otherwise.
+ * @throws {InvalidDeployment} if the deployment id failed.
+ */
+export async function isDeploymentCompleted(
+  address: string,
+  deploymentId: string,
+  getDeploymentResponse: (catchIfNotFound: boolean) => Promise<DeploymentResponse | undefined>,
+): Promise<boolean> {
+  debug('verifying deployment id', deploymentId);
+  const response = await getDeploymentResponse(false);
+  if (response === undefined) {
+    throw new Error(`Broken invariant: Response not found for deployment id ${deploymentId}`);
+  }
+
+  const status = response.status;
+  if (status === 'completed') {
+    debug('succeeded verifying deployment id completed', deploymentId);
+    return true;
+  } else if (status === 'failed') {
+    debug(`deployment id ${deploymentId} failed with tx hash ${response.txHash}`);
+    throw new InvalidDeployment({ address, txHash: response.txHash });
+  } else if (status === 'submitted') {
+    debug('waiting for deployment id to be completed', deploymentId);
+    return false;
+  } else {
+    throw new Error(`Broken invariant: Unrecognized status ${status} for deployment id ${deploymentId}`);
   }
 }

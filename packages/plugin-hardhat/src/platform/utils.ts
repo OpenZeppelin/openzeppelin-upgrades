@@ -1,5 +1,11 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getChainId, hasCode, InvalidDeployment, DeploymentResponse, DeployOpts } from '@openzeppelin/upgrades-core';
+import {
+  getChainId,
+  hasCode,
+  DeploymentResponse,
+  DeployOpts,
+  isDeploymentCompleted,
+} from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from 'defender-base-client';
 import { AdminClient } from 'defender-admin-client';
@@ -87,12 +93,17 @@ export async function getDeploymentResponse(
   }
 }
 
+/**
+ * Wait indefinitely for the deployment until it is completed or failed.
+ */
 export async function waitForDeployment(
   hre: HardhatRuntimeEnvironment,
   opts: DeployOpts,
   address: string,
   deploymentId: string,
 ) {
+  const pollInterval = opts.pollingInterval ?? 5e3;
+
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (await hasCode(hre.ethers.provider, address)) {
@@ -100,26 +111,13 @@ export async function waitForDeployment(
       break;
     }
 
-    const pollingInterval = opts.pollingInterval ?? 5e3;
-
-    debug('verifying deployment id', deploymentId);
-    const response = await getDeploymentResponse(hre, deploymentId, false);
-    if (response === undefined) {
-      throw new Error(`Broken invariant: Response not found for deployment id ${deploymentId}`);
-    }
-
-    const status = response.status;
-    if (status === 'completed') {
-      debug('succeeded verifying deployment id completed', deploymentId);
+    const completed = await isDeploymentCompleted(address, deploymentId, catchIfNotFound =>
+      getDeploymentResponse(hre, deploymentId, catchIfNotFound),
+    );
+    if (completed) {
       break;
-    } else if (status === 'failed') {
-      debug('deployment id failed', deploymentId);
-      throw new InvalidDeployment({ address, txHash: response.txHash });
-    } else if (status === 'submitted') {
-      debug('waiting for deployment id to be completed', deploymentId);
-      await sleep(pollingInterval);
     } else {
-      throw new Error(`Broken invariant: Unrecognized status ${status} for deployment id ${deploymentId}`);
+      await sleep(pollInterval);
     }
   }
 }
