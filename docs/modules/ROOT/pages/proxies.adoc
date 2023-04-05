@@ -29,9 +29,9 @@ The most immediate problem that proxies need to solve is how the proxy exposes t
 
 [source,solidity]
 ----
-// this code is for "illustration" purposes. To implement a similar functionality,
-// you should use the `Proxy` contract from the `@openzeppelin/contracts` library.
-// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/proxy/Proxy.sol
+// This code is for "illustration" purposes. To implement this functionality in production it
+// is recommended to use the `Proxy` contract from the `@openzeppelin/contracts` library.
+// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.8.2/contracts/proxy/Proxy.sol
 
 assembly {
   // (1) copy incoming call data
