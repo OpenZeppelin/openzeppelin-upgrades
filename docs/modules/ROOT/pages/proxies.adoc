@@ -29,23 +29,28 @@ The most immediate problem that proxies need to solve is how the proxy exposes t
 
 [source,solidity]
 ----
-assembly {
-  let ptr := mload(0x40)
+// This code is for "illustration" purposes. To implement this functionality in production it
+// is recommended to use the `Proxy` contract from the `@openzeppelin/contracts` library.
+// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.8.2/contracts/proxy/Proxy.sol
 
+assembly {
   // (1) copy incoming call data
-  calldatacopy(ptr, 0, calldatasize)
+  calldatacopy(0, 0, calldatasize())
 
   // (2) forward call to logic contract
-  let result := delegatecall(gas, _impl, ptr, calldatasize, 0, 0)
-  let size := returndatasize
+  let result := delegatecall(gas(), implementation, 0, calldatasize(), 0, 0)
 
   // (3) retrieve return data
-  returndatacopy(ptr, 0, size)
+  returndatacopy(0, 0, returndatasize())
 
   // (4) forward return data back to caller
   switch result
-  case 0 { revert(ptr, size) }
-  default { return(ptr, size) }
+  case 0 {
+      revert(0, returndatasize())
+  }
+  default {
+      return(0, returndatasize())
+  }
 }
 ----
 
