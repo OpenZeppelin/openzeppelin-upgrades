@@ -95,7 +95,7 @@ export async function getDeploymentResponse(
     return await client.Deployment.get(deploymentId);
   } catch (e) {
     const message = (e as any).response?.data?.message;
-    if (allowUndefined && message !== undefined && message.match(/deployment with id .* not found\./)) {
+    if (allowUndefined && message?.match(/deployment with id .* not found\./)) {
       return undefined;
     }
     throw e;
