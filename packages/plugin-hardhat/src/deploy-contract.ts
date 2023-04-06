@@ -2,38 +2,44 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract, ethers } from 'ethers';
 import assert from 'assert';
 
-import { deploy, DeployContractOptions } from './utils';
+import { deploy, DeployContractOptions, DeployTransaction } from './utils';
 import { DeployData, getDeployData } from './utils/deploy-impl';
 import { setPlatformDefaults, waitForDeployment } from './platform/utils';
-import { getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
+import { Deployment, DeploymentId, getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
 
 export interface DeployContractFunction {
-  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployContractOptions): Promise<Contract>;
-  (ImplFactory: ContractFactory, opts?: DeployContractOptions): Promise<Contract>;
+  (Contract: ContractFactory, args?: unknown[], opts?: DeployContractOptions): Promise<Contract>;
+  (Contract: ContractFactory, opts?: DeployContractOptions): Promise<Contract>;
 }
 
 interface DeployedContract {
-  impl: string;
+  address: string;
   txResponse?: ethers.providers.TransactionResponse;
   deploymentId?: string;
 }
 
 export async function deployNonUpgradeableContract(
   hre: HardhatRuntimeEnvironment,
-  ImplFactory: ContractFactory,
+  Contract: ContractFactory,
   opts: DeployContractOptions,
 ): Promise<DeployedContract> {
-  const deployData = await getDeployData(hre, ImplFactory, opts);
+  const deployData = await getDeployData(hre, Contract, opts);
 
   if (!opts.unsafeAllowDeployContract) {
     assertNonUpgradeable(deployData);
   }
 
-  const deployment = await deploy(hre, opts, ImplFactory, ...deployData.fullOpts.constructorArgs);
-  const impl = deployment.address;
-  const txResponse =
-    deployment.txHash !== undefined ? await hre.ethers.provider.getTransaction(deployment.txHash) : undefined;
-  return { impl, txResponse, deploymentId: deployment.deploymentId };
+  const deployment: Required<Deployment & DeployTransaction> & DeploymentId = await deploy(
+    hre,
+    opts,
+    Contract,
+    ...deployData.fullOpts.constructorArgs,
+  );
+
+  const address = deployment.address;
+  const txResponse = deployment.deployTransaction;
+  const deploymentId = deployment.deploymentId;
+  return { address, txResponse, deploymentId };
 }
 
 function assertNonUpgradeable(deployData: DeployData) {
@@ -56,7 +62,7 @@ function assertNonUpgradeable(deployData: DeployData) {
 
 export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModule: boolean): DeployContractFunction {
   return async function deployContract(
-    ImplFactory,
+    Contract,
     args: unknown[] | DeployContractOptions = [],
     opts: DeployContractOptions = {},
   ) {
@@ -78,9 +84,9 @@ export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModul
     }
     opts.constructorArgs = args;
 
-    const deployed = await deployNonUpgradeableContract(hre, ImplFactory, opts);
+    const deployed = await deployNonUpgradeableContract(hre, Contract, opts);
 
-    const inst = ImplFactory.attach(deployed.impl);
+    const inst = Contract.attach(deployed.address);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = deployed.txResponse;
     if (opts.platform && deployed.deploymentId !== undefined) {
