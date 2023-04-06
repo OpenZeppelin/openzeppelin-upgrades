@@ -67,7 +67,7 @@ export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModul
 
     setPlatformDefaults(hre, platformModule, opts);
 
-    if (opts.platform === undefined || !opts.platform) {
+    if (!opts.platform) {
       throw new Error(`The ${deployContract.name} function can only be used with the \`platform\` module or option.`);
     }
 
