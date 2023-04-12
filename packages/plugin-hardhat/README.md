@@ -148,6 +148,23 @@ describe("Box", function() {
   });
 });
 ```
+## Troubleshooting
+
+### Error Code ELOCK
+If used in an environment with lots of contracts being compiled, a timeout can occur related to lockfile usage for safe access to the validation file cache. 
+
+See https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/537 for context.
+
+If this occurs, you can tune the following parameters to increase leniency on lockfile acquisition.
+The following env vars configure the retry options, see https://github.com/tim-kos/node-retry#retrytimeoutsoptions and https://github.com/tim-kos/node-retry#retryoperationoptions for option details.
+
+```sh
+OPENZEPPPELIN_HARDHAT_UPGRADES_LOCK_RETRY_OPTIONS_FACTOR
+OPENZEPPPELIN_HARDHAT_UPGRADES_LOCK_RETRY_OPTIONS_MAXRETRYTIME
+OPENZEPPPELIN_HARDHAT_UPGRADES_LOCK_RETRY_OPTIONS_MAXTIMEOUT
+OPENZEPPPELIN_HARDHAT_UPGRADES_LOCK_RETRY_OPTIONS_MINTIMEOUT
+OPENZEPPPELIN_HARDHAT_UPGRADES_LOCK_RETRY_OPTIONS_RETRIES
+```
 
 ## Learn more
 * Refer to the [API documentation](https://docs.openzeppelin.com/upgrades-plugins/api-hardhat-upgrades).
