@@ -3,6 +3,7 @@
 
 ## Unreleased
 
+- Add support for Arbitrum Chain to manifest file names. ([#770](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/770))
 - Add Sepolia testnet to manifest file names. ([#766](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/766))
 
 ## 1.24.1 (2023-03-02)
