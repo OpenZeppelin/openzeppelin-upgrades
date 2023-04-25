@@ -392,7 +392,7 @@ async function verifyWithFallback(
         if (fallbackError.message.toLowerCase().includes('already verified')) {
           console.log(`Contract at ${address} already verified.`);
         } else {
-          // Fallback failed, so record both the original error and the fallback attempt
+          // Fallback failed, so record both the original error and the fallback attempt, then return
           if (origError instanceof BytecodeNotMatchArtifact) {
             recordVerificationError(address, origError.contractName, origError.message, errors);
           } else {
@@ -400,8 +400,17 @@ async function verifyWithFallback(
           }
 
           recordError(`Failed to verify directly using hardhat verify: ${fallbackError.message}`, errors);
+          return;
         }
       }
+
+      // Since the contract was able to be verified directly, we don't want the task to fail so we should clear earlier errors for other related contracts.
+      // This is fine since earlier errors were already logged.
+
+      // For example, user provided constructor arguments for the verify command will apply to all calls of the regular hardhat verify,
+      // so it is not possible to successfully verify both an impl and a proxy that uses the above fallback at the same time.
+
+      errors.splice(0, errors.length);
     } else {
       throw origError;
     }
