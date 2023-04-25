@@ -1,10 +1,10 @@
 # Changelog
 
-
 ## Unreleased
 
 - Add support for Arbitrum to manifest file names. ([#770](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/770))
 - Add support for Sepolia testnet to manifest file names. ([#766](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/766))
+- Support `prepareUpgrade` from an implementation address. ([#777](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/777))
 
 ## 1.24.1 (2023-03-02)
 
