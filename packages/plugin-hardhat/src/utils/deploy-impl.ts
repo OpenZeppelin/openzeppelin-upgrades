@@ -53,13 +53,14 @@ export async function getDeployData(
   return { provider, validations, unlinkedBytecode, encodedArgs, version, layout, fullOpts };
 }
 
-export async function deployStandaloneImpl(
+export async function deployUpgradeableImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: StandaloneOptions,
+  currentImplAddress?: string,
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
-  await validateImpl(deployData, opts);
+  await validateImpl(deployData, opts, currentImplAddress);
   return await deployImpl(hre, deployData, ImplFactory, opts);
 }
 

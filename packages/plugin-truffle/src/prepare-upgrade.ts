@@ -3,7 +3,7 @@ import {
   isBeacon,
   isBeaconProxy,
   isTransparentOrUUPSProxy,
-  PrepareUpgradeUnsupportedError,
+  PrepareUpgradeRequiresKindError,
 } from '@openzeppelin/upgrades-core';
 import {
   ContractClass,
@@ -14,26 +14,30 @@ import {
   wrapProvider,
   deployBeaconImpl,
   PrepareUpgradeOptions,
+  deployUpgradeableImpl,
 } from './utils';
 
 export async function prepareUpgrade(
-  proxyOrBeacon: ContractAddressOrInstance,
+  from: ContractAddressOrInstance,
   Contract: ContractClass,
   opts: PrepareUpgradeOptions = {},
 ): Promise<string> {
-  const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
+  const fromAddr = getContractAddress(from);
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
   let deployedImpl;
-  if (await isTransparentOrUUPSProxy(provider, proxyOrBeaconAddress)) {
-    deployedImpl = await deployProxyImpl(Contract, opts, proxyOrBeaconAddress);
-  } else if (await isBeaconProxy(provider, proxyOrBeaconAddress)) {
-    const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
+  if (await isTransparentOrUUPSProxy(provider, fromAddr)) {
+    deployedImpl = await deployProxyImpl(Contract, opts, fromAddr);
+  } else if (await isBeaconProxy(provider, fromAddr)) {
+    const beaconAddress = await getBeaconAddress(provider, fromAddr);
     deployedImpl = await deployBeaconImpl(Contract, opts, beaconAddress);
-  } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
-    deployedImpl = await deployBeaconImpl(Contract, opts, proxyOrBeaconAddress);
+  } else if (await isBeacon(provider, fromAddr)) {
+    deployedImpl = await deployBeaconImpl(Contract, opts, fromAddr);
   } else {
-    throw new PrepareUpgradeUnsupportedError(proxyOrBeaconAddress);
+    if (opts.kind === undefined) {
+      throw new PrepareUpgradeRequiresKindError();
+    }
+    deployedImpl = await deployUpgradeableImpl(Contract, opts, fromAddr);
   }
   return deployedImpl.impl;
 }

@@ -42,6 +42,9 @@ export class LoadProxyUnsupportedError extends UpgradesError {
   }
 }
 
+/**
+ * @deprecated No longer used since prepareUpgrade() supports using an implementation contract as the reference address.
+ */
 export class PrepareUpgradeUnsupportedError extends UpgradesError {
   constructor(proxyOrBeaconAddress: string) {
     super(
@@ -78,6 +81,16 @@ export class ValidateUpdateRequiresKindError extends UpgradesError {
       'The `kind` option must be provided',
       () =>
         'When validating an upgrade from an implementation address, pass in the `kind` option for the kind of proxy that you are using.',
+    );
+  }
+}
+
+export class PrepareUpgradeRequiresKindError extends UpgradesError {
+  constructor() {
+    super(
+      'The `kind` option must be provided',
+      () =>
+        'When preparing an upgrade from an implementation address, pass in the `kind` option for the kind of proxy that you are using.',
     );
   }
 }
