@@ -225,6 +225,8 @@ async function fullVerifyTransparentOrUUPS(
           adminAddress,
           [verifiableContracts.proxyAdmin],
           errorReport,
+          // The user provided the proxy address to verify, whereas this function is only verifying the related proxy admin.
+          // So even if this falls back and succeeds, we want to keep any errors that might have occurred while verifying the proxy itself.
           false,
         );
       } catch (e: any) {
