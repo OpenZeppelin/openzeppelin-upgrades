@@ -100,14 +100,14 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
     severity: 'error',
   };
 
-  let beacon = false;
+  let proxy = true;
 
   if (await isTransparentOrUUPSProxy(provider, proxyAddress)) {
     await fullVerifyTransparentOrUUPS(hre, proxyAddress, hardhatVerify, errorReport);
   } else if (await isBeaconProxy(provider, proxyAddress)) {
     await fullVerifyBeaconProxy(hre, proxyAddress, hardhatVerify, errorReport);
   } else if (await isBeacon(provider, proxyAddress)) {
-    beacon = true;
+    proxy = false;
     const etherscanApi = await getEtherscanAPIConfig(hre);
     await fullVerifyBeacon(hre, proxyAddress, hardhatVerify, etherscanApi, errorReport);
   } else {
@@ -118,7 +118,7 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
   if (errorReport.errors.length > 0) {
     displayErrorReport(errorReport);
   } else {
-    console.info(`\n${beacon ? 'Beacon' : 'Proxy'} fully verified.`);
+    console.info(`\n${proxy ? 'Proxy' : 'Contract'} fully verified.`);
   }
 
   async function hardhatVerify(address: string) {
@@ -312,7 +312,7 @@ async function fullVerifyBeacon(
   await verifyBeacon();
 
   async function verifyBeacon() {
-    console.log(`Verifying beacon: ${beaconAddress}`);
+    console.log(`Verifying beacon or beacon-like contract: ${beaconAddress}`);
     await verifyWithArtifactOrFallback(
       hre,
       hardhatVerify,
