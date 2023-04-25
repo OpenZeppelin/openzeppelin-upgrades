@@ -155,6 +155,17 @@ function recordError(message: string, errors: string[]) {
 class EventNotFound extends UpgradesError {}
 
 /**
+ * Indicates that the contract's bytecode does not match with the plugin's artifact.
+ */
+class BytecodeNotMatchArtifact extends Error {
+  contractName: string;
+  constructor(message: string, contractName: string) {
+    super(message);
+    this.contractName = contractName;
+  }
+}
+
+/**
  * Fully verifies all contracts related to the given transparent or UUPS proxy address: implementation, admin (if any), and proxy.
  * Also links the proxy to the implementation ABI on Etherscan.
  *
@@ -191,8 +202,9 @@ async function fullVerifyTransparentOrUUPS(
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
       try {
-        await verifyContractWithCreationEvent(
+        await verifyWithFallback(
           hre,
+          hardhatVerify,
           etherscanApi,
           adminAddress,
           [verifiableContracts.proxyAdmin],
@@ -210,8 +222,9 @@ async function fullVerifyTransparentOrUUPS(
 
   async function verifyTransparentOrUUPS() {
     console.log(`Verifying proxy: ${proxyAddress}`);
-    await verifyContractWithCreationEvent(
+    await verifyWithFallback(
       hre,
+      hardhatVerify,
       etherscanApi,
       proxyAddress,
       [verifiableContracts.transparentUpgradeableProxy, verifiableContracts.erc1967proxy],
@@ -246,7 +259,7 @@ async function fullVerifyBeaconProxy(
 
   async function verifyBeaconProxy() {
     console.log(`Verifying beacon proxy: ${proxyAddress}`);
-    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [verifiableContracts.beaconProxy], errors);
+    await verifyWithFallback(hre, hardhatVerify, etherscanApi, proxyAddress, [verifiableContracts.beaconProxy], errors);
   }
 }
 
@@ -274,8 +287,9 @@ async function fullVerifyBeacon(
 
   async function verifyBeacon() {
     console.log(`Verifying beacon: ${beaconAddress}`);
-    await verifyContractWithCreationEvent(
+    await verifyWithFallback(
       hre,
+      hardhatVerify,
       etherscanApi,
       beaconAddress,
       [verifiableContracts.upgradeableBeacon],
@@ -343,7 +357,59 @@ async function searchEvent(
 }
 
 /**
- * Verifies a contract by looking up an event that should have been logged during contract construction,
+ * Verifies a contract by matching with known artifacts.
+ *
+ * If a match was not found, falls back to verify directly using the regular hardhat verify task.
+ *
+ * If the fallback passes, logs as success.
+ * If the fallback also fails, records errors for both the original and fallback attempts.
+ *
+ * @param hre
+ * @param etherscanApi The Etherscan API config
+ * @param address The contract address to verify
+ * @param possibleContractInfo An array of possible contract artifacts to use for verification along
+ *  with the corresponding creation event expected in the logs.
+ * @param errors Accumulated verification errors
+ * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
+ */
+async function verifyWithFallback(
+  hre: HardhatRuntimeEnvironment,
+  hardhatVerify: (address: string) => Promise<any>,
+  etherscanApi: EtherscanAPIConfig,
+  address: string,
+  possibleContractInfo: VerifiableContractInfo[],
+  errors: string[],
+) {
+  try {
+    await attemptVerifyWithCreationEvent(hre, etherscanApi, address, possibleContractInfo, errors);
+  } catch (origError: any) {
+    if (origError instanceof BytecodeNotMatchArtifact || origError instanceof EventNotFound) {
+      // Try falling back to regular hardhat verify in case the source code is available in the user's project.
+      try {
+        await hardhatVerify(address);
+        console.log(`Successfully verified contract at ${address}.`);
+      } catch (fallbackError: any) {
+        if (fallbackError.message.toLowerCase().includes('already verified')) {
+          console.log(`Contract at ${address} already verified.`);
+        } else {
+          // Fallback failed, so record both the original error and the fallback attempt
+          if (origError instanceof BytecodeNotMatchArtifact) {
+            recordVerificationError(address, origError.contractName, origError.message, errors);
+          } else {
+            recordError(origError.message, errors);
+          }
+
+          recordError(`Failed to verify directly using hardhat verify: ${fallbackError.message}`, errors);
+        }
+      }
+    } else {
+      throw origError;
+    }
+  }
+}
+
+/**
+ * Attempts to verify a contract by looking up an event that should have been logged during contract construction,
  * finds the txHash for that, and infers the constructor args to use for verification.
  *
  * Iterates through each element of possibleContractInfo to look for that element's event, until an event is found.
@@ -355,8 +421,9 @@ async function searchEvent(
  *  with the corresponding creation event expected in the logs.
  * @param errors Accumulated verification errors
  * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
+ * @throws {BytecodeNotMatchArtifact} if the contract's bytecode does not match with the plugin's known artifact.
  */
-async function verifyContractWithCreationEvent(
+async function attemptVerifyWithCreationEvent(
   hre: HardhatRuntimeEnvironment,
   etherscanApi: EtherscanAPIConfig,
   address: string,
@@ -376,11 +443,9 @@ async function verifyContractWithCreationEvent(
   if (constructorArguments === undefined) {
     // The creation bytecode for the address does not match with the expected artifact.
     // This may be because a different version of the contract was deployed compared to what is in the plugins.
-    recordVerificationError(
-      address,
-      contractInfo.artifact.contractName,
+    throw new BytecodeNotMatchArtifact(
       `Bytecode does not match with the current version of ${contractInfo.artifact.contractName} in the Hardhat Upgrades plugin.`,
-      errors,
+      contractInfo.artifact.contractName,
     );
   } else {
     await verifyContractWithConstructorArgs(etherscanApi, address, contractInfo.artifact, constructorArguments, errors);
