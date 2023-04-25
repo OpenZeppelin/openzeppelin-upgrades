@@ -418,7 +418,6 @@ async function verifyWithArtifactOrFallback(
       // Try falling back to regular hardhat verify in case the source code is available in the user's project.
       try {
         await hardhatVerify(address);
-        console.log(`Successfully verified contract at ${address}.`);
       } catch (fallbackError: any) {
         if (fallbackError.message.toLowerCase().includes('already verified')) {
           console.log(`Contract at ${address} already verified.`);
