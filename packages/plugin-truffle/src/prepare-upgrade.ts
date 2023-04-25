@@ -18,26 +18,26 @@ import {
 } from './utils';
 
 export async function prepareUpgrade(
-  from: ContractAddressOrInstance,
+  referenceAddressOrContract: ContractAddressOrInstance,
   Contract: ContractClass,
   opts: PrepareUpgradeOptions = {},
 ): Promise<string> {
-  const fromAddr = getContractAddress(from);
+  const referenceAddress = getContractAddress(referenceAddressOrContract);
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
   let deployedImpl;
-  if (await isTransparentOrUUPSProxy(provider, fromAddr)) {
-    deployedImpl = await deployProxyImpl(Contract, opts, fromAddr);
-  } else if (await isBeaconProxy(provider, fromAddr)) {
-    const beaconAddress = await getBeaconAddress(provider, fromAddr);
+  if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
+    deployedImpl = await deployProxyImpl(Contract, opts, referenceAddress);
+  } else if (await isBeaconProxy(provider, referenceAddress)) {
+    const beaconAddress = await getBeaconAddress(provider, referenceAddress);
     deployedImpl = await deployBeaconImpl(Contract, opts, beaconAddress);
-  } else if (await isBeacon(provider, fromAddr)) {
-    deployedImpl = await deployBeaconImpl(Contract, opts, fromAddr);
+  } else if (await isBeacon(provider, referenceAddress)) {
+    deployedImpl = await deployBeaconImpl(Contract, opts, referenceAddress);
   } else {
     if (opts.kind === undefined) {
       throw new PrepareUpgradeRequiresKindError();
     }
-    deployedImpl = await deployUpgradeableImpl(Contract, opts, fromAddr);
+    deployedImpl = await deployUpgradeableImpl(Contract, opts, referenceAddress);
   }
   return deployedImpl.impl;
 }
