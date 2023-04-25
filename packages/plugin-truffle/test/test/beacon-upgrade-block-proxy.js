@@ -69,7 +69,7 @@ contract('Greeter', function () {
   });
 
   it('block deployBeaconProxy with non-beacon address', async function () {
-    const genericContract = GreeterStandaloneImpl.deployed();
+    const genericContract = await GreeterStandaloneImpl.deployed();
 
     await assert.rejects(deployBeaconProxy(genericContract, GreeterStandaloneImpl, ['Hello Truffle']), error =>
       NOT_BEACON.test(error.message),
@@ -77,15 +77,19 @@ contract('Greeter', function () {
   });
 
   it('block prepareUpgrade on generic contract', async function () {
-    const genericContract = GreeterStandaloneImpl.deployed();
+    const genericContract = await GreeterStandaloneImpl.deployed();
 
-    await assert.rejects(prepareUpgrade(genericContract, GreeterV2), error => NOT_REGISTERED_REGEX.test(error.message));
+    await assert.rejects(prepareUpgrade(genericContract, GreeterV2, { kind: 'transparent' }), error =>
+      NOT_REGISTERED_REGEX.test(error.message),
+    );
   });
 
   it('block prepareUpgrade on generic contract with fallback', async function () {
-    const genericContract = GreeterFallback.deployed();
+    const genericContract = await GreeterFallback.deployed();
 
-    await assert.rejects(prepareUpgrade(genericContract, GreeterV2), error => NOT_REGISTERED_REGEX.test(error.message));
+    await assert.rejects(prepareUpgrade(genericContract, GreeterV2, { kind: 'transparent' }), error =>
+      NOT_REGISTERED_REGEX.test(error.message),
+    );
   });
 
   it('block deployBeaconProxy without attachTo with args', async function () {

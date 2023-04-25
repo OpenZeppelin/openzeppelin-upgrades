@@ -113,7 +113,7 @@ test('block prepareUpgrade on generic contract', async t => {
   const genericContract = await Greeter.deploy();
 
   try {
-    await upgrades.prepareUpgrade(genericContract, GreeterV2);
+    await upgrades.prepareUpgrade(genericContract, GreeterV2, { kind: 'transparent' });
     t.fail('prepareUpgrade() should not allow generic contract that is not registered');
   } catch (e) {
     t.true(NOT_REGISTERED_REGEX.test(e.message), e.message);
@@ -126,7 +126,7 @@ test('block prepareUpgrade on generic contract with fallback', async t => {
   await genericContract.deployed();
 
   try {
-    await upgrades.prepareUpgrade(genericContract, GreeterV2);
+    await upgrades.prepareUpgrade(genericContract, GreeterV2, { kind: 'transparent' });
     t.fail('prepareUpgrade() should not allow generic contract with fallback that is not registered');
   } catch (e) {
     t.true(NOT_REGISTERED_REGEX.test(e.message), e.message);
