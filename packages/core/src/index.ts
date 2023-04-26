@@ -52,5 +52,6 @@ export {
   ForceImportUnsupportedError,
   NoContractImportError,
   ValidateUpdateRequiresKindError,
+  PrepareUpgradeRequiresKindError,
   assertNotProxy,
 } from './usage-error';

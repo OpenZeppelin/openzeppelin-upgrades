@@ -14,7 +14,7 @@ const BEACON_PROXY_NOT_SUPPORTED = 'Beacon proxies are not supported with the cu
 const ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY = 'Address is a transparent or UUPS proxy';
 const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy which cannot be upgraded directly.';
 const PROXY_KIND_UUPS_NOT_SUPPORTED = "Unsupported proxy kind 'uups'";
-const NOT_PROXY_OR_BEACON_REGEX = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
+const NOT_REGISTERED_REGEX = /Deployment at address \S+ is not registered/;
 const NOT_BEACON = /Contract at \S+ doesn't look like a beacon/;
 const MUST_SPECIFY_CONTRACT_FACTORY = 'attachTo must specify a contract factory';
 
@@ -113,10 +113,10 @@ test('block prepareUpgrade on generic contract', async t => {
   const genericContract = await Greeter.deploy();
 
   try {
-    await upgrades.prepareUpgrade(genericContract, GreeterV2);
-    t.fail('prepareUpgrade() should not allow generic contract');
+    await upgrades.prepareUpgrade(genericContract, GreeterV2, { kind: 'transparent' });
+    t.fail('prepareUpgrade() should not allow generic contract that is not registered');
   } catch (e) {
-    t.true(NOT_PROXY_OR_BEACON_REGEX.test(e.message), e.message);
+    t.true(NOT_REGISTERED_REGEX.test(e.message), e.message);
   }
 });
 
@@ -126,10 +126,10 @@ test('block prepareUpgrade on generic contract with fallback', async t => {
   await genericContract.deployed();
 
   try {
-    await upgrades.prepareUpgrade(genericContract, GreeterV2);
-    t.fail('prepareUpgrade() should not allow generic contract with fallback');
+    await upgrades.prepareUpgrade(genericContract, GreeterV2, { kind: 'transparent' });
+    t.fail('prepareUpgrade() should not allow generic contract with fallback that is not registered');
   } catch (e) {
-    t.true(NOT_PROXY_OR_BEACON_REGEX.test(e.message), e.message);
+    t.true(NOT_REGISTERED_REGEX.test(e.message), e.message);
   }
 });
 
