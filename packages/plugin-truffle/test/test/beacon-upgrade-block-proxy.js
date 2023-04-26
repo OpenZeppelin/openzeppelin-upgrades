@@ -19,7 +19,7 @@ const BEACON_PROXY_NOT_SUPPORTED = 'Beacon proxies are not supported with the cu
 const ADDRESS_IS_A_TRANSPARENT_OR_UUPS_PROXY = 'Address is a transparent or UUPS proxy';
 const ADDRESS_IS_A_BEACON_PROXY = 'Address is a beacon proxy which cannot be upgraded directly.';
 const PROXY_KIND_UUPS_NOT_SUPPORTED = "Unsupported proxy kind 'uups'";
-const NOT_PROXY_OR_BEACON_REGEX = /Contract at address \S+ doesn't look like a supported proxy or beacon/;
+const NOT_REGISTERED_REGEX = /Deployment at address \S+ is not registered/;
 const NOT_BEACON = /Contract at \S+ doesn't look like a beacon/;
 const MUST_SPECIFY_CONTRACT_ABSTRACTION = 'attachTo must specify a contract abstraction';
 
@@ -69,7 +69,7 @@ contract('Greeter', function () {
   });
 
   it('block deployBeaconProxy with non-beacon address', async function () {
-    const genericContract = GreeterStandaloneImpl.deployed();
+    const genericContract = await GreeterStandaloneImpl.deployed();
 
     await assert.rejects(deployBeaconProxy(genericContract, GreeterStandaloneImpl, ['Hello Truffle']), error =>
       NOT_BEACON.test(error.message),
@@ -77,18 +77,18 @@ contract('Greeter', function () {
   });
 
   it('block prepareUpgrade on generic contract', async function () {
-    const genericContract = GreeterStandaloneImpl.deployed();
+    const genericContract = await GreeterStandaloneImpl.deployed();
 
-    await assert.rejects(prepareUpgrade(genericContract, GreeterV2), error =>
-      NOT_PROXY_OR_BEACON_REGEX.test(error.message),
+    await assert.rejects(prepareUpgrade(genericContract, GreeterV2, { kind: 'transparent' }), error =>
+      NOT_REGISTERED_REGEX.test(error.message),
     );
   });
 
   it('block prepareUpgrade on generic contract with fallback', async function () {
-    const genericContract = GreeterFallback.deployed();
+    const genericContract = await GreeterFallback.deployed();
 
-    await assert.rejects(prepareUpgrade(genericContract, GreeterV2), error =>
-      NOT_PROXY_OR_BEACON_REGEX.test(error.message),
+    await assert.rejects(prepareUpgrade(genericContract, GreeterV2, { kind: 'transparent' }), error =>
+      NOT_REGISTERED_REGEX.test(error.message),
     );
   });
 
