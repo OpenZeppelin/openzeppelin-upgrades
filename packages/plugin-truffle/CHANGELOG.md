@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.18.0 (2023-04-26)
 
 - Support `prepareUpgrade` from an implementation address. ([#777](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/777))
 
