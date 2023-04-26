@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Enable `verify` to fall back to hardhat-etherscan if proxy bytecode does not match. ([#752](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/752))
+
 ## 1.23.0 (2023-04-26)
 
 - Support `prepareUpgrade` from an implementation address. ([#777](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/777))
