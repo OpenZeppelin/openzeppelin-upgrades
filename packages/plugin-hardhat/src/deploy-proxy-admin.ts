@@ -12,11 +12,11 @@ export interface DeployAdminFunction {
 
 export function makeDeployProxyAdmin(hre: HardhatRuntimeEnvironment, platformModule: boolean): DeployAdminFunction {
   return async function deployProxyAdmin(signer?: Signer, opts: DeployProxyAdminOptions = {}) {
-    disablePlatform(hre, platformModule, opts, deployProxyAdmin.name);
+    const withOpts = disablePlatform(hre, platformModule, opts, deployProxyAdmin.name);
 
     const { provider } = hre.network;
 
     const AdminFactory = await getProxyAdminFactory(hre, signer);
-    return await fetchOrDeployAdmin(provider, () => deploy(hre, opts, AdminFactory), opts);
+    return await fetchOrDeployAdmin(provider, () => deploy(hre, withOpts, AdminFactory), withOpts);
   };
 }

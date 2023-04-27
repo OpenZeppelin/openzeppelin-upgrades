@@ -4,7 +4,7 @@ import assert from 'assert';
 
 import { deploy, DeployContractOptions, DeployTransaction } from './utils';
 import { DeployData, getDeployData } from './utils/deploy-impl';
-import { setPlatformDefaults, waitForDeployment } from './platform/utils';
+import { withPlatformDefaults, waitForDeployment } from './platform/utils';
 import { Deployment, DeploymentId, getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
 
 export interface DeployContractFunction {
@@ -71,28 +71,28 @@ export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModul
       args = [];
     }
 
-    setPlatformDefaults(hre, platformModule, opts);
+    const withOpts = withPlatformDefaults(hre, platformModule, opts);
 
-    if (!opts.platform) {
+    if (!withOpts.platform) {
       throw new Error(`The ${deployContract.name} function can only be used with the \`platform\` module or option.`);
     }
 
-    if (opts.constructorArgs !== undefined) {
+    if (withOpts.constructorArgs !== undefined) {
       throw new Error(
         `The ${deployContract.name} function does not support the constructorArgs option. Pass in constructor arguments using the format: deployContract(MyContract, [ 'my arg' ]);`,
       );
     }
-    opts.constructorArgs = args;
+    withOpts.constructorArgs = args;
 
-    const deployed = await deployNonUpgradeableContract(hre, Contract, opts);
+    const deployed = await deployNonUpgradeableContract(hre, Contract, withOpts);
 
     const inst = Contract.attach(deployed.address);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = deployed.txResponse;
-    if (opts.platform && deployed.deploymentId !== undefined) {
+    if (withOpts.platform && deployed.deploymentId !== undefined) {
       inst.deployed = async () => {
         assert(deployed.deploymentId !== undefined);
-        await waitForDeployment(hre, opts, inst.address, deployed.deploymentId);
+        await waitForDeployment(hre, withOpts, inst.address, deployed.deploymentId);
         return inst;
       };
     }

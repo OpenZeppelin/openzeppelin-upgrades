@@ -19,7 +19,7 @@ import {
   deployProxyImpl,
   getInitializerData,
 } from './utils';
-import { setPlatformDefaults, waitForDeployment } from './platform/utils';
+import { withPlatformDefaults, waitForDeployment } from './platform/utils';
 
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployProxyOptions): Promise<Contract>;
@@ -37,15 +37,15 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
       args = [];
     }
 
-    setPlatformDefaults(hre, platformModule, opts);
+    const withOpts = withPlatformDefaults(hre, platformModule, opts);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const { impl, kind } = await deployProxyImpl(hre, ImplFactory, opts);
+    const { impl, kind } = await deployProxyImpl(hre, ImplFactory, withOpts);
 
     const contractInterface = ImplFactory.interface;
-    const data = getInitializerData(contractInterface, args, opts.initializer);
+    const data = getInitializerData(contractInterface, args, withOpts.initializer);
 
     if (kind === 'uups') {
       if (await manifest.getAdmin()) {
@@ -64,16 +64,16 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
 
       case 'uups': {
         const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
-        proxyDeployment = Object.assign({ kind }, await deploy(hre, opts, ProxyFactory, impl, data));
+        proxyDeployment = Object.assign({ kind }, await deploy(hre, withOpts, ProxyFactory, impl, data));
         break;
       }
 
       case 'transparent': {
-        const adminAddress = await hre.upgrades.deployProxyAdmin(ImplFactory.signer, opts);
+        const adminAddress = await hre.upgrades.deployProxyAdmin(ImplFactory.signer, withOpts);
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
         proxyDeployment = Object.assign(
           { kind },
-          await deploy(hre, opts, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
+          await deploy(hre, withOpts, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
         );
         break;
       }
@@ -84,10 +84,10 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
     const inst = ImplFactory.attach(proxyDeployment.address);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = proxyDeployment.deployTransaction;
-    if (opts.platform && proxyDeployment.deploymentId !== undefined) {
+    if (withOpts.platform && proxyDeployment.deploymentId !== undefined) {
       inst.deployed = async () => {
         assert(proxyDeployment.deploymentId !== undefined);
-        await waitForDeployment(hre, opts, inst.address, proxyDeployment.deploymentId);
+        await waitForDeployment(hre, withOpts, inst.address, proxyDeployment.deploymentId);
         return inst;
       };
     }

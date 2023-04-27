@@ -12,12 +12,17 @@ export interface DeployBeaconFunction {
 
 export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, platformModule: boolean): DeployBeaconFunction {
   return async function deployBeacon(ImplFactory: ContractFactory, opts: DeployBeaconOptions = {}) {
-    disablePlatform(hre, platformModule, opts, deployBeacon.name);
+    const withOpts = disablePlatform(hre, platformModule, opts, deployBeacon.name);
 
-    const { impl } = await deployBeaconImpl(hre, ImplFactory, opts);
+    const { impl } = await deployBeaconImpl(hre, ImplFactory, withOpts);
 
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
-    const beaconDeployment: Deployment & DeployTransaction = await deploy(hre, opts, UpgradeableBeaconFactory, impl);
+    const beaconDeployment: Deployment & DeployTransaction = await deploy(
+      hre,
+      withOpts,
+      UpgradeableBeaconFactory,
+      impl,
+    );
     const beaconContract = UpgradeableBeaconFactory.attach(beaconDeployment.address);
 
     // @ts-ignore Won't be readonly because beaconContract was created through attach.

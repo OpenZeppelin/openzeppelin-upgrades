@@ -3,7 +3,7 @@ import type { ContractFactory, ethers } from 'ethers';
 
 import { DeployImplementationOptions } from './utils';
 import { deployStandaloneImpl } from './utils/deploy-impl';
-import { setPlatformDefaults } from './platform/utils';
+import { withPlatformDefaults } from './platform/utils';
 
 export type DeployImplementationFunction = (
   ImplFactory: ContractFactory,
@@ -17,11 +17,11 @@ export function makeDeployImplementation(
   platformModule: boolean,
 ): DeployImplementationFunction {
   return async function deployImplementation(ImplFactory, opts: DeployImplementationOptions = {}) {
-    setPlatformDefaults(hre, platformModule, opts);
+    const withOpts = withPlatformDefaults(hre, platformModule, opts);
 
-    const deployedImpl = await deployStandaloneImpl(hre, ImplFactory, opts);
+    const deployedImpl = await deployStandaloneImpl(hre, ImplFactory, withOpts);
 
-    if (opts.getTxResponse && deployedImpl.txResponse !== undefined) {
+    if (withOpts.getTxResponse && deployedImpl.txResponse !== undefined) {
       return deployedImpl.txResponse;
     } else {
       return deployedImpl.impl;

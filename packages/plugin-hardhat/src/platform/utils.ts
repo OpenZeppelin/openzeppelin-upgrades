@@ -48,21 +48,35 @@ export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Networ
   return network;
 }
 
-export function setPlatformDefaults(hre: HardhatRuntimeEnvironment, platformModule: boolean, opts: Platform) {
+export function withPlatformDefaults<T extends Platform>(
+  hre: HardhatRuntimeEnvironment,
+  platformModule: boolean,
+  opts: T,
+): T {
   if ((hre.config.platform?.deploy || platformModule) && opts.platform === undefined) {
-    opts.platform = true;
+    return {
+      ...opts,
+      platform: true,
+    };
+  } else {
+    return opts;
   }
 }
 
-export function disablePlatform(
+export function disablePlatform<T extends Platform>(
   hre: HardhatRuntimeEnvironment,
   platformModule: boolean,
-  opts: Platform = {},
+  opts: T,
   unsupportedFunction: string,
-) {
+): T {
   if (hre.config.platform?.deploy || platformModule || opts.platform) {
     debug(`The function ${unsupportedFunction} is not supported with \`platform\`. Using Hardhat signer instead.`);
-    opts.platform = false;
+    return {
+      ...opts,
+      platform: false,
+    };
+  } else {
+    return opts;
   }
 }
 

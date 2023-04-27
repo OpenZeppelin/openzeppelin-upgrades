@@ -10,7 +10,7 @@ import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { PlatformSupportedOptions, UpgradeOptions } from '../utils';
-import { getNetwork, getAdminClient, setPlatformDefaults } from './utils';
+import { getNetwork, getAdminClient, withPlatformDefaults } from './utils';
 import type { VerificationResponse } from './verify-deployment';
 
 export interface ExtendedProposalResponse extends ProposalResponse {
@@ -35,12 +35,12 @@ export interface ProposalOptions extends UpgradeOptions, PlatformSupportedOption
 
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModule: boolean): ProposeUpgradeFunction {
   return async function proposeUpgrade(proxyAddress, contractNameOrImplFactory, opts = {}) {
-    setPlatformDefaults(hre, platformModule, opts);
+    const withOpts = withPlatformDefaults(hre, platformModule, opts);
 
     const client = getAdminClient(hre);
     const network = await getNetwork(hre);
 
-    const { title, description, proxyAdmin, multisig, multisigType, ...moreOpts } = opts;
+    const { title, description, proxyAdmin, multisig, multisigType, ...moreOpts } = withOpts;
 
     if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
       throw new Error(`Beacon proxy is not currently supported with defender.proposeUpgrade()`);
@@ -88,8 +88,12 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
     }
 
     const verificationResponse =
-      contractName && opts.bytecodeVerificationReferenceUrl
-        ? await hre.platform.verifyDeployment(newImplementation, contractName, opts.bytecodeVerificationReferenceUrl)
+      contractName && withOpts.bytecodeVerificationReferenceUrl
+        ? await hre.platform.verifyDeployment(
+            newImplementation,
+            contractName,
+            withOpts.bytecodeVerificationReferenceUrl,
+          )
         : undefined;
 
     const proposalResponse = await client.proposeUpgrade(
