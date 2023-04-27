@@ -5,7 +5,13 @@ import assert from 'assert';
 import { deploy, DeployContractOptions, DeployTransaction } from './utils';
 import { DeployData, getDeployData } from './utils/deploy-impl';
 import { withPlatformDefaults, waitForDeployment } from './platform/utils';
-import { Deployment, DeploymentId, getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
+import {
+  Deployment,
+  DeploymentId,
+  getContractNameAndRunValidation,
+  inferProxyKind,
+  UpgradesError,
+} from '@openzeppelin/upgrades-core';
 
 export interface DeployContractFunction {
   (Contract: ContractFactory, args?: unknown[], opts?: DeployContractOptions): Promise<Contract>;
@@ -46,10 +52,7 @@ function assertNonUpgradeable(deployData: DeployData) {
   const [fullContractName, runValidation] = getContractNameAndRunValidation(deployData.validations, deployData.version);
   const c = runValidation[fullContractName];
   const inherit = c.inherit;
-  if (
-    hasInitializable(inherit) ||
-    inherit.includes('@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:UUPSUpgradeable')
-  ) {
+  if (hasInitializable(inherit) || inferProxyKind(deployData.validations, deployData.version) === 'uups') {
     throw new UpgradesError(
       `The contract ${fullContractName} looks like an upgradeable contract.`,
       () =>

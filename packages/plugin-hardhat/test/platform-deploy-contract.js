@@ -14,6 +14,7 @@ test.before(async t => {
   t.context.IsInitializable = await ethers.getContractFactory('IsInitializable');
   t.context.IsInitializableUpgradeable = await ethers.getContractFactory('IsInitializableUpgradeable');
   t.context.IsUUPS = await ethers.getContractFactory('IsUUPS');
+  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
 
   t.context.deployContract = proxyquire('../dist/deploy-contract', {
     './platform/deploy': {
@@ -78,9 +79,15 @@ test('deploy contract - is initializable upgradeable', async t => {
   t.regex(error.message, /Upgradable contracts cannot be deployed using the deployContract function/);
 });
 
-test('deploy contract - is uups', async t => {
+test('deploy contract - is UUPSUpgradeable', async t => {
   const { deployContract, IsUUPS } = t.context;
   const error = await t.throwsAsync(() => deployContract(IsUUPS));
+  t.regex(error.message, /Upgradable contracts cannot be deployed using the deployContract function/);
+});
+
+test('deploy contract - is uups custom', async t => {
+  const { deployContract, GreeterProxiable } = t.context;
+  const error = await t.throwsAsync(() => deployContract(GreeterProxiable));
   t.regex(error.message, /Upgradable contracts cannot be deployed using the deployContract function/);
 });
 
