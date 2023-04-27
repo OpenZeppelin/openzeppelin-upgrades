@@ -14,6 +14,7 @@ contract IsInitializable is Initializable1 {
 contract IsInitializableUpgradeable is Initializable2 {
 }
 
+// Insecure contract
 contract IsUUPS is UUPSUpgradeable {
     function _authorizeUpgrade(address newImplementation)
         internal
