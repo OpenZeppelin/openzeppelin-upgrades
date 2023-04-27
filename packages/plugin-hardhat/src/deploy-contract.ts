@@ -47,8 +47,7 @@ function assertNonUpgradeable(deployData: DeployData) {
   const c = runValidation[fullContractName];
   const inherit = c.inherit;
   if (
-    inherit.includes('@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:Initializable') ||
-    inherit.includes('@openzeppelin/contracts/proxy/utils/Initializable.sol:Initializable') ||
+    hasInitializable(inherit) ||
     inherit.includes('@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:UUPSUpgradeable')
   ) {
     throw new UpgradesError(
@@ -58,6 +57,15 @@ function assertNonUpgradeable(deployData: DeployData) {
         'If this is not intended to be an upgradeable contract, set the unsafeAllowDeployContract option to true and run the deployContract function again.',
     );
   }
+}
+
+/**
+ * Whether inherit has any contract that ends with ":Initializable"
+ * @param inherit an array of fully qualified contract names
+ * @return true if inherit has any contract that ends with ":Initializable"
+ */
+function hasInitializable(inherit: string[]) {
+  return inherit.some(c => c.endsWith(':Initializable'));
 }
 
 export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModule: boolean): DeployContractFunction {
