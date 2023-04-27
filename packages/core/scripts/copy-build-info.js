@@ -49,7 +49,9 @@ assert(
 
 let buildInfo = readJSON(jsonRelativePath);
 
-// Keep only relevant sections of output.contracts
+// To reduce package size, remove output sections not needed for deployment or verification:
+// - Keep only the following sections from output.contracts: abi, evm, metadata
+//   - This removes AST, and storageLayout
 const contractFiles = buildInfo.output.contracts;
 for (const contractFile in contractFiles) {
   const contractNames = contractFiles[contractFile];
@@ -61,34 +63,27 @@ for (const contractFile in contractFiles) {
     };
   }
 }
-
-// Adjust correponding output selection
-const input = buildInfo.input;
-
-const origSelection = input.settings.outputSelection['*']['*'];
-assert(origSelection.includes('abi'));
-assert(origSelection.includes('evm.bytecode'));
-assert(origSelection.includes('evm.deployedBytecode'));
-assert(origSelection.includes('evm.methodIdentifiers'));
-assert(origSelection.includes('metadata'));
-
-input.settings.outputSelection['*'] = {
-  '*': ['abi', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers', 'metadata'],
+// - Remove sources
+const modifiedOutput = {
+  contracts: contractFiles,
 };
 
-// Keep only relevant sections of build info
-buildInfo = {
-  _format: buildInfo._format,
-  id: buildInfo.id,
-  solcVersion: buildInfo.solcVersion,
-  solcLongVersion: buildInfo.solcLongVersion,
-  input: input,
-  output: {
-    contracts: contractFiles,
-  },
+// Use build-info with custom format and the modified output
+const modifiedBuildInfo = {
+  ...buildInfo,
+  _format: `${buildInfo._format}-oz-slim1`, // Use custom marker to indicate that this is a custom build-info file
+  output: modifiedOutput,
 };
 
-const sources = input.sources;
+// Assert input's outputSelection includes all required outputs
+const outputSelection = buildInfo.input.settings.outputSelection['*']['*'];
+assert(outputSelection.includes('abi'));
+assert(outputSelection.includes('evm.bytecode'));
+assert(outputSelection.includes('evm.deployedBytecode'));
+assert(outputSelection.includes('evm.methodIdentifiers'));
+assert(outputSelection.includes('metadata'));
+
+const sources = buildInfo.input.sources;
 
 // Assert that all deployable proxy artifacts exist in ERC1967's build-info file
 assert(hasProperty(sources, '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol'));
@@ -100,4 +95,4 @@ assert(hasProperty(sources, '@openzeppelin/contracts/proxy/transparent/ProxyAdmi
 // Assert that the build-info file does NOT contain test contracts
 assert(!hasPropertyStartsWith(sources, 'contracts/test'));
 
-writeJSON('artifacts/build-info.json', buildInfo);
+writeJSON('artifacts/build-info.json', modifiedBuildInfo);
