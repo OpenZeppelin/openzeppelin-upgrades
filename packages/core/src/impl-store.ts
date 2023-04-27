@@ -44,7 +44,7 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
   deploy: () => Promise<U>,
   opts?: DeployOpts,
   merge?: boolean,
-  getRemoteDeployment?: (deploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
 ): Promise<U | Deployment> {
   const manifest = await Manifest.forNetwork(provider);
 
@@ -116,6 +116,18 @@ export function deleteDeployment(deployment: ManifestField<Deployment>) {
   deployment.set(undefined);
 }
 
+/**
+ * Fetches the deployment address from the manifest, or deploys it if not found and returns the address.
+ *
+ * @param version the contract version
+ * @param provider the Ethereum provider
+ * @param deploy the deploy function
+ * @param opts options containing the timeout and pollingInterval parameters. If undefined, assumes the timeout is not configurable and will not mention those parameters in the error message for TransactionMinedTimeout.
+ * @param merge if true, adds a deployment to existing deployment by merging their addresses. Defaults to false.
+ * @returns the deployment address
+ * @throws {InvalidDeployment} if the deployment is invalid
+ * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
+ */
 export async function fetchOrDeploy(
   version: Version,
   provider: EthereumProvider,
@@ -126,13 +138,26 @@ export async function fetchOrDeploy(
   return (await fetchOrDeployGeneric(implLens(version.linkedWithoutMetadata), provider, deploy, opts, merge)).address;
 }
 
+/**
+ * Fetches the deployment from the manifest, or deploys it if not found and returns the deployment.
+ *
+ * @param version the contract version
+ * @param provider the Ethereum provider
+ * @param deploy the deploy function
+ * @param opts options containing the timeout and pollingInterval parameters. If undefined, assumes the timeout is not configurable and will not mention those parameters in the error message for TransactionMinedTimeout.
+ * @param merge if true, adds a deployment to existing deployment by merging their addresses. Defaults to false.
+ * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined if allowUndefined is true, or throws an error if it is false.
+ * @returns the deployment
+ * @throws {InvalidDeployment} if the deployment is invalid
+ * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
+ */
 export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
   version: Version,
   provider: EthereumProvider,
   deploy: () => Promise<T>,
   opts?: DeployOpts,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
 ): Promise<T | Deployment> {
   return fetchOrDeployGeneric(
     implLens(version.linkedWithoutMetadata),
@@ -140,7 +165,7 @@ export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
     deploy,
     opts,
     merge,
-    getDeploymentResponse,
+    getRemoteDeployment,
   );
 }
 
