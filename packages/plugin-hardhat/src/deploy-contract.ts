@@ -21,7 +21,7 @@ export interface DeployContractFunction {
 interface DeployedContract {
   address: string;
   txResponse?: ethers.providers.TransactionResponse;
-  deploymentId?: string;
+  remoteDeploymentId?: string;
 }
 
 export async function deployNonUpgradeableContract(
@@ -44,8 +44,8 @@ export async function deployNonUpgradeableContract(
 
   const address = deployment.address;
   const txResponse = deployment.deployTransaction;
-  const deploymentId = deployment.remoteDeploymentId;
-  return { address, txResponse, deploymentId };
+  const remoteDeploymentId = deployment.remoteDeploymentId;
+  return { address, txResponse, remoteDeploymentId: remoteDeploymentId };
 }
 
 function assertNonUpgradeable(deployData: DeployData) {
@@ -100,10 +100,10 @@ export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModul
     const inst = Contract.attach(deployed.address);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = deployed.txResponse;
-    if (withOpts.platform && deployed.deploymentId !== undefined) {
+    if (withOpts.platform && deployed.remoteDeploymentId !== undefined) {
       inst.deployed = async () => {
-        assert(deployed.deploymentId !== undefined);
-        await waitForDeployment(hre, withOpts, inst.address, deployed.deploymentId);
+        assert(deployed.remoteDeploymentId !== undefined);
+        await waitForDeployment(hre, withOpts, inst.address, deployed.remoteDeploymentId);
         return inst;
       };
     }

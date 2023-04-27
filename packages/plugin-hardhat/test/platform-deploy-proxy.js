@@ -26,7 +26,7 @@ test.beforeEach(async t => {
         return {
           // just do regular deploy but add a deployment id
           ...(await require('../dist/utils/deploy').deploy(hre, opts, factory, ...args)),
-          deploymentId: stub(),
+          remoteDeploymentId: stub(),
         };
       },
       '@global': true,
@@ -49,10 +49,10 @@ test('deploy proxy', async t => {
 
   await m.lockedRun(async () => {
     const proxy = await m.getProxyFromAddress(inst.address);
-    t.is(proxy.deploymentId, PROXY_ID);
+    t.is(proxy.remoteDeploymentId, PROXY_ID);
 
     const impl = await m.getDeploymentFromAddress(await hre.upgrades.erc1967.getImplementationAddress(inst.address));
-    t.is(impl.deploymentId, IMPL_ID);
+    t.is(impl.remoteDeploymentId, IMPL_ID);
   });
 });
 
@@ -74,7 +74,7 @@ test('deployed calls wait for deployment', async t => {
     address: PROXY_ADDR,
     txHash: PROXY_TX_HASH,
     deployTransaction: undefined,
-    deploymentId: PROXY_ID,
+    remoteDeploymentId: PROXY_ID,
   });
 
   // stub the waitForDeployment function

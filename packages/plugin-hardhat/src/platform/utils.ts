@@ -85,22 +85,22 @@ export function getPlatformClient(hre: HardhatRuntimeEnvironment): PlatformClien
 }
 
 /**
- * Gets the deployment response for the given id.
+ * Gets the remote deployment response for the given id.
  *
  * @param hre The Hardhat runtime environment
- * @param deploymentId The deployment id.
+ * @param remoteDeploymentId The deployment id.
  * @param allowUndefined If the deployment id is not found, returns undefined if this is true, or throws an error if this is false.
  * @returns The deployment response, or undefined if allowUndefined is true and the deployment is not found.
  * @throws Error if the deployment response could not be retrieved, or if allowUndefined is false and the deployment is not found.
  */
-export async function getDeploymentResponse(
+export async function getRemoteDeployment(
   hre: HardhatRuntimeEnvironment,
-  deploymentId: string,
+  remoteDeploymentId: string,
   allowUndefined: boolean,
 ): Promise<RemoteDeployment | undefined> {
   const client = getPlatformClient(hre);
   try {
-    return (await client.Deployment.get(deploymentId)) as RemoteDeployment;
+    return (await client.Deployment.get(remoteDeploymentId)) as RemoteDeployment;
   } catch (e) {
     const message = (e as any).response?.data?.message;
     if (allowUndefined && message?.match(/deployment with id .* not found\./)) {
@@ -117,7 +117,7 @@ export async function waitForDeployment(
   hre: HardhatRuntimeEnvironment,
   opts: DeployOpts,
   address: string,
-  deploymentId: string,
+  remoteDeploymentId: string,
 ) {
   const pollInterval = opts.pollingInterval ?? 5e3;
 
@@ -128,8 +128,8 @@ export async function waitForDeployment(
       break;
     }
 
-    const completed = await isDeploymentCompleted(address, deploymentId, allowUndefined =>
-      getDeploymentResponse(hre, deploymentId, allowUndefined),
+    const completed = await isDeploymentCompleted(address, remoteDeploymentId, allowUndefined =>
+      getRemoteDeployment(hre, remoteDeploymentId, allowUndefined),
     );
     if (completed) {
       break;

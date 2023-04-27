@@ -23,7 +23,7 @@ test.before(async t => {
           address: ADDR,
           txHash: TX_HASH,
           deployTransaction: undefined,
-          deploymentId: 'abc',
+          remoteDeploymentId: 'abc',
         };
       },
       '@global': true,
@@ -109,7 +109,7 @@ test('await deployed contract', async t => {
           address: precreated.address,
           txHash: precreated.txHash,
           deployTransaction: precreated.deployTransaction,
-          deploymentId: 'abc',
+          remoteDeploymentId: 'abc',
         };
       },
       '@global': true,
@@ -133,7 +133,7 @@ test('deployed calls wait for deployment', async t => {
           address: ADDR,
           txHash: TX_HASH,
           deployTransaction: undefined,
-          deploymentId: 'abc',
+          remoteDeploymentId: 'abc',
         };
       },
       '@global': true,

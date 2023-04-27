@@ -14,7 +14,7 @@ import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
 import { GetTxResponse, PlatformSupportedOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
-import { getDeploymentResponse } from '../platform/utils';
+import { getRemoteDeployment } from '../platform/utils';
 import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { readValidations } from './validations';
 
@@ -115,8 +115,8 @@ async function deployImpl(
     },
     opts,
     undefined,
-    async (deploymentId: string, allowUndefined: boolean) => {
-      return await getDeploymentResponse(hre, deploymentId, allowUndefined);
+    async (remoteDeploymentId: string, allowUndefined: boolean) => {
+      return await getRemoteDeployment(hre, remoteDeploymentId, allowUndefined);
     },
   );
 

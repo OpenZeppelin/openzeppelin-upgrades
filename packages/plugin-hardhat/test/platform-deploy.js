@@ -85,7 +85,7 @@ function assertResult(t, result) {
     address: ADDRESS,
     txHash: TX_HASH,
     deployTransaction: TX_RESPONSE,
-    deploymentId: DEPLOYMENT_ID,
+    remoteDeploymentId: DEPLOYMENT_ID,
   });
 }
 

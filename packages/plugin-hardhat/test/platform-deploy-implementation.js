@@ -16,7 +16,7 @@ test.before(async t => {
         return {
           // just do regular deploy but add a deployment id
           ...(await require('../dist/utils/deploy').deploy(hre, opts, factory, ...args)),
-          deploymentId: 'abc',
+          remoteDeploymentId: 'abc',
         };
       },
       '@global': true,
@@ -34,7 +34,7 @@ test('deploy implementation', async t => {
   const m = await manifest.Manifest.forNetwork(ethers.provider);
   await m.lockedRun(async () => {
     const deployment = await m.getDeploymentFromAddress(inst);
-    t.is(deployment.deploymentId, 'abc');
+    t.is(deployment.remoteDeploymentId, 'abc');
   });
 });
 
