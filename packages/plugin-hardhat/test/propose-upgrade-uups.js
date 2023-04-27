@@ -12,7 +12,6 @@ const multisig = '0xc0889725c22e2e36c524F41AECfddF5650432464';
 
 test.beforeEach(async t => {
   t.context.fakeClient = sinon.createStubInstance(AdminClient);
-  t.context.fakePlatform = { verifyDeployment: sinon.stub() };
   t.context.fakeChainId = 'goerli';
   t.context.proposeUpgrade = proxyquire('../dist/platform/propose-upgrade', {
     './utils': {
@@ -20,10 +19,7 @@ test.beforeEach(async t => {
       getNetwork: () => t.context.fakeChainId,
       getAdminClient: () => t.context.fakeClient,
     },
-  }).makeProposeUpgrade({
-    ...hre,
-    platform: t.context.fakePlatform,
-  });
+  }).makeProposeUpgrade(hre);
 
   t.context.Greeter = await ethers.getContractFactory('GreeterPlatformProxiable');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterPlatformV2Proxiable');
@@ -80,48 +76,6 @@ test('proposes an upgrade', async t => {
       network: 'goerli',
       abi: GreeterV2.interface.format(FormatTypes.json),
     },
-  );
-});
-
-test('proposes an upgrade and verifies bytecode', async t => {
-  const { proposeUpgrade, fakeClient, fakePlatform, greeter, GreeterV2 } = t.context;
-  fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
-  fakePlatform.verifyDeployment.resolves({ match: 'EXACT' });
-
-  const title = 'My upgrade';
-  const description = 'My contract upgrade';
-  const proposal = await proposeUpgrade(greeter.address, 'GreeterPlatformV2Proxiable', {
-    title,
-    description,
-    multisig,
-    bytecodeVerificationReferenceUrl: 'http://example.com',
-  });
-
-  t.is(proposal.url, proposalUrl);
-  t.is(proposal.verificationResponse.match, 'EXACT');
-
-  sinon.assert.calledWithExactly(
-    fakeClient.proposeUpgrade,
-    {
-      newImplementation: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
-      title,
-      description,
-      proxyAdmin: undefined,
-      via: multisig,
-      viaType: undefined,
-    },
-    {
-      address: greeter.address,
-      network: 'goerli',
-      abi: GreeterV2.interface.format(FormatTypes.json),
-    },
-  );
-
-  sinon.assert.calledWithExactly(
-    fakePlatform.verifyDeployment,
-    sinon.match(/^0x[A-Fa-f0-9]{40}$/),
-    'GreeterPlatformV2Proxiable',
-    'http://example.com',
   );
 });
 

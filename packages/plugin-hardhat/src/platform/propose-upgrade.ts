@@ -11,11 +11,9 @@ import { FormatTypes } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { PlatformSupportedOptions, UpgradeOptions } from '../utils';
 import { getNetwork, getAdminClient, withPlatformDefaults } from './utils';
-import type { VerificationResponse } from './verify-deployment';
 
 export interface ExtendedProposalResponse extends ProposalResponse {
   txResponse?: ethers.providers.TransactionResponse;
-  verificationResponse?: VerificationResponse;
 }
 
 export type ProposeUpgradeFunction = (
@@ -59,7 +57,6 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
       typeof contractNameOrImplFactory === 'string'
         ? await hre.ethers.getContractFactory(contractNameOrImplFactory)
         : contractNameOrImplFactory;
-    const contractName = typeof contractNameOrImplFactory === 'string' ? contractNameOrImplFactory : undefined;
     const contract = { address: proxyAddress, network, abi: implFactory.interface.format(FormatTypes.json) as string };
 
     const prepareUpgradeResult = await hre.upgrades.prepareUpgrade(proxyAddress, implFactory, {
@@ -87,15 +84,6 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
       newImplementation = fetchedAddress;
     }
 
-    const verificationResponse =
-      contractName && withOpts.bytecodeVerificationReferenceUrl
-        ? await hre.platform.verifyDeployment(
-            newImplementation,
-            contractName,
-            withOpts.bytecodeVerificationReferenceUrl,
-          )
-        : undefined;
-
     const proposalResponse = await client.proposeUpgrade(
       {
         newImplementation,
@@ -111,7 +99,6 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
     return {
       ...proposalResponse,
       txResponse,
-      verificationResponse,
     };
   };
 }

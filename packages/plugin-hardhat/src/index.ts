@@ -21,13 +21,6 @@ import type { DeployImplementationFunction } from './deploy-implementation';
 import { DeployAdminFunction, makeDeployProxyAdmin } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
 import type { ProposeUpgradeFunction } from './platform/propose-upgrade';
-import type {
-  GetBytecodeDigestFunction,
-  GetVerifyDeployArtifactFunction,
-  GetVerifyDeployBuildInfoFunction,
-  VerifyDeployFunction,
-  VerifyDeployWithUploadedArtifactFunction,
-} from './platform/verify-deployment';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -57,11 +50,6 @@ export interface HardhatUpgrades {
     getImplementationAddress: (beaconAddress: string) => Promise<string>;
   };
   proposeUpgrade: ProposeUpgradeFunction;
-  verifyDeployment: VerifyDeployFunction;
-  verifyDeploymentWithUploadedArtifact: VerifyDeployWithUploadedArtifactFunction;
-  getDeploymentArtifact: GetVerifyDeployArtifactFunction;
-  getDeploymentBuildInfo: GetVerifyDeployBuildInfoFunction;
-  getBytecodeDigest: GetBytecodeDigestFunction;
 }
 
 interface RunCompilerArgs {
@@ -152,13 +140,6 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
   const { makeForceImport } = require('./force-import');
   const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
   const { makeProposeUpgrade } = require('./platform/propose-upgrade');
-  const {
-    makeVerifyDeploy,
-    makeVerifyDeployWithUploadedArtifact,
-    makeGetVerifyDeployBuildInfo,
-    makeGetVerifyDeployArtifact,
-    makeGetBytecodeDigest,
-  } = require('./platform/verify-deployment');
 
   return {
     silenceWarnings,
@@ -189,11 +170,6 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
         getImplementationAddressFromBeacon(hre.network.provider, beaconAddress),
     },
     proposeUpgrade: makeProposeUpgrade(hre, platform),
-    verifyDeployment: makeVerifyDeploy(hre),
-    verifyDeploymentWithUploadedArtifact: makeVerifyDeployWithUploadedArtifact(hre),
-    getDeploymentArtifact: makeGetVerifyDeployArtifact(hre),
-    getDeploymentBuildInfo: makeGetVerifyDeployBuildInfo(hre),
-    getBytecodeDigest: makeGetBytecodeDigest(hre),
   };
 }
 
