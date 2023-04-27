@@ -28,7 +28,6 @@ export interface HardhatUpgrades {
   validateImplementation: ValidateImplementationFunction;
   validateUpgrade: ValidateUpgradeFunction;
   deployImplementation: DeployImplementationFunction;
-  deployContract: DeployContractFunction;
   prepareUpgrade: PrepareUpgradeFunction;
   deployBeacon: DeployBeaconFunction;
   deployBeaconProxy: DeployBeaconProxyFunction;
@@ -50,6 +49,10 @@ export interface HardhatUpgrades {
     getImplementationAddress: (beaconAddress: string) => Promise<string>;
   };
   proposeUpgrade: ProposeUpgradeFunction;
+}
+
+export interface Platform extends HardhatUpgrades {
+  deployContract: DeployContractFunction;
 }
 
 interface RunCompilerArgs {
@@ -92,11 +95,11 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 
 extendEnvironment(hre => {
   hre.upgrades = lazyObject((): HardhatUpgrades => {
-    return makeFunctions(hre, false);
+    return makeUpgradesFunctions(hre);
   });
 
-  hre.platform = lazyObject((): HardhatUpgrades => {
-    return makeFunctions(hre, true);
+  hre.platform = lazyObject((): Platform => {
+    return makePlatformFunctions(hre);
   });
 });
 
@@ -132,7 +135,6 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
   const { makeValidateImplementation } = require('./validate-implementation');
   const { makeValidateUpgrade } = require('./validate-upgrade');
   const { makeDeployImplementation } = require('./deploy-implementation');
-  const { makeDeployContract } = require('./deploy-contract');
   const { makePrepareUpgrade } = require('./prepare-upgrade');
   const { makeDeployBeacon } = require('./deploy-beacon');
   const { makeDeployBeaconProxy } = require('./deploy-beacon-proxy');
@@ -148,7 +150,6 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
     validateImplementation: makeValidateImplementation(hre),
     validateUpgrade: makeValidateUpgrade(hre),
     deployImplementation: makeDeployImplementation(hre, platform),
-    deployContract: makeDeployContract(hre, platform),
     prepareUpgrade: makePrepareUpgrade(hre, platform),
     deployBeacon: makeDeployBeacon(hre, platform), // block on platform
     deployBeaconProxy: makeDeployBeaconProxy(hre, platform),
@@ -170,6 +171,18 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
         getImplementationAddressFromBeacon(hre.network.provider, beaconAddress),
     },
     proposeUpgrade: makeProposeUpgrade(hre, platform),
+  };
+}
+
+function makeUpgradesFunctions(hre: HardhatRuntimeEnvironment): HardhatUpgrades {
+  return makeFunctions(hre, false);
+}
+
+function makePlatformFunctions(hre: HardhatRuntimeEnvironment): Platform {
+  const { makeDeployContract } = require('./deploy-contract');
+  return {
+    ...makeFunctions(hre, true),
+    deployContract: makeDeployContract(hre, true),
   };
 }
 
