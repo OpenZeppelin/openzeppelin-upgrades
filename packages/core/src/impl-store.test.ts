@@ -101,7 +101,7 @@ test('platform - replace tx hash for deployment', async t => {
     return {
       ...fakeDeploy,
       txHash: '0x1',
-      deploymentId: 'abc',
+      remoteDeploymentId: 'abc',
     };
   }
 

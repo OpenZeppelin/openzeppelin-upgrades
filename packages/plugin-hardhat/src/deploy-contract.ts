@@ -7,7 +7,7 @@ import { DeployData, getDeployData } from './utils/deploy-impl';
 import { withPlatformDefaults, waitForDeployment } from './platform/utils';
 import {
   Deployment,
-  DeploymentId,
+  RemoteDeploymentId,
   getContractNameAndRunValidation,
   inferProxyKind,
   UpgradesError,
@@ -35,7 +35,7 @@ export async function deployNonUpgradeableContract(
     assertNonUpgradeable(deployData);
   }
 
-  const deployment: Required<Deployment & DeployTransaction> & DeploymentId = await deploy(
+  const deployment: Required<Deployment & DeployTransaction> & RemoteDeploymentId = await deploy(
     hre,
     opts,
     Contract,
@@ -44,7 +44,7 @@ export async function deployNonUpgradeableContract(
 
   const address = deployment.address;
   const txResponse = deployment.deployTransaction;
-  const deploymentId = deployment.deploymentId;
+  const deploymentId = deployment.remoteDeploymentId;
   return { address, txResponse, deploymentId };
 }
 

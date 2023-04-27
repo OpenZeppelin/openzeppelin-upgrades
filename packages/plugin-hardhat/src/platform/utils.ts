@@ -1,11 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import {
-  getChainId,
-  hasCode,
-  DeploymentResponse,
-  DeployOpts,
-  isDeploymentCompleted,
-} from '@openzeppelin/upgrades-core';
+import { getChainId, hasCode, RemoteDeployment, DeployOpts, isDeploymentCompleted } from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from 'defender-base-client';
 import { AdminClient } from 'defender-admin-client';
@@ -103,10 +97,10 @@ export async function getDeploymentResponse(
   hre: HardhatRuntimeEnvironment,
   deploymentId: string,
   allowUndefined: boolean,
-): Promise<DeploymentResponse | undefined> {
+): Promise<RemoteDeployment | undefined> {
   const client = getPlatformClient(hre);
   try {
-    return await client.Deployment.get(deploymentId);
+    return (await client.Deployment.get(deploymentId)) as RemoteDeployment;
   } catch (e) {
     const message = (e as any).response?.data?.message;
     if (allowUndefined && message?.match(/deployment with id .* not found\./)) {

@@ -3,8 +3,8 @@ import { Manifest, ManifestData, ImplDeployment } from './manifest';
 import { EthereumProvider, isDevelopmentNetwork } from './provider';
 import {
   Deployment,
-  DeploymentId,
-  DeploymentResponse,
+  RemoteDeploymentId,
+  RemoteDeployment,
   InvalidDeployment,
   resumeOrDeploy,
   waitAndValidateDeployment,
@@ -33,6 +33,7 @@ export interface ManifestField<T> {
  * @param deploy the deploy function
  * @param opts options containing the timeout and pollingInterval parameters. If undefined, assumes the timeout is not configurable and will not mention those parameters in the error message for TransactionMinedTimeout.
  * @param merge if true, adds a deployment to existing deployment by merging their addresses. Defaults to false.
+ * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined if allowUndefined is true, or throws an error if it is false.
  * @returns the deployment
  * @throws {InvalidDeployment} if the deployment is invalid
  * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
@@ -43,7 +44,7 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
   deploy: () => Promise<U>,
   opts?: DeployOpts,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
+  getRemoteDeployment?: (deploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
 ): Promise<U | Deployment> {
   const manifest = await Manifest.forNetwork(provider);
 
@@ -67,7 +68,7 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
         opts,
         deployment,
         merge,
-        getDeploymentResponse,
+        getRemoteDeployment,
       );
       if (updated !== stored) {
         if (merge && deployment.merge) {
@@ -84,7 +85,7 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
       return updated;
     });
 
-    await waitAndValidateDeployment(provider, deployment, lens.type, opts, getDeploymentResponse);
+    await waitAndValidateDeployment(provider, deployment, lens.type, opts, getRemoteDeployment);
 
     return deployment;
   } catch (e) {
@@ -131,7 +132,7 @@ export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
   deploy: () => Promise<T>,
   opts?: DeployOpts,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
+  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
 ): Promise<T | Deployment> {
   return fetchOrDeployGeneric(
     implLens(version.linkedWithoutMetadata),
@@ -196,7 +197,7 @@ function lens<T>(description: string, type: string, fn: (data: ManifestData) => 
 async function checkForAddressClash(
   provider: EthereumProvider,
   data: ManifestData,
-  updated: Deployment & DeploymentId,
+  updated: Deployment & RemoteDeploymentId,
   checkAllAddresses: boolean,
 ): Promise<void> {
   const clash = lookupDeployment(data, updated.address, checkAllAddresses);
@@ -209,7 +210,7 @@ async function checkForAddressClash(
       // it's a clash if there is no deployment id or if deployment ids don't match
       if (
         existing !== undefined &&
-        (existing.deploymentId === undefined || existing.deploymentId !== updated.deploymentId)
+        (existing.remoteDeploymentId === undefined || existing.remoteDeploymentId !== updated.remoteDeploymentId)
       ) {
         throw new Error(
           `The following deployment clashes with an existing one at ${updated.address}\n\n` +
@@ -225,7 +226,7 @@ function lookupDeployment(
   data: ManifestData,
   address: string,
   checkAllAddresses: boolean,
-): ManifestField<Deployment & DeploymentId> | undefined {
+): ManifestField<Deployment & RemoteDeploymentId> | undefined {
   if (data.admin?.address === address) {
     return adminLens(data);
   }

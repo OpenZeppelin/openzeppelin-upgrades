@@ -3,7 +3,12 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { BlockExplorerApiKeyClient, SourceCodeLicense } from 'platform-deploy-client';
 import { Network } from 'defender-base-client';
-import { Deployment, DeploymentId, getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
+import {
+  Deployment,
+  RemoteDeploymentId,
+  getContractNameAndRunValidation,
+  UpgradesError,
+} from '@openzeppelin/upgrades-core';
 
 import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info.json';
 
@@ -54,7 +59,7 @@ export async function platformDeploy(
   factory: ContractFactory,
   opts: UpgradeOptions & PlatformSupportedOptions,
   ...args: unknown[]
-): Promise<Required<Deployment & DeployTransaction> & DeploymentId> {
+): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
   const client = getPlatformClient(hre);
 
   const constructorArgs = [...args] as (string | number | boolean)[];
@@ -83,7 +88,7 @@ export async function platformDeploy(
     address: checksumAddress,
     txHash: deploymentResponse.txHash,
     deployTransaction: txResponse,
-    deploymentId: deploymentResponse.deploymentId,
+    remoteDeploymentId: deploymentResponse.deploymentId,
   };
 }
 

@@ -22,8 +22,8 @@ export interface Deployment {
   txHash?: string;
 }
 
-export interface DeploymentId {
-  deploymentId?: string;
+export interface RemoteDeploymentId {
+  remoteDeploymentId?: string;
 }
 
 export interface DeployOpts {
@@ -54,7 +54,7 @@ export interface DeployOpts {
  *   If not provided, invalid deployments will not be deleted in a dev network (which is not a problem if merge is false,
  *   since it will be overwritten with the new deployment).
  * @param merge whether the cached deployment is intended to be merged with the new deployment. Defaults to false.
- * @param getDeploymentResponse a function to get the deployment response by id.
+ * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined if allowUndefined is true, or throws an error if it is false.
  * @returns the cached deployment if it should be used, otherwise the new deployment from the deploy function
  * @throws {InvalidDeployment} if the cached deployment is invalid and we are not on a dev network
  */
@@ -66,9 +66,9 @@ export async function resumeOrDeploy<T extends Deployment, U extends T = T>(
   opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
 ): Promise<T | U> {
-  const validated = await validateCached(cached, provider, type, opts, deployment, merge, getDeploymentResponse);
+  const validated = await validateCached(cached, provider, type, opts, deployment, merge, getRemoteDeployment);
   if (validated === undefined || merge) {
     const deployment = await deploy();
     debug('initiated deployment', 'transaction hash:', deployment.txHash, 'merge:', merge);
@@ -85,11 +85,11 @@ async function validateCached<T extends Deployment>(
   opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
 ): Promise<T | undefined> {
   if (cached !== undefined) {
     try {
-      return await validateStoredDeployment(cached, provider, type, opts, merge, getDeploymentResponse);
+      return await validateStoredDeployment(cached, provider, type, opts, merge, getRemoteDeployment);
     } catch (e) {
       if (e instanceof InvalidDeployment && (await isDevelopmentNetwork(provider))) {
         debug('ignoring invalid deployment in development network', e.deployment.address);
@@ -106,15 +106,15 @@ async function validateCached<T extends Deployment>(
   }
 }
 
-async function validateStoredDeployment<T extends Deployment & DeploymentId>(
+async function validateStoredDeployment<T extends Deployment & RemoteDeploymentId>(
   stored: T,
   provider: EthereumProvider,
   type?: string,
   opts?: DeployOpts,
   merge?: boolean,
-  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
 ): Promise<T> {
-  const { txHash, deploymentId } = stored;
+  const { txHash, remoteDeploymentId } = stored;
   let deployment = stored;
 
   if (txHash !== undefined) {
@@ -125,11 +125,11 @@ async function validateStoredDeployment<T extends Deployment & DeploymentId>(
     let foundDeployment = undefined;
     if (tx !== null) {
       foundDeployment = txHash;
-    } else if (deploymentId !== undefined && getDeploymentResponse !== undefined) {
+    } else if (remoteDeploymentId !== undefined && getRemoteDeployment !== undefined) {
       // If the transaction is not found, try checking the deployment id since the transaction may have been replaced
-      const response = await getDeploymentResponse(deploymentId, true);
+      const response = await getRemoteDeployment(remoteDeploymentId, true);
       if (response !== undefined) {
-        foundDeployment = deploymentId;
+        foundDeployment = remoteDeploymentId;
 
         // update the stored tx hash
         deployment = { ...stored, txHash: response.txHash };
@@ -141,7 +141,7 @@ async function validateStoredDeployment<T extends Deployment & DeploymentId>(
       debug('resuming previous deployment', foundDeployment);
       if (merge) {
         // If merging, wait for the existing deployment to be mined
-        waitAndValidateDeployment(provider, deployment, type, opts, getDeploymentResponse);
+        waitAndValidateDeployment(provider, deployment, type, opts, getRemoteDeployment);
       }
     } else {
       // If the transaction is not found we throw an error, except if we're in
@@ -158,19 +158,22 @@ async function validateStoredDeployment<T extends Deployment & DeploymentId>(
   return deployment;
 }
 
-export interface DeploymentResponse {
-  status: string;
+/**
+ * A deployment that is performed remotely, which has a status and transaction hash.
+ */
+export interface RemoteDeployment {
+  status: 'completed' | 'failed' | 'submitted';
   txHash: string;
 }
 
 export async function waitAndValidateDeployment(
   provider: EthereumProvider,
-  deployment: Deployment & DeploymentId,
+  deployment: Deployment & RemoteDeploymentId,
   type?: string,
   opts?: DeployOpts,
-  getDeploymentResponse?: (deploymentId: string, allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
 ): Promise<void> {
-  const { txHash, address, deploymentId } = deployment;
+  const { txHash, address, remoteDeploymentId } = deployment;
 
   // Poll for 60 seconds with a 5 second poll interval by default.
   const pollTimeout = opts?.timeout ?? 60e3;
@@ -180,7 +183,7 @@ export async function waitAndValidateDeployment(
 
   let foundCode = false;
 
-  if (deploymentId !== undefined && getDeploymentResponse !== undefined) {
+  if (remoteDeploymentId !== undefined && getRemoteDeployment !== undefined) {
     const startTime = Date.now();
 
     // eslint-disable-next-line no-constant-condition
@@ -191,8 +194,8 @@ export async function waitAndValidateDeployment(
         break;
       }
 
-      const completed = await isDeploymentCompleted(address, deploymentId, allowUndefined =>
-        getDeploymentResponse(deploymentId, allowUndefined),
+      const completed = await isDeploymentCompleted(address, remoteDeploymentId, allowUndefined =>
+        getRemoteDeployment(remoteDeploymentId, allowUndefined),
       );
       if (completed) {
         break;
@@ -249,10 +252,12 @@ export async function waitAndValidateDeployment(
 }
 
 export class TransactionMinedTimeout extends UpgradesError {
-  constructor(readonly deployment: Deployment & DeploymentId, type?: string, configurableTimeout?: boolean) {
+  constructor(readonly deployment: Deployment & RemoteDeploymentId, type?: string, configurableTimeout?: boolean) {
     super(
       `Timed out waiting for ${type ? type + ' ' : ''}contract deployment to address ${deployment.address} with ${
-        deployment.deploymentId ? `deployment id ${deployment.deploymentId}` : `transaction ${deployment.txHash}`
+        deployment.remoteDeploymentId
+          ? `deployment id ${deployment.remoteDeploymentId}`
+          : `transaction ${deployment.txHash}`
       }`,
       () =>
         'Run the function again to continue waiting for the transaction confirmation.' +
@@ -286,33 +291,33 @@ export class InvalidDeployment extends Error {
  * Checks if the deployment id is completed.
  *
  * @param address The expected address of the deployment.
- * @param deploymentId The deployment id.
- * @param getDeploymentResponse A function to get the deployment response.
+ * @param remoteDeploymentId The deployment id.
+ * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined if allowUndefined is true, or throws an error if it is false.
  * @returns true if the deployment id is completed, false otherwise.
  * @throws {InvalidDeployment} if the deployment id failed.
  */
 export async function isDeploymentCompleted(
   address: string,
-  deploymentId: string,
-  getDeploymentResponse: (allowUndefined: boolean) => Promise<DeploymentResponse | undefined>,
+  remoteDeploymentId: string,
+  getRemoteDeployment: (allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
 ): Promise<boolean> {
-  debug('verifying deployment id', deploymentId);
-  const response = await getDeploymentResponse(false);
+  debug('verifying deployment id', remoteDeploymentId);
+  const response = await getRemoteDeployment(false);
   if (response === undefined) {
-    throw new Error(`Broken invariant: Response not found for deployment id ${deploymentId}`);
+    throw new Error(`Broken invariant: Response not found for deployment id ${remoteDeploymentId}`);
   }
 
   const status = response.status;
   if (status === 'completed') {
-    debug('succeeded verifying deployment id completed', deploymentId);
+    debug('succeeded verifying deployment id completed', remoteDeploymentId);
     return true;
   } else if (status === 'failed') {
-    debug(`deployment id ${deploymentId} failed with tx hash ${response.txHash}`);
+    debug(`deployment id ${remoteDeploymentId} failed with tx hash ${response.txHash}`);
     throw new InvalidDeployment({ address, txHash: response.txHash });
   } else if (status === 'submitted') {
-    debug('waiting for deployment id to be completed', deploymentId);
+    debug('waiting for deployment id to be completed', remoteDeploymentId);
     return false;
   } else {
-    throw new Error(`Broken invariant: Unrecognized status ${status} for deployment id ${deploymentId}`);
+    throw new Error(`Broken invariant: Unrecognized status ${status} for deployment id ${remoteDeploymentId}`);
   }
 }

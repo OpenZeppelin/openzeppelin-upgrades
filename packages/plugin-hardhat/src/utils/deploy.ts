@@ -1,4 +1,4 @@
-import type { Deployment, DeploymentId } from '@openzeppelin/upgrades-core';
+import type { Deployment, RemoteDeploymentId } from '@openzeppelin/upgrades-core';
 import debug from './debug';
 import type { ethers, ContractFactory } from 'ethers';
 import { getContractAddress } from 'ethers/lib/utils';
@@ -15,7 +15,7 @@ export async function deploy(
   opts: UpgradeOptions & PlatformSupportedOptions,
   factory: ContractFactory,
   ...args: unknown[]
-): Promise<Required<Deployment & DeployTransaction> & DeploymentId> {
+): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
   if (opts?.platform) {
     return await platformDeploy(hre, factory, opts, ...args);
   } else {

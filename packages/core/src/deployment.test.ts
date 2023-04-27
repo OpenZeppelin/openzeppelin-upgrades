@@ -3,7 +3,7 @@ import { promisify } from 'util';
 import { TransactionMinedTimeout } from '.';
 import sinon from 'sinon';
 
-import { Deployment, DeploymentId, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
+import { Deployment, RemoteDeploymentId, resumeOrDeploy, waitAndValidateDeployment } from './deployment';
 import { stubProvider } from './stub-provider';
 
 const sleep = promisify(setTimeout);
@@ -135,11 +135,11 @@ test('platform - resumes existing deployment id and replaces tx hash', async t =
     txHash: '0x2',
   });
 
-  const first: Deployment & DeploymentId = await resumeOrDeploy(provider, undefined, provider.deployPending);
+  const first: Deployment & RemoteDeploymentId = await resumeOrDeploy(provider, undefined, provider.deployPending);
   first.txHash = '0x1';
-  first.deploymentId = 'abc';
+  first.remoteDeploymentId = 'abc';
 
-  const second: Deployment & DeploymentId = await resumeOrDeploy(
+  const second: Deployment & RemoteDeploymentId = await resumeOrDeploy(
     provider,
     first,
     provider.deployPending,
@@ -150,7 +150,7 @@ test('platform - resumes existing deployment id and replaces tx hash', async t =
     getDeploymentResponse,
   );
   t.is(second.address, first.address);
-  t.is(second.deploymentId, first.deploymentId);
+  t.is(second.remoteDeploymentId, first.remoteDeploymentId);
   t.is(second.txHash, '0x2');
   t.is(provider.deployCount, 1);
 });
@@ -160,11 +160,11 @@ test('platform - resumes existing deployment id and uses tx hash', async t => {
 
   const getDeploymentResponse = sinon.stub().throws();
 
-  const first: Deployment & DeploymentId = await resumeOrDeploy(provider, undefined, provider.deploy);
+  const first: Deployment & RemoteDeploymentId = await resumeOrDeploy(provider, undefined, provider.deploy);
   // tx hash was mined
-  first.deploymentId = 'abc';
+  first.remoteDeploymentId = 'abc';
 
-  const second: Deployment & DeploymentId = await resumeOrDeploy(
+  const second: Deployment & RemoteDeploymentId = await resumeOrDeploy(
     provider,
     first,
     provider.deployPending,
@@ -176,7 +176,7 @@ test('platform - resumes existing deployment id and uses tx hash', async t => {
   );
   t.is(second.address, first.address);
   t.is(second.txHash, first.txHash);
-  t.is(second.deploymentId, first.deploymentId);
+  t.is(second.remoteDeploymentId, first.remoteDeploymentId);
   t.is(provider.deployCount, 1);
 
   await waitAndValidateDeployment(provider, second);
@@ -188,10 +188,10 @@ test('platform - errors if tx and deployment id are not found', async t => {
 
   const getDeploymentResponse = sinon.stub().returns(undefined);
 
-  const fakeDeployment: Deployment & DeploymentId = {
+  const fakeDeployment: Deployment & RemoteDeploymentId = {
     address: '0x1aec6468218510f19bb19f52c4767996895ce711',
     txHash: '0xc48e21ac9c051922f5ccf1b47b62000f567ef9bbc108d274848b44351a6872cb',
-    deploymentId: 'abc',
+    remoteDeploymentId: 'abc',
   };
 
   await t.throwsAsync(
@@ -213,8 +213,8 @@ test('platform - waits for a deployment to be completed', async t => {
   const timeout = Symbol('timeout');
   const provider = stubProvider();
 
-  const deployment: Deployment & DeploymentId = await provider.deployPending();
-  deployment.deploymentId = 'abc';
+  const deployment: Deployment & RemoteDeploymentId = await provider.deployPending();
+  deployment.remoteDeploymentId = 'abc';
   provider.removeContract(deployment.address);
 
   const getDeploymentResponse = sinon.stub();
@@ -253,10 +253,10 @@ test('platform - fails deployment fast if deployment id failed', async t => {
     txHash: '0x2',
   });
 
-  const fakeDeployment: Deployment & DeploymentId = {
+  const fakeDeployment: Deployment & RemoteDeploymentId = {
     address: '0x1aec6468218510f19bb19f52c4767996895ce711',
     txHash: '0xc48e21ac9c051922f5ccf1b47b62000f567ef9bbc108d274848b44351a6872cb',
-    deploymentId: 'abc',
+    remoteDeploymentId: 'abc',
   };
 
   const deployment = await resumeOrDeploy(
@@ -274,10 +274,10 @@ test('platform - fails deployment fast if deployment id failed', async t => {
 });
 
 test('platform - deployment id timeout - no params', async t => {
-  const fakeDeployment: Deployment & DeploymentId = {
+  const fakeDeployment: Deployment & RemoteDeploymentId = {
     address: '0x1aec6468218510f19bb19f52c4767996895ce711',
     txHash: '0xc48e21ac9c051922f5ccf1b47b62000f567ef9bbc108d274848b44351a6872cb',
-    deploymentId: 'abc',
+    remoteDeploymentId: 'abc',
   };
   try {
     throw new TransactionMinedTimeout(fakeDeployment);
@@ -289,10 +289,10 @@ test('platform - deployment id timeout - no params', async t => {
 });
 
 test('platform - deployment id timeout - params', async t => {
-  const fakeDeployment: Deployment & DeploymentId = {
+  const fakeDeployment: Deployment & RemoteDeploymentId = {
     address: '0x1aec6468218510f19bb19f52c4767996895ce711',
     txHash: '0xc48e21ac9c051922f5ccf1b47b62000f567ef9bbc108d274848b44351a6872cb',
-    deploymentId: 'abc',
+    remoteDeploymentId: 'abc',
   };
   try {
     throw new TransactionMinedTimeout(fakeDeployment, 'implementation', true);

@@ -10,7 +10,7 @@ import {
   DeployBeaconProxyUnsupportedError,
   DeployBeaconProxyKindError,
   UpgradesError,
-  DeploymentId,
+  RemoteDeploymentId,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -80,7 +80,7 @@ export function makeDeployBeaconProxy(
     }
 
     const BeaconProxyFactory = await getBeaconProxyFactory(hre, attachTo.signer);
-    const proxyDeployment: Required<ProxyDeployment & DeployTransaction> & DeploymentId = Object.assign(
+    const proxyDeployment: Required<ProxyDeployment & DeployTransaction> & RemoteDeploymentId = Object.assign(
       { kind: withOpts.kind },
       await deploy(hre, withOpts, BeaconProxyFactory, beaconAddress, data),
     );
@@ -90,10 +90,10 @@ export function makeDeployBeaconProxy(
     const inst = attachTo.attach(proxyDeployment.address);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = proxyDeployment.deployTransaction;
-    if (withOpts.platform && proxyDeployment.deploymentId !== undefined) {
+    if (withOpts.platform && proxyDeployment.remoteDeploymentId !== undefined) {
       inst.deployed = async () => {
-        assert(proxyDeployment.deploymentId !== undefined);
-        await waitForDeployment(hre, withOpts, inst.address, proxyDeployment.deploymentId);
+        assert(proxyDeployment.remoteDeploymentId !== undefined);
+        await waitForDeployment(hre, withOpts, inst.address, proxyDeployment.remoteDeploymentId);
         return inst;
       };
     }
