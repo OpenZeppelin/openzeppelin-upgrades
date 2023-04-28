@@ -1,6 +1,8 @@
 import type { ethers, ContractFactory } from 'ethers';
 import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from 'hardhat/types';
 
+import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
+
 import { SourceCodeLicense } from 'platform-deploy-client';
 import {
   Deployment,
@@ -43,7 +45,7 @@ interface ReducedBuildInfo {
 }
 
 interface ContractInfo {
-  contractPath: string;
+  sourceName: string;
   contractName: string;
   buildInfo: ReducedBuildInfo;
 }
@@ -69,7 +71,7 @@ export async function platformDeploy(
 
   const deploymentResponse = await client.Deployment.deploy({
     contractName: contractInfo.contractName,
-    contractPath: contractInfo.contractPath,
+    contractPath: contractInfo.sourceName,
     network: network,
     artifactPayload: JSON.stringify(contractInfo.buildInfo),
     licenseType: getLicenseFromMetadata(contractInfo),
@@ -85,13 +87,6 @@ export async function platformDeploy(
     deployTransaction: txResponse,
     remoteDeploymentId: deploymentResponse.deploymentId,
   };
-}
-
-function getContractPathAndName(fullyQualified: string) {
-  const lastIndex = fullyQualified.lastIndexOf(':');
-  const contractPath = fullyQualified.slice(0, lastIndex);
-  const contractName = fullyQualified.slice(lastIndex + 1);
-  return { contractPath, contractName };
 }
 
 async function getContractInfo(
@@ -110,11 +105,11 @@ async function getContractInfo(
       // Proxy contracts would not be found in the validations, so try to get these from the plugin's precompiled artifacts.
       for (const artifact of deployableProxyContracts) {
         if (artifact.bytecode === factory.bytecode) {
-          const contractPath = artifact.sourceName;
+          const sourceName = artifact.sourceName;
           const contractName = artifact.contractName;
           const buildInfo = artifactsBuildInfo;
-          debug(`Proxy contract ${contractPath}:${contractName}`);
-          return { contractPath, contractName, buildInfo };
+          debug(`Proxy contract ${sourceName}:${contractName}`);
+          return { sourceName, contractName, buildInfo };
         }
       }
     }
@@ -122,7 +117,7 @@ async function getContractInfo(
     throw e;
   }
 
-  const { contractPath, contractName } = getContractPathAndName(fullContractName);
+  const { sourceName, contractName } = parseFullyQualifiedName(fullContractName);
   // Get the build-info file corresponding to the fully qualified contract name
   const buildInfo = await hre.artifacts.getBuildInfo(fullContractName);
   if (buildInfo === undefined) {
@@ -131,12 +126,12 @@ async function getContractInfo(
       () => `Run \`npx hardhat compile\``,
     );
   }
-  return { contractPath, contractName, buildInfo };
+  return { sourceName, contractName, buildInfo };
 }
 
 function getLicenseFromMetadata(contractInfo: ContractInfo): SourceCodeLicense | undefined {
   const compilerOutput: CompilerOutputWithMetadata =
-    contractInfo.buildInfo.output.contracts[contractInfo.contractPath][contractInfo.contractName];
+    contractInfo.buildInfo.output.contracts[contractInfo.sourceName][contractInfo.contractName];
 
   const metadataString = compilerOutput.metadata;
   if (metadataString === undefined) {
@@ -146,7 +141,7 @@ function getLicenseFromMetadata(contractInfo: ContractInfo): SourceCodeLicense |
 
   const metadata = JSON.parse(metadataString);
 
-  const license = metadata.sources[contractInfo.contractPath].license;
+  const license = metadata.sources[contractInfo.sourceName].license;
   if (license === undefined) {
     debug('License not found in metadata');
   } else {
