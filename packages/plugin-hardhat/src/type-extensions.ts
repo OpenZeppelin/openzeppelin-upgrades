@@ -12,7 +12,7 @@ declare module 'hardhat/types/runtime' {
 export interface HardhatPlatformConfig {
   apiKey: string;
   apiSecret: string;
-  deploy?: boolean;
+  useDeploy?: boolean;
 }
 
 declare module 'hardhat/types/config' {

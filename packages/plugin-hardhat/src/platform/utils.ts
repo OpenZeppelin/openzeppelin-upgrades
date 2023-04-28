@@ -47,7 +47,7 @@ export function enablePlatform<T extends Platform>(
   platformModule: boolean,
   opts: T,
 ): T {
-  if ((hre.config.platform?.deploy || platformModule) && opts.platform === undefined) {
+  if ((hre.config.platform?.useDeploy || platformModule) && opts.platform === undefined) {
     return {
       ...opts,
       platform: true,
@@ -63,7 +63,7 @@ export function disablePlatform<T extends Platform>(
   opts: T,
   unsupportedFunction: string,
 ): T {
-  if (hre.config.platform?.deploy || platformModule || opts.platform) {
+  if (hre.config.platform?.useDeploy || platformModule || opts.platform) {
     debug(`The function ${unsupportedFunction} is not supported with \`platform\`. Using Hardhat signer instead.`);
     return {
       ...opts,
