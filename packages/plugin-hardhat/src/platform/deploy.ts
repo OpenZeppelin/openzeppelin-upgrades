@@ -1,8 +1,7 @@
 import type { ethers, ContractFactory } from 'ethers';
 import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from 'hardhat/types';
 
-import { BlockExplorerApiKeyClient, SourceCodeLicense } from 'platform-deploy-client';
-import { Network } from 'defender-base-client';
+import { SourceCodeLicense } from 'platform-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -21,7 +20,6 @@ import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/cont
 import { getNetwork, getPlatformClient } from './utils';
 import { DeployTransaction, PlatformSupportedOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
-import { getEtherscanAPIConfig } from '../utils/etherscan-api';
 import { getDeployData } from '../utils/deploy-impl';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
 
@@ -68,9 +66,6 @@ export async function platformDeploy(
   debug(`Network ${network}`);
 
   const verifySourceCode = opts.verifySourceCode ?? true;
-  if (verifySourceCode) {
-    await registerEtherscanApiKey(hre, network, client.BlockExplorerApiKey);
-  }
 
   const deploymentResponse = await client.Deployment.deploy({
     contractName: contractInfo.contractName,
@@ -90,43 +85,6 @@ export async function platformDeploy(
     deployTransaction: txResponse,
     remoteDeploymentId: deploymentResponse.deploymentId,
   };
-}
-
-async function registerEtherscanApiKey(
-  hre: HardhatRuntimeEnvironment,
-  network: Network,
-  client: BlockExplorerApiKeyClient,
-) {
-  const registeredKeys = await client.list();
-
-  // If this network does not already have an API key registered on Platform, then register the configured Hardhat Etherscan API key.
-  if (registeredKeys.length == 0 || !(await hasNetworkKey())) {
-    const etherscanApiConfig = await getEtherscanAPIConfig(hre); // hardhat-etherscan throws an error here if the network is not configured
-    debug(
-      'Found Etherscan API key in Hardhat configuration. Registering as block explorer API key on the OpenZeppelin Platform...',
-    );
-    try {
-      await client.create({
-        key: etherscanApiConfig.key,
-        network: network,
-      });
-      debug(`Successfully registered block explorer API key for network ${network} on the OpenZeppelin Platform.`);
-    } catch (e: any) {
-      console.error(`Could not register block explorer API key for network ${network} on the OpenZeppelin Platform.`);
-      throw e;
-    }
-  } else {
-    debug(`Found block explorer API key for network ${network} on the OpenZeppelin Platform.`);
-  }
-
-  async function hasNetworkKey() {
-    for (const key of registeredKeys) {
-      if (key.network === network) {
-        return true;
-      }
-    }
-    return false;
-  }
 }
 
 function getContractPathAndName(fullyQualified: string) {

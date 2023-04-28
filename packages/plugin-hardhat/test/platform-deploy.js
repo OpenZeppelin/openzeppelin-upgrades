@@ -158,45 +158,11 @@ test('calls platform deploy with constructor args', async t => {
   assertResult(t, result);
 });
 
-test('calls platform deploy with verify true', async t => {
-  const { spy, fakePlatformClient, deploy, fakeHre, fakeChainId } = t.context;
-
-  const contractPath = 'contracts/Greeter.sol';
-  const contractName = 'Greeter';
-
-  // current network is in api key list
-  const list = sinon.spy(fakePlatformClient.BlockExplorerApiKey, 'list');
-  const create = sinon.spy(fakePlatformClient.BlockExplorerApiKey, 'create');
-
-  const factory = await ethers.getContractFactory(contractName);
-  const result = await deploy.platformDeploy(fakeHre, factory, { verifySourceCode: true });
-
-  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
-  sinon.assert.calledWithExactly(spy, {
-    contractName: contractName,
-    contractPath: contractPath,
-    network: fakeChainId,
-    artifactPayload: JSON.stringify(buildInfo),
-    licenseType: undefined,
-    constructorInputs: [],
-    verifySourceCode: true,
-  });
-
-  assertResult(t, result);
-
-  // api key was not created since network is in list
-  sinon.assert.calledOnce(list);
-  sinon.assert.notCalled(create);
-});
-
 test('calls platform deploy with verify false', async t => {
-  const { spy, fakePlatformClient, deploy, fakeHre, fakeChainId } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
-
-  const list = sinon.spy(fakePlatformClient.BlockExplorerApiKey, 'list');
-  const create = sinon.spy(fakePlatformClient.BlockExplorerApiKey, 'create');
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.platformDeploy(fakeHre, factory, { verifySourceCode: false });
@@ -213,44 +179,6 @@ test('calls platform deploy with verify false', async t => {
   });
 
   assertResult(t, result);
-
-  // api key was not looked up since verifySourceCode set to false
-  sinon.assert.notCalled(list);
-  sinon.assert.notCalled(create);
-});
-
-test('calls platform deploy with verify true, create API key', async t => {
-  const { spy, deploy, fakePlatformClient, fakeHre, fakeChainId } = t.context;
-
-  const contractPath = 'contracts/Greeter.sol';
-  const contractName = 'Greeter';
-
-  const factory = await ethers.getContractFactory(contractName);
-
-  // current network not in api key list
-  const list = sinon.stub(fakePlatformClient.BlockExplorerApiKey, 'list');
-  list.returns([{ network: 'mainnet' }]);
-  const create = sinon.spy(fakePlatformClient.BlockExplorerApiKey, 'create');
-
-  const result = await deploy.platformDeploy(fakeHre, factory, {});
-
-  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
-  sinon.assert.calledWithExactly(spy, {
-    contractName: contractName,
-    contractPath: contractPath,
-    network: fakeChainId,
-    artifactPayload: JSON.stringify(buildInfo),
-    licenseType: undefined,
-    constructorInputs: [],
-    verifySourceCode: true,
-  });
-
-  assertResult(t, result);
-
-  // api key was created since network not in list
-  sinon.assert.calledOnce(list);
-  sinon.assert.calledOnce(create);
-  sinon.assert.calledWithExactly(create, { key: ETHERSCAN_API_KEY, network: fakeChainId });
 });
 
 test('calls platform deploy with ERC1967Proxy', async t => {
