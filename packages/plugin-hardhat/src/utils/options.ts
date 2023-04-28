@@ -6,12 +6,18 @@ import {
   withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
 
+/**
+ * Options for functions that can deploy an implementation contract.
+ */
 export type StandaloneOptions = StandaloneValidationOptions &
   DeployOpts & {
     constructorArgs?: unknown[];
     useDeployedImplementation?: boolean;
   };
 
+/**
+ * Options for functions that can deploy a new version of an implementation contract for upgrading.
+ */
 export type UpgradeOptions = ValidationOptions & StandaloneOptions;
 
 export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions> {
@@ -24,6 +30,9 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
   };
 }
 
+/**
+ * Option for functions that support getting a transaction response.
+ */
 export type GetTxResponse = {
   getTxResponse?: boolean;
 };
@@ -32,10 +41,16 @@ type Initializer = {
   initializer?: string | false;
 };
 
+/**
+ * Option to enable or disable Platform deployments.
+ */
 export type Platform = {
   platform?: boolean;
 };
 
+/**
+ * Options for functions that support Platform deployments.
+ */
 export type PlatformSupportedOptions = Platform & {
   verifySourceCode?: boolean;
 };

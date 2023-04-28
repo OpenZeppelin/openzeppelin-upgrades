@@ -26,6 +26,9 @@ export interface RemoteDeploymentId {
   remoteDeploymentId?: string;
 }
 
+/**
+ * Options for deploying an implementation contract, proxy admin contract, or remote deployment.
+ */
 export interface DeployOpts {
   /**
    * Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Use `0` to wait indefinitely.
