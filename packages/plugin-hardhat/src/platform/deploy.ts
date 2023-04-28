@@ -191,9 +191,8 @@ function getLicenseFromMetadata(contractInfo: ContractInfo): SourceCodeLicense |
   const license = metadata.sources[contractInfo.contractPath].license;
   if (license === undefined) {
     debug('License not found in metadata');
-    return undefined;
+  } else {
+    debug(`Found license from metadata: ${license}`);
   }
-
-  debug(`Found license from metadata: ${license}`);
   return license;
 }
