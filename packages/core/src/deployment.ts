@@ -54,7 +54,7 @@ export interface DeployOpts {
  *   If not provided, invalid deployments will not be deleted in a dev network (which is not a problem if merge is false,
  *   since it will be overwritten with the new deployment).
  * @param merge whether the cached deployment is intended to be merged with the new deployment. Defaults to false.
- * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined if allowUndefined is true, or throws an error if it is false.
+ * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined.
  * @returns the cached deployment if it should be used, otherwise the new deployment from the deploy function
  * @throws {InvalidDeployment} if the cached deployment is invalid and we are not on a dev network
  */
@@ -66,7 +66,7 @@ export async function resumeOrDeploy<T extends Deployment, U extends T = T>(
   opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
-  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string) => Promise<RemoteDeployment | undefined>,
 ): Promise<T | U> {
   const validated = await validateCached(cached, provider, type, opts, deployment, merge, getRemoteDeployment);
   if (validated === undefined || merge) {
@@ -85,7 +85,7 @@ async function validateCached<T extends Deployment>(
   opts?: DeployOpts,
   deployment?: ManifestField<T>,
   merge?: boolean,
-  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string) => Promise<RemoteDeployment | undefined>,
 ): Promise<T | undefined> {
   if (cached !== undefined) {
     try {
@@ -112,7 +112,7 @@ async function validateStoredDeployment<T extends Deployment & RemoteDeploymentI
   type?: string,
   opts?: DeployOpts,
   merge?: boolean,
-  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string) => Promise<RemoteDeployment | undefined>,
 ): Promise<T> {
   const { txHash, remoteDeploymentId } = stored;
   let deployment = stored;
@@ -127,7 +127,7 @@ async function validateStoredDeployment<T extends Deployment & RemoteDeploymentI
       foundDeployment = txHash;
     } else if (remoteDeploymentId !== undefined && getRemoteDeployment !== undefined) {
       // If the transaction is not found, try checking the deployment id since the transaction may have been replaced
-      const response = await getRemoteDeployment(remoteDeploymentId, true);
+      const response = await getRemoteDeployment(remoteDeploymentId);
       if (response !== undefined) {
         foundDeployment = remoteDeploymentId;
 
@@ -171,7 +171,7 @@ export async function waitAndValidateDeployment(
   deployment: Deployment & RemoteDeploymentId,
   type?: string,
   opts?: DeployOpts,
-  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string) => Promise<RemoteDeployment | undefined>,
 ): Promise<void> {
   const { txHash, address, remoteDeploymentId } = deployment;
 
@@ -194,9 +194,7 @@ export async function waitAndValidateDeployment(
         break;
       }
 
-      const completed = await isDeploymentCompleted(address, remoteDeploymentId, allowUndefined =>
-        getRemoteDeployment(remoteDeploymentId, allowUndefined),
-      );
+      const completed = await isDeploymentCompleted(address, remoteDeploymentId, getRemoteDeployment);
       if (completed) {
         break;
       } else {
@@ -292,19 +290,19 @@ export class InvalidDeployment extends Error {
  *
  * @param address The expected address of the deployment.
  * @param remoteDeploymentId The deployment id.
- * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined if allowUndefined is true, or throws an error if it is false.
+ * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined.
  * @returns true if the deployment id is completed, false otherwise.
  * @throws {InvalidDeployment} if the deployment id failed.
  */
 export async function isDeploymentCompleted(
   address: string,
   remoteDeploymentId: string,
-  getRemoteDeployment: (allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
+  getRemoteDeployment: (remoteDeploymentId: string) => Promise<RemoteDeployment | undefined>,
 ): Promise<boolean> {
   debug('verifying deployment id', remoteDeploymentId);
-  const response = await getRemoteDeployment(false);
+  const response = await getRemoteDeployment(remoteDeploymentId);
   if (response === undefined) {
-    throw new Error(`Broken invariant: Response not found for deployment id ${remoteDeploymentId}`);
+    throw new Error(`Could not find remote deployment with id ${remoteDeploymentId}`);
   }
 
   const status = response.status;

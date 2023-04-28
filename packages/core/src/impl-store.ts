@@ -33,7 +33,7 @@ export interface ManifestField<T> {
  * @param deploy the deploy function
  * @param opts options containing the timeout and pollingInterval parameters. If undefined, assumes the timeout is not configurable and will not mention those parameters in the error message for TransactionMinedTimeout.
  * @param merge if true, adds a deployment to existing deployment by merging their addresses. Defaults to false.
- * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined if allowUndefined is true, or throws an error if it is false.
+ * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined.
  * @returns the deployment
  * @throws {InvalidDeployment} if the deployment is invalid
  * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
@@ -44,7 +44,7 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
   deploy: () => Promise<U>,
   opts?: DeployOpts,
   merge?: boolean,
-  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string) => Promise<RemoteDeployment | undefined>,
 ): Promise<U | Deployment> {
   const manifest = await Manifest.forNetwork(provider);
 
@@ -146,7 +146,7 @@ export async function fetchOrDeploy(
  * @param deploy the deploy function
  * @param opts options containing the timeout and pollingInterval parameters. If undefined, assumes the timeout is not configurable and will not mention those parameters in the error message for TransactionMinedTimeout.
  * @param merge if true, adds a deployment to existing deployment by merging their addresses. Defaults to false.
- * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined if allowUndefined is true, or throws an error if it is false.
+ * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined.
  * @returns the deployment
  * @throws {InvalidDeployment} if the deployment is invalid
  * @throws {TransactionMinedTimeout} if the transaction was not confirmed within the timeout period
@@ -157,7 +157,7 @@ export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
   deploy: () => Promise<T>,
   opts?: DeployOpts,
   merge?: boolean,
-  getRemoteDeployment?: (remoteDeploymentId: string, allowUndefined: boolean) => Promise<RemoteDeployment | undefined>,
+  getRemoteDeployment?: (remoteDeploymentId: string) => Promise<RemoteDeployment | undefined>,
 ): Promise<T | Deployment> {
   return fetchOrDeployGeneric(
     implLens(version.linkedWithoutMetadata),

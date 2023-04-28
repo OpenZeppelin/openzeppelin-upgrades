@@ -206,7 +206,7 @@ test('platform - errors if tx and deployment id are not found', async t => {
       getDeploymentResponse,
     ),
   );
-  t.true(getDeploymentResponse.calledOnceWithExactly('abc', true));
+  t.true(getDeploymentResponse.calledOnceWithExactly('abc'));
 });
 
 test('platform - waits for a deployment to be completed', async t => {
@@ -269,7 +269,7 @@ test('platform - fails deployment fast if deployment id failed', async t => {
     undefined,
     getDeploymentResponse,
   );
-  t.true(getDeploymentResponse.calledOnceWithExactly('abc', true));
+  t.true(getDeploymentResponse.calledOnceWithExactly('abc'));
   await t.throwsAsync(waitAndValidateDeployment(provider, deployment, undefined, undefined, getDeploymentResponse));
 });
 

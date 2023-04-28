@@ -115,9 +115,7 @@ async function deployImpl(
     },
     opts,
     undefined,
-    async (remoteDeploymentId: string, allowUndefined: boolean) => {
-      return await getRemoteDeployment(hre, remoteDeploymentId, allowUndefined);
-    },
+    remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId),
   );
 
   let txResponse;
