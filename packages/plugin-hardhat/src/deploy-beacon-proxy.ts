@@ -1,6 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Contract, ContractFactory } from 'ethers';
-import assert from 'assert';
 
 import {
   Manifest,
@@ -22,7 +21,8 @@ import {
   getContractAddress,
   getInitializerData,
 } from './utils';
-import { enablePlatform, waitForDeployment } from './platform/utils';
+import { enablePlatform } from './platform/utils';
+import { getContractInstance } from './utils/contract-instance';
 
 export interface DeployBeaconProxyFunction {
   (
@@ -87,16 +87,6 @@ export function makeDeployBeaconProxy(
 
     await manifest.addProxy(proxyDeployment);
 
-    const inst = attachTo.attach(proxyDeployment.address);
-    // @ts-ignore Won't be readonly because inst was created through attach.
-    inst.deployTransaction = proxyDeployment.deployTransaction;
-    if (opts.platform && proxyDeployment.remoteDeploymentId !== undefined) {
-      inst.deployed = async () => {
-        assert(proxyDeployment.remoteDeploymentId !== undefined);
-        await waitForDeployment(hre, opts, inst.address, proxyDeployment.remoteDeploymentId);
-        return inst;
-      };
-    }
-    return inst;
+    return getContractInstance(hre, attachTo, opts, proxyDeployment);
   };
 }

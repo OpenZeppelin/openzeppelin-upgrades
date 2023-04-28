@@ -1,10 +1,9 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract, ethers } from 'ethers';
-import assert from 'assert';
+import type { ContractFactory, Contract } from 'ethers';
 
 import { deploy, DeployContractOptions, DeployTransaction } from './utils';
 import { DeployData, getDeployData } from './utils/deploy-impl';
-import { enablePlatform, waitForDeployment } from './platform/utils';
+import { enablePlatform } from './platform/utils';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -12,23 +11,18 @@ import {
   inferProxyKind,
   UpgradesError,
 } from '@openzeppelin/upgrades-core';
+import { getContractInstance } from './utils/contract-instance';
 
 export interface DeployContractFunction {
   (Contract: ContractFactory, args?: unknown[], opts?: DeployContractOptions): Promise<Contract>;
   (Contract: ContractFactory, opts?: DeployContractOptions): Promise<Contract>;
 }
 
-interface DeployedContract {
-  address: string;
-  txResponse?: ethers.providers.TransactionResponse;
-  remoteDeploymentId?: string;
-}
-
-export async function deployNonUpgradeableContract(
+async function deployNonUpgradeableContract(
   hre: HardhatRuntimeEnvironment,
   Contract: ContractFactory,
   opts: DeployContractOptions,
-): Promise<DeployedContract> {
+) {
   const deployData = await getDeployData(hre, Contract, opts);
 
   if (!opts.unsafeAllowDeployContract) {
@@ -42,10 +36,7 @@ export async function deployNonUpgradeableContract(
     ...deployData.fullOpts.constructorArgs,
   );
 
-  const address = deployment.address;
-  const txResponse = deployment.deployTransaction;
-  const remoteDeploymentId = deployment.remoteDeploymentId;
-  return { address, txResponse, remoteDeploymentId: remoteDeploymentId };
+  return deployment;
 }
 
 function assertNonUpgradeable(deployData: DeployData) {
@@ -95,18 +86,8 @@ export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModul
     }
     opts.constructorArgs = args;
 
-    const deployed = await deployNonUpgradeableContract(hre, Contract, opts);
+    const deployment = await deployNonUpgradeableContract(hre, Contract, opts);
 
-    const inst = Contract.attach(deployed.address);
-    // @ts-ignore Won't be readonly because inst was created through attach.
-    inst.deployTransaction = deployed.txResponse;
-    if (opts.platform && deployed.remoteDeploymentId !== undefined) {
-      inst.deployed = async () => {
-        assert(deployed.remoteDeploymentId !== undefined);
-        await waitForDeployment(hre, opts, inst.address, deployed.remoteDeploymentId);
-        return inst;
-      };
-    }
-    return inst;
+    return getContractInstance(hre, Contract, opts, deployment);
   };
 }

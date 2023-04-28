@@ -197,7 +197,11 @@ export async function waitAndValidateDeployment(
         break;
       }
 
-      const completed = await isDeploymentCompleted(address, remoteDeploymentId, getRemoteDeployment);
+      const completed = await isDeploymentCompleted(
+        address,
+        remoteDeploymentId,
+        await getRemoteDeployment(remoteDeploymentId),
+      );
       if (completed) {
         break;
       } else {
@@ -293,28 +297,27 @@ export class InvalidDeployment extends Error {
  *
  * @param address The expected address of the deployment.
  * @param remoteDeploymentId The deployment id.
- * @param getRemoteDeployment a function to get the remote deployment status by id. If the deployment id is not found, returns undefined.
+ * @param remoteDeploymentResponse The remote deployment response corresponding to the given id.
  * @returns true if the deployment id is completed, false otherwise.
  * @throws {InvalidDeployment} if the deployment id failed.
  */
 export async function isDeploymentCompleted(
   address: string,
   remoteDeploymentId: string,
-  getRemoteDeployment: (remoteDeploymentId: string) => Promise<RemoteDeployment | undefined>,
+  remoteDeploymentResponse: RemoteDeployment | undefined,
 ): Promise<boolean> {
   debug('verifying deployment id', remoteDeploymentId);
-  const response = await getRemoteDeployment(remoteDeploymentId);
-  if (response === undefined) {
+  if (remoteDeploymentResponse === undefined) {
     throw new Error(`Could not find remote deployment with id ${remoteDeploymentId}`);
   }
 
-  const status = response.status;
+  const status = remoteDeploymentResponse.status;
   if (status === 'completed') {
     debug('succeeded verifying deployment id completed', remoteDeploymentId);
     return true;
   } else if (status === 'failed') {
-    debug(`deployment id ${remoteDeploymentId} failed with tx hash ${response.txHash}`);
-    throw new InvalidDeployment({ address, txHash: response.txHash });
+    debug(`deployment id ${remoteDeploymentId} failed with tx hash ${remoteDeploymentResponse.txHash}`);
+    throw new InvalidDeployment({ address, txHash: remoteDeploymentResponse.txHash });
   } else if (status === 'submitted') {
     debug('waiting for deployment id to be completed', remoteDeploymentId);
     return false;

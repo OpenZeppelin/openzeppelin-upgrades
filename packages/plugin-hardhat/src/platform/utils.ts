@@ -89,7 +89,7 @@ export function getPlatformClient(hre: HardhatRuntimeEnvironment): PlatformClien
  *
  * @param hre The Hardhat runtime environment
  * @param remoteDeploymentId The deployment id.
- * @returns The deployment response, or undefined if the deployment is not found.
+ * @returns The remote deployment response, or undefined if the deployment is not found.
  * @throws Error if the deployment response could not be retrieved.
  */
 export async function getRemoteDeployment(
@@ -110,14 +110,16 @@ export async function getRemoteDeployment(
 
 /**
  * Waits indefinitely for the deployment until it is completed or failed.
+ * Returns the last known transaction hash seen from the remote deployment, or undefined if the remote deployment was not retrieved.
  */
 export async function waitForDeployment(
   hre: HardhatRuntimeEnvironment,
   opts: DeployOpts,
   address: string,
   remoteDeploymentId: string,
-) {
+): Promise<string | undefined> {
   const pollInterval = opts.pollingInterval ?? 5e3;
+  let lastKnownTxHash: string | undefined;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -126,11 +128,14 @@ export async function waitForDeployment(
       break;
     }
 
-    const completed = await isDeploymentCompleted(address, remoteDeploymentId, id => getRemoteDeployment(hre, id));
+    const response = await getRemoteDeployment(hre, remoteDeploymentId);
+    lastKnownTxHash = response?.txHash;
+    const completed = await isDeploymentCompleted(address, remoteDeploymentId, response);
     if (completed) {
       break;
     } else {
       await sleep(pollInterval);
     }
   }
+  return lastKnownTxHash;
 }

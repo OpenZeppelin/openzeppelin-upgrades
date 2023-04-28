@@ -1,6 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
-import assert from 'assert';
 
 import {
   Manifest,
@@ -19,7 +18,8 @@ import {
   deployProxyImpl,
   getInitializerData,
 } from './utils';
-import { enablePlatform, waitForDeployment } from './platform/utils';
+import { enablePlatform } from './platform/utils';
+import { getContractInstance } from './utils/contract-instance';
 
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployProxyOptions): Promise<Contract>;
@@ -81,16 +81,6 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
 
     await manifest.addProxy(proxyDeployment);
 
-    const inst = ImplFactory.attach(proxyDeployment.address);
-    // @ts-ignore Won't be readonly because inst was created through attach.
-    inst.deployTransaction = proxyDeployment.deployTransaction;
-    if (opts.platform && proxyDeployment.remoteDeploymentId !== undefined) {
-      inst.deployed = async () => {
-        assert(proxyDeployment.remoteDeploymentId !== undefined);
-        await waitForDeployment(hre, opts, inst.address, proxyDeployment.remoteDeploymentId);
-        return inst;
-      };
-    }
-    return inst;
+    return getContractInstance(hre, ImplFactory, opts, proxyDeployment);
   };
 }
