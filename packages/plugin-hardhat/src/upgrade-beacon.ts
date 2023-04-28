@@ -18,10 +18,10 @@ export type UpgradeBeaconFunction = (
 
 export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, platformModule: boolean): UpgradeBeaconFunction {
   return async function upgradeBeacon(beacon, ImplFactory, opts: UpgradeBeaconOptions = {}) {
-    const withOpts = disablePlatform(hre, platformModule, opts, upgradeBeacon.name);
+    opts = disablePlatform(hre, platformModule, opts, upgradeBeacon.name);
 
     const beaconAddress = getContractAddress(beacon);
-    const { impl: nextImpl } = await deployBeaconImpl(hre, ImplFactory, withOpts, beaconAddress);
+    const { impl: nextImpl } = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
 
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
     const beaconContract = UpgradeableBeaconFactory.attach(beaconAddress);

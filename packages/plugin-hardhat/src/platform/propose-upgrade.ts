@@ -10,7 +10,7 @@ import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { PlatformSupportedOptions, UpgradeOptions } from '../utils';
-import { getNetwork, getAdminClient, withPlatformDefaults } from './utils';
+import { getNetwork, getAdminClient, enablePlatform } from './utils';
 
 export interface ExtendedProposalResponse extends ProposalResponse {
   txResponse?: ethers.providers.TransactionResponse;
@@ -33,12 +33,12 @@ export interface ProposalOptions extends UpgradeOptions, PlatformSupportedOption
 
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModule: boolean): ProposeUpgradeFunction {
   return async function proposeUpgrade(proxyAddress, contractNameOrImplFactory, opts = {}) {
-    const withOpts = withPlatformDefaults(hre, platformModule, opts);
+    opts = enablePlatform(hre, platformModule, opts);
 
     const client = getAdminClient(hre);
     const network = await getNetwork(hre);
 
-    const { title, description, proxyAdmin, multisig, multisigType, ...moreOpts } = withOpts;
+    const { title, description, proxyAdmin, multisig, multisigType, ...moreOpts } = opts;
 
     if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
       throw new Error(`Beacon proxy is not currently supported with defender.proposeUpgrade()`);

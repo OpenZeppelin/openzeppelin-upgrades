@@ -22,7 +22,7 @@ import {
   getContractAddress,
   getInitializerData,
 } from './utils';
-import { withPlatformDefaults, waitForDeployment } from './platform/utils';
+import { enablePlatform, waitForDeployment } from './platform/utils';
 
 export interface DeployBeaconProxyFunction {
   (
@@ -55,22 +55,22 @@ export function makeDeployBeaconProxy(
       args = [];
     }
 
-    const withOpts = withPlatformDefaults(hre, platformModule, opts);
+    opts = enablePlatform(hre, platformModule, opts);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    if (withOpts.kind !== undefined && withOpts.kind !== 'beacon') {
-      throw new DeployBeaconProxyKindError(withOpts.kind);
+    if (opts.kind !== undefined && opts.kind !== 'beacon') {
+      throw new DeployBeaconProxyKindError(opts.kind);
     }
-    withOpts.kind = 'beacon';
+    opts.kind = 'beacon';
 
     const beaconAddress = getContractAddress(beacon);
     if (!(await isBeacon(provider, beaconAddress))) {
       throw new DeployBeaconProxyUnsupportedError(beaconAddress);
     }
 
-    const data = getInitializerData(attachTo.interface, args, withOpts.initializer);
+    const data = getInitializerData(attachTo.interface, args, opts.initializer);
 
     if (await manifest.getAdmin()) {
       logWarning(`A proxy admin was previously deployed on this network`, [
@@ -81,8 +81,8 @@ export function makeDeployBeaconProxy(
 
     const BeaconProxyFactory = await getBeaconProxyFactory(hre, attachTo.signer);
     const proxyDeployment: Required<ProxyDeployment & DeployTransaction> & RemoteDeploymentId = Object.assign(
-      { kind: withOpts.kind },
-      await deploy(hre, withOpts, BeaconProxyFactory, beaconAddress, data),
+      { kind: opts.kind },
+      await deploy(hre, opts, BeaconProxyFactory, beaconAddress, data),
     );
 
     await manifest.addProxy(proxyDeployment);
@@ -90,10 +90,10 @@ export function makeDeployBeaconProxy(
     const inst = attachTo.attach(proxyDeployment.address);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = proxyDeployment.deployTransaction;
-    if (withOpts.platform && proxyDeployment.remoteDeploymentId !== undefined) {
+    if (opts.platform && proxyDeployment.remoteDeploymentId !== undefined) {
       inst.deployed = async () => {
         assert(proxyDeployment.remoteDeploymentId !== undefined);
-        await waitForDeployment(hre, withOpts, inst.address, proxyDeployment.remoteDeploymentId);
+        await waitForDeployment(hre, opts, inst.address, proxyDeployment.remoteDeploymentId);
         return inst;
       };
     }

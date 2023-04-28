@@ -42,7 +42,7 @@ export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Networ
   return network;
 }
 
-export function withPlatformDefaults<T extends Platform>(
+export function enablePlatform<T extends Platform>(
   hre: HardhatRuntimeEnvironment,
   platformModule: boolean,
   opts: T,

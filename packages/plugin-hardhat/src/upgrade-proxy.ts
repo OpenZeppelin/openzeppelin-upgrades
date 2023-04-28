@@ -21,14 +21,14 @@ export type UpgradeFunction = (
 
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule: boolean): UpgradeFunction {
   return async function upgradeProxy(proxy, ImplFactory, opts: UpgradeProxyOptions = {}) {
-    const withOpts = disablePlatform(hre, platformModule, opts, upgradeProxy.name);
+    opts = disablePlatform(hre, platformModule, opts, upgradeProxy.name);
 
     const proxyAddress = getContractAddress(proxy);
 
-    const { impl: nextImpl } = await deployProxyImpl(hre, ImplFactory, withOpts, proxyAddress);
+    const { impl: nextImpl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress);
     // upgrade kind is inferred above
     const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.signer);
-    const call = encodeCall(ImplFactory, withOpts.call);
+    const call = encodeCall(ImplFactory, opts.call);
     const upgradeTx = await upgradeTo(nextImpl, call);
 
     const inst = ImplFactory.attach(proxyAddress);

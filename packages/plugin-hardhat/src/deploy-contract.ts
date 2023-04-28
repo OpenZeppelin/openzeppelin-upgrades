@@ -4,7 +4,7 @@ import assert from 'assert';
 
 import { deploy, DeployContractOptions, DeployTransaction } from './utils';
 import { DeployData, getDeployData } from './utils/deploy-impl';
-import { withPlatformDefaults, waitForDeployment } from './platform/utils';
+import { enablePlatform, waitForDeployment } from './platform/utils';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -82,28 +82,28 @@ export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModul
       args = [];
     }
 
-    const withOpts = withPlatformDefaults(hre, platformModule, opts);
+    opts = enablePlatform(hre, platformModule, opts);
 
-    if (!withOpts.platform) {
+    if (!opts.platform) {
       throw new Error(`The ${deployContract.name} function can only be used with the \`platform\` module or option.`);
     }
 
-    if (withOpts.constructorArgs !== undefined) {
+    if (opts.constructorArgs !== undefined) {
       throw new Error(
         `The ${deployContract.name} function does not support the constructorArgs option. Pass in constructor arguments using the format: deployContract(MyContract, [ 'my arg' ]);`,
       );
     }
-    withOpts.constructorArgs = args;
+    opts.constructorArgs = args;
 
-    const deployed = await deployNonUpgradeableContract(hre, Contract, withOpts);
+    const deployed = await deployNonUpgradeableContract(hre, Contract, opts);
 
     const inst = Contract.attach(deployed.address);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = deployed.txResponse;
-    if (withOpts.platform && deployed.remoteDeploymentId !== undefined) {
+    if (opts.platform && deployed.remoteDeploymentId !== undefined) {
       inst.deployed = async () => {
         assert(deployed.remoteDeploymentId !== undefined);
-        await waitForDeployment(hre, withOpts, inst.address, deployed.remoteDeploymentId);
+        await waitForDeployment(hre, opts, inst.address, deployed.remoteDeploymentId);
         return inst;
       };
     }

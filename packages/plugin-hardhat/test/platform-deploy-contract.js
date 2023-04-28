@@ -140,7 +140,7 @@ test('deployed calls wait for deployment', async t => {
     },
     './platform/utils': {
       waitForDeployment: stub,
-      withPlatformDefaults: (hre, platformModule, opts) => {
+      enablePlatform: (hre, platformModule, opts) => {
         return {
           ...opts,
           platform: true,
