@@ -76,8 +76,8 @@ export function enablePlatform<T extends Platform>(
  */
 export function disablePlatform(
   hre: HardhatRuntimeEnvironment,
-  opts: Platform,
   platformModule: boolean,
+  opts: Platform,
   unsupportedFunction: string,
 ): void {
   if (opts.platform) {
