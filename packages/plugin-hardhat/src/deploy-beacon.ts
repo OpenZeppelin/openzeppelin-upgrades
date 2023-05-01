@@ -12,7 +12,7 @@ export interface DeployBeaconFunction {
 
 export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, platformModule: boolean): DeployBeaconFunction {
   return async function deployBeacon(ImplFactory: ContractFactory, opts: DeployBeaconOptions = {}) {
-    opts = disablePlatform(hre, platformModule, opts, deployBeacon.name);
+    disablePlatform(hre, opts, platformModule, deployBeacon.name);
 
     const { impl } = await deployBeaconImpl(hre, ImplFactory, opts);
 

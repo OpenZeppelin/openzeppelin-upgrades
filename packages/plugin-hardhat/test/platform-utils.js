@@ -1,6 +1,6 @@
 const test = require('ava');
 const sinon = require('sinon');
-const { getNetwork, getAdminClient } = require('../dist/platform/utils');
+const { getNetwork, getAdminClient, disablePlatform } = require('../dist/platform/utils');
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x05';
@@ -44,4 +44,54 @@ test('fails if platform api key is missing in config', async t => {
   t.throws(() => getAdminClient(t.context.fakeHre), {
     message: /Missing OpenZeppelin Platform API key and secret in hardhat config/,
   });
+});
+
+test('disablePlatform - use option', async t => {
+  await t.throws(() => disablePlatform(t.context.fakeHre, { platform: true }, false, 'someFunc'), {
+    message: /The function someFunc is not supported with the \`platform\` option/,
+  });
+});
+
+test('disablePlatform - use module', async t => {
+  await t.throws(() => disablePlatform(t.context.fakeHre, {}, true, 'someFunc'), {
+    message: /The function someFunc is not supported with the \`platform\` module/,
+  });
+});
+
+test('disablePlatform - use config', async t => {
+  const hre = {
+    ...t.context.fakeHre,
+    config: {
+      platform: {
+        useDeploy: true,
+      },
+    },
+  };
+  disablePlatform(hre, {}, false, 'someFunc'); // passes through
+});
+
+test('disablePlatform - use all', async t => {
+  const hre = {
+    ...t.context.fakeHre,
+    config: {
+      platform: {
+        useDeploy: true,
+      },
+    },
+  };
+  await t.throws(() => disablePlatform(hre, { platform: true }, true, 'someFunc'), {
+    message: /The function someFunc is not supported with the \`platform\` option/,
+  });
+});
+
+test('disablePlatform - use none', async t => {
+  const hre = {
+    ...t.context.fakeHre,
+    config: {
+      platform: {
+        useDeploy: false,
+      },
+    },
+  };
+  disablePlatform(hre, {}, false, 'someFunc'); // passes through
 });

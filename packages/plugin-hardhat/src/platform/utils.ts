@@ -64,33 +64,33 @@ export function enablePlatform<T extends Platform>(
   }
 }
 
-export function disablePlatform<T extends Platform>(
+/**
+ * Disables Platform for a function that does not support it.
+ * If opts.platform or platformModule is true, throws an error.
+ * If hre.config.platform.useDeploy is true, logs a debug message and passes (to allow fallback to Hardhat signer).
+ *
+ * @param hre The Hardhat runtime environment
+ * @param platformModule Whether the function was called from the platform module
+ * @param opts The options passed to the function
+ * @param unsupportedFunction The name of the function that does not support Platform
+ */
+export function disablePlatform(
   hre: HardhatRuntimeEnvironment,
+  opts: Platform,
   platformModule: boolean,
-  opts: T,
   unsupportedFunction: string,
-): T {
-  // When the function does not support Platform:
+): void {
   if (opts.platform) {
-    // If using the platform option, throw an error
     throw new UpgradesError(`The function ${unsupportedFunction} is not supported with the \`platform\` option.`);
   } else if (platformModule) {
-    // If using the platform module, throw an error
     throw new UpgradesError(
       `The function ${unsupportedFunction} is not supported with the \`platform\` module.`,
-      () => `Call the function as upgrades.${unsupportedFunction} instead to use the Hardhat signer.`,
+      () => `Call the function as upgrades.${unsupportedFunction} to use the Hardhat signer.`,
     );
   } else if (hre.config.platform?.useDeploy) {
-    // If using the config option, fall back to Hardhat signer
     debug(
       `The function ${unsupportedFunction} is not supported with the \`platform.useDeploy\` configuration option. Using the Hardhat signer instead.`,
     );
-    return {
-      ...opts,
-      platform: false,
-    };
-  } else {
-    return opts;
   }
 }
 
