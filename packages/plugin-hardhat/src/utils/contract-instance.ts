@@ -30,6 +30,7 @@ export function getContractInstance(
   instance.deployTransaction = deployment.deployTransaction;
 
   if (opts.platform && deployment.remoteDeploymentId !== undefined) {
+    const origDeployed = instance.deployed.bind(instance);
     instance.deployed = async () => {
       assert(deployment.remoteDeploymentId !== undefined);
       const updatedTxHash = await waitForDeployment(hre, opts, instance.address, deployment.remoteDeploymentId);
@@ -38,7 +39,8 @@ export function getContractInstance(
         // @ts-ignore Won't be readonly because instance was created through attach.
         instance.deployTransaction = await hre.ethers.provider.getTransaction(updatedTxHash);
       }
-      return instance;
+
+      return await origDeployed();
     };
   }
   return instance;
