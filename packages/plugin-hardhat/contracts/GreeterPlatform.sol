@@ -19,16 +19,6 @@ contract GreeterPlatformV2Bad {
   }
 }
 
-contract GreeterPlatformV3 {
-  uint256 immutable versionNumber;
-  constructor(uint256 initialVersion) public {
-    versionNumber = initialVersion;
-  }
-  function version() external view returns (uint256) {
-    return versionNumber;
-  }
-}
-
 import "./utils/Proxiable.sol";
 contract GreeterPlatformProxiable is GreeterPlatform, Proxiable {}
 contract GreeterPlatformV2Proxiable is GreeterPlatformV2, Proxiable {}
