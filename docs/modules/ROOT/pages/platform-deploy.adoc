@@ -1,6 +1,6 @@
 = Using with OpenZeppelin Platform
 
-The Hardhat Upgrades package can use the OpenZeppelin Platform for deployments instead of ethers.js.
+The Hardhat Upgrades package can use the OpenZeppelin Platform for deployments instead of ethers.js, which allows for features such as automated bytecode and source code verification.
 
 [[configuration]]
 == Configuration
