@@ -1,5 +1,12 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getChainId, hasCode, RemoteDeployment, DeployOpts, isDeploymentCompleted } from '@openzeppelin/upgrades-core';
+import {
+  getChainId,
+  hasCode,
+  RemoteDeployment,
+  DeployOpts,
+  isDeploymentCompleted,
+  UpgradesError,
+} from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from 'defender-base-client';
 import { AdminClient } from 'defender-admin-client';
@@ -63,8 +70,21 @@ export function disablePlatform<T extends Platform>(
   opts: T,
   unsupportedFunction: string,
 ): T {
-  if (hre.config.platform?.useDeploy || platformModule || opts.platform) {
-    debug(`The function ${unsupportedFunction} is not supported with \`platform\`. Using Hardhat signer instead.`);
+  // When the function does not support Platform:
+  if (opts.platform) {
+    // If using the platform option, throw an error
+    throw new UpgradesError(`The function ${unsupportedFunction} is not supported with the \`platform\` option.`);
+  } else if (platformModule) {
+    // If using the platform module, throw an error
+    throw new UpgradesError(
+      `The function ${unsupportedFunction} is not supported with the \`platform\` module.`,
+      () => `Call the function as upgrades.${unsupportedFunction} instead to use the Hardhat signer.`,
+    );
+  } else if (hre.config.platform?.useDeploy) {
+    // If using the config option, fall back to Hardhat signer
+    debug(
+      `The function ${unsupportedFunction} is not supported with the \`platform.useDeploy\` configuration option. Using the Hardhat signer instead.`,
+    );
     return {
       ...opts,
       platform: false,
