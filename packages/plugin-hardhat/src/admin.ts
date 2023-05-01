@@ -1,19 +1,19 @@
 import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
-import { Contract } from 'ethers';
+import { Contract, Signer } from 'ethers';
 import { getProxyAdminFactory } from './utils';
 
 const SUCCESS_CHECK = chalk.green('✔') + ' ';
 const FAILURE_CROSS = chalk.red('✘') + ' ';
 
-export type ChangeAdminFunction = (proxyAddress: string, newAdmin: string) => Promise<void>;
-export type TransferProxyAdminOwnershipFunction = (newOwner: string) => Promise<void>;
-export type GetInstanceFunction = () => Promise<Contract>;
+export type ChangeAdminFunction = (proxyAddress: string, newAdmin: string, signer?: Signer) => Promise<void>;
+export type TransferProxyAdminOwnershipFunction = (newOwner: string, signer?: Signer) => Promise<void>;
+export type GetInstanceFunction = (signer?: Signer) => Promise<Contract>;
 
 export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment): ChangeAdminFunction {
-  return async function changeProxyAdmin(proxyAddress, newAdmin) {
-    const admin = await getManifestAdmin(hre);
+  return async function changeProxyAdmin(proxyAddress: string, newAdmin: string, signer?: Signer) {
+    const admin = await getManifestAdmin(hre, signer);
     const proxyAdminAddress = await getAdminAddress(hre.network.provider, proxyAddress);
 
     if (admin.address !== proxyAdminAddress) {
@@ -25,8 +25,8 @@ export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment): ChangeAdmi
 }
 
 export function makeTransferProxyAdminOwnership(hre: HardhatRuntimeEnvironment): TransferProxyAdminOwnershipFunction {
-  return async function transferProxyAdminOwnership(newOwner) {
-    const admin = await getManifestAdmin(hre);
+  return async function transferProxyAdminOwnership(newOwner: string, signer?: Signer) {
+    const admin = await getManifestAdmin(hre, signer);
     await admin.transferOwnership(newOwner);
 
     const { provider } = hre.network;
@@ -43,12 +43,12 @@ export function makeTransferProxyAdminOwnership(hre: HardhatRuntimeEnvironment):
 }
 
 export function makeGetInstanceFunction(hre: HardhatRuntimeEnvironment): GetInstanceFunction {
-  return async function getInstance() {
-    return await getManifestAdmin(hre);
+  return async function getInstance(signer?: Signer) {
+    return await getManifestAdmin(hre, signer);
   };
 }
 
-export async function getManifestAdmin(hre: HardhatRuntimeEnvironment): Promise<Contract> {
+export async function getManifestAdmin(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<Contract> {
   const manifest = await Manifest.forNetwork(hre.network.provider);
   const manifestAdmin = await manifest.getAdmin();
   const proxyAdminAddress = manifestAdmin?.address;
@@ -57,6 +57,6 @@ export async function getManifestAdmin(hre: HardhatRuntimeEnvironment): Promise<
     throw new Error('No ProxyAdmin was found in the network manifest');
   }
 
-  const AdminFactory = await getProxyAdminFactory(hre);
+  const AdminFactory = await getProxyAdminFactory(hre, signer);
   return AdminFactory.attach(proxyAdminAddress);
 }
