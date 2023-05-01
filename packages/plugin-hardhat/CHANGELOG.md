@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support custom signer for `admin` functions. ([#784](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/784))
+
 ## 1.23.1 (2023-04-26)
 
 - Enable `verify` to fall back to hardhat-etherscan if proxy bytecode does not match. ([#752](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/752))
