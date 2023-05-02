@@ -442,7 +442,7 @@ Similar to `prepareUpgrade`. This method validates and deploys the new implement
 [source,ts]
 ----
 async function deployProxyAdmin(
-  Signer?: ethers.Signer,
+  signer?: ethers.Signer,
   opts?: {
     timeout?: number,
     pollingInterval?: number,
@@ -454,7 +454,7 @@ Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy
 
 *Parameters:*
 
-* `Signer` - the signer to use for deployment.
+* `signer` - the signer to use for deployment.
 * `opts` - an object with options:
 ** See <<common-options>>.
 
@@ -474,6 +474,7 @@ Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy
 async function changeProxyAdmin(
   proxyAddress: string,
   newAdmin: string,
+  signer?: ethers.Signer,
 ): Promise<void>
 ----
 
@@ -483,6 +484,7 @@ Changes the admin for a specific proxy.
 
 * `proxyAddress` - the address of the proxy to change.
 * `newAdmin` - the new admin address.
+* `signer` - the signer to use for the transaction.
 
 [[admin-transfer-proxy-admin-ownership]]
 == admin.transferProxyAdminOwnership
@@ -491,6 +493,7 @@ Changes the admin for a specific proxy.
 ----
 async function transferProxyAdminOwnership(
   newAdmin: string,
+  signer?: ethers.Signer,
 ): Promise<void>
 ----
 
@@ -499,6 +502,7 @@ Changes the owner of the proxy admin contract, which is the default admin for up
 *Parameters:*
 
 * `newAdmin` - the new admin address.
+* `signer` - the signer to use for the transaction.
 
 [[erc1967]]
 == erc1967
