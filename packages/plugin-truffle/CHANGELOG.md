@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.18.0 (2023-04-26)
+
+- Support `prepareUpgrade` from an implementation address. ([#777](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/777))
+
+## 1.17.1 (2023-03-03)
+
+- Use proxy transaction hash for implementation contract abstraction. ([#737](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/737))
+
 ## 1.17.0 (2022-09-27)
 
 - Include solc version in storage layouts in manifest files. ([#662](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/662))

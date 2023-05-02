@@ -13,7 +13,7 @@ The following options are common to some functions.
 ** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.
 ** `"state-variable-assignment"`: Allows assigning state variables in a contract even though they will be stored in the implementation.
 ** `"state-variable-immutable"`: Allows use of immutable variables, which are not unsafe
-** `"constructor"`: Allows defining a constructor. Note that constructor arguments are not supported regardless of this option.
+** `"constructor"`: Allows defining a constructor. See `constructorArgs`.
 ** `"delegatecall"`, `"selfdestruct"`: Allow the use of these operations. Incorrect use of this option can put funds at risk of permanent loss. See xref:faq.adoc#delegatecall-selfdestruct[Can I safely use `delegatecall` and `selfdestruct`?]
 ** `"missing-public-upgradeto"`: Allow UUPS implementations that do not contain a public `upgradeTo` function. Enabling this option is likely to cause a revert due to the built-in UUPS safety mechanism.
 * `unsafeAllowRenames`: (`boolean`) Configure storage layout check to allow variable renaming.
@@ -400,7 +400,7 @@ await upgrades.validateUpgrade(Box, BoxV2);
 [source,ts]
 ----
 async function prepareUpgrade(
-  proxyOrBeacon: string | ethers.Contract,
+  referenceAddressOrContract: string | ethers.Contract,
   Contract: ethers.ContractFactory,
   opts?: {
     unsafeAllow?: ValidationError[],
@@ -417,11 +417,11 @@ async function prepareUpgrade(
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
 
-Validates and deploys a new implementation contract, and returns its address. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Hardhat. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons.
+Validates and deploys a new implementation contract, and returns its address. If `referenceAddressOrContract` is the current implementation address, the `kind` option is required. Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from Hardhat.
 
 *Parameters:*
 
-* `proxyOrBeacon` - the proxy or beacon address or contract instance.
+* `referenceAddressOrContract` - the proxy or beacon or implementation address or contract instance.
 * `Contract` - the new implementation contract.
 * `opts` - an object with options:
 ** `getTxResponse`: if set to `true`, causes this function to return an ethers transaction response corresponding to the deployment of the new implementation contract instead of its address. Note that if the new implementation contract was originally imported as a result of `forceImport`, only the address will be returned.

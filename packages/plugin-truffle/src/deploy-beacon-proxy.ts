@@ -82,6 +82,7 @@ export async function deployBeaconProxy(
   await manifest.addProxy(proxyDeployment);
 
   attachTo.address = proxyDeployment.address;
+  attachTo.transactionHash = proxyDeployment.txHash;
   const contract = new attachTo(proxyDeployment.address);
   contract.transactionHash = proxyDeployment.txHash;
   return contract;

@@ -7,6 +7,8 @@ const {
   deployImplementation,
   validateUpgrade,
   erc1967,
+  prepareUpgrade,
+  upgradeProxy,
 } = require('@openzeppelin/truffle-upgrades');
 
 const Greeter = artifacts.require('Greeter');
@@ -203,5 +205,58 @@ contract('Greeter', function () {
     await assert.rejects(validateUpgrade(greeter, GreeterV2, { kind: 'uups' }), error =>
       getUpgradeUnsafeRegex('GreeterV2').test(error.message),
     );
+  });
+
+  it('prepare upgrade on deployed implementation - happy paths', async function () {
+    const greeter = await deployImplementation(Greeter);
+    const v2Impl = await prepareUpgrade(greeter, GreeterV2, { kind: 'transparent' });
+    await GreeterV2.at(v2Impl).then(c => c.resetGreeting());
+
+    const greeterUUPS = await deployImplementation(GreeterProxiable);
+    const v2ImplUUPS = await prepareUpgrade(greeterUUPS, GreeterV2Proxiable, { kind: 'uups' });
+    await GreeterV2Proxiable.at(v2ImplUUPS).then(c => c.resetGreeting());
+  });
+
+  it('prepare upgrade on deployed implementation - incompatible storage', async function () {
+    const greeter = await deployImplementation(Greeter);
+    await assert.rejects(prepareUpgrade(greeter, GreeterStorageConflict, { kind: 'transparent' }), error =>
+      error.message.includes('New storage layout is incompatible'),
+    );
+  });
+
+  it('prepare upgrade on deployed implementation - incompatible storage - forced', async function () {
+    const greeter = await deployImplementation(Greeter);
+    await prepareUpgrade(greeter, GreeterStorageConflict, { kind: 'transparent', unsafeSkipStorageCheck: true });
+  });
+
+  it('prepare upgrade on deployed implementation - no kind', async function () {
+    const greeter = await deployImplementation(GreeterProxiable);
+    await assert.rejects(prepareUpgrade(greeter, GreeterV2), error =>
+      error.message.includes('The `kind` option must be provided'),
+    );
+  });
+
+  it('prepare upgrade on deployed implementation - kind uups - no upgrade function', async function () {
+    const greeter = await deployImplementation(GreeterProxiable);
+    await assert.rejects(prepareUpgrade(greeter, GreeterV2, { kind: 'uups' }), error =>
+      getUpgradeUnsafeRegex('GreeterV2').test(error.message),
+    );
+  });
+
+  it('prepare upgrade on deployed implementation, then upgrade proxy', async function () {
+    const greeterProxy = await deployProxy(Greeter, ['Hello, Truffle!']);
+    const v1Impl = await erc1967.getImplementationAddress(greeterProxy.address);
+
+    const v2Impl = await prepareUpgrade(v1Impl, GreeterV2, { kind: 'transparent' });
+    assert.notEqual(v1Impl, v2Impl);
+
+    const greeterProxyV2 = await upgradeProxy(greeterProxy, GreeterV2);
+    const v2ImplUpgraded = await erc1967.getImplementationAddress(greeterProxy.address);
+    assert.equal(await greeterProxyV2.greet(), 'Hello, Truffle!');
+
+    assert.equal(v2Impl, v2ImplUpgraded);
+
+    await greeterProxyV2.resetGreeting();
+    assert.equal(await greeterProxyV2.greet(), 'Hello World');
   });
 });

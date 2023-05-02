@@ -46,9 +46,13 @@ export async function getDeployData(opts: UpgradeOptions, Contract: ContractClas
   return { fullOpts, validations, version, provider, layout };
 }
 
-export async function deployStandaloneImpl(Contract: ContractClass, opts: StandaloneOptions): Promise<DeployedImpl> {
+export async function deployUpgradeableImpl(
+  Contract: ContractClass,
+  opts: StandaloneOptions,
+  currentImplAddress?: string,
+): Promise<DeployedImpl> {
   const deployData = await getDeployData(opts, Contract);
-  await validateImpl(deployData, opts);
+  await validateImpl(deployData, opts, currentImplAddress);
   return await deployImpl(deployData, Contract, opts);
 }
 

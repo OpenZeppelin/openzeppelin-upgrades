@@ -127,10 +127,14 @@ export const networkNames: { [chainId in number]?: string } = Object.freeze({
   137: 'polygon',
   420: 'optimism-goerli',
   80001: 'polygon-mumbai',
+  42161: 'arbitrum-one',
+  42170: 'arbitrum-nova',
+  421613: 'arbitrum-goerli',
   43113: 'avalanche-fuji',
   43114: 'avalanche',
   42220: 'celo',
   44787: 'celo-alfajores',
+  11155111: 'sepolia',
 });
 
 export async function isDevelopmentNetwork(provider: EthereumProvider): Promise<boolean> {

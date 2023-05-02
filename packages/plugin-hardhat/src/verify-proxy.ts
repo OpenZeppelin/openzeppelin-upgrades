@@ -52,6 +52,11 @@ interface VerifiableContractInfo {
   event: string;
 }
 
+interface ErrorReport {
+  errors: string[];
+  severity: 'error' | 'warn';
+}
+
 /**
  * The proxy-related contracts and their corresponding events that may have been deployed the current version of this plugin.
  */
@@ -90,28 +95,31 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
 
   const provider = hre.network.provider;
   const proxyAddress = args.address;
-  const errors: string[] = [];
+  const errorReport: ErrorReport = {
+    errors: [],
+    severity: 'error',
+  };
 
-  let beacon = false;
+  let proxy = true;
 
   if (await isTransparentOrUUPSProxy(provider, proxyAddress)) {
-    await fullVerifyTransparentOrUUPS(hre, proxyAddress, hardhatVerify, errors);
+    await fullVerifyTransparentOrUUPS(hre, proxyAddress, hardhatVerify, errorReport);
   } else if (await isBeaconProxy(provider, proxyAddress)) {
-    await fullVerifyBeaconProxy(hre, proxyAddress, hardhatVerify, errors);
+    await fullVerifyBeaconProxy(hre, proxyAddress, hardhatVerify, errorReport);
   } else if (await isBeacon(provider, proxyAddress)) {
-    beacon = true;
+    proxy = false;
     const etherscanApi = await getEtherscanAPIConfig(hre);
-    await fullVerifyBeacon(hre, proxyAddress, hardhatVerify, etherscanApi, errors);
+    await fullVerifyBeacon(hre, proxyAddress, hardhatVerify, etherscanApi, errorReport);
   } else {
     // Doesn't look like a proxy, so just verify directly
     return hardhatVerify(proxyAddress);
   }
 
-  if (errors.length > 0) {
-    throw new UpgradesError(getVerificationErrorSummary(errors));
+  if (errorReport.errors.length > 0) {
+    displayErrorReport(errorReport);
+  } else {
+    console.info(`\n${proxy ? 'Proxy' : 'Contract'} fully verified.`);
   }
-
-  console.info(`\n${beacon ? 'Beacon' : 'Proxy'} fully verified.`);
 
   async function hardhatVerify(address: string) {
     return await runSuper({ ...args, address });
@@ -119,16 +127,24 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
 }
 
 /**
- * @param errors Accumulated verification errors
- * @returns Formatted summary of all of the verification errors that have been recorded.
+ * Throws or warns with a formatted summary of all of the verification errors that have been recorded.
+ *
+ * @param errorReport Accumulated verification errors
+ * @throws UpgradesError if errorReport.severity is 'error'
  */
-function getVerificationErrorSummary(errors: string[]) {
-  let str = 'Verification completed with the following errors.';
-  for (let i = 0; i < errors.length; i++) {
-    const error = errors[i];
-    str += `\n\nError ${i + 1}: ${error}`;
+function displayErrorReport(errorReport: ErrorReport) {
+  let summary = `\nVerification completed with the following ${
+    errorReport.severity === 'error' ? 'errors' : 'warnings'
+  }.`;
+  for (let i = 0; i < errorReport.errors.length; i++) {
+    const error = errorReport.errors[i];
+    summary += `\n\n${errorReport.severity === 'error' ? 'Error' : 'Warning'} ${i + 1}: ${error}`;
   }
-  return str;
+  if (errorReport.severity === 'error') {
+    throw new UpgradesError(summary);
+  } else {
+    console.warn(summary);
+  }
 }
 
 /**
@@ -137,22 +153,33 @@ function getVerificationErrorSummary(errors: string[]) {
  * @param address The address that failed to verify
  * @param contractType The type or name of the contract
  * @param details The error details
- * @param errors Accumulated verification errors
+ * @param errorReport Accumulated verification errors
  */
-function recordVerificationError(address: string, contractType: string, details: string, errors: string[]) {
+function recordVerificationError(address: string, contractType: string, details: string, errorReport: ErrorReport) {
   const message = `Failed to verify ${contractType} contract at ${address}: ${details}`;
-  recordError(message, errors);
+  recordError(message, errorReport);
 }
 
-function recordError(message: string, errors: string[]) {
+function recordError(message: string, errorReport: ErrorReport) {
   console.error(message);
-  errors.push(message);
+  errorReport.errors.push(message);
 }
 
 /**
  * Indicates that the expected event topic was not found in the contract's logs according to the Etherscan API.
  */
 class EventNotFound extends UpgradesError {}
+
+/**
+ * Indicates that the contract's bytecode does not match with the plugin's artifact.
+ */
+class BytecodeNotMatchArtifact extends Error {
+  contractName: string;
+  constructor(message: string, contractName: string) {
+    super(message);
+    this.contractName = contractName;
+  }
+}
 
 /**
  * Fully verifies all contracts related to the given transparent or UUPS proxy address: implementation, admin (if any), and proxy.
@@ -167,22 +194,22 @@ class EventNotFound extends UpgradesError {}
  * @param hre
  * @param proxyAddress The transparent or UUPS proxy address
  * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
- * @errors Accumulated verification errors
+ * @param errorReport Accumulated verification errors
  */
 async function fullVerifyTransparentOrUUPS(
   hre: HardhatRuntimeEnvironment,
   proxyAddress: any,
   hardhatVerify: (address: string) => Promise<any>,
-  errors: string[],
+  errorReport: ErrorReport,
 ) {
   const provider = hre.network.provider;
   const implAddress = await getImplementationAddress(provider, proxyAddress);
-  await verifyImplementation(hardhatVerify, implAddress, errors);
+  await verifyImplementation(hardhatVerify, implAddress, errorReport);
 
   const etherscanApi = await getEtherscanAPIConfig(hre);
 
   await verifyTransparentOrUUPS();
-  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress, errors);
+  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress, errorReport);
   // Either UUPS or Transparent proxy could have admin slot set, although typically this should only be for Transparent
   await verifyAdmin();
 
@@ -191,12 +218,16 @@ async function fullVerifyTransparentOrUUPS(
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
       try {
-        await verifyContractWithCreationEvent(
+        await verifyWithArtifactOrFallback(
           hre,
+          hardhatVerify,
           etherscanApi,
           adminAddress,
           [verifiableContracts.proxyAdmin],
-          errors,
+          errorReport,
+          // The user provided the proxy address to verify, whereas this function is only verifying the related proxy admin.
+          // So even if this falls back and succeeds, we want to keep any errors that might have occurred while verifying the proxy itself.
+          false,
         );
       } catch (e: any) {
         if (e instanceof EventNotFound) {
@@ -210,12 +241,14 @@ async function fullVerifyTransparentOrUUPS(
 
   async function verifyTransparentOrUUPS() {
     console.log(`Verifying proxy: ${proxyAddress}`);
-    await verifyContractWithCreationEvent(
+    await verifyWithArtifactOrFallback(
       hre,
+      hardhatVerify,
       etherscanApi,
       proxyAddress,
       [verifiableContracts.transparentUpgradeableProxy, verifiableContracts.erc1967proxy],
-      errors,
+      errorReport,
+      true,
     );
   }
 }
@@ -227,26 +260,34 @@ async function fullVerifyTransparentOrUUPS(
  * @param hre
  * @param proxyAddress The beacon proxy address
  * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
- * @errors Accumulated verification errors
+ * @param errorReport Accumulated verification errors
  */
 async function fullVerifyBeaconProxy(
   hre: HardhatRuntimeEnvironment,
   proxyAddress: any,
   hardhatVerify: (address: string) => Promise<any>,
-  errors: string[],
+  errorReport: ErrorReport,
 ) {
   const provider = hre.network.provider;
   const beaconAddress = await getBeaconAddress(provider, proxyAddress);
   const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
   const etherscanApi = await getEtherscanAPIConfig(hre);
 
-  await fullVerifyBeacon(hre, beaconAddress, hardhatVerify, etherscanApi, errors);
+  await fullVerifyBeacon(hre, beaconAddress, hardhatVerify, etherscanApi, errorReport);
   await verifyBeaconProxy();
-  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress, errors);
+  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress, errorReport);
 
   async function verifyBeaconProxy() {
     console.log(`Verifying beacon proxy: ${proxyAddress}`);
-    await verifyContractWithCreationEvent(hre, etherscanApi, proxyAddress, [verifiableContracts.beaconProxy], errors);
+    await verifyWithArtifactOrFallback(
+      hre,
+      hardhatVerify,
+      etherscanApi,
+      proxyAddress,
+      [verifiableContracts.beaconProxy],
+      errorReport,
+      true,
+    );
   }
 }
 
@@ -257,29 +298,31 @@ async function fullVerifyBeaconProxy(
  * @param beaconAddress The beacon address
  * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
  * @param etherscanApi Configuration for the Etherscan API
- * @errors Accumulated verification errors
+ * @param errorReport Accumulated verification errors
  */
 async function fullVerifyBeacon(
   hre: HardhatRuntimeEnvironment,
   beaconAddress: any,
   hardhatVerify: (address: string) => Promise<any>,
   etherscanApi: EtherscanAPIConfig,
-  errors: string[],
+  errorReport: ErrorReport,
 ) {
   const provider = hre.network.provider;
 
   const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
-  await verifyImplementation(hardhatVerify, implAddress, errors);
+  await verifyImplementation(hardhatVerify, implAddress, errorReport);
   await verifyBeacon();
 
   async function verifyBeacon() {
-    console.log(`Verifying beacon: ${beaconAddress}`);
-    await verifyContractWithCreationEvent(
+    console.log(`Verifying beacon or beacon-like contract: ${beaconAddress}`);
+    await verifyWithArtifactOrFallback(
       hre,
+      hardhatVerify,
       etherscanApi,
       beaconAddress,
       [verifiableContracts.upgradeableBeacon],
-      errors,
+      errorReport,
+      true,
     );
   }
 }
@@ -289,12 +332,12 @@ async function fullVerifyBeacon(
  *
  * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
  * @param implAddress The implementation address
- * @param errors Accumulated verification errors
+ * @param errorReport Accumulated verification errors
  */
 async function verifyImplementation(
   hardhatVerify: (address: string) => Promise<any>,
   implAddress: string,
-  errors: string[],
+  errorReport: ErrorReport,
 ) {
   try {
     console.log(`Verifying implementation: ${implAddress}`);
@@ -303,7 +346,7 @@ async function verifyImplementation(
     if (e.message.toLowerCase().includes('already verified')) {
       console.log(`Implementation ${implAddress} already verified.`);
     } else {
-      recordVerificationError(implAddress, 'implementation', e.message, errors);
+      recordVerificationError(implAddress, 'implementation', e.message, errorReport);
     }
   }
 }
@@ -343,7 +386,70 @@ async function searchEvent(
 }
 
 /**
- * Verifies a contract by looking up an event that should have been logged during contract construction,
+ * Verifies a contract by matching with known artifacts.
+ *
+ * If a match was not found, falls back to verify directly using the regular hardhat verify task.
+ *
+ * If the fallback passes, logs as success.
+ * If the fallback also fails, records errors for both the original and fallback attempts.
+ *
+ * @param hre
+ * @param etherscanApi The Etherscan API config
+ * @param address The contract address to verify
+ * @param possibleContractInfo An array of possible contract artifacts to use for verification along
+ *  with the corresponding creation event expected in the logs.
+ * @param errorReport Accumulated verification errors
+ * @param convertErrorsToWarningsOnFallbackSuccess If fallback verification occurred and succeeded, whether any
+ *  previously accumulated errors should be converted into warnings in the final summary.
+ * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
+ */
+async function verifyWithArtifactOrFallback(
+  hre: HardhatRuntimeEnvironment,
+  hardhatVerify: (address: string) => Promise<any>,
+  etherscanApi: EtherscanAPIConfig,
+  address: string,
+  possibleContractInfo: VerifiableContractInfo[],
+  errorReport: ErrorReport,
+  convertErrorsToWarningsOnFallbackSuccess: boolean,
+) {
+  try {
+    await attemptVerifyWithCreationEvent(hre, etherscanApi, address, possibleContractInfo, errorReport);
+    return true;
+  } catch (origError: any) {
+    if (origError instanceof BytecodeNotMatchArtifact || origError instanceof EventNotFound) {
+      // Try falling back to regular hardhat verify in case the source code is available in the user's project.
+      try {
+        await hardhatVerify(address);
+      } catch (fallbackError: any) {
+        if (fallbackError.message.toLowerCase().includes('already verified')) {
+          console.log(`Contract at ${address} already verified.`);
+        } else {
+          // Fallback failed, so record both the original error and the fallback attempt, then return
+          if (origError instanceof BytecodeNotMatchArtifact) {
+            recordVerificationError(address, origError.contractName, origError.message, errorReport);
+          } else {
+            recordError(origError.message, errorReport);
+          }
+
+          recordError(`Failed to verify directly using hardhat verify: ${fallbackError.message}`, errorReport);
+          return;
+        }
+      }
+
+      // Since the contract was able to be verified directly, we don't want the task to fail so we should convert earlier errors into warnings for other related contracts.
+      // For example, the user provided constructor arguments for the verify command will apply to all calls of the regular hardhat verify,
+      // so it is not possible to successfully verify both an impl and a proxy that uses the above fallback at the same time.
+      if (convertErrorsToWarningsOnFallbackSuccess) {
+        errorReport.severity = 'warn';
+      }
+    } else {
+      throw origError;
+    }
+  }
+}
+
+/**
+ * Attempts to verify a contract by looking up an event that should have been logged during contract construction,
  * finds the txHash for that, and infers the constructor args to use for verification.
  *
  * Iterates through each element of possibleContractInfo to look for that element's event, until an event is found.
@@ -353,15 +459,16 @@ async function searchEvent(
  * @param address The contract address to verify
  * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
- * @param errors Accumulated verification errors
+ * @param errorReport Accumulated verification errors
  * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
+ * @throws {BytecodeNotMatchArtifact} if the contract's bytecode does not match with the plugin's known artifact.
  */
-async function verifyContractWithCreationEvent(
+async function attemptVerifyWithCreationEvent(
   hre: HardhatRuntimeEnvironment,
   etherscanApi: EtherscanAPIConfig,
   address: string,
   possibleContractInfo: VerifiableContractInfo[],
-  errors: string[],
+  errorReport: ErrorReport,
 ) {
   const { contractInfo, txHash } = await searchEvent(etherscanApi, address, possibleContractInfo);
   debug(`verifying contract ${contractInfo.artifact.contractName} at ${address}`);
@@ -376,14 +483,18 @@ async function verifyContractWithCreationEvent(
   if (constructorArguments === undefined) {
     // The creation bytecode for the address does not match with the expected artifact.
     // This may be because a different version of the contract was deployed compared to what is in the plugins.
-    recordVerificationError(
-      address,
-      contractInfo.artifact.contractName,
+    throw new BytecodeNotMatchArtifact(
       `Bytecode does not match with the current version of ${contractInfo.artifact.contractName} in the Hardhat Upgrades plugin.`,
-      errors,
+      contractInfo.artifact.contractName,
     );
   } else {
-    await verifyContractWithConstructorArgs(etherscanApi, address, contractInfo.artifact, constructorArguments, errors);
+    await verifyContractWithConstructorArgs(
+      etherscanApi,
+      address,
+      contractInfo.artifact,
+      constructorArguments,
+      errorReport,
+    );
   }
 }
 
@@ -400,7 +511,7 @@ async function verifyContractWithConstructorArgs(
   address: any,
   artifact: ContractArtifact,
   constructorArguments: string,
-  errors: string[],
+  errorReport: ErrorReport,
 ) {
   debug(`verifying contract ${address} with constructor args ${constructorArguments}`);
 
@@ -426,13 +537,13 @@ async function verifyContractWithConstructorArgs(
     if (status.isVerificationSuccess()) {
       console.log(`Successfully verified contract ${artifact.contractName} at ${address}.`);
     } else {
-      recordVerificationError(address, artifact.contractName, status.message, errors);
+      recordVerificationError(address, artifact.contractName, status.message, errorReport);
     }
   } catch (e: any) {
     if (e.message.toLowerCase().includes('already verified')) {
       console.log(`Contract at ${address} already verified.`);
     } else {
-      recordVerificationError(address, artifact.contractName, e.message, errors);
+      recordVerificationError(address, artifact.contractName, e.message, errorReport);
     }
   }
 }
@@ -489,7 +600,7 @@ async function linkProxyWithImplementationAbi(
   etherscanApi: EtherscanAPIConfig,
   proxyAddress: string,
   implAddress: string,
-  errors: string[],
+  errorReport: ErrorReport,
 ) {
   console.log(`Linking proxy ${proxyAddress} with implementation`);
   const params = {
@@ -514,7 +625,10 @@ async function linkProxyWithImplementationAbi(
   if (responseBody.status === RESPONSE_OK) {
     console.log('Successfully linked proxy to implementation.');
   } else {
-    recordError(`Failed to link proxy ${proxyAddress} with its implementation. Reason: ${responseBody.result}`, errors);
+    recordError(
+      `Failed to link proxy ${proxyAddress} with its implementation. Reason: ${responseBody.result}`,
+      errorReport,
+    );
   }
 
   async function delay(ms: number): Promise<void> {
