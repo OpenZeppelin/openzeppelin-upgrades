@@ -126,11 +126,14 @@ test('deployed calls wait for deployment', async t => {
 
   const stub = sinon.stub();
 
+  // just predeploy a contract so that it exists on the network
+  const deployed = await NonUpgradeable.deploy();
+
   const deployContract = proxyquire('../dist/deploy-contract', {
     './platform/deploy': {
       platformDeploy: async () => {
         return {
-          address: ADDR,
+          address: deployed.address,
           txHash: TX_HASH,
           deployTransaction: undefined,
           remoteDeploymentId: 'abc',
@@ -151,7 +154,7 @@ test('deployed calls wait for deployment', async t => {
   }).makeDeployContract(hre, true);
 
   const inst = await deployContract(NonUpgradeable);
-  t.is(inst.address, ADDR);
+  t.is(inst.address, deployed.address);
   await inst.deployed();
 
   t.is(stub.callCount, 1);

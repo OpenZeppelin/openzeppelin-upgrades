@@ -9,7 +9,6 @@ const manifest = require('@openzeppelin/upgrades-core/dist/manifest');
 
 const IMPL_ID = 'abc';
 
-const PROXY_ADDR = '0x1';
 const PROXY_TX_HASH = '0x2';
 const PROXY_ID = 'def';
 
@@ -65,13 +64,15 @@ test('deploy proxy - unsafe', async t => {
 test('deployed calls wait for deployment', async t => {
   const { GreeterProxiable } = t.context;
 
-  // deploy impl since we aren't testing that here
-  await hre.upgrades.deployImplementation(GreeterProxiable);
+  // predeploy a proxy normally for two reasons:
+  // 1. so we have a real address
+  // 2. so it predeploys the implementation since we are assuming the impl is being deployed by Platform
+  const realProxy = await hre.upgrades.deployProxy(GreeterProxiable, ['Hello World']);
 
   // stub proxy deployment
   const deployStub = sinon.stub();
   deployStub.returns({
-    address: PROXY_ADDR,
+    address: realProxy.address,
     txHash: PROXY_TX_HASH,
     deployTransaction: undefined,
     remoteDeploymentId: PROXY_ID,
