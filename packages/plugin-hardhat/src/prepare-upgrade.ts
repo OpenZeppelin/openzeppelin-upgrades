@@ -17,6 +17,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 import { DeployImplementationResponse } from './deploy-implementation';
 import { enablePlatform } from './platform/utils';
+import { DeployedBeaconImpl, DeployedProxyImpl } from './utils/deploy-impl';
 
 export type PrepareUpgradeFunction = (
   proxyOrBeaconAddress: ContractAddressOrInstance,
@@ -28,19 +29,7 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, platformModul
   return async function prepareUpgrade(proxyOrBeacon, ImplFactory, opts: PrepareUpgradeOptions = {}) {
     opts = enablePlatform(hre, platformModule, opts);
 
-    const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
-    const { provider } = hre.network;
-    let deployedImpl;
-    if (await isTransparentOrUUPSProxy(provider, proxyOrBeaconAddress)) {
-      deployedImpl = await deployProxyImpl(hre, ImplFactory, opts, proxyOrBeaconAddress);
-    } else if (await isBeaconProxy(provider, proxyOrBeaconAddress)) {
-      const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
-      deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
-    } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
-      deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, proxyOrBeaconAddress);
-    } else {
-      throw new PrepareUpgradeUnsupportedError(proxyOrBeaconAddress);
-    }
+    const deployedImpl = await deployImplForUpgrade(hre, proxyOrBeacon, ImplFactory, opts);
 
     if (opts.getTxResponse && deployedImpl.txResponse !== undefined) {
       return deployedImpl.txResponse;
@@ -48,4 +37,26 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, platformModul
       return deployedImpl.impl;
     }
   };
+}
+
+export async function deployImplForUpgrade(
+  hre: HardhatRuntimeEnvironment,
+  proxyOrBeacon: ContractAddressOrInstance,
+  ImplFactory: ContractFactory,
+  opts: PrepareUpgradeOptions = {},
+): Promise<DeployedProxyImpl | DeployedBeaconImpl> {
+  const proxyOrBeaconAddress = getContractAddress(proxyOrBeacon);
+  const { provider } = hre.network;
+  let deployedImpl;
+  if (await isTransparentOrUUPSProxy(provider, proxyOrBeaconAddress)) {
+    deployedImpl = await deployProxyImpl(hre, ImplFactory, opts, proxyOrBeaconAddress);
+  } else if (await isBeaconProxy(provider, proxyOrBeaconAddress)) {
+    const beaconAddress = await getBeaconAddress(provider, proxyOrBeaconAddress);
+    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
+  } else if (await isBeacon(provider, proxyOrBeaconAddress)) {
+    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, proxyOrBeaconAddress);
+  } else {
+    throw new PrepareUpgradeUnsupportedError(proxyOrBeaconAddress);
+  }
+  return deployedImpl;
 }

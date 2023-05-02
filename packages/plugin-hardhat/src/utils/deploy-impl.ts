@@ -18,13 +18,13 @@ import { getRemoteDeployment } from '../platform/utils';
 import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { readValidations } from './validations';
 
-interface DeployedProxyImpl {
+export interface DeployedProxyImpl {
   impl: string;
   kind: NonNullable<ValidationOptions['kind']>;
   txResponse?: ethers.providers.TransactionResponse;
 }
 
-interface DeployedBeaconImpl {
+export interface DeployedBeaconImpl {
   impl: string;
   txResponse?: ethers.providers.TransactionResponse;
 }
@@ -123,7 +123,7 @@ async function deployImpl(
     if ('deployTransaction' in deployment) {
       txResponse = deployment.deployTransaction;
     } else if (deployment.txHash !== undefined) {
-      txResponse = hre.ethers.provider.getTransaction(deployment.txHash);
+      txResponse = await hre.ethers.provider.getTransaction(deployment.txHash);
     }
   }
 
