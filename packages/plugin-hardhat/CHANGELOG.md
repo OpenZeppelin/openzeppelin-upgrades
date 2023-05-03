@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.24.0 (2023-05-03)
 
 - Support custom signer for `admin` functions. ([#784](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/784))
 
