@@ -15,6 +15,7 @@ import {
   DeploymentClient,
   DeploymentConfigClient,
   PlatformClient,
+  UpgradeClient,
 } from 'platform-deploy-client';
 
 import { HardhatPlatformConfig } from '../type-extensions';
@@ -98,6 +99,7 @@ interface PlatformClient {
   Deployment: DeploymentClient;
   DeploymentConfig: DeploymentConfigClient;
   BlockExplorerApiKey: BlockExplorerApiKeyClient;
+  Upgrade: UpgradeClient;
 }
 
 export function getPlatformClient(hre: HardhatRuntimeEnvironment): PlatformClient {
