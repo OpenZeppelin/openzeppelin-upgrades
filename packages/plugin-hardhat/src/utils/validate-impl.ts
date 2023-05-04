@@ -11,6 +11,9 @@ import {
 } from '@openzeppelin/upgrades-core';
 import { DeployData } from './deploy-impl';
 
+/**
+ * Processes the proxy kind and returns the implementation address if proxyAddress is provided.
+ */
 async function processProxyImpl(deployData: DeployData, proxyAddress: string | undefined, opts: ValidationOptions) {
   await processProxyKind(deployData.provider, proxyAddress, opts, deployData.validations, deployData.version);
 
@@ -22,6 +25,9 @@ async function processProxyImpl(deployData: DeployData, proxyAddress: string | u
   return currentImplAddress;
 }
 
+/**
+ * Asserts that the address is not a proxy and returns the beacon's implementation address.
+ */
 async function processBeaconImpl(deployData: DeployData, beaconAddress: string) {
   // upgrade scenario
   await assertNotProxy(deployData.provider, beaconAddress);
@@ -44,6 +50,10 @@ export async function validateImpl(
   }
 }
 
+/**
+ * Processes the proxy kind and validates that the implementation in deployData is upgrade safe
+ * (compared to the proxy's current implementation if proxyAddress is specified).
+ */
 export async function validateProxyImpl(
   deployData: DeployData,
   opts: ValidationOptions,
@@ -53,6 +63,10 @@ export async function validateProxyImpl(
   return validateImpl(deployData, opts, currentImplAddress);
 }
 
+/**
+ * Asserts that the address is not a proxy and validates that the implementation in deployData is upgrade safe
+ * compared to the beacon's current implementation.
+ */
 export async function validateBeaconImpl(
   deployData: DeployData,
   opts: ValidationOptions,

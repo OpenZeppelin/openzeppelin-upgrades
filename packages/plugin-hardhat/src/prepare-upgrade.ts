@@ -17,7 +17,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 import { DeployImplementationResponse } from './deploy-implementation';
 import { enablePlatform } from './platform/utils';
-import { deployUpgradeableImpl, DeployedBeaconImpl, DeployedProxyImpl } from './utils/deploy-impl';
+import { deployUpgradeableImpl, DeployedImpl } from './utils/deploy-impl';
 
 export type PrepareUpgradeFunction = (
   referenceAddressOrContract: ContractAddressOrInstance,
@@ -44,7 +44,7 @@ export async function deployImplForUpgrade(
   referenceAddressOrContract: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
   opts: PrepareUpgradeOptions = {},
-): Promise<DeployedProxyImpl | DeployedBeaconImpl> {
+): Promise<DeployedImpl> {
   const referenceAddress = getContractAddress(referenceAddressOrContract);
   const { provider } = hre.network;
   let deployedImpl;

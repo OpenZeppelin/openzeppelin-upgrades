@@ -18,15 +18,13 @@ import { getRemoteDeployment } from '../platform/utils';
 import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { readValidations } from './validations';
 
-export interface DeployedProxyImpl {
+export interface DeployedImpl {
   impl: string;
-  kind: NonNullable<ValidationOptions['kind']>;
   txResponse?: ethers.providers.TransactionResponse;
 }
 
-export interface DeployedBeaconImpl {
-  impl: string;
-  txResponse?: ethers.providers.TransactionResponse;
+export interface DeployedProxyImpl extends DeployedImpl {
+  kind: NonNullable<ValidationOptions['kind']>;
 }
 
 export interface DeployData {
@@ -59,7 +57,7 @@ export async function deployUpgradeableImpl(
   ImplFactory: ContractFactory,
   opts: StandaloneOptions,
   currentImplAddress?: string,
-): Promise<DeployedProxyImpl> {
+): Promise<DeployedImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateImpl(deployData, opts, currentImplAddress);
   return await deployImpl(hre, deployData, ImplFactory, opts);
@@ -73,7 +71,13 @@ export async function deployProxyImpl(
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateProxyImpl(deployData, opts, proxyAddress);
-  return await deployImpl(hre, deployData, ImplFactory, opts);
+  if (opts.kind === undefined) {
+    throw new Error('Broken invariant: Proxy kind is undefined');
+  }
+  return {
+    ...(await deployImpl(hre, deployData, ImplFactory, opts)),
+    kind: opts.kind,
+  };
 }
 
 export async function deployBeaconImpl(
@@ -81,7 +85,7 @@ export async function deployBeaconImpl(
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
   beaconAddress?: string,
-): Promise<DeployedBeaconImpl> {
+): Promise<DeployedImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateBeaconImpl(deployData, opts, beaconAddress);
   return await deployImpl(hre, deployData, ImplFactory, opts);
@@ -92,7 +96,7 @@ async function deployImpl(
   deployData: DeployData,
   ImplFactory: ContractFactory,
   opts: UpgradeOptions & GetTxResponse & PlatformSupportedOptions,
-): Promise<any> {
+): Promise<DeployedImpl> {
   const layout = deployData.layout;
 
   const deployment = await fetchOrDeployGetDeployment(
@@ -128,5 +132,5 @@ async function deployImpl(
     }
   }
 
-  return { impl: deployment.address, kind: opts.kind, txResponse };
+  return { impl: deployment.address, txResponse };
 }
