@@ -16,7 +16,8 @@ import {
   PrepareUpgradeRequiresKindError,
 } from '@openzeppelin/upgrades-core';
 import { DeployImplementationResponse } from './deploy-implementation';
-import { deployUpgradeableImpl } from './utils/deploy-impl';
+import { enablePlatform } from './platform/utils';
+import { deployUpgradeableImpl, DeployedImpl } from './utils/deploy-impl';
 
 export type PrepareUpgradeFunction = (
   referenceAddressOrContract: ContractAddressOrInstance,
@@ -24,24 +25,11 @@ export type PrepareUpgradeFunction = (
   opts?: PrepareUpgradeOptions,
 ) => Promise<DeployImplementationResponse>;
 
-export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgradeFunction {
+export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, platformModule: boolean): PrepareUpgradeFunction {
   return async function prepareUpgrade(referenceAddressOrContract, ImplFactory, opts: PrepareUpgradeOptions = {}) {
-    const referenceAddress = getContractAddress(referenceAddressOrContract);
-    const { provider } = hre.network;
-    let deployedImpl;
-    if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
-      deployedImpl = await deployProxyImpl(hre, ImplFactory, opts, referenceAddress);
-    } else if (await isBeaconProxy(provider, referenceAddress)) {
-      const beaconAddress = await getBeaconAddress(provider, referenceAddress);
-      deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
-    } else if (await isBeacon(provider, referenceAddress)) {
-      deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, referenceAddress);
-    } else {
-      if (opts.kind === undefined) {
-        throw new PrepareUpgradeRequiresKindError();
-      }
-      deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts, referenceAddress);
-    }
+    opts = enablePlatform(hre, platformModule, opts);
+
+    const deployedImpl = await deployImplForUpgrade(hre, referenceAddressOrContract, ImplFactory, opts);
 
     if (opts.getTxResponse && deployedImpl.txResponse !== undefined) {
       return deployedImpl.txResponse;
@@ -49,4 +37,29 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment): PrepareUpgra
       return deployedImpl.impl;
     }
   };
+}
+
+export async function deployImplForUpgrade(
+  hre: HardhatRuntimeEnvironment,
+  referenceAddressOrContract: ContractAddressOrInstance,
+  ImplFactory: ContractFactory,
+  opts: PrepareUpgradeOptions = {},
+): Promise<DeployedImpl> {
+  const referenceAddress = getContractAddress(referenceAddressOrContract);
+  const { provider } = hre.network;
+  let deployedImpl;
+  if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
+    deployedImpl = await deployProxyImpl(hre, ImplFactory, opts, referenceAddress);
+  } else if (await isBeaconProxy(provider, referenceAddress)) {
+    const beaconAddress = await getBeaconAddress(provider, referenceAddress);
+    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
+  } else if (await isBeacon(provider, referenceAddress)) {
+    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, referenceAddress);
+  } else {
+    if (opts.kind === undefined) {
+      throw new PrepareUpgradeRequiresKindError();
+    }
+    deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts, referenceAddress);
+  }
+  return deployedImpl;
 }

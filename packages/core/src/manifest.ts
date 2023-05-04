@@ -5,7 +5,7 @@ import { EthereumProvider, getChainId, getHardhatMetadata, networkNames } from '
 import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
 
-import type { Deployment } from './deployment';
+import type { Deployment, RemoteDeploymentId } from './deployment';
 import type { StorageLayout } from './storage';
 import { pick } from './utils/pick';
 import { mapValues } from './utils/map-values';
@@ -18,9 +18,9 @@ const currentManifestVersion = '3.2';
 export interface ManifestData {
   manifestVersion: string;
   impls: {
-    [version in string]?: ImplDeployment;
+    [version in string]?: ImplDeployment & RemoteDeploymentId;
   };
-  proxies: ProxyDeployment[];
+  proxies: (ProxyDeployment & RemoteDeploymentId)[];
   admin?: Deployment;
 }
 
@@ -318,11 +318,14 @@ export function normalizeManifestData(input: ManifestData): ManifestData {
   };
 }
 
-function normalizeDeployment<D extends Deployment>(input: D): Deployment;
-function normalizeDeployment<D extends Deployment, K extends keyof D>(input: D, include: K[]): Deployment & Pick<D, K>;
-function normalizeDeployment<D extends Deployment, K extends keyof D>(
+function normalizeDeployment<D extends Deployment & RemoteDeploymentId>(input: D): Deployment & RemoteDeploymentId;
+function normalizeDeployment<D extends Deployment & RemoteDeploymentId, K extends keyof D>(
+  input: D,
+  include: K[],
+): Deployment & RemoteDeploymentId & Pick<D, K>;
+function normalizeDeployment<D extends Deployment & RemoteDeploymentId, K extends keyof D>(
   input: D,
   include: K[] = [],
-): Deployment & Pick<D, K> {
-  return pick(input, ['address', 'txHash', ...include]);
+): Deployment & RemoteDeploymentId & Pick<D, K> {
+  return pick(input, ['address', 'txHash', 'remoteDeploymentId', ...include]);
 }

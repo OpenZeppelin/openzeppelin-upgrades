@@ -434,6 +434,7 @@ test('normalize manifest', t => {
   const deployment = {
     address: '0x1234',
     txHash: '0x1234',
+    remoteDeploymentId: 'abc',
     kind: 'uups' as const,
     layout: { solcVersion: '0.8.9', types: {}, storage: [] },
     deployTransaction: {},
