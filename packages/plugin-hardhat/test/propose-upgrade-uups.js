@@ -11,6 +11,8 @@ const proxyAdmin = '0xc0889725c22e2e36c524F41AECfddF5650432464';
 const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
 
+const approvalProcessId = '123';
+
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
 
@@ -77,6 +79,23 @@ test('proposes an upgrade', async t => {
     newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
     network: 'goerli',
+    approvalProcessId: undefined,
+  });
+});
+
+test('proposes an upgrade with approvalProcessId', async t => {
+  const { proposeUpgrade, spy, greeter, GreeterV2 } = t.context;
+
+  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { proxyAdmin, approvalProcessId });
+
+  t.is(proposal.url, proposalUrl);
+  sinon.assert.calledWithExactly(spy, {
+    proxyAddress: greeter.address,
+    proxyAdminAddress: proxyAdmin,
+    newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
+    newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
+    network: 'goerli',
+    approvalProcessId,
   });
 });
 
@@ -93,6 +112,7 @@ test('proposes an upgrade reusing prepared implementation', async t => {
     newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
     newImplementationAddress: greeterV2Impl,
     network: 'goerli',
+    approvalProcessId: undefined,
   });
 });
 
