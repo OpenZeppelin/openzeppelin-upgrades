@@ -69,5 +69,6 @@ test('proposes an upgrade using deployed implementation', async t => {
     newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
     newImplementationAddress: greeterV2Impl,
     network: 'goerli',
+    approvalProcessId: undefined,
   });
 });

@@ -27,6 +27,7 @@ export type ProposeUpgradeFunction = (
 
 export interface ProposalOptions extends UpgradeOptions, PlatformSupportedOptions {
   proxyAdmin?: string;
+  approvalProcessId?: string;
 }
 
 export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModule: boolean): ProposeUpgradeFunction {
@@ -74,6 +75,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
       newImplementationABI: JSON.stringify(abi),
       newImplementationAddress: newImplementation,
       network: network,
+      approvalProcessId: opts.approvalProcessId,
     });
 
     return {

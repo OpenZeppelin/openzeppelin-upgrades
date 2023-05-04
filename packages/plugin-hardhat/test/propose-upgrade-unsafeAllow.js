@@ -58,5 +58,6 @@ test('proposes an upgrade', async t => {
     newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
     network: 'goerli',
+    approvalProcessId: undefined,
   });
 });
