@@ -77,6 +77,7 @@ export async function platformDeploy(
     licenseType: getLicenseFromMetadata(contractInfo),
     constructorInputs: constructorArgs,
     verifySourceCode: verifySourceCode,
+    relayerId: opts.walletId,
   });
 
   const txResponse = await hre.ethers.provider.getTransaction(deploymentResponse.txHash);
