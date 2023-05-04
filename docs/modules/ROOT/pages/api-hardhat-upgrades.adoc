@@ -450,19 +450,30 @@ async function proposeUpgrade(
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
-    title?: string,
-    description?: string,
-    multisig?: string,
     proxyAdmin?: string,
     platform?: boolean,
   },
 ): Promise<{
+    proposalId: string,
     url: string,
     txResponse?: ethers.providers.TransactionResponse,
   }>
 ----
 
-Similar to <<defender-propose-upgrade>> but supports deploying the new implementation contract using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform].
+Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal through the OpenZeppelin Platform, for review and approval by the upgrade administrators. Supported for UUPS or Transparent proxies. Not currently supported for beacon proxies or beacons. For beacons, use `prepareUpgrade` along with a transaction proposal on Platform to upgrade the beacon to the deployed implementation.
+
+*Parameters:*
+
+* `proxyAddress` - the proxy address.
+* `ImplFactory` - the new implementation contract.
+* `opts` - an object with options:
+** `proxyAdmin`: address of the https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[`ProxyAdmin`] contract or multisignature wallet contract with the rights to execute the upgrade. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]). Both Gnosis Safe and Gnosis MultisigWallet multisigs are supported.
+** additional options as described in <<common-options>>.
+
+*Returns:*
+
+* an object with the Platform proposal ID, the URL of the proposal in Safe App if applicable, and the ethers transaction response corresponding to the deployment of the new implementation contract. Note that if the new implementation contract was originally imported as a result of `forceImport`, the ethers transaction response will be undefined.
+
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
