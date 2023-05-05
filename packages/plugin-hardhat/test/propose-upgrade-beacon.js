@@ -49,7 +49,7 @@ test('block proposing an upgrade on beacon proxy', async t => {
   const { proposeUpgrade, greeter, GreeterV2 } = t.context;
 
   await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), {
-    message: 'Beacon proxy is not currently supported with proposeUpgrade()',
+    message: 'Beacon proxy is not currently supported with platform.proposeUpgrade()',
   });
 });
 
@@ -76,7 +76,7 @@ test('block proposing an upgrade reusing prepared implementation on beacon proxy
 
   await upgrades.prepareUpgrade(greeter.address, GreeterV2);
   await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), {
-    message: 'Beacon proxy is not currently supported with proposeUpgrade()',
+    message: 'Beacon proxy is not currently supported with platform.proposeUpgrade()',
   });
 });
 
