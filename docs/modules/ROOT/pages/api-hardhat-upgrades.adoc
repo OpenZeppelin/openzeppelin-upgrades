@@ -451,7 +451,6 @@ async function proposeUpgrade(
     useDeployedImplementation?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
     usePlatformDeploy?: boolean,
-    proxyAdmin?: string,
     approvalProcessId?: string,
   },
 ): Promise<{
@@ -470,7 +469,6 @@ Similar to `prepareUpgrade`. This method validates and deploys the new implement
 * `proxyAddress` - the proxy address.
 * `ImplFactory` - the new implementation contract.
 * `opts` - an object with options:
-** `proxyAdmin`: address of the https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[`ProxyAdmin`] contract or the multisignature wallet contract with the rights to execute the upgrade. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]). Both Gnosis Safe and Gnosis MultisigWallet multisigs are supported.
 ** `approvalProcessId`: The ID of the upgrade approval process. Defaults to the upgrade approval process configured for your deployment environment on Platform.
 ** additional options as described in <<common-options>>.
 
@@ -497,7 +495,7 @@ Gets the default upgrade approval process configured for your deployment environ
 
 *Returns:*
 
-* an object with the default upgrade approval process ID and the associated address.
+* an object with the default upgrade approval process ID and the associated address, such as a multisig or governor contract address.
 
 *Since:*
 

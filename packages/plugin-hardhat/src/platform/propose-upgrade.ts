@@ -4,7 +4,6 @@ import {
   getImplementationAddress,
   isBeaconProxy,
   isTransparentProxy,
-  isUUPSProxy,
 } from '@openzeppelin/upgrades-core';
 import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
@@ -26,7 +25,6 @@ export type ProposeUpgradeFunction = (
 ) => Promise<UpgradeProposalResponse>;
 
 export interface ProposalOptions extends UpgradeOptions, PlatformDeployOptions {
-  proxyAdmin?: string;
   approvalProcessId?: string;
 }
 
@@ -37,22 +35,17 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
     const client = getPlatformClient(hre);
     const network = await getNetwork(hre);
 
-    let { proxyAdmin } = opts;
-
     if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
       throw new Error(`Beacon proxy is not currently supported with proposeUpgrade()`);
-    } else if (!proxyAdmin && (await isUUPSProxy(hre.network.provider, proxyAddress))) {
-      throw new Error(`proxyAdmin address is a required property for UUPS proxies`);
-    } else if (!proxyAdmin && (await isTransparentProxy(hre.network.provider, proxyAddress))) {
-      // use the erc1967 admin address as the proxy admin
-      proxyAdmin = await getAdminAddress(hre.network.provider, proxyAddress);
     } else {
       // try getting the implementation address so that it will give an error if it's not a transparent/uups proxy
       await getImplementationAddress(hre.network.provider, proxyAddress);
     }
 
-    if (proxyAdmin === undefined) {
-      throw new Error(`Broken invariant: proxyAdmin should not be undefined`);
+    let proxyAdmin = undefined;
+    if (await isTransparentProxy(hre.network.provider, proxyAddress)) {
+      // use the erc1967 admin address as the proxy admin
+      proxyAdmin = await getAdminAddress(hre.network.provider, proxyAddress);
     }
 
     const implFactory =
