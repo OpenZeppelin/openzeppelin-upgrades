@@ -433,8 +433,8 @@ Validates and deploys a new implementation contract, and returns its address. If
 
 * the address or an ethers transaction response corresponding to the deployment of the new implementation contract.
 
-[[propose-upgrade]]
-== proposeUpgrade
+[[platform-propose-upgrade]]
+== platform.proposeUpgrade
 
 [source,ts]
 ----
