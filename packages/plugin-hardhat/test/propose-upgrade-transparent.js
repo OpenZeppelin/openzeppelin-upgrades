@@ -79,23 +79,6 @@ test('proposes an upgrade with approvalProcessId', async t => {
   });
 });
 
-test('proposes an upgrade using custom proxyAdmin', async t => {
-  const { proposeUpgrade, spy, greeter, GreeterV2 } = t.context;
-
-  const customProxyAdmin = '0xabc';
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { proxyAdmin: customProxyAdmin });
-
-  t.is(proposal.url, proposalUrl);
-  sinon.assert.calledWithExactly(spy, {
-    proxyAddress: greeter.address,
-    proxyAdminAddress: customProxyAdmin,
-    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
-    newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
-    network: 'goerli',
-    approvalProcessId: undefined,
-  });
-});
-
 test('proposes an upgrade reusing prepared implementation', async t => {
   const { proposeUpgrade, spy, proxyAdmin, greeter, GreeterV2 } = t.context;
 

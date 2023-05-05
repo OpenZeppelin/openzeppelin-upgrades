@@ -27,10 +27,6 @@ export async function isTransparentProxy(provider: EthereumProvider, address: st
   return !isEmptySlot(adminAddress);
 }
 
-export async function isUUPSProxy(provider: EthereumProvider, address: string): Promise<boolean> {
-  return (await isTransparentOrUUPSProxy(provider, address)) && !(await isTransparentProxy(provider, address));
-}
-
 export async function isBeaconProxy(provider: EthereumProvider, address: string): Promise<boolean> {
   try {
     await getBeaconAddress(provider, address);
