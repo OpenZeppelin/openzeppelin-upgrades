@@ -36,7 +36,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
     const network = await getNetwork(hre);
 
     if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
-      throw new Error(`Beacon proxy is not currently supported with proposeUpgrade()`);
+      throw new Error(`Beacon proxy is not currently supported with platform.proposeUpgrade()`);
     } else {
       // try getting the implementation address so that it will give an error if it's not a transparent/uups proxy
       await getImplementationAddress(hre.network.provider, proxyAddress);
