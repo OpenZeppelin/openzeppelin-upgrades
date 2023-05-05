@@ -73,6 +73,7 @@ test('proposes an upgrade', async t => {
   const proposal = await proposeUpgrade(greeter.address, GreeterV2, { proxyAdmin });
 
   t.is(proposal.url, proposalUrl);
+  t.is(proposal.proposalId, proposalId);
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: greeter.address,
     proxyAdminAddress: proxyAdmin,
