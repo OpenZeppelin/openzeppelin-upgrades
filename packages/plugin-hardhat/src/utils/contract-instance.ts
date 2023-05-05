@@ -29,7 +29,7 @@ export function getContractInstance(
   // @ts-ignore Won't be readonly because instance was created through attach.
   instance.deployTransaction = deployment.deployTransaction;
 
-  if (opts.platform && deployment.remoteDeploymentId !== undefined) {
+  if (opts.usePlatformDeploy && deployment.remoteDeploymentId !== undefined) {
     const origDeployed = instance.deployed.bind(instance);
     instance.deployed = async () => {
       assert(deployment.remoteDeploymentId !== undefined);

@@ -13,7 +13,7 @@ import type { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
-import { GetTxResponse, PlatformSupportedOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
+import { GetTxResponse, PlatformDeployOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
 import { getRemoteDeployment } from '../platform/utils';
 import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { readValidations } from './validations';
@@ -95,7 +95,7 @@ async function deployImpl(
   hre: HardhatRuntimeEnvironment,
   deployData: DeployData,
   ImplFactory: ContractFactory,
-  opts: UpgradeOptions & GetTxResponse & PlatformSupportedOptions,
+  opts: UpgradeOptions & GetTxResponse & PlatformDeployOptions,
 ): Promise<DeployedImpl> {
   const layout = deployData.layout;
 

@@ -9,7 +9,7 @@ import {
 import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { PlatformSupportedOptions, UpgradeOptions } from '../utils';
+import { PlatformDeployOptions, UpgradeOptions } from '../utils';
 import { getNetwork, enablePlatform, getPlatformClient } from './utils';
 import { deployImplForUpgrade } from '../prepare-upgrade';
 
@@ -25,7 +25,7 @@ export type ProposeUpgradeFunction = (
   opts?: ProposalOptions,
 ) => Promise<UpgradeProposalResponse>;
 
-export interface ProposalOptions extends UpgradeOptions, PlatformSupportedOptions {
+export interface ProposalOptions extends UpgradeOptions, PlatformDeployOptions {
   proxyAdmin?: string;
   approvalProcessId?: string;
 }

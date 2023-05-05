@@ -20,7 +20,7 @@ import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
 import { getNetwork, getPlatformClient } from './utils';
-import { DeployTransaction, PlatformSupportedOptions, UpgradeOptions } from '../utils';
+import { DeployTransaction, PlatformDeployOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
@@ -57,7 +57,7 @@ type CompilerOutputWithMetadata = CompilerOutputContract & {
 export async function platformDeploy(
   hre: HardhatRuntimeEnvironment,
   factory: ContractFactory,
-  opts: UpgradeOptions & PlatformSupportedOptions,
+  opts: UpgradeOptions & PlatformDeployOptions,
   ...args: unknown[]
 ): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
   const client = getPlatformClient(hre);
