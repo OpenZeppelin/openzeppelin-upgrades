@@ -66,7 +66,7 @@ test('proposes an upgrade using deployed implementation', async t => {
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: greeter.address,
     proxyAdminAddress: proxyAdmin,
-    newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
+    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
     newImplementationAddress: greeterV2Impl,
     network: 'goerli',
     approvalProcessId: undefined,

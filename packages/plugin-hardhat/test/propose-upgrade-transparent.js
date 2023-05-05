@@ -55,7 +55,7 @@ test('proposes an upgrade', async t => {
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: greeter.address,
     proxyAdminAddress: proxyAdmin,
-    newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
+    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
     network: 'goerli',
     approvalProcessId: undefined,
@@ -71,7 +71,7 @@ test('proposes an upgrade with approvalProcessId', async t => {
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: greeter.address,
     proxyAdminAddress: proxyAdmin,
-    newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
+    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
     network: 'goerli',
     approvalProcessId,
@@ -88,7 +88,7 @@ test('proposes an upgrade using custom proxyAdmin', async t => {
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: greeter.address,
     proxyAdminAddress: customProxyAdmin,
-    newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
+    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
     network: 'goerli',
     approvalProcessId: undefined,
@@ -105,7 +105,7 @@ test('proposes an upgrade reusing prepared implementation', async t => {
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: greeter.address,
     proxyAdminAddress: proxyAdmin,
-    newImplementationABI: JSON.stringify(GreeterV2.interface.format(FormatTypes.json)),
+    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
     newImplementationAddress: greeterV2Impl,
     network: 'goerli',
     approvalProcessId: undefined,
