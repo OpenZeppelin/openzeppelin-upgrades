@@ -520,6 +520,24 @@ Similar to `prepareUpgrade`. This method validates and deploys the new implement
 
 * `@openzeppelin/hardhat-upgrades@1.25.0`
 
+[[platform-get-default-approval-process]]
+== platform.getDefaultApprovalProcess
+
+[source,ts]
+----
+async function getDefaultApprovalProcess(): Promise<{
+  approvalProcessId: string,
+  address?: string,
+}>
+----
+
+Gets the default upgrade approval process configured for your deployment environment on Platform. For example, this is useful for determining the default multisig wallet that you can use in your scripts to assign as the owner of your proxy.
+
+*Returns:*
+
+* an object with the default upgrade approval process ID and the associated address.
+
+
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
 
