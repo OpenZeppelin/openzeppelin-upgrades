@@ -72,7 +72,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
     const upgradeProposalResponse = await client.Upgrade.upgrade({
       proxyAddress: proxyAddress,
       proxyAdminAddress: proxyAdmin,
-      newImplementationABI: JSON.stringify(abi),
+      newImplementationABI: abi,
       newImplementationAddress: newImplementation,
       network: network,
       approvalProcessId: opts.approvalProcessId,
