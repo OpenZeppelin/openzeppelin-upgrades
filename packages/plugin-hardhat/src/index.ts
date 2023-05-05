@@ -21,6 +21,10 @@ import type { DeployImplementationFunction } from './deploy-implementation';
 import { DeployAdminFunction, makeDeployProxyAdmin } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
 import type { ProposeUpgradeFunction } from './platform/propose-upgrade';
+import {
+  GetDefaultApprovalProcessFunction,
+  makeGetDefaultApprovalProcess,
+} from './platform/get-default-approval-process';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -53,6 +57,7 @@ export interface HardhatUpgrades {
 
 export interface Platform extends HardhatUpgrades {
   deployContract: DeployContractFunction;
+  getDefaultApprovalProcess: GetDefaultApprovalProcessFunction;
 }
 
 interface RunCompilerArgs {
@@ -183,6 +188,7 @@ function makePlatformFunctions(hre: HardhatRuntimeEnvironment): Platform {
   return {
     ...makeFunctions(hre, true),
     deployContract: makeDeployContract(hre, true),
+    getDefaultApprovalProcess: makeGetDefaultApprovalProcess(hre),
   };
 }
 

@@ -477,6 +477,24 @@ Similar to `prepareUpgrade`. This method validates and deploys the new implement
 * an object with the Platform proposal ID, the URL of the proposal in Safe App if applicable, and the ethers transaction response corresponding to the deployment of the new implementation contract. Note that if the new implementation contract was originally imported as a result of `forceImport`, the ethers transaction response will be undefined.
 
 
+[[platform-get-default-approval-process]]
+== platform.getDefaultApprovalProcess
+
+[source,ts]
+----
+async function getDefaultApprovalProcess(): Promise<{
+  approvalProcessId: string,
+  address?: string,
+}>
+----
+
+Gets the default upgrade approval process configured for your deployment environment on Platform. For example, this is useful for determining the default multisig wallet that you can use in your scripts to assign as the owner of your proxy.
+
+*Returns:*
+
+* an object with the default upgrade approval process ID and the associated address.
+
+
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
 
