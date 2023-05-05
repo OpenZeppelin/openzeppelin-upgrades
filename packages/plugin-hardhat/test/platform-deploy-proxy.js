@@ -21,7 +21,7 @@ test.beforeEach(async t => {
   t.context.deployProxy = proxyquire('../dist/deploy-proxy', {
     './utils/deploy': {
       deploy: async (hre, opts, factory, ...args) => {
-        opts.platform = false;
+        opts.usePlatformDeploy = false;
         return {
           // just do regular deploy but add a deployment id
           ...(await require('../dist/utils/deploy').deploy(hre, opts, factory, ...args)),
@@ -91,7 +91,7 @@ test('deployed calls wait for deployment', async t => {
       enablePlatform: (hre, platformModule, opts) => {
         return {
           ...opts,
-          platform: true,
+          usePlatformDeploy: true,
         };
       },
       '@global': true,

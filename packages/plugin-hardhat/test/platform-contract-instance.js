@@ -37,7 +37,7 @@ test('get contract instance - tx hash not updated', async t => {
     },
   }).getContractInstance;
 
-  const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { platform: true }, deployment);
+  const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { usePlatformDeploy: true }, deployment);
   await stubbedInstance.deployed();
 
   t.is(waitStub.callCount, 1);
@@ -72,7 +72,7 @@ test('get contract instance - tx hash updated', async t => {
     },
   }).getContractInstance;
 
-  const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { platform: true }, deployment);
+  const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { usePlatformDeploy: true }, deployment);
 
   // assert the tx hash not updated yet
   t.not(stubbedInstance.deployTransaction.hash, undefined);

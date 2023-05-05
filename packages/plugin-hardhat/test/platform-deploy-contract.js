@@ -43,8 +43,8 @@ test('deploy contract', async t => {
 
 test('deploy contract - platform false', async t => {
   const { deployContract, NonUpgradeable } = t.context;
-  const error = await t.throwsAsync(() => deployContract(NonUpgradeable, { platform: false }));
-  t.regex(error.message, /The deployContract function can only be used with the `platform` module or option/);
+  const error = await t.throwsAsync(() => deployContract(NonUpgradeable, { usePlatformDeploy: false }));
+  t.regex(error.message, /The deployContract function cannot have the `usePlatformDeploy` option disabled./);
 });
 
 test('deploy contract - constructor', async t => {
@@ -146,7 +146,7 @@ test('deployed calls wait for deployment', async t => {
       enablePlatform: (hre, platformModule, opts) => {
         return {
           ...opts,
-          platform: true,
+          usePlatformDeploy: true,
         };
       },
       '@global': true,
