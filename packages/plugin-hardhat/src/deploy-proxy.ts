@@ -1,5 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract } from 'ethers';
+import type { ContractFactory } from 'ethers';
 
 import { Manifest, logWarning, ProxyDeployment, BeaconProxyUnsupportedError } from '@openzeppelin/upgrades-core';
 
@@ -13,17 +13,21 @@ import {
   getInitializerData,
 } from './utils';
 
+type ContractTypeOfFactory<F extends ContractFactory> = ReturnType<F['attach']>;
+
 export interface DeployFunction {
-  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployProxyOptions): Promise<Contract>;
-  (ImplFactory: ContractFactory, opts?: DeployProxyOptions): Promise<Contract>;
+  <F extends ContractFactory>(ImplFactory: F, args?: unknown[], opts?: DeployProxyOptions): Promise<
+    ContractTypeOfFactory<F>
+  >;
+  <F extends ContractFactory>(ImplFactory: F, opts?: DeployProxyOptions): Promise<ContractTypeOfFactory<F>>;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction {
-  return async function deployProxy(
-    ImplFactory: ContractFactory,
+  return async function deployProxy<F extends ContractFactory>(
+    ImplFactory: F,
     args: unknown[] | DeployProxyOptions = [],
     opts: DeployProxyOptions = {},
-  ) {
+  ): Promise<ContractTypeOfFactory<F>> {
     if (!Array.isArray(args)) {
       opts = args;
       args = [];
@@ -70,7 +74,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment): DeployFunction 
 
     await manifest.addProxy(proxyDeployment);
 
-    const inst = ImplFactory.attach(proxyDeployment.address);
+    const inst = ImplFactory.attach(proxyDeployment.address) as ContractTypeOfFactory<F>;
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = proxyDeployment.deployTransaction;
     return inst;
