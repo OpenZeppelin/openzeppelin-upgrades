@@ -33,7 +33,7 @@
     "@openzeppelin/contracts-upgradeable": "4.1.0"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^1.25.0",
+    "@openzeppelin/upgrades-core": "^1.26.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
     "platform-deploy-client": "^0.3.2",
