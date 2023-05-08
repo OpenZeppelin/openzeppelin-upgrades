@@ -22,7 +22,7 @@ The following options are common to some functions.
 * `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `60000`. Use `0` to wait indefinitely. 
 * `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `5000`.
 * `useDeployedImplementation`: (`boolean`) Require the use of an existing deployed implementation. If this is set to `true` and the implementation contract was not previously deployed or is not found in the network file, an error will be thrown instead of deploying the implementation.
-* `platform`: Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform].
+* `platform`: Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform]. **Note**: OpenZeppelin Platform is in beta and functionality related to Platform is subject to change.
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -307,42 +307,6 @@ Validates and deploys an implementation contract, and returns its address.
 
 * `@openzeppelin/hardhat-upgrades@1.20.0`
 
-[[deploy-contract]]
-== deployContract
-
-[source,ts]
-----
-async function deployContract(
-  Contract: ethers.ContractFactory,
-  args: unknown[] = [],
-  opts?: {
-    unsafeAllowDeployContract?: boolean,
-    pollingInterval?: number,
-    platform?: boolean,
-  },
-): Promise<ethers.Contract>
-----
-
-Deploys a non-upgradeable contract using the OpenZeppelin Platform, and returns a contract instance. Throws an error if the contract looks like an implementation contract.
-
-CAUTION: Do not use this function to deploy implementations of upgradeable contracts, because upgrade safety validations are not performed with this function. For implementation contracts, use <<deploy-implementation>> instead.
-
-*Parameters:*
-
-* `Contract` - an ethers contract factory to use as the contract to deploy.
-* `opts` - an object with options:
-** `unsafeAllowDeployContract`: if set to `true`, allows the contract to be deployed even if it looks like an implementation contract. Defaults to `false`.
-** `pollingInterval`: polling interval in milliseconds between checks for the transaction confirmation when calling `.deployed()` on the resulting contract instance. Defaults to `5000`.
-** `platform`: to use this function, you must enable OpenZeppelin Platform deployments using any of the ways described in xref:platform-deploy.adoc[Using with OpenZeppelin Platform] in order to set this to `true`. This function does not support `false`.
-
-*Returns:*
-
-* the contract instance.
-
-*Since:*
-
-* `@openzeppelin/hardhat-upgrades@1.23.0`
-
 [[validate-upgrade]]
 == validateUpgrade
 
@@ -431,8 +395,46 @@ Validates and deploys a new implementation contract, and returns its address. If
 
 * the address or an ethers transaction response corresponding to the deployment of the new implementation contract.
 
-[[propose-upgrade]]
-== proposeUpgrade
+[[platform-deploy-contract]]
+== platform.deployContract
+
+[source,ts]
+----
+async function deployContract(
+  Contract: ethers.ContractFactory,
+  args: unknown[] = [],
+  opts?: {
+    unsafeAllowDeployContract?: boolean,
+    pollingInterval?: number,
+    platform?: boolean,
+  },
+): Promise<ethers.Contract>
+----
+
+**Note**: OpenZeppelin Platform is in beta and this function is subject to change.
+
+Deploys a non-upgradeable contract using the OpenZeppelin Platform, and returns a contract instance. Throws an error if the contract looks like an implementation contract.
+
+CAUTION: Do not use this function to deploy implementations of upgradeable contracts, because upgrade safety validations are not performed with this function. For implementation contracts, use <<deploy-implementation>> instead.
+
+*Parameters:*
+
+* `Contract` - an ethers contract factory to use as the contract to deploy.
+* `opts` - an object with options:
+** `unsafeAllowDeployContract`: if set to `true`, allows the contract to be deployed even if it looks like an implementation contract. Defaults to `false`.
+** `pollingInterval`: polling interval in milliseconds between checks for the transaction confirmation when calling `.deployed()` on the resulting contract instance. Defaults to `5000`.
+** `platform`: to use this function, you must enable OpenZeppelin Platform deployments using any of the ways described in xref:platform-deploy.adoc[Using with OpenZeppelin Platform] in order to set this to `true`. This function does not support `false`.
+
+*Returns:*
+
+* the contract instance.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.25.0`
+
+[[platform-propose-upgrade]]
+== platform.proposeUpgrade
 
 [source,ts]
 ----
@@ -460,7 +462,13 @@ async function proposeUpgrade(
   }>
 ----
 
+**Note**: OpenZeppelin Platform is in beta and this function is subject to change.
+
 Similar to <<defender-propose-upgrade>> but supports deploying the new implementation contract using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform].
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.25.0`
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade

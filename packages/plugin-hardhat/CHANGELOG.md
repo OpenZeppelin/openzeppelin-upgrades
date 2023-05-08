@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Enable using OpenZeppelin Platform for deployments. ([#763](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/763))
+
+**Note**: OpenZeppelin Platform is currently in beta and functionality related to it is subject to change.
+
+
 ## 1.23.1 (2023-04-26)
 
 - Enable `verify` to fall back to hardhat-etherscan if proxy bytecode does not match. ([#752](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/752))
