@@ -2,6 +2,8 @@
 
 The Hardhat Upgrades package can use the https://docs.openzeppelin.com/platform/beta/product/deploy[OpenZeppelin Platform for deployments] instead of ethers.js, which allows for features such as gas pricing estimation, resubmissions, and automated bytecode and source code verification.
 
+**Note**: OpenZeppelin Platform is in beta and the functionality described here is subject to change.
+
 [[configuration]]
 == Configuration
 
