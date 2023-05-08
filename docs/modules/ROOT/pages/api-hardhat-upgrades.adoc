@@ -492,6 +492,8 @@ async function getDefaultApprovalProcess(
   }>
 ----
 
+**Note**: OpenZeppelin Platform is in beta and this function is subject to change.
+
 Gets the default upgrade approval process configured for your deployment environment on Platform. For example, this is useful for determining the default multisig wallet that you can use in your scripts to assign as the owner of your proxy.
 
 *Returns:*
