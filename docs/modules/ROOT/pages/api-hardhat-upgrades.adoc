@@ -309,41 +309,6 @@ Validates and deploys an implementation contract, and returns its address.
 
 * `@openzeppelin/hardhat-upgrades@1.20.0`
 
-[[platform-deploy-contract]]
-== platform.deployContract
-
-[source,ts]
-----
-async function deployContract(
-  Contract: ethers.ContractFactory,
-  args: unknown[] = [],
-  opts?: {
-    unsafeAllowDeployContract?: boolean,
-    pollingInterval?: number,
-  },
-): Promise<ethers.Contract>
-----
-
-Deploys a non-upgradeable contract using the OpenZeppelin Platform, and returns a contract instance. Throws an error if the contract looks like an implementation contract.
-
-CAUTION: Do not use this function to deploy implementations of upgradeable contracts, because upgrade safety validations are not performed with this function. For implementation contracts, use <<deploy-implementation>> instead.
-
-*Parameters:*
-
-* `Contract` - an ethers contract factory to use as the contract to deploy.
-* `opts` - an object with options:
-** `unsafeAllowDeployContract`: if set to `true`, allows the contract to be deployed even if it looks like an implementation contract. Defaults to `false`.
-** `pollingInterval`: polling interval in milliseconds between checks for the transaction confirmation when calling `.deployed()` on the resulting contract instance. Defaults to `5000`.
-
-*Returns:*
-
-* the contract instance.
-
-*Since:*
-
-* `@openzeppelin/hardhat-upgrades@1.25.0`
-
-
 [[validate-upgrade]]
 == validateUpgrade
 
@@ -443,7 +408,6 @@ async function deployContract(
   opts?: {
     unsafeAllowDeployContract?: boolean,
     pollingInterval?: number,
-    platform?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -460,7 +424,6 @@ CAUTION: Do not use this function to deploy implementations of upgradeable contr
 * `opts` - an object with options:
 ** `unsafeAllowDeployContract`: if set to `true`, allows the contract to be deployed even if it looks like an implementation contract. Defaults to `false`.
 ** `pollingInterval`: polling interval in milliseconds between checks for the transaction confirmation when calling `.deployed()` on the resulting contract instance. Defaults to `5000`.
-** `platform`: to use this function, you must enable OpenZeppelin Platform deployments using any of the ways described in xref:platform-deploy.adoc[Using with OpenZeppelin Platform] in order to set this to `true`. This function does not support `false`.
 
 *Returns:*
 
