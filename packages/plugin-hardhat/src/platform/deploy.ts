@@ -68,17 +68,36 @@ export async function platformDeploy(
   debug(`Network ${network}`);
 
   const verifySourceCode = opts.verifySourceCode ?? true;
+  debug(`Verify source code: ${verifySourceCode}`);
 
-  const deploymentResponse = await client.Deployment.deploy({
-    contractName: contractInfo.contractName,
-    contractPath: contractInfo.sourceName,
-    network: network,
-    artifactPayload: JSON.stringify(contractInfo.buildInfo),
-    licenseType: getLicenseFromMetadata(contractInfo),
-    constructorInputs: constructorArgs,
-    verifySourceCode: verifySourceCode,
-    relayerId: opts.walletId,
-  });
+  let license;
+  if (verifySourceCode) {
+    license = getLicenseFromMetadata(contractInfo);
+    debug(`License type: ${license}`);
+  }
+
+  let deploymentResponse;
+  try {
+    deploymentResponse = await client.Deployment.deploy({
+      contractName: contractInfo.contractName,
+      contractPath: contractInfo.sourceName,
+      network: network,
+      artifactPayload: JSON.stringify(contractInfo.buildInfo),
+      licenseType: license as SourceCodeLicense, // cast without validation but catch error from API below
+      constructorInputs: constructorArgs,
+      verifySourceCode: verifySourceCode,
+      relayerId: opts.walletId,
+    });
+  } catch (e: any) {
+    if (e.response?.data?.message?.includes('licenseType should be equal to one of the allowed values')) {
+      throw new UpgradesError(
+        `License type ${license} is not a valid SPDX license identifier for block explorer verification.`,
+        () => 'Specify a valid SPDX-License-Identifier in your contract.',
+      );
+    } else {
+      throw e;
+    }
+  }
 
   const txResponse = await hre.ethers.provider.getTransaction(deploymentResponse.txHash);
   const checksumAddress = hre.ethers.utils.getAddress(deploymentResponse.address);
@@ -130,23 +149,28 @@ async function getContractInfo(
   return { sourceName, contractName, buildInfo };
 }
 
-function getLicenseFromMetadata(contractInfo: ContractInfo): SourceCodeLicense | undefined {
+/**
+ * Get the license type from the contract metadata without validating its validity, except converts undefined or UNLICENSED to None.
+ */
+function getLicenseFromMetadata(contractInfo: ContractInfo): string {
   const compilerOutput: CompilerOutputWithMetadata =
     contractInfo.buildInfo.output.contracts[contractInfo.sourceName][contractInfo.contractName];
 
   const metadataString = compilerOutput.metadata;
   if (metadataString === undefined) {
-    debug('Metadata not found in compiler output');
-    return undefined;
+    throw new UpgradesError(
+      'License type could not be determined from contract metadata',
+      () => 'Enable metadata output in your compiler settings.',
+    );
   }
 
   const metadata = JSON.parse(metadataString);
 
-  const license = metadata.sources[contractInfo.sourceName].license;
-  if (license === undefined) {
-    debug('License not found in metadata');
+  const license: string = metadata.sources[contractInfo.sourceName].license;
+  if (license === undefined || license === 'UNLICENSED') {
+    // UNLICENSED means no license according to solidity docs
+    return 'None';
   } else {
-    debug(`Found license from metadata: ${license}`);
+    return license;
   }
-  return license;
 }
