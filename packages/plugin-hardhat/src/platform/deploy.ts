@@ -70,7 +70,7 @@ export async function platformDeploy(
   const verifySourceCode = opts.verifySourceCode ?? true;
   debug(`Verify source code: ${verifySourceCode}`);
 
-  let license;
+  let license: string | undefined = undefined;
   if (verifySourceCode) {
     license = getLicenseFromMetadata(contractInfo);
     debug(`License type: ${license}`);
