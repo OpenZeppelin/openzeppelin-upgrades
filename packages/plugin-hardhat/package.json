@@ -23,21 +23,21 @@
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
     "@nomiclabs/hardhat-etherscan": "^3.1.0",
+    "@openzeppelin/contracts": "4.1.0",
+    "@openzeppelin/contracts-upgradeable": "4.1.0",
     "@types/mocha": "^7.0.2",
     "ava": "^5.0.0",
     "fgbg": "^0.1.4",
     "hardhat": "^2.0.2",
     "promisified": "^0.5.0",
-    "rimraf": "^3.0.2",
-    "@openzeppelin/contracts": "4.1.0",
-    "@openzeppelin/contracts-upgradeable": "4.1.0"
+    "rimraf": "^3.0.2"
   },
   "dependencies": {
     "@openzeppelin/upgrades-core": "^1.26.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
-    "platform-deploy-client": "^0.3.2",
     "defender-admin-client": "^1.39.0",
+    "platform-deploy-client": "^0.3.2",
     "proper-lockfile": "^4.1.1"
   },
   "peerDependencies": {

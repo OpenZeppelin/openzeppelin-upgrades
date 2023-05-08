@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.25.0 (2023-05-08)
 
 - Enable using OpenZeppelin Platform for deployments. ([#763](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/763))
 
