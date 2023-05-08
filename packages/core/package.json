@@ -35,7 +35,7 @@
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^3.0.0",
     "@openzeppelin/contracts": "4.1.0",
-    "@openzeppelin/contracts-upgradeable": "4.1.0",
+    "@openzeppelin/contracts-upgradeable": "4.8.3",
     "@types/cbor": "^5.0.0",
     "@types/debug": "^4.1.5",
     "@types/mocha": "^7.0.2",
