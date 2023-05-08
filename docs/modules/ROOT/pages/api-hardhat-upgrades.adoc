@@ -431,7 +431,7 @@ CAUTION: Do not use this function to deploy implementations of upgradeable contr
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@1.24.0`
+* `@openzeppelin/hardhat-upgrades@1.25.0`
 
 [[platform-propose-upgrade]]
 == platform.proposeUpgrade
@@ -468,7 +468,7 @@ Similar to <<defender-propose-upgrade>> but supports deploying the new implement
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@1.24.0`
+* `@openzeppelin/hardhat-upgrades@1.25.0`
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
