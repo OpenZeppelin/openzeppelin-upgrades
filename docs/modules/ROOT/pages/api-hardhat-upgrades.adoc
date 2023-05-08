@@ -478,7 +478,7 @@ Similar to `prepareUpgrade`. This method validates and deploys the new implement
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@1.25.0`
+* `@openzeppelin/hardhat-upgrades@1.26.0`
 
 [[platform-get-default-approval-process]]
 == platform.getDefaultApprovalProcess
@@ -502,7 +502,7 @@ Gets the default upgrade approval process configured for your deployment environ
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@1.25.0`
+* `@openzeppelin/hardhat-upgrades@1.26.0`
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
