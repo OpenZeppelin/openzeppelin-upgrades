@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Enable using OpenZeppelin Platform for deployments. ([#763](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/763))
+
+**Note**: OpenZeppelin Platform is currently in beta and functionality related to it is subject to change.
+
 ## 1.24.0 (2023-05-03)
 
 - Support custom signer for `admin` functions. ([#784](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/784))

@@ -9,6 +9,7 @@ import {
   DeployBeaconProxyUnsupportedError,
   DeployBeaconProxyKindError,
   UpgradesError,
+  RemoteDeploymentId,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -20,6 +21,8 @@ import {
   getContractAddress,
   getInitializerData,
 } from './utils';
+import { enablePlatform } from './platform/utils';
+import { getContractInstance } from './utils/contract-instance';
 
 export interface DeployBeaconProxyFunction {
   (
@@ -31,7 +34,10 @@ export interface DeployBeaconProxyFunction {
   (beacon: ContractAddressOrInstance, attachTo: ContractFactory, opts?: DeployBeaconProxyOptions): Promise<Contract>;
 }
 
-export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBeaconProxyFunction {
+export function makeDeployBeaconProxy(
+  hre: HardhatRuntimeEnvironment,
+  platformModule: boolean,
+): DeployBeaconProxyFunction {
   return async function deployBeaconProxy(
     beacon: ContractAddressOrInstance,
     attachTo: ContractFactory,
@@ -48,6 +54,8 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
       opts = args;
       args = [];
     }
+
+    opts = enablePlatform(hre, platformModule, opts);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
@@ -72,16 +80,13 @@ export function makeDeployBeaconProxy(hre: HardhatRuntimeEnvironment): DeployBea
     }
 
     const BeaconProxyFactory = await getBeaconProxyFactory(hre, attachTo.signer);
-    const proxyDeployment: Required<ProxyDeployment & DeployTransaction> = Object.assign(
+    const proxyDeployment: Required<ProxyDeployment & DeployTransaction> & RemoteDeploymentId = Object.assign(
       { kind: opts.kind },
-      await deploy(BeaconProxyFactory, beaconAddress, data),
+      await deploy(hre, opts, BeaconProxyFactory, beaconAddress, data),
     );
 
     await manifest.addProxy(proxyDeployment);
 
-    const inst = attachTo.attach(proxyDeployment.address);
-    // @ts-ignore Won't be readonly because inst was created through attach.
-    inst.deployTransaction = proxyDeployment.deployTransaction;
-    return inst;
+    return getContractInstance(hre, attachTo, opts, proxyDeployment);
   };
 }

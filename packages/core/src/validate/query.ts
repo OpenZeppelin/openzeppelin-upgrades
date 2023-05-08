@@ -3,7 +3,7 @@ import { ValidationRunData, ValidationError, isOpcodeError } from './run';
 import { StorageLayout } from '../storage/layout';
 import { unlinkBytecode } from '../link-refs';
 import { ValidationOptions, processExceptions } from './overrides';
-import { ValidationErrors } from './error';
+import { ContractSourceNotFoundError, ValidationErrors } from './error';
 import { ValidationData, normalizeValidationData } from './data';
 import { ProxyDeployment } from '../manifest';
 
@@ -72,7 +72,7 @@ export function getContractNameAndRunValidation(data: ValidationData, version: V
   }
 
   if (fullContractName === undefined || runValidation === undefined) {
-    throw new Error('The requested contract was not found. Make sure the source code is available for compilation');
+    throw new ContractSourceNotFoundError();
   }
 
   return [fullContractName, runValidation];

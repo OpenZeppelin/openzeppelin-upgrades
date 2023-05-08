@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-upgrades",
-  "version": "1.24.0",
+  "version": "1.25.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
@@ -28,12 +28,16 @@
     "fgbg": "^0.1.4",
     "hardhat": "^2.0.2",
     "promisified": "^0.5.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "@openzeppelin/contracts": "4.1.0",
+    "@openzeppelin/contracts-upgradeable": "4.1.0"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^1.25.0",
+    "@openzeppelin/upgrades-core": "^1.26.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
+    "platform-deploy-client": "^0.3.2",
+    "defender-admin-client": "^1.39.0",
     "proper-lockfile": "^4.1.1"
   },
   "peerDependencies": {

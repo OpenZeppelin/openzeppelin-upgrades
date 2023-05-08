@@ -1,0 +1,89 @@
+= Using with OpenZeppelin Platform
+
+The Hardhat Upgrades package can use the https://docs.openzeppelin.com/platform/beta/product/deploy[OpenZeppelin Platform for deployments] instead of ethers.js, which allows for features such as gas pricing estimation, resubmissions, and automated bytecode and source code verification.
+
+**Note**: OpenZeppelin Platform is in beta and the functionality described here is subject to change.
+
+[[configuration]]
+== Configuration
+
+https://docs.openzeppelin.com/platform/beta/tutorial/deploy[Create a deployment environment] on the OpenZeppelin Platform and provide the Team API Key and secret in your `hardhat.config.js` or `hardhat.config.ts` file under `platform`:
+
+[source,js]
+----
+module.exports = {
+  platform: {
+    apiKey: process.env.API_KEY,
+    apiSecret: process.env.API_SECRET,
+  }
+}
+----
+
+[[usage]]
+== Usage
+
+When using the xref:api-hardhat-upgrades.adoc[Hardhat Upgrades API functions], enable OpenZeppelin Platform deployments using any of the ways below.
+
+NOTE: Only functions that have the `platform` option in their API reference support deployments through the OpenZeppelin Platform. If you enable the following but use functions that do not support `platform`, the first way below will cause those functions to deploy using ethers.js, whereas the second and third ways will cause those functions to give an error.
+
+- Recommended: In `hardhat.config.js` or `hardhat.config.ts`, set `useDeploy: true` under `platform`. For example:
+
+[source,js]
+----
+module.exports = {
+  platform: {
+    apiKey: process.env.API_KEY,
+    apiSecret: process.env.API_SECRET,
+    useDeploy: true,
+  }
+}
+----
+
+[source,js]
+----
+// scripts/create-box.js
+const { ethers, upgrades } = require("hardhat");
+
+async function main() {
+  const Box = await ethers.getContractFactory("Box");
+  const box = await upgrades.deployProxy(Box, [42]);
+  await box.deployed();
+  console.log("Box deployed to:", box.address);
+}
+
+main();
+----
+
+- Use the `platform` module instead of `upgrades` from the Hardhat Runtime Environment. Use this if you want to make sure Platform is used and want to see an error if the function does not support Platform. For example:
+
+[source,js]
+----
+// scripts/create-box.js
+const { ethers, platform } = require("hardhat");
+
+async function main() {
+  const Box = await ethers.getContractFactory("Box");
+  const box = await platform.deployProxy(Box, [42]);
+  await box.deployed();
+  console.log("Box deployed to:", box.address);
+}
+
+main();
+----
+
+- Use the `platform` common option. Setting this option overrides the above for specific functions. For example:
+
+[source,js]
+----
+// scripts/create-box.js
+const { ethers, upgrades } = require("hardhat");
+
+async function main() {
+  const Box = await ethers.getContractFactory("Box");
+  const box = await upgrades.deployProxy(Box, [42], { platform: true });
+  await box.deployed();
+  console.log("Box deployed to:", box.address);
+}
+
+main();
+----

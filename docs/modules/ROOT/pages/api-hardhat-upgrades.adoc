@@ -22,6 +22,7 @@ The following options are common to some functions.
 * `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `60000`. Use `0` to wait indefinitely. 
 * `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `5000`.
 * `useDeployedImplementation`: (`boolean`) Require the use of an existing deployed implementation. If this is set to `true` and the implementation contract was not previously deployed or is not found in the network file, an error will be thrown instead of deploying the implementation.
+* `platform`: Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform]. **Note**: OpenZeppelin Platform is in beta and functionality related to Platform is subject to change.
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -46,6 +47,7 @@ async function deployProxy(
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
     kind?: 'uups' | 'transparent',
+    platform?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -60,7 +62,7 @@ If you call `deployProxy` several times for the same implementation contract, se
 * `args` - arguments for the initializer function.
 * `opts` - an object with options:
 ** `initializer`: set a different initializer function to call (see link:++https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments++[Specifying Fragments]), or specify `false` to disable initialization.
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Returns:*
 
@@ -96,7 +98,7 @@ Upgrades a UUPS or Transparent proxy at a specified address to a new implementat
 * `Contract` - an ethers contract factory to use as the new implementation.
 * `opts` - an object with options:
 ** `call`: enables the execution of an arbitrary function call during the upgrade process. This call is described using a function name, signature, or selector (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), and optional arguments. It is batched into the upgrade transaction, making it safe to call migration initializing functions.
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Returns:*
 
@@ -125,7 +127,7 @@ Creates an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeac
 
 * `Contract` - an ethers contract factory to use as the implementation.
 * `opts` - an object with options:
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Returns:*
 
@@ -162,7 +164,7 @@ Upgrades an https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBea
 * `beacon` - the beacon address or beacon contract instance.
 * `Contract` - an ethers contract factory to use as the new implementation.
 * `opts` - an object with options:
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Returns:*
 
@@ -183,6 +185,7 @@ async function deployBeaconProxy(
   args: unknown[] = [],
   opts?: {
     initializer?: string | false,
+    platform?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -196,6 +199,7 @@ Creates a https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[Beac
 * `args` - arguments for the initializer function.
 * `opts` - an object with options:
 ** `initializer`: set a different initializer function to call (see https://docs.ethers.io/v5/api/utils/abi/interface/#Interface--specifying-fragments[Specifying Fragments]), or specify `false` to disable initialization.
+** additional options as described in <<common-options>>.
 
 *Returns:*
 
@@ -260,7 +264,7 @@ Validates an implementation contract without deploying it.
 
 * `Contract` - the ethers contract factory of the implementation contract.
 * `opts` - an object with options:
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Since:*
 
@@ -281,6 +285,7 @@ async function deployImplementation(
     useDeployedImplementation?: boolean,
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
+    platform?: boolean,
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -292,7 +297,7 @@ Validates and deploys an implementation contract, and returns its address.
 * `Contract` - an ethers contract factory to use as the implementation.
 * `opts` - an object with options:
 ** `getTxResponse`: if set to `true`, causes this function to return an ethers transaction response corresponding to the deployment of the new implementation contract instead of its address. Note that if the new implementation contract was originally imported as a result of `forceImport`, only the address will be returned.
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Returns:*
 
@@ -326,7 +331,7 @@ Validates a new implementation contract without deploying it and without actuall
 * `referenceAddressOrContract` - a proxy or beacon address that uses the current implementation, or an address or ethers contract factory corresponding to the current implementation.
 * `newContract` - the new implementation contract.
 * `opts` - an object with options:
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Since:*
 
@@ -371,6 +376,7 @@ async function prepareUpgrade(
     useDeployedImplementation?: boolean,
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
+    platform?: boolean,
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -383,11 +389,86 @@ Validates and deploys a new implementation contract, and returns its address. If
 * `Contract` - the new implementation contract.
 * `opts` - an object with options:
 ** `getTxResponse`: if set to `true`, causes this function to return an ethers transaction response corresponding to the deployment of the new implementation contract instead of its address. Note that if the new implementation contract was originally imported as a result of `forceImport`, only the address will be returned.
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Returns:*
 
 * the address or an ethers transaction response corresponding to the deployment of the new implementation contract.
+
+[[platform-deploy-contract]]
+== platform.deployContract
+
+[source,ts]
+----
+async function deployContract(
+  Contract: ethers.ContractFactory,
+  args: unknown[] = [],
+  opts?: {
+    unsafeAllowDeployContract?: boolean,
+    pollingInterval?: number,
+    platform?: boolean,
+  },
+): Promise<ethers.Contract>
+----
+
+**Note**: OpenZeppelin Platform is in beta and this function is subject to change.
+
+Deploys a non-upgradeable contract using the OpenZeppelin Platform, and returns a contract instance. Throws an error if the contract looks like an implementation contract.
+
+CAUTION: Do not use this function to deploy implementations of upgradeable contracts, because upgrade safety validations are not performed with this function. For implementation contracts, use <<deploy-implementation>> instead.
+
+*Parameters:*
+
+* `Contract` - an ethers contract factory to use as the contract to deploy.
+* `opts` - an object with options:
+** `unsafeAllowDeployContract`: if set to `true`, allows the contract to be deployed even if it looks like an implementation contract. Defaults to `false`.
+** `pollingInterval`: polling interval in milliseconds between checks for the transaction confirmation when calling `.deployed()` on the resulting contract instance. Defaults to `5000`.
+** `platform`: to use this function, you must enable OpenZeppelin Platform deployments using any of the ways described in xref:platform-deploy.adoc[Using with OpenZeppelin Platform] in order to set this to `true`. This function does not support `false`.
+
+*Returns:*
+
+* the contract instance.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.25.0`
+
+[[platform-propose-upgrade]]
+== platform.proposeUpgrade
+
+[source,ts]
+----
+async function proposeUpgrade(
+  proxyAddress: string,
+  ImplFactory: ContractFactory,
+  opts?: {
+    unsafeAllow?: ValidationError[],
+    unsafeAllowRenames?: boolean,
+    unsafeSkipStorageCheck?: boolean,
+    constructorArgs?: unknown[],
+    timeout?: number,
+    pollingInterval?: number,
+    useDeployedImplementation?: boolean,
+    kind?: 'uups' | 'transparent' | 'beacon',
+    title?: string,
+    description?: string,
+    multisig?: string,
+    proxyAdmin?: string,
+    platform?: boolean,
+  },
+): Promise<{
+    url: string,
+    txResponse?: ethers.providers.TransactionResponse,
+  }>
+----
+
+**Note**: OpenZeppelin Platform is in beta and this function is subject to change.
+
+Similar to <<defender-propose-upgrade>> but supports deploying the new implementation contract using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform].
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.25.0`
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
@@ -430,7 +511,7 @@ Similar to `prepareUpgrade`. This method validates and deploys the new implement
 ** `description`: description of the upgrade proposal as seen in Defender Admin, defaults to the full implementation address.
 ** `multisig`: address of the multisignature wallet contract with the rights to execute the upgrade. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]). Both Gnosis Safe and Gnosis MultisigWallet multisigs are supported.
 ** `proxyAdmin`: address of the https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[`ProxyAdmin`] contract that manages the proxy, if exists. This is autodetected in https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[Transparent proxies], but required for https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable[UUPS proxies] (read more https://docs.openzeppelin.com/contracts/4.x/api/proxy#transparent-vs-uups[here]), though UUPS proxies typically do not require the usage of a ProxyAdmin.
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Returns:*
 
@@ -456,7 +537,7 @@ Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy
 
 * `signer` - the signer to use for deployment.
 * `opts` - an object with options:
-** See <<common-options>>.
+** additional options as described in <<common-options>>.
 
 *Returns:*
 

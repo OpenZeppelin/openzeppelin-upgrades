@@ -5,8 +5,9 @@ import rimrafAsync from 'rimraf';
 import util from 'util';
 import path from 'path';
 import os from 'os';
+import sinon from 'sinon';
 
-import { fetchOrDeploy, mergeAddresses } from './impl-store';
+import { fetchOrDeploy, fetchOrDeployGetDeployment, mergeAddresses } from './impl-store';
 import { getVersion } from './version';
 import { stubProvider } from './stub-provider';
 import { ImplDeployment } from './manifest';
@@ -89,3 +90,53 @@ test('merge all addresses', async t => {
 function unorderedEqual(arr1: string[], arr2: string[]) {
   return arr1.every(i => arr2.includes(i)) && arr2.every(i => arr1.includes(i));
 }
+
+test('platform - replace tx hash for deployment', async t => {
+  const provider = stubProvider();
+
+  // create a pending deployment with id
+  const fakeDeploy = await provider.deployPending();
+  provider.removeContract(fakeDeploy.address);
+  async function fakeDeployWithId() {
+    return {
+      ...fakeDeploy,
+      txHash: '0x1',
+      remoteDeploymentId: 'abc',
+    };
+  }
+
+  const getDeploymentResponse1 = sinon.stub().returns({
+    status: 'submitted',
+    txHash: '0x1',
+  });
+  // let it timeout
+  await t.throwsAsync(
+    fetchOrDeployGetDeployment(
+      version1,
+      provider,
+      fakeDeployWithId,
+      { timeout: 1, pollingInterval: 0 },
+      undefined,
+      getDeploymentResponse1,
+    ),
+  );
+
+  // make the contract code exist
+  provider.addContract(fakeDeploy.address);
+
+  // simulate a changed tx hash
+  const getDeploymentResponse2 = sinon.stub().returns({
+    status: 'completed',
+    txHash: '0x2',
+  });
+  const deployment = await fetchOrDeployGetDeployment(
+    version1,
+    provider,
+    fakeDeployWithId,
+    { timeout: 1, pollingInterval: 0 },
+    undefined,
+    getDeploymentResponse2,
+  );
+  t.is(deployment.address, fakeDeploy.address);
+  t.is(deployment.txHash, '0x2');
+});

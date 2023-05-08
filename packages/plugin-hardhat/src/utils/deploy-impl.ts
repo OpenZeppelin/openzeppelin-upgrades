@@ -13,19 +13,18 @@ import type { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
-import { GetTxResponse, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
+import { GetTxResponse, PlatformSupportedOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
+import { getRemoteDeployment } from '../platform/utils';
 import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
 import { readValidations } from './validations';
 
-interface DeployedProxyImpl {
+export interface DeployedImpl {
   impl: string;
-  kind: NonNullable<ValidationOptions['kind']>;
   txResponse?: ethers.providers.TransactionResponse;
 }
 
-interface DeployedBeaconImpl {
-  impl: string;
-  txResponse?: ethers.providers.TransactionResponse;
+export interface DeployedProxyImpl extends DeployedImpl {
+  kind: NonNullable<ValidationOptions['kind']>;
 }
 
 export interface DeployData {
@@ -58,7 +57,7 @@ export async function deployUpgradeableImpl(
   ImplFactory: ContractFactory,
   opts: StandaloneOptions,
   currentImplAddress?: string,
-): Promise<DeployedProxyImpl> {
+): Promise<DeployedImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateImpl(deployData, opts, currentImplAddress);
   return await deployImpl(hre, deployData, ImplFactory, opts);
@@ -72,7 +71,13 @@ export async function deployProxyImpl(
 ): Promise<DeployedProxyImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateProxyImpl(deployData, opts, proxyAddress);
-  return await deployImpl(hre, deployData, ImplFactory, opts);
+  if (opts.kind === undefined) {
+    throw new Error('Broken invariant: Proxy kind is undefined');
+  }
+  return {
+    ...(await deployImpl(hre, deployData, ImplFactory, opts)),
+    kind: opts.kind,
+  };
 }
 
 export async function deployBeaconImpl(
@@ -80,7 +85,7 @@ export async function deployBeaconImpl(
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
   beaconAddress?: string,
-): Promise<DeployedBeaconImpl> {
+): Promise<DeployedImpl> {
   const deployData = await getDeployData(hre, ImplFactory, opts);
   await validateBeaconImpl(deployData, opts, beaconAddress);
   return await deployImpl(hre, deployData, ImplFactory, opts);
@@ -90,8 +95,8 @@ async function deployImpl(
   hre: HardhatRuntimeEnvironment,
   deployData: DeployData,
   ImplFactory: ContractFactory,
-  opts: UpgradeOptions & GetTxResponse,
-): Promise<any> {
+  opts: UpgradeOptions & GetTxResponse & PlatformSupportedOptions,
+): Promise<DeployedImpl> {
   const layout = deployData.layout;
 
   const deployment = await fetchOrDeployGetDeployment(
@@ -107,13 +112,15 @@ async function deployImpl(
               'The useDeployedImplementation option was set to true but the implementation contract was not previously deployed on this network.',
           );
         } else {
-          return deploy(ImplFactory, ...deployData.fullOpts.constructorArgs);
+          return deploy(hre, opts, ImplFactory, ...deployData.fullOpts.constructorArgs);
         }
       };
       const deployment = Object.assign({ abi }, await attemptDeploy());
       return { ...deployment, layout };
     },
     opts,
+    undefined,
+    remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId),
   );
 
   let txResponse;
@@ -121,9 +128,9 @@ async function deployImpl(
     if ('deployTransaction' in deployment) {
       txResponse = deployment.deployTransaction;
     } else if (deployment.txHash !== undefined) {
-      txResponse = hre.ethers.provider.getTransaction(deployment.txHash);
+      txResponse = await hre.ethers.provider.getTransaction(deployment.txHash);
     }
   }
 
-  return { impl: deployment.address, kind: opts.kind, txResponse };
+  return { impl: deployment.address, txResponse };
 }
