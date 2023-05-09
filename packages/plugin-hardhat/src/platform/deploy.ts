@@ -3,7 +3,7 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { SourceCodeLicense } from 'platform-deploy-client';
+import { DeploymentResponse, SourceCodeLicense } from 'platform-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -76,14 +76,14 @@ export async function platformDeploy(
     debug(`License type: ${license}`);
   }
 
-  let deploymentResponse;
+  let deploymentResponse: DeploymentResponse;
   try {
     deploymentResponse = await client.Deployment.deploy({
       contractName: contractInfo.contractName,
       contractPath: contractInfo.sourceName,
       network: network,
       artifactPayload: JSON.stringify(contractInfo.buildInfo),
-      licenseType: license as SourceCodeLicense, // cast without validation but catch error from API below
+      licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
       constructorInputs: constructorArgs,
       verifySourceCode: verifySourceCode,
       relayerId: opts.walletId,
