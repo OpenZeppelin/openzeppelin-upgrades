@@ -1,13 +1,13 @@
 = Using with OpenZeppelin Platform
 
-The Hardhat Upgrades package can use the https://docs.openzeppelin.com/platform/beta/product/deploy[OpenZeppelin Platform for deployments] instead of ethers.js, which allows for features such as gas pricing estimation, resubmissions, and automated bytecode and source code verification.
+The Hardhat Upgrades package can use the OpenZeppelin Platform for deployments instead of ethers.js, which allows for features such as gas pricing estimation, resubmissions, and automated bytecode and source code verification.
 
 **Note**: OpenZeppelin Platform is in beta and the functionality described here is subject to change.
 
 [[configuration]]
 == Configuration
 
-https://docs.openzeppelin.com/platform/beta/tutorial/deploy[Create a deployment environment] on the OpenZeppelin Platform and provide the Team API Key and secret in your `hardhat.config.js` or `hardhat.config.ts` file under `platform`:
+Create a deployment environment on the OpenZeppelin Platform and provide the Team API Key and secret in your `hardhat.config.js` or `hardhat.config.ts` file under `platform`:
 
 [source,js]
 ----

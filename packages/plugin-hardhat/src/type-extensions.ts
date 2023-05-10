@@ -1,11 +1,11 @@
 import 'hardhat/types/runtime';
 
-import type { HardhatUpgrades } from '.';
+import type { HardhatUpgrades, PlatformHardhatUpgrades } from '.';
 
 declare module 'hardhat/types/runtime' {
   export interface HardhatRuntimeEnvironment {
     upgrades: HardhatUpgrades;
-    platform: HardhatUpgrades;
+    platform: PlatformHardhatUpgrades;
   }
 }
 
