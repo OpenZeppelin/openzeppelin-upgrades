@@ -2,7 +2,7 @@
 
 ## Unrelease
 
-- Fix type error with platform.deployContract. ([#793](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/793))
+- Fix type error with `platform.deployContract`. ([#793](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/793))
 
 ## 1.25.0 (2023-05-08)
 
