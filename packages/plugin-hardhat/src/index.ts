@@ -51,7 +51,7 @@ export interface HardhatUpgrades {
   proposeUpgrade: ProposeUpgradeFunction;
 }
 
-export interface Platform extends HardhatUpgrades {
+export interface PlatformHardhatUpgrades extends HardhatUpgrades {
   deployContract: DeployContractFunction;
 }
 
@@ -98,7 +98,7 @@ extendEnvironment(hre => {
     return makeUpgradesFunctions(hre);
   });
 
-  hre.platform = lazyObject((): Platform => {
+  hre.platform = lazyObject((): PlatformHardhatUpgrades => {
     return makePlatformFunctions(hre);
   });
 });
@@ -178,7 +178,7 @@ function makeUpgradesFunctions(hre: HardhatRuntimeEnvironment): HardhatUpgrades 
   return makeFunctions(hre, false);
 }
 
-function makePlatformFunctions(hre: HardhatRuntimeEnvironment): Platform {
+function makePlatformFunctions(hre: HardhatRuntimeEnvironment): PlatformHardhatUpgrades {
   const { makeDeployContract } = require('./deploy-contract');
   return {
     ...makeFunctions(hre, true),
