@@ -1,6 +1,6 @@
 const test = require('ava');
 const sinon = require('sinon');
-const { getNetwork, getAdminClient, disablePlatform, enablePlatform } = require('../dist/platform/utils');
+const { getNetwork, getPlatformClient, disablePlatform, enablePlatform } = require('../dist/platform/utils');
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x05';
@@ -27,21 +27,16 @@ test('fails if chain id is not accepted', async t => {
   await t.throwsAsync(() => getNetwork(t.context.fakeHre), { message: /Network \d+ is not supported/ });
 });
 
-test('returns admin client', async t => {
-  const client = getAdminClient(t.context.fakeHre);
-  t.is(typeof client.createProposal, 'function');
-});
-
 test('fails if platform config is missing', async t => {
   delete t.context.fakeHre.config.platform;
-  t.throws(() => getAdminClient(t.context.fakeHre), {
+  t.throws(() => getPlatformClient(t.context.fakeHre), {
     message: /Missing OpenZeppelin Platform API key and secret in hardhat config/,
   });
 });
 
 test('fails if platform api key is missing in config', async t => {
   delete t.context.fakeHre.config.platform.apiKey;
-  t.throws(() => getAdminClient(t.context.fakeHre), {
+  t.throws(() => getPlatformClient(t.context.fakeHre), {
     message: /Missing OpenZeppelin Platform API key and secret in hardhat config/,
   });
 });
