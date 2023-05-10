@@ -1,6 +1,6 @@
 # Changelog
 
-## Unrelease
+## 1.25.1 (2023-05-10)
 
 - Fix type error with `platform.deployContract`. ([#793](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/793))
 
