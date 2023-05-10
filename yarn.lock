@@ -5170,18 +5170,7 @@ defender-base-client@1.37.0, defender-base-client@^1.3.1:
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-defender-base-client@^1.40.0:
-  version "1.43.0"
-  resolved "https://registry.yarnpkg.com/defender-base-client/-/defender-base-client-1.43.0.tgz#0b915ea9a1ac7f9ce67c381043aa4db035f43c5c"
-  integrity sha512-PFQPDZ08SznSlsKiHcvf1TzvKtnd/fv2/P5s2Y8jYPIb7OtANHw94oDFOOvRpg54o8EQItIb9v7H4g4kp/7fng==
-  dependencies:
-    amazon-cognito-identity-js "^6.0.1"
-    async-retry "^1.3.3"
-    axios "^0.21.2"
-    lodash "^4.17.19"
-    node-fetch "^2.6.0"
-
-defender-base-client@^1.44.0-rc.1:
+defender-base-client@1.44.0-rc.1, defender-base-client@^1.44.0-rc.1:
   version "1.44.0-rc.1"
   resolved "https://registry.yarnpkg.com/defender-base-client/-/defender-base-client-1.44.0-rc.1.tgz#6c4c09ff90eb01f1ff26ad03c478e62177e6382c"
   integrity sha512-iTENGAuntw0F30pqZrND7c3aR25iLJA+IW6x9tBedqlKHoKeADs2TVGxckAF5duUD7GVqh94DJty/41KD2Fzbw==
@@ -9762,14 +9751,14 @@ pkg-up@^3.1.0:
   dependencies:
     find-up "^3.0.0"
 
-platform-deploy-client@^0.5.1-rc.2:
-  version "0.5.1-rc.2"
-  resolved "https://registry.yarnpkg.com/platform-deploy-client/-/platform-deploy-client-0.5.1-rc.2.tgz#79ac53f633d1aa41a30b404f7c19acbdeda504e2"
-  integrity sha512-aX+rgu3vbUYs6D+CDXrLW4+f+sU1t+ANk7vZoF1/tBnfjFG2/a0SRwOMvm7nKnTVOqb/wNPU5Mv+9RqyzpN8hA==
+platform-deploy-client@^0.5.1-rc.3:
+  version "0.5.1-rc.3"
+  resolved "https://registry.yarnpkg.com/platform-deploy-client/-/platform-deploy-client-0.5.1-rc.3.tgz#f25f72392c3bd2c33f0f79af616eba3f962df4b5"
+  integrity sha512-Ft5noE0tx1IvqOTQyrlFr9J4iW8uPJo5qHcEWEVaYKR2pSGzwWpEMChlXiKHn+DgsMowndzoF4oKxn74LQTCfQ==
   dependencies:
     "@ethersproject/abi" "^5.6.3"
     axios "^0.21.2"
-    defender-base-client "^1.40.0"
+    defender-base-client "1.44.0-rc.1"
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 

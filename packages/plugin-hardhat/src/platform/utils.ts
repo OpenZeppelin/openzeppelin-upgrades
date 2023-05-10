@@ -15,7 +15,6 @@ import {
   DeploymentConfigClient,
   PlatformClient,
   UpgradeClient,
-  UpgradeContractRequest,
 } from 'platform-deploy-client';
 
 import { HardhatPlatformConfig } from '../type-extensions';
@@ -35,11 +34,6 @@ export function getPlatformApiKey(hre: HardhatRuntimeEnvironment): HardhatPlatfo
   }
   return cfg;
 }
-
-/**
- * Network input for the Platform API, so that it can differ from defender-base-client's Network if they are not in sync.
- */
-export type NetworkInput = UpgradeContractRequest['network'];
 
 export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Network> {
   const { provider } = hre.network;

@@ -36,7 +36,7 @@
     "@openzeppelin/upgrades-core": "^1.26.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
-    "platform-deploy-client": "^0.5.1-rc.2",
+    "platform-deploy-client": "^0.5.1-rc.3",
     "defender-base-client": "^1.44.0-rc.1",
     "proper-lockfile": "^4.1.1"
   },

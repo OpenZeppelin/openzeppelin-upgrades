@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
-import { NetworkInput, getNetwork, getPlatformClient } from './utils';
+import { getNetwork, getPlatformClient } from './utils';
 
 export interface ApprovalProcess {
   approvalProcessId: string;
@@ -14,7 +14,7 @@ export function makeGetDefaultApprovalProcess(hre: HardhatRuntimeEnvironment): G
     const client = getPlatformClient(hre);
     const network = await getNetwork(hre);
 
-    const response = await client.Upgrade.getApprovalProcess(network as NetworkInput);
+    const response = await client.Upgrade.getApprovalProcess(network);
 
     if (response.network !== network) {
       // This should not happen

@@ -19,7 +19,7 @@ import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppel
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
-import { NetworkInput, getNetwork, getPlatformClient } from './utils';
+import { getNetwork, getPlatformClient } from './utils';
 import { DeployTransaction, PlatformDeployOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
@@ -81,7 +81,7 @@ export async function platformDeploy(
     deploymentResponse = await client.Deployment.deploy({
       contractName: contractInfo.contractName,
       contractPath: contractInfo.sourceName,
-      network: network as NetworkInput,
+      network: network,
       artifactPayload: JSON.stringify(contractInfo.buildInfo),
       licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
       constructorInputs: constructorArgs,

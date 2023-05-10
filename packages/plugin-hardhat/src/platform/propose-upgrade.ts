@@ -9,7 +9,7 @@ import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { PlatformDeployOptions, UpgradeOptions } from '../utils';
-import { getNetwork, enablePlatform, getPlatformClient, NetworkInput } from './utils';
+import { getNetwork, enablePlatform, getPlatformClient } from './utils';
 import { deployImplForUpgrade } from '../prepare-upgrade';
 
 export interface UpgradeProposalResponse {
@@ -67,7 +67,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
       proxyAdminAddress: proxyAdmin,
       newImplementationABI: abi,
       newImplementationAddress: newImplementation,
-      network: network as NetworkInput,
+      network: network,
       approvalProcessId: opts.approvalProcessId,
     });
 
