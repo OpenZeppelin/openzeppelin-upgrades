@@ -9,13 +9,13 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from 'defender-base-client';
-import { AdminClient } from 'defender-admin-client';
 import {
   BlockExplorerApiKeyClient,
   DeploymentClient,
   DeploymentConfigClient,
   PlatformClient,
   UpgradeClient,
+  UpgradeContractRequest,
 } from 'platform-deploy-client';
 
 import { HardhatPlatformConfig } from '../type-extensions';
@@ -36,9 +36,10 @@ export function getPlatformApiKey(hre: HardhatRuntimeEnvironment): HardhatPlatfo
   return cfg;
 }
 
-export function getAdminClient(hre: HardhatRuntimeEnvironment): AdminClient {
-  return new AdminClient(getPlatformApiKey(hre));
-}
+/**
+ * Network input for the Platform API, so that it can differ from defender-base-client's Network if they are not in sync.
+ */
+export type NetworkInput = UpgradeContractRequest['network'];
 
 export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Network> {
   const { provider } = hre.network;

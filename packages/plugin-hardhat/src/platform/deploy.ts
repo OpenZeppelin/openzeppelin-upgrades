@@ -19,7 +19,7 @@ import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppel
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
-import { getNetwork, getPlatformClient } from './utils';
+import { NetworkInput, getNetwork, getPlatformClient } from './utils';
 import { DeployTransaction, PlatformDeployOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
@@ -81,12 +81,12 @@ export async function platformDeploy(
     deploymentResponse = await client.Deployment.deploy({
       contractName: contractInfo.contractName,
       contractPath: contractInfo.sourceName,
-      network: network,
+      network: network as NetworkInput,
       artifactPayload: JSON.stringify(contractInfo.buildInfo),
       licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
       constructorInputs: constructorArgs,
       verifySourceCode: verifySourceCode,
-      relayerId: opts.walletId,
+      walletId: opts.walletId,
     });
   } catch (e: any) {
     if (e.response?.data?.message?.includes('licenseType should be equal to one of the allowed values')) {

@@ -108,7 +108,7 @@ test('calls platform deploy', async t => {
     licenseType: 'None',
     constructorInputs: [],
     verifySourceCode: true,
-    relayerId: undefined,
+    walletId: undefined,
   });
 
   assertResult(t, result);
@@ -132,7 +132,7 @@ test('calls platform deploy with walletId', async t => {
     licenseType: 'None',
     constructorInputs: [],
     verifySourceCode: true,
-    relayerId: WALLET_ID,
+    walletId: WALLET_ID,
   });
 
   assertResult(t, result);
@@ -156,7 +156,7 @@ test('calls platform deploy with license', async t => {
     licenseType: 'MIT',
     constructorInputs: [],
     verifySourceCode: true,
-    relayerId: undefined,
+    walletId: undefined,
   });
 
   assertResult(t, result);
@@ -180,7 +180,7 @@ test('calls platform deploy with constructor args', async t => {
     licenseType: 'MIT',
     constructorInputs: [10],
     verifySourceCode: true,
-    relayerId: undefined,
+    walletId: undefined,
   });
 
   assertResult(t, result);
@@ -204,7 +204,7 @@ test('calls platform deploy with verify false', async t => {
     licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: false,
-    relayerId: undefined,
+    walletId: undefined,
   });
 
   assertResult(t, result);
@@ -228,7 +228,7 @@ test('calls platform deploy with ERC1967Proxy', async t => {
     licenseType: 'MIT',
     constructorInputs: [LOGIC_ADDRESS, DATA],
     verifySourceCode: true,
-    relayerId: undefined,
+    walletId: undefined,
   });
 });
 
@@ -250,7 +250,7 @@ test('calls platform deploy with BeaconProxy', async t => {
     licenseType: 'MIT',
     constructorInputs: [LOGIC_ADDRESS, DATA],
     verifySourceCode: true,
-    relayerId: undefined,
+    walletId: undefined,
   });
 });
 
@@ -272,6 +272,6 @@ test('calls platform deploy with TransparentUpgradeableProxy', async t => {
     licenseType: 'MIT',
     constructorInputs: [LOGIC_ADDRESS, ADMIN_ADDRESS, DATA],
     verifySourceCode: true,
-    relayerId: undefined,
+    walletId: undefined,
   });
 });
