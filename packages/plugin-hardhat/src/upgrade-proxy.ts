@@ -6,7 +6,7 @@ import { Manifest, getAdminAddress, getCode, isEmptySlot } from '@openzeppelin/u
 import {
   UpgradeProxyOptions,
   deployProxyImpl,
-  getTransparentUpgradeableProxyFactory,
+  getITransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   getContractAddress,
   ContractAddressOrInstance,
@@ -46,9 +46,9 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule:
     const adminBytecode = await getCode(provider, adminAddress);
 
     if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
-      // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
-      const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
-      const proxy = TransparentUpgradeableProxyFactory.attach(proxyAddress);
+      // No admin contract: use ITransparentUpgradeableProxyFactory to get proxiable interface
+      const ITransparentUpgradeableProxyFactory = await getITransparentUpgradeableProxyFactory(hre, signer);
+      const proxy = ITransparentUpgradeableProxyFactory.attach(proxyAddress);
 
       return (nextImpl, call) => (call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl));
     } else {
