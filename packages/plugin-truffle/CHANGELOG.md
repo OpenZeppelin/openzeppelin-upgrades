@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.18.1 (2023-05-12)
 
 - Use proxies from OpenZeppelin Contracts 4.8.3. ([#795](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/795))
 
