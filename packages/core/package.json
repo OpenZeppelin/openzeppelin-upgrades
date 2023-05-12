@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/upgrades-core",
-  "version": "1.26.0",
+  "version": "1.26.1",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/core",
   "license": "MIT",
@@ -34,8 +34,8 @@
     "@ava/typescript": "^2.0.0",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^3.0.0",
-    "@openzeppelin/contracts": "4.1.0",
-    "@openzeppelin/contracts-upgradeable": "4.1.0",
+    "@openzeppelin/contracts": "4.8.3",
+    "@openzeppelin/contracts-upgradeable": "4.8.3",
     "@types/cbor": "^5.0.0",
     "@types/debug": "^4.1.5",
     "@types/mocha": "^7.0.2",

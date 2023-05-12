@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Use proxies from OpenZeppelin Contracts 4.8.3. ([#795](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/795))
+
 ## 1.25.1 (2023-05-10)
 
 - Fix type error with `platform.deployContract`. ([#793](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/793))

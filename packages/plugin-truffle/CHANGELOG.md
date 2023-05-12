@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Use proxies from OpenZeppelin Contracts 4.8.3. ([#795](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/795))
+
 ## 1.18.0 (2023-04-26)
 
 - Support `prepareUpgrade` from an implementation address. ([#777](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/777))
