@@ -33,7 +33,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "@openzeppelin/upgrades-core": "^1.26.1",
+    "@openzeppelin/upgrades-core": "^1.26.2",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
     "defender-admin-client": "^1.39.0",
