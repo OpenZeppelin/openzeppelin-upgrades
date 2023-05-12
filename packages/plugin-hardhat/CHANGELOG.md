@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Use proxies from Contracts 4.8.3. ([#795](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/795))
+- Use proxies from OpenZeppelin Contracts 4.8.3. ([#795](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/795))
 
 ## 1.25.1 (2023-05-10)
 
