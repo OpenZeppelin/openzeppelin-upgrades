@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/upgrades-core",
-  "version": "1.26.1",
+  "version": "1.26.2",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/core",
   "license": "MIT",
@@ -18,6 +18,7 @@
     "/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
     "/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json",
     "/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json",
+    "/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/ITransparentUpgradeableProxy.json",
     "/artifacts/build-info.json"
   ],
   "scripts": {
