@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-upgrades",
-  "version": "1.25.3",
+  "version": "1.26.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
@@ -36,8 +36,8 @@
     "@openzeppelin/upgrades-core": "^1.26.2",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
-    "platform-deploy-client": "^0.6.0",
     "defender-base-client": "^1.44.0",
+    "platform-deploy-client": "^0.6.0",
     "proper-lockfile": "^4.1.1"
   },
   "peerDependencies": {

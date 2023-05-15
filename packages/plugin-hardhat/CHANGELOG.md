@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.26.0 (2023-05-15)
 
 - Improve OpenZeppelin Platform functions. ([#791](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/791))
 
