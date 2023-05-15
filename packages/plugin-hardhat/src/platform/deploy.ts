@@ -3,7 +3,7 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { SourceCodeLicense } from 'platform-deploy-client';
+import { DeploymentResponse, SourceCodeLicense } from 'platform-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -20,7 +20,7 @@ import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
 import { getNetwork, getPlatformClient } from './utils';
-import { DeployTransaction, PlatformSupportedOptions, UpgradeOptions } from '../utils';
+import { DeployTransaction, PlatformDeployOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
@@ -57,7 +57,7 @@ type CompilerOutputWithMetadata = CompilerOutputContract & {
 export async function platformDeploy(
   hre: HardhatRuntimeEnvironment,
   factory: ContractFactory,
-  opts: UpgradeOptions & PlatformSupportedOptions,
+  opts: UpgradeOptions & PlatformDeployOptions,
   ...args: unknown[]
 ): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
   const client = getPlatformClient(hre);
@@ -68,16 +68,36 @@ export async function platformDeploy(
   debug(`Network ${network}`);
 
   const verifySourceCode = opts.verifySourceCode ?? true;
+  debug(`Verify source code: ${verifySourceCode}`);
 
-  const deploymentResponse = await client.Deployment.deploy({
-    contractName: contractInfo.contractName,
-    contractPath: contractInfo.sourceName,
-    network: network,
-    artifactPayload: JSON.stringify(contractInfo.buildInfo),
-    licenseType: getLicenseFromMetadata(contractInfo),
-    constructorInputs: constructorArgs,
-    verifySourceCode: verifySourceCode,
-  });
+  let license: string | undefined = undefined;
+  if (verifySourceCode) {
+    license = getLicenseFromMetadata(contractInfo);
+    debug(`License type: ${license}`);
+  }
+
+  let deploymentResponse: DeploymentResponse;
+  try {
+    deploymentResponse = await client.Deployment.deploy({
+      contractName: contractInfo.contractName,
+      contractPath: contractInfo.sourceName,
+      network: network,
+      artifactPayload: JSON.stringify(contractInfo.buildInfo),
+      licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
+      constructorInputs: constructorArgs,
+      verifySourceCode: verifySourceCode,
+      walletId: opts.walletId,
+    });
+  } catch (e: any) {
+    if (e.response?.data?.message?.includes('licenseType should be equal to one of the allowed values')) {
+      throw new UpgradesError(
+        `License type ${license} is not a valid SPDX license identifier for block explorer verification.`,
+        () => 'Specify a valid SPDX-License-Identifier in your contract.',
+      );
+    } else {
+      throw e;
+    }
+  }
 
   const txResponse = await hre.ethers.provider.getTransaction(deploymentResponse.txHash);
   const checksumAddress = hre.ethers.utils.getAddress(deploymentResponse.address);
@@ -129,23 +149,28 @@ async function getContractInfo(
   return { sourceName, contractName, buildInfo };
 }
 
-function getLicenseFromMetadata(contractInfo: ContractInfo): SourceCodeLicense | undefined {
+/**
+ * Get the license type from the contract metadata without validating its validity, except converts undefined or UNLICENSED to None.
+ */
+function getLicenseFromMetadata(contractInfo: ContractInfo): string {
   const compilerOutput: CompilerOutputWithMetadata =
     contractInfo.buildInfo.output.contracts[contractInfo.sourceName][contractInfo.contractName];
 
   const metadataString = compilerOutput.metadata;
   if (metadataString === undefined) {
-    debug('Metadata not found in compiler output');
-    return undefined;
+    throw new UpgradesError(
+      'License type could not be determined from contract metadata',
+      () => 'Enable metadata output in your compiler settings.',
+    );
   }
 
   const metadata = JSON.parse(metadataString);
 
-  const license = metadata.sources[contractInfo.sourceName].license;
-  if (license === undefined) {
-    debug('License not found in metadata');
+  const license: string = metadata.sources[contractInfo.sourceName].license;
+  if (license === undefined || license === 'UNLICENSED') {
+    // UNLICENSED means no license according to solidity docs
+    return 'None';
   } else {
-    debug(`Found license from metadata: ${license}`);
+    return license;
   }
-  return license;
 }

@@ -21,6 +21,7 @@ import type { DeployImplementationFunction } from './deploy-implementation';
 import { DeployAdminFunction, makeDeployProxyAdmin } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
 import type { ProposeUpgradeFunction } from './platform/propose-upgrade';
+import type { GetDefaultApprovalProcessFunction } from './platform/get-default-approval-process';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -48,11 +49,12 @@ export interface HardhatUpgrades {
   beacon: {
     getImplementationAddress: (beaconAddress: string) => Promise<string>;
   };
-  proposeUpgrade: ProposeUpgradeFunction;
 }
 
 export interface PlatformHardhatUpgrades extends HardhatUpgrades {
   deployContract: DeployContractFunction;
+  proposeUpgrade: ProposeUpgradeFunction;
+  getDefaultApprovalProcess: GetDefaultApprovalProcessFunction;
 }
 
 interface RunCompilerArgs {
@@ -141,7 +143,6 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
   const { makeUpgradeBeacon } = require('./upgrade-beacon');
   const { makeForceImport } = require('./force-import');
   const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
-  const { makeProposeUpgrade } = require('./platform/propose-upgrade');
 
   return {
     silenceWarnings,
@@ -170,7 +171,6 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
       getImplementationAddress: (beaconAddress: string) =>
         getImplementationAddressFromBeacon(hre.network.provider, beaconAddress),
     },
-    proposeUpgrade: makeProposeUpgrade(hre, platform),
   };
 }
 
@@ -180,9 +180,14 @@ function makeUpgradesFunctions(hre: HardhatRuntimeEnvironment): HardhatUpgrades 
 
 function makePlatformFunctions(hre: HardhatRuntimeEnvironment): PlatformHardhatUpgrades {
   const { makeDeployContract } = require('./deploy-contract');
+  const { makeProposeUpgrade } = require('./platform/propose-upgrade');
+  const { makeGetDefaultApprovalProcess } = require('./platform/get-default-approval-process');
+
   return {
     ...makeFunctions(hre, true),
     deployContract: makeDeployContract(hre, true),
+    proposeUpgrade: makeProposeUpgrade(hre, true),
+    getDefaultApprovalProcess: makeGetDefaultApprovalProcess(hre),
   };
 }
 

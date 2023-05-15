@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Improve OpenZeppelin Platform functions. ([#791](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/791))
+
+**Note**: Some OpenZeppelin Platform functions have breaking changes since the previous release. See ([#791](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/791)) for details. OpenZeppelin Platform is in beta and its functionality is subject to change.
+
 ## 1.25.3 (2023-05-12)
 
 - Add missing file in package. ([#797](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/797))

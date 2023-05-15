@@ -1,6 +1,6 @@
 const test = require('ava');
 const sinon = require('sinon');
-const { getNetwork, getAdminClient, disablePlatform, enablePlatform } = require('../dist/platform/utils');
+const { getNetwork, getPlatformClient, disablePlatform, enablePlatform } = require('../dist/platform/utils');
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x05';
@@ -27,28 +27,23 @@ test('fails if chain id is not accepted', async t => {
   await t.throwsAsync(() => getNetwork(t.context.fakeHre), { message: /Network \d+ is not supported/ });
 });
 
-test('returns admin client', async t => {
-  const client = getAdminClient(t.context.fakeHre);
-  t.is(typeof client.createProposal, 'function');
-});
-
 test('fails if platform config is missing', async t => {
   delete t.context.fakeHre.config.platform;
-  t.throws(() => getAdminClient(t.context.fakeHre), {
+  t.throws(() => getPlatformClient(t.context.fakeHre), {
     message: /Missing OpenZeppelin Platform API key and secret in hardhat config/,
   });
 });
 
 test('fails if platform api key is missing in config', async t => {
   delete t.context.fakeHre.config.platform.apiKey;
-  t.throws(() => getAdminClient(t.context.fakeHre), {
+  t.throws(() => getPlatformClient(t.context.fakeHre), {
     message: /Missing OpenZeppelin Platform API key and secret in hardhat config/,
   });
 });
 
 test('disablePlatform - use option', async t => {
-  await t.throws(() => disablePlatform(t.context.fakeHre, false, { platform: true }, 'someFunc'), {
-    message: /The function someFunc is not supported with the `platform` option/,
+  await t.throws(() => disablePlatform(t.context.fakeHre, false, { usePlatformDeploy: true }, 'someFunc'), {
+    message: /The function someFunc is not supported with the `usePlatformDeploy` option/,
   });
 });
 
@@ -63,7 +58,7 @@ test('disablePlatform - use config', async t => {
     ...t.context.fakeHre,
     config: {
       platform: {
-        useDeploy: true,
+        usePlatformDeploy: true,
       },
     },
   };
@@ -75,12 +70,12 @@ test('disablePlatform - use all', async t => {
     ...t.context.fakeHre,
     config: {
       platform: {
-        useDeploy: true,
+        usePlatformDeploy: true,
       },
     },
   };
-  await t.throws(() => disablePlatform(hre, true, { platform: true }, 'someFunc'), {
-    message: /The function someFunc is not supported with the `platform` option/,
+  await t.throws(() => disablePlatform(hre, true, { usePlatformDeploy: true }, 'someFunc'), {
+    message: /The function someFunc is not supported with the `usePlatformDeploy` option/,
   });
 });
 
@@ -89,7 +84,7 @@ test('disablePlatform - use none', async t => {
     ...t.context.fakeHre,
     config: {
       platform: {
-        useDeploy: false,
+        usePlatformDeploy: false,
       },
     },
   };
@@ -97,13 +92,13 @@ test('disablePlatform - use none', async t => {
 });
 
 test('enablePlatform - use option', async t => {
-  const result = enablePlatform(t.context.fakeHre, false, { platform: true });
-  t.is(result.platform, true);
+  const result = enablePlatform(t.context.fakeHre, false, { usePlatformDeploy: true });
+  t.is(result.usePlatformDeploy, true);
 });
 
 test('enablePlatform - use module', async t => {
   const result = enablePlatform(t.context.fakeHre, true, {});
-  t.is(result.platform, true);
+  t.is(result.usePlatformDeploy, true);
 });
 
 test('enablePlatform - use config', async t => {
@@ -111,12 +106,12 @@ test('enablePlatform - use config', async t => {
     ...t.context.fakeHre,
     config: {
       platform: {
-        useDeploy: true,
+        usePlatformDeploy: true,
       },
     },
   };
   const result = enablePlatform(hre, false, {});
-  t.is(result.platform, true);
+  t.is(result.usePlatformDeploy, true);
 });
 
 test('enablePlatform - use all', async t => {
@@ -124,12 +119,12 @@ test('enablePlatform - use all', async t => {
     ...t.context.fakeHre,
     config: {
       platform: {
-        useDeploy: true,
+        usePlatformDeploy: true,
       },
     },
   };
-  const result = enablePlatform(hre, true, { platform: true });
-  t.is(result.platform, true);
+  const result = enablePlatform(hre, true, { usePlatformDeploy: true });
+  t.is(result.usePlatformDeploy, true);
 });
 
 test('enablePlatform - use none', async t => {
@@ -137,12 +132,12 @@ test('enablePlatform - use none', async t => {
     ...t.context.fakeHre,
     config: {
       platform: {
-        useDeploy: false,
+        usePlatformDeploy: false,
       },
     },
   };
   const result = enablePlatform(hre, false, {});
-  t.not(result.platform, true); // not enabled
+  t.not(result.usePlatformDeploy, true); // not enabled
 });
 
 test('enablePlatform - option false overrides everything else', async t => {
@@ -150,10 +145,10 @@ test('enablePlatform - option false overrides everything else', async t => {
     ...t.context.fakeHre,
     config: {
       platform: {
-        useDeploy: true,
+        usePlatformDeploy: true,
       },
     },
   };
-  const result = enablePlatform(hre, true, { platform: false });
-  t.not(result.platform, true); // not enabled
+  const result = enablePlatform(hre, true, { usePlatformDeploy: false });
+  t.not(result.usePlatformDeploy, true); // not enabled
 });

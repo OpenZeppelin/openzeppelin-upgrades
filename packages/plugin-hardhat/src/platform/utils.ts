@@ -9,12 +9,12 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from 'defender-base-client';
-import { AdminClient } from 'defender-admin-client';
 import {
   BlockExplorerApiKeyClient,
   DeploymentClient,
   DeploymentConfigClient,
   PlatformClient,
+  UpgradeClient,
 } from 'platform-deploy-client';
 
 import { HardhatPlatformConfig } from '../type-extensions';
@@ -35,10 +35,6 @@ export function getPlatformApiKey(hre: HardhatRuntimeEnvironment): HardhatPlatfo
   return cfg;
 }
 
-export function getAdminClient(hre: HardhatRuntimeEnvironment): AdminClient {
-  return new AdminClient(getPlatformApiKey(hre));
-}
-
 export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Network> {
   const { provider } = hre.network;
   const chainId = hre.network.config.chainId ?? (await getChainId(provider));
@@ -54,10 +50,10 @@ export function enablePlatform<T extends Platform>(
   platformModule: boolean,
   opts: T,
 ): T {
-  if ((hre.config.platform?.useDeploy || platformModule) && opts.platform === undefined) {
+  if ((hre.config.platform?.usePlatformDeploy || platformModule) && opts.usePlatformDeploy === undefined) {
     return {
       ...opts,
-      platform: true,
+      usePlatformDeploy: true,
     };
   } else {
     return opts;
@@ -66,8 +62,8 @@ export function enablePlatform<T extends Platform>(
 
 /**
  * Disables Platform for a function that does not support it.
- * If opts.platform or platformModule is true, throws an error.
- * If hre.config.platform.useDeploy is true, logs a debug message and passes (to allow fallback to Hardhat signer).
+ * If opts.usePlatformDeploy or platformModule is true, throws an error.
+ * If hre.config.platform.usePlatformDeploy is true, logs a debug message and passes (to allow fallback to Hardhat signer).
  *
  * @param hre The Hardhat runtime environment
  * @param platformModule Whether the function was called from the platform module
@@ -80,16 +76,18 @@ export function disablePlatform(
   opts: Platform,
   unsupportedFunction: string,
 ): void {
-  if (opts.platform) {
-    throw new UpgradesError(`The function ${unsupportedFunction} is not supported with the \`platform\` option.`);
+  if (opts.usePlatformDeploy) {
+    throw new UpgradesError(
+      `The function ${unsupportedFunction} is not supported with the \`usePlatformDeploy\` option.`,
+    );
   } else if (platformModule) {
     throw new UpgradesError(
       `The function ${unsupportedFunction} is not supported with the \`platform\` module.`,
       () => `Call the function as upgrades.${unsupportedFunction} to use the Hardhat signer.`,
     );
-  } else if (hre.config.platform?.useDeploy) {
+  } else if (hre.config.platform?.usePlatformDeploy) {
     debug(
-      `The function ${unsupportedFunction} is not supported with the \`platform.useDeploy\` configuration option. Using the Hardhat signer instead.`,
+      `The function ${unsupportedFunction} is not supported with the \`platform.usePlatformDeploy\` configuration option. Using the Hardhat signer instead.`,
     );
   }
 }
@@ -98,6 +96,7 @@ interface PlatformClient {
   Deployment: DeploymentClient;
   DeploymentConfig: DeploymentConfigClient;
   BlockExplorerApiKey: BlockExplorerApiKeyClient;
+  Upgrade: UpgradeClient;
 }
 
 export function getPlatformClient(hre: HardhatRuntimeEnvironment): PlatformClient {

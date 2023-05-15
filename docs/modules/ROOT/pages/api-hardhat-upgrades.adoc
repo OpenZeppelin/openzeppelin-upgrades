@@ -22,7 +22,9 @@ The following options are common to some functions.
 * `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `60000`. Use `0` to wait indefinitely. 
 * `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `5000`.
 * `useDeployedImplementation`: (`boolean`) Require the use of an existing deployed implementation. If this is set to `true` and the implementation contract was not previously deployed or is not found in the network file, an error will be thrown instead of deploying the implementation.
-* `platform`: Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform]. **Note**: OpenZeppelin Platform is in beta and functionality related to Platform is subject to change.
+* `usePlatformDeploy`: (`boolean`) Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform]. **Note**: OpenZeppelin Platform is in beta and functionality related to Platform is subject to change.
+* `verifySourceCode`: (`boolean`) When using Platform, whether to verify source code on block explorers. Defaults to `true`.
+* `walletId`: (`string`) When using Platform, the ID of the wallet to use for the deployment. Defaults to the wallet configured for your deployment environment on Platform.
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -47,7 +49,7 @@ async function deployProxy(
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
     kind?: 'uups' | 'transparent',
-    platform?: boolean,
+    usePlatformDeploy?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -185,7 +187,7 @@ async function deployBeaconProxy(
   args: unknown[] = [],
   opts?: {
     initializer?: string | false,
-    platform?: boolean,
+    usePlatformDeploy?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -285,7 +287,7 @@ async function deployImplementation(
     useDeployedImplementation?: boolean,
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
-    platform?: boolean,
+    usePlatformDeploy?: boolean,
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -376,7 +378,7 @@ async function prepareUpgrade(
     useDeployedImplementation?: boolean,
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
-    platform?: boolean,
+    usePlatformDeploy?: boolean,
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -406,7 +408,6 @@ async function deployContract(
   opts?: {
     unsafeAllowDeployContract?: boolean,
     pollingInterval?: number,
-    platform?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -423,7 +424,6 @@ CAUTION: Do not use this function to deploy implementations of upgradeable contr
 * `opts` - an object with options:
 ** `unsafeAllowDeployContract`: if set to `true`, allows the contract to be deployed even if it looks like an implementation contract. Defaults to `false`.
 ** `pollingInterval`: polling interval in milliseconds between checks for the transaction confirmation when calling `.deployed()` on the resulting contract instance. Defaults to `5000`.
-** `platform`: to use this function, you must enable OpenZeppelin Platform deployments using any of the ways described in xref:platform-deploy.adoc[Using with OpenZeppelin Platform] in order to set this to `true`. This function does not support `false`.
 
 *Returns:*
 
@@ -450,13 +450,11 @@ async function proposeUpgrade(
     pollingInterval?: number,
     useDeployedImplementation?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
-    title?: string,
-    description?: string,
-    multisig?: string,
-    proxyAdmin?: string,
-    platform?: boolean,
+    usePlatformDeploy?: boolean,
+    approvalProcessId?: string,
   },
 ): Promise<{
+    proposalId: string,
     url: string,
     txResponse?: ethers.providers.TransactionResponse,
   }>
@@ -464,11 +462,47 @@ async function proposeUpgrade(
 
 **Note**: OpenZeppelin Platform is in beta and this function is subject to change.
 
-Similar to <<defender-propose-upgrade>> but supports deploying the new implementation contract using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform].
+Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal through the OpenZeppelin Platform, for review and approval by the upgrade administrators. Supported for UUPS or Transparent proxies. Not currently supported for beacon proxies or beacons. For beacons, use `prepareUpgrade` along with a transaction proposal on Platform to upgrade the beacon to the deployed implementation.
+
+*Parameters:*
+
+* `proxyAddress` - the proxy address.
+* `ImplFactory` - the new implementation contract.
+* `opts` - an object with options:
+** `approvalProcessId`: The ID of the upgrade approval process. Defaults to the upgrade approval process configured for your deployment environment on Platform.
+** additional options as described in <<common-options>>.
+
+*Returns:*
+
+* an object with the Platform proposal ID, the URL of the proposal in Safe App if applicable, and the ethers transaction response corresponding to the deployment of the new implementation contract. Note that if the new implementation contract was originally imported as a result of `forceImport`, the ethers transaction response will be undefined.
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@1.25.0`
+* `@openzeppelin/hardhat-upgrades@1.26.0`
+
+[[platform-get-default-approval-process]]
+== platform.getDefaultApprovalProcess
+
+[source,ts]
+----
+async function getDefaultApprovalProcess(
+): Promise<{
+    approvalProcessId: string,
+    address?: string,
+  }>
+----
+
+**Note**: OpenZeppelin Platform is in beta and this function is subject to change.
+
+Gets the default upgrade approval process configured for your deployment environment on Platform. For example, this is useful for determining the default multisig wallet that you can use in your scripts to assign as the owner of your proxy.
+
+*Returns:*
+
+* an object with the default upgrade approval process ID and the associated address, such as a multisig or governor contract address.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@1.26.0`
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade

@@ -5,19 +5,32 @@ const proxyquire = require('proxyquire').noCallThru();
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
 const { FormatTypes } = require('ethers/lib/utils');
-const { AdminClient } = require('defender-admin-client');
 
+const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
-const multisig = '0xc0889725c22e2e36c524F41AECfddF5650432464';
 
 test.beforeEach(async t => {
-  t.context.fakeClient = sinon.createStubInstance(AdminClient);
   t.context.fakeChainId = 'goerli';
+
+  t.context.fakePlatformClient = {
+    Upgrade: {
+      upgrade: () => {
+        return {
+          proposalId: proposalId,
+          externalUrl: proposalUrl,
+          transaction: {},
+        };
+      },
+    },
+  };
+
+  t.context.spy = sinon.spy(t.context.fakePlatformClient.Upgrade, 'upgrade');
+
   t.context.proposeUpgrade = proxyquire('../dist/platform/propose-upgrade', {
     './utils': {
       ...require('../dist/platform/utils'),
       getNetwork: () => t.context.fakeChainId,
-      getAdminClient: () => t.context.fakeClient,
+      getPlatformClient: () => t.context.fakePlatformClient,
     },
   }).makeProposeUpgrade(hre);
 
@@ -31,36 +44,26 @@ test.afterEach.always(() => {
 });
 
 test('proposes an upgrade using deployed implementation - implementation not deployed', async t => {
-  const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
-  fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
+  const { proposeUpgrade, greeter, GreeterV2 } = t.context;
 
-  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2, { multisig, useDeployedImplementation: true }), {
+  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2, { useDeployedImplementation: true }), {
     message: /(The implementation contract was not previously deployed.)/,
   });
 });
 
 test('proposes an upgrade using deployed implementation', async t => {
-  const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
-  fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
+  const { proposeUpgrade, spy, greeter, GreeterV2 } = t.context;
 
   const greeterV2Impl = await upgrades.deployImplementation(GreeterV2);
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { multisig, useDeployedImplementation: true });
+  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { useDeployedImplementation: true });
 
   t.is(proposal.url, proposalUrl);
-  sinon.assert.calledWithExactly(
-    fakeClient.proposeUpgrade,
-    {
-      newImplementation: greeterV2Impl,
-      title: undefined,
-      description: undefined,
-      proxyAdmin: undefined,
-      via: multisig,
-      viaType: undefined,
-    },
-    {
-      address: greeter.address,
-      network: 'goerli',
-      abi: GreeterV2.interface.format(FormatTypes.json),
-    },
-  );
+  sinon.assert.calledWithExactly(spy, {
+    proxyAddress: greeter.address,
+    proxyAdminAddress: undefined,
+    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
+    newImplementationAddress: greeterV2Impl,
+    network: 'goerli',
+    approvalProcessId: undefined,
+  });
 });

@@ -12,7 +12,7 @@ test.before(async t => {
   t.context.deployImplementation = proxyquire('../dist/deploy-implementation', {
     './utils/deploy': {
       deploy: async (hre, opts, factory, ...args) => {
-        opts.platform = false;
+        opts.usePlatformDeploy = false;
         return {
           // just do regular deploy but add a deployment id
           ...(await require('../dist/utils/deploy').deploy(hre, opts, factory, ...args)),

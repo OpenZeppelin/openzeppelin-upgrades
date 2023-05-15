@@ -45,28 +45,29 @@ type Initializer = {
  * Option to enable or disable Platform deployments.
  */
 export type Platform = {
-  platform?: boolean;
+  usePlatformDeploy?: boolean;
 };
 
 /**
  * Options for functions that support Platform deployments.
  */
-export type PlatformSupportedOptions = Platform & {
+export type PlatformDeployOptions = Platform & {
   verifySourceCode?: boolean;
+  walletId?: string;
 };
 
-export type DeployBeaconProxyOptions = DeployOpts & ProxyKindOption & Initializer & PlatformSupportedOptions;
+export type DeployBeaconProxyOptions = DeployOpts & ProxyKindOption & Initializer & PlatformDeployOptions;
 export type DeployBeaconOptions = StandaloneOptions & Platform;
-export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & PlatformSupportedOptions;
+export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & PlatformDeployOptions;
 export type DeployContractOptions = StandaloneOptions &
   GetTxResponse &
-  PlatformSupportedOptions & {
+  PlatformDeployOptions & {
     unsafeAllowDeployContract?: boolean;
   };
 export type DeployProxyAdminOptions = DeployOpts & Platform;
-export type DeployProxyOptions = StandaloneOptions & Initializer & PlatformSupportedOptions;
+export type DeployProxyOptions = StandaloneOptions & Initializer & PlatformDeployOptions;
 export type ForceImportOptions = ProxyKindOption;
-export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & PlatformSupportedOptions;
+export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & PlatformDeployOptions;
 export type UpgradeBeaconOptions = UpgradeOptions & Platform;
 export type UpgradeProxyOptions = UpgradeOptions & {
   call?: { fn: string; args?: unknown[] } | string;
