@@ -5,7 +5,7 @@ import {
   ContractInstance,
   wrapProvider,
   deployProxyImpl,
-  getTransparentUpgradeableProxyFactory,
+  getITransparentUpgradeableProxyFactory,
   getProxyAdminFactory,
   UpgradeProxyOptions,
   withDefaults,
@@ -46,9 +46,9 @@ async function getUpgrader(
   const adminBytecode = await getCode(provider, adminAddress);
 
   if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
-    // No admin contract: use TransparentUpgradeableProxyFactory to get proxiable interface
-    const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(contractTemplate);
-    const proxy = new TransparentUpgradeableProxyFactory(proxyAddress);
+    // No admin contract: use ITransparentUpgradeableProxyFactory to get proxiable interface
+    const ITransparentUpgradeableProxyFactory = getITransparentUpgradeableProxyFactory(contractTemplate);
+    const proxy = new ITransparentUpgradeableProxyFactory(proxyAddress);
 
     return (nextImpl, call) => {
       return call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl);

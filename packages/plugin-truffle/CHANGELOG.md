@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.18.2 (2023-05-12)
+
+- Add missing file in package. ([#797](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/797))
+
+## 1.18.1 (2023-05-12)
+
+- Use proxies from OpenZeppelin Contracts 4.8.3. ([#795](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/795))
+
 ## 1.18.0 (2023-04-26)
 
 - Support `prepareUpgrade` from an implementation address. ([#777](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/777))

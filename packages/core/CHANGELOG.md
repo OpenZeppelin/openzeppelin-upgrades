@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.26.2 (2023-05-12)
+
+- Add missing file in package. ([#797](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/797))
+
+## 1.26.1 (2023-05-12)
+
+- Use proxies from OpenZeppelin Contracts 4.8.3. ([#795](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/795))
+
 ## 1.26.0 (2023-05-08)
 
 - Enable using OpenZeppelin Platform for deployments. ([#763](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/763))
