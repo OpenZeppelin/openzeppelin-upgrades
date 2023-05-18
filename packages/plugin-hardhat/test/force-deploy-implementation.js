@@ -5,7 +5,6 @@ const { ethers, upgrades } = require('hardhat');
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
-  t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3');
 });
 
 test('deployImplementation - both use and force options enabled', async t => {
