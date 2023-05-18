@@ -30,16 +30,27 @@ test('deployImplementation - force', async t => {
 test('deployProxy - force, then upgrade', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
+  // predeploy an impl
   const greeterImplAddr = await upgrades.deployImplementation(Greeter);
-  const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!'], {
+
+  // deploy first proxy with existing impl
+  const greeter1 = await upgrades.deployProxy(Greeter, ['Hola mundo!'], {
+    kind: 'transparent',
+  });
+  t.is(await greeter1.greet(), 'Hola mundo!');
+  t.is(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(greeter1.address));
+
+  // deploy second proxy with force deployed impl
+  const greeter2 = await upgrades.deployProxy(Greeter, ['Hola mundo!'], {
     kind: 'transparent',
     forceDeployImplementation: true,
   });
-  t.is(await greeter.greet(), 'Hola mundo!');
-  t.not(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(greeter.address));
+  t.is(await greeter2.greet(), 'Hola mundo!');
+  t.not(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(greeter2.address));
 
-  // upgrade proxy that had a force deployed implementation
-  await upgrades.upgradeProxy(greeter, GreeterV2);
+  // both proxies should be upgradable
+  await upgrades.upgradeProxy(greeter1, GreeterV2);
+  await upgrades.upgradeProxy(greeter2, GreeterV2);
 });
 
 test('deployBeacon - force', async t => {
