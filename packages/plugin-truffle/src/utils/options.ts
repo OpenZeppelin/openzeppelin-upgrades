@@ -16,6 +16,7 @@ export type StandaloneOptions = StandaloneValidationOptions &
   TruffleDeployer & {
     constructorArgs?: unknown[];
     useDeployedImplementation?: boolean;
+    forceDeployImplementation?: boolean;
   };
 
 export type UpgradeOptions = ValidationOptions & StandaloneOptions;
@@ -26,7 +27,8 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     timeout: opts.timeout ?? 60e3, // not used for Truffle, but include these anyways
     pollingInterval: opts.pollingInterval ?? 5e3, // not used for Truffle, but include these anyways
     constructorArgs: opts.constructorArgs ?? [],
-    useDeployedImplementation: opts.useDeployedImplementation ?? true,
+    useDeployedImplementation: opts.useDeployedImplementation ?? false,
+    forceDeployImplementation: opts.forceDeployImplementation ?? false,
     ...withValidationDefaults(opts),
   };
 }
