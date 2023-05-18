@@ -99,6 +99,14 @@ async function deployImpl(
 ): Promise<DeployedImpl> {
   const layout = deployData.layout;
 
+  if (opts.useDeployedImplementation && opts.forceDeployImplementation) {
+    throw new UpgradesError(
+      'The useDeployedImplementation and forceDeployImplementation options cannot both be set to true at the same time',
+    );
+  }
+
+  const merge = opts.forceDeployImplementation;
+
   const deployment = await fetchOrDeployGetDeployment(
     deployData.version,
     deployData.provider,
@@ -119,7 +127,7 @@ async function deployImpl(
       return { ...deployment, layout };
     },
     opts,
-    undefined,
+    merge,
     remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId),
   );
 
