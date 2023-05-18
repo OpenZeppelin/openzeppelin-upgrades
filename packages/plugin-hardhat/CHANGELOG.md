@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Support `salt` option for deployments on OpenZeppelin Platform. ([#799](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/799))
+- Support `forceDeployImplementation` option. ([#800](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/800))
 
 **Note**: OpenZeppelin Platform is currently in beta and functionality related to it is subject to change.
 

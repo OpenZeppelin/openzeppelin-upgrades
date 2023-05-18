@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support `forceDeployImplementation` option. ([#800](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/800))
+
 ## 1.18.2 (2023-05-12)
 
 - Add missing file in package. ([#797](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/797))
