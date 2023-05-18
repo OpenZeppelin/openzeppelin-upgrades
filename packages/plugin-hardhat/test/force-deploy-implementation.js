@@ -27,8 +27,8 @@ test('deployImplementation - force', async t => {
   t.not(impl2, impl1);
 });
 
-test('deployProxy - force', async t => {
-  const { Greeter } = t.context;
+test('deployProxy - force, then upgrade', async t => {
+  const { Greeter, GreeterV2 } = t.context;
 
   const greeterImplAddr = await upgrades.deployImplementation(Greeter);
   const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!'], {
@@ -37,6 +37,9 @@ test('deployProxy - force', async t => {
   });
   t.is(await greeter.greet(), 'Hola mundo!');
   t.not(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(greeter.address));
+
+  // upgrade proxy that had a force deployed implementation
+  await upgrades.upgradeProxy(greeter, GreeterV2);
 });
 
 test('deployBeacon - force', async t => {

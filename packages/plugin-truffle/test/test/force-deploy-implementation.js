@@ -32,7 +32,7 @@ contract('Greeter', function () {
     assert.notEqual(impl2, impl1);
   });
 
-  it('deployProxy - force', async function () {
+  it('deployProxy - force, then upgrade', async function () {
     const greeterImplAddr = await deployImplementation(GreeterDeployImpl);
     const greeter = await deployProxy(GreeterDeployImpl, ['Hola mundo!'], {
       kind: 'transparent',
@@ -40,6 +40,9 @@ contract('Greeter', function () {
     });
     assert.equal(await greeter.greet(), 'Hola mundo!');
     assert.notEqual(greeterImplAddr, await erc1967.getImplementationAddress(greeter.address));
+
+    // upgrade proxy that had a force deployed implementation
+    await upgradeProxy(greeter, GreeterV2DeployImpl);
   });
 
   it('deployBeacon - force', async function () {
