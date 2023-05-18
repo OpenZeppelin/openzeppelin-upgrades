@@ -76,6 +76,10 @@ export async function platformDeploy(
     debug(`License type: ${license}`);
   }
 
+  if (opts.salt !== undefined) {
+    debug(`Salt: ${opts.salt}`);
+  }
+
   let deploymentResponse: DeploymentResponse;
   try {
     deploymentResponse = await client.Deployment.deploy({
@@ -87,6 +91,7 @@ export async function platformDeploy(
       constructorInputs: constructorArgs,
       verifySourceCode: verifySourceCode,
       walletId: opts.walletId,
+      salt: opts.salt,
     });
   } catch (e: any) {
     if (e.response?.data?.message?.includes('licenseType should be equal to one of the allowed values')) {

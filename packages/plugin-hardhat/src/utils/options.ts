@@ -54,6 +54,7 @@ export type Platform = {
 export type PlatformDeployOptions = Platform & {
   verifySourceCode?: boolean;
   walletId?: string;
+  salt?: string;
 };
 
 export type DeployBeaconProxyOptions = DeployOpts & ProxyKindOption & Initializer & PlatformDeployOptions;

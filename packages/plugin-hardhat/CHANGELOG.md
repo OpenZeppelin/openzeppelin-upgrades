@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Support `salt` option for deployments on OpenZeppelin Platform. ([#799](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/799))
+
+**Note**: OpenZeppelin Platform is currently in beta and functionality related to it is subject to change.
+
 ## 1.26.0 (2023-05-15)
 
 - Improve OpenZeppelin Platform functions. ([#791](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/791))
