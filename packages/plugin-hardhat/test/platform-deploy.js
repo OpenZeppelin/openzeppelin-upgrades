@@ -18,6 +18,7 @@ const ADDRESS = '0x2';
 const TX_RESPONSE = 'mocked response';
 const ETHERSCAN_API_KEY = 'fakeKey';
 const WALLET_ID = '123-abc';
+const SALT = 'customsalt';
 
 const LOGIC_ADDRESS = '0x0000000000000000000000000000000000000003';
 const ADMIN_ADDRESS = '0x0000000000000000000000000000000000000004';
@@ -109,6 +110,7 @@ test('calls platform deploy', async t => {
     constructorInputs: [],
     verifySourceCode: true,
     walletId: undefined,
+    salt: undefined,
   });
 
   assertResult(t, result);
@@ -133,6 +135,32 @@ test('calls platform deploy with walletId', async t => {
     constructorInputs: [],
     verifySourceCode: true,
     walletId: WALLET_ID,
+    salt: undefined,
+  });
+
+  assertResult(t, result);
+});
+
+test('calls platform deploy with salt', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Greeter.sol';
+  const contractName = 'Greeter';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.platformDeploy(fakeHre, factory, { salt: SALT });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'None',
+    constructorInputs: [],
+    verifySourceCode: true,
+    walletId: undefined,
+    salt: SALT,
   });
 
   assertResult(t, result);
@@ -157,6 +185,7 @@ test('calls platform deploy with license', async t => {
     constructorInputs: [],
     verifySourceCode: true,
     walletId: undefined,
+    salt: undefined,
   });
 
   assertResult(t, result);
@@ -181,6 +210,7 @@ test('calls platform deploy with constructor args', async t => {
     constructorInputs: [10],
     verifySourceCode: true,
     walletId: undefined,
+    salt: undefined,
   });
 
   assertResult(t, result);
@@ -205,6 +235,7 @@ test('calls platform deploy with verify false', async t => {
     constructorInputs: [],
     verifySourceCode: false,
     walletId: undefined,
+    salt: undefined,
   });
 
   assertResult(t, result);
@@ -229,6 +260,7 @@ test('calls platform deploy with ERC1967Proxy', async t => {
     constructorInputs: [LOGIC_ADDRESS, DATA],
     verifySourceCode: true,
     walletId: undefined,
+    salt: undefined,
   });
 });
 
@@ -251,6 +283,7 @@ test('calls platform deploy with BeaconProxy', async t => {
     constructorInputs: [LOGIC_ADDRESS, DATA],
     verifySourceCode: true,
     walletId: undefined,
+    salt: undefined,
   });
 });
 
@@ -273,5 +306,6 @@ test('calls platform deploy with TransparentUpgradeableProxy', async t => {
     constructorInputs: [LOGIC_ADDRESS, ADMIN_ADDRESS, DATA],
     verifySourceCode: true,
     walletId: undefined,
+    salt: undefined,
   });
 });
