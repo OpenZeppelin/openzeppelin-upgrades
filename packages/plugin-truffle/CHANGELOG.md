@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Support `redeployImplementation` option, deprecate `useDeployedImplementation`. ([#800](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/800))
+- Add `redeployImplementation` option, deprecate `useDeployedImplementation`. ([#804](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/804))
 
 ## 1.18.2 (2023-05-12)
 
