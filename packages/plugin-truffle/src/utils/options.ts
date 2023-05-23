@@ -15,8 +15,11 @@ export type StandaloneOptions = StandaloneValidationOptions &
   DeployOpts &
   TruffleDeployer & {
     constructorArgs?: unknown[];
+    /**
+     * @deprecated Use `redeployImplementation = 'never'` instead.
+     */
     useDeployedImplementation?: boolean;
-    forceDeployImplementation?: boolean;
+    redeployImplementation?: 'always' | 'never' | 'onchange';
   };
 
 export type UpgradeOptions = ValidationOptions & StandaloneOptions;
@@ -28,7 +31,7 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     pollingInterval: opts.pollingInterval ?? 5e3, // not used for Truffle, but include these anyways
     constructorArgs: opts.constructorArgs ?? [],
     useDeployedImplementation: opts.useDeployedImplementation ?? false,
-    forceDeployImplementation: opts.forceDeployImplementation ?? false,
+    redeployImplementation: opts.redeployImplementation ?? 'onchange',
     ...withValidationDefaults(opts),
   };
 }

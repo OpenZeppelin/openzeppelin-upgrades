@@ -88,13 +88,13 @@ function encodeArgs(Contract: ContractClass, constructorArgs: unknown[]): string
 async function deployImpl(deployData: DeployData, Contract: ContractClass, opts: UpgradeOptions): Promise<any> {
   const layout = deployData.layout;
 
-  if (opts.useDeployedImplementation && opts.forceDeployImplementation) {
+  if (opts.useDeployedImplementation && opts.redeployImplementation !== undefined) {
     throw new UpgradesError(
-      'The useDeployedImplementation and forceDeployImplementation options cannot both be set to true at the same time',
+      'The useDeployedImplementation and redeployImplementation options cannot both be set at the same time',
     );
   }
 
-  const merge = opts.forceDeployImplementation;
+  const merge = opts.redeployImplementation === 'always';
 
   const impl = await fetchOrDeploy(
     deployData.version,
@@ -102,12 +102,14 @@ async function deployImpl(deployData: DeployData, Contract: ContractClass, opts:
     async () => {
       const abi = (Contract as any).abi;
       const attemptDeploy = () => {
-        if (opts.useDeployedImplementation) {
-          throw new UpgradesError(
-            'The implementation contract was not previously deployed.',
-            () =>
-              'The useDeployedImplementation option was set to true but the implementation contract was not previously deployed on this network.',
-          );
+        if (opts.useDeployedImplementation || opts.redeployImplementation === 'never') {
+          throw new UpgradesError('The implementation contract was not previously deployed.', () => {
+            if (opts.useDeployedImplementation) {
+              return 'The useDeployedImplementation option was set to true but the implementation contract was not previously deployed on this network.';
+            } else {
+              return "The redeployImplementation option was set to 'never' but the implementation contract was not previously deployed on this network.";
+            }
+          });
         } else {
           return deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs);
         }
