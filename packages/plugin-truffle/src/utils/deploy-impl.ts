@@ -94,7 +94,7 @@ async function deployImpl(deployData: DeployData, Contract: ContractClass, opts:
     );
   }
 
-  const merge = opts.redeployImplementation === 'always';
+  const merge = deployData.fullOpts.redeployImplementation === 'always';
 
   const impl = await fetchOrDeploy(
     deployData.version,
@@ -102,9 +102,9 @@ async function deployImpl(deployData: DeployData, Contract: ContractClass, opts:
     async () => {
       const abi = (Contract as any).abi;
       const attemptDeploy = () => {
-        if (opts.useDeployedImplementation || opts.redeployImplementation === 'never') {
+        if (deployData.fullOpts.useDeployedImplementation || deployData.fullOpts.redeployImplementation === 'never') {
           throw new UpgradesError('The implementation contract was not previously deployed.', () => {
-            if (opts.useDeployedImplementation) {
+            if (deployData.fullOpts.useDeployedImplementation) {
               return 'The useDeployedImplementation option was set to true but the implementation contract was not previously deployed on this network.';
             } else {
               return "The redeployImplementation option was set to 'never' but the implementation contract was not previously deployed on this network.";
