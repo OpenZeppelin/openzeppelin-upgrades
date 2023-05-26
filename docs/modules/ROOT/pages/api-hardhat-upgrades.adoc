@@ -21,7 +21,10 @@ The following options are common to some functions.
 * `constructorArgs`: (`unknown[]`) Provide arguments for the constructor of the implementation contract. Note that these are different from initializer arguments, and will be used in the deployment of the implementation contract itself. Can be used to initialize immutable variables.
 * `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `60000`. Use `0` to wait indefinitely. 
 * `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `5000`.
-* `useDeployedImplementation`: (`boolean`) Require the use of an existing deployed implementation. If this is set to `true` and the implementation contract was not previously deployed or is not found in the network file, an error will be thrown instead of deploying the implementation.
+* `redeployImplementation`: (`"always" | "never" | "onchange"`) Determines whether the implementation contract will be redeployed. Defaults to `"onchange"`.
+** If set to `"always"`, the implementation contract is always redeployed even if it was previously deployed with the same bytecode. This can be used with the `salt` option when deploying a proxy through OpenZeppelin Platform to ensure that the implementation contract is deployed with the same salt as the proxy.
+** If set to `"never"`, the implementation contract is never redeployed. If the implementation contract was not previously deployed or is not found in the network file, an error will be thrown.
+** If set to `"onchange"`, the implementation contract is redeployed only if the bytecode has changed from previous deployments.
 * `usePlatformDeploy`: (`boolean`) Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform]. **Note**: OpenZeppelin Platform is in beta and functionality related to Platform is subject to change.
 * `verifySourceCode`: (`boolean`) When using Platform, whether to verify source code on block explorers. Defaults to `true`.
 * `walletId`: (`string`) When using Platform, the ID of the wallet to use for the deployment. Defaults to the wallet configured for your deployment environment on Platform.
@@ -33,6 +36,7 @@ The following options have been deprecated.
 
 * `unsafeAllowLinkedLibraries`: Equivalent to including `"external-library-linking"` in `unsafeAllow`.
 * `unsafeAllowCustomTypes`: Equivalent to including `"struct-definition"` and `"enum-definition"` in `unsafeAllow`. No longer necessary.
+* `useDeployedImplementation`: (`boolean`) Equivalent to setting `redeployImplementation` to `"never"`.
 
 [[deploy-proxy]]
 == deployProxy
@@ -48,7 +52,7 @@ async function deployProxy(
     constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
-    useDeployedImplementation?: boolean,
+    redeployImplementation?: 'always' | 'never' | 'onchange',
     kind?: 'uups' | 'transparent',
     usePlatformDeploy?: boolean,
   },
@@ -87,7 +91,7 @@ async function upgradeProxy(
     constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
-    useDeployedImplementation?: boolean,
+    redeployImplementation?: 'always' | 'never' | 'onchange',
     kind?: 'uups' | 'transparent',
   },
 ): Promise<ethers.Contract>
@@ -119,7 +123,7 @@ async function deployBeacon(
     constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
-    useDeployedImplementation?: boolean,
+    redeployImplementation?: 'always' | 'never' | 'onchange',
   },
 ): Promise<ethers.Contract>
 ----
@@ -155,7 +159,7 @@ async function upgradeBeacon(
     constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
-    useDeployedImplementation?: boolean,
+    redeployImplementation?: 'always' | 'never' | 'onchange',
   },
 ): Promise<ethers.Contract>
 ----
@@ -285,7 +289,7 @@ async function deployImplementation(
     constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
-    useDeployedImplementation?: boolean,
+    redeployImplementation?: 'always' | 'never' | 'onchange',
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
     usePlatformDeploy?: boolean,
@@ -376,7 +380,7 @@ async function prepareUpgrade(
     constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
-    useDeployedImplementation?: boolean,
+    redeployImplementation?: 'always' | 'never' | 'onchange',
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
     usePlatformDeploy?: boolean,
@@ -449,7 +453,7 @@ async function proposeUpgrade(
     constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
-    useDeployedImplementation?: boolean,
+    redeployImplementation?: 'always' | 'never' | 'onchange',
     kind?: 'uups' | 'transparent' | 'beacon',
     usePlatformDeploy?: boolean,
     approvalProcessId?: string,
@@ -520,7 +524,7 @@ async function proposeUpgrade(
     constructorArgs?: unknown[],
     timeout?: number,
     pollingInterval?: number,
-    useDeployedImplementation?: boolean,
+    redeployImplementation?: 'always' | 'never' | 'onchange',
     kind?: 'uups' | 'transparent' | 'beacon',
     title?: string,
     description?: string,

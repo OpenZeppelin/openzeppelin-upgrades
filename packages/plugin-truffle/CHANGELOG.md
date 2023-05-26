@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `redeployImplementation` option, deprecate `useDeployedImplementation`. ([#804](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/804))
+
 ## 1.18.2 (2023-05-12)
 
 - Add missing file in package. ([#797](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/797))

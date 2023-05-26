@@ -12,7 +12,11 @@ import {
 export type StandaloneOptions = StandaloneValidationOptions &
   DeployOpts & {
     constructorArgs?: unknown[];
+    /**
+     * @deprecated Use `redeployImplementation = 'never'` instead.
+     */
     useDeployedImplementation?: boolean;
+    redeployImplementation?: 'always' | 'never' | 'onchange';
   };
 
 /**
@@ -25,7 +29,8 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     constructorArgs: opts.constructorArgs ?? [],
     timeout: opts.timeout ?? 60e3,
     pollingInterval: opts.pollingInterval ?? 5e3,
-    useDeployedImplementation: opts.useDeployedImplementation ?? true,
+    useDeployedImplementation: opts.useDeployedImplementation ?? false,
+    redeployImplementation: opts.redeployImplementation ?? 'onchange',
     ...withValidationDefaults(opts),
   };
 }
