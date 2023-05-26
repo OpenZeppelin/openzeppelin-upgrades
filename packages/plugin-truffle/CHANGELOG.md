@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.19.0 (2023-05-26)
 
 - Add `redeployImplementation` option, deprecate `useDeployedImplementation`. ([#804](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/804))
 

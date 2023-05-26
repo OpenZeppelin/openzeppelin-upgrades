@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.27.0 (2023-05-26)
 
 - Support `salt` option for deployments on OpenZeppelin Platform. ([#799](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/799))
 - Add `redeployImplementation` option, deprecate `useDeployedImplementation`. ([#804](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/804))
