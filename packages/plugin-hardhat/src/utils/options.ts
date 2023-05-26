@@ -24,11 +24,12 @@ export type StandaloneOptions = StandaloneValidationOptions &
  */
 export type UpgradeOptions = ValidationOptions & StandaloneOptions;
 
-export function withDefaults(opts: UpgradeOptions = {}): Required<Omit<UpgradeOptions, 'useDeployedImplementation'>> {
+export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions> {
   return {
     constructorArgs: opts.constructorArgs ?? [],
     timeout: opts.timeout ?? 60e3,
     pollingInterval: opts.pollingInterval ?? 5e3,
+    useDeployedImplementation: opts.useDeployedImplementation ?? false,
     redeployImplementation: opts.redeployImplementation ?? 'onchange',
     ...withValidationDefaults(opts),
   };
