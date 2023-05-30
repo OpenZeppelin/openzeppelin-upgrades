@@ -1,5 +1,5 @@
 import { Version, getVersion } from '../version';
-import { ValidationRunData, ValidationError, isOpcodeError } from './run';
+import { ValidationRunData, ValidationError, isOpcodeError, ContractValidation } from './run';
 import { StorageLayout } from '../storage/layout';
 import { unlinkBytecode } from '../link-refs';
 import { ValidationOptions, processExceptions } from './overrides';
@@ -186,13 +186,26 @@ export function isUpgradeSafe(data: ValidationData, version: Version): boolean {
   return getErrors(dataV3, version).length == 0;
 }
 
+export function inferUUPS(runValidation: ValidationRunData, fullContractName: string): boolean {
+  const methods = getAllMethods(runValidation, fullContractName);
+  return methods.includes(upgradeToSignature);
+}
+
 export function inferProxyKind(data: ValidationData, version: Version): ProxyDeployment['kind'] {
   const dataV3 = normalizeValidationData(data);
   const [fullContractName, runValidation] = getContractNameAndRunValidation(dataV3, version);
-  const methods = getAllMethods(runValidation, fullContractName);
-  if (methods.includes(upgradeToSignature)) {
+  if (inferUUPS(runValidation, fullContractName)) {
     return 'uups';
   } else {
     return 'transparent';
   }
+}
+
+/**
+ * Whether the contract inherits any contract named "Initializable"
+ * @param contractValidation The validation result for the contract
+ * @return true if the contract inheritss any contract whose fully qualified name ends with ":Initializable"
+ */
+export function inferInitializable(contractValidation: ContractValidation) {
+  return contractValidation.inherit.some(c => c.endsWith(':Initializable'));
 }

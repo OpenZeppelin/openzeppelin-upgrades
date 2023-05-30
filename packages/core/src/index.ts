@@ -55,3 +55,5 @@ export {
   PrepareUpgradeRequiresKindError,
   assertNotProxy,
 } from './usage-error';
+
+export { ReportOptions, ValidateUpgradeSafetyOptions, validateUpgradeSafety, SummaryReport } from './cli';

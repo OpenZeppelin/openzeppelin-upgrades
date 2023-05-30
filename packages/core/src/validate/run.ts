@@ -11,6 +11,8 @@ import { Version, getVersion } from '../version';
 import { extractLinkReferences, LinkReference } from '../link-refs';
 import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
+import { getFullyQualifiedName } from '../utils/contract-name';
+import { getAnnotationArgs as getSupportedAnnotationArgs } from '../utils/annotations';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -92,18 +94,6 @@ interface ValidationErrorUpgradeability extends ValidationErrorBase {
   kind: 'missing-public-upgradeto';
 }
 
-function* execall(re: RegExp, text: string) {
-  re = new RegExp(re, re.flags + (re.sticky ? '' : 'y'));
-  while (true) {
-    const match = re.exec(text);
-    if (match && match[0] !== '') {
-      yield match;
-    } else {
-      break;
-    }
-  }
-}
-
 function getAllowed(node: Node, reachable: boolean): string[] {
   if ('documentation' in node) {
     const tag = `oz-upgrades-unsafe-allow${reachable ? '-reachable' : ''}`;
@@ -114,30 +104,8 @@ function getAllowed(node: Node, reachable: boolean): string[] {
   }
 }
 
-/**
- * Get args from the doc string matching the given tag
- */
 export function getAnnotationArgs(doc: string, tag: string) {
-  const result: string[] = [];
-  for (const { groups } of execall(
-    /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s*@\w+)[^])*)/m,
-    doc,
-  )) {
-    if (groups && groups.title === 'custom' && groups.tag === tag) {
-      const trimmedArgs = groups.args.trim();
-      if (trimmedArgs.length > 0) {
-        result.push(...trimmedArgs.split(/\s+/));
-      }
-    }
-  }
-
-  result.forEach(arg => {
-    if (!(errorKinds as readonly string[]).includes(arg)) {
-      throw new Error(`NatSpec: ${tag} argument not recognized: ${arg}`);
-    }
-  });
-
-  return result;
+  return getSupportedAnnotationArgs(doc, tag, errorKinds as readonly string[]);
 }
 
 function skipCheckReachable(error: string, node: Node): boolean {
@@ -147,10 +115,6 @@ function skipCheckReachable(error: string, node: Node): boolean {
 function skipCheck(error: string, node: Node): boolean {
   // skip both allow and allow-reachable errors in the lexical scope
   return getAllowed(node, false).includes(error) || getAllowed(node, true).includes(error);
-}
-
-function getFullyQualifiedName(source: string, contractName: string) {
-  return `${source}:${contractName}`;
 }
 
 export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVersion?: string): ValidationRunData {
