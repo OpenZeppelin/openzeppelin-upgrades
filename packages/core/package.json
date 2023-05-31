@@ -30,10 +30,10 @@
     "test": "tsc -b && hardhat compile --force && node scripts/copy-build-info.js && ava",
     "test:watch": "hardhat compile --force && fgbg 'ava --watch' 'tsc -b --watch' --",
     "version": "node ../../scripts/bump-changelog.js",
-    "validate-upgrade-safety": "node ./dist/cli/cli.js"
+    "cli": "node ./dist/cli/cli.js"
   },
   "bin": {
-    "validate-upgrade-safety": "./dist/cli/cli.js"
+    "openzeppelin-upgrades-core": "./dist/cli/cli.js"
   },
   "devDependencies": {
     "@ava/typescript": "^2.0.0",
