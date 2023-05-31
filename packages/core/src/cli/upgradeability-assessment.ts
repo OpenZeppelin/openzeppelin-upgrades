@@ -46,9 +46,14 @@ export function getUpgradeabilityAssessment(
 }
 
 function getReferenceContract(reference: string, origin: SourceContract, allContracts: SourceContract[]) {
-  const referenceContract = allContracts.find(c => c.fullyQualifiedName === reference || c.name === reference);
-  if (referenceContract !== undefined) {
-    return referenceContract;
+  const referenceContracts = allContracts.filter(c => c.fullyQualifiedName === reference || c.name === reference);
+
+  if (referenceContracts.length > 1) {
+    throw new Error(
+      `Found multiple contracts with name ${reference} referenced in ${origin.fullyQualifiedName}. This may be caused by old copies of build info files. Clean and recompile your project, then run the command again with the updated files.`,
+    );
+  } else if (referenceContracts.length === 1) {
+    return referenceContracts[0];
   } else {
     throw new Error(`Could not find contract ${reference} referenced in ${origin.fullyQualifiedName}.`);
   }
