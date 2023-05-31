@@ -58,7 +58,7 @@ export type Platform = {
  */
 export type PlatformDeployOptions = Platform & {
   verifySourceCode?: boolean;
-  walletId?: string;
+  relayerId?: string;
   salt?: string;
 };
 
