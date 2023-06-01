@@ -1,5 +1,5 @@
-import { getAnnotationArgs } from '../utils/annotations';
-import { inferInitializable, inferUUPS } from '../validate/query';
+import { getAnnotationArgs } from '../../utils/annotations';
+import { inferInitializable, inferUUPS } from '../../validate/query';
 import { SourceContract } from './validations';
 
 interface AnnotationAssessment {

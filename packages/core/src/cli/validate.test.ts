@@ -3,7 +3,7 @@ import minimist from 'minimist';
 import { USAGE, DETAILS, handleHelp } from './validate';
 import sinon from 'sinon';
 
-test('help command', t => {
+test('help', t => {
   const parsedArgs = minimist(['validate', '--help']);
   const extraArgs = parsedArgs._;
 
@@ -48,7 +48,9 @@ test('missing arguments', t => {
 test('invalid command', t => {
   const parsedArgs = minimist(['invalid']);
   const extraArgs = parsedArgs._;
-  t.throws(() => handleHelp(parsedArgs, extraArgs), { message: `Invalid command: invalid. Supported commands are: validate` });
+  t.throws(() => handleHelp(parsedArgs, extraArgs), {
+    message: `Invalid command: invalid. Supported commands are: validate`,
+  });
 });
 
 test('no help needed', t => {

@@ -5,12 +5,12 @@ import {
   SolcInput,
   ValidationRunData,
   ValidateUpgradeSafetyOptions,
-} from '..';
+} from '../..';
 
 import { findAll } from 'solidity-ast/utils';
 import { ContractDefinition } from 'solidity-ast';
 
-import { getFullyQualifiedName } from '../utils/contract-name';
+import { getFullyQualifiedName } from '../../utils/contract-name';
 import { getContractErrorReports } from './contract-error-report';
 import { BuildInfoFile } from './build-info-file';
 

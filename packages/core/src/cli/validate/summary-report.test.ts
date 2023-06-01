@@ -1,16 +1,16 @@
 import { getSummaryReport } from './summary-report';
-import { UpgradeableContractErrorReport } from '../validate';
+import { UpgradeableContractErrorReport } from '../../validate';
 
 import _test, { TestFn } from 'ava';
 import { ContractDefinition } from 'solidity-ast';
 import { findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
 
-import { SolcOutput } from '../solc-api';
-import { astDereferencer } from '../ast-dereferencer';
-import { extractStorageLayout } from '../storage/extract';
-import { StorageLayoutComparator } from '../storage/compare';
-import { StorageLayout, getDetailedLayout } from '../storage/layout';
+import { SolcOutput } from '../../solc-api';
+import { astDereferencer } from '../../ast-dereferencer';
+import { extractStorageLayout } from '../../storage/extract';
+import { StorageLayoutComparator } from '../../storage/compare';
+import { StorageLayout, getDetailedLayout } from '../../storage/layout';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
@@ -52,26 +52,29 @@ test('get summary report - errors', async t => {
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Replace_V2');
   const layoutReport = getLayoutReport(v1, v2);
 
-  const report = getSummaryReport([
-    {
-      contract: 'mypath/MyContract.sol:MyContract',
-      standaloneErrors: new UpgradeableContractErrorReport([
-        {
-          src: 'MyContract.sol:10',
-          kind: 'missing-public-upgradeto',
-        },
-        {
-          src: 'MyContract.sol:20',
-          kind: 'delegatecall',
-        },
-      ])
-    },
-    {
-      contract: 'MyContract2',
-      reference: 'MyContract',
-      storageLayoutErrors: layoutReport,
-    },
-  ], true);
+  const report = getSummaryReport(
+    [
+      {
+        contract: 'mypath/MyContract.sol:MyContract',
+        standaloneErrors: new UpgradeableContractErrorReport([
+          {
+            src: 'MyContract.sol:10',
+            kind: 'missing-public-upgradeto',
+          },
+          {
+            src: 'MyContract.sol:20',
+            kind: 'delegatecall',
+          },
+        ]),
+      },
+      {
+        contract: 'MyContract2',
+        reference: 'MyContract',
+        storageLayoutErrors: layoutReport,
+      },
+    ],
+    true,
+  );
   t.false(report.ok);
   t.snapshot(report.explain());
 });

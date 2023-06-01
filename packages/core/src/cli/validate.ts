@@ -1,6 +1,6 @@
 import minimist from 'minimist';
 
-import { ValidateUpgradeSafetyOptions, validateUpgradeSafety } from './validate-upgrade-safety';
+import { ValidateUpgradeSafetyOptions, validateUpgradeSafety } from '.';
 import { withValidationDefaults } from '..';
 import { ValidationError, errorKinds } from '../validate/run';
 import debug from '../utils/debug';

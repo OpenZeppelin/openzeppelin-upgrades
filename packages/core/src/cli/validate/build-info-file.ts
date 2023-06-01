@@ -1,4 +1,4 @@
-import { SolcOutput, SolcInput } from '..';
+import { SolcOutput, SolcInput } from '../..';
 
 import fs from 'fs';
 
@@ -27,7 +27,7 @@ export function getBuildInfoFiles(buildInfoFilePaths: string[]) {
   const buildInfoFiles: BuildInfoFile[] = [];
 
   for (const buildInfoFilePath of buildInfoFilePaths) {
-    let buildInfoJson = readJSON(buildInfoFilePath);
+    const buildInfoJson = readJSON(buildInfoFilePath);
     if (buildInfoJson.input === undefined || buildInfoJson.output === undefined) {
       throw new Error(`Build info file ${buildInfoFilePath} must contain Solidity compiler input and output.`);
     } else {

@@ -1,6 +1,6 @@
 import _chalk from 'chalk';
 import { ContractErrorReport } from './contract-error-report';
-import { Report } from '../standalone';
+import { Report } from '../../standalone';
 
 export class SummaryReport implements Report {
   constructor(readonly errorReports: ContractErrorReport[]) {}

@@ -1,4 +1,4 @@
-import { ValidationOptions } from '..';
+import { ValidationOptions } from '../..';
 
 import { getBuildInfoFiles } from './build-info-file';
 import { SummaryReport, getSummaryReport } from './summary-report';

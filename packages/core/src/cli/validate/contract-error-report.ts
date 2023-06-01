@@ -11,8 +11,8 @@ import {
   getErrors,
   UpgradeableContractErrorReport,
   getStorageUpgradeReport,
-} from '..';
-import { Report } from '../standalone';
+} from '../..';
+import { Report } from '../../standalone';
 
 import { getUpgradeabilityAssessment } from './upgradeability-assessment';
 import { SourceContract } from './validations';
