@@ -77,8 +77,12 @@ export function withDefaults(args: minimist.ParsedArgs): Required<ValidateUpgrad
   return withValidationDefaults(allOpts);
 }
 
-export function getUnsafeAllowKinds(unsafeAllow: string): ValidationError['kind'][] {
+export function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['kind'][] {
   type errorKindsType = typeof errorKinds[number];
+
+  if (unsafeAllow === undefined) {
+    return [];
+  }
 
   const unsafeAllowTokens: string[] = unsafeAllow.split(/[\s,]+/);
   if (unsafeAllowTokens.some(token => !errorKinds.includes(token as errorKindsType))) {
