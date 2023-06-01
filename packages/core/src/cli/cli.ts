@@ -4,18 +4,20 @@ import minimist from 'minimist';
 
 import { ValidateUpgradeSafetyOptions, validateUpgradeSafety } from './validate-upgrade-safety';
 import { withValidationDefaults } from '..';
-import { ValidationError } from '../validate/run';
+import { ValidationError, errorKinds } from '../validate/run';
 import debug from '../utils/debug';
 
 const USAGE = 'Usage: npx @openzeppelin/upgrades-core validate <build-info-files> [options]';
 const DETAILS =
-  '\n\nValidates that the contracts in a set of build info files are upgrade safe.' +
+  '\nDetects upgradeable contracts from a set of build info files and validates that they are upgrade safe.' +
   '\n\nArguments:' +
-  '\n  <build-info-files>  One or more paths to build info files' +
+  '\n  <build-info-files>  One or more paths to build info JSON files which contain Solidity compiler input and output sections.' +
   '\n\nOptions:' +
   '\n  --unsafeAllowRenames  Configure storage layout check to allow variable renaming.' +
   '\n  --unsafeSkipStorageCheck  Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.' +
-  '\n  --unsafeAllow "<validation errors>"  Selectively disable one or more validation errors. Comma or space separated list of validation errors described in https://docs.openzeppelin.com/upgrades-plugins/1.x/api-hardhat-upgrades#common-options';
+  `\n  --unsafeAllow "<validation errors>"  Comma or space separated list to selectively disable one or more validation errors. Supported values are: ${errorKinds.join(
+    ', ',
+  )}`;
 
 export function main(args: string[]): void {
   const parsedArgs = minimist(args);
@@ -41,24 +43,39 @@ function handleHelp(parsedArgs: minimist.ParsedArgs, extraArgs: string[]) {
     console.log(DETAILS);
     process.exit(0);
   } else if (extraArgs[0] !== 'validate') {
-    console.error(`Invalid command: ${extraArgs[0]}. Supported commands are: validate`);
-    process.exit(1);
+    exitWithError(`Invalid command: ${extraArgs[0]}. Supported commands are: validate`);
   } else if (extraArgs.length === 1) {
-    console.error(`Missing arguments. ${USAGE}`);
-    process.exit(1);
+    exitWithError(`Missing arguments. ${USAGE}`);
   }
 }
 
 function withDefaults(args: minimist.ParsedArgs): Required<ValidateUpgradeSafetyOptions> {
-  const unsafeAllow = args['unsafeAllow'] ? (args['unsafeAllow'].split(/[\s,]+/) as ValidationError['kind'][]) : [];
-
   const allOpts: Required<ValidateUpgradeSafetyOptions> = {
     unsafeAllowRenames: args['unsafeAllowRenames'],
     unsafeSkipStorageCheck: args['unsafeSkipStorageCheck'],
     unsafeAllowCustomTypes: args['unsafeAllowCustomTypes'],
     unsafeAllowLinkedLibraries: args['unsafeAllowLinkedLibraries'],
-    unsafeAllow: unsafeAllow,
+    unsafeAllow: getUnsafeAllowKinds(args['unsafeAllow']),
   };
 
   return withValidationDefaults(allOpts);
+}
+
+function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['kind'][] {
+  type errorKindsType = typeof errorKinds[number];
+
+  const unsafeAllowTokens: string[] = unsafeAllow ? unsafeAllow.split(/[\s,]+/) : [];
+  if (unsafeAllowTokens.some(token => !errorKinds.includes(token as errorKindsType))) {
+    exitWithError(
+      `Invalid option: --unsafeAllow "${unsafeAllow}". Supported values for the --unsafeAllow option are: ${errorKinds.join(
+        ', ',
+      )}`,
+    );
+  }
+  return unsafeAllowTokens as errorKindsType[];
+}
+
+function exitWithError(message: string): never {
+  console.error(message);
+  process.exit(1);
 }

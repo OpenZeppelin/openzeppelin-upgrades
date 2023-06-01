@@ -28,7 +28,7 @@ export interface ContractValidation {
   solcVersion?: string;
 }
 
-const errorKinds = [
+export const errorKinds = [
   'state-variable-assignment',
   'state-variable-immutable',
   'external-library-linking',
