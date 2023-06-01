@@ -11,7 +11,7 @@ import { findAll } from 'solidity-ast/utils';
 import { ContractDefinition } from 'solidity-ast';
 
 import { getFullyQualifiedName } from '../../utils/contract-name';
-import { getContractErrorReports } from './contract-error-report';
+import { getContractReports } from './contract-report';
 import { BuildInfoFile } from './build-info-file';
 
 export interface SourceContract {
@@ -28,7 +28,7 @@ export function validateBuildInfoContracts(buildInfoFiles: BuildInfoFile[], opts
     addContractsFromBuildInfo(buildInfoFile, validations, sourceContracts);
   }
 
-  return getContractErrorReports(sourceContracts, opts);
+  return getContractReports(sourceContracts, opts);
 }
 
 function runValidations(solcInput: SolcInput, solcOutput: SolcOutput) {

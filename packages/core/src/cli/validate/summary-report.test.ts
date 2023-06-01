@@ -47,6 +47,20 @@ test('get summary report - empty', async t => {
   t.is(report.explain(), '');
 });
 
+test('get summary report - no errors', async t => {
+  const report = getSummaryReport(
+    [
+      {
+        contract: 'mypath/MyContract.sol:MyContract',
+        standaloneReport: new UpgradeableContractErrorReport([]),
+      }
+    ],
+    true,
+  );
+  t.true(report.ok);
+  t.is(report.explain(), '');
+});
+
 test('get summary report - errors', async t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Replace_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Replace_V2');
@@ -56,7 +70,7 @@ test('get summary report - errors', async t => {
     [
       {
         contract: 'mypath/MyContract.sol:MyContract',
-        standaloneErrors: new UpgradeableContractErrorReport([
+        standaloneReport: new UpgradeableContractErrorReport([
           {
             src: 'MyContract.sol:10',
             kind: 'missing-public-upgradeto',
@@ -70,11 +84,13 @@ test('get summary report - errors', async t => {
       {
         contract: 'MyContract2',
         reference: 'MyContract',
-        storageLayoutErrors: layoutReport,
+        standaloneReport: new UpgradeableContractErrorReport([]),
+        storageLayoutReport: layoutReport,
       },
     ],
     true,
   );
   t.false(report.ok);
   t.snapshot(report.explain());
+  // TODO test console output or add a test for it
 });
