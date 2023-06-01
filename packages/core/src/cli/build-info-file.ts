@@ -21,21 +21,15 @@ export interface BuildInfoFile {
  * Get the build info files from the given paths.
  *
  * @param buildInfoFilePaths Build info file paths.
- * @param ignoreInvalidFiles Whether to ignore files that don't look like build info files. If false, an error will be thrown if any files don't look like build info files.
  * @returns The build info files with Solidity compiler input and output.
  */
-export function getBuildInfoFiles(buildInfoFilePaths: string[], ignoreInvalidFiles: boolean) {
+export function getBuildInfoFiles(buildInfoFilePaths: string[]) {
   const buildInfoFiles: BuildInfoFile[] = [];
 
   for (const buildInfoFilePath of buildInfoFilePaths) {
-    const buildInfoJson = readJSON(buildInfoFilePath);
+    let buildInfoJson = readJSON(buildInfoFilePath);
     if (buildInfoJson.input === undefined || buildInfoJson.output === undefined) {
-      if (ignoreInvalidFiles) {
-        console.log(`Skipping ${buildInfoFilePath} because it does not look like a build-info file.`);
-        continue;
-      } else {
-        throw new Error(`Build info file ${buildInfoFilePath} must contain Solidity compiler input and output.`);
-      }
+      throw new Error(`Build info file ${buildInfoFilePath} must contain Solidity compiler input and output.`);
     } else {
       buildInfoFiles.push({
         input: buildInfoJson.input,
@@ -47,5 +41,5 @@ export function getBuildInfoFiles(buildInfoFilePaths: string[], ignoreInvalidFil
 }
 
 function readJSON(path: string) {
-  return JSON.parse(fs.readFileSync(path, 'utf8'));
+  return JSON.parse(fs.readFileSync(path, 'utf8')); // TODO use async
 }

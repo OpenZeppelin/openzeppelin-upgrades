@@ -12,12 +12,6 @@ export interface ReportOptions {
    * Whether to skip logging the summary report before returning it.
    */
   suppressSummary?: boolean;
-
-  /**
-   * Any files that don't look like build info files will be ignored if this is true,
-   * otherwise an error will be thrown.
-   */
-  ignoreInvalidFiles?: boolean;
 }
 
 /**
@@ -40,7 +34,7 @@ export function validateUpgradeSafety(
 ): SummaryReport {
   const fullReportOpts = withReportDefaults(reportOpts);
 
-  const buildInfoFiles = getBuildInfoFiles(buildInfoFilePaths, fullReportOpts.ignoreInvalidFiles);
+  const buildInfoFiles = getBuildInfoFiles(buildInfoFilePaths);
   const reports = validateBuildInfoContracts(buildInfoFiles, opts);
 
   return getSummaryReport(reports, fullReportOpts.suppressSummary);
@@ -49,6 +43,5 @@ export function validateUpgradeSafety(
 function withReportDefaults(cmdOpts: ReportOptions): Required<ReportOptions> {
   return {
     suppressSummary: cmdOpts.suppressSummary ?? false,
-    ignoreInvalidFiles: cmdOpts.ignoreInvalidFiles ?? false,
   };
 }
