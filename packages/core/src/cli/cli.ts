@@ -61,18 +61,29 @@ function withDefaults(args: minimist.ParsedArgs): Required<ValidateUpgradeSafety
   return withValidationDefaults(allOpts);
 }
 
-function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['kind'][] {
+function getUnsafeAllowKinds(unsafeAllow: any): ValidationError['kind'][] {
   type errorKindsType = typeof errorKinds[number];
 
-  const unsafeAllowTokens: string[] = unsafeAllow ? unsafeAllow.split(/[\s,]+/) : [];
-  if (unsafeAllowTokens.some(token => !errorKinds.includes(token as errorKindsType))) {
-    exitWithError(
-      `Invalid option: --unsafeAllow "${unsafeAllow}". Supported values for the --unsafeAllow option are: ${errorKinds.join(
-        ', ',
-      )}`,
-    );
+  if (unsafeAllow === undefined) {
+    // No --unsafeAllow option was provided.
+    return [];
+  } else if (typeof unsafeAllow !== 'string' || unsafeAllow.trim().length === 0) {
+    invalidUnsafeAllow(unsafeAllow);
+  } else {
+    const unsafeAllowTokens: string[] = unsafeAllow.split(/[\s,]+/);
+    if (unsafeAllowTokens.some(token => !errorKinds.includes(token as errorKindsType))) {
+      invalidUnsafeAllow(unsafeAllow);
+    }
+    return unsafeAllowTokens as errorKindsType[];
   }
-  return unsafeAllowTokens as errorKindsType[];
+}
+
+function invalidUnsafeAllow(unsafeAllow: any): never {
+  exitWithError(
+    `Invalid option: --unsafeAllow "${unsafeAllow}". Supported values for the --unsafeAllow option are: ${errorKinds.join(
+      ', ',
+    )}`,
+  );
 }
 
 function exitWithError(message: string): never {
