@@ -16,7 +16,7 @@
 
 ```
 npm install --save-dev @openzeppelin/hardhat-upgrades
-npm install --save-dev @nomiclabs/hardhat-ethers ethers # peer dependencies
+npm install --save-dev '@nomiclabs/hardhat-ethers@^2.0.0' 'ethers@^5.0.0' # peer dependencies
 ```
 
 ```js
