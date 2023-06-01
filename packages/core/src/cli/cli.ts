@@ -20,8 +20,19 @@ const DETAILS =
   )}`;
 
 export function main(args: string[]): void {
-  const parsedArgs = minimist(args);
+  const parsedArgs = minimist(args, {
+    boolean: [
+      'help',
+      'unsafeAllowRenames',
+      'unsafeSkipStorageCheck',
+      'unsafeAllowCustomTypes',
+      'unsafeAllowLinkedLibraries',
+    ],
+    string: ['unsafeAllow'],
+    alias: { h: 'help' },
+  });
   const extraArgs = parsedArgs._;
+  debug('parsedArgs', parsedArgs);
 
   handleHelp(parsedArgs, extraArgs);
 
@@ -38,7 +49,7 @@ export function main(args: string[]): void {
 void main(process.argv.slice(2));
 
 function handleHelp(parsedArgs: minimist.ParsedArgs, extraArgs: string[]) {
-  if (extraArgs.length === 0 || parsedArgs['help'] || parsedArgs['h']) {
+  if (extraArgs.length === 0 || parsedArgs['help']) {
     console.log(USAGE);
     console.log(DETAILS);
     process.exit(0);
@@ -61,29 +72,19 @@ function withDefaults(args: minimist.ParsedArgs): Required<ValidateUpgradeSafety
   return withValidationDefaults(allOpts);
 }
 
-function getUnsafeAllowKinds(unsafeAllow: any): ValidationError['kind'][] {
+function getUnsafeAllowKinds(unsafeAllow: string): ValidationError['kind'][] {
   type errorKindsType = typeof errorKinds[number];
 
-  if (unsafeAllow === undefined) {
-    // No --unsafeAllow option was provided.
-    return [];
-  } else if (typeof unsafeAllow !== 'string' || unsafeAllow.trim().length === 0) {
-    invalidUnsafeAllow(unsafeAllow);
-  } else {
-    const unsafeAllowTokens: string[] = unsafeAllow.split(/[\s,]+/);
-    if (unsafeAllowTokens.some(token => !errorKinds.includes(token as errorKindsType))) {
-      invalidUnsafeAllow(unsafeAllow);
-    }
-    return unsafeAllowTokens as errorKindsType[];
+  const unsafeAllowTokens: string[] = unsafeAllow.split(/[\s,]+/);
+  if (unsafeAllowTokens.some(token => !errorKinds.includes(token as errorKindsType))) {
+    // This includes empty strings
+    exitWithError(
+      `Invalid option: --unsafeAllow "${unsafeAllow}". Supported values for the --unsafeAllow option are: ${errorKinds.join(
+        ', ',
+      )}`,
+    );
   }
-}
-
-function invalidUnsafeAllow(unsafeAllow: any): never {
-  exitWithError(
-    `Invalid option: --unsafeAllow "${unsafeAllow}". Supported values for the --unsafeAllow option are: ${errorKinds.join(
-      ', ',
-    )}`,
-  );
+  return unsafeAllowTokens as errorKindsType[];
 }
 
 function exitWithError(message: string): never {
