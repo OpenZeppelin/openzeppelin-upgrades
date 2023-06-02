@@ -1,6 +1,6 @@
 import test from 'ava';
 import minimist from 'minimist';
-import { USAGE, DETAILS, handleHelp } from './validate';
+import { USAGE, DETAILS, handleHelp, main } from './validate';
 import sinon from 'sinon';
 
 test('help', t => {
@@ -57,4 +57,10 @@ test('no help needed', t => {
   const parsedArgs = minimist(['validate', 'build-info.json']);
   const extraArgs = parsedArgs._;
   t.false(handleHelp(parsedArgs, extraArgs));
+});
+
+test('invalid options', t => {
+  t.throws(() => main(['validate', 'build-info.json', '--foo', '--bar', 'xyz']), {
+    message: `Invalid options: foo, bar`,
+  });
 });

@@ -65,7 +65,28 @@ export function handleHelp(parsedArgs: minimist.ParsedArgs, extraArgs: string[])
   }
 }
 
+function validateOptions(parsedArgs: minimist.ParsedArgs) {
+  const invalidArgs = Object.keys(parsedArgs).filter(
+    key =>
+      ![
+        'help',
+        'h',
+        '_',
+        'unsafeAllowRenames',
+        'unsafeSkipStorageCheck',
+        'unsafeAllowCustomTypes',
+        'unsafeAllowLinkedLibraries',
+        'unsafeAllow',
+      ].includes(key),
+  );
+  if (invalidArgs.length > 0) {
+    throw new Error(`Invalid options: ${invalidArgs.join(', ')}`);
+  }
+}
+
 export function withDefaults(args: minimist.ParsedArgs): Required<ValidateUpgradeSafetyOptions> {
+  validateOptions(args);
+
   const allOpts: Required<ValidateUpgradeSafetyOptions> = {
     unsafeAllowRenames: args['unsafeAllowRenames'],
     unsafeSkipStorageCheck: args['unsafeSkipStorageCheck'],
