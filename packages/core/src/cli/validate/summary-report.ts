@@ -6,13 +6,7 @@ export class SummaryReport implements Report {
   constructor(readonly upgradeableContractReports: UpgradeableContractReport[]) {}
 
   get ok(): boolean {
-    // TODO add ok function to UpgradeableContractReport as a class
-    for (const report of this.upgradeableContractReports) {
-      if (!report.standaloneReport.ok || (report.storageLayoutReport !== undefined && !report.storageLayoutReport.ok)) {
-        return false;
-      }
-    }
-    return true;
+    return this.upgradeableContractReports.every(r => r.ok);
   }
 
   explain(color = true): string {
