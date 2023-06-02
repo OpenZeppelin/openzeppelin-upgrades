@@ -60,3 +60,22 @@ contract MultipleUnsafe {
   }
 }
 
+/**
+ * @custom:oz-upgrades
+ */
+contract InheritsMultipleUnsafe is MultipleUnsafe {
+}
+
+/**
+ * @custom:oz-upgrades-from HasUpgradeTo
+ */
+contract UpgradesFromUUPS {
+  // unsafe: v1 is uups, v2 missing upgradeTo
+}
+
+/**
+ * @custom:oz-upgrades-from HasInitializer
+ */
+contract UpgradesFromTransparent {
+  // safe: v1 is transparent, v2 is transparent
+}

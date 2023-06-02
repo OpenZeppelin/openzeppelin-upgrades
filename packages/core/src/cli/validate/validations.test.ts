@@ -73,3 +73,18 @@ test('HasUpgradeToConstructorUnsafe', async t => {
   const report = getReport(t, 'HasUpgradeToConstructorUnsafe');
   assertReport(t, report, false);
 });
+
+test('InheritsMultipleUnsafe', async t => {
+  const report = getReport(t, 'InheritsMultipleUnsafe');
+  assertReport(t, report, false);
+});
+
+test('UpgradesFromUUPS', async t => {
+  const report = getReport(t, 'UpgradesFromUUPS');
+  assertReport(t, report, false);
+});
+
+test('UpgradesFromTransparent', async t => {
+  const report = getReport(t, 'UpgradesFromTransparent');
+  assertReport(t, report, true);
+});
