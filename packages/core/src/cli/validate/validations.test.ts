@@ -29,62 +29,36 @@ function getReport(t: ExecutionContext<Context>, contractName: string) {
 function assertReport(
   t: ExecutionContext<Context>,
   report: UpgradeableContractReport | undefined,
-  expectation: boolean | undefined,
+  valid: boolean | undefined,
 ) {
-  if (expectation === undefined) {
+  if (valid === undefined) {
     t.true(report === undefined);
-  } else if (expectation === true) {
+  } else if (valid === true) {
     t.true(report !== undefined);
     t.true(report?.ok);
     t.is(report?.explain(), '');
-  } else if (expectation === false) {
+  } else if (valid === false) {
     t.true(report !== undefined);
     t.false(report?.ok);
     t.snapshot(report?.explain());
   }
 }
 
-test('Safe', async t => {
-  const report = getReport(t, 'Safe');
-  assertReport(t, report, true);
-});
+function testValid(name: string, valid: boolean | undefined) {
+  const expectationString = valid === undefined ? 'ignores' : valid ? 'accepts' : 'rejects';
+  const testName = [expectationString, name].join(' ');
+  test(testName, t => {
+    const report = getReport(t, name);
+    assertReport(t, report, valid);
+  });
+}
 
-test('MultipleUnsafe', async t => {
-  const report = getReport(t, 'MultipleUnsafe');
-  assertReport(t, report, false);
-});
-
-test('NonUpgradeable', async t => {
-  const report = getReport(t, 'NonUpgradeable');
-  assertReport(t, report, undefined);
-});
-
-test('HasInitializer', async t => {
-  const report = getReport(t, 'HasInitializer');
-  assertReport(t, report, true);
-});
-
-test('HasUpgradeTo', async t => {
-  const report = getReport(t, 'HasUpgradeTo');
-  assertReport(t, report, true);
-});
-
-test('HasUpgradeToConstructorUnsafe', async t => {
-  const report = getReport(t, 'HasUpgradeToConstructorUnsafe');
-  assertReport(t, report, false);
-});
-
-test('InheritsMultipleUnsafe', async t => {
-  const report = getReport(t, 'InheritsMultipleUnsafe');
-  assertReport(t, report, false);
-});
-
-test('UpgradesFromUUPS', async t => {
-  const report = getReport(t, 'UpgradesFromUUPS');
-  assertReport(t, report, false);
-});
-
-test('UpgradesFromTransparent', async t => {
-  const report = getReport(t, 'UpgradesFromTransparent');
-  assertReport(t, report, true);
-});
+testValid('Safe', true);
+testValid('MultipleUnsafe', false);
+testValid('NonUpgradeable', undefined);
+testValid('HasInitializer', true);
+testValid('HasUpgradeTo', true);
+testValid('HasUpgradeToConstructorUnsafe', false);
+testValid('InheritsMultipleUnsafe', false);
+testValid('UpgradesFromUUPS', false);
+testValid('UpgradesFromTransparent', true);
