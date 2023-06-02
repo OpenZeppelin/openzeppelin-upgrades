@@ -2,6 +2,25 @@ import { getAnnotationArgs } from '../../utils/annotations';
 import { inferInitializable, inferUUPS } from '../../validate/query';
 import { SourceContract } from './validations';
 
+export class ReferenceContractNotFound extends Error {
+  /**
+   * The contract reference that could not be found.
+   */
+  readonly reference: string;
+
+  /**
+   * The fully qualified name of the contract that referenced the missing contract.
+   */
+  readonly origin: string;
+
+  constructor(reference: string, origin: string) {
+    super(`Could not find contract ${reference} referenced in ${origin}.`);
+    this.reference = reference;
+    this.origin = origin;
+    this.name = 'ReferenceContractNotFound';
+  }
+}
+
 interface AnnotationAssessment {
   upgradeable: boolean;
   referenceName?: string;
@@ -55,7 +74,7 @@ function getReferenceContract(reference: string, origin: SourceContract, allCont
   } else if (referenceContracts.length === 1) {
     return referenceContracts[0];
   } else {
-    throw new Error(`Could not find contract ${reference} referenced in ${origin.fullyQualifiedName}.`);
+    throw new ReferenceContractNotFound(reference, origin.fullyQualifiedName);
   }
 }
 
