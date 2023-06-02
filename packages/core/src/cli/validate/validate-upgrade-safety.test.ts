@@ -51,8 +51,8 @@ test('bad upgrade from 0.8.8 to 0.8.9', async t => {
 });
 
 test('reference contract not found', async t => {
-  const buildInfo2 = await artifacts.getBuildInfo(`contracts/test/cli/Storage089.sol:Storage089`);
-  await fs.writeFile('storage089-noref.json', JSON.stringify(buildInfo2));
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage089.sol:Storage089`);
+  await fs.writeFile('storage089-noref.json', JSON.stringify(buildInfo));
 
   const error = t.throws(() => validateUpgradeSafety(['storage089-noref.json']));
   t.true(error instanceof ReferenceContractNotFound);
@@ -66,4 +66,30 @@ test('with report defaults', async t => {
   t.is(true, withReportDefaults({ suppressSummary: true }).suppressSummary);
   t.is(false, withReportDefaults({ suppressSummary: false }).suppressSummary);
   t.is(false, withReportDefaults({}).suppressSummary);
+});
+
+test('invalid annotation args - upgrades-from', async t => {
+  const fullyQualifiedName = `contracts/test/cli/InvalidAnnotationArgs.sol:InvalidAnnotationArgs`;
+
+  const buildInfo = await artifacts.getBuildInfo(fullyQualifiedName);
+  await fs.writeFile('invalid-annotation-args.json', JSON.stringify(buildInfo));
+
+  const error = t.throws(() => validateUpgradeSafety(['invalid-annotation-args.json']));
+  t.is(
+    error?.message,
+    `Invalid number of arguments for @custom:oz-upgrades-from annotation in contract ${fullyQualifiedName}. Expected 1, found 0`,
+  );
+});
+
+test('invalid annotation args - upgrades', async t => {
+  const fullyQualifiedName = `contracts/test/cli/InvalidAnnotationArgs2.sol:InvalidAnnotationArgs2`;
+
+  const buildInfo = await artifacts.getBuildInfo(fullyQualifiedName);
+  await fs.writeFile('invalid-annotation-args2.json', JSON.stringify(buildInfo));
+
+  const error = t.throws(() => validateUpgradeSafety(['invalid-annotation-args2.json']));
+  t.is(
+    error?.message,
+    `Invalid number of arguments for @custom:oz-upgrades annotation in contract ${fullyQualifiedName}. Expected 0, found 1`,
+  );
 });
