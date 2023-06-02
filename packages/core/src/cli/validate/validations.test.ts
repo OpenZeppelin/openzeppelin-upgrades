@@ -65,3 +65,5 @@ testValid('UpgradesFromTransparent', true);
 testValid('UnsafeAndStorageLayoutErrors', false);
 testValid('BecomesSafe', true);
 testValid('StillUnsafe', false);
+testValid('AbstractUpgradeable', undefined);
+testValid('InheritsAbstractUpgradeable', true);

@@ -112,3 +112,10 @@ contract StillUnsafe {
     selfdestruct(payable(msg.sender));
   }
 }
+
+abstract contract AbstractUpgradeable is Initializable {
+}
+
+contract InheritsAbstractUpgradeable is AbstractUpgradeable {
+    function initialize() public virtual override {}
+}
