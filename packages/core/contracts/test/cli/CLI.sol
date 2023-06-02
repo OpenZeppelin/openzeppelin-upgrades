@@ -79,3 +79,36 @@ contract UpgradesFromUUPS {
 contract UpgradesFromTransparent {
   // safe: v1 is transparent, v2 is transparent
 }
+
+contract StorageV1 {
+  uint256 public x;
+  uint256[49] private __gap;
+}
+
+/**
+ * @custom:oz-upgrades-from StorageV1
+ */
+contract UnsafeAndStorageLayoutErrors {
+  uint256 public x;
+  uint256 public y;
+  uint256[49] private __gap;
+
+  function sd() public {
+    selfdestruct(payable(msg.sender));
+  }
+}
+
+/**
+ * @custom:oz-upgrades-from MultipleUnsafe
+ */
+contract BecomesSafe {
+}
+
+/**
+ * @custom:oz-upgrades-from NonUpgradeable
+ */
+contract StillUnsafe {
+  function sd() public {
+    selfdestruct(payable(msg.sender));
+  }
+}

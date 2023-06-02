@@ -62,3 +62,6 @@ testValid('HasUpgradeToConstructorUnsafe', false);
 testValid('InheritsMultipleUnsafe', false);
 testValid('UpgradesFromUUPS', false);
 testValid('UpgradesFromTransparent', true);
+testValid('UnsafeAndStorageLayoutErrors', false);
+testValid('BecomesSafe', true);
+testValid('StillUnsafe', false);
