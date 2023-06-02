@@ -40,7 +40,7 @@ export function validateUpgradeSafety(
   return getSummaryReport(reports, fullReportOpts.suppressSummary);
 }
 
-function withReportDefaults(cmdOpts: ReportOptions): Required<ReportOptions> {
+export function withReportDefaults(cmdOpts: ReportOptions): Required<ReportOptions> {
   return {
     suppressSummary: cmdOpts.suppressSummary ?? false,
   };

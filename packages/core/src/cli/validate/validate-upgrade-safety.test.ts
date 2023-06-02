@@ -7,7 +7,7 @@ import path from 'path';
 import os from 'os';
 
 import { artifacts } from 'hardhat';
-import { validateUpgradeSafety } from './validate-upgrade-safety';
+import { validateUpgradeSafety, withReportDefaults } from './validate-upgrade-safety';
 
 const rimraf = util.promisify(rimrafAsync);
 
@@ -47,4 +47,10 @@ test('bad upgrade from 0.8.8 to 0.8.9', async t => {
   const report = validateUpgradeSafety(['storage088.json', 'storage089.json']);
   t.false(report.ok);
   t.snapshot(report.explain());
+});
+
+test('with report defaults', async t => {
+  t.is(true, withReportDefaults({ suppressSummary: true }).suppressSummary);
+  t.is(false, withReportDefaults({ suppressSummary: false }).suppressSummary);
+  t.is(false, withReportDefaults({}).suppressSummary);
 });
