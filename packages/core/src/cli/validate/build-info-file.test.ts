@@ -69,3 +69,9 @@ test('get build info files', async t => {
   t.is(buildInfoFiles[1].input.sources['mypath/MyContract.sol'].content, 'contract MyContractModified {}');
   t.is(buildInfoFiles[1].output.sources['mypath/MyContract.sol'].id, 456);
 });
+
+test('invalid build info', async t => {
+  await fs.writeFile('build-info-invalid.json', JSON.stringify({ output: {} }));
+  const error = t.throws(() => getBuildInfoFiles(['build-info-invalid.json']));
+  t.true(error?.message.includes('must contain Solidity compiler input and output'));
+});
