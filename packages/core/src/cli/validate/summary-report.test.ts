@@ -11,6 +11,7 @@ import { astDereferencer } from '../../ast-dereferencer';
 import { extractStorageLayout } from '../../storage/extract';
 import { StorageLayoutComparator } from '../../storage/compare';
 import { StorageLayout, getDetailedLayout } from '../../storage/layout';
+import { UpgradeableContractReport } from './contract-report';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
@@ -50,10 +51,12 @@ test('get summary report - empty', async t => {
 test('get summary report - no errors', async t => {
   const report = getSummaryReport(
     [
-      {
-        contract: 'mypath/MyContract.sol:MyContract',
-        standaloneReport: new UpgradeableContractErrorReport([]),
-      }
+      new UpgradeableContractReport(
+        'mypath/MyContract.sol:MyContract',
+        undefined,
+        new UpgradeableContractErrorReport([]),
+        undefined,
+      ),
     ],
     true,
   );
@@ -68,9 +71,10 @@ test('get summary report - errors', async t => {
 
   const report = getSummaryReport(
     [
-      {
-        contract: 'mypath/MyContract.sol:MyContract',
-        standaloneReport: new UpgradeableContractErrorReport([
+      new UpgradeableContractReport(
+        'mypath/MyContract.sol:MyContract',
+        undefined,
+        new UpgradeableContractErrorReport([
           {
             src: 'MyContract.sol:10',
             kind: 'missing-public-upgradeto',
@@ -80,13 +84,9 @@ test('get summary report - errors', async t => {
             kind: 'delegatecall',
           },
         ]),
-      },
-      {
-        contract: 'MyContract2',
-        reference: 'MyContract',
-        standaloneReport: new UpgradeableContractErrorReport([]),
-        storageLayoutReport: layoutReport,
-      },
+        undefined,
+      ),
+      new UpgradeableContractReport('MyContract2', 'MyContract', new UpgradeableContractErrorReport([]), layoutReport),
     ],
     true,
   );

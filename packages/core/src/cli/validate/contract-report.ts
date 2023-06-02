@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import _chalk from 'chalk';
 import {
   getContractVersion,
   getStorageLayout,
@@ -16,30 +16,41 @@ import { Report } from '../../standalone';
 
 import { getUpgradeabilityAssessment } from './upgradeability-assessment';
 import { SourceContract } from './validations';
+import { LayoutCompatibilityReport } from '../../storage/report';
 
 /**
- * Report for a contract that failed upgrade safety checks.
+ * Report for an upgradeable contract.
+ * Contains the standalone report, and if there is a reference contract, the reference contract name and storage layout report.
  */
-export interface UpgradeableContractReport {
-  /**
-   * The fully qualified name of the contract.
-   */
-  contract: string;
+export class UpgradeableContractReport implements Report {
+  constructor(
+    readonly contract: string,
+    readonly reference: string | undefined,
+    readonly standaloneReport: UpgradeableContractErrorReport,
+    readonly storageLayoutReport: LayoutCompatibilityReport | undefined,
+  ) {}
 
-  /**
-   * The fully qualified name of the contract that was used as the reference for storage layout comparison.
-   */
-  reference?: string;
+  get ok(): boolean {
+    return this.standaloneReport.ok && (this.storageLayoutReport === undefined || this.storageLayoutReport.ok);
+  }
 
-  /**
-   * A report of the standalone upgrade safety checks, including any errors found in the contract if any.
-   */
-  standaloneReport: Report;
+  explain(color = true): string {
+    const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
 
-  /**
-   * A report of the storage layout comparison, including any errors found if any. Undefined if there is no reference.
-   */
-  storageLayoutReport?: Report;
+    const lines: string[] = [];
+    if (!this.standaloneReport.ok) {
+      lines.push(chalk.bold(`- ${this.contract}:`));
+      lines.push(this.standaloneReport.explain(color));
+    }
+    if (this.storageLayoutReport !== undefined && !this.storageLayoutReport.ok) {
+      if (this.reference === undefined) {
+        throw new Error('Broken invariant: Storage layout errors reported without a reference contract');
+      }
+      lines.push(chalk.bold(`- ${this.reference} to ${this.contract}:`));
+      lines.push(this.storageLayoutReport.explain(color));
+    }
+    return lines.join('\n\n');
+  }
 }
 
 /**
@@ -88,10 +99,10 @@ function getUpgradeableContractReport(
   }
 
   console.log('Checking: ' + contract.fullyQualifiedName);
-  const standaloneErrors = reportStandaloneErrors(contract.validationData, version, opts, contract.fullyQualifiedName);
+  const standaloneReport = reportStandalone(contract.validationData, version, opts, contract.fullyQualifiedName);
 
   let reference: string | undefined;
-  let storageLayoutErrors: Report | undefined;
+  let storageLayoutReport: LayoutCompatibilityReport | undefined;
 
   if (opts.unsafeSkipStorageCheck !== true && referenceContract !== undefined) {
     const layout = getStorageLayout(contract.validationData, version);
@@ -100,7 +111,7 @@ function getUpgradeableContractReport(
     const referenceLayout = getStorageLayout(referenceContract.validationData, referenceVersion);
 
     reference = referenceContract.fullyQualifiedName;
-    storageLayoutErrors = reportStorageLayoutErrors(
+    storageLayoutReport = reportStorageLayout(
       referenceLayout,
       layout,
       withValidationDefaults(opts),
@@ -109,42 +120,42 @@ function getUpgradeableContractReport(
     );
   }
 
-  if (standaloneErrors.ok) {
-    if (storageLayoutErrors?.ok) {
+  if (standaloneReport.ok) {
+    if (storageLayoutReport?.ok) {
       console.log('Passed: from ' + reference + ' to ' + contract.fullyQualifiedName);
     } else {
       console.log('Passed: ' + contract.fullyQualifiedName);
     }
   }
 
-  return {
-    contract: contract.fullyQualifiedName,
-    reference,
-    standaloneReport: standaloneErrors,
-    storageLayoutReport: storageLayoutErrors,
-  }
+  return new UpgradeableContractReport(contract.fullyQualifiedName, reference, standaloneReport, storageLayoutReport);
 }
 
-function reportStandaloneErrors(data: ValidationData, version: Version, opts: ValidationOptions, name: string): Report {
+function reportStandalone(
+  data: ValidationData,
+  version: Version,
+  opts: ValidationOptions,
+  name: string,
+): UpgradeableContractErrorReport {
   const errors = getErrors(data, version, opts);
   const report = new UpgradeableContractErrorReport(errors);
   if (!report.ok) {
-    console.error(chalk.red(chalk.bold(`Failed: ${name}`)));
+    console.error(_chalk.red(_chalk.bold(`Failed: ${name}`)));
     console.error(report.explain());
   }
   return report;
 }
 
-function reportStorageLayoutErrors(
+function reportStorageLayout(
   referenceLayout: StorageLayout,
   layout: StorageLayout,
   opts: ValidationOptions,
   referenceName: string,
   name: string,
-): Report {
+): LayoutCompatibilityReport {
   const report = getStorageUpgradeReport(referenceLayout, layout, withValidationDefaults(opts));
   if (!report.ok) {
-    console.error(chalk.red(chalk.bold(`Failed: from ${referenceName} to ${name}`)));
+    console.error(_chalk.red(_chalk.bold(`Failed: from ${referenceName} to ${name}`)));
     console.error(report.explain());
   }
   return report;

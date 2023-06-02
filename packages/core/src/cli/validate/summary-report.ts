@@ -36,7 +36,10 @@ export class SummaryReport implements Report {
   }
 }
 
-export function getSummaryReport(upgradeableContractReports: UpgradeableContractReport[], suppressSummary: boolean): SummaryReport {
+export function getSummaryReport(
+  upgradeableContractReports: UpgradeableContractReport[],
+  suppressSummary: boolean,
+): SummaryReport {
   const report = new SummaryReport(upgradeableContractReports);
   if (!suppressSummary) {
     if (report.ok) {
