@@ -8,6 +8,7 @@ import os from 'os';
 
 import { artifacts } from 'hardhat';
 import { validateUpgradeSafety, withReportDefaults } from './validate-upgrade-safety';
+import { ReferenceContractNotFound } from './upgradeability-assessment';
 
 const rimraf = util.promisify(rimrafAsync);
 
@@ -47,6 +48,18 @@ test('bad upgrade from 0.8.8 to 0.8.9', async t => {
   const report = validateUpgradeSafety(['storage088.json', 'storage089.json']);
   t.false(report.ok);
   t.snapshot(report.explain());
+});
+
+test('reference contract not found', async t => {
+  const buildInfo2 = await artifacts.getBuildInfo(`contracts/test/cli/Storage089.sol:Storage089`);
+  await fs.writeFile('storage089-noref.json', JSON.stringify(buildInfo2));
+
+  const error = t.throws(() => validateUpgradeSafety(['storage089-noref.json']));
+  t.true(error instanceof ReferenceContractNotFound);
+  t.is(
+    error?.message,
+    'Could not find contract Storage088 referenced in contracts/test/cli/Storage089.sol:Storage089.',
+  );
 });
 
 test('with report defaults', async t => {
