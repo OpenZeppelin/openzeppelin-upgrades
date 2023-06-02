@@ -98,7 +98,7 @@ export function withDefaults(args: minimist.ParsedArgs): Required<ValidateUpgrad
   return withValidationDefaults(allOpts);
 }
 
-export function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['kind'][] {
+function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['kind'][] {
   type errorKindsType = typeof errorKinds[number];
 
   if (unsafeAllow === undefined) {
