@@ -1,8 +1,17 @@
 import test from 'ava';
+
+import { promises as fs } from 'fs';
+import rimrafAsync from 'rimraf';
+import path from 'path';
+import os from 'os';
+import util from 'util';
 import minimist from 'minimist';
 import { USAGE, DETAILS, handleHelp, main, withDefaults } from './validate';
 import sinon from 'sinon';
 import { errorKinds } from '../validate/run';
+import { artifacts } from 'hardhat';
+
+const rimraf = util.promisify(rimrafAsync);
 
 test('help', t => {
   const parsedArgs = minimist(['validate', '--help']);
@@ -112,4 +121,23 @@ test('withDefaults - invalid unsafeAllow', t => {
       ', ',
     )}`,
   });
+});
+
+test('main', async t => {
+  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
+
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/CLI.sol:Safe`);
+  await fs.writeFile('main-build-info.json', JSON.stringify(buildInfo));
+
+  let consoleErrorSpy = sinon.spy(console, 'error');
+
+  try {
+    t.notThrows(() => main(['validate', 'main-build-info.json']));
+    t.is(process.exitCode, 1);
+
+    t.true(consoleErrorSpy.calledWith('\nUpgrade safety checks completed with the following errors:'));
+  } finally {
+    process.exitCode = 0;
+    await rimraf(process.cwd());
+  }
 });
