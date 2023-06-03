@@ -129,13 +129,24 @@ test('main', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/CLI.sol:Safe`);
   await fs.writeFile('main-build-info.json', JSON.stringify(buildInfo));
 
-  let consoleErrorSpy = sinon.spy(console, 'error');
+  const consoleLogSpy = sinon.stub(console, 'log');
+  const consoleErrorSpy = sinon.stub(console, 'error');
+
+  const messages: string[] = [];
+
+  consoleLogSpy.callsFake((...args: string[]) => {
+    messages.push(args.join(' '));
+  });
+  consoleErrorSpy.callsFake((...args: string[]) => {
+    messages.push(args.join(' '));
+  });
 
   try {
     t.notThrows(() => main(['validate', 'main-build-info.json']));
     t.is(process.exitCode, 1);
 
     t.true(consoleErrorSpy.calledWith('\nUpgrade safety checks completed with the following errors:'));
+    t.snapshot(messages);
   } finally {
     process.exitCode = 0;
     await rimraf(process.cwd());
