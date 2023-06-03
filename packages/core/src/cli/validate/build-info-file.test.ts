@@ -59,7 +59,7 @@ test('get build info files', async t => {
   await fs.writeFile('build-info.json', JSON.stringify(BUILD_INFO));
   await fs.writeFile('build-info-2.json', JSON.stringify(BUILD_INFO_2));
 
-  const buildInfoFiles = getBuildInfoFiles([
+  const buildInfoFiles = await getBuildInfoFiles([
     'build-info.json', // relative path
     path.join(process.cwd(), 'build-info-2.json'), // absolute path
   ]);
@@ -72,6 +72,6 @@ test('get build info files', async t => {
 
 test('invalid build info', async t => {
   await fs.writeFile('build-info-invalid.json', JSON.stringify({ output: {} }));
-  const error = t.throws(() => getBuildInfoFiles(['build-info-invalid.json']));
+  const error = await t.throwsAsync(getBuildInfoFiles(['build-info-invalid.json']));
   t.true(error?.message.includes('must contain Solidity compiler input and output'));
 });

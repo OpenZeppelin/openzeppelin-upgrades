@@ -17,7 +17,7 @@ export const DETAILS =
     ', ',
   )}`;
 
-export function main(args: string[]): void {
+export async function main(args: string[]): Promise<void> {
   const parsedArgs = minimist(args, {
     boolean: [
       'help',
@@ -42,7 +42,7 @@ export function main(args: string[]): void {
   const opts = withDefaults(parsedArgs);
   debug('opts', JSON.stringify(opts, null, 2));
 
-  const result = validateUpgradeSafety(buildInfoFilePaths, undefined, opts);
+  const result = await validateUpgradeSafety(buildInfoFilePaths, undefined, opts);
   process.exitCode = result.ok ? 0 : 1;
 }
 

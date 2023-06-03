@@ -27,14 +27,14 @@ export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'>;
  * @param opts Validation options, or undefined to use the default validation options.
  * @returns The validation result.
  */
-export function validateUpgradeSafety(
+export async function validateUpgradeSafety(
   buildInfoFilePaths: string[],
   reportOpts: ReportOptions = {},
   opts: ValidateUpgradeSafetyOptions = {},
-): SummaryReport {
+): Promise<SummaryReport> {
   const fullReportOpts = withReportDefaults(reportOpts);
 
-  const buildInfoFiles = getBuildInfoFiles(buildInfoFilePaths);
+  const buildInfoFiles = await getBuildInfoFiles(buildInfoFilePaths);
   const reports = validateBuildInfoContracts(buildInfoFiles, opts);
 
   return getSummaryReport(reports, fullReportOpts.suppressSummary);

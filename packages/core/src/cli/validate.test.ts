@@ -69,8 +69,8 @@ test('no help needed', t => {
   t.false(handleHelp(parsedArgs, extraArgs));
 });
 
-test('invalid options', t => {
-  t.throws(() => main(['validate', 'build-info.json', '--foo', '--bar', 'xyz']), {
+test('invalid options', async t => {
+  await t.throwsAsync(main(['validate', 'build-info.json', '--foo', '--bar', 'xyz']), {
     message: `Invalid options: foo, bar`,
   });
 });
@@ -123,7 +123,7 @@ test('withDefaults - invalid unsafeAllow', t => {
   });
 });
 
-test('main - errors', async t => {
+test.serial('main - errors', async t => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
 
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/CLI.sol:Safe`);
@@ -142,7 +142,7 @@ test('main - errors', async t => {
   });
 
   try {
-    t.notThrows(() => main(['validate', 'main-build-info.json']));
+    await t.notThrowsAsync(main(['validate', 'main-build-info.json']));
     t.is(process.exitCode, 1);
 
     t.true(consoleErrorSpy.calledWith('\nUpgrade safety checks completed with the following errors:'));
@@ -154,7 +154,7 @@ test('main - errors', async t => {
   }
 });
 
-test('main - no errors', async t => {
+test.serial('main - no errors', async t => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
 
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage088.sol:Storage088`);
@@ -173,7 +173,7 @@ test('main - no errors', async t => {
   });
 
   try {
-    t.notThrows(() => main(['validate', 'storage088-build-info.json']));
+    await t.notThrowsAsync(main(['validate', 'storage088-build-info.json']));
     t.is(process.exitCode, 0);
 
     t.true(consoleLogSpy.calledWith('\nUpgrade safety checks completed successfully.'));

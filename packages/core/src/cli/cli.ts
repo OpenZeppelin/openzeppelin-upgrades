@@ -2,4 +2,8 @@
 
 import { main } from './validate';
 
-void main(process.argv.slice(2));
+const run = async () => {
+  await main(process.argv.slice(2));
+};
+
+void run();
