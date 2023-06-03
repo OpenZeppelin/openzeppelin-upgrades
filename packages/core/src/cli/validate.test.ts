@@ -123,7 +123,7 @@ test('withDefaults - invalid unsafeAllow', t => {
   });
 });
 
-test('main', async t => {
+test('main - errors', async t => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
 
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/CLI.sol:Safe`);
@@ -148,6 +148,38 @@ test('main', async t => {
     t.true(consoleErrorSpy.calledWith('\nUpgrade safety checks completed with the following errors:'));
     t.snapshot(messages);
   } finally {
+    sinon.restore();
+    process.exitCode = 0;
+    await rimraf(process.cwd());
+  }
+});
+
+test('main - no errors', async t => {
+  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
+
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage088.sol:Storage088`);
+  await fs.writeFile('storage088-build-info.json', JSON.stringify(buildInfo));
+
+  const consoleLogSpy = sinon.stub(console, 'log');
+  const consoleErrorSpy = sinon.stub(console, 'error');
+
+  const messages: string[] = [];
+
+  consoleLogSpy.callsFake((...args: string[]) => {
+    messages.push(args.join(' '));
+  });
+  consoleErrorSpy.callsFake((...args: string[]) => {
+    messages.push(args.join(' '));
+  });
+
+  try {
+    t.notThrows(() => main(['validate', 'storage088-build-info.json']));
+    t.is(process.exitCode, 0);
+
+    t.true(consoleLogSpy.calledWith('\nUpgrade safety checks completed successfully.'));
+    t.snapshot(messages);
+  } finally {
+    sinon.restore();
     process.exitCode = 0;
     await rimraf(process.cwd());
   }
