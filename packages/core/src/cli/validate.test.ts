@@ -13,33 +13,29 @@ import { artifacts } from 'hardhat';
 
 const rimraf = util.promisify(rimrafAsync);
 
-test('help', t => {
+test.afterEach.always(() => {
+  sinon.restore();
+});
+
+test.serial('help', t => {
   const parsedArgs = minimist(['validate', '--help']);
   const extraArgs = parsedArgs._;
 
-  const consoleLog = sinon.spy(console, 'log');
+  const consoleLog = sinon.stub(console, 'log');
 
-  try {
-    handleHelp(parsedArgs, extraArgs);
-  } finally {
-    sinon.restore();
-  }
+  handleHelp(parsedArgs, extraArgs);
 
   t.true(consoleLog.firstCall.calledWith(USAGE));
   t.true(consoleLog.secondCall.calledWith(DETAILS));
 });
 
-test('no arguments', t => {
+test.serial('no arguments', t => {
   const parsedArgs = minimist([]);
   const extraArgs = parsedArgs._;
 
-  const consoleLog = sinon.spy(console, 'log');
+  const consoleLog = sinon.stub(console, 'log');
 
-  try {
-    handleHelp(parsedArgs, extraArgs);
-  } finally {
-    sinon.restore();
-  }
+  handleHelp(parsedArgs, extraArgs);
 
   t.true(consoleLog.firstCall.calledWith(USAGE));
   t.true(consoleLog.secondCall.calledWith(DETAILS));
@@ -137,6 +133,7 @@ test.serial('main - errors', async t => {
     messages.push(args.join(' '));
   });
 
+  const exitCode = process.exitCode;
   try {
     await t.notThrowsAsync(main(['validate', 'main-build-info.json']));
     t.is(process.exitCode, 1);
@@ -144,8 +141,7 @@ test.serial('main - errors', async t => {
     t.true(consoleErrorStub.calledWith('\nUpgrade safety checks completed with the following errors:'));
     t.snapshot(messages);
   } finally {
-    sinon.restore();
-    process.exitCode = 0;
+    process.exitCode = exitCode;
     await rimraf(process.cwd());
   }
 });
@@ -168,6 +164,7 @@ test.serial('main - no errors', async t => {
     messages.push(args.join(' '));
   });
 
+  const exitCode = process.exitCode;
   try {
     await t.notThrowsAsync(main(['validate', 'storage088-build-info.json']));
     t.is(process.exitCode, 0);
@@ -175,8 +172,7 @@ test.serial('main - no errors', async t => {
     t.true(consoleLogStub.calledWith('\nUpgrade safety checks completed successfully.'));
     t.snapshot(messages);
   } finally {
-    sinon.restore();
-    process.exitCode = 0;
+    process.exitCode = exitCode;
     await rimraf(process.cwd());
   }
 });
