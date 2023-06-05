@@ -46,6 +46,8 @@ function getLayoutReport(original: StorageLayout, updated: StorageLayout) {
 test('get summary report - empty ok', async t => {
   const report = getSummaryReport([], true);
   t.true(report.ok);
+  t.is(report.numPassed, 0);
+  t.is(report.numTotal, 0);
   t.is(report.explain(), '');
 });
 
@@ -58,11 +60,29 @@ test('get summary report - ok - suppress', async t => {
   console.error = stubError;
 
   try {
-    const report = getSummaryReport([], true);
+    const report = getSummaryReport(
+      [
+        new UpgradeableContractReport(
+          'mypath/MyContract.sol:MyContract1',
+          undefined,
+          new UpgradeableContractErrorReport([]),
+          undefined,
+        ),
+        new UpgradeableContractReport(
+          'mypath/MyContract.sol:MyContract2',
+          undefined,
+          new UpgradeableContractErrorReport([]),
+          undefined,
+        ),
+      ],
+      true,
+    );
     t.is(stubLog.callCount, 0);
     t.is(stubError.callCount, 0);
 
     t.true(report.ok);
+    t.is(report.numPassed, 2);
+    t.is(report.numTotal, 2);
     t.is(report.explain(), '');
   } finally {
     console.log = consoleLog;
@@ -79,12 +99,24 @@ test('get summary report - ok - console', async t => {
   console.error = stubError;
 
   try {
-    const report = getSummaryReport([], false);
+    const report = getSummaryReport(
+      [
+        new UpgradeableContractReport(
+          'mypath/MyContract.sol:MyContract1',
+          undefined,
+          new UpgradeableContractErrorReport([]),
+          undefined,
+        ),
+      ],
+      false,
+    );
     t.is(stubLog.callCount, 1);
     t.regex(stubLog.getCall(0).args[0], /completed successfully/);
     t.is(stubError.callCount, 0);
 
     t.true(report.ok);
+    t.is(report.numPassed, 1);
+    t.is(report.numTotal, 1);
     t.is(report.explain(), '');
   } finally {
     console.log = consoleLog;
@@ -133,6 +165,8 @@ test('get summary report - errors - suppress', async t => {
     );
     t.is(stubLog.callCount, 0);
     t.is(stubError.callCount, 0);
+    t.is(report.numPassed, 0);
+    t.is(report.numTotal, 2);
 
     t.false(report.ok);
     t.snapshot(report.explain());
@@ -188,9 +222,41 @@ test('get summary report - errors - console', async t => {
     t.true(stubError.getCall(2).args[0].includes(report.explain()));
 
     t.false(report.ok);
+    t.is(report.numPassed, 0);
+    t.is(report.numTotal, 2);
     t.snapshot(report.explain());
   } finally {
     console.log = consoleLog;
     console.error = consoleError;
   }
+});
+
+test('get summary report - some passed', async t => {
+  const report = getSummaryReport(
+    [
+      new UpgradeableContractReport(
+        'mypath/MyContract.sol:MyContract1',
+        undefined,
+        new UpgradeableContractErrorReport([
+          {
+            src: 'MyContract.sol:10',
+            kind: 'missing-public-upgradeto',
+          },
+        ]),
+        undefined,
+      ),
+      new UpgradeableContractReport(
+        'mypath/MyContract.sol:MyContract2',
+        undefined,
+        new UpgradeableContractErrorReport([]),
+        undefined,
+      ),
+    ],
+    true,
+  );
+
+  t.false(report.ok);
+  t.is(report.numPassed, 1);
+  t.is(report.numTotal, 2);
+  t.snapshot(report.explain());
 });

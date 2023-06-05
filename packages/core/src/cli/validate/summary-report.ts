@@ -13,6 +13,7 @@ export class SummaryReport implements Report {
     const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
 
     const lines: string[] = [];
+
     for (const r of this.upgradeableContractReports) {
       if (!r.standaloneReport.ok) {
         lines.push(chalk.bold(`- ${r.contract}:`));
@@ -27,6 +28,20 @@ export class SummaryReport implements Report {
       }
     }
     return lines.join('\n\n');
+  }
+
+  /**
+   * Number of contracts that passed upgrade safety checks.
+   */
+  get numPassed(): number {
+    return this.upgradeableContractReports.filter(r => r.ok).length;
+  }
+
+  /**
+   * Total number of upgradeable contracts detected.
+   */
+  get numTotal(): number {
+    return this.upgradeableContractReports.length;
   }
 }
 
