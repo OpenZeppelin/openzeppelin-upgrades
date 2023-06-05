@@ -9,7 +9,7 @@ import { validateBuildInfoContracts } from './validations';
  */
 export interface ReportOptions {
   /**
-   * Whether to skip logging the summary report before returning it.
+   * Whether to skip logging the summary report to the console before returning it.
    */
   suppressSummary?: boolean;
 }
