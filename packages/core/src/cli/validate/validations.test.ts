@@ -64,6 +64,7 @@ testValid('UpgradesFromUUPS', false);
 testValid('UpgradesFromTransparent', true);
 testValid('UnsafeAndStorageLayoutErrors', false);
 testValid('BecomesSafe', true);
+testValid('BecomesBadLayout', false);
 testValid('StillUnsafe', false);
 testValid('AbstractUpgradeable', undefined);
 testValid('InheritsAbstractUpgradeable', true);

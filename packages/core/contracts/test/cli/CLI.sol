@@ -102,6 +102,13 @@ contract UnsafeAndStorageLayoutErrors {
  * @custom:oz-upgrades-from MultipleUnsafe
  */
 contract BecomesSafe {
+  bool public x;
+}
+
+/**
+ * @custom:oz-upgrades-from BecomesSafe
+ */
+contract BecomesBadLayout {
 }
 
 /**
