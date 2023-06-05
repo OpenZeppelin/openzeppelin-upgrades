@@ -17,36 +17,32 @@ test('help', t => {
   const parsedArgs = minimist(['validate', '--help']);
   const extraArgs = parsedArgs._;
 
-  const consoleLog = console.log;
-  const stubLog = sinon.stub();
-  console.log = stubLog;
+  const consoleLog = sinon.spy(console, 'log');
 
   try {
     handleHelp(parsedArgs, extraArgs);
   } finally {
-    console.log = consoleLog;
+    sinon.restore();
   }
 
-  t.true(stubLog.firstCall.calledWith(USAGE));
-  t.true(stubLog.secondCall.calledWith(DETAILS));
+  t.true(consoleLog.firstCall.calledWith(USAGE));
+  t.true(consoleLog.secondCall.calledWith(DETAILS));
 });
 
 test('no arguments', t => {
   const parsedArgs = minimist([]);
   const extraArgs = parsedArgs._;
 
-  const consoleLog = console.log;
-  const stubLog = sinon.stub();
-  console.log = stubLog;
+  const consoleLog = sinon.spy(console, 'log');
 
   try {
     handleHelp(parsedArgs, extraArgs);
   } finally {
-    console.log = consoleLog;
+    sinon.restore();
   }
 
-  t.true(stubLog.firstCall.calledWith(USAGE));
-  t.true(stubLog.secondCall.calledWith(DETAILS));
+  t.true(consoleLog.firstCall.calledWith(USAGE));
+  t.true(consoleLog.secondCall.calledWith(DETAILS));
 });
 
 test('missing arguments', t => {
@@ -129,15 +125,15 @@ test.serial('main - errors', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/CLI.sol:Safe`);
   await fs.writeFile('main-build-info.json', JSON.stringify(buildInfo));
 
-  const consoleLogSpy = sinon.stub(console, 'log');
-  const consoleErrorSpy = sinon.stub(console, 'error');
+  const consoleLogStub = sinon.stub(console, 'log');
+  const consoleErrorStub = sinon.stub(console, 'error');
 
   const messages: string[] = [];
 
-  consoleLogSpy.callsFake((...args: string[]) => {
+  consoleLogStub.callsFake((...args: string[]) => {
     messages.push(args.join(' '));
   });
-  consoleErrorSpy.callsFake((...args: string[]) => {
+  consoleErrorStub.callsFake((...args: string[]) => {
     messages.push(args.join(' '));
   });
 
@@ -145,7 +141,7 @@ test.serial('main - errors', async t => {
     await t.notThrowsAsync(main(['validate', 'main-build-info.json']));
     t.is(process.exitCode, 1);
 
-    t.true(consoleErrorSpy.calledWith('\nUpgrade safety checks completed with the following errors:'));
+    t.true(consoleErrorStub.calledWith('\nUpgrade safety checks completed with the following errors:'));
     t.snapshot(messages);
   } finally {
     sinon.restore();
@@ -160,15 +156,15 @@ test.serial('main - no errors', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage088.sol:Storage088`);
   await fs.writeFile('storage088-build-info.json', JSON.stringify(buildInfo));
 
-  const consoleLogSpy = sinon.stub(console, 'log');
-  const consoleErrorSpy = sinon.stub(console, 'error');
+  const consoleLogStub = sinon.stub(console, 'log');
+  const consoleErrorStub = sinon.stub(console, 'error');
 
   const messages: string[] = [];
 
-  consoleLogSpy.callsFake((...args: string[]) => {
+  consoleLogStub.callsFake((...args: string[]) => {
     messages.push(args.join(' '));
   });
-  consoleErrorSpy.callsFake((...args: string[]) => {
+  consoleErrorStub.callsFake((...args: string[]) => {
     messages.push(args.join(' '));
   });
 
@@ -176,7 +172,7 @@ test.serial('main - no errors', async t => {
     await t.notThrowsAsync(main(['validate', 'storage088-build-info.json']));
     t.is(process.exitCode, 0);
 
-    t.true(consoleLogSpy.calledWith('\nUpgrade safety checks completed successfully.'));
+    t.true(consoleLogStub.calledWith('\nUpgrade safety checks completed successfully.'));
     t.snapshot(messages);
   } finally {
     sinon.restore();
