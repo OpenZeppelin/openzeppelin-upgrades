@@ -118,7 +118,7 @@ test('withDefaults - invalid unsafeAllow', t => {
 test.serial('main - errors', async t => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
 
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/CLI.sol:Safe`);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
   await fs.writeFile('main-build-info.json', JSON.stringify(buildInfo));
 
   const consoleLogStub = sinon.stub(console, 'log');

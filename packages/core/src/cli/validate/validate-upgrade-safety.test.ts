@@ -21,7 +21,7 @@ test.after(async () => {
 });
 
 test('validate upgrade safety', async t => {
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/CLI.sol:Safe`);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
   await fs.writeFile('cli-build-info.json', JSON.stringify(buildInfo));
 
   const report = await validateUpgradeSafety(['cli-build-info.json']);
@@ -30,7 +30,7 @@ test('validate upgrade safety', async t => {
 });
 
 test('ambiguous upgrades-from', async t => {
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/CLI.sol:Safe`);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
   await fs.writeFile('cli-build-info-1.json', JSON.stringify(buildInfo));
   await fs.writeFile('cli-build-info-2.json', JSON.stringify(buildInfo));
 

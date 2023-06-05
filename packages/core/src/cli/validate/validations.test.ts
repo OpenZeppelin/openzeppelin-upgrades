@@ -10,7 +10,7 @@ interface Context {
 
 const test = _test as TestFn<Context>;
 
-const SOURCE_FILE = 'contracts/test/cli/CLI.sol';
+const SOURCE_FILE = 'contracts/test/cli/Validate.sol';
 
 test.before(async t => {
   const buildInfo = await artifacts.getBuildInfo(`${SOURCE_FILE}:Safe`);
