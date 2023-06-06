@@ -76,7 +76,8 @@ forge clean && forge build --build-info --extra-output storageLayout
 
 After performing the prerequisites, run the `npx @openzeppelin/upgrades-core validate` command to validate your contracts:
 
-[prewrap]
+:prewrap:
+[source,bash]
 ----
 npx @openzeppelin/upgrades-core validate [<build-info-dir>] [options]
 
@@ -88,6 +89,7 @@ Options:
   --unsafeAllowRenames  Configure storage layout check to allow variable renaming.
   --unsafeSkipStorageCheck  Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
 ----
+:prewrap!:
 
 If any errors are found, the command will exit with a non-zero exit code and print a detailed report of the errors to the console.
 
@@ -108,7 +110,7 @@ Import the `validateUpgradeSafety` function:
 import { validateUpgradeSafety } from '@openzeppelin/upgrades-core';
 ----
 
-Then call the function to validate your contracts and get a <<summary-report, summary report>> with the validation results.
+Then call the function to validate your contracts and get a summary report with the validation results.
 
 ==== validateUpgradeSafety
 [source,ts]
