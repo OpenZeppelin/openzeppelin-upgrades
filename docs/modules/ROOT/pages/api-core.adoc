@@ -82,7 +82,7 @@ npx @openzeppelin/upgrades-core validate [BUILD_INFO_DIR] [OPTIONS]
 
 If any errors are found, the command will exit with a non-zero exit code and print a detailed report of the errors to the console.
 
-*Parameters:*
+*Arguments:*
 
 * `BUILD_INFO_DIR` - Optional path to the build info directory which contains JSON files with Solidity compiler input and output. If not specified, uses the default Hardhat or Foundry build info directory if running in a Hardhat or Foundry project.
 
