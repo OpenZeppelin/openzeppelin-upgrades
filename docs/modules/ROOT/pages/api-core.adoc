@@ -75,22 +75,22 @@ forge clean && forge build --build-info --extra-output storageLayout
 
 After performing the prerequisites, run the `npx @openzeppelin/upgrades-core validate` command to validate your contracts:
 
-:prewrap:
 [source,bash]
 ----
-npx @openzeppelin/upgrades-core validate [<build-info-dir>] [options]
-
-Arguments:
-  <build-info-dir>  Optional path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to the Hardhat or Foundry build-info directory if running in a Hardhat or Foundry project.
-
-Options:
-  --unsafeAllow "<validation errors>"  Comma or space separated list to selectively disable one or more validation errors. Supported values are: state-variable-assignment, state-variable-immutable, external-library-linking, struct-definition, enum-definition, constructor, delegatecall, selfdestruct, missing-public-upgradeto
-  --unsafeAllowRenames  Configure storage layout check to allow variable renaming.
-  --unsafeSkipStorageCheck  Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
+npx @openzeppelin/upgrades-core validate [BUILD_INFO_DIR] [OPTIONS]
 ----
-:prewrap!:
 
 If any errors are found, the command will exit with a non-zero exit code and print a detailed report of the errors to the console.
+
+*Parameters:*
+
+* `BUILD_INFO_DIR` - Optional path to the build info directory which contains JSON files with Solidity compiler input and output. If not specified, uses the default Hardhat or Foundry build info directory if running in a Hardhat or Foundry project.
+
+*Options:*
+
+* `--unsafeAllow "VALIDATION_ERRORS"` - Selectively disable one or more validation errors. Comma or space separated list with one or more of the following: `state-variable-assignment, state-variable-immutable, external-library-linking, struct-definition, enum-definition, constructor, delegatecall, selfdestruct, missing-public-upgradeto`
+* `--unsafeAllowRenames` - Configure storage layout check to allow variable renaming.
+* `--unsafeSkipStorageCheck` - Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
 
 == High-Level API
 
