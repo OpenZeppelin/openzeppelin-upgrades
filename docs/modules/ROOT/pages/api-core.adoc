@@ -98,7 +98,7 @@ The high-level API is a programmatic equivalent to the <<validate-command, valid
 
 === Prerequisites
 
-Prerequisites are the same as for the `validate` command.
+Same prerequisites as the <<validate-command, validate command>>.
 
 === Usage
 
