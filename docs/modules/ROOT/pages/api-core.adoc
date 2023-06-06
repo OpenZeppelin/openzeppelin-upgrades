@@ -2,12 +2,12 @@
 
 The `@openzeppelin/upgrades-core` package provides a command-line interface to check for upgrade safety and storage layout compatibility in upgradeable contracts.  It can be used throughout your development process to ensure that your contracts are upgrade safe and compatible with previous versions.
 
-It also provides lower-level APIs to perform these checks programmatically, and contains the core logic for these checks to be performed with the OpenZeppelin Upgrades plugins.
+It also provides APIs to perform these checks programmatically, and contains the core logic for these checks to be performed with the OpenZeppelin Upgrades plugins.
 
 [[cli]]
 == Command-Line Interface
 
-Detects upgradeable contracts from a build-info directory and validates whether they are upgrade safe.
+Detects upgradeable contracts from a build info directory and validates whether they are upgrade safe.
 
 [[cli-prerequisites]]
 === Prerequisites
@@ -25,9 +25,10 @@ The command-line interface performs upgrade safety checks on contracts that look
 
 If your implementation contract does not inherit `Initializable` or `UUPSUpgradeable`, add the NatSpec annotation `@custom:oz-upgrades` or `@custom:oz-upgrades-from <reference>` so that it can be detected as an upgradeable contract.
 
+[[define-reference-contracts]]
 ==== Define Reference Contracts
 
-CAUTION: If an implementation contract is meant to upgraded from a previous version, you *MUST* define a reference contract for storage layout comparisons.  Otherwise, you will not receive errors if there are any storage layout incompatibilities.
+IMPORTANT: If an implementation contract is meant to upgraded from a previous version, you *MUST* define a reference contract for storage layout comparisons.  Otherwise, you will not receive errors if there are any storage layout incompatibilities.
 
 Define a reference contract by adding the NatSpec annotation `@custom:oz-upgrades-from <reference>` to your implementation contract, where `<reference>` is the contract name or fully qualified contract name of the reference contract to use for storage layout comparisons.
 
@@ -60,20 +61,22 @@ contract MyContractV2 {
 Compile your contracts and ensure that your build artifacts are available as JSON files with Solidity compiler inputs and outputs in a build info directory. The compiler output must include storage layouts. If any previous build artifacts exist, they must be cleaned first to avoid duplicate contract definitions.
 
 ===== Hardhat
-```
+[source,bash]
+----
 npx hardhat clean && npx hardhat compile
-```
+----
 
 ===== Foundry
-```
+[source,bash]
+----
 forge clean && forge build --build-info --extra-output storageLayout
-```
+----
 
 === Usage
 
 After performing the prerequisites, run the `npx @openzeppelin/upgrades-core validate` command to validate your contracts:
 
-[source]
+[prewrap]
 ----
 npx @openzeppelin/upgrades-core validate [<build-info-dir>] [options]
 
