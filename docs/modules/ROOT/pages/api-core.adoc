@@ -1,22 +1,21 @@
 = OpenZeppelin Upgrades Core
 
-The `@openzeppelin/upgrades-core` package provides a command-line interface to check for upgrade safety and storage layout compatibility in upgradeable contracts.  It can be used throughout your development process to ensure that your contracts are upgrade safe and compatible with previous versions.
+The `@openzeppelin/upgrades-core` package provides a `validate` command to check for upgrade safety and storage layout compatibility in upgradeable contracts.  It can be used throughout your development process to ensure that your contracts are upgrade safe and compatible with previous versions.
 
 It also provides APIs to perform these checks programmatically, and contains the core logic for these checks to be performed with the OpenZeppelin Upgrades plugins.
 
-[[cli]]
-== Command-Line Interface
+[[validate-command]]
+== Validate Command
 
 Detects upgradeable contracts from a build info directory and validates whether they are upgrade safe.
 
-[[cli-prerequisites]]
 === Prerequisites
 
-Before using the command-line interface, you must define upgradeable contracts so that they can be detected and validated, define reference contracts for storage layout comparisons, and compile your contracts.
+Before using the `validate` command, you must define upgradeable contracts so that they can be detected and validated, define reference contracts for storage layout comparisons, and compile your contracts.
 
 ==== Define Upgradeable Contracts
 
-The command-line interface performs upgrade safety checks on contracts that look like upgradeable contracts. Specifically, it performs checks on implementation contracts that meet any of the following criteria:
+The `validate` command performs upgrade safety checks on contracts that look like upgradeable contracts. Specifically, it performs checks on implementation contracts that meet any of the following criteria:
 
 - Inherits https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/Initializable.sol[`Initializable`].
 - Has an `upgradeTo(address)` function. This is the case for contracts that inherit https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/UUPSUpgradeable.sol[`UUPSUpgradeable`].
@@ -95,11 +94,11 @@ If any errors are found, the command will exit with a non-zero exit code and pri
 
 == High-Level API
 
-The high-level API is a programmatic equivalent to the <<cli, command-line interface>>.
+The high-level API is a programmatic equivalent to the <<validate-command, validate command>>.
 
 === Prerequisites
 
-Prerequisites are the same as for the command-line interface.
+Prerequisites are the same as for the `validate` command.
 
 === Usage
 
@@ -123,6 +122,8 @@ validateUpgradeSafety(
 ----
 
 Detects upgradeable contracts from a build info directory and validates whether they are upgrade safe. Returns a <<summary-report, summary report>> with the results.
+
+Note that this function does not throw validation errors directly. Instead, you must use the summary report to determine whether any errors were found.
 
 *Parameters:*
 
@@ -167,7 +168,7 @@ The low-level API works with https://docs.soliditylang.org/en/latest/using-the-c
 
 Compile your contracts to get Solidity input and output JSON objects. The compiler output must include storage layouts.
 
-Note that the other prerequisites from the <<cli-prerequisites, command-line interface>> are not required, because the low-level API does not detect upgradeable contracts automatically. Instead, you must create an instance of `UpgradeableContract` for each implementation contract that you want to validate, and call functions on it to get the upgrade safety and storage layout reports.
+Note that the other prerequisites from the <<validate-command, validate command>> are not required, because the low-level API does not detect upgradeable contracts automatically. Instead, you must create an instance of `UpgradeableContract` for each implementation contract that you want to validate, and call functions on it to get the upgrade safety and storage layout reports.
 
 === Usage
 
