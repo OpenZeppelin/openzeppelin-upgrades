@@ -1,9 +1,10 @@
-= OpenZeppelin Upgrades Core API
+= OpenZeppelin Upgrades Core
 
 The `@openzeppelin/upgrades-core` package provides a command-line interface to check for upgrade safety and storage layout compatibility in upgradeable contracts.  It can be used throughout your development process to ensure that your contracts are upgrade safe and compatible with previous versions.
 
 It also provides lower-level APIs to perform these checks programmatically, and contains the core logic for these checks to be performed with the OpenZeppelin Upgrades plugins.
 
+[[cli]]
 == Command-Line Interface
 
 Detects upgradeable contracts from a build-info directory and validates whether they are upgrade safe.
@@ -11,22 +12,26 @@ Detects upgradeable contracts from a build-info directory and validates whether 
 [[cli-prerequisites]]
 === Prerequisites
 
+Before using the command-line interface, you must define upgradeable contracts so that they can be detected and validated, define reference contracts for storage layout comparisons, and compile your contracts.
+
 ==== Define Upgradeable Contracts
 
-The command-line interface performs upgrade safety checks on contracts that meet any of the following criteria:
+The command-line interface performs upgrade safety checks on contracts that look like upgradeable contracts. Specifically, it performs checks on implementation contracts that meet any of the following criteria:
 
-- If the contract inherits https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/Initializable.sol[`Initializable`].
-- If the contract has the `upgradeTo(address)` function. This is true for contracts that inherit https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/UUPSUpgradeable.sol[`UUPSUpgradeable`].
-- If the contract has the NatSpec annotation `@custom:oz-upgrades`
-- If the contract has the NatSpec annotation `@custom:oz-upgrades-from <reference>` as defined below.
+- Inherits https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/Initializable.sol[`Initializable`].
+- Has an `upgradeTo(address)` function. This is the case for contracts that inherit https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/UUPSUpgradeable.sol[`UUPSUpgradeable`].
+- Has the NatSpec annotation `@custom:oz-upgrades`
+- Has the NatSpec annotation `@custom:oz-upgrades-from <reference>` according to <<define-reference-contracts, Define Reference Contracts>> below.
+
+If your implementation contract does not inherit `Initializable` or `UUPSUpgradeable`, add the NatSpec annotation `@custom:oz-upgrades` or `@custom:oz-upgrades-from <reference>` so that it can be detected as an upgradeable contract.
 
 ==== Define Reference Contracts
 
-CAUTION: If an implementation contract is meant to be used in an upgrade from a previous version, you *MUST* define a reference contract for storage layout comparisons.  Otherwise, you will not receive errors if there are any storage layout incompatibilities.
+CAUTION: If an implementation contract is meant to upgraded from a previous version, you *MUST* define a reference contract for storage layout comparisons.  Otherwise, you will not receive errors if there are any storage layout incompatibilities.
 
-Define a reference contract by adding the NatSpec annotation `@custom:oz-upgrades-from <reference>` to your implementation contract, where `<reference>` is the contract name or fully qualified contract name of the reference contract to use for storage layout compatibility checks.
+Define a reference contract by adding the NatSpec annotation `@custom:oz-upgrades-from <reference>` to your implementation contract, where `<reference>` is the contract name or fully qualified contract name of the reference contract to use for storage layout comparisons.
 
-For example:
+Example:
 [source,solidity]
 ----
 // SPDX-License-Identifier: MIT
@@ -52,14 +57,14 @@ contract MyContractV2 {
 
 ==== Compile Contracts
 
-Compile your contracts and ensure that your build artifacts are available as JSON files with Solidity compiler inputs and outputs in a build-info directory. The compiler output must include storage layouts. If any previous build artifacts exist, they must be cleaned first to avoid duplicate contract definitions.
+Compile your contracts and ensure that your build artifacts are available as JSON files with Solidity compiler inputs and outputs in a build info directory. The compiler output must include storage layouts. If any previous build artifacts exist, they must be cleaned first to avoid duplicate contract definitions.
 
-Hardhat:
+===== Hardhat
 ```
 npx hardhat clean && npx hardhat compile
 ```
 
-Foundry:
+===== Foundry
 ```
 forge clean && forge build --build-info --extra-output storageLayout
 ```
@@ -68,12 +73,12 @@ forge clean && forge build --build-info --extra-output storageLayout
 
 After performing the prerequisites, run the `npx @openzeppelin/upgrades-core validate` command to validate your contracts:
 
-[source,bash]
+[source]
 ----
 npx @openzeppelin/upgrades-core validate [<build-info-dir>] [options]
 
 Arguments:
-  <build-info-dir>  Optional path to the build-info directory which contains JSON files with Solidity compiler input and output. Defaults to the Hardhat or Foundry build-info directory if running in a Hardhat or Foundry project.
+  <build-info-dir>  Optional path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to the Hardhat or Foundry build-info directory if running in a Hardhat or Foundry project.
 
 Options:
   --unsafeAllow "<validation errors>"  Comma or space separated list to selectively disable one or more validation errors. Supported values are: state-variable-assignment, state-variable-immutable, external-library-linking, struct-definition, enum-definition, constructor, delegatecall, selfdestruct, missing-public-upgradeto
@@ -81,36 +86,42 @@ Options:
   --unsafeSkipStorageCheck  Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
 ----
 
+If any errors are found, the command will exit with a non-zero exit code and print a detailed report of the errors to the console.
+
 == High-Level API
 
-The package exports a high-level API as a programmatic equivalent to the command-line interface.
+The high-level API is a programmatic equivalent to the <<cli, command-line interface>>.
 
-=== Pre-requisites
+=== Prerequisites
 
-Pre-requisites are the same as for the <<cli-prerequisites, command-line interface>>.
+Prerequisites are the same as for the command-line interface.
 
 === Usage
+
+Import the `validateUpgradeSafety` function:
 
 [source,ts]
 ----
 import { validateUpgradeSafety } from '@openzeppelin/upgrades-core';
 ----
 
+Then call the function to validate your contracts and get a <<summary-report, summary report>> with the validation results.
+
 ==== validateUpgradeSafety
 [source,ts]
 ----
 validateUpgradeSafety(
-  buildInfoFilePath?: string,
+  buildInfoDir?: string,
   reportOpts: ReportOptions = {},
   opts: ValidateUpgradeSafetyOptions = {},
 ): Promise<SummaryReport>
 ----
 
-Detects upgradeable contracts from a build-info directory and validates whether they are upgrade safe. Returns a <<summary-report, summary report>> with the results.
+Detects upgradeable contracts from a build info directory and validates whether they are upgrade safe. Returns a <<summary-report, summary report>> with the results.
 
 *Parameters:*
 
-* `buildInfoFilePath` - the path to the build-info directory which contains JSON files with Solidity compiler input and output. Defaults to the Hardhat or Foundry build-info directory if running in a Hardhat or Foundry project.
+* `buildInfoDir` - the path to the build info directory which contains JSON files with Solidity compiler input and output. If not specified, uses the default Hardhat or Foundry build info directory if running in a Hardhat or Foundry project.
 * `reportOpts` - an object with the following options:
 ** `suppressSummary` - whether to skip logging the summary report to the console before returning it.
 * `opts` - an object with the following options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options]:
@@ -118,7 +129,9 @@ Detects upgradeable contracts from a build-info directory and validates whether 
 ** `unsafeAllowRenames`
 ** `unsafeSkipStorageCheck`
 
-*Returns:* a <<summary-report, summary report>>.
+*Returns:*
+
+* a <<summary-report, summary report>>.
 
 [[summary-report]]
 ==== SummaryReport
@@ -132,7 +145,7 @@ interface SummaryReport {
 }
 ----
 
-An object that represents the result of the upgrade safety checks and contains a summary of the errors found.
+An object that represents the result of upgrade safety checks and storage layout comparisons, and contains a summary of all errors found.
 
 **Members:**
 
@@ -143,14 +156,24 @@ An object that represents the result of the upgrade safety checks and contains a
 
 == Low-Level API
 
-The package exports a standalone interface that works with https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description[Solidity input and output JSON objects].
+The low-level API works with https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description[Solidity input and output JSON objects] and lets you perform upgrade safety checks and storage layout comparisons on individual contracts.
+
+=== Prerequisites
+
+Compile your contracts to get Solidity input and output JSON objects. The compiler output must include storage layouts.
+
+Note that the other prerequisites from the <<cli-prerequisites, command-line interface>> are not required, because the low-level API does not detect upgradeable contracts automatically. Instead, you must create an instance of `UpgradeableContract` for each implementation contract that you want to validate, and call functions on it to get the upgrade safety and storage layout reports.
 
 === Usage
+
+Import the `UpgradeableContract` class:
 
 [source,ts]
 ----
 import { UpgradeableContract } from '@openzeppelin/upgrades-core';
 ----
+
+Then create an instance of `UpgradeableContract` for each implementation contract that you want to validate, and call `.getErrorReport()` and/or `.getStorageLayoutReport()` on it to get the upgrade safety and storage layout reports, respectively.
 
 ==== UpgradeableContract
 
@@ -179,7 +202,11 @@ Creates a new instance of `UpgradeableContract`.
 * `name` - the name of the implementation contract as either a fully qualified name or contract name. If multiple contracts have the same name, you must use the fully qualified name e.g., `contracts/Bar.sol:Bar`.
 * `solcInput` - the Solidity input JSON object for the implementation contract.
 * `solcOutput` - the Solidity output JSON object for the implementation contract.
-* `opts` - an object with options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options].
+* `opts` - an object with the following options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options]:
+** `kind`
+** `unsafeAllow`
+** `unsafeAllowRenames`
+** `unsafeSkipStorageCheck`
 
 TIP: In Hardhat, `solcInput` and `solcOutput` can be obtained from the Build Info file, which itself can be retrieved with `hre.artifacts.getBuildInfo`.
 
