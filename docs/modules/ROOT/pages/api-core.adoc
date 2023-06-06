@@ -7,7 +7,7 @@ It also provides APIs to perform these checks programmatically, and contains the
 [[validate-command]]
 == Validate Command
 
-Detects upgradeable contracts from a build info directory and validates whether they are upgrade safe.
+Detects upgradeable contracts from a build info directory and validates whether they are upgrade safe. Use this if you want to validate all of your project's upgradeable contracts from the command line, in a script, or as part of your CI/CD pipeline.
 
 === Prerequisites
 
@@ -94,7 +94,7 @@ If any errors are found, the command will exit with a non-zero exit code and pri
 
 == High-Level API
 
-The high-level API is a programmatic equivalent to the <<validate-command, validate command>>.
+The high-level API is a programmatic equivalent to the <<validate-command, validate command>>. Use this API if you want to validate all of your project's upgradeable contracts from a JavaScript or TypeScript environment.
 
 === Prerequisites
 
@@ -162,11 +162,11 @@ An object that represents the result of upgrade safety checks and storage layout
 
 == Low-Level API
 
-The low-level API works with https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description[Solidity input and output JSON objects] and lets you perform upgrade safety checks and storage layout comparisons on individual contracts.
+The low-level API works with https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description[Solidity input and output JSON objects] and lets you perform upgrade safety checks and storage layout comparisons on individual contracts. Use this API if you want to validate specific contracts rather than a whole project.
 
 === Prerequisites
 
-Compile your contracts to get Solidity input and output JSON objects. The compiler output must include storage layouts.
+Compile your contracts to generate Solidity input and output JSON objects. The compiler output must include storage layouts.
 
 Note that the other prerequisites from the <<validate-command, validate command>> are not required, because the low-level API does not detect upgradeable contracts automatically. Instead, you must create an instance of `UpgradeableContract` for each implementation contract that you want to validate, and call functions on it to get the upgrade safety and storage layout reports.
 
