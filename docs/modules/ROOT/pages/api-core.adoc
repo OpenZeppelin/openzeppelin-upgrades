@@ -84,7 +84,7 @@ If any errors are found, the command will exit with a non-zero exit code and pri
 
 *Parameters:*
 
-* `<BUILD_INFO_DIR>` - Optional path to the build info directory which contains JSON files with Solidity compiler input and output. If not specified, uses the default Hardhat or Foundry build info directory if running in a Hardhat or Foundry project.
+* `<BUILD_INFO_DIR>` - Optional path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to `artifacts/build-info` for Hardhat projects or `out/build-info` for Foundry projects. If your project uses a custom output directory, you must specify its build info directory here.
 
 *Options:*
 
@@ -127,7 +127,7 @@ Note that this function does not throw validation errors directly. Instead, you 
 
 *Parameters:*
 
-* `buildInfoDir` - the path to the build info directory which contains JSON files with Solidity compiler input and output. If not specified, uses the default Hardhat or Foundry build info directory if running in a Hardhat or Foundry project.
+* `buildInfoDir` - the path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to `artifacts/build-info` for Hardhat projects or `out/build-info` for Foundry projects. If your project uses a custom output directory, you must specify its build info directory here.
 * `reportOpts` - an object with the following options:
 ** `suppressSummary` - whether to skip logging the summary report to the console before returning it.
 * `opts` - an object with the following options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options]:
