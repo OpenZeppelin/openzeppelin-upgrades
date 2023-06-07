@@ -124,6 +124,11 @@ test.serial('invalid build info file', async t => {
   t.true(error?.message.includes('must contain Solidity compiler input and output'));
 });
 
+test.serial('dir does not exist', async t => {
+  const error = await t.throwsAsync(getBuildInfoFiles('invalid-dir'));
+  t.true(error?.message.includes('does not exist'));
+});
+
 function assertBuildInfoFiles(t: ExecutionContext, buildInfoFiles: BuildInfoFile[]) {
   t.is(buildInfoFiles.length, 2);
 
