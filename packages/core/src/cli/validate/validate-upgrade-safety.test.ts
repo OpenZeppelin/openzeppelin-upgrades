@@ -22,39 +22,46 @@ test.after(async () => {
 
 test('validate upgrade safety', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
-  await fs.writeFile('cli-build-info.json', JSON.stringify(buildInfo));
 
-  const report = await validateUpgradeSafety(['cli-build-info.json']);
+  await fs.mkdir('validate-upgrade-safety');
+  await fs.writeFile('validate-upgrade-safety/1.json', JSON.stringify(buildInfo));
+
+  const report = await validateUpgradeSafety('validate-upgrade-safety');
   t.false(report.ok);
   t.snapshot(report.explain());
 });
 
 test('ambiguous upgrades-from', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
-  await fs.writeFile('cli-build-info-1.json', JSON.stringify(buildInfo));
-  await fs.writeFile('cli-build-info-2.json', JSON.stringify(buildInfo));
 
-  const error = await t.throwsAsync(validateUpgradeSafety(['cli-build-info-1.json', 'cli-build-info-2.json']));
+  await fs.mkdir('ambiguous-upgrades-from');
+  await fs.writeFile('ambiguous-upgrades-from/1.json', JSON.stringify(buildInfo));
+  await fs.writeFile('ambiguous-upgrades-from/2.json', JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(validateUpgradeSafety('ambiguous-upgrades-from'));
   t.true(error?.message.includes('Found multiple contracts with name'), error?.message);
 });
 
 test('bad upgrade from 0.8.8 to 0.8.9', async t => {
+  await fs.mkdir('bad-upgrade');
+
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage088.sol:Storage088`);
-  await fs.writeFile('storage088.json', JSON.stringify(buildInfo));
+  await fs.writeFile('bad-upgrade/storage088.json', JSON.stringify(buildInfo));
 
   const buildInfo2 = await artifacts.getBuildInfo(`contracts/test/cli/Storage089.sol:Storage089`);
-  await fs.writeFile('storage089.json', JSON.stringify(buildInfo2));
+  await fs.writeFile('bad-upgrade/storage089.json', JSON.stringify(buildInfo2));
 
-  const report = await validateUpgradeSafety(['storage088.json', 'storage089.json']);
+  const report = await validateUpgradeSafety('bad-upgrade');
   t.false(report.ok);
   t.snapshot(report.explain());
 });
 
 test('reference contract not found', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage089.sol:Storage089`);
-  await fs.writeFile('storage089-noref.json', JSON.stringify(buildInfo));
+  await fs.mkdir('ref-not-found');
+  await fs.writeFile('ref-not-found/storage089.json', JSON.stringify(buildInfo));
 
-  const error = await t.throwsAsync(validateUpgradeSafety(['storage089-noref.json']));
+  const error = await t.throwsAsync(validateUpgradeSafety('ref-not-found'));
   t.true(error instanceof ReferenceContractNotFound);
   t.is(
     error?.message,
@@ -69,12 +76,13 @@ test('with report defaults', async t => {
 });
 
 test('invalid annotation args - upgrades-from', async t => {
-  const fullyQualifiedName = `contracts/test/cli/InvalidAnnotationArgs.sol:InvalidAnnotationArgs`;
+  const fullyQualifiedName = `contracts/test/cli/InvalidAnnotationArgsUpgradesFrom.sol:InvalidAnnotationArgsUpgradesFrom`;
 
   const buildInfo = await artifacts.getBuildInfo(fullyQualifiedName);
-  await fs.writeFile('invalid-annotation-args.json', JSON.stringify(buildInfo));
+  await fs.mkdir('invalid-annotation-args-upgrades-from');
+  await fs.writeFile('invalid-annotation-args-upgrades-from/1.json', JSON.stringify(buildInfo));
 
-  const error = await t.throwsAsync(validateUpgradeSafety(['invalid-annotation-args.json']));
+  const error = await t.throwsAsync(validateUpgradeSafety('invalid-annotation-args-upgrades-from'));
   t.is(
     error?.message,
     `Invalid number of arguments for @custom:oz-upgrades-from annotation in contract ${fullyQualifiedName}. Expected 1, found 0`,
@@ -82,12 +90,13 @@ test('invalid annotation args - upgrades-from', async t => {
 });
 
 test('invalid annotation args - upgrades', async t => {
-  const fullyQualifiedName = `contracts/test/cli/InvalidAnnotationArgs2.sol:InvalidAnnotationArgs2`;
+  const fullyQualifiedName = `contracts/test/cli/InvalidAnnotationArgsUpgrades.sol:InvalidAnnotationArgsUpgrades`;
 
   const buildInfo = await artifacts.getBuildInfo(fullyQualifiedName);
-  await fs.writeFile('invalid-annotation-args2.json', JSON.stringify(buildInfo));
+  await fs.mkdir('invalid-annotation-args-upgrades');
+  await fs.writeFile('invalid-annotation-args-upgrades/1.json', JSON.stringify(buildInfo));
 
-  const error = await t.throwsAsync(validateUpgradeSafety(['invalid-annotation-args2.json']));
+  const error = await t.throwsAsync(validateUpgradeSafety('invalid-annotation-args-upgrades'));
   t.is(
     error?.message,
     `Invalid number of arguments for @custom:oz-upgrades annotation in contract ${fullyQualifiedName}. Expected 0, found 1`,

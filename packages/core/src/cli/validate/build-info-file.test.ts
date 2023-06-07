@@ -55,23 +55,34 @@ const BUILD_INFO_2 = {
   },
 };
 
-test('get build info files', async t => {
-  await fs.writeFile('build-info.json', JSON.stringify(BUILD_INFO));
-  await fs.writeFile('build-info-2.json', JSON.stringify(BUILD_INFO_2));
+test('get build info files - default', async t => {
+  await fs.mkdir('artifacts/build-info', { recursive: true });
 
-  const buildInfoFiles = await getBuildInfoFiles([
-    'build-info.json', // relative path
-    path.join(process.cwd(), 'build-info-2.json'), // absolute path
-  ]);
+  await fs.writeFile('artifacts/build-info/build-info.json', JSON.stringify(BUILD_INFO));
+  await fs.writeFile('artifacts/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
+
+  const buildInfoFiles = await getBuildInfoFiles(); // uses default
   t.is(buildInfoFiles.length, 2);
-  t.is(buildInfoFiles[0].input.sources['mypath/MyContract.sol'].content, 'contract MyContract {}');
-  t.is(buildInfoFiles[0].output.sources['mypath/MyContract.sol'].id, 123);
-  t.is(buildInfoFiles[1].input.sources['mypath/MyContract.sol'].content, 'contract MyContractModified {}');
-  t.is(buildInfoFiles[1].output.sources['mypath/MyContract.sol'].id, 456);
+
+  const buildInfoFile1 = buildInfoFiles.find(
+    b => b.input.sources['mypath/MyContract.sol'].content === 'contract MyContract {}',
+  );
+  const buildInfoFile2 = buildInfoFiles.find(
+    b => b.input.sources['mypath/MyContract.sol'].content === 'contract MyContractModified {}',
+  );
+
+  if (buildInfoFile1 === undefined || buildInfoFile2 === undefined) {
+    t.fail('build info files not found');
+  } else {
+    t.is(buildInfoFile1.output.sources['mypath/MyContract.sol'].id, 123);
+    t.is(buildInfoFile2.output.sources['mypath/MyContract.sol'].id, 456);
+  }
 });
 
-test('invalid build info', async t => {
-  await fs.writeFile('build-info-invalid.json', JSON.stringify({ output: {} }));
-  const error = await t.throwsAsync(getBuildInfoFiles(['build-info-invalid.json']));
+test('invalid build info file', async t => {
+  await fs.mkdir('invalid-build-info', { recursive: true });
+
+  await fs.writeFile('invalid-build-info/invalid.json', JSON.stringify({ output: {} }));
+  const error = await t.throwsAsync(getBuildInfoFiles('invalid-build-info'));
   t.true(error?.message.includes('must contain Solidity compiler input and output'));
 });

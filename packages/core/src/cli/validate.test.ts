@@ -1,4 +1,4 @@
-import test from 'ava';
+import test, { ExecutionContext } from 'ava';
 
 import { promises as fs } from 'fs';
 import rimrafAsync from 'rimraf';
@@ -58,10 +58,17 @@ test('invalid command', t => {
 test('no help needed', t => {
   const parsedArgs = minimist(['validate', 'build-info.json']);
   const extraArgs = parsedArgs._;
-  t.deepEqual(getFunctionArgs(parsedArgs, extraArgs), {
-    buildInfoDir: 'build-info.json',
-    opts: {},
-  });
+  const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
+  if (functionArgs === undefined) {
+    t.fail();
+  } else {
+    t.is(functionArgs.buildInfoDir, 'build-info.json');
+    t.is(functionArgs.opts.unsafeAllowRenames, false);
+    t.is(functionArgs.opts.unsafeSkipStorageCheck, false);
+    t.is(functionArgs.opts.unsafeAllowCustomTypes, false);
+    t.is(functionArgs.opts.unsafeAllowLinkedLibraries, false);
+    t.deepEqual(functionArgs.opts.unsafeAllow, []);
+  }
 });
 
 test('invalid options', async t => {
@@ -120,9 +127,10 @@ test('withDefaults - invalid unsafeAllow', t => {
 
 test.serial('main - errors', async t => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
+  await fs.mkdir('main-errors');
 
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
-  await fs.writeFile('main-build-info.json', JSON.stringify(buildInfo));
+  await fs.writeFile('main-errors/1.json', JSON.stringify(buildInfo));
 
   const consoleLogStub = sinon.stub(console, 'log');
   const consoleErrorStub = sinon.stub(console, 'error');
@@ -138,7 +146,7 @@ test.serial('main - errors', async t => {
 
   const exitCode = process.exitCode;
   try {
-    await t.notThrowsAsync(main(['validate', 'main-build-info.json']));
+    await t.notThrowsAsync(main(['validate', 'main-errors']));
     t.is(process.exitCode, 1);
 
     t.true(consoleErrorStub.calledWith('\nUpgrade safety checks completed with the following errors:'));
@@ -151,9 +159,10 @@ test.serial('main - errors', async t => {
 
 test.serial('main - no errors', async t => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
+  await fs.mkdir('main-no-errors');
 
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage088.sol:Storage088`);
-  await fs.writeFile('storage088-build-info.json', JSON.stringify(buildInfo));
+  await fs.writeFile('main-no-errors/1.json', JSON.stringify(buildInfo));
 
   const consoleLogStub = sinon.stub(console, 'log');
   const consoleErrorStub = sinon.stub(console, 'error');
@@ -169,7 +178,7 @@ test.serial('main - no errors', async t => {
 
   const exitCode = process.exitCode;
   try {
-    await t.notThrowsAsync(main(['validate', 'storage088-build-info.json']));
+    await t.notThrowsAsync(main(['validate', 'main-no-errors']));
     t.is(process.exitCode, 0);
 
     t.true(consoleLogStub.calledWith('\nUpgrade safety checks completed successfully.'));
