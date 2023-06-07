@@ -5,17 +5,17 @@ import { withValidationDefaults } from '..';
 import { ValidationError, errorKinds } from '../validate/run';
 import debug from '../utils/debug';
 
-export const USAGE = 'Usage: npx @openzeppelin/upgrades-core validate <build-info-files> [options]';
+export const USAGE = 'Usage: npx @openzeppelin/upgrades-core validate [<BUILD_INFO_DIR>] [<OPTIONS>]';
 export const DETAILS =
-  '\nDetects upgradeable contracts from a set of build info files and validates that they are upgrade safe.' +
+  '\nDetects upgradeable contracts from a build info directory and validates whether they are upgrade safe.' +
   '\n\nArguments:' +
-  '\n  <build-info-files>  One or more paths to build info JSON files which contain Solidity compiler input and output sections.' +
+  "\n  <BUILD_INFO_DIR>  Optional path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to 'artifacts/build-info' for Hardhat projects or 'out/build-info' for Foundry projects. If your project uses a custom output directory, you must specify its build info directory here." +
   '\n\nOptions:' +
-  '\n  --unsafeAllowRenames  Configure storage layout check to allow variable renaming.' +
-  '\n  --unsafeSkipStorageCheck  Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.' +
-  `\n  --unsafeAllow "<validation errors>"  Comma or space separated list to selectively disable one or more validation errors. Supported values are: ${errorKinds.join(
+  `\n  --unsafeAllow "<VALIDATION_ERRORS>"  Selectively disable one or more validation errors. Comma or space separated list with one or more of the following: ${errorKinds.join(
     ', ',
-  )}`;
+  )}` +
+  '\n  --unsafeAllowRenames  Configure storage layout check to allow variable renaming.' +
+  '\n  --unsafeSkipStorageCheck  Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.';
 
 export async function main(args: string[]): Promise<void> {
   const parsedArgs = minimist(args, {
