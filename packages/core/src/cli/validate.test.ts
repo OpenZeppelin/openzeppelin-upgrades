@@ -1,4 +1,4 @@
-import test, { ExecutionContext } from 'ava';
+import test from 'ava';
 
 import { promises as fs } from 'fs';
 import rimrafAsync from 'rimraf';

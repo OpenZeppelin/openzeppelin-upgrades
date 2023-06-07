@@ -25,6 +25,9 @@ export interface BuildInfoFile {
  * @returns The build info files with Solidity compiler input and output.
  */
 export async function getBuildInfoFiles(buildInfoDir?: string) {
+  if (buildInfoDir !== undefined && !(await checkDirExists(buildInfoDir))) {
+    throw new Error(`Build info directory '${buildInfoDir}' does not exist.`);
+  }
   const dir = buildInfoDir ?? (await findDefaultDir());
   const jsonFiles = await getJsonFiles(dir);
   return await readBuildInfo(jsonFiles);
@@ -39,7 +42,7 @@ async function findDefaultDir() {
 
   if (hardhatDirExists && foundryDirExists) {
     throw new Error(
-      `Found both Hardhat and Foundry build-info directories in '${hardhatDir}' and '${foundryDir}'. Specify the build-info directory to validate.`,
+      `Found both Hardhat and Foundry build-info directories: '${hardhatDir}' and '${foundryDir}'. Specify the build-info directory to validate.`,
     );
   } else if (hardhatDirExists) {
     return hardhatDir;

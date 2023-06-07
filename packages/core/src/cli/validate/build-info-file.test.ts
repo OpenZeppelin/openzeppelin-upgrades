@@ -1,19 +1,19 @@
-import test from 'ava';
+import test, { ExecutionContext } from 'ava';
 
 import { promises as fs } from 'fs';
 import rimrafAsync from 'rimraf';
 import util from 'util';
 import path from 'path';
 import os from 'os';
-import { getBuildInfoFiles } from './build-info-file';
+import { BuildInfoFile, getBuildInfoFiles } from './build-info-file';
 
 const rimraf = util.promisify(rimrafAsync);
 
-test.before(async () => {
-  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
+test.beforeEach(async t => {
+  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), `upgrades-core-test-${t.title.replace(/\s/g, '-')}-`)));
 });
 
-test.after(async () => {
+test.afterEach(async () => {
   await rimraf(process.cwd());
 });
 
@@ -55,13 +55,76 @@ const BUILD_INFO_2 = {
   },
 };
 
-test('get build info files - default', async t => {
+test.serial('get build info files - default hardhat', async t => {
   await fs.mkdir('artifacts/build-info', { recursive: true });
 
   await fs.writeFile('artifacts/build-info/build-info.json', JSON.stringify(BUILD_INFO));
   await fs.writeFile('artifacts/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
 
-  const buildInfoFiles = await getBuildInfoFiles(); // uses default
+  const buildInfoFiles = await getBuildInfoFiles();
+
+  assertBuildInfoFiles(t, buildInfoFiles);
+});
+
+test.serial('get build info files - default foundry', async t => {
+  await fs.mkdir('out/build-info', { recursive: true });
+
+  await fs.writeFile('out/build-info/build-info.json', JSON.stringify(BUILD_INFO));
+  await fs.writeFile('out/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
+
+  const buildInfoFiles = await getBuildInfoFiles();
+
+  assertBuildInfoFiles(t, buildInfoFiles);
+});
+
+test.serial('get build info files - both hardhat and foundry dirs exist', async t => {
+  await fs.mkdir('artifacts/build-info', { recursive: true });
+  await fs.mkdir('out/build-info', { recursive: true });
+
+  await fs.writeFile('out/build-info/build-info.json', JSON.stringify(BUILD_INFO));
+  await fs.writeFile('out/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
+
+  const error = await t.throwsAsync(getBuildInfoFiles());
+  t.true(error?.message.includes('Found both Hardhat and Foundry build-info directories'));
+});
+
+test.serial('get build info files - override with custom relative path', async t => {
+  await fs.mkdir('artifacts/build-info', { recursive: true });
+  await fs.mkdir('out/build-info', { recursive: true });
+
+  await fs.mkdir('custom/build-info', { recursive: true });
+
+  await fs.writeFile('custom/build-info/build-info.json', JSON.stringify(BUILD_INFO));
+  await fs.writeFile('custom/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
+
+  const buildInfoFiles = await getBuildInfoFiles('custom/build-info');
+
+  assertBuildInfoFiles(t, buildInfoFiles);
+});
+
+test.serial('get build info files - override with custom absolute path', async t => {
+  await fs.mkdir('artifacts/build-info', { recursive: true });
+  await fs.mkdir('out/build-info', { recursive: true });
+
+  await fs.mkdir('custom/build-info', { recursive: true });
+
+  await fs.writeFile('custom/build-info/build-info.json', JSON.stringify(BUILD_INFO));
+  await fs.writeFile('custom/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
+
+  const buildInfoFiles = await getBuildInfoFiles(path.join(process.cwd(), 'custom/build-info'));
+
+  assertBuildInfoFiles(t, buildInfoFiles);
+});
+
+test.serial('invalid build info file', async t => {
+  await fs.mkdir('invalid-build-info', { recursive: true });
+
+  await fs.writeFile('invalid-build-info/invalid.json', JSON.stringify({ output: {} }));
+  const error = await t.throwsAsync(getBuildInfoFiles('invalid-build-info'));
+  t.true(error?.message.includes('must contain Solidity compiler input and output'));
+});
+
+function assertBuildInfoFiles(t: ExecutionContext, buildInfoFiles: BuildInfoFile[]) {
   t.is(buildInfoFiles.length, 2);
 
   const buildInfoFile1 = buildInfoFiles.find(
@@ -77,12 +140,4 @@ test('get build info files - default', async t => {
     t.is(buildInfoFile1.output.sources['mypath/MyContract.sol'].id, 123);
     t.is(buildInfoFile2.output.sources['mypath/MyContract.sol'].id, 456);
   }
-});
-
-test('invalid build info file', async t => {
-  await fs.mkdir('invalid-build-info', { recursive: true });
-
-  await fs.writeFile('invalid-build-info/invalid.json', JSON.stringify({ output: {} }));
-  const error = await t.throwsAsync(getBuildInfoFiles('invalid-build-info'));
-  t.true(error?.message.includes('must contain Solidity compiler input and output'));
-});
+}
