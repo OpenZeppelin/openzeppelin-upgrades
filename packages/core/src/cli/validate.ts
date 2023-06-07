@@ -18,6 +18,15 @@ export const DETAILS =
   '\n  --unsafeSkipStorageCheck  Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.';
 
 export async function main(args: string[]): Promise<void> {
+  const { parsedArgs, extraArgs } = parseArgs(args);
+  const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
+  if (functionArgs !== undefined) {
+    const result = await validateUpgradeSafety(functionArgs.buildInfoDir, undefined, functionArgs.opts);
+    process.exitCode = result.ok ? 0 : 1;
+  }
+}
+
+function parseArgs(args: string[]) {
   const parsedArgs = minimist(args, {
     boolean: [
       'help',
@@ -31,37 +40,34 @@ export async function main(args: string[]): Promise<void> {
   });
   const extraArgs = parsedArgs._;
   debug('parsedArgs', parsedArgs);
+  return { parsedArgs, extraArgs };
+}
 
-  if (handleHelp(parsedArgs, extraArgs)) {
-    return;
-  }
-
-  const buildInfoFilePaths = extraArgs.slice(1, extraArgs.length);
-  debug('buildInfoFilePaths', JSON.stringify(buildInfoFilePaths, null, 2));
-
-  const opts = withDefaults(parsedArgs);
-  debug('opts', JSON.stringify(opts, null, 2));
-
-  const result = await validateUpgradeSafety(buildInfoFilePaths, undefined, opts);
-  process.exitCode = result.ok ? 0 : 1;
+interface FunctionArgs {
+  buildInfoDir: string;
+  opts: Required<ValidateUpgradeSafetyOptions>;
 }
 
 /**
- * Prints help if the --help option is present or if there are no arguments.
- * @returns True if help was printed, false otherwise.
- * @throws Error if the wrong subcommand is used, or if there are missing arguments for the 'validate' subcommand.
+ * Gets and validates function arguments, or prints help if needed.
+ * @returns Function arguments if they are valid, or undefined if the function should not proceed due to help being printed.
+ * @throws Error if any arguments or options are invalid.
  */
-export function handleHelp(parsedArgs: minimist.ParsedArgs, extraArgs: string[]): boolean {
+export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: string[]): FunctionArgs | undefined {
   if (extraArgs.length === 0 || parsedArgs['help']) {
     console.log(USAGE);
     console.log(DETAILS);
-    return true;
+    return undefined;
   } else if (extraArgs[0] !== 'validate') {
     throw new Error(`Invalid command: ${extraArgs[0]}. Supported commands are: validate`);
   } else if (extraArgs.length === 1) {
     throw new Error(`Missing arguments. ${USAGE}`);
+  } else if (extraArgs.length > 2) {
+    throw new Error('The validate command takes only one argument: the build info directory.');
   } else {
-    return false;
+    const buildInfoDir = extraArgs[1];
+    const opts = withDefaults(parsedArgs);
+    return { buildInfoDir, opts };
   }
 }
 
@@ -84,20 +90,6 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
   }
 }
 
-export function withDefaults(args: minimist.ParsedArgs): Required<ValidateUpgradeSafetyOptions> {
-  validateOptions(args);
-
-  const allOpts: Required<ValidateUpgradeSafetyOptions> = {
-    unsafeAllowRenames: args['unsafeAllowRenames'],
-    unsafeSkipStorageCheck: args['unsafeSkipStorageCheck'],
-    unsafeAllowCustomTypes: args['unsafeAllowCustomTypes'],
-    unsafeAllowLinkedLibraries: args['unsafeAllowLinkedLibraries'],
-    unsafeAllow: getUnsafeAllowKinds(args['unsafeAllow']),
-  };
-
-  return withValidationDefaults(allOpts);
-}
-
 function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['kind'][] {
   type errorKindsType = typeof errorKinds[number];
 
@@ -115,4 +107,18 @@ function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['
     );
   }
   return unsafeAllowTokens as errorKindsType[];
+}
+
+export function withDefaults(parsedArgs: minimist.ParsedArgs): Required<ValidateUpgradeSafetyOptions> {
+  validateOptions(parsedArgs);
+
+  const allOpts: Required<ValidateUpgradeSafetyOptions> = {
+    unsafeAllowRenames: parsedArgs['unsafeAllowRenames'],
+    unsafeSkipStorageCheck: parsedArgs['unsafeSkipStorageCheck'],
+    unsafeAllowCustomTypes: parsedArgs['unsafeAllowCustomTypes'],
+    unsafeAllowLinkedLibraries: parsedArgs['unsafeAllowLinkedLibraries'],
+    unsafeAllow: getUnsafeAllowKinds(parsedArgs['unsafeAllow']),
+  };
+
+  return withValidationDefaults(allOpts);
 }

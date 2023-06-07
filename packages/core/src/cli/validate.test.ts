@@ -6,7 +6,7 @@ import path from 'path';
 import os from 'os';
 import util from 'util';
 import minimist from 'minimist';
-import { USAGE, DETAILS, handleHelp, main, withDefaults } from './validate';
+import { USAGE, DETAILS, getFunctionArgs, main, withDefaults } from './validate';
 import sinon from 'sinon';
 import { errorKinds } from '../validate/run';
 import { artifacts } from 'hardhat';
@@ -23,7 +23,7 @@ test.serial('help', t => {
 
   const consoleLog = sinon.stub(console, 'log');
 
-  handleHelp(parsedArgs, extraArgs);
+  getFunctionArgs(parsedArgs, extraArgs);
 
   t.true(consoleLog.firstCall.calledWith(USAGE));
   t.true(consoleLog.secondCall.calledWith(DETAILS));
@@ -35,7 +35,7 @@ test.serial('no arguments', t => {
 
   const consoleLog = sinon.stub(console, 'log');
 
-  handleHelp(parsedArgs, extraArgs);
+  getFunctionArgs(parsedArgs, extraArgs);
 
   t.true(consoleLog.firstCall.calledWith(USAGE));
   t.true(consoleLog.secondCall.calledWith(DETAILS));
@@ -44,13 +44,13 @@ test.serial('no arguments', t => {
 test('missing arguments', t => {
   const parsedArgs = minimist(['validate']);
   const extraArgs = parsedArgs._;
-  t.throws(() => handleHelp(parsedArgs, extraArgs), { message: `Missing arguments. ${USAGE}` });
+  t.throws(() => getFunctionArgs(parsedArgs, extraArgs), { message: `Missing arguments. ${USAGE}` });
 });
 
 test('invalid command', t => {
   const parsedArgs = minimist(['invalid']);
   const extraArgs = parsedArgs._;
-  t.throws(() => handleHelp(parsedArgs, extraArgs), {
+  t.throws(() => getFunctionArgs(parsedArgs, extraArgs), {
     message: `Invalid command: invalid. Supported commands are: validate`,
   });
 });
@@ -58,7 +58,10 @@ test('invalid command', t => {
 test('no help needed', t => {
   const parsedArgs = minimist(['validate', 'build-info.json']);
   const extraArgs = parsedArgs._;
-  t.false(handleHelp(parsedArgs, extraArgs));
+  t.deepEqual(getFunctionArgs(parsedArgs, extraArgs), {
+    buildInfoDir: 'build-info.json',
+    opts: {},
+  });
 });
 
 test('invalid options', async t => {
