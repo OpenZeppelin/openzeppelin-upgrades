@@ -2,6 +2,7 @@ import { SolcOutput, SolcInput } from '../..';
 
 import { promises as fs } from 'fs';
 import path from 'path';
+import { ValidateCommandError } from './error';
 
 const HARDHAT_COMPILE_COMMAND = 'npx hardhat compile';
 const FOUNDRY_COMPILE_COMMAND = 'forge clean && forge build --build-info --extra-output storageLayout';
@@ -35,8 +36,10 @@ export async function getBuildInfoFiles(buildInfoDir?: string) {
 
 async function findDir(buildInfoDir: string | undefined) {
   if (buildInfoDir !== undefined && !(await hasJsonFiles(buildInfoDir))) {
-    throw new Error(
-      `The directory '${buildInfoDir}' does not exist or does not contain any build info files. Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}' and try again with the correct path to the build info directory.`,
+    throw new ValidateCommandError(
+      `The directory '${buildInfoDir}' does not exist or does not contain any build info files.`,
+      () =>
+        `Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}' and try again with the correct path to the build info directory.`,
     );
   }
   const dir = buildInfoDir ?? (await findDefaultDir());
@@ -54,16 +57,19 @@ async function findDefaultDir() {
   const hasFoundryBuildInfo = await hasJsonFiles(foundryDir);
 
   if (hasHardhatBuildInfo && hasFoundryBuildInfo) {
-    throw new Error(
-      `Found both Hardhat and Foundry build info directories: '${hardhatRelativeDir}' and '${foundryRelativeDir}'. Specify the build info directory that you want to validate.`,
+    throw new ValidateCommandError(
+      `Found both Hardhat and Foundry build info directories: '${hardhatRelativeDir}' and '${foundryRelativeDir}'.`,
+      () => `Specify the build info directory that you want to validate.`,
     );
   } else if (hasHardhatBuildInfo) {
     return hardhatDir;
   } else if (hasFoundryBuildInfo) {
     return foundryDir;
   } else {
-    throw new Error(
-      `Could not find the default Hardhat or Foundry build info directory. Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}', or specify the build info directory that you want to validate.`,
+    throw new ValidateCommandError(
+      `Could not find the default Hardhat or Foundry build info directory.`,
+      () =>
+        `Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}', or specify the build info directory that you want to validate.`,
     );
   }
 }
@@ -93,12 +99,14 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
   for (const buildInfoFilePath of buildInfoFilePaths) {
     const buildInfoJson = await readJSON(buildInfoFilePath);
     if (buildInfoJson.input === undefined || buildInfoJson.output === undefined) {
-      throw new Error(`Build info file ${buildInfoFilePath} must contain Solidity compiler input and output.`);
+      throw new ValidateCommandError(
+        `Build info file ${buildInfoFilePath} must contain Solidity compiler input and output.`,
+      );
     } else {
       if (!hasStorageLayoutSetting(buildInfoJson)) {
-        throw new Error(
-          `Build info file ${buildInfoFilePath} does not contain storage layout.\n` +
-            `\n` +
+        throw new ValidateCommandError(
+          `Build info file ${buildInfoFilePath} does not contain storage layout.`,
+          () =>
             `If using Hardhat, include the 'storageLayout' output selection in your Hardhat config:\n` +
             `module.exports = {\n` +
             `  solidity: {\n` +

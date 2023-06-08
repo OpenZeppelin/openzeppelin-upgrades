@@ -83,10 +83,12 @@ test('invalid annotation args - upgrades-from', async t => {
   await fs.writeFile('invalid-annotation-args-upgrades-from/1.json', JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(validateUpgradeSafety('invalid-annotation-args-upgrades-from'));
-  t.is(
-    error?.message,
-    `Invalid number of arguments for @custom:oz-upgrades-from annotation in contract ${fullyQualifiedName}. Expected 1, found 0`,
+  t.true(
+    error?.message.includes(
+      `Invalid number of arguments for @custom:oz-upgrades-from annotation in contract ${fullyQualifiedName}.`,
+    ),
   );
+  t.true(error?.message.includes('Found 0, expected 1'));
 });
 
 test('invalid annotation args - upgrades', async t => {
@@ -97,8 +99,10 @@ test('invalid annotation args - upgrades', async t => {
   await fs.writeFile('invalid-annotation-args-upgrades/1.json', JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(validateUpgradeSafety('invalid-annotation-args-upgrades'));
-  t.is(
-    error?.message,
-    `Invalid number of arguments for @custom:oz-upgrades annotation in contract ${fullyQualifiedName}. Expected 0, found 1`,
+  t.true(
+    error?.message.includes(
+      `Invalid number of arguments for @custom:oz-upgrades annotation in contract ${fullyQualifiedName}.`,
+    ),
   );
+  t.true(error?.message.includes('Found 1, expected 0'));
 });

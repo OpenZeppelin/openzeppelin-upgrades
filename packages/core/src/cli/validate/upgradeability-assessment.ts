@@ -1,5 +1,6 @@
 import { getAnnotationArgs } from '../../utils/annotations';
 import { inferInitializable, inferUUPS } from '../../validate/query';
+import { ValidateCommandError } from './error';
 import { SourceContract } from './validations';
 
 export class ReferenceContractNotFound extends Error {
@@ -68,8 +69,10 @@ function getReferenceContract(reference: string, origin: SourceContract, allCont
   const referenceContracts = allContracts.filter(c => c.fullyQualifiedName === reference || c.name === reference);
 
   if (referenceContracts.length > 1) {
-    throw new Error(
-      `Found multiple contracts with name ${reference} referenced in ${origin.fullyQualifiedName}. This may be caused by old copies of build info files. Clean and recompile your project, then run the command again with the updated files.`,
+    throw new ValidateCommandError(
+      `Found multiple contracts with name ${reference} referenced in ${origin.fullyQualifiedName}.`,
+      () =>
+        `This may be caused by old copies of build info files. Clean and recompile your project, then run the command again with the updated files.`,
     );
   } else if (referenceContracts.length === 1) {
     return referenceContracts[0];
@@ -111,8 +114,9 @@ function getAnnotationAssessment(contract: SourceContract): AnnotationAssessment
 function getAndValidateAnnotationArgs(doc: string, tag: string, contract: SourceContract, expectedLength: number) {
   const annotationArgs = getAnnotationArgs(doc, tag, undefined);
   if (annotationArgs.length !== expectedLength) {
-    throw new Error(
-      `Invalid number of arguments for @custom:${tag} annotation in contract ${contract.fullyQualifiedName}. Expected ${expectedLength}, found ${annotationArgs.length}`,
+    throw new ValidateCommandError(
+      `Invalid number of arguments for @custom:${tag} annotation in contract ${contract.fullyQualifiedName}.`,
+      () => `Found ${annotationArgs.length}, expected ${expectedLength}.`,
     );
   }
   return annotationArgs;
