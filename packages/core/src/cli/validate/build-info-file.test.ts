@@ -189,7 +189,7 @@ test.serial('no storage layout', async t => {
   await fs.writeFile('no-storage-layout/build-info.json', JSON.stringify(BUILD_INFO_NO_LAYOUT));
 
   const error = await t.throwsAsync(getBuildInfoFiles('no-storage-layout'));
-  t.true(error?.message.includes('must contain storage layout'));
+  t.true(error?.message.includes('does not contain storage layout'));
 });
 
 function assertBuildInfoFiles(t: ExecutionContext, buildInfoFiles: BuildInfoFile[]) {

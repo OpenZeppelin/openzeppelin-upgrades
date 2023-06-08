@@ -97,7 +97,7 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
     } else {
       if (!hasStorageLayoutSetting(buildInfoJson)) {
         throw new Error(
-          `Build info file ${buildInfoFilePath} must contain storage layout.\n` +
+          `Build info file ${buildInfoFilePath} does not contain storage layout.\n` +
             `\n` +
             `If using Hardhat, include the 'storageLayout' output selection in your Hardhat config:\n` +
             `module.exports = {\n` +
