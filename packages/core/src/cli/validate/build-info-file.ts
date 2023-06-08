@@ -95,6 +95,28 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
     if (buildInfoJson.input === undefined || buildInfoJson.output === undefined) {
       throw new Error(`Build info file ${buildInfoFilePath} must contain Solidity compiler input and output.`);
     } else {
+      if (!hasStorageLayoutSetting(buildInfoJson)) {
+        throw new Error(
+          `Build info file ${buildInfoFilePath} must contain storage layout.\n` +
+            `\n` +
+            `If using Hardhat, include the 'storageLayout' output selection in your Hardhat config:\n` +
+            `module.exports = {\n` +
+            `  solidity: {\n` +
+            `    settings: {\n` +
+            `      outputSelection: {\n` +
+            `        '*': {\n` +
+            `          '*': ['storageLayout'],\n` +
+            `        },\n` +
+            `      },\n` +
+            `    },\n` +
+            `  },\n` +
+            `};\n` +
+            `Then recompile your contracts with '${HARDHAT_COMPILE_COMMAND}' and try again.\n` +
+            `\n` +
+            `If using Foundry, recompile your contracts with '${FOUNDRY_COMPILE_COMMAND}' and try again.`,
+        );
+      }
+
       buildInfoFiles.push({
         input: buildInfoJson.input,
         output: buildInfoJson.output,
@@ -102,6 +124,11 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
     }
   }
   return buildInfoFiles;
+}
+
+function hasStorageLayoutSetting(buildInfoJson: any) {
+  const o = buildInfoJson.input.settings?.outputSelection;
+  return o && o['*'] && o['*']['*'] && (o['*']['*'].includes('storageLayout') || o['*']['*'].includes('*'));
 }
 
 async function readJSON(path: string) {

@@ -25,6 +25,13 @@ const BUILD_INFO = {
         content: 'contract MyContract {}',
       },
     },
+    settings: {
+      outputSelection: {
+        '*': {
+          '*': ['storageLayout'],
+        },
+      },
+    },
   },
   output: {
     sources: {
@@ -44,12 +51,45 @@ const BUILD_INFO_2 = {
         content: 'contract MyContractModified {}',
       },
     },
+    settings: {
+      outputSelection: {
+        '*': {
+          '*': ['storageLayout'],
+        },
+      },
+    },
   },
   output: {
     sources: {
       'mypath/MyContract.sol': {
         ast: {},
         id: 456,
+      },
+    },
+  },
+};
+
+const BUILD_INFO_NO_LAYOUT = {
+  input: {
+    language: 'Solidity',
+    sources: {
+      'mypath/MyContract.sol': {
+        content: 'contract MyContract {}',
+      },
+    },
+    settings: {
+      outputSelection: {
+        '*': {
+          '*': ['abi'],
+        },
+      },
+    },
+  },
+  output: {
+    sources: {
+      'mypath/MyContract.sol': {
+        ast: {},
+        id: 123,
       },
     },
   },
@@ -142,6 +182,14 @@ test.serial('no build info files', async t => {
 
   const error = await t.throwsAsync(getBuildInfoFiles('empty-dir'));
   t.true(error?.message.includes('does not contain any build info files'));
+});
+
+test.serial('no storage layout', async t => {
+  await fs.mkdir('no-storage-layout', { recursive: true });
+  await fs.writeFile('no-storage-layout/build-info.json', JSON.stringify(BUILD_INFO_NO_LAYOUT));
+
+  const error = await t.throwsAsync(getBuildInfoFiles('no-storage-layout'));
+  t.true(error?.message.includes('must contain storage layout'));
 });
 
 function assertBuildInfoFiles(t: ExecutionContext, buildInfoFiles: BuildInfoFile[]) {
