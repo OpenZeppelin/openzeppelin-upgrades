@@ -1,4 +1,4 @@
-import _chalk from 'chalk';
+import chalk from 'chalk';
 import { UpgradeableContractReport } from './contract-report';
 import { Report } from '../../standalone';
 
@@ -10,21 +10,11 @@ export class SummaryReport implements Report {
   }
 
   explain(color = true): string {
-    const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
-
     const lines: string[] = [];
-
     for (const r of this.upgradeableContractReports) {
-      if (!r.standaloneReport.ok) {
-        lines.push(chalk.bold(`- ${r.contract}:`));
-        lines.push(r.standaloneReport.explain(color));
-      }
-      if (r.storageLayoutReport !== undefined && !r.storageLayoutReport.ok) {
-        if (r.reference === undefined) {
-          throw new Error('Broken invariant: Storage layout errors reported without a reference contract');
-        }
-        lines.push(chalk.bold(`- ${r.reference} to ${r.contract}:`));
-        lines.push(r.storageLayoutReport.explain(color));
+      const explain = r.explain(color);
+      if (explain !== '') {
+        lines.push(explain);
       }
     }
     return lines.join('\n\n');
@@ -54,8 +44,8 @@ export function getSummaryReport(
     if (report.ok) {
       console.log('\nUpgrade safety checks completed successfully.');
     } else {
-      console.error(_chalk.bold('\n=========================================================='));
-      console.error(_chalk.bold('\nUpgrade safety checks completed with the following errors:'));
+      console.error(chalk.bold('\n=========================================================='));
+      console.error(chalk.bold('\nUpgrade safety checks completed with the following errors:'));
       console.error(`\n${report.explain()}`);
     }
   }
