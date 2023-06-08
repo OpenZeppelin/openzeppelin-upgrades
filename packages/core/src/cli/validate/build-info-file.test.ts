@@ -57,6 +57,7 @@ const BUILD_INFO_2 = {
 
 test.serial('get build info files - default hardhat', async t => {
   await fs.mkdir('artifacts/build-info', { recursive: true });
+  await fs.mkdir('out/build-info', { recursive: true }); // should be ignored since it's empty
 
   await fs.writeFile('artifacts/build-info/build-info.json', JSON.stringify(BUILD_INFO));
   await fs.writeFile('artifacts/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
@@ -68,6 +69,7 @@ test.serial('get build info files - default hardhat', async t => {
 
 test.serial('get build info files - default foundry', async t => {
   await fs.mkdir('out/build-info', { recursive: true });
+  await fs.mkdir('artifacts/build-info', { recursive: true }); // should be ignored since it's empty
 
   await fs.writeFile('out/build-info/build-info.json', JSON.stringify(BUILD_INFO));
   await fs.writeFile('out/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
@@ -79,13 +81,18 @@ test.serial('get build info files - default foundry', async t => {
 
 test.serial('get build info files - both hardhat and foundry dirs exist', async t => {
   await fs.mkdir('artifacts/build-info', { recursive: true });
-  await fs.mkdir('out/build-info', { recursive: true });
+  await fs.writeFile('artifacts/build-info/build-info.json', JSON.stringify(BUILD_INFO));
 
-  await fs.writeFile('out/build-info/build-info.json', JSON.stringify(BUILD_INFO));
+  await fs.mkdir('out/build-info', { recursive: true });
   await fs.writeFile('out/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
 
   const error = await t.throwsAsync(getBuildInfoFiles());
-  t.true(error?.message.includes('Found both Hardhat and Foundry build-info directories'));
+  t.true(error?.message.includes('Found both Hardhat and Foundry build info directories'));
+});
+
+test.serial('get build info files - no default dirs exist', async t => {
+  const error = await t.throwsAsync(getBuildInfoFiles());
+  t.true(error?.message.includes('Could not find the default Hardhat or Foundry build info directory'));
 });
 
 test.serial('get build info files - override with custom relative path', async t => {
@@ -127,6 +134,14 @@ test.serial('invalid build info file', async t => {
 test.serial('dir does not exist', async t => {
   const error = await t.throwsAsync(getBuildInfoFiles('invalid-dir'));
   t.true(error?.message.includes('does not exist'));
+});
+
+test.serial('no build info files', async t => {
+  await fs.mkdir('empty-dir', { recursive: true });
+  await fs.writeFile('empty-dir/notjson.txt', 'abc');
+
+  const error = await t.throwsAsync(getBuildInfoFiles('empty-dir'));
+  t.true(error?.message.includes('does not contain any build info files'));
 });
 
 function assertBuildInfoFiles(t: ExecutionContext, buildInfoFiles: BuildInfoFile[]) {

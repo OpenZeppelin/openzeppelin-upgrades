@@ -3,6 +3,9 @@ import { SolcOutput, SolcInput } from '../..';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+const HARDHAT_COMPILE_COMMAND = 'npx hardhat compile';
+const FOUNDRY_COMPILE_COMMAND = 'forge build --build-info --extra-output storageLayout';
+
 /**
  * A build info file containing Solidity compiler input and output JSON objects.
  */
@@ -25,33 +28,51 @@ export interface BuildInfoFile {
  * @returns The build info files with Solidity compiler input and output.
  */
 export async function getBuildInfoFiles(buildInfoDir?: string) {
-  if (buildInfoDir !== undefined && !(await checkDirExists(buildInfoDir))) {
-    throw new Error(`Build info directory '${buildInfoDir}' does not exist.`);
-  }
-  const dir = buildInfoDir ?? (await findDefaultDir());
+  const dir = await findDir(buildInfoDir);
   const jsonFiles = await getJsonFiles(dir);
   return await readBuildInfo(jsonFiles);
 }
 
-async function findDefaultDir() {
-  const hardhatDir = path.join(process.cwd(), 'artifacts', 'build-info');
-  const foundryDir = path.join(process.cwd(), 'out', 'build-info');
-
-  const hardhatDirExists = await checkDirExists(hardhatDir);
-  const foundryDirExists = await checkDirExists(foundryDir);
-
-  if (hardhatDirExists && foundryDirExists) {
+async function findDir(buildInfoDir: string | undefined) {
+  if (buildInfoDir !== undefined && !(await hasJsonFiles(buildInfoDir))) {
     throw new Error(
-      `Found both Hardhat and Foundry build-info directories: '${hardhatDir}' and '${foundryDir}'. Specify the build-info directory to validate.`,
+      `The directory '${buildInfoDir}' does not exist or does not contain any build info files. Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}' and try again with the correct path to the build info directory.`,
     );
-  } else if (hardhatDirExists) {
+  }
+  const dir = buildInfoDir ?? (await findDefaultDir());
+  return dir;
+}
+
+async function findDefaultDir() {
+  const hardhatRelativeDir = path.join('artifacts', 'build-info');
+  const foundryRelativeDir = path.join('out', 'build-info');
+
+  const hardhatDir = path.join(process.cwd(), hardhatRelativeDir);
+  const foundryDir = path.join(process.cwd(), foundryRelativeDir);
+
+  const hasHardhatBuildInfo = await hasJsonFiles(hardhatDir);
+  const hasFoundryBuildInfo = await hasJsonFiles(foundryDir);
+
+  if (hasHardhatBuildInfo && hasFoundryBuildInfo) {
+    throw new Error(
+      `Found both Hardhat and Foundry build info directories: '${hardhatRelativeDir}' and '${foundryRelativeDir}'. Specify the build info directory that you want to validate.`,
+    );
+  } else if (hasHardhatBuildInfo) {
     return hardhatDir;
-  } else {
+  } else if (hasFoundryBuildInfo) {
     return foundryDir;
+  } else {
+    throw new Error(
+      `Could not find the default Hardhat or Foundry build info directory. Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}', or specify the build info directory that you want to validate.`,
+    );
   }
 }
 
-async function checkDirExists(dir: string) {
+async function hasJsonFiles(dir: string) {
+  return (await exists(dir)) && (await getJsonFiles(dir)).length > 0;
+}
+
+async function exists(dir: string) {
   try {
     await fs.access(dir);
     return true;
