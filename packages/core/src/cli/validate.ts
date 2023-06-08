@@ -44,7 +44,7 @@ function parseArgs(args: string[]) {
 }
 
 interface FunctionArgs {
-  buildInfoDir: string;
+  buildInfoDir?: string;
   opts: Required<ValidateUpgradeSafetyOptions>;
 }
 
@@ -60,12 +60,10 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     return undefined;
   } else if (extraArgs[0] !== 'validate') {
     throw new Error(`Invalid command: ${extraArgs[0]}. Supported commands are: validate`);
-  } else if (extraArgs.length === 1) {
-    throw new Error(`Missing arguments. ${USAGE}`);
   } else if (extraArgs.length > 2) {
     throw new Error('The validate command takes only one argument: the build info directory.');
   } else {
-    const buildInfoDir = extraArgs[1];
+    const buildInfoDir = extraArgs.length === 1 ? undefined : extraArgs[1];
     const opts = withDefaults(parsedArgs);
     return { buildInfoDir, opts };
   }

@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 const HARDHAT_COMPILE_COMMAND = 'npx hardhat compile';
-const FOUNDRY_COMPILE_COMMAND = 'forge build --build-info --extra-output storageLayout';
+const FOUNDRY_COMPILE_COMMAND = 'forge clean && forge build --build-info --extra-output storageLayout';
 
 /**
  * A build info file containing Solidity compiler input and output JSON objects.

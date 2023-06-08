@@ -29,7 +29,7 @@ test.serial('help', t => {
   t.true(consoleLog.secondCall.calledWith(DETAILS));
 });
 
-test.serial('no arguments', t => {
+test.serial('no command', t => {
   const parsedArgs = minimist([]);
   const extraArgs = parsedArgs._;
 
@@ -41,12 +41,6 @@ test.serial('no arguments', t => {
   t.true(consoleLog.secondCall.calledWith(DETAILS));
 });
 
-test('missing arguments', t => {
-  const parsedArgs = minimist(['validate']);
-  const extraArgs = parsedArgs._;
-  t.throws(() => getFunctionArgs(parsedArgs, extraArgs), { message: `Missing arguments. ${USAGE}` });
-});
-
 test('invalid command', t => {
   const parsedArgs = minimist(['invalid']);
   const extraArgs = parsedArgs._;
@@ -55,7 +49,23 @@ test('invalid command', t => {
   });
 });
 
-test('no help needed', t => {
+test('command only', t => {
+  const parsedArgs = minimist(['validate']);
+  const extraArgs = parsedArgs._;
+  const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
+  if (functionArgs === undefined) {
+    t.fail();
+  } else {
+    t.is(functionArgs.buildInfoDir, undefined);
+    t.is(functionArgs.opts.unsafeAllowRenames, false);
+    t.is(functionArgs.opts.unsafeSkipStorageCheck, false);
+    t.is(functionArgs.opts.unsafeAllowCustomTypes, false);
+    t.is(functionArgs.opts.unsafeAllowLinkedLibraries, false);
+    t.deepEqual(functionArgs.opts.unsafeAllow, []);
+  }
+});
+
+test('command with arg', t => {
   const parsedArgs = minimist(['validate', 'build-info.json']);
   const extraArgs = parsedArgs._;
   const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
