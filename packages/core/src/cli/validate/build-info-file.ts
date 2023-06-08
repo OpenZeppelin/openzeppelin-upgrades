@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { ValidateCommandError } from './error';
 
-const HARDHAT_COMPILE_COMMAND = 'npx hardhat compile';
+const HARDHAT_COMPILE_COMMAND = 'npx hardhat clean && npx hardhat compile';
 const FOUNDRY_COMPILE_COMMAND = 'forge clean && forge build --build-info --extra-output storageLayout';
 
 /**
