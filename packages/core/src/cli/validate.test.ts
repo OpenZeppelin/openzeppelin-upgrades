@@ -142,23 +142,14 @@ test.serial('main - errors', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
   await fs.writeFile('main-errors/1.json', JSON.stringify(buildInfo));
 
-  const consoleLogStub = sinon.stub(console, 'log');
-  const consoleErrorStub = sinon.stub(console, 'error');
-
-  const messages: string[] = [];
-
-  consoleLogStub.callsFake((...args: string[]) => {
-    messages.push(args.join(' '));
-  });
-  consoleErrorStub.callsFake((...args: string[]) => {
-    messages.push(args.join(' '));
-  });
+  const { consoleLogStub, consoleErrorStub, messages } = stubConsole();
 
   const exitCode = process.exitCode;
   try {
     await t.notThrowsAsync(main(['validate', 'main-errors']));
     t.is(process.exitCode, 1);
 
+    t.true(consoleLogStub.called);
     t.true(consoleErrorStub.calledWith('\nUpgrade safety checks completed with the following errors:'));
     t.snapshot(messages);
   } finally {
@@ -167,13 +158,53 @@ test.serial('main - errors', async t => {
   }
 });
 
-test.serial('main - no errors', async t => {
+test.serial('main - no upgradeable', async t => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
   await fs.mkdir('main-no-errors');
 
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage088.sol:Storage088`);
   await fs.writeFile('main-no-errors/1.json', JSON.stringify(buildInfo));
 
+  const { consoleLogStub, consoleErrorStub, messages } = stubConsole();
+
+  const exitCode = process.exitCode;
+  try {
+    await t.notThrowsAsync(main(['validate', 'main-no-errors']));
+    t.is(process.exitCode, 0);
+
+    t.true(consoleLogStub.calledWith('\nNo upgradeable contracts detected.'));
+    t.true(consoleErrorStub.notCalled);
+    t.snapshot(messages);
+  } finally {
+    process.exitCode = exitCode;
+    await rimraf(process.cwd());
+  }
+});
+
+test.serial('main - ok', async t => {
+  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
+  await fs.mkdir('main-no-errors');
+
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Annotation.sol:Annotation`);
+  await fs.writeFile('main-no-errors/1.json', JSON.stringify(buildInfo));
+
+  const { consoleLogStub, consoleErrorStub, messages } = stubConsole();
+
+  const exitCode = process.exitCode;
+  try {
+    await t.notThrowsAsync(main(['validate', 'main-no-errors']));
+    t.is(process.exitCode, 0);
+
+    t.true(consoleLogStub.calledWith('\nUpgrade safety checks completed successfully.'));
+    t.true(consoleErrorStub.notCalled);
+    t.snapshot(messages);
+  } finally {
+    process.exitCode = exitCode;
+    await rimraf(process.cwd());
+  }
+});
+
+function stubConsole() {
   const consoleLogStub = sinon.stub(console, 'log');
   const consoleErrorStub = sinon.stub(console, 'error');
 
@@ -185,16 +216,5 @@ test.serial('main - no errors', async t => {
   consoleErrorStub.callsFake((...args: string[]) => {
     messages.push(args.join(' '));
   });
-
-  const exitCode = process.exitCode;
-  try {
-    await t.notThrowsAsync(main(['validate', 'main-no-errors']));
-    t.is(process.exitCode, 0);
-
-    t.true(consoleLogStub.calledWith('\nUpgrade safety checks completed successfully.'));
-    t.snapshot(messages);
-  } finally {
-    process.exitCode = exitCode;
-    await rimraf(process.cwd());
-  }
-});
+  return { consoleLogStub, consoleErrorStub, messages };
+}

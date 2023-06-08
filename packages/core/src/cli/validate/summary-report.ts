@@ -42,7 +42,11 @@ export function getSummaryReport(
   const report = new SummaryReport(upgradeableContractReports);
   if (!suppressSummary) {
     if (report.ok) {
-      console.log('\nUpgrade safety checks completed successfully.');
+      if (report.numTotal === 0) {
+        console.log('\nNo upgradeable contracts detected.');
+      } else {
+        console.log('\nUpgrade safety checks completed successfully.');
+      }
     } else {
       console.error(chalk.bold('\n=========================================================='));
       console.error(chalk.bold('\nUpgrade safety checks completed with the following errors:'));

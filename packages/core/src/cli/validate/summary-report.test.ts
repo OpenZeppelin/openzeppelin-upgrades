@@ -47,8 +47,15 @@ function getLayoutReport(original: StorageLayout, updated: StorageLayout) {
   return comparator.compareLayouts(originalDetailed, updatedDetailed);
 }
 
-test('get summary report - empty ok', async t => {
-  const report = getSummaryReport([], true);
+test.serial('get summary report - ok - no upgradeable', async t => {
+  const consoleLog = sinon.stub(console, 'log');
+  const consoleError = sinon.stub(console, 'error');
+
+  const report = getSummaryReport([], false);
+  t.is(consoleLog.callCount, 1);
+  t.regex(consoleLog.getCall(0).args[0], /No upgradeable contracts detected/);
+  t.is(consoleError.callCount, 0);
+
   t.true(report.ok);
   t.is(report.numPassed, 0);
   t.is(report.numTotal, 0);
