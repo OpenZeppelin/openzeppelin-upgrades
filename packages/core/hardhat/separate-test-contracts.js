@@ -5,8 +5,6 @@
 const { task } = require('hardhat/config');
 const { TASK_COMPILE_SOLIDITY_GET_COMPILATION_JOB_FOR_FILE } = require('hardhat/builtin-tasks/task-names');
 
-const cacheMap = new Map();
-
 task(TASK_COMPILE_SOLIDITY_GET_COMPILATION_JOB_FOR_FILE, async (params, _, runSuper) => {
   const job = await runSuper(params);
   // If the file is not a proxy contract, we make a copy of the config and mark it, which will cause it to get
@@ -24,22 +22,27 @@ task(TASK_COMPILE_SOLIDITY_GET_COMPILATION_JOB_FOR_FILE, async (params, _, runSu
   return job;
 });
 
-function mark(job, name) {
-  let cache = cacheMap.get(name);
+const marker = Symbol('compilation marker');
+const markedGroupCache = new Map();
+
+function mark(job, group) {
+  let cache = markedGroupCache.get(group);
   if (cache === undefined) {
     cache = new WeakMap();
-    cacheMap.set(name, cache);
+    markedGroupCache.set(group, cache);
   }
 
-  setMarker(job, cache, Symbol(name));
-}
-
-function setMarker(job, cache, marker) {
   const originalConfig = job.solidityConfig;
+
   let markedConfig = cache.get(originalConfig);
   if (markedConfig === undefined) {
-    markedConfig = { ...originalConfig, [marker]: true };
+    markedConfig = { ...originalConfig, [marker]: group };
     cache.set(originalConfig, markedConfig);
+  } else {
+    if (markedConfig[marker] !== group) {
+      throw Error('Same job in different compilation groups');
+    }
   }
+
   job.solidityConfig = markedConfig;
 }
