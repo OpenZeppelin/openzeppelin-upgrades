@@ -34,14 +34,14 @@ function mark(job, group) {
 
   const originalConfig = job.solidityConfig;
 
+  if (originalConfig[marker] && originalConfig[marker] !== group) {
+    throw Error('Same job in different compilation groups');
+  }
+
   let markedConfig = cache.get(originalConfig);
   if (markedConfig === undefined) {
     markedConfig = { ...originalConfig, [marker]: group };
     cache.set(originalConfig, markedConfig);
-  } else {
-    if (markedConfig[marker] !== group) {
-      throw Error('Same job in different compilation groups');
-    }
   }
 
   job.solidityConfig = markedConfig;
