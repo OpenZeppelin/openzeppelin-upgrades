@@ -136,7 +136,7 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
 
 function hasStorageLayoutSetting(buildInfoJson: any) {
   const o = buildInfoJson.input.settings?.outputSelection;
-  return o && o['*'] && o['*']['*'] && (o['*']['*'].includes('storageLayout') || o['*']['*'].includes('*'));
+  return o?.['*']?.['*'] && (o['*']['*'].includes('storageLayout') || o['*']['*'].includes('*'));
 }
 
 async function readJSON(path: string) {
