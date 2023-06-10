@@ -1,4 +1,4 @@
-= OpenZeppelin Upgrades Core
+= OpenZeppelin Upgrades Core & CLI
 
 The `@openzeppelin/upgrades-core` package provides a `validate` command to check for upgrade safety and storage layout compatibility in upgradeable contracts.  It can be used throughout your development process to ensure that your contracts are upgrade safe and compatible with previous versions.
 
