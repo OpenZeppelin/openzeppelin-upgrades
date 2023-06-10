@@ -7,7 +7,7 @@ import { execall } from './execall';
  * @param tag - The tag to match
  * @param supportedArgs - The list of supported args, or undefined if all args are supported
  */
-export function getAnnotationArgs(doc: string, tag: string, supportedArgs: readonly string[] | undefined) {
+export function getAnnotationArgs(doc: string, tag: string, supportedArgs?: readonly string[]) {
   const result: string[] = [];
   for (const { groups } of execall(
     /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s*@\w+)[^])*)/m,

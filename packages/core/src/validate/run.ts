@@ -105,7 +105,7 @@ function getAllowed(node: Node, reachable: boolean): string[] {
 }
 
 export function getAnnotationArgs(doc: string, tag: string) {
-  return getSupportedAnnotationArgs(doc, tag, errorKinds as readonly string[]);
+  return getSupportedAnnotationArgs(doc, tag, errorKinds);
 }
 
 function skipCheckReachable(error: string, node: Node): boolean {
