@@ -29,7 +29,7 @@ If your implementation contract does not inherit `Initializable` or `UUPSUpgrade
 [[define-reference-contracts]]
 ==== Define Reference Contracts
 
-IMPORTANT: If an implementation contract is meant to upgraded from a previous version, you *MUST* define a reference contract for storage layout comparisons.  Otherwise, you will not receive errors if there are any storage layout incompatibilities.
+IMPORTANT: If an implementation contract is meant to deployed as an upgrade to an existing proxy, you *MUST* define a reference contract for storage layout comparisons.  Otherwise, you will not receive errors if there are any storage layout incompatibilities.
 
 Define a reference contract by adding the NatSpec annotation `@custom:oz-upgrades-from <reference>` to your implementation contract, where `<reference>` is the contract name or fully qualified contract name of the reference contract to use for storage layout comparisons.
 
