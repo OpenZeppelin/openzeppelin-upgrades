@@ -6,6 +6,22 @@ import { ValidateCommandError } from './error';
 
 const HARDHAT_COMPILE_COMMAND = 'npx hardhat clean && npx hardhat compile';
 const FOUNDRY_COMPILE_COMMAND = 'forge clean && forge build --build-info --extra-output storageLayout';
+const STORAGE_LAYOUT_HELP = `\
+If using Hardhat, include the 'storageLayout' output selection in your Hardhat config:
+module.exports = {
+  solidity: {
+    settings: {
+      outputSelection: {
+        '*': {
+          '*': ['storageLayout'],
+        },
+      },
+    },
+  },
+};
+Then recompile your contracts with '${HARDHAT_COMPILE_COMMAND}' and try again.
+
+If using Foundry, recompile your contracts with '${FOUNDRY_COMPILE_COMMAND}' and try again.`;
 
 /**
  * A build info file containing Solidity compiler input and output JSON objects.
@@ -106,22 +122,7 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
       if (!hasStorageLayoutSetting(buildInfoJson)) {
         throw new ValidateCommandError(
           `Build info file ${buildInfoFilePath} does not contain storage layout.`,
-          () =>
-            `If using Hardhat, include the 'storageLayout' output selection in your Hardhat config:\n` +
-            `module.exports = {\n` +
-            `  solidity: {\n` +
-            `    settings: {\n` +
-            `      outputSelection: {\n` +
-            `        '*': {\n` +
-            `          '*': ['storageLayout'],\n` +
-            `        },\n` +
-            `      },\n` +
-            `    },\n` +
-            `  },\n` +
-            `};\n` +
-            `Then recompile your contracts with '${HARDHAT_COMPILE_COMMAND}' and try again.\n` +
-            `\n` +
-            `If using Foundry, recompile your contracts with '${FOUNDRY_COMPILE_COMMAND}' and try again.`,
+          () => STORAGE_LAYOUT_HELP,
         );
       }
 
