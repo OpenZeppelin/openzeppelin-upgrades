@@ -67,8 +67,10 @@ export class UpgradeableContractReport implements Report {
 
   private explainChildren(indentSpaces: number, color = true): string {
     const result: string[] = [];
-    result.push(this.standaloneReport.explain(color));
-    if (this.storageLayoutReport !== undefined) {
+    if (!this.standaloneReport.ok) {
+      result.push(this.standaloneReport.explain(color));
+    }
+    if (this.storageLayoutReport !== undefined && !this.storageLayoutReport.ok) {
       result.push(this.storageLayoutReport.explain(color));
     }
     return this.indent(result.join('\n\n'), indentSpaces);
