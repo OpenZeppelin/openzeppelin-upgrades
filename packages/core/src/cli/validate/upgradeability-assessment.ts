@@ -18,7 +18,6 @@ export class ReferenceContractNotFound extends Error {
     super(`Could not find contract ${reference} referenced in ${origin}.`);
     this.reference = reference;
     this.origin = origin;
-    this.name = 'ReferenceContractNotFound';
   }
 }
 
