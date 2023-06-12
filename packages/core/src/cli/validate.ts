@@ -21,8 +21,9 @@ Options:
 
 export async function main(args: string[]): Promise<void> {
   const { parsedArgs, extraArgs } = parseArgs(args);
-  const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
-  if (functionArgs !== undefined) {
+
+  if (!help(parsedArgs, extraArgs)) {
+    const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
     const result = await validateUpgradeSafety(functionArgs.buildInfoDir, functionArgs.opts);
     process.exitCode = result.ok ? 0 : 1;
   }
@@ -45,21 +46,29 @@ function parseArgs(args: string[]) {
   return { parsedArgs, extraArgs };
 }
 
+function help(parsedArgs: minimist.ParsedArgs, extraArgs: string[]): boolean {
+  if (extraArgs.length === 0 || parsedArgs['help']) {
+    console.log(USAGE);
+    console.log(DETAILS);
+    return true;
+  } else {
+    return false;
+  }
+}
+
 interface FunctionArgs {
   buildInfoDir?: string;
   opts: Required<ValidateUpgradeSafetyOptions>;
 }
 
 /**
- * Gets and validates function arguments, or prints help if needed.
- * @returns Function arguments if they are valid, or undefined if the function should not proceed due to help being printed.
+ * Gets and validates function arguments and options.
+ * @returns Function arguments
  * @throws Error if any arguments or options are invalid.
  */
-export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: string[]): FunctionArgs | undefined {
-  if (extraArgs.length === 0 || parsedArgs['help']) {
-    console.log(USAGE);
-    console.log(DETAILS);
-    return undefined;
+export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: string[]): FunctionArgs {
+  if (extraArgs.length === 0) {
+    throw new Error('Missing command. Supported commands are: validate');
   } else if (extraArgs[0] !== 'validate') {
     throw new Error(`Invalid command: ${extraArgs[0]}. Supported commands are: validate`);
   } else if (extraArgs.length > 2) {

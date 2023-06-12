@@ -17,25 +17,19 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
-test.serial('help', t => {
-  const parsedArgs = minimist(['validate', '--help']);
-  const extraArgs = parsedArgs._;
-
+test.serial('help', async t => {
   const consoleLog = sinon.stub(console, 'log');
 
-  getFunctionArgs(parsedArgs, extraArgs);
+  await main(['validate', '--help']);
 
   t.true(consoleLog.firstCall.calledWith(USAGE));
   t.true(consoleLog.secondCall.calledWith(DETAILS));
 });
 
-test.serial('no command', t => {
-  const parsedArgs = minimist([]);
-  const extraArgs = parsedArgs._;
-
+test.serial('no command', async t => {
   const consoleLog = sinon.stub(console, 'log');
 
-  getFunctionArgs(parsedArgs, extraArgs);
+  await main([]);
 
   t.true(consoleLog.firstCall.calledWith(USAGE));
   t.true(consoleLog.secondCall.calledWith(DETAILS));
