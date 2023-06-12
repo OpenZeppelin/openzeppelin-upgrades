@@ -5,7 +5,6 @@ import {
   getStorageLayout,
   ValidationOptions,
   withValidationDefaults,
-  StorageLayout,
   Version,
   ValidationData,
   ValidateUpgradeSafetyOptions,
@@ -35,21 +34,49 @@ export class UpgradeableContractReport implements Report {
   }
 
   explain(color = true): string {
-    const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
-
-    const lines: string[] = [];
-    if (!this.standaloneReport.ok) {
-      lines.push(chalk.bold(`- ${this.contract}`));
-      lines.push(indent(this.standaloneReport.explain(color), 4));
-    }
-    if (this.storageLayoutReport !== undefined && !this.storageLayoutReport.ok) {
+    if (this.ok) {
+      return '';
+    } else {
+      const result: string[] = [];
       if (this.reference === undefined) {
-        throw new Error('Broken invariant: Storage layout errors reported without a reference contract');
+        result.push(`- ${this.contract}`);
+      } else {
+        result.push(`- ${this.contract} (upgrades from ${this.reference})`);
       }
-      lines.push(chalk.bold(`- from ${this.reference} to ${this.contract}`));
-      lines.push(indent(this.storageLayoutReport.explain(color), 4));
+      result.push(this.explainChildren(4, color));
+      return result.join('\n\n');
     }
-    return lines.join('\n\n');
+  }
+
+  log(): void {
+    if (this.ok) {
+      if (this.reference === undefined) {
+        console.log(` ${_chalk.green('✔')}  ${this.contract}`);
+      } else {
+        console.log(` ${_chalk.green('✔')}  ${this.contract} (upgrades from ${this.reference})`);
+      }
+    } else {
+      if (this.reference === undefined) {
+        console.log(` ${_chalk.red('✘')}  ${this.contract}`);
+      } else {
+        console.log(` ${_chalk.red('✘')}  ${this.contract} (upgrades from ${this.reference})`);
+      }
+      console.log(`\n${this.explainChildren(6)}\n`);
+    }
+  }
+
+  private explainChildren(indentSpaces: number, color = true): string {
+    const result: string[] = [];
+    result.push(this.standaloneReport.explain(color));
+    if (this.storageLayoutReport !== undefined) {
+      result.push(this.storageLayoutReport.explain(color));
+    }
+    return this.indent(result.join('\n\n'), indentSpaces);
+  }
+
+  private indent(str: string, numSpaces: number): string {
+    const spaces = ' '.repeat(numSpaces);
+    return str.replace(/^/gm, spaces);
   }
 }
 
@@ -73,6 +100,7 @@ export function getContractReports(sourceContracts: SourceContract[], opts: Vali
 
       const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind });
       if (report !== undefined) {
+        report.log(); // TODO call this in parent function
         upgradeableContractReports.push(report);
       }
     }
@@ -99,7 +127,7 @@ function getUpgradeableContractReport(
   }
 
   debug('Checking: ' + contract.fullyQualifiedName);
-  const standaloneReport = reportStandalone(contract.validationData, version, opts, contract.fullyQualifiedName);
+  const standaloneReport = getStandaloneReport(contract.validationData, version, opts);
 
   let reference: string | undefined;
   let storageLayoutReport: LayoutCompatibilityReport | undefined;
@@ -111,55 +139,17 @@ function getUpgradeableContractReport(
     const referenceLayout = getStorageLayout(referenceContract.validationData, referenceVersion);
 
     reference = referenceContract.fullyQualifiedName;
-    storageLayoutReport = reportStorageLayout(
-      referenceLayout,
-      layout,
-      withValidationDefaults(opts),
-      referenceContract.fullyQualifiedName,
-      contract.fullyQualifiedName,
-    );
+    storageLayoutReport = getStorageUpgradeReport(referenceLayout, layout, withValidationDefaults(opts));
   }
 
   return new UpgradeableContractReport(contract.fullyQualifiedName, reference, standaloneReport, storageLayoutReport);
 }
 
-function reportStandalone(
+function getStandaloneReport(
   data: ValidationData,
   version: Version,
   opts: ValidationOptions,
-  name: string,
 ): UpgradeableContractErrorReport {
-  const errors = getErrors(data, version, opts);
-  const report = new UpgradeableContractErrorReport(errors);
-
-  if (report.ok) {
-    console.log(` ${_chalk.green('✔')}  ${name}`);
-  } else {
-    console.error(` ${_chalk.red('✘')}  ${name}`);
-    console.error(`\n${indent(report.explain(), 6)}\n`);
-  }
-  return report;
-}
-
-function reportStorageLayout(
-  referenceLayout: StorageLayout,
-  layout: StorageLayout,
-  opts: ValidationOptions,
-  referenceName: string,
-  name: string,
-): LayoutCompatibilityReport {
-  const report = getStorageUpgradeReport(referenceLayout, layout, withValidationDefaults(opts));
-
-  if (report.ok) {
-    console.log(` ${_chalk.green('✔')}  from ${referenceName} to ${name}`);
-  } else {
-    console.error(` ${_chalk.red('✘')}  from ${referenceName} to ${name}`);
-    console.error(`\n${indent(report.explain(), 6)}\n`);
-  }
-  return report;
-}
-
-function indent(str: string, numSpaces: number): string {
-  const spaces = ' '.repeat(numSpaces);
-  return str.replace(/^/gm, spaces);
+  const errors = getErrors(data, version, withValidationDefaults(opts));
+  return new UpgradeableContractErrorReport(errors);
 }
