@@ -24,7 +24,7 @@ The `validate` command performs upgrade safety checks on contracts that look lik
 - Has the NatSpec annotation `@custom:oz-upgrades`
 - Has the NatSpec annotation `@custom:oz-upgrades-from <reference>` according to <<define-reference-contracts, Define Reference Contracts>> below.
 
-If your implementation contract does not inherit `Initializable` or `UUPSUpgradeable`, add the NatSpec annotation `@custom:oz-upgrades` or `@custom:oz-upgrades-from <reference>` so that it can be detected as an upgradeable contract.
+TIP: Simply add the NatSpec annotation `@custom:oz-upgrades` or `@custom:oz-upgrades-from <reference>` to each implementation contract so that it can be detected as an upgradeable contract for validation.
 
 [[define-reference-contracts]]
 ==== Define Reference Contracts

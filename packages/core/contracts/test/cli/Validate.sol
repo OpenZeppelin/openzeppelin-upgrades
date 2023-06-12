@@ -126,3 +126,17 @@ abstract contract AbstractUpgradeable is Initializable {
 contract InheritsAbstractUpgradeable is AbstractUpgradeable {
     function initialize() public virtual override {}
 }
+
+/**
+ * @custom:oz-upgrades
+ * @custom:oz-upgrades-from StorageV1
+ */
+contract BothAnnotationsUnsafe {
+  uint256 public x;
+  uint256 public y;
+  uint256[49] private __gap;
+
+  function sd() public {
+    selfdestruct(payable(msg.sender));
+  }
+}
