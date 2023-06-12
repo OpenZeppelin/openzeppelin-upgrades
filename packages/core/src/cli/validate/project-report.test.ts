@@ -1,4 +1,4 @@
-import { getSummaryReport } from './summary-report';
+import { getProjectReport } from './project-report';
 import { UpgradeableContractErrorReport } from '../../validate';
 
 import _test, { TestFn } from 'ava';
@@ -47,11 +47,11 @@ function getLayoutReport(original: StorageLayout, updated: StorageLayout) {
   return comparator.compareLayouts(originalDetailed, updatedDetailed);
 }
 
-test.serial('get summary report - ok - no upgradeable', async t => {
+test.serial('get project report - ok - no upgradeable', async t => {
   const consoleLog = sinon.stub(console, 'log');
   const consoleError = sinon.stub(console, 'error');
 
-  const report = getSummaryReport([]);
+  const report = getProjectReport([]);
   t.is(consoleLog.callCount, 1);
   t.regex(consoleLog.getCall(0).args[0], /No upgradeable contracts detected/);
   t.is(consoleError.callCount, 0);
@@ -62,11 +62,11 @@ test.serial('get summary report - ok - no upgradeable', async t => {
   t.is(report.explain(), '');
 });
 
-test.serial('get summary report - ok - console', async t => {
+test.serial('get project report - ok - console', async t => {
   const consoleLog = sinon.stub(console, 'log');
   const consoleError = sinon.stub(console, 'error');
 
-  const report = getSummaryReport([
+  const report = getProjectReport([
     new UpgradeableContractReport(
       'mypath/MyContract.sol:MyContract1',
       undefined,
@@ -84,7 +84,7 @@ test.serial('get summary report - ok - console', async t => {
   t.is(report.explain(), '');
 });
 
-test.serial('get summary report - errors - console', async t => {
+test.serial('get project report - errors - console', async t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Replace_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Replace_V2');
   const layoutReport = getLayoutReport(v1, v2);
@@ -92,7 +92,7 @@ test.serial('get summary report - errors - console', async t => {
   const consoleLog = sinon.stub(console, 'log');
   const consoleError = sinon.stub(console, 'error');
 
-  const report = getSummaryReport([
+  const report = getProjectReport([
     new UpgradeableContractReport(
       'mypath/MyContract.sol:MyContract',
       undefined,
@@ -122,8 +122,8 @@ test.serial('get summary report - errors - console', async t => {
   t.snapshot(report.explain());
 });
 
-test.serial('get summary report - some passed', async t => {
-  const report = getSummaryReport([
+test.serial('get project report - some passed', async t => {
+  const report = getProjectReport([
     new UpgradeableContractReport(
       'mypath/MyContract.sol:MyContract1',
       undefined,

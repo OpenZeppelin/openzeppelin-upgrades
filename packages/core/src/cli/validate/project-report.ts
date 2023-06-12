@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { UpgradeableContractReport } from './contract-report';
 import { Report } from '../../standalone';
 
-export class SummaryReport implements Report {
+export class ProjectReport implements Report {
   constructor(readonly upgradeableContractReports: UpgradeableContractReport[]) {}
 
   get ok(): boolean {
@@ -35,8 +35,8 @@ export class SummaryReport implements Report {
   }
 }
 
-export function getSummaryReport(upgradeableContractReports: UpgradeableContractReport[]): SummaryReport {
-  const report = new SummaryReport(upgradeableContractReports);
+export function getProjectReport(upgradeableContractReports: UpgradeableContractReport[]): ProjectReport {
+  const report = new ProjectReport(upgradeableContractReports);
 
   if (report.ok) {
     if (report.numTotal === 0) {

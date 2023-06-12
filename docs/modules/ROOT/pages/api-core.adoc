@@ -131,27 +131,24 @@ Import the `validateUpgradeSafety` function:
 import { validateUpgradeSafety } from '@openzeppelin/upgrades-core';
 ----
 
-Then call the function to validate your contracts and get a summary report with the validation results.
+Then call the function to validate your contracts and get a project report with the validation results.
 
 ==== validateUpgradeSafety
 [source,ts]
 ----
 validateUpgradeSafety(
   buildInfoDir?: string,
-  reportOpts: ReportOptions = {},
   opts: ValidateUpgradeSafetyOptions = {},
-): Promise<SummaryReport>
+): Promise<ProjectReport>
 ----
 
-Detects upgradeable contracts from a build info directory and validates whether they are upgrade safe. Returns a <<summary-report, summary report>> with the results.
+Detects upgradeable contracts from a build info directory and validates whether they are upgrade safe. Returns a <<project-report, project report>> with the results.
 
-Note that this function does not throw validation errors directly. Instead, you must use the summary report to determine whether any errors were found.
+Note that this function does not throw validation errors directly. Instead, you must use the project report to determine whether any errors were found.
 
 *Parameters:*
 
 * `buildInfoDir` - the path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to `artifacts/build-info` for Hardhat projects or `out/build-info` for Foundry projects. If your project uses a custom output directory, you must specify its build info directory here.
-* `reportOpts` - an object with the following options:
-** `suppressSummary` - whether to skip logging the summary report to the console before returning it.
 * `opts` - an object with the following options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options]:
 ** `unsafeAllow`
 ** `unsafeAllowRenames`
@@ -159,13 +156,13 @@ Note that this function does not throw validation errors directly. Instead, you 
 
 *Returns:*
 
-* a <<summary-report, summary report>>.
+* a <<project-report, project report>>.
 
-[[summary-report]]
-==== SummaryReport
+[[project-report]]
+==== ProjectReport
 [source,ts]
 ----
-interface SummaryReport {
+interface ProjectReport {
   ok: boolean;
   explain(color?: boolean): string;
   numPassed: number;
@@ -173,7 +170,7 @@ interface SummaryReport {
 }
 ----
 
-An object that represents the result of upgrade safety checks and storage layout comparisons, and contains a summary of all errors found.
+An object that represents the result of upgrade safety checks and storage layout comparisons, and contains a report of all errors found.
 
 **Members:**
 

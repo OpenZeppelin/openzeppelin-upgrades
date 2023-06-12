@@ -56,4 +56,4 @@ export {
   assertNotProxy,
 } from './usage-error';
 
-export { ValidateUpgradeSafetyOptions, validateUpgradeSafety, SummaryReport, ReferenceContractNotFound } from './cli';
+export { ValidateUpgradeSafetyOptions, validateUpgradeSafety, ProjectReport, ReferenceContractNotFound } from './cli';

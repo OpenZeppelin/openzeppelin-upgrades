@@ -1,7 +1,7 @@
 import { ValidationOptions } from '../..';
 
 import { getBuildInfoFiles } from './build-info-file';
-import { SummaryReport, getSummaryReport } from './summary-report';
+import { ProjectReport, getProjectReport } from './project-report';
 import { validateBuildInfoContracts } from './validations';
 
 /**
@@ -20,9 +20,9 @@ export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'>;
 export async function validateUpgradeSafety(
   buildInfoDir?: string,
   opts: ValidateUpgradeSafetyOptions = {},
-): Promise<SummaryReport> {
+): Promise<ProjectReport> {
   const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
   const reports = validateBuildInfoContracts(buildInfoFiles, opts);
 
-  return getSummaryReport(reports);
+  return getProjectReport(reports);
 }
