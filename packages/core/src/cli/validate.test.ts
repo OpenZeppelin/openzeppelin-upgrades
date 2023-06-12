@@ -98,13 +98,19 @@ test('withDefaults - empty', t => {
 });
 
 test('withDefaults - some', t => {
-  const parsedArgs = minimist(['validate', 'build-info.json', '--unsafeAllowRenames', '--unsafeAllow', 'selfdestruct']);
+  const parsedArgs = minimist([
+    'validate',
+    'build-info.json',
+    '--unsafeAllowRenames',
+    '--unsafeAllow',
+    'selfdestruct, delegatecall,constructor',
+  ]);
   const opts = withDefaults(parsedArgs);
   t.is(opts.unsafeAllowRenames, true);
   t.is(opts.unsafeSkipStorageCheck, false);
   t.is(opts.unsafeAllowCustomTypes, false);
   t.is(opts.unsafeAllowLinkedLibraries, false);
-  t.deepEqual(opts.unsafeAllow, ['selfdestruct']);
+  t.deepEqual(opts.unsafeAllow, ['selfdestruct', 'delegatecall', 'constructor']);
 });
 
 test('withDefaults - all', t => {

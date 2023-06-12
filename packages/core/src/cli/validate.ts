@@ -13,7 +13,7 @@ Arguments:
   <BUILD_INFO_DIR>  Optional path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to 'artifacts/build-info' for Hardhat projects or 'out/build-info' for Foundry projects. If your project uses a custom output directory, you must specify its build info directory here.
 
 Options:
-  --unsafeAllow "<VALIDATION_ERRORS>"  Selectively disable one or more validation errors. Comma or space separated list with one or more of the following: ${errorKinds.join(
+  --unsafeAllow "<VALIDATION_ERRORS>"  Selectively disable one or more validation errors. Comma-separated list with one or more of the following: ${errorKinds.join(
     ', ',
   )}
   --unsafeAllowRenames  Configure storage layout check to allow variable renaming.
