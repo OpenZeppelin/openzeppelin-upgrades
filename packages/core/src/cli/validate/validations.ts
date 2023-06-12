@@ -1,11 +1,4 @@
-import {
-  solcInputOutputDecoder,
-  validate,
-  SolcOutput,
-  SolcInput,
-  ValidationRunData,
-  ValidateUpgradeSafetyOptions,
-} from '../..';
+import { solcInputOutputDecoder, validate, SolcOutput, SolcInput, ValidationRunData } from '../..';
 
 import debug from '../../utils/debug';
 
@@ -13,7 +6,6 @@ import { findAll } from 'solidity-ast/utils';
 import { ContractDefinition } from 'solidity-ast';
 
 import { getFullyQualifiedName } from '../../utils/contract-name';
-import { getContractReports } from './contract-report';
 import { BuildInfoFile } from './build-info-file';
 
 export interface SourceContract {
@@ -23,14 +15,13 @@ export interface SourceContract {
   validationData: ValidationRunData;
 }
 
-export function validateBuildInfoContracts(buildInfoFiles: BuildInfoFile[], opts: ValidateUpgradeSafetyOptions) {
+export function validateBuildInfoContracts(buildInfoFiles: BuildInfoFile[]): SourceContract[] {
   const sourceContracts: SourceContract[] = [];
   for (const buildInfoFile of buildInfoFiles) {
     const validations = runValidations(buildInfoFile.input, buildInfoFile.output);
     addContractsFromBuildInfo(buildInfoFile, validations, sourceContracts);
   }
-
-  return getContractReports(sourceContracts, opts);
+  return sourceContracts;
 }
 
 function runValidations(solcInput: SolcInput, solcOutput: SolcOutput) {

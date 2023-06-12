@@ -33,6 +33,9 @@ export class UpgradeableContractReport implements Report {
     return this.standaloneReport.ok && (this.storageLayoutReport === undefined || this.storageLayoutReport.ok);
   }
 
+  /**
+   * Explain any errors in the report.
+   */
   explain(color = true): string {
     if (this.ok) {
       return '';
@@ -48,6 +51,9 @@ export class UpgradeableContractReport implements Report {
     }
   }
 
+  /**
+   * Log the report to the console, including pass/fail status and any errors.
+   */
   log(): void {
     if (this.ok) {
       if (this.reference === undefined) {
@@ -57,11 +63,11 @@ export class UpgradeableContractReport implements Report {
       }
     } else {
       if (this.reference === undefined) {
-        console.log(` ${_chalk.red('✘')}  ${this.contract}`);
+        console.error(` ${_chalk.red('✘')}  ${this.contract}`);
       } else {
-        console.log(` ${_chalk.red('✘')}  ${this.contract} (upgrades from ${this.reference})`);
+        console.error(` ${_chalk.red('✘')}  ${this.contract} (upgrades from ${this.reference})`);
       }
-      console.log(`\n${this.explainChildren(6)}\n`);
+      console.error(`\n${this.explainChildren(6)}\n`);
     }
   }
 
@@ -102,7 +108,7 @@ export function getContractReports(sourceContracts: SourceContract[], opts: Vali
 
       const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind });
       if (report !== undefined) {
-        report.log(); // TODO call this in parent function
+        report.log();
         upgradeableContractReports.push(report);
       }
     }

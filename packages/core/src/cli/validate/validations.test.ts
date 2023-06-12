@@ -2,7 +2,7 @@ import _test, { ExecutionContext, TestFn } from 'ava';
 
 import { artifacts } from 'hardhat';
 import { validateBuildInfoContracts } from './validations';
-import { UpgradeableContractReport } from './contract-report';
+import { UpgradeableContractReport, getContractReports } from './contract-report';
 
 interface Context {
   reports: UpgradeableContractReport[];
@@ -18,7 +18,8 @@ test.before(async t => {
   if (buildInfo === undefined) {
     t.fail();
   } else {
-    t.context.reports = validateBuildInfoContracts([buildInfo], {});
+    const sourceContracts = validateBuildInfoContracts([buildInfo]);
+    t.context.reports = getContractReports(sourceContracts, {});
   }
 });
 

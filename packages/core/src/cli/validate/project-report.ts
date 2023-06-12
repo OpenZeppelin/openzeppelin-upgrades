@@ -36,10 +36,10 @@ export class ProjectReport implements Report {
 }
 
 export function getProjectReport(upgradeableContractReports: UpgradeableContractReport[]): ProjectReport {
-  const report = new ProjectReport(upgradeableContractReports);
+  const projectReport = new ProjectReport(upgradeableContractReports);
 
-  if (report.ok) {
-    if (report.numTotal === 0) {
+  if (projectReport.ok) {
+    if (projectReport.numTotal === 0) {
       console.log('\nNo upgradeable contracts detected.');
     } else {
       console.log('\nUpgrade safety checks completed successfully.');
@@ -47,8 +47,8 @@ export function getProjectReport(upgradeableContractReports: UpgradeableContract
   } else {
     console.error(chalk.bold('\n=========================================================='));
     console.error(chalk.bold('\nUpgrade safety checks completed with the following errors:'));
-    console.error(`\n${report.explain()}`);
+    console.error(`\n${projectReport.explain()}`);
   }
 
-  return report;
+  return projectReport;
 }

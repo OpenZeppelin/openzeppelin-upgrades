@@ -1,6 +1,7 @@
 import { ValidationOptions } from '../..';
 
 import { getBuildInfoFiles } from './build-info-file';
+import { getContractReports } from './contract-report';
 import { ProjectReport, getProjectReport } from './project-report';
 import { validateBuildInfoContracts } from './validations';
 
@@ -22,7 +23,7 @@ export async function validateUpgradeSafety(
   opts: ValidateUpgradeSafetyOptions = {},
 ): Promise<ProjectReport> {
   const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
-  const reports = validateBuildInfoContracts(buildInfoFiles, opts);
-
-  return getProjectReport(reports);
+  const sourceContracts = validateBuildInfoContracts(buildInfoFiles);
+  const contractReports = getContractReports(sourceContracts, opts);
+  return getProjectReport(contractReports);
 }
