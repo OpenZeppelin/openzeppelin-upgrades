@@ -35,23 +35,20 @@ export class SummaryReport implements Report {
   }
 }
 
-export function getSummaryReport(
-  upgradeableContractReports: UpgradeableContractReport[],
-  suppressSummary: boolean,
-): SummaryReport {
+export function getSummaryReport(upgradeableContractReports: UpgradeableContractReport[]): SummaryReport {
   const report = new SummaryReport(upgradeableContractReports);
-  if (!suppressSummary) {
-    if (report.ok) {
-      if (report.numTotal === 0) {
-        console.log('\nNo upgradeable contracts detected.');
-      } else {
-        console.log('\nUpgrade safety checks completed successfully.');
-      }
+
+  if (report.ok) {
+    if (report.numTotal === 0) {
+      console.log('\nNo upgradeable contracts detected.');
     } else {
-      console.error(chalk.bold('\n=========================================================='));
-      console.error(chalk.bold('\nUpgrade safety checks completed with the following errors:'));
-      console.error(`\n${report.explain()}`);
+      console.log('\nUpgrade safety checks completed successfully.');
     }
+  } else {
+    console.error(chalk.bold('\n=========================================================='));
+    console.error(chalk.bold('\nUpgrade safety checks completed with the following errors:'));
+    console.error(`\n${report.explain()}`);
   }
+
   return report;
 }

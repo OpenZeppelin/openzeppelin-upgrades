@@ -23,7 +23,7 @@ export async function main(args: string[]): Promise<void> {
   const { parsedArgs, extraArgs } = parseArgs(args);
   const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
   if (functionArgs !== undefined) {
-    const result = await validateUpgradeSafety(functionArgs.buildInfoDir, undefined, functionArgs.opts);
+    const result = await validateUpgradeSafety(functionArgs.buildInfoDir, functionArgs.opts);
     process.exitCode = result.ok ? 0 : 1;
   }
 }

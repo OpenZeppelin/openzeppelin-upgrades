@@ -7,7 +7,7 @@ import path from 'path';
 import os from 'os';
 
 import { artifacts } from 'hardhat';
-import { validateUpgradeSafety, withReportDefaults } from './validate-upgrade-safety';
+import { validateUpgradeSafety } from './validate-upgrade-safety';
 import { ReferenceContractNotFound } from './upgradeability-assessment';
 
 const rimraf = util.promisify(rimrafAsync);
@@ -67,12 +67,6 @@ test('reference contract not found', async t => {
     error?.message,
     'Could not find contract Storage088 referenced in contracts/test/cli/Storage089.sol:Storage089.',
   );
-});
-
-test('with report defaults', async t => {
-  t.is(true, withReportDefaults({ suppressSummary: true }).suppressSummary);
-  t.is(false, withReportDefaults({ suppressSummary: false }).suppressSummary);
-  t.is(false, withReportDefaults({}).suppressSummary);
 });
 
 test('invalid annotation args - upgrades-from', async t => {

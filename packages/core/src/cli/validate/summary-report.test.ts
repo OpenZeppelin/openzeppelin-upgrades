@@ -51,7 +51,7 @@ test.serial('get summary report - ok - no upgradeable', async t => {
   const consoleLog = sinon.stub(console, 'log');
   const consoleError = sinon.stub(console, 'error');
 
-  const report = getSummaryReport([], false);
+  const report = getSummaryReport([]);
   t.is(consoleLog.callCount, 1);
   t.regex(consoleLog.getCall(0).args[0], /No upgradeable contracts detected/);
   t.is(consoleError.callCount, 0);
@@ -62,51 +62,18 @@ test.serial('get summary report - ok - no upgradeable', async t => {
   t.is(report.explain(), '');
 });
 
-test.serial('get summary report - ok - suppress', async t => {
-  const consoleLog = sinon.stub(console, 'log');
-  const consoleError = sinon.stub(console, 'error');
-
-  const report = getSummaryReport(
-    [
-      new UpgradeableContractReport(
-        'mypath/MyContract.sol:MyContract1',
-        undefined,
-        new UpgradeableContractErrorReport([]),
-        undefined,
-      ),
-      new UpgradeableContractReport(
-        'mypath/MyContract.sol:MyContract2',
-        undefined,
-        new UpgradeableContractErrorReport([]),
-        undefined,
-      ),
-    ],
-    true,
-  );
-  t.is(consoleLog.callCount, 0);
-  t.is(consoleError.callCount, 0);
-
-  t.true(report.ok);
-  t.is(report.numPassed, 2);
-  t.is(report.numTotal, 2);
-  t.is(report.explain(), '');
-});
-
 test.serial('get summary report - ok - console', async t => {
   const consoleLog = sinon.stub(console, 'log');
   const consoleError = sinon.stub(console, 'error');
 
-  const report = getSummaryReport(
-    [
-      new UpgradeableContractReport(
-        'mypath/MyContract.sol:MyContract1',
-        undefined,
-        new UpgradeableContractErrorReport([]),
-        undefined,
-      ),
-    ],
-    false,
-  );
+  const report = getSummaryReport([
+    new UpgradeableContractReport(
+      'mypath/MyContract.sol:MyContract1',
+      undefined,
+      new UpgradeableContractErrorReport([]),
+      undefined,
+    ),
+  ]);
   t.is(consoleLog.callCount, 1);
   t.regex(consoleLog.getCall(0).args[0], /completed successfully/);
   t.is(consoleError.callCount, 0);
@@ -117,44 +84,6 @@ test.serial('get summary report - ok - console', async t => {
   t.is(report.explain(), '');
 });
 
-test.serial('get summary report - errors - suppress', async t => {
-  const v1 = t.context.extractStorageLayout('StorageUpgrade_Replace_V1');
-  const v2 = t.context.extractStorageLayout('StorageUpgrade_Replace_V2');
-  const layoutReport = getLayoutReport(v1, v2);
-
-  const consoleLog = sinon.stub(console, 'log');
-  const consoleError = sinon.stub(console, 'error');
-
-  const report = getSummaryReport(
-    [
-      new UpgradeableContractReport(
-        'mypath/MyContract.sol:MyContract',
-        undefined,
-        new UpgradeableContractErrorReport([
-          {
-            src: 'MyContract.sol:10',
-            kind: 'missing-public-upgradeto',
-          },
-          {
-            src: 'MyContract.sol:20',
-            kind: 'delegatecall',
-          },
-        ]),
-        undefined,
-      ),
-      new UpgradeableContractReport('MyContract2', 'MyContract', new UpgradeableContractErrorReport([]), layoutReport),
-    ],
-    true,
-  );
-  t.is(consoleLog.callCount, 0);
-  t.is(consoleError.callCount, 0);
-  t.is(report.numPassed, 0);
-  t.is(report.numTotal, 2);
-
-  t.false(report.ok);
-  t.snapshot(report.explain());
-});
-
 test.serial('get summary report - errors - console', async t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Replace_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Replace_V2');
@@ -163,27 +92,24 @@ test.serial('get summary report - errors - console', async t => {
   const consoleLog = sinon.stub(console, 'log');
   const consoleError = sinon.stub(console, 'error');
 
-  const report = getSummaryReport(
-    [
-      new UpgradeableContractReport(
-        'mypath/MyContract.sol:MyContract',
-        undefined,
-        new UpgradeableContractErrorReport([
-          {
-            src: 'MyContract.sol:10',
-            kind: 'missing-public-upgradeto',
-          },
-          {
-            src: 'MyContract.sol:20',
-            kind: 'delegatecall',
-          },
-        ]),
-        undefined,
-      ),
-      new UpgradeableContractReport('MyContract2', 'MyContract', new UpgradeableContractErrorReport([]), layoutReport),
-    ],
-    false,
-  );
+  const report = getSummaryReport([
+    new UpgradeableContractReport(
+      'mypath/MyContract.sol:MyContract',
+      undefined,
+      new UpgradeableContractErrorReport([
+        {
+          src: 'MyContract.sol:10',
+          kind: 'missing-public-upgradeto',
+        },
+        {
+          src: 'MyContract.sol:20',
+          kind: 'delegatecall',
+        },
+      ]),
+      undefined,
+    ),
+    new UpgradeableContractReport('MyContract2', 'MyContract', new UpgradeableContractErrorReport([]), layoutReport),
+  ]);
   t.is(consoleLog.callCount, 0);
   t.is(consoleError.callCount, 3);
   t.regex(consoleError.getCall(0).args[0], /===/);
@@ -197,28 +123,25 @@ test.serial('get summary report - errors - console', async t => {
 });
 
 test.serial('get summary report - some passed', async t => {
-  const report = getSummaryReport(
-    [
-      new UpgradeableContractReport(
-        'mypath/MyContract.sol:MyContract1',
-        undefined,
-        new UpgradeableContractErrorReport([
-          {
-            src: 'MyContract.sol:10',
-            kind: 'missing-public-upgradeto',
-          },
-        ]),
-        undefined,
-      ),
-      new UpgradeableContractReport(
-        'mypath/MyContract.sol:MyContract2',
-        undefined,
-        new UpgradeableContractErrorReport([]),
-        undefined,
-      ),
-    ],
-    true,
-  );
+  const report = getSummaryReport([
+    new UpgradeableContractReport(
+      'mypath/MyContract.sol:MyContract1',
+      undefined,
+      new UpgradeableContractErrorReport([
+        {
+          src: 'MyContract.sol:10',
+          kind: 'missing-public-upgradeto',
+        },
+      ]),
+      undefined,
+    ),
+    new UpgradeableContractReport(
+      'mypath/MyContract.sol:MyContract2',
+      undefined,
+      new UpgradeableContractErrorReport([]),
+      undefined,
+    ),
+  ]);
 
   t.false(report.ok);
   t.is(report.numPassed, 1);
