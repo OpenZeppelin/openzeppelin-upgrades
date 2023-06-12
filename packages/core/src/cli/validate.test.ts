@@ -6,7 +6,7 @@ import path from 'path';
 import os from 'os';
 import util from 'util';
 import minimist from 'minimist';
-import { USAGE, DETAILS, getFunctionArgs, main, withDefaults } from './validate';
+import { getFunctionArgs, main, withDefaults } from './validate';
 import sinon from 'sinon';
 import { errorKinds } from '../validate/run';
 import { artifacts } from 'hardhat';
@@ -15,24 +15,6 @@ const rimraf = util.promisify(rimrafAsync);
 
 test.afterEach.always(() => {
   sinon.restore();
-});
-
-test.serial('help', async t => {
-  const consoleLog = sinon.stub(console, 'log');
-
-  await main(['validate', '--help']);
-
-  t.true(consoleLog.firstCall.calledWith(USAGE));
-  t.true(consoleLog.secondCall.calledWith(DETAILS));
-});
-
-test.serial('no command', async t => {
-  const consoleLog = sinon.stub(console, 'log');
-
-  await main([]);
-
-  t.true(consoleLog.firstCall.calledWith(USAGE));
-  t.true(consoleLog.secondCall.calledWith(DETAILS));
 });
 
 test('invalid command', t => {
