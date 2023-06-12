@@ -1,4 +1,5 @@
 import _chalk from 'chalk';
+import debug from '../../utils/debug';
 import {
   getContractVersion,
   getStorageLayout,
@@ -13,7 +14,6 @@ import {
   getStorageUpgradeReport,
 } from '../..';
 import { Report } from '../../standalone';
-
 import { getUpgradeabilityAssessment } from './upgradeability-assessment';
 import { SourceContract } from './validations';
 import { LayoutCompatibilityReport } from '../../storage/report';
@@ -39,15 +39,15 @@ export class UpgradeableContractReport implements Report {
 
     const lines: string[] = [];
     if (!this.standaloneReport.ok) {
-      lines.push(chalk.bold(`- ${this.contract}:`));
-      lines.push(this.standaloneReport.explain(color));
+      lines.push(chalk.bold(`- ${this.contract}`));
+      lines.push(indent(this.standaloneReport.explain(color), 4));
     }
     if (this.storageLayoutReport !== undefined && !this.storageLayoutReport.ok) {
       if (this.reference === undefined) {
         throw new Error('Broken invariant: Storage layout errors reported without a reference contract');
       }
-      lines.push(chalk.bold(`- ${this.reference} to ${this.contract}:`));
-      lines.push(this.storageLayoutReport.explain(color));
+      lines.push(chalk.bold(`- from ${this.reference} to ${this.contract}`));
+      lines.push(indent(this.storageLayoutReport.explain(color), 4));
     }
     return lines.join('\n\n');
   }
@@ -98,7 +98,7 @@ function getUpgradeableContractReport(
     }
   }
 
-  console.log('Checking: ' + contract.fullyQualifiedName);
+  debug('Checking: ' + contract.fullyQualifiedName);
   const standaloneReport = reportStandalone(contract.validationData, version, opts, contract.fullyQualifiedName);
 
   let reference: string | undefined;
@@ -120,14 +120,6 @@ function getUpgradeableContractReport(
     );
   }
 
-  if (standaloneReport.ok) {
-    if (storageLayoutReport?.ok) {
-      console.log('Passed: from ' + reference + ' to ' + contract.fullyQualifiedName);
-    } else {
-      console.log('Passed: ' + contract.fullyQualifiedName);
-    }
-  }
-
   return new UpgradeableContractReport(contract.fullyQualifiedName, reference, standaloneReport, storageLayoutReport);
 }
 
@@ -139,9 +131,12 @@ function reportStandalone(
 ): UpgradeableContractErrorReport {
   const errors = getErrors(data, version, opts);
   const report = new UpgradeableContractErrorReport(errors);
-  if (!report.ok) {
-    console.error(_chalk.red(_chalk.bold(`Failed: ${name}`)));
-    console.error(report.explain());
+
+  if (report.ok) {
+    console.log(` ${_chalk.green('✔')}  ${name}`);
+  } else {
+    console.error(` ${_chalk.red('✘')}  ${name}`);
+    console.error(`\n${indent(report.explain(), 6)}\n`);
   }
   return report;
 }
@@ -154,9 +149,17 @@ function reportStorageLayout(
   name: string,
 ): LayoutCompatibilityReport {
   const report = getStorageUpgradeReport(referenceLayout, layout, withValidationDefaults(opts));
-  if (!report.ok) {
-    console.error(_chalk.red(_chalk.bold(`Failed: from ${referenceName} to ${name}`)));
-    console.error(report.explain());
+
+  if (report.ok) {
+    console.log(` ${_chalk.green('✔')}  from ${referenceName} to ${name}`);
+  } else {
+    console.error(` ${_chalk.red('✘')}  from ${referenceName} to ${name}`);
+    console.error(`\n${indent(report.explain(), 6)}\n`);
   }
   return report;
+}
+
+function indent(str: string, numSpaces: number): string {
+  const spaces = ' '.repeat(numSpaces);
+  return str.replace(/^/gm, spaces);
 }
