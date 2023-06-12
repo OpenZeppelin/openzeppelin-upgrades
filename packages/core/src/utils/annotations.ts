@@ -1,11 +1,12 @@
 import { execall } from './execall';
+import { Node } from 'solidity-ast/node';
 
 /**
  * Get args from the doc string matching the given tag.
  *
- * @param doc - The doc string to parse
- * @param tag - The tag to match
- * @param supportedArgs - The list of supported args, or undefined if all args are supported
+ * @param doc The doc string to parse
+ * @param tag The tag to match
+ * @param supportedArgs The list of supported args, or undefined if all args are supported
  */
 export function getAnnotationArgs(doc: string, tag: string, supportedArgs?: readonly string[]) {
   const result: string[] = [];
@@ -30,4 +31,17 @@ export function getAnnotationArgs(doc: string, tag: string, supportedArgs?: read
   }
 
   return result;
+}
+
+/**
+ * Get the documentation string for the given node.
+ * @param node The node
+ * @returns The documentation string, or an empty string if the node has no documentation
+ */
+export function getDocumentation(node: Node) {
+  if ('documentation' in node) {
+    return typeof node.documentation === 'string' ? node.documentation : node.documentation?.text ?? '';
+  } else {
+    return '';
+  }
 }

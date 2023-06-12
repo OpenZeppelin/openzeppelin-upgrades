@@ -1,4 +1,4 @@
-import { getAnnotationArgs } from '../../utils/annotations';
+import { getAnnotationArgs, getDocumentation } from '../../utils/annotations';
 import { inferInitializable, inferUUPS } from '../../validate/query';
 import { ValidateCommandError } from './error';
 import { SourceContract } from './validations';
@@ -84,7 +84,7 @@ function getAnnotationAssessment(contract: SourceContract): AnnotationAssessment
   const node = contract.node;
 
   if ('documentation' in node) {
-    const doc = typeof node.documentation === 'string' ? node.documentation : node.documentation?.text ?? '';
+    const doc = getDocumentation(node);
 
     const tag = 'oz-upgrades';
     const hasUpgradeAnnotation = hasAnnotationTag(doc, tag);

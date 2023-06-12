@@ -12,7 +12,7 @@ import { extractLinkReferences, LinkReference } from '../link-refs';
 import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
-import { getAnnotationArgs as getSupportedAnnotationArgs } from '../utils/annotations';
+import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -97,7 +97,7 @@ interface ValidationErrorUpgradeability extends ValidationErrorBase {
 function getAllowed(node: Node, reachable: boolean): string[] {
   if ('documentation' in node) {
     const tag = `oz-upgrades-unsafe-allow${reachable ? '-reachable' : ''}`;
-    const doc = typeof node.documentation === 'string' ? node.documentation : node.documentation?.text ?? '';
+    const doc = getDocumentation(node);
     return getAnnotationArgs(doc, tag);
   } else {
     return [];
