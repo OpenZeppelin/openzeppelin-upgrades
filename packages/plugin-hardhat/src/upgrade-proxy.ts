@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ethers, ContractFactory, Contract, ContractRunner, Signer } from 'ethers';
+import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
 import { Manifest, getAdminAddress, getCode, isEmptySlot } from '@openzeppelin/upgrades-core';
 
