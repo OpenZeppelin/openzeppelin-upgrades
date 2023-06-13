@@ -9,6 +9,22 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test('getFunctionArgs - invalid command', t => {
+  const parsedArgs = minimist(['invalid']);
+  const extraArgs = parsedArgs._;
+  t.throws(() => getFunctionArgs(parsedArgs, extraArgs), {
+    message: `Invalid command: invalid. Supported commands are: validate`,
+  });
+});
+
+test('getFunctionArgs - invalid options', async t => {
+  const parsedArgs = minimist(['validate', 'build-info.json', '--foo', '--bar', 'xyz']);
+  const extraArgs = parsedArgs._;
+  t.throws(() => getFunctionArgs(parsedArgs, extraArgs), {
+    message: `Invalid options: foo, bar`,
+  });
+});
+
 test('getFunctionArgs - command only', t => {
   const parsedArgs = minimist(['validate']);
   const extraArgs = parsedArgs._;

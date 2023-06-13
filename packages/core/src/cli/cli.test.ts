@@ -22,16 +22,6 @@ test('no args', async t => {
   t.snapshot(output);
 });
 
-test('invalid options', async t => {
-  const error = await t.throwsAsync(execAsync(`${CLI} validate build-info.json --foo --bar xyz`));
-  t.true((error as any).stderr.includes('Invalid options: foo, bar'));
-});
-
-test('invalid command', async t => {
-  const error = await t.throwsAsync(execAsync(`${CLI} invalid`));
-  t.true((error as any).stderr.includes('Invalid command: invalid. Supported commands are: validate'));
-});
-
 test('validate - errors', async t => {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-'));
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
