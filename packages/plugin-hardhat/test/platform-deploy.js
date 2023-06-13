@@ -68,9 +68,7 @@ test.beforeEach(async t => {
       provider: {
         getTransaction: () => 'mocked response',
       },
-      utils: {
-        getAddress: address => address,
-      },
+      getAddress: address => address,
     },
     network: {
       provider: { send: async () => t.context.fakeChainId },
