@@ -4,7 +4,6 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
-const { FormatTypes } = require('ethers/lib/utils');
 
 const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
@@ -75,7 +74,7 @@ test('proposes an upgrade', async t => {
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: undefined,
-    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
+    newImplementationABI: GreeterV2.interface.formatJson(),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
     network: 'goerli',
     approvalProcessId: undefined,
@@ -91,7 +90,7 @@ test('proposes an upgrade with approvalProcessId', async t => {
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: undefined,
-    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
+    newImplementationABI: GreeterV2.interface.formatJson(),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
     network: 'goerli',
     approvalProcessId,
@@ -108,7 +107,7 @@ test('proposes an upgrade reusing prepared implementation', async t => {
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: undefined,
-    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
+    newImplementationABI: GreeterV2.interface.formatJson(),
     newImplementationAddress: greeterV2Impl,
     network: 'goerli',
     approvalProcessId: undefined,

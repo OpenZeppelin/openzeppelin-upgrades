@@ -4,7 +4,6 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
-const { FormatTypes } = require('ethers/lib/utils');
 
 const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
@@ -62,7 +61,7 @@ test('proposes an upgrade using deployed implementation', async t => {
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: undefined,
-    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
+    newImplementationABI: GreeterV2.interface.formatJson(),
     newImplementationAddress: greeterV2Impl,
     network: 'goerli',
     approvalProcessId: undefined,
