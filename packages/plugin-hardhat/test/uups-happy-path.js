@@ -1,6 +1,7 @@
 const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
+const { attach } = require('../dist/utils/ethers');
 
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
@@ -18,7 +19,7 @@ test('happy path', async t => {
   await greeter2.resetGreeting();
 
   const greeter3ImplAddr = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3);
-  const greeter3 = GreeterV3.attach(greeter3ImplAddr);
+  const greeter3 = attach(GreeterV3, greeter3ImplAddr);
   const version3 = await greeter3.version();
   t.is(version3, 'V3');
 });

@@ -1,6 +1,7 @@
 const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
+const { attach } = require('../dist/utils/ethers');
 
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
@@ -24,26 +25,26 @@ test('happy path', async t => {
   await upgrades.upgradeBeacon(greeterBeacon, GreeterV2);
 
   // reload proxy to work with the new contract
-  const greeter2 = GreeterV2.attach(await greeter.getAddress());
+  const greeter2 = attach(GreeterV2, await greeter.getAddress());
   t.is(await greeter2.greet(), 'Hello, Hardhat!');
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
 
   // reload proxy to work with the new contract
-  const greeterSecond2 = GreeterV2.attach(await greeterSecond.getAddress());
+  const greeterSecond2 = attach(GreeterV2, await greeterSecond.getAddress());
   t.is(await greeterSecond2.greet(), 'Hello, Hardhat second!');
   await greeterSecond2.resetGreeting();
   t.is(await greeterSecond2.greet(), 'Hello World');
 
   // prepare upgrade from beacon proxy
   const greeter3ImplAddr = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3);
-  const greeter3 = GreeterV3.attach(greeter3ImplAddr);
+  const greeter3 = attach(GreeterV3, greeter3ImplAddr);
   const version3 = await greeter3.version();
   t.is(version3, 'V3');
 
   // prepare upgrade from beacon itself
   const greeter3ImplAddrFromBeacon = await upgrades.prepareUpgrade(await greeterBeacon.getAddress(), GreeterV3);
-  const greeter3FromBeacon = GreeterV3.attach(greeter3ImplAddrFromBeacon);
+  const greeter3FromBeacon = attach(GreeterV3, greeter3ImplAddrFromBeacon);
   const version3FromBeacon = await greeter3FromBeacon.version();
   t.is(version3FromBeacon, 'V3');
 });

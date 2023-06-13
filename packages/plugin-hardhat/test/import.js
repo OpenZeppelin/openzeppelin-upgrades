@@ -1,6 +1,7 @@
 const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
+const { attach } = require('../dist/utils/ethers');
 
 const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
 const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
@@ -125,7 +126,7 @@ test('beacon proxy happy path', async t => {
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   await upgrades.upgradeBeacon(beacon, GreeterV2);
-  const greeter2 = GreeterV2.attach(await greeter.getAddress());
+  const greeter2 = attach(GreeterV2, await greeter.getAddress());
   await greeter2.waitForDeployment();
   t.is(await greeter2.greet(), 'Hello, Hardhat!');
   await greeter2.resetGreeting();

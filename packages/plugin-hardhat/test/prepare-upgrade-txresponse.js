@@ -1,6 +1,7 @@
 const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
+const { attach } = require('../dist/utils/ethers');
 
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
@@ -21,7 +22,7 @@ test('prepare upgrade with txresponse', async t => {
 
   t.is(txReceipt.contractAddress, precomputedAddress);
 
-  const greeter3 = GreeterV3.attach(txReceipt.contractAddress);
+  const greeter3 = attach(GreeterV3, txReceipt.contractAddress);
   const version3 = await greeter3.version();
   t.is(version3, 'V3');
 });
