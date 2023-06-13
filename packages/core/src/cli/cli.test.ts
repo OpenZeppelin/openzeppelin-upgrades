@@ -23,15 +23,13 @@ test('no args', async t => {
 });
 
 test('invalid options', async t => {
-  await t.throwsAsync(execAsync(`${CLI} validate build-info.json --foo --bar xyz`), {
-    message: /Invalid options: foo, bar/,
-  });
+  const error = await t.throwsAsync(execAsync(`${CLI} validate build-info.json --foo --bar xyz`));
+  t.true((error as any).stderr.includes('Invalid options: foo, bar'));
 });
 
 test('invalid command', async t => {
-  await t.throwsAsync(execAsync(`${CLI} invalid`), {
-    message: /Invalid command: invalid. Supported commands are: validate/,
-  });
+  const error = await t.throwsAsync(execAsync(`${CLI} invalid`));
+  t.true((error as any).stderr.includes('Invalid command: invalid. Supported commands are: validate'));
 });
 
 test('validate - errors', async t => {
