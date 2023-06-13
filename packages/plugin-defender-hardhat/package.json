@@ -18,11 +18,11 @@
     "version": "node ../../scripts/bump-changelog.js"
   },
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@openzeppelin/upgrades-core": "^1.18.0",
     "@types/mocha": "^7.0.2",
     "ava": "^5.0.0",
-    "ethers": "^5.0.5",
+    "ethers": "^6.0.0",
     "fgbg": "^0.1.4",
     "hardhat": "^2.0.2",
     "promisified": "^0.5.0",
