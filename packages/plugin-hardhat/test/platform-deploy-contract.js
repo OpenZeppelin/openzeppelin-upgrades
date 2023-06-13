@@ -107,8 +107,8 @@ test('await deployed contract', async t => {
       platformDeploy: async () => {
         return {
           address: await precreated.getAddress(),
-          txHash: precreated.txHash,
-          deployTransaction: precreated.deployTransaction,
+          txHash: precreated.deploymentTransaction().hash,
+          deployTransaction: precreated.deploymentTransaction(),
           remoteDeploymentId: 'abc',
         };
       },

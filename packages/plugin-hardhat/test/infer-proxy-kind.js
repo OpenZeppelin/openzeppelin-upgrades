@@ -16,7 +16,7 @@ test('infer proxy kind', async t => {
   const transparent = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!']);
   t.is(
     await upgrades.erc1967.getAdminAddress(await transparent.getAddress()),
-    (await upgrades.admin.getInstance()).address,
+    await (await upgrades.admin.getInstance()).getAddress(),
   );
 
   const beacon = await upgrades.deployBeacon(Greeter);
