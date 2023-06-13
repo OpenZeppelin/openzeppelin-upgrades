@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-import '@nomiclabs/hardhat-ethers';
+import '@nomicfoundation/hardhat-ethers';
 import { extendEnvironment } from 'hardhat/config';
 import { lazyFunction, lazyObject } from 'hardhat/plugins';
 import type { ProposeUpgradeFunction } from './propose-upgrade';

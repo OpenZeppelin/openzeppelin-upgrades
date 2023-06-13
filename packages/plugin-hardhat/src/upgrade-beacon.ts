@@ -9,6 +9,7 @@ import {
   UpgradeBeaconOptions,
 } from './utils';
 import { disablePlatform } from './platform/utils';
+import { attach } from './utils/attach';
 
 export type UpgradeBeaconFunction = (
   beacon: ContractAddressOrInstance,
@@ -23,8 +24,8 @@ export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, platformModule
     const beaconAddress = getContractAddress(beacon);
     const { impl: nextImpl } = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
 
-    const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
-    const beaconContract = UpgradeableBeaconFactory.attach(beaconAddress);
+    const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(ImplFactory.runner);
+    const beaconContract = attach(UpgradeableBeaconFactory, beaconAddress);
     const upgradeTx = await beaconContract.upgradeTo(nextImpl);
 
     // @ts-ignore Won't be readonly because beaconContract was created through attach.

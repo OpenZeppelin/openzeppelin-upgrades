@@ -1,13 +1,13 @@
 import type { Deployment, RemoteDeploymentId } from '@openzeppelin/upgrades-core';
 import debug from './debug';
-import type { ethers, ContractFactory } from 'ethers';
-import { getContractAddress } from 'ethers/lib/utils';
+import type { ethers, ContractFactory, Signer } from 'ethers';
+import { getCreateAddress } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { platformDeploy } from '../platform/deploy';
 import { PlatformDeployOptions, UpgradeOptions } from './options';
 
 export interface DeployTransaction {
-  deployTransaction: ethers.providers.TransactionResponse;
+  deployTransaction: null | ethers.TransactionResponse;
 }
 
 export async function deploy(
@@ -25,16 +25,26 @@ export async function deploy(
 
 async function ethersDeploy(factory: ContractFactory, ...args: unknown[]) {
   const contractInstance = await factory.deploy(...args);
-  const { deployTransaction } = contractInstance;
+  const deployTransaction = contractInstance.deploymentTransaction();
 
-  const address: string = getContractAddress({
-    from: await factory.signer.getAddress(),
-    nonce: deployTransaction.nonce,
-  });
-  if (address !== contractInstance.address) {
-    debug(
-      `overriding contract address from ${contractInstance.address} to ${address} for nonce ${deployTransaction.nonce}`,
-    );
+  if (deployTransaction === null) {
+    throw new Error('Broken invariant: deploymentTransaction is null');
+  }
+
+  const contractAddress = await contractInstance.getAddress();
+  let address = contractAddress;
+
+  const runner = factory.runner;
+  if (runner && 'getAddress' in runner) {
+    const from = await (runner as Signer).getAddress();
+
+    address = getCreateAddress({
+      from: from,
+      nonce: deployTransaction.nonce,
+    });
+    if (address !== contractAddress) {
+      debug(`overriding contract address from ${contractAddress} to ${address} for nonce ${deployTransaction.nonce}`);
+    }
   }
 
   const txHash = deployTransaction.hash;

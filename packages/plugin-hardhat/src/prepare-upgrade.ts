@@ -31,7 +31,7 @@ export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, platformModul
 
     const deployedImpl = await deployImplForUpgrade(hre, referenceAddressOrContract, ImplFactory, opts);
 
-    if (opts.getTxResponse && deployedImpl.txResponse !== undefined) {
+    if (opts.getTxResponse && deployedImpl.txResponse) {
       return deployedImpl.txResponse;
     } else {
       return deployedImpl.impl;

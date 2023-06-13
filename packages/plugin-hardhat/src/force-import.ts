@@ -24,6 +24,7 @@ import {
 } from './utils';
 import { simulateDeployAdmin } from './utils/simulate-deploy';
 import { getDeployData } from './utils/deploy-impl';
+import { attach } from './utils/attach';
 
 export interface ForceImportFunction {
   (proxyAddress: string, ImplFactory: ContractFactory, opts?: ForceImportOptions): Promise<Contract>;
@@ -44,19 +45,19 @@ export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunc
     if (implAddress !== undefined) {
       await importProxyToManifest(provider, hre, address, implAddress, ImplFactory, opts, manifest);
 
-      return ImplFactory.attach(address);
+      return attach(ImplFactory, address);
     } else if (await isBeacon(provider, address)) {
       const beaconImplAddress = await getImplementationAddressFromBeacon(provider, address);
       await addImplToManifest(hre, beaconImplAddress, ImplFactory, opts);
 
-      const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, ImplFactory.signer);
-      return UpgradeableBeaconFactory.attach(address);
+      const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(ImplFactory.runner);
+      return attach(UpgradeableBeaconFactory, address);
     } else {
       if (!(await hasCode(provider, address))) {
         throw new NoContractImportError(address);
       }
       await addImplToManifest(hre, address, ImplFactory, opts);
-      return ImplFactory.attach(address);
+      return attach(ImplFactory, address);
     }
   };
 }

@@ -1,4 +1,4 @@
-import { Interface } from '@ethersproject/abi';
+import type { Interface } from 'ethers';
 
 export function getInitializerData(
   contractInterface: Interface,
@@ -14,7 +14,11 @@ export function getInitializerData(
 
   try {
     const fragment = contractInterface.getFunction(initializer);
-    return contractInterface.encodeFunctionData(fragment, args);
+    if (fragment === null) {
+      throw new Error(`no matching function "${initializer}"`); // TODO see if we can avoid the catch below
+    } else {
+      return contractInterface.encodeFunctionData(fragment, args);
+    }
   } catch (e: unknown) {
     if (e instanceof Error) {
       if (allowNoInitialization && e.message.includes('no matching function')) {

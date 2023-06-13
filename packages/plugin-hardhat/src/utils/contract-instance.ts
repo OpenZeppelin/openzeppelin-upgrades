@@ -5,6 +5,7 @@ import assert from 'assert';
 import { DeployTransaction, Platform } from '.';
 import { waitForDeployment } from '../platform/utils';
 import { Deployment, RemoteDeploymentId, DeployOpts } from '@openzeppelin/upgrades-core';
+import { attach } from './attach';
 
 /**
  * Gets a contract instance from a deployment, where the deployment may be remote.
@@ -24,23 +25,28 @@ export function getContractInstance(
   opts: DeployOpts & Platform,
   deployment: Deployment & DeployTransaction & RemoteDeploymentId,
 ) {
-  const instance = contract.attach(deployment.address);
+  const instance = attach(contract, deployment.address);
 
   // @ts-ignore Won't be readonly because instance was created through attach.
   instance.deployTransaction = deployment.deployTransaction;
 
   if (opts.usePlatformDeploy && deployment.remoteDeploymentId !== undefined) {
-    const origDeployed = instance.deployed.bind(instance);
-    instance.deployed = async () => {
+    const origWait = instance.waitForDeployment.bind(instance);
+    instance.waitForDeployment = async () => {
       assert(deployment.remoteDeploymentId !== undefined);
-      const updatedTxHash = await waitForDeployment(hre, opts, instance.address, deployment.remoteDeploymentId);
+      const updatedTxHash = await waitForDeployment(
+        hre,
+        opts,
+        await instance.getAddress(),
+        deployment.remoteDeploymentId,
+      );
 
       if (updatedTxHash !== undefined && updatedTxHash !== deployment.txHash) {
         // @ts-ignore Won't be readonly because instance was created through attach.
         instance.deployTransaction = await hre.ethers.provider.getTransaction(updatedTxHash);
       }
 
-      return await origDeployed();
+      return await origWait();
     };
   }
   return instance;
