@@ -17,7 +17,7 @@ test('prepare upgrade with txresponse', async t => {
   // prepare the upgrade and get tx response
   const txResponse = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3, { getTxResponse: true });
 
-  const precomputedAddress = ethers.utils.getContractAddress(txResponse);
+  const precomputedAddress = ethers.getCreateAddress(txResponse);
   const txReceipt = await txResponse.wait();
 
   t.is(txReceipt.contractAddress, precomputedAddress);

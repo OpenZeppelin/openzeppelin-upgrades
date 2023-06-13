@@ -83,7 +83,7 @@ test('deploy implementation - with txresponse', async t => {
 
   const txResponse = await upgrades.deployImplementation(Greeter, { getTxResponse: true });
 
-  const precomputedAddress = ethers.utils.getContractAddress(txResponse);
+  const precomputedAddress = ethers.getCreateAddress(txResponse);
   const txReceipt = await txResponse.wait();
 
   t.is(txReceipt.contractAddress, precomputedAddress);
