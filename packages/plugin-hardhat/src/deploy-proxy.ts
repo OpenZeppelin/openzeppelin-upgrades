@@ -71,7 +71,10 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
 
       case 'transparent': {
         const adminAddress = await hre.upgrades.deployProxyAdmin(getSigner(ImplFactory.runner), opts);
-        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, getSigner(ImplFactory.runner));
+        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(
+          hre,
+          getSigner(ImplFactory.runner),
+        );
         proxyDeployment = Object.assign(
           { kind },
           await deploy(hre, opts, TransparentUpgradeableProxyFactory, impl, adminAddress, data),

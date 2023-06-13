@@ -50,7 +50,9 @@ test('deploy proxy', async t => {
     const proxy = await m.getProxyFromAddress(await inst.getAddress());
     t.is(proxy.remoteDeploymentId, PROXY_ID);
 
-    const impl = await m.getDeploymentFromAddress(await hre.upgrades.erc1967.getImplementationAddress(await inst.getAddress()));
+    const impl = await m.getDeploymentFromAddress(
+      await hre.upgrades.erc1967.getImplementationAddress(await inst.getAddress()),
+    );
     t.is(impl.remoteDeploymentId, IMPL_ID);
   });
 });

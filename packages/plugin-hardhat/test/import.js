@@ -119,7 +119,10 @@ test('beacon proxy happy path', async t => {
   await impl.waitForDeployment();
   const beacon = await UpgradableBeacon.deploy(await impl.getAddress());
   await beacon.waitForDeployment();
-  const proxy = await BeaconProxy.deploy(await beacon.getAddress(), getInitializerData(Greeter.interface, ['Hello, Hardhat!']));
+  const proxy = await BeaconProxy.deploy(
+    await beacon.getAddress(),
+    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+  );
   await proxy.waitForDeployment();
 
   const greeter = await upgrades.forceImport(await proxy.getAddress(), Greeter);
@@ -328,7 +331,8 @@ test('import transparents with different admin', async t => {
   );
 
   // cannot upgrade directly
-  const e = await t.throwsAsync(() => upgrades.upgradeProxy(await proxy.getAddress(), GreeterV2));
+  const proxyAddress = await proxy.getAddress();
+  const e = await t.throwsAsync(() => upgrades.upgradeProxy(proxyAddress, GreeterV2));
   t.is(NOT_REGISTERED_ADMIN, e.message, e.message);
 
   // prepare upgrades instead

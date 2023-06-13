@@ -14,7 +14,8 @@ test('changeProxyAdmin - wrong signer', async t => {
 
   const signer = (await ethers.getSigners())[1];
 
-  await t.throwsAsync(() => upgrades.admin.changeProxyAdmin(await greeter.getAddress(), testAddress, signer), {
+  const addr = await greeter.getAddress();
+  await t.throwsAsync(() => upgrades.admin.changeProxyAdmin(addr, testAddress, signer), {
     message: /(caller is not the owner)/,
   });
 });

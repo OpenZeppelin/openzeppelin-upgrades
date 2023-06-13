@@ -17,7 +17,9 @@ test('happy path - addresses', async t => {
   await greeter.waitForDeployment();
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  const greeterSecond = await upgrades.deployBeaconProxy(await greeterBeacon.getAddress(), Greeter, ['Hello, Hardhat second!']);
+  const greeterSecond = await upgrades.deployBeaconProxy(await greeterBeacon.getAddress(), Greeter, [
+    'Hello, Hardhat second!',
+  ]);
   await greeterSecond.waitForDeployment();
   t.is(await greeterSecond.greet(), 'Hello, Hardhat second!');
 

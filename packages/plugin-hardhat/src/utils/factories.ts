@@ -11,11 +11,17 @@ export async function getProxyFactory(hre: HardhatRuntimeEnvironment, signer?: S
   return new ContractFactory(ERC1967Proxy.abi, ERC1967Proxy.bytecode, signer);
 }
 
-export async function getTransparentUpgradeableProxyFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
+export async function getTransparentUpgradeableProxyFactory(
+  hre: HardhatRuntimeEnvironment,
+  signer?: Signer,
+): Promise<ContractFactory> {
   return new ContractFactory(TransparentUpgradeableProxy.abi, TransparentUpgradeableProxy.bytecode, signer);
 }
 
-export async function getITransparentUpgradeableProxyFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
+export async function getITransparentUpgradeableProxyFactory(
+  hre: HardhatRuntimeEnvironment,
+  signer?: Signer,
+): Promise<ContractFactory> {
   return new ContractFactory(ITransparentUpgradeableProxy.abi, ITransparentUpgradeableProxy.bytecode, signer);
 }
 
@@ -27,6 +33,9 @@ export async function getBeaconProxyFactory(hre: HardhatRuntimeEnvironment, sign
   return new ContractFactory(BeaconProxy.abi, BeaconProxy.bytecode, signer);
 }
 
-export async function getUpgradeableBeaconFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
+export async function getUpgradeableBeaconFactory(
+  hre: HardhatRuntimeEnvironment,
+  signer?: Signer,
+): Promise<ContractFactory> {
   return new ContractFactory(UpgradeableBeacon.abi, UpgradeableBeacon.bytecode, signer);
 }

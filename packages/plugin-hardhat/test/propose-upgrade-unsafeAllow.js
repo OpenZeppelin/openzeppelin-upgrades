@@ -37,7 +37,7 @@ test.beforeEach(async t => {
   t.context.Greeter = await ethers.getContractFactory('GreeterPlatform');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterPlatformV2Bad');
   t.context.greeter = await upgrades.deployProxy(t.context.Greeter, { kind: 'transparent' });
-  t.context.proxyAdmin = await upgrades.erc1967.getAdminAddress(t.context.await greeter.getAddress());
+  t.context.proxyAdmin = await upgrades.erc1967.getAdminAddress(await t.context.greeter.getAddress());
 });
 
 test.afterEach.always(() => {

@@ -46,7 +46,8 @@ test.afterEach.always(() => {
 test('proposes an upgrade using deployed implementation - implementation not deployed', async t => {
   const { proposeUpgrade, greeter, GreeterV2 } = t.context;
 
-  await t.throwsAsync(() => proposeUpgrade(await greeter.getAddress(), GreeterV2, { useDeployedImplementation: true }), {
+  const addr = await greeter.getAddress();
+  await t.throwsAsync(() => proposeUpgrade(addr, GreeterV2, { useDeployedImplementation: true }), {
     message: /(The implementation contract was not previously deployed.)/,
   });
 });

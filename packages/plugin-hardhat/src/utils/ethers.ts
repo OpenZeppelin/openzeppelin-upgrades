@@ -11,5 +11,5 @@ export function attach(contractFactory: ContractFactory, address: string) {
  * Best effort to get a signer from a ContractRunner. Returns undefined if the runner is not a signer.
  */
 export function getSigner(runner?: null | ContractRunner): Signer | undefined {
-  return (runner && 'getAddress' in runner) ? (runner as Signer) : undefined;
+  return runner && 'getAddress' in runner ? (runner as Signer) : undefined;
 }
