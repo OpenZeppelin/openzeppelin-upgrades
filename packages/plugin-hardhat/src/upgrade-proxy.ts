@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ethers, ContractFactory, Contract, ContractRunner } from 'ethers';
+import type { ethers, ContractFactory, Contract, ContractRunner, Signer } from 'ethers';
 
 import { Manifest, getAdminAddress, getCode, isEmptySlot } from '@openzeppelin/upgrades-core';
 
@@ -10,9 +10,10 @@ import {
   getProxyAdminFactory,
   getContractAddress,
   ContractAddressOrInstance,
+  getSigner,
 } from './utils';
 import { disablePlatform } from './platform/utils';
-import { attach } from './utils/attach';
+import { attach } from './utils/ethers';
 
 export type UpgradeFunction = (
   proxy: ContractAddressOrInstance,
@@ -28,7 +29,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule:
 
     const { impl: nextImpl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress);
     // upgrade kind is inferred above
-    const upgradeTo = await getUpgrader(proxyAddress, ImplFactory.runner);
+    const upgradeTo = await getUpgrader(proxyAddress, getSigner(ImplFactory.runner));
     const call = encodeCall(ImplFactory, opts.call);
     const upgradeTx = await upgradeTo(nextImpl, call);
 
@@ -40,7 +41,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule:
 
   type Upgrader = (nextImpl: string, call?: string) => Promise<ethers.TransactionResponse>;
 
-  async function getUpgrader(proxyAddress: string, runner?: null | ContractRunner): Promise<Upgrader> {
+  async function getUpgrader(proxyAddress: string, signer?: Signer): Promise<Upgrader> {
     const { provider } = hre.network;
 
     const adminAddress = await getAdminAddress(provider, proxyAddress);
@@ -48,14 +49,14 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule:
 
     if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
       // No admin contract: use ITransparentUpgradeableProxyFactory to get proxiable interface
-      const ITransparentUpgradeableProxyFactory = await getITransparentUpgradeableProxyFactory(runner);
+      const ITransparentUpgradeableProxyFactory = await getITransparentUpgradeableProxyFactory(hre, getSigner(signer));
       const proxy = attach(ITransparentUpgradeableProxyFactory, proxyAddress);
 
       return (nextImpl, call) => (call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl));
     } else {
       // Admin contract: redirect upgrade call through it
       const manifest = await Manifest.forNetwork(provider);
-      const AdminFactory = await getProxyAdminFactory(runner);
+      const AdminFactory = await getProxyAdminFactory(hre, signer);
       const admin = attach(AdminFactory, adminAddress);
       const manifestAdmin = await manifest.getAdmin();
 

@@ -17,6 +17,7 @@ import {
   DeployTransaction,
   deployProxyImpl,
   getInitializerData,
+  getSigner,
 } from './utils';
 import { enablePlatform } from './platform/utils';
 import { getContractInstance } from './utils/contract-instance';
@@ -63,14 +64,14 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
       }
 
       case 'uups': {
-        const ProxyFactory = await getProxyFactory(ImplFactory.runner);
+        const ProxyFactory = await getProxyFactory(hre, getSigner(ImplFactory.runner));
         proxyDeployment = Object.assign({ kind }, await deploy(hre, opts, ProxyFactory, impl, data));
         break;
       }
 
       case 'transparent': {
-        const adminAddress = await hre.upgrades.deployProxyAdmin(ImplFactory.runner, opts);
-        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(ImplFactory.runner);
+        const adminAddress = await hre.upgrades.deployProxyAdmin(getSigner(ImplFactory.runner), opts);
+        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, getSigner(ImplFactory.runner));
         proxyDeployment = Object.assign(
           { kind },
           await deploy(hre, opts, TransparentUpgradeableProxyFactory, impl, adminAddress, data),

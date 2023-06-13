@@ -4,7 +4,7 @@ import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract, Signer } from 'ethers';
 import { getProxyAdminFactory } from './utils';
 import { disablePlatform } from './platform/utils';
-import { attach } from './utils/attach';
+import { attach } from './utils/ethers';
 
 const SUCCESS_CHECK = chalk.green('✔') + ' ';
 const FAILURE_CROSS = chalk.red('✘') + ' ';
@@ -67,6 +67,6 @@ export async function getManifestAdmin(hre: HardhatRuntimeEnvironment, signer?: 
     throw new Error('No ProxyAdmin was found in the network manifest');
   }
 
-  const AdminFactory = await getProxyAdminFactory(signer);
+  const AdminFactory = await getProxyAdminFactory(hre, signer);
   return attach(AdminFactory, proxyAdminAddress);
 }

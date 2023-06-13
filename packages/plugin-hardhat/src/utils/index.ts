@@ -7,3 +7,4 @@ export * from './validations';
 export * from './contract-types';
 export * from './options';
 export * from './initializer-data';
+export { attach, getSigner } from './ethers';

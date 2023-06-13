@@ -5,7 +5,7 @@ import assert from 'assert';
 import { DeployTransaction, Platform } from '.';
 import { waitForDeployment } from '../platform/utils';
 import { Deployment, RemoteDeploymentId, DeployOpts } from '@openzeppelin/upgrades-core';
-import { attach } from './attach';
+import { attach } from './ethers';
 
 /**
  * Gets a contract instance from a deployment, where the deployment may be remote.

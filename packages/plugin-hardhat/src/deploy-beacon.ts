@@ -5,7 +5,7 @@ import { Deployment } from '@openzeppelin/upgrades-core';
 
 import { DeployBeaconOptions, deploy, DeployTransaction, getUpgradeableBeaconFactory, deployBeaconImpl } from './utils';
 import { disablePlatform } from './platform/utils';
-import { attach } from './utils/attach';
+import { attach, getSigner } from './utils/ethers';
 
 export interface DeployBeaconFunction {
   (ImplFactory: ContractFactory, opts?: DeployBeaconOptions): Promise<Contract>;
@@ -17,7 +17,7 @@ export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, platformModule:
 
     const { impl } = await deployBeaconImpl(hre, ImplFactory, opts);
 
-    const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(ImplFactory.runner);
+    const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, getSigner(ImplFactory.runner));
     const beaconDeployment: Deployment & DeployTransaction = await deploy(hre, opts, UpgradeableBeaconFactory, impl);
     const beaconContract = attach(UpgradeableBeaconFactory, beaconDeployment.address);
 
