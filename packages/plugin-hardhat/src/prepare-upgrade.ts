@@ -45,7 +45,7 @@ export async function deployImplForUpgrade(
   ImplFactory: ContractFactory,
   opts: PrepareUpgradeOptions = {},
 ): Promise<DeployedImpl> {
-  const referenceAddress = getContractAddress(referenceAddressOrContract);
+  const referenceAddress = await getContractAddress(referenceAddressOrContract);
   const { provider } = hre.network;
   let deployedImpl;
   if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {

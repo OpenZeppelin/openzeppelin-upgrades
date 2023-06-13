@@ -39,7 +39,7 @@ export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunc
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
-    const address = getContractAddress(addressOrInstance);
+    const address = await getContractAddress(addressOrInstance);
 
     const implAddress = await getImplementationAddressFromProxy(provider, address);
     if (implAddress !== undefined) {
