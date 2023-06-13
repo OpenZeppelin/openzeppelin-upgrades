@@ -39,7 +39,7 @@ test.beforeEach(async t => {
   t.context.Greeter = await ethers.getContractFactory('GreeterPlatform');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterPlatformV2');
   t.context.greeter = await upgrades.deployProxy(t.context.Greeter, { kind: 'transparent' });
-  t.context.proxyAdmin = await upgrades.erc1967.getAdminAddress(t.context.greeter.address);
+  t.context.proxyAdmin = await upgrades.erc1967.getAdminAddress(t.context.await greeter.getAddress());
 });
 
 test.afterEach.always(() => {
@@ -49,12 +49,12 @@ test.afterEach.always(() => {
 test('proposes an upgrade', async t => {
   const { proposeUpgrade, spy, proxyAdmin, greeter, GreeterV2 } = t.context;
 
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2);
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2);
 
   t.is(proposal.url, proposalUrl);
   t.is(proposal.proposalId, proposalId);
   sinon.assert.calledWithExactly(spy, {
-    proxyAddress: greeter.address,
+    proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: proxyAdmin,
     newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
@@ -66,11 +66,11 @@ test('proposes an upgrade', async t => {
 test('proposes an upgrade with approvalProcessId', async t => {
   const { proposeUpgrade, spy, proxyAdmin, greeter, GreeterV2 } = t.context;
 
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { approvalProcessId });
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2, { approvalProcessId });
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(spy, {
-    proxyAddress: greeter.address,
+    proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: proxyAdmin,
     newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
@@ -82,12 +82,12 @@ test('proposes an upgrade with approvalProcessId', async t => {
 test('proposes an upgrade reusing prepared implementation', async t => {
   const { proposeUpgrade, spy, proxyAdmin, greeter, GreeterV2 } = t.context;
 
-  const greeterV2Impl = await upgrades.prepareUpgrade(greeter.address, GreeterV2);
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2);
+  const greeterV2Impl = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV2);
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2);
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(spy, {
-    proxyAddress: greeter.address,
+    proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: proxyAdmin,
     newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
     newImplementationAddress: greeterV2Impl,

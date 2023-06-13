@@ -22,7 +22,7 @@ test('get contract instance - tx hash not updated', async t => {
   const first = await GreeterProxiable.deploy();
 
   const deployment = {
-    address: first.address,
+    address: await first.getAddress(),
     txHash: first.deployTransaction.hash,
     deployTransaction: first.deployTransaction,
     remoteDeploymentId: DEPLOYMENT_ID,
@@ -38,7 +38,7 @@ test('get contract instance - tx hash not updated', async t => {
   }).getContractInstance;
 
   const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { usePlatformDeploy: true }, deployment);
-  await stubbedInstance.deployed();
+  await stubbedInstance.waitForDeployment();
 
   t.is(waitStub.callCount, 1);
 
@@ -57,7 +57,7 @@ test('get contract instance - tx hash updated', async t => {
   t.not(first.deployTransaction.hash, second.deployTransaction.hash);
 
   const deployment = {
-    address: first.address,
+    address: await first.getAddress(),
     txHash: first.deployTransaction.hash,
     deployTransaction: first.deployTransaction,
     remoteDeploymentId: DEPLOYMENT_ID,
@@ -79,7 +79,7 @@ test('get contract instance - tx hash updated', async t => {
   t.is(stubbedInstance.deployTransaction.hash, first.deployTransaction.hash);
   t.not(stubbedInstance.deployTransaction.hash, second.deployTransaction.hash);
 
-  await stubbedInstance.deployed();
+  await stubbedInstance.waitForDeployment();
 
   t.is(waitStub.callCount, 1);
 

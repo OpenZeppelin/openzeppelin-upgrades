@@ -11,7 +11,7 @@ test('without flag', async t => {
   const safeMathLib = await deployLibrary('SafeMath');
 
   // Attempting to Deploy Token
-  const Token = await getLinkedContractFactory('Token', { SafeMath: safeMathLib.address });
+  const Token = await getLinkedContractFactory('Token', { SafeMath: await safeMathLib.getAddress() });
   await t.throwsAsync(
     () => upgrades.deployProxy(Token, ['TKN', 10000], { kind: 'transparent' }),
     undefined,
@@ -29,7 +29,7 @@ test('with flag', async t => {
   const safePctLib = await deployLibrary('SafePercent');
 
   // Deploying Token
-  const Token = await getLinkedContractFactory('Token', { SafeMath: safeMathLib.address });
+  const Token = await getLinkedContractFactory('Token', { SafeMath: await safeMathLib.getAddress() });
   const token = await upgrades.deployProxy(Token, ['TKN', 10000], {
     kind: 'transparent',
     unsafeAllow: ['external-library-linking'],
@@ -39,7 +39,7 @@ test('with flag', async t => {
   t.is('V1', await token.getLibraryVersion());
 
   // Deploying Token with different Library
-  const TokenNew = await getLinkedContractFactory('Token', { SafeMath: safeMathLib2.address });
+  const TokenNew = await getLinkedContractFactory('Token', { SafeMath: await safeMathLib2.getAddress() });
   const tokenNew = await upgrades.deployProxy(TokenNew, ['TKN', 5000], {
     kind: 'transparent',
     unsafeAllow: ['external-library-linking'],
@@ -49,35 +49,35 @@ test('with flag', async t => {
   t.is('V2', await tokenNew.getLibraryVersion());
 
   // Attempting to upgrade to TokenV2 using same library
-  const TokenV2 = await getLinkedContractFactory('TokenV2', { SafeMath: safeMathLib.address });
+  const TokenV2 = await getLinkedContractFactory('TokenV2', { SafeMath: await safeMathLib.getAddress() });
   const token2 = await upgrades.upgradeProxy(token, TokenV2, {
     unsafeAllow: ['external-library-linking'],
   });
 
-  t.is(token.address, token2.address);
+  t.is(await token.getAddress(), await token2.getAddress());
   t.is('10000', (await token2.totalSupply()).toString());
   t.is('V1', await token2.getLibraryVersion());
 
   // Attempting to upgrade to same TokenV2 using different library
-  const TokenV2New = await getLinkedContractFactory('TokenV2', { SafeMath: safeMathLib2.address });
+  const TokenV2New = await getLinkedContractFactory('TokenV2', { SafeMath: await safeMathLib2.getAddress() });
   const token2New = await upgrades.upgradeProxy(token, TokenV2New, {
     unsafeAllow: ['external-library-linking'],
   });
 
-  t.is(token.address, token2New.address);
+  t.is(await token.getAddress(), await token2New.getAddress());
   t.is('10000', (await token2New.totalSupply()).toString());
   t.is('V2', await token2New.getLibraryVersion());
 
   // Attempting to upgrade to LibraryTesterV3 using multiple libraries
   const TokenV3 = await getLinkedContractFactory('TokenV3', {
-    SafeMath: safeMathLib.address,
-    SafePercent: safePctLib.address,
+    SafeMath: await safeMathLib.getAddress(),
+    SafePercent: await safePctLib.getAddress(),
   });
   const token3 = await upgrades.upgradeProxy(token, TokenV3, {
     unsafeAllow: ['external-library-linking'],
   });
 
-  t.is(token.address, token3.address);
+  t.is(await token.getAddress(), await token3.getAddress());
   t.is('10000', (await token3.totalSupply()).toString());
   t.is('V1', await token3.getLibraryVersion());
 
@@ -113,7 +113,7 @@ function linkBytecode(artifact, libraries) {
 async function deployLibrary(libraryName) {
   const Library = await ethers.getContractFactory(libraryName);
   const library = await Library.deploy();
-  await library.deployed();
+  await library.waitForDeployment();
   return library;
 }
 

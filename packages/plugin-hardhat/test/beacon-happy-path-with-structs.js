@@ -13,10 +13,10 @@ test.before(async t => {
 test('deployBeaconProxy', async t => {
   const { Portfolio } = t.context;
   const beacon = await upgrades.deployBeacon(Portfolio);
-  await beacon.deployed();
+  await beacon.waitForDeployment();
 
   const portfolio = await upgrades.deployBeaconProxy(beacon, Portfolio, []);
-  await portfolio.deployed();
+  await portfolio.waitForDeployment();
 
   await portfolio.enable('ETH');
 });
@@ -24,14 +24,14 @@ test('deployBeaconProxy', async t => {
 test('upgradeBeacon', async t => {
   const { Portfolio, PortfolioV2 } = t.context;
   const beacon = await upgrades.deployBeacon(Portfolio);
-  await beacon.deployed();
+  await beacon.waitForDeployment();
 
   const portfolio = await upgrades.deployBeaconProxy(beacon, Portfolio, []);
-  await portfolio.deployed();
+  await portfolio.waitForDeployment();
 
   await upgrades.upgradeBeacon(beacon, PortfolioV2);
 
-  const portfolio2 = PortfolioV2.attach(portfolio.address);
+  const portfolio2 = PortfolioV2.attach(await portfolio.getAddress());
   await portfolio2.enable('ETH');
 });
 
