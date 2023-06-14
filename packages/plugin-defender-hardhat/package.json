@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-defender",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "description": "Hardhat plugin to propose smart contract upgrades on OpenZeppelin Defender",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-defender-hardhat",
   "license": "MIT",
@@ -31,9 +31,9 @@
     "sinon": "^15.0.0"
   },
   "dependencies": {
-    "@openzeppelin/hardhat-upgrades": "^1.20.0",
     "@openzeppelin/defender-admin-client": "^1.46.0",
     "@openzeppelin/defender-base-client": "^1.46.0",
+    "@openzeppelin/hardhat-upgrades": "^1.20.0",
     "ethereumjs-util": "^7.1.5"
   }
 }
