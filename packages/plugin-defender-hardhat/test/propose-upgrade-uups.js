@@ -5,7 +5,7 @@ const proxyquire = require('proxyquire').noCallThru();
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
 const { FormatTypes } = require('ethers/lib/utils');
-const { AdminClient } = require('defender-admin-client');
+const { AdminClient } = require('@openzeppelin/defender-admin-client');
 
 const proposalUrl = 'https://example.com';
 const multisig = '0xc0889725c22e2e36c524F41AECfddF5650432464';

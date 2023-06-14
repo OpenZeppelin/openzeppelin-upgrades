@@ -6,7 +6,7 @@ import {
   isTransparentOrUUPSProxy,
   isTransparentProxy,
 } from '@openzeppelin/upgrades-core';
-import { ProposalResponse } from 'defender-admin-client';
+import { ProposalResponse } from '@openzeppelin/defender-admin-client';
 import { ContractFactory, ethers } from 'ethers';
 import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';

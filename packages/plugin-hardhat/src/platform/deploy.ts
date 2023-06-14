@@ -3,7 +3,7 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { DeploymentResponse, SourceCodeLicense } from 'platform-deploy-client';
+import { DeploymentResponse, SourceCodeLicense } from '@openzeppelin/platform-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -90,7 +90,7 @@ export async function platformDeploy(
       licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
       constructorInputs: constructorArgs,
       verifySourceCode: verifySourceCode,
-      walletId: opts.walletId,
+      relayerId: opts.relayerId,
       salt: opts.salt,
     });
   } catch (e: any) {

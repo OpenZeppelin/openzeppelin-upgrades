@@ -1,15 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- **Breaking change**: Rename `walletId` option to `relayerId` for OpenZeppelin Platform deployments. Update dependencies. ([#806](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/806))
+
+**Note**: OpenZeppelin Platform is in beta and its functionality is subject to change.
+
 ## 1.27.0 (2023-05-26)
 
 - Support `salt` option for deployments on OpenZeppelin Platform. ([#799](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/799))
 - Add `redeployImplementation` option, deprecate `useDeployedImplementation`. ([#804](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/804))
 
-**Note**: OpenZeppelin Platform is currently in beta and functionality related to it is subject to change.
+**Note**: OpenZeppelin Platform is in beta and its functionality is subject to change.
 
 ## 1.26.0 (2023-05-15)
 
-- Improve OpenZeppelin Platform functions. ([#791](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/791))
+- **Breaking change**: Improve OpenZeppelin Platform functions. ([#791](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/791))
 
 **Note**: Some OpenZeppelin Platform functions have breaking changes since the previous release. See ([#791](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/791)) for details. OpenZeppelin Platform is in beta and its functionality is subject to change.
 
@@ -29,7 +35,7 @@
 
 - Enable using OpenZeppelin Platform for deployments. ([#763](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/763))
 
-**Note**: OpenZeppelin Platform is currently in beta and functionality related to it is subject to change.
+**Note**: OpenZeppelin Platform is in beta and its functionality is subject to change.
 
 ## 1.24.0 (2023-05-03)
 
