@@ -15,7 +15,11 @@ export class ProjectReport implements Report {
       const lines = this.upgradeableContractReports.map(r => r.explain(color));
       const numFailed = this.numTotal - this.numPassed;
       const plural = numFailed === 1 ? '' : 's';
-      lines.push(`${numFailed} contract${plural} out of ${this.numTotal} failed safety checks.`);
+      const status = this.ok ? 'SUCCESS' : 'FAILED';
+
+      lines.push(
+        `${status} (${this.numTotal} upgradeable contract${plural} detected, ${this.numPassed} passed, ${numFailed} failed)`,
+      );
       return lines.join('\n\n');
     }
   }
