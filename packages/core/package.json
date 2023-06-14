@@ -29,7 +29,11 @@
     "prepublishOnly": "bash scripts/copy-artifacts.sh",
     "test": "tsc -b && hardhat compile --force && node scripts/copy-build-info.js && ava",
     "test:watch": "hardhat compile --force && fgbg 'ava --watch' 'tsc -b --watch' --",
-    "version": "node ../../scripts/bump-changelog.js"
+    "version": "node ../../scripts/bump-changelog.js",
+    "cli": "node ./dist/cli/cli.js"
+  },
+  "bin": {
+    "openzeppelin-upgrades-core": "./dist/cli/cli.js"
   },
   "devDependencies": {
     "@ava/typescript": "^2.0.0",
@@ -58,6 +62,7 @@
     "debug": "^4.1.1",
     "ethereumjs-util": "^7.0.3",
     "proper-lockfile": "^4.1.1",
-    "solidity-ast": "^0.4.15"
+    "solidity-ast": "^0.4.15",
+    "minimist": "^1.2.7"
   }
 }
