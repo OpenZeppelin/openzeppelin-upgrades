@@ -5,10 +5,9 @@
 * xref:writing-upgradeable.adoc[Writing Upgradeable Contracts]
 * xref:proxies.adoc[Proxy Upgrade Pattern]
 * xref:network-files.adoc[Network Files]
-* xref:migrate-from-cli.adoc[Migrate from CLI]
 * xref:faq.adoc[Frequently Asked Questions]
 
 .API Reference
 * xref:api-truffle-upgrades.adoc[Truffle Upgrades]
 * xref:api-hardhat-upgrades.adoc[Hardhat Upgrades]
-* xref:api-core.adoc[Core]
+* xref:api-core.adoc[Upgrades Core & CLI]

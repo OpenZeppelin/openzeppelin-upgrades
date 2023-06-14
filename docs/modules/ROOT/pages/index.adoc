@@ -19,7 +19,7 @@ TIP: Upgrades Plugins are only a part of a comprehensive set of OpenZeppelin too
 
 [source,console]
 ----
-$ npm install --save-dev @openzeppelin/hardhat-upgrades @nomiclabs/hardhat-ethers ethers
+$ npm install --save-dev @openzeppelin/hardhat-upgrades '@nomiclabs/hardhat-ethers@^2.0.0' 'ethers@^5.0.0'
 ----
 
 This installs our Hardhat plugin along with the necessary peer dependencies.

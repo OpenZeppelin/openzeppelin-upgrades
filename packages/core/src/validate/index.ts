@@ -12,6 +12,7 @@ export {
   getErrors,
   isUpgradeSafe,
   inferProxyKind,
+  inferInitializable,
 } from './query';
 export { UpgradeableContractErrorReport } from './report';
 
