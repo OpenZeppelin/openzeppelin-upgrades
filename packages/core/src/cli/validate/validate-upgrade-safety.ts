@@ -16,7 +16,7 @@ export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'>;
  *
  * @param buildInfoDir Absolute path of build info directory, or undefined to use the default Hardhat or Foundry build-info dir.
  * @param opts Validation options, or undefined to use the default validation options.
- * @returns The validation result.
+ * @returns The project report.
  */
 export async function validateUpgradeSafety(
   buildInfoDir?: string,
