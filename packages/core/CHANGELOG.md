@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.27.0 (2023-06-14)
 
 - Add CLI for upgrade safety checks. ([#807](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/807))
 
