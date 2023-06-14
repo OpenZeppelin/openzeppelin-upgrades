@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import { UpgradeableContractReport } from './contract-report';
 import { Report } from '../../standalone';
 

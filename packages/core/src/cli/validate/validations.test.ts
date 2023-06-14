@@ -37,6 +37,7 @@ function assertReport(
   } else if (valid === true) {
     t.true(report !== undefined);
     t.true(report?.ok);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     t.regex(report!.explain(), /✔/);
   } else if (valid === false) {
     t.true(report !== undefined);
