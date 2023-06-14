@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 
 const hre = require('hardhat');
-const { AdminClient } = require('defender-admin-client');
+const { AdminClient } = require('@openzeppelin/defender-admin-client');
 
 const address = '0x0dB58eF1B0F7Bb3d70177bcBFd31BC557fbE8b2A';
 const artifactUri = 'http://example.com/artifact.json';

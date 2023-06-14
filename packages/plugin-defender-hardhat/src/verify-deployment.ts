@@ -1,5 +1,5 @@
 import '@openzeppelin/hardhat-upgrades/dist/type-extensions';
-import { AdminClient, VerificationRequest } from 'defender-admin-client';
+import { AdminClient, VerificationRequest } from '@openzeppelin/defender-admin-client';
 import { Artifact, BuildInfo, CompilerOutputBytecode, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getAdminClient, getNetwork } from './utils';
 import { sha256FromString } from 'ethereumjs-util';

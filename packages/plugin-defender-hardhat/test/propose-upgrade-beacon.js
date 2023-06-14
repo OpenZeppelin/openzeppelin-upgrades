@@ -4,7 +4,7 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
-const { AdminClient } = require('defender-admin-client');
+const { AdminClient } = require('@openzeppelin/defender-admin-client');
 
 const proposalUrl = 'https://example.com';
 

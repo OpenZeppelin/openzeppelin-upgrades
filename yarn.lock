@@ -2192,6 +2192,28 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.8.3.tgz#cbef3146bfc570849405f59cba18235da95a252a"
   integrity sha512-bQHV8R9Me8IaJoJ2vPG4rXcL7seB7YVuskr4f+f5RyOStSZetwzkWtoqDMl5erkBJy0lDRUnIR2WIkPiC0GJlg==
 
+"@openzeppelin/defender-admin-client@^1.46.0":
+  version "1.46.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-admin-client/-/defender-admin-client-1.46.0.tgz#b8af0269bda215a01108ce04d2bc6db872d84367"
+  integrity sha512-ZOt8z6Vce3vC1CgwZ3wt5paepfw1EHNcb0hssLkrbXBNeANcHI8e37p+VE6/DdEECoAKdQj2qQwggcsPqc19OQ==
+  dependencies:
+    "@openzeppelin/defender-base-client" "1.46.0"
+    axios "^0.21.2"
+    ethers "^5.7.2"
+    lodash "^4.17.19"
+    node-fetch "^2.6.0"
+
+"@openzeppelin/defender-base-client@1.46.0", "@openzeppelin/defender-base-client@^1.46.0":
+  version "1.46.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-base-client/-/defender-base-client-1.46.0.tgz#aa5177f8fbad23fd03d78f3dbe06664bbe9333ff"
+  integrity sha512-EMnVBcfE6ZN5yMxfaxrFF3eqyGp2RQp3oSRSRP+R3yuCRJf8VCc2ArdZf1QPmQQzbq70nl8EZa03mmAqPauNlQ==
+  dependencies:
+    amazon-cognito-identity-js "^6.0.1"
+    async-retry "^1.3.3"
+    axios "^0.21.2"
+    lodash "^4.17.19"
+    node-fetch "^2.6.0"
+
 "@openzeppelin/docs-utils@^0.1.0":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/docs-utils/-/docs-utils-0.1.3.tgz#12a42535ba0fd51ebbf9d72bcc8b601e3a42a803"
@@ -2206,6 +2228,17 @@
     js-yaml "^3.13.1"
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
+
+"@openzeppelin/platform-deploy-client@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/platform-deploy-client/-/platform-deploy-client-0.8.0.tgz#af6596275a19c283d6145f0128cc1247d18223c1"
+  integrity sha512-POx3AsnKwKSV/ZLOU/gheksj0Lq7Is1q2F3pKmcFjGZiibf+4kjGxr4eSMrT+2qgKYZQH1ZLQZ+SkbguD8fTvA==
+  dependencies:
+    "@ethersproject/abi" "^5.6.3"
+    "@openzeppelin/defender-base-client" "^1.46.0"
+    axios "^0.21.2"
+    lodash "^4.17.19"
+    node-fetch "^2.6.0"
 
 "@parcel/watcher@2.0.4":
   version "2.0.4"
@@ -3305,17 +3338,6 @@ ajv@^8.0.0, ajv@^8.0.1, ajv@^8.6.3:
     json-schema-traverse "^1.0.0"
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
-
-amazon-cognito-identity-js@^4.3.3:
-  version "4.6.3"
-  resolved "https://registry.yarnpkg.com/amazon-cognito-identity-js/-/amazon-cognito-identity-js-4.6.3.tgz#889410379a5fc5e883edc95f4ce233cc628e354c"
-  integrity sha512-MPVJfirbdmSGo7l4h7Kbn3ms1eJXT5Xq8ly+mCPPi8yAxaxdg7ouMUUNTqtDykoZxIdDLF/P6F3Zbg3dlGKOWg==
-  dependencies:
-    buffer "4.9.2"
-    crypto-js "^4.0.0"
-    fast-base64-decode "^1.0.0"
-    isomorphic-unfetch "^3.0.0"
-    js-cookie "^2.2.1"
 
 amazon-cognito-identity-js@^6.0.1:
   version "6.1.2"
@@ -4978,11 +5000,6 @@ crypto-browserify@3.12.0:
     randombytes "^2.0.0"
     randomfill "^1.0.3"
 
-crypto-js@^4.0.0:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.1.1.tgz#9e485bcf03521041bd85844786b83fb7619736cf"
-  integrity sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==
-
 css-select@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/css-select/-/css-select-5.1.0.tgz#b8ebd6554c3637ccc76688804ad3f6a6fdaea8a6"
@@ -5148,38 +5165,6 @@ defaults@^1.0.3:
   integrity sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==
   dependencies:
     clone "^1.0.2"
-
-defender-admin-client@^1.29.0-rc.1:
-  version "1.37.0"
-  resolved "https://registry.yarnpkg.com/defender-admin-client/-/defender-admin-client-1.37.0.tgz#d4b6cc6c7ebaa9aab138f39b10572018c25dc9a1"
-  integrity sha512-0I0n+LUo4X75uiy/Sd5V5Qv1HwhmIvC++uswxx8xnQ0VUK+y0ic0uMk/8ACrItH/9EGH2YrURNm8ZGg9AY1K5A==
-  dependencies:
-    axios "^0.21.2"
-    defender-base-client "1.37.0"
-    lodash "^4.17.19"
-    node-fetch "^2.6.0"
-
-defender-base-client@1.37.0, defender-base-client@^1.3.1:
-  version "1.37.0"
-  resolved "https://registry.yarnpkg.com/defender-base-client/-/defender-base-client-1.37.0.tgz#22f63357ac99c2c8f64eab6e52c99ef113c62d3a"
-  integrity sha512-V6tU0q8/n1/m/edT2FlTvUmZn6u5/A64FqYQfrMgg4PEy1TvYCz9tF+3dnGjk+sJrzICAv0GQWwLw/+8uRq2mg==
-  dependencies:
-    amazon-cognito-identity-js "^4.3.3"
-    async-retry "^1.3.3"
-    axios "^0.21.2"
-    lodash "^4.17.19"
-    node-fetch "^2.6.0"
-
-defender-base-client@^1.44.0:
-  version "1.44.0"
-  resolved "https://registry.yarnpkg.com/defender-base-client/-/defender-base-client-1.44.0.tgz#afe724447c0f9177b999b70b9f14dd70d61d5a7a"
-  integrity sha512-8ZgGA93+FlxNwG9LN1nu/Au5AyCKwAWJGNf0VLiPmh4GX/Nali/7kv72K+OtZgGxTLtKDKfgN4cnhEZwfrc8dg==
-  dependencies:
-    amazon-cognito-identity-js "^6.0.1"
-    async-retry "^1.3.3"
-    axios "^0.21.2"
-    lodash "^4.17.19"
-    node-fetch "^2.6.0"
 
 defer-to-connect@^2.0.0, defer-to-connect@^2.0.1:
   version "2.0.1"
@@ -5873,7 +5858,7 @@ ethers@^4.0.32:
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
 
-ethers@^5.0.13, ethers@^5.0.5:
+ethers@^5.0.13, ethers@^5.0.5, ethers@^5.7.2:
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.7.2.tgz#3a7deeabbb8c030d4126b24f84e525466145872e"
   integrity sha512-wswUsmWo1aOK8rR7DIKiWSw9DbLWe6x98Jrn8wcTflTVvaXhAMaB5zGAXy0GYQEQp9iO1iSHWVyARQm11zUtyg==
@@ -9755,17 +9740,6 @@ pkg-up@^3.1.0:
   integrity sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA==
   dependencies:
     find-up "^3.0.0"
-
-platform-deploy-client@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/platform-deploy-client/-/platform-deploy-client-0.6.0.tgz#1f7a59d0cbae2e78f65ad253d7cc1aff67e3de0e"
-  integrity sha512-mBfnOvF2gb9acGJjlXBQ6VOAkKFRdljsNKHUVY5xKqzKP2PNh/RqCIvi5AR5NqLMrQ3XaMIwRvmwAjtGw7JhYg==
-  dependencies:
-    "@ethersproject/abi" "^5.6.3"
-    axios "^0.21.2"
-    defender-base-client "^1.44.0"
-    lodash "^4.17.19"
-    node-fetch "^2.6.0"
 
 plur@^5.1.0:
   version "5.1.0"

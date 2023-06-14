@@ -8,14 +8,14 @@ import {
   UpgradesError,
 } from '@openzeppelin/upgrades-core';
 
-import { Network, fromChainId } from 'defender-base-client';
+import { Network, fromChainId } from '@openzeppelin/defender-base-client';
 import {
   BlockExplorerApiKeyClient,
   DeploymentClient,
   DeploymentConfigClient,
   PlatformClient,
   UpgradeClient,
-} from 'platform-deploy-client';
+} from '@openzeppelin/platform-deploy-client';
 
 import { HardhatPlatformConfig } from '../type-extensions';
 import { Platform } from '../utils';
