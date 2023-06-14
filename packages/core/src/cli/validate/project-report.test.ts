@@ -5,7 +5,6 @@ import _test, { TestFn } from 'ava';
 import { ContractDefinition } from 'solidity-ast';
 import { findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
-import sinon from 'sinon';
 
 import { SolcOutput } from '../../solc-api';
 import { astDereferencer } from '../../ast-dereferencer';
@@ -36,10 +35,6 @@ test.before(async t => {
   t.context.extractStorageLayout = name => extractStorageLayout(contracts[name], dummyDecodeSrc, deref);
 });
 
-test.afterEach.always(() => {
-  sinon.restore();
-});
-
 function getLayoutReport(original: StorageLayout, updated: StorageLayout) {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
@@ -47,25 +42,15 @@ function getLayoutReport(original: StorageLayout, updated: StorageLayout) {
   return comparator.compareLayouts(originalDetailed, updatedDetailed);
 }
 
-test.serial('get project report - ok - no upgradeable', async t => {
-  const consoleLog = sinon.stub(console, 'log');
-  const consoleError = sinon.stub(console, 'error');
-
+test('get project report - ok - no upgradeable', async t => {
   const report = getProjectReport([]);
-  t.is(consoleLog.callCount, 1);
-  t.regex(consoleLog.getCall(0).args[0], /No upgradeable contracts detected/);
-  t.is(consoleError.callCount, 0);
-
   t.true(report.ok);
   t.is(report.numPassed, 0);
   t.is(report.numTotal, 0);
-  t.is(report.explain(), '');
+  t.is(report.explain(), 'No upgradeable contracts detected.');
 });
 
-test.serial('get project report - ok - console', async t => {
-  const consoleLog = sinon.stub(console, 'log');
-  const consoleError = sinon.stub(console, 'error');
-
+test('get project report - ok - console', async t => {
   const report = getProjectReport([
     new UpgradeableContractReport(
       'mypath/MyContract.sol:MyContract1',
@@ -74,23 +59,17 @@ test.serial('get project report - ok - console', async t => {
       undefined,
     ),
   ]);
-  t.is(consoleLog.callCount, 1);
-  t.regex(consoleLog.getCall(0).args[0], /completed successfully/);
-  t.is(consoleError.callCount, 0);
 
   t.true(report.ok);
   t.is(report.numPassed, 1);
   t.is(report.numTotal, 1);
-  t.is(report.explain(), '');
+  t.regex(report.explain(), /0 contracts out of 1 failed/);
 });
 
-test.serial('get project report - errors - console', async t => {
+test('get project report - errors - console', async t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Replace_V1');
   const v2 = t.context.extractStorageLayout('StorageUpgrade_Replace_V2');
   const layoutReport = getLayoutReport(v1, v2);
-
-  const consoleLog = sinon.stub(console, 'log');
-  const consoleError = sinon.stub(console, 'error');
 
   const report = getProjectReport([
     new UpgradeableContractReport(
@@ -110,11 +89,6 @@ test.serial('get project report - errors - console', async t => {
     ),
     new UpgradeableContractReport('MyContract2', 'MyContract', new UpgradeableContractErrorReport([]), layoutReport),
   ]);
-  t.is(consoleLog.callCount, 0);
-  t.is(consoleError.callCount, 3);
-  t.regex(consoleError.getCall(0).args[0], /===/);
-  t.regex(consoleError.getCall(1).args[0], /Upgrade safety checks completed with the following errors:/);
-  t.true(consoleError.getCall(2).args[0].includes(report.explain()));
 
   t.false(report.ok);
   t.is(report.numPassed, 0);
@@ -122,7 +96,7 @@ test.serial('get project report - errors - console', async t => {
   t.snapshot(report.explain());
 });
 
-test.serial('get project report - some passed', async t => {
+test('get project report - some passed', async t => {
   const report = getProjectReport([
     new UpgradeableContractReport(
       'mypath/MyContract.sol:MyContract1',

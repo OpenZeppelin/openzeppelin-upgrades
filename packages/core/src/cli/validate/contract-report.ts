@@ -16,6 +16,7 @@ import { Report } from '../../standalone';
 import { getUpgradeabilityAssessment } from './upgradeability-assessment';
 import { SourceContract } from './validations';
 import { LayoutCompatibilityReport } from '../../storage/report';
+import { indent } from '../../utils/indent';
 
 /**
  * Report for an upgradeable contract.
@@ -37,54 +38,21 @@ export class UpgradeableContractReport implements Report {
    * Explain any errors in the report.
    */
   explain(color = true): string {
-    if (this.ok) {
-      return '';
-    } else {
-      const result: string[] = [];
-      if (this.reference === undefined) {
-        result.push(`- ${this.contract}`);
-      } else {
-        result.push(`- ${this.contract} (upgrades from ${this.reference})`);
-      }
-      result.push(this.explainChildren(4, color));
-      return result.join('\n\n');
-    }
-  }
-
-  /**
-   * Log the report to the console, including pass/fail status and any errors.
-   */
-  log(): void {
-    if (this.ok) {
-      if (this.reference === undefined) {
-        console.log(` ${_chalk.green('✔')}  ${this.contract}`);
-      } else {
-        console.log(` ${_chalk.green('✔')}  ${this.contract} (upgrades from ${this.reference})`);
-      }
-    } else {
-      if (this.reference === undefined) {
-        console.error(` ${_chalk.red('✘')}  ${this.contract}`);
-      } else {
-        console.error(` ${_chalk.red('✘')}  ${this.contract} (upgrades from ${this.reference})`);
-      }
-      console.error(`\n${this.explainChildren(6)}\n`);
-    }
-  }
-
-  private explainChildren(indentSpaces: number, color = true): string {
     const result: string[] = [];
+    const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
+    const icon = this.ok ? chalk.green('✔') : chalk.red('✘');
+    if (this.reference === undefined) {
+      result.push(` ${icon}  ${this.contract}`);
+    } else {
+      result.push(` ${icon}  ${this.contract} (upgrades from ${this.reference})`);
+    }
     if (!this.standaloneReport.ok) {
-      result.push(this.standaloneReport.explain(color));
+      result.push(indent(this.standaloneReport.explain(color), 6));
     }
     if (this.storageLayoutReport !== undefined && !this.storageLayoutReport.ok) {
-      result.push(this.storageLayoutReport.explain(color));
+      result.push(indent(this.storageLayoutReport.explain(color), 6));
     }
-    return this.indent(result.join('\n\n'), indentSpaces);
-  }
-
-  private indent(str: string, numSpaces: number): string {
-    const spaces = ' '.repeat(numSpaces);
-    return str.replace(/^/gm, spaces);
+    return result.join('\n\n');
   }
 }
 
@@ -108,7 +76,6 @@ export function getContractReports(sourceContracts: SourceContract[], opts: Vali
 
       const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind });
       if (report !== undefined) {
-        report.log();
         upgradeableContractReports.push(report);
       }
     }

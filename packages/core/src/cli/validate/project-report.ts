@@ -10,14 +10,15 @@ export class ProjectReport implements Report {
   }
 
   explain(color = true): string {
-    const lines: string[] = [];
-    for (const r of this.upgradeableContractReports) {
-      const explain = r.explain(color);
-      if (explain !== '') {
-        lines.push(explain);
-      }
+    if (this.numTotal === 0) {
+      return 'No upgradeable contracts detected.';
+    } else {
+      const lines = this.upgradeableContractReports.map(r => r.explain(color));
+      const numFailed = this.numTotal - this.numPassed;
+      const plural = numFailed === 1 ? '' : 's';
+      lines.push(`${numFailed} contract${plural} out of ${this.numTotal} failed safety checks.`);
+      return lines.join('\n\n');
     }
-    return lines.join('\n\n');
   }
 
   /**
@@ -36,19 +37,5 @@ export class ProjectReport implements Report {
 }
 
 export function getProjectReport(upgradeableContractReports: UpgradeableContractReport[]): ProjectReport {
-  const projectReport = new ProjectReport(upgradeableContractReports);
-
-  if (projectReport.ok) {
-    if (projectReport.numTotal === 0) {
-      console.log('\nNo upgradeable contracts detected.');
-    } else {
-      console.log('\nUpgrade safety checks completed successfully.');
-    }
-  } else {
-    console.error(chalk.bold('\n=========================================================='));
-    console.error(chalk.bold('\nUpgrade safety checks completed with the following errors:'));
-    console.error(`\n${projectReport.explain()}`);
-  }
-
-  return projectReport;
+  return new ProjectReport(upgradeableContractReports);
 }

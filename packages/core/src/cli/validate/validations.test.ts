@@ -37,7 +37,7 @@ function assertReport(
   } else if (valid === true) {
     t.true(report !== undefined);
     t.true(report?.ok);
-    t.is(report?.explain(), '');
+    t.regex(report!.explain(), /✔/);
   } else if (valid === false) {
     t.true(report !== undefined);
     t.false(report?.ok);
