@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- **Breaking change**: Rename `walletId` option to `relayerId` for OpenZeppelin Platform deployments.
+- **Breaking change**: Rename `walletId` option to `relayerId` for OpenZeppelin Platform deployments. Update dependencies. ([#806](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/806))
 
 **Note**: OpenZeppelin Platform is in beta and its functionality is subject to change.
 
