@@ -5,23 +5,27 @@ import path from 'path';
 import { ValidateCommandError } from './error';
 
 const HARDHAT_COMPILE_COMMAND = 'npx hardhat clean && npx hardhat compile';
-const FOUNDRY_COMPILE_COMMAND = 'forge clean && forge build --build-info --extra-output storageLayout';
+const FOUNDRY_COMPILE_COMMAND = 'forge clean && forge build';
 const STORAGE_LAYOUT_HELP = `\
 If using Hardhat, include the 'storageLayout' output selection in your Hardhat config:
-module.exports = {
-  solidity: {
-    settings: {
-      outputSelection: {
-        '*': {
-          '*': ['storageLayout'],
+  module.exports = {
+    solidity: {
+      settings: {
+        outputSelection: {
+          '*': {
+            '*': ['storageLayout'],
+          },
         },
       },
     },
-  },
-};
+  };
 Then recompile your contracts with '${HARDHAT_COMPILE_COMMAND}' and try again.
 
-If using Foundry, recompile your contracts with '${FOUNDRY_COMPILE_COMMAND}' and try again.`;
+If using Foundry, include the "storageLayout" extra output in foundry.toml:
+  [profile.default]
+  build_info = true
+  extra_output = ["storageLayout"]
+Then recompile your contracts with '${FOUNDRY_COMPILE_COMMAND}' and try again.`;
 
 /**
  * A build info file containing Solidity compiler input and output JSON objects.
@@ -54,8 +58,9 @@ async function findDir(buildInfoDir: string | undefined) {
   if (buildInfoDir !== undefined && !(await hasJsonFiles(buildInfoDir))) {
     throw new ValidateCommandError(
       `The directory '${buildInfoDir}' does not exist or does not contain any build info files.`,
-      () =>
-        `Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}' and try again with the correct path to the build info directory.`,
+      () => `\
+If using Foundry, ensure your foundry.toml file has build_info = true.
+Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}' and try again with the correct path to the build info directory.`,
     );
   }
   const dir = buildInfoDir ?? (await findDefaultDir());
