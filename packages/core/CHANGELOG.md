@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.27.1 (2023-06-15)
 
 - Update recommended Foundry config for CLI. ([#818](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/818))
 
