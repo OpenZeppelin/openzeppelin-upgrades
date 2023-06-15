@@ -10,6 +10,7 @@ import {
   getContractNameAndRunValidation,
   inferProxyKind,
   UpgradesError,
+  inferInitializable,
 } from '@openzeppelin/upgrades-core';
 import { getContractInstance } from './utils/contract-instance';
 
@@ -42,8 +43,7 @@ async function deployNonUpgradeableContract(
 function assertNonUpgradeable(deployData: DeployData) {
   const [fullContractName, runValidation] = getContractNameAndRunValidation(deployData.validations, deployData.version);
   const c = runValidation[fullContractName];
-  const inherit = c.inherit;
-  if (hasInitializable(inherit) || inferProxyKind(deployData.validations, deployData.version) === 'uups') {
+  if (inferInitializable(c) || inferProxyKind(deployData.validations, deployData.version) === 'uups') {
     throw new UpgradesError(
       `The contract ${fullContractName} looks like an upgradeable contract.`,
       () =>
@@ -51,15 +51,6 @@ function assertNonUpgradeable(deployData: DeployData) {
         'If this is not intended to be an upgradeable contract, set the unsafeAllowDeployContract option to true and run the deployContract function again.',
     );
   }
-}
-
-/**
- * Whether inherit has any contract that ends with ":Initializable"
- * @param inherit an array of fully qualified contract names
- * @return true if inherit has any contract that ends with ":Initializable"
- */
-function hasInitializable(inherit: string[]) {
-  return inherit.some(c => c.endsWith(':Initializable'));
 }
 
 export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModule: boolean): DeployContractFunction {

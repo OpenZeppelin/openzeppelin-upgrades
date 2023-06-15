@@ -1,5 +1,7 @@
 = Migrate from OpenZeppelin CLI
 
+NOTE: This guide is for migrating from an old CLI which is deprecated.
+
 This guide will walk through migrating a project from the OpenZeppelin CLI to OpenZeppelin Upgrades Plugins for either Truffle or Hardhat.
 
 include::learn::partial$hardhat-truffle-toggle.adoc[]

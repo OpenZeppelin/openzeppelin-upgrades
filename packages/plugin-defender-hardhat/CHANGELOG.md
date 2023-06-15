@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.0 (2023-06-14)
+
+- Update Defender Client dependencies. ([#806](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/806))
+
 ## 1.8.2 (2023-02-14)
 
 - Remove check for beacon in `proposeUpgrade`. ([#745](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/745))

@@ -27,7 +27,7 @@ The following options are common to some functions.
 ** If set to `"onchange"`, the implementation contract is redeployed only if the bytecode has changed from previous deployments.
 * `usePlatformDeploy`: (`boolean`) Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform]. **Note**: OpenZeppelin Platform is in beta and functionality related to Platform is subject to change.
 * `verifySourceCode`: (`boolean`) When using Platform, whether to verify source code on block explorers. Defaults to `true`.
-* `walletId`: (`string`) When using Platform, the ID of the wallet to use for the deployment. Defaults to the wallet configured for your deployment environment on Platform.
+* `relayerId`: (`string`) When using Platform, the ID of the relayer to use for the deployment. Defaults to the relayer configured for your deployment environment on Platform.
 * `salt`: (`string`) When using Platform, deployments are performed using the CREATE2 opcode. Use this option to provide the salt for the deployment. Defaults to a random salt.
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]

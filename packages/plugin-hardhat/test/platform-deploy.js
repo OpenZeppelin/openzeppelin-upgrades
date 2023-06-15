@@ -17,7 +17,7 @@ const DEPLOYMENT_ID = 'abc';
 const ADDRESS = '0x2';
 const TX_RESPONSE = 'mocked response';
 const ETHERSCAN_API_KEY = 'fakeKey';
-const WALLET_ID = '123-abc';
+const RELAYER_ID = '123-abc';
 const SALT = 'customsalt';
 
 const LOGIC_ADDRESS = '0x0000000000000000000000000000000000000003';
@@ -107,21 +107,21 @@ test('calls platform deploy', async t => {
     licenseType: 'None',
     constructorInputs: [],
     verifySourceCode: true,
-    walletId: undefined,
+    relayerId: undefined,
     salt: undefined,
   });
 
   assertResult(t, result);
 });
 
-test('calls platform deploy with walletId', async t => {
+test('calls platform deploy with relayerId', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
-  const result = await deploy.platformDeploy(fakeHre, factory, { walletId: WALLET_ID });
+  const result = await deploy.platformDeploy(fakeHre, factory, { relayerId: RELAYER_ID });
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(spy, {
@@ -132,7 +132,7 @@ test('calls platform deploy with walletId', async t => {
     licenseType: 'None',
     constructorInputs: [],
     verifySourceCode: true,
-    walletId: WALLET_ID,
+    relayerId: RELAYER_ID,
     salt: undefined,
   });
 
@@ -157,7 +157,7 @@ test('calls platform deploy with salt', async t => {
     licenseType: 'None',
     constructorInputs: [],
     verifySourceCode: true,
-    walletId: undefined,
+    relayerId: undefined,
     salt: SALT,
   });
 
@@ -182,7 +182,7 @@ test('calls platform deploy with license', async t => {
     licenseType: 'MIT',
     constructorInputs: [],
     verifySourceCode: true,
-    walletId: undefined,
+    relayerId: undefined,
     salt: undefined,
   });
 
@@ -207,7 +207,7 @@ test('calls platform deploy with constructor args', async t => {
     licenseType: 'MIT',
     constructorInputs: [10],
     verifySourceCode: true,
-    walletId: undefined,
+    relayerId: undefined,
     salt: undefined,
   });
 
@@ -232,7 +232,7 @@ test('calls platform deploy with verify false', async t => {
     licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: false,
-    walletId: undefined,
+    relayerId: undefined,
     salt: undefined,
   });
 
@@ -257,7 +257,7 @@ test('calls platform deploy with ERC1967Proxy', async t => {
     licenseType: 'MIT',
     constructorInputs: [LOGIC_ADDRESS, DATA],
     verifySourceCode: true,
-    walletId: undefined,
+    relayerId: undefined,
     salt: undefined,
   });
 });
@@ -280,7 +280,7 @@ test('calls platform deploy with BeaconProxy', async t => {
     licenseType: 'MIT',
     constructorInputs: [LOGIC_ADDRESS, DATA],
     verifySourceCode: true,
-    walletId: undefined,
+    relayerId: undefined,
     salt: undefined,
   });
 });
@@ -303,7 +303,7 @@ test('calls platform deploy with TransparentUpgradeableProxy', async t => {
     licenseType: 'MIT',
     constructorInputs: [LOGIC_ADDRESS, ADMIN_ADDRESS, DATA],
     verifySourceCode: true,
-    walletId: undefined,
+    relayerId: undefined,
     salt: undefined,
   });
 });

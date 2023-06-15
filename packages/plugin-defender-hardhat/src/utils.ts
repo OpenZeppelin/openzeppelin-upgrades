@@ -1,5 +1,5 @@
-import { AdminClient } from 'defender-admin-client';
-import { fromChainId, Network } from 'defender-base-client';
+import { AdminClient } from '@openzeppelin/defender-admin-client';
+import { fromChainId, Network } from '@openzeppelin/defender-base-client';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 export function getAdminClient(hre: HardhatRuntimeEnvironment): AdminClient {

@@ -55,3 +55,5 @@ export {
   PrepareUpgradeRequiresKindError,
   assertNotProxy,
 } from './usage-error';
+
+export { ValidateUpgradeSafetyOptions, validateUpgradeSafety, ProjectReport, ReferenceContractNotFound } from './cli';
