@@ -1,7 +1,6 @@
 const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
-const { attach } = require('../dist/utils/ethers');
 
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
@@ -47,7 +46,7 @@ test('deploy implementation - happy path', async t => {
   const { Greeter } = t.context;
 
   const greeterImplAddr = await upgrades.deployImplementation(Greeter);
-  const greeter = attach(Greeter, greeterImplAddr);
+  const greeter = Greeter.attach(greeterImplAddr);
   await greeter.greet();
 });
 
@@ -88,7 +87,7 @@ test('deploy implementation - with txresponse', async t => {
 
   t.is(txReceipt.contractAddress, precomputedAddress);
 
-  const greeter = attach(Greeter, txReceipt.contractAddress);
+  const greeter = Greeter.attach(txReceipt.contractAddress);
   await greeter.greet();
 });
 
@@ -283,11 +282,11 @@ test('prepare upgrade on deployed implementation - happy paths', async t => {
 
   const greeter = await upgrades.deployImplementation(Greeter);
   const v2Impl = await upgrades.prepareUpgrade(greeter, GreeterV2, { kind: 'transparent' });
-  await attach(GreeterV2, v2Impl).resetGreeting();
+  await GreeterV2.attach(v2Impl).resetGreeting();
 
   const greeterUUPS = await upgrades.deployImplementation(GreeterProxiable);
   const v2ImplUUPS = await upgrades.prepareUpgrade(greeterUUPS, GreeterV2Proxiable, { kind: 'uups' });
-  await attach(GreeterV2Proxiable, v2ImplUUPS).resetGreeting();
+  await GreeterV2Proxiable.attach(v2ImplUUPS).resetGreeting();
 });
 
 test('prepare upgrade on deployed implementation - incompatible storage', async t => {

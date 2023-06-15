@@ -1,7 +1,6 @@
 const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
-const { attach } = require('../dist/utils/ethers');
 
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
@@ -22,7 +21,7 @@ test('deploy proxy using proper contract factory after external beacon upgrade',
   await greeter2.waitForDeployment();
 
   // external upgrade beacon to impl 2
-  const beaconContract = attach(Beacon, await greeterBeacon.getAddress());
+  const beaconContract = Beacon.attach(await greeterBeacon.getAddress());
   await beaconContract.upgradeTo(await greeter2.getAddress());
 
   // deploy beacon proxy to attach to beacon (which points to impl 2)
@@ -49,11 +48,11 @@ test('manually attach to proxy after external beacon upgrade', async t => {
   await greeter2.waitForDeployment();
 
   // external upgrade beacon to impl 2
-  const beaconContract = attach(Beacon, await greeterBeacon.getAddress());
+  const beaconContract = Beacon.attach(await greeterBeacon.getAddress());
   await beaconContract.upgradeTo(await greeter2.getAddress());
 
   // manually attach to proxy address
-  const manualAttach = attach(GreeterV2, await greeterProxy.getAddress());
+  const manualAttach = GreeterV2.attach(await greeterProxy.getAddress());
   t.is(await manualAttach.greet(), 'Hello, Hardhat!');
   await manualAttach.resetGreeting();
   t.is(await manualAttach.greet(), 'Hello World');

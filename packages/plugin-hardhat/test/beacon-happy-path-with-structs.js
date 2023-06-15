@@ -1,7 +1,6 @@
 const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
-const { attach } = require('../dist/utils/ethers');
 
 upgrades.silenceWarnings();
 
@@ -32,7 +31,7 @@ test('upgradeBeacon', async t => {
 
   await upgrades.upgradeBeacon(beacon, PortfolioV2);
 
-  const portfolio2 = attach(PortfolioV2, await portfolio.getAddress());
+  const portfolio2 = PortfolioV2.attach(await portfolio.getAddress());
   await portfolio2.enable('ETH');
 });
 

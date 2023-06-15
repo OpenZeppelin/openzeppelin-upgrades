@@ -1,7 +1,6 @@
 const test = require('ava');
 
 const { ethers, upgrades, artifacts } = require('hardhat');
-const { attach } = require('../dist/utils/ethers');
 
 const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 
@@ -50,7 +49,7 @@ test('with flag', async t => {
   await upgrades.upgradeBeacon(beacon, TokenV2, {
     unsafeAllow: ['external-library-linking'],
   });
-  const token2 = attach(TokenV2, await token.getAddress());
+  const token2 = TokenV2.attach(await token.getAddress());
 
   t.is(await token.getAddress(), await token2.getAddress());
   t.is('10000', (await token2.totalSupply()).toString());
@@ -61,7 +60,7 @@ test('with flag', async t => {
   await upgrades.upgradeBeacon(beacon, TokenV2New, {
     unsafeAllow: ['external-library-linking'],
   });
-  const token2New = attach(TokenV2New, await token.getAddress());
+  const token2New = TokenV2New.attach(await token.getAddress());
 
   t.is(await token.getAddress(), await token2New.getAddress());
   t.is('10000', (await token2New.totalSupply()).toString());
@@ -75,7 +74,7 @@ test('with flag', async t => {
   await upgrades.upgradeBeacon(beacon, TokenV3, {
     unsafeAllow: ['external-library-linking'],
   });
-  const token3 = attach(TokenV3, await token.getAddress());
+  const token3 = TokenV3.attach(await token.getAddress());
 
   t.is(await token.getAddress(), await token3.getAddress());
   t.is('10000', (await token3.totalSupply()).toString());

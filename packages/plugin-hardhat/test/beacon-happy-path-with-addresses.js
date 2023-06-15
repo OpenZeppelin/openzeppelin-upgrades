@@ -1,7 +1,6 @@
 const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
-const { attach } = require('../dist/utils/ethers');
 
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
@@ -36,19 +35,19 @@ test('happy path - addresses', async t => {
   await upgrades.upgradeBeacon(await greeterBeaconDuplicate.getAddress(), GreeterV3);
 
   // reload proxy to work with the new contract
-  const greeter2 = attach(GreeterV2, await greeter.getAddress());
+  const greeter2 = GreeterV2.attach(await greeter.getAddress());
   t.is(await greeter2.greet(), 'Hello, Hardhat!');
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
 
   // reload proxy to work with the new contract
-  const greeterSecond2 = attach(GreeterV2, await greeterSecond.getAddress());
+  const greeterSecond2 = GreeterV2.attach(await greeterSecond.getAddress());
   t.is(await greeterSecond2.greet(), 'Hello, Hardhat second!');
   await greeterSecond2.resetGreeting();
   t.is(await greeterSecond2.greet(), 'Hello World');
 
   // reload proxy to work with the new contract
-  const greeterThird2 = attach(GreeterV3, await greeterThird.getAddress());
+  const greeterThird2 = GreeterV3.attach(await greeterThird.getAddress());
   t.is(await greeterThird2.greet(), 'Hello, Hardhat third!');
   await greeterThird2.resetGreeting();
   t.is(await greeterThird2.greet(), 'Hello World');
