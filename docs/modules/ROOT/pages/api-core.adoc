@@ -62,7 +62,7 @@ contract MyContractV2 {
 Compile your contracts and ensure that your build is configured to output JSON files with Solidity compiler inputs and outputs in a build info directory. The compiler output must include storage layouts. If any previous build artifacts exist, they must be cleaned first to avoid duplicate contract definitions.
 
 ===== Hardhat
-Configure Hardhat to include the `'storageLayout'` output selection in `hardhat.config.js` or `hardhat.config.ts`:
+Configure `hardhat.config.js` or `hardhat.config.ts` to include storage layout in the output selection:
 [source,js]
 ----
 module.exports = {
@@ -79,18 +79,24 @@ module.exports = {
 ----
 
 Then compile your contracts:
-
 [source,bash]
 ----
 npx hardhat clean && npx hardhat compile
 ----
 
 ===== Foundry
-Run the following command to compile your contracts and generate build info with storage layouts.
+Configure `foundry.toml` to include build info and storage layout:
+[source,toml]
+----
+[profile.default]
+build_info = true
+extra_output = ["storageLayout"]
+----
 
+Then compile your contracts:
 [source,bash]
 ----
-forge clean && forge build --build-info --extra-output storageLayout
+forge clean && forge build
 ----
 
 === Usage
