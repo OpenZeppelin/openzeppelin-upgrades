@@ -8,21 +8,21 @@ import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/cont
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 export async function getProxyFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
-  return new ContractFactory(ERC1967Proxy.abi, ERC1967Proxy.bytecode, signer);
+  return hre.ethers.getContractFactory(ERC1967Proxy.abi, ERC1967Proxy.bytecode, signer);
 }
 
 export async function getTransparentUpgradeableProxyFactory(
   hre: HardhatRuntimeEnvironment,
   signer?: Signer,
 ): Promise<ContractFactory> {
-  return new ContractFactory(TransparentUpgradeableProxy.abi, TransparentUpgradeableProxy.bytecode, signer);
+  return hre.ethers.getContractFactory(TransparentUpgradeableProxy.abi, TransparentUpgradeableProxy.bytecode, signer);
 }
 
 export async function getITransparentUpgradeableProxyFactory(
   hre: HardhatRuntimeEnvironment,
   signer?: Signer,
 ): Promise<ContractFactory> {
-  return new ContractFactory(ITransparentUpgradeableProxy.abi, ITransparentUpgradeableProxy.bytecode, signer);
+  return hre.ethers.getContractFactory(ITransparentUpgradeableProxy.abi, ITransparentUpgradeableProxy.bytecode, signer);
 }
 
 export async function getProxyAdminFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
@@ -30,12 +30,12 @@ export async function getProxyAdminFactory(hre: HardhatRuntimeEnvironment, signe
 }
 
 export async function getBeaconProxyFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
-  return new ContractFactory(BeaconProxy.abi, BeaconProxy.bytecode, signer);
+  return hre.ethers.getContractFactory(BeaconProxy.abi, BeaconProxy.bytecode, signer);
 }
 
 export async function getUpgradeableBeaconFactory(
   hre: HardhatRuntimeEnvironment,
   signer?: Signer,
 ): Promise<ContractFactory> {
-  return new ContractFactory(UpgradeableBeacon.abi, UpgradeableBeacon.bytecode, signer);
+  return hre.ethers.getContractFactory(UpgradeableBeacon.abi, UpgradeableBeacon.bytecode, signer);
 }
