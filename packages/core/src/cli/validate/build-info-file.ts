@@ -60,7 +60,7 @@ async function findDir(buildInfoDir: string | undefined) {
       `The directory '${buildInfoDir}' does not exist or does not contain any build info files.`,
       () => `\
 If using Foundry, ensure your foundry.toml file has build_info = true.
-Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}' and try again with the correct path to the build info directory.`
+Compile your contracts with '${HARDHAT_COMPILE_COMMAND}' or '${FOUNDRY_COMPILE_COMMAND}' and try again with the correct path to the build info directory.`,
     );
   }
   const dir = buildInfoDir ?? (await findDefaultDir());
