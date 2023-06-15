@@ -43,7 +43,7 @@
   "peerDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomiclabs/hardhat-etherscan": "^3.1.0",
-
+    "ethers": "^6.6.0",
     "hardhat": "^2.0.2"
   },
   "peerDependenciesMeta": {
