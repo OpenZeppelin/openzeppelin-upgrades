@@ -49,7 +49,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule:
 
     if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
       // No admin contract: use ITransparentUpgradeableProxyFactory to get proxiable interface
-      const ITransparentUpgradeableProxyFactory = await getITransparentUpgradeableProxyFactory(hre, getSigner(signer));
+      const ITransparentUpgradeableProxyFactory = await getITransparentUpgradeableProxyFactory(hre, signer);
       const proxy = attach(ITransparentUpgradeableProxyFactory, proxyAddress);
 
       return (nextImpl, call) => (call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl));

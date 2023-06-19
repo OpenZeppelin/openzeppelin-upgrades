@@ -57,6 +57,8 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
       }
     }
 
+    const signer = getSigner(ImplFactory.runner);
+
     let proxyDeployment: Required<ProxyDeployment & DeployTransaction> & RemoteDeploymentId;
     switch (kind) {
       case 'beacon': {
@@ -64,17 +66,14 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
       }
 
       case 'uups': {
-        const ProxyFactory = await getProxyFactory(hre, getSigner(ImplFactory.runner));
+        const ProxyFactory = await getProxyFactory(hre, signer);
         proxyDeployment = Object.assign({ kind }, await deploy(hre, opts, ProxyFactory, impl, data));
         break;
       }
 
       case 'transparent': {
-        const adminAddress = await hre.upgrades.deployProxyAdmin(getSigner(ImplFactory.runner), opts);
-        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(
-          hre,
-          getSigner(ImplFactory.runner),
-        );
+        const adminAddress = await hre.upgrades.deployProxyAdmin(signer, opts);
+        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
         proxyDeployment = Object.assign(
           { kind },
           await deploy(hre, opts, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
