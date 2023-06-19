@@ -1,10 +1,11 @@
 import type { Deployment, RemoteDeploymentId } from '@openzeppelin/upgrades-core';
 import debug from './debug';
-import type { ethers, ContractFactory, Signer } from 'ethers';
+import type { ethers, ContractFactory } from 'ethers';
 import { getCreateAddress } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { platformDeploy } from '../platform/deploy';
 import { PlatformDeployOptions, UpgradeOptions } from './options';
+import { getSigner } from './ethers';
 
 export interface DeployTransaction {
   deployTransaction: null | ethers.TransactionResponse;
@@ -31,12 +32,13 @@ async function ethersDeploy(factory: ContractFactory, ...args: unknown[]) {
     throw new Error('Broken invariant: deploymentTransaction is null');
   }
 
+  const signer = getSigner(factory.runner);
   const contractAddress = await contractInstance.getAddress();
+
   let address = contractAddress;
 
-  const runner = factory.runner;
-  if (runner && 'getAddress' in runner) {
-    const from = await (runner as Signer).getAddress();
+  if (signer !== undefined) {
+    const from = await signer.getAddress();
 
     address = getCreateAddress({
       from: from,
