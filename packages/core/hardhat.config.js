@@ -4,7 +4,6 @@ const path = require('path');
 require('dotenv/config');
 
 require('@nomicfoundation/hardhat-ethers');
-require('@nomicfoundation/hardhat-verify');
 
 for (const f of fs.readdirSync(path.join(__dirname, 'hardhat'))) {
   require(path.join(__dirname, 'hardhat', f));
