@@ -50,7 +50,7 @@ async function getSimulatedData(
   const deployData = await getDeployData(hre, ImplFactory, opts);
   const simulateDeploy = async () => {
     return {
-      abi: ImplFactory.interface.format(true) as string[],
+      abi: ImplFactory.interface.format(true),
       layout: deployData.layout,
       address: implAddress,
     };

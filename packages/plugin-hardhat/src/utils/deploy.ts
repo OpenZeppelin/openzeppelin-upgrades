@@ -8,7 +8,7 @@ import { PlatformDeployOptions, UpgradeOptions } from './options';
 import { getSigner } from './ethers';
 
 export interface DeployTransaction {
-  deployTransaction: null | ethers.TransactionResponse;
+  deployTransaction: ethers.TransactionResponse;
 }
 
 export async function deploy(
@@ -40,6 +40,8 @@ async function ethersDeploy(factory: ContractFactory, ...args: unknown[]) {
   if (signer !== undefined) {
     const from = await signer.getAddress();
 
+    // Some RPC endpoints can return an incorrect address. See https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/487
+    // As a workaround, calculate the correct address using the address and nonce.
     address = getCreateAddress({
       from: from,
       nonce: deployTransaction.nonce,

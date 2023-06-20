@@ -19,7 +19,7 @@ import { readValidations } from './validations';
 
 export interface DeployedImpl {
   impl: string;
-  txResponse?: null | ethers.TransactionResponse;
+  txResponse?: ethers.TransactionResponse;
 }
 
 export interface DeployedProxyImpl extends DeployedImpl {
@@ -135,9 +135,9 @@ async function deployImpl(
   let txResponse;
   if (opts.getTxResponse) {
     if ('deployTransaction' in deployment) {
-      txResponse = deployment.deployTransaction;
+      txResponse = deployment.deployTransaction ?? undefined;
     } else if (deployment.txHash !== undefined) {
-      txResponse = await hre.ethers.provider.getTransaction(deployment.txHash);
+      txResponse = await hre.ethers.provider.getTransaction(deployment.txHash) ?? undefined;
     }
   }
 

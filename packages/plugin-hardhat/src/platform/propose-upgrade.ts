@@ -14,7 +14,7 @@ import { deployImplForUpgrade } from '../prepare-upgrade';
 export interface UpgradeProposalResponse {
   proposalId: string;
   url?: string;
-  txResponse?: null | ethers.TransactionResponse;
+  txResponse?: ethers.TransactionResponse;
 }
 
 export type ProposeUpgradeFunction = (
