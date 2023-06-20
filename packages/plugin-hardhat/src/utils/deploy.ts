@@ -16,7 +16,8 @@ export async function deploy(
   opts: UpgradeOptions & PlatformDeployOptions,
   factory: ContractFactory,
   ...args: unknown[]
-): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> { // platform always includes RemoteDeploymentId, while ethers always includes DeployTransaction
+): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> {
+  // platform always includes RemoteDeploymentId, while ethers always includes DeployTransaction
   if (opts?.usePlatformDeploy) {
     return await platformDeploy(hre, factory, opts, ...args);
   } else {
@@ -24,7 +25,10 @@ export async function deploy(
   }
 }
 
-async function ethersDeploy(factory: ContractFactory, ...args: unknown[]): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
+async function ethersDeploy(
+  factory: ContractFactory,
+  ...args: unknown[]
+): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
   const contractInstance = await factory.deploy(...args);
   const deployTransaction = contractInstance.deploymentTransaction();
 

@@ -137,7 +137,7 @@ async function deployImpl(
     if ('deployTransaction' in deployment) {
       txResponse = deployment.deployTransaction ?? undefined;
     } else if (deployment.txHash !== undefined) {
-      txResponse = await hre.ethers.provider.getTransaction(deployment.txHash) ?? undefined;
+      txResponse = (await hre.ethers.provider.getTransaction(deployment.txHash)) ?? undefined;
     }
   }
 
