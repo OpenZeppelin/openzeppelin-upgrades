@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.0.0-alpha.0 (2023-06-20)
 
 - Use ethers v6 and hardhat-ethers v3. ([#817](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/817))
 
