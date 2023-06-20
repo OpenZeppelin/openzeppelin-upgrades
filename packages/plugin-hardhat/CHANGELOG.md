@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Use ethers v6 and hardhat-ethers v3. ([#817](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/817))
+
 ## 1.28.0 (2023-06-14)
 
 - **Breaking change**: Rename `walletId` option to `relayerId` for OpenZeppelin Platform deployments. Update dependencies. ([#806](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/806))
