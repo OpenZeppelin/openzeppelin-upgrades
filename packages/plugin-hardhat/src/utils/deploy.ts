@@ -8,7 +8,7 @@ import { PlatformDeployOptions, UpgradeOptions } from './options';
 import { getSigner } from './ethers';
 
 export interface DeployTransaction {
-  deployTransaction: ethers.TransactionResponse;
+  deployTransaction?: ethers.TransactionResponse;
 }
 
 export async function deploy(
@@ -16,7 +16,7 @@ export async function deploy(
   opts: UpgradeOptions & PlatformDeployOptions,
   factory: ContractFactory,
   ...args: unknown[]
-): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
+): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> { // platform always includes RemoteDeploymentId, while ethers always includes DeployTransaction
   if (opts?.usePlatformDeploy) {
     return await platformDeploy(hre, factory, opts, ...args);
   } else {
@@ -24,7 +24,7 @@ export async function deploy(
   }
 }
 
-async function ethersDeploy(factory: ContractFactory, ...args: unknown[]) {
+async function ethersDeploy(factory: ContractFactory, ...args: unknown[]): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
   const contractInstance = await factory.deploy(...args);
   const deployTransaction = contractInstance.deploymentTransaction();
 

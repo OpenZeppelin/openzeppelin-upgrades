@@ -28,7 +28,7 @@ export function getContractInstance(
   const instance = attach(contract, deployment.address);
 
   // @ts-ignore Won't be readonly because instance was created through attach.
-  instance.deploymentTransaction = () => deployment.deployTransaction;
+  instance.deploymentTransaction = () => deployment.deployTransaction ?? null; // Convert undefined to null to conform to ethers.js types.
 
   if (opts.usePlatformDeploy && deployment.remoteDeploymentId !== undefined) {
     const origWait = instance.waitForDeployment.bind(instance);

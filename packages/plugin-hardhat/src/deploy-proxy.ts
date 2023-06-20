@@ -59,7 +59,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
 
     const signer = getSigner(ImplFactory.runner);
 
-    let proxyDeployment: Required<ProxyDeployment & DeployTransaction> & RemoteDeploymentId;
+    let proxyDeployment: Required<ProxyDeployment> & DeployTransaction & RemoteDeploymentId;
     switch (kind) {
       case 'beacon': {
         throw new BeaconProxyUnsupportedError();
