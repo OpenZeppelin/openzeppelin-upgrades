@@ -14,9 +14,9 @@ test('prepare upgrade with txresponse', async t => {
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
 
   // prepare the upgrade and get tx response
-  const txResponse = await upgrades.prepareUpgrade(greeter.address, GreeterV3, { getTxResponse: true });
+  const txResponse = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3, { getTxResponse: true });
 
-  const precomputedAddress = ethers.utils.getContractAddress(txResponse);
+  const precomputedAddress = ethers.getCreateAddress(txResponse);
   const txReceipt = await txResponse.wait();
 
   t.is(txReceipt.contractAddress, precomputedAddress);
@@ -33,11 +33,11 @@ test('prepare upgrade twice with txresponse', async t => {
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
 
   // prepare the upgrade and get tx response
-  const txResponse1 = await upgrades.prepareUpgrade(greeter.address, GreeterV3, { getTxResponse: true });
+  const txResponse1 = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3, { getTxResponse: true });
   const txReceipt1 = await txResponse1.wait();
 
   // prepare another upgrade with the same impl
-  const txResponse2 = await upgrades.prepareUpgrade(greeter.address, GreeterV3, { getTxResponse: true });
+  const txResponse2 = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3, { getTxResponse: true });
   const txReceipt2 = await txResponse2.wait();
 
   t.is(txReceipt2.contractAddress, txReceipt1.contractAddress);

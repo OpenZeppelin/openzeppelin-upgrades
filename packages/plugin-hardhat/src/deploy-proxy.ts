@@ -17,6 +17,7 @@ import {
   DeployTransaction,
   deployProxyImpl,
   getInitializerData,
+  getSigner,
 } from './utils';
 import { enablePlatform } from './platform/utils';
 import { getContractInstance } from './utils/contract-instance';
@@ -56,21 +57,23 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
       }
     }
 
-    let proxyDeployment: Required<ProxyDeployment & DeployTransaction> & RemoteDeploymentId;
+    const signer = getSigner(ImplFactory.runner);
+
+    let proxyDeployment: Required<ProxyDeployment> & DeployTransaction & RemoteDeploymentId;
     switch (kind) {
       case 'beacon': {
         throw new BeaconProxyUnsupportedError();
       }
 
       case 'uups': {
-        const ProxyFactory = await getProxyFactory(hre, ImplFactory.signer);
+        const ProxyFactory = await getProxyFactory(hre, signer);
         proxyDeployment = Object.assign({ kind }, await deploy(hre, opts, ProxyFactory, impl, data));
         break;
       }
 
       case 'transparent': {
-        const adminAddress = await hre.upgrades.deployProxyAdmin(ImplFactory.signer, opts);
-        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, ImplFactory.signer);
+        const adminAddress = await hre.upgrades.deployProxyAdmin(signer, opts);
+        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
         proxyDeployment = Object.assign(
           { kind },
           await deploy(hre, opts, TransparentUpgradeableProxyFactory, impl, adminAddress, data),

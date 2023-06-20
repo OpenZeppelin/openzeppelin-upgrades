@@ -6,7 +6,6 @@ import {
   isTransparentProxy,
 } from '@openzeppelin/upgrades-core';
 import { ContractFactory, ethers } from 'ethers';
-import { FormatTypes } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { PlatformDeployOptions, UpgradeOptions } from '../utils';
 import { getNetwork, enablePlatform, getPlatformClient } from './utils';
@@ -15,7 +14,7 @@ import { deployImplForUpgrade } from '../prepare-upgrade';
 export interface UpgradeProposalResponse {
   proposalId: string;
   url?: string;
-  txResponse?: ethers.providers.TransactionResponse;
+  txResponse?: ethers.TransactionResponse;
 }
 
 export type ProposeUpgradeFunction = (
@@ -52,7 +51,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModul
       typeof contractNameOrImplFactory === 'string'
         ? await hre.ethers.getContractFactory(contractNameOrImplFactory)
         : contractNameOrImplFactory;
-    const abi = implFactory.interface.format(FormatTypes.json) as string;
+    const abi = implFactory.interface.formatJson();
 
     const deployedImpl = await deployImplForUpgrade(hre, proxyAddress, implFactory, {
       getTxResponse: true,

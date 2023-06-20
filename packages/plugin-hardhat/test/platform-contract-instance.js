@@ -22,9 +22,9 @@ test('get contract instance - tx hash not updated', async t => {
   const first = await GreeterProxiable.deploy();
 
   const deployment = {
-    address: first.address,
-    txHash: first.deployTransaction.hash,
-    deployTransaction: first.deployTransaction,
+    address: await first.getAddress(),
+    txHash: first.deploymentTransaction().hash,
+    deployTransaction: first.deploymentTransaction(),
     remoteDeploymentId: DEPLOYMENT_ID,
   };
 
@@ -38,13 +38,13 @@ test('get contract instance - tx hash not updated', async t => {
   }).getContractInstance;
 
   const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { usePlatformDeploy: true }, deployment);
-  await stubbedInstance.deployed();
+  await stubbedInstance.waitForDeployment();
 
   t.is(waitStub.callCount, 1);
 
   // assert the tx hash is not updated
-  t.not(stubbedInstance.deployTransaction.hash, undefined);
-  t.is(stubbedInstance.deployTransaction.hash, first.deployTransaction.hash);
+  t.not(stubbedInstance.deploymentTransaction().hash, undefined);
+  t.is(stubbedInstance.deploymentTransaction().hash, first.deploymentTransaction().hash);
 });
 
 test('get contract instance - tx hash updated', async t => {
@@ -54,16 +54,16 @@ test('get contract instance - tx hash updated', async t => {
   const first = await GreeterProxiable.deploy();
   const second = await GreeterProxiable.deploy();
 
-  t.not(first.deployTransaction.hash, second.deployTransaction.hash);
+  t.not(first.deploymentTransaction().hash, second.deploymentTransaction().hash);
 
   const deployment = {
-    address: first.address,
-    txHash: first.deployTransaction.hash,
-    deployTransaction: first.deployTransaction,
+    address: await first.getAddress(),
+    txHash: first.deploymentTransaction().hash,
+    deployTransaction: first.deploymentTransaction(),
     remoteDeploymentId: DEPLOYMENT_ID,
   };
 
-  const waitStub = sinon.stub().returns(second.deployTransaction.hash);
+  const waitStub = sinon.stub().returns(second.deploymentTransaction().hash);
 
   const getContractInstance = proxyquire('../dist/utils/contract-instance', {
     '../platform/utils': {
@@ -75,16 +75,16 @@ test('get contract instance - tx hash updated', async t => {
   const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { usePlatformDeploy: true }, deployment);
 
   // assert the tx hash not updated yet
-  t.not(stubbedInstance.deployTransaction.hash, undefined);
-  t.is(stubbedInstance.deployTransaction.hash, first.deployTransaction.hash);
-  t.not(stubbedInstance.deployTransaction.hash, second.deployTransaction.hash);
+  t.not(stubbedInstance.deploymentTransaction().hash, undefined);
+  t.is(stubbedInstance.deploymentTransaction().hash, first.deploymentTransaction().hash);
+  t.not(stubbedInstance.deploymentTransaction().hash, second.deploymentTransaction().hash);
 
-  await stubbedInstance.deployed();
+  await stubbedInstance.waitForDeployment();
 
   t.is(waitStub.callCount, 1);
 
   // assert the tx hash is updated
-  t.not(stubbedInstance.deployTransaction.hash, undefined);
-  t.not(stubbedInstance.deployTransaction.hash, first.deployTransaction.hash);
-  t.is(stubbedInstance.deployTransaction.hash, second.deployTransaction.hash);
+  t.not(stubbedInstance.deploymentTransaction().hash, undefined);
+  t.not(stubbedInstance.deploymentTransaction().hash, first.deploymentTransaction().hash);
+  t.is(stubbedInstance.deploymentTransaction().hash, second.deploymentTransaction().hash);
 });

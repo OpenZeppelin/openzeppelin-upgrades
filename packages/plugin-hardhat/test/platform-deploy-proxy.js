@@ -41,16 +41,18 @@ test('deploy proxy', async t => {
   const { deployProxy, GreeterProxiable } = t.context;
 
   const inst = await deployProxy(GreeterProxiable, ['Hello World']);
-  t.not(inst.address, undefined);
+  t.not(await inst.getAddress(), undefined);
 
   // check that manifest has deployment ids
   const m = await manifest.Manifest.forNetwork(ethers.provider);
 
   await m.lockedRun(async () => {
-    const proxy = await m.getProxyFromAddress(inst.address);
+    const proxy = await m.getProxyFromAddress(await inst.getAddress());
     t.is(proxy.remoteDeploymentId, PROXY_ID);
 
-    const impl = await m.getDeploymentFromAddress(await hre.upgrades.erc1967.getImplementationAddress(inst.address));
+    const impl = await m.getDeploymentFromAddress(
+      await hre.upgrades.erc1967.getImplementationAddress(await inst.getAddress()),
+    );
     t.is(impl.remoteDeploymentId, IMPL_ID);
   });
 });
@@ -72,7 +74,7 @@ test('deployed calls wait for deployment', async t => {
   // stub proxy deployment
   const deployStub = sinon.stub();
   deployStub.returns({
-    address: realProxy.address,
+    address: await realProxy.getAddress(),
     txHash: PROXY_TX_HASH,
     deployTransaction: undefined,
     remoteDeploymentId: PROXY_ID,
@@ -99,7 +101,7 @@ test('deployed calls wait for deployment', async t => {
   }).makeDeployProxy(hre, true);
 
   const inst = await deployProxy(GreeterProxiable, ['Hello World']);
-  await inst.deployed();
+  await inst.waitForDeployment();
 
   t.is(waitStub.callCount, 1);
 });

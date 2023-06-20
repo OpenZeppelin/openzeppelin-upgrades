@@ -7,14 +7,13 @@ import {
   isTransparentProxy,
 } from '@openzeppelin/upgrades-core';
 import { ProposalResponse } from '@openzeppelin/defender-admin-client';
-import { ContractFactory, ethers } from 'ethers';
-import { FormatTypes, getContractAddress } from 'ethers/lib/utils';
+import { ContractFactory, getCreateAddress, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getAdminClient, getNetwork } from './utils';
 import type { VerificationResponse } from './verify-deployment';
 
 export interface ExtendedProposalResponse extends ProposalResponse {
-  txResponse?: ethers.providers.TransactionResponse;
+  txResponse?: ethers.TransactionResponse;
   verificationResponse?: VerificationResponse;
 }
 
@@ -58,7 +57,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
         ? await hre.ethers.getContractFactory(contractNameOrImplFactory)
         : contractNameOrImplFactory;
     const contractName = typeof contractNameOrImplFactory === 'string' ? contractNameOrImplFactory : undefined;
-    const contract = { address: proxyAddress, network, abi: implFactory.interface.format(FormatTypes.json) as string };
+    const contract = { address: proxyAddress, network, abi: implFactory.interface.formatJson() };
 
     const prepareUpgradeResult = await hre.upgrades.prepareUpgrade(proxyAddress, implFactory, {
       getTxResponse: true,
@@ -71,7 +70,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
       newImplementation = prepareUpgradeResult;
     } else {
       txResponse = prepareUpgradeResult;
-      newImplementation = getContractAddress(txResponse);
+      newImplementation = getCreateAddress(txResponse);
     }
 
     const verificationResponse =

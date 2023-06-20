@@ -37,7 +37,7 @@ test('deployProxy - redeploy, then upgrade', async t => {
     kind: 'transparent',
   });
   t.is(await greeter1.greet(), 'Hola mundo!');
-  t.is(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(greeter1.address));
+  t.is(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(await greeter1.getAddress()));
 
   // deploy second proxy with redeployed impl
   const greeter2 = await upgrades.deployProxy(Greeter, ['Hola mundo!'], {
@@ -45,7 +45,7 @@ test('deployProxy - redeploy, then upgrade', async t => {
     redeployImplementation: 'always',
   });
   t.is(await greeter2.greet(), 'Hola mundo!');
-  t.not(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(greeter2.address));
+  t.not(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(await greeter2.getAddress()));
 
   // both proxies should be upgradable
   await upgrades.upgradeProxy(greeter1, GreeterV2);
@@ -57,7 +57,7 @@ test('deployBeacon - redeploy', async t => {
 
   const greeterImplAddr = await upgrades.deployImplementation(Greeter);
   const beacon = await upgrades.deployBeacon(Greeter, { redeployImplementation: 'always' });
-  t.not(greeterImplAddr, await upgrades.beacon.getImplementationAddress(beacon.address));
+  t.not(greeterImplAddr, await upgrades.beacon.getImplementationAddress(await beacon.getAddress()));
 });
 
 test('prepareUpgrade - redeploy', async t => {
@@ -73,12 +73,12 @@ test('upgradeProxy - redeploy', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
-  const origImplAddress = await upgrades.erc1967.getImplementationAddress(greeter.address);
+  const origImplAddress = await upgrades.erc1967.getImplementationAddress(await greeter.getAddress());
 
   const deployedImplAddress = await upgrades.deployImplementation(GreeterV2);
   await upgrades.upgradeProxy(greeter, GreeterV2, { redeployImplementation: 'always' });
 
-  const newImplAddress = await upgrades.erc1967.getImplementationAddress(greeter.address);
+  const newImplAddress = await upgrades.erc1967.getImplementationAddress(await greeter.getAddress());
   t.not(newImplAddress, origImplAddress);
   t.not(newImplAddress, deployedImplAddress);
 });
@@ -87,12 +87,12 @@ test('upgradeBeacon - redeploy', async t => {
   const { Greeter, GreeterV2 } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
-  const origImplAddress = await upgrades.beacon.getImplementationAddress(greeterBeacon.address);
+  const origImplAddress = await upgrades.beacon.getImplementationAddress(await greeterBeacon.getAddress());
 
   const deployedImplAddress = await upgrades.deployImplementation(GreeterV2);
 
   await upgrades.upgradeBeacon(greeterBeacon, GreeterV2, { redeployImplementation: 'always' });
-  const newImplAddress = await upgrades.beacon.getImplementationAddress(greeterBeacon.address);
+  const newImplAddress = await upgrades.beacon.getImplementationAddress(await greeterBeacon.getAddress());
   t.not(newImplAddress, origImplAddress);
   t.not(newImplAddress, deployedImplAddress);
 });

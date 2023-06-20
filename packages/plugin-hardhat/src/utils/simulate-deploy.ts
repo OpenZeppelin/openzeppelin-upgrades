@@ -1,6 +1,5 @@
 import { fetchOrDeploy, fetchOrDeployAdmin, logWarning } from '@openzeppelin/upgrades-core';
 import type { ContractFactory } from 'ethers';
-import { FormatTypes } from 'ethers/lib/utils';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getDeployData } from './deploy-impl';
 import { UpgradeOptions } from './options';
@@ -51,7 +50,7 @@ async function getSimulatedData(
   const deployData = await getDeployData(hre, ImplFactory, opts);
   const simulateDeploy = async () => {
     return {
-      abi: ImplFactory.interface.format(FormatTypes.minimal) as string[],
+      abi: ImplFactory.interface.format(true),
       layout: deployData.layout,
       address: implAddress,
     };
