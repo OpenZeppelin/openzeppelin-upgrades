@@ -1,7 +1,6 @@
 import { toCheckStatusRequest, toVerifyRequest } from './hardhat-etherscan/EtherscanVerifyContractRequest';
 import { getVerificationStatus, verifyContract } from './hardhat-etherscan/EtherscanService';
 import { resolveEtherscanApiKey } from './hardhat-etherscan/resolveEtherscanApiKey';
-import { EtherscanConfig, EtherscanNetworkEntry } from './hardhat-etherscan/types';
 
 import { UpgradesError } from '@openzeppelin/upgrades-core';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
@@ -9,6 +8,8 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { request } from 'undici';
 
 import debug from './debug';
+import { getCurrentChainConfig } from '@nomicfoundation/hardhat-verify/dist/src/chain-config';
+import { ChainConfig, EtherscanConfig } from '@nomicfoundation/hardhat-verify/dist/src/types';
 
 /**
  * Call the configured Etherscan API with the given parameters.
@@ -44,7 +45,7 @@ export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params:
  * Makes use of Hardhat Etherscan for handling cases when Etherscan API parameters are not present in config.
  */
 export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Promise<EtherscanAPIConfig> {
-  const endpoints = await hre.run('verify:get-etherscan-endpoint');
+  const endpoints = await getCurrentChainConfig(hre.network, (hre.config as any).etherscan.customChains);
   const etherscanConfig: EtherscanConfig = (hre.config as any).etherscan;
   const key = resolveEtherscanApiKey(etherscanConfig.apiKey, endpoints.network);
   return { key, endpoints };
@@ -55,7 +56,7 @@ export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Pro
  */
 export interface EtherscanAPIConfig {
   key: string;
-  endpoints: EtherscanNetworkEntry;
+  endpoints: ChainConfig;
 }
 
 /**
