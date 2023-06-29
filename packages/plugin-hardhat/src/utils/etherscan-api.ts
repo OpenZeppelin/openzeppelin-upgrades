@@ -9,7 +9,6 @@ import { request } from 'undici';
 
 import debug from './debug';
 import { getCurrentChainConfig } from '@nomicfoundation/hardhat-verify/dist/src/chain-config';
-import { ChainConfig, EtherscanConfig } from '@nomicfoundation/hardhat-verify/dist/src/types';
 
 /**
  * Call the configured Etherscan API with the given parameters.
@@ -21,7 +20,7 @@ import { ChainConfig, EtherscanConfig } from '@nomicfoundation/hardhat-verify/di
 export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params: any): Promise<EtherscanResponseBody> {
   const parameters = new URLSearchParams({ ...params, apikey: etherscanApi.key });
 
-  const response = await request(etherscanApi.endpoints.urls.apiURL, {
+  const response = await request(etherscanApi.url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: parameters.toString(),
@@ -46,17 +45,16 @@ export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params:
  */
 export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Promise<EtherscanAPIConfig> {
   const endpoints = await getCurrentChainConfig(hre.network, (hre.config as any).etherscan.customChains);
-  const etherscanConfig: EtherscanConfig = (hre.config as any).etherscan;
-  const key = resolveEtherscanApiKey(etherscanConfig.apiKey, endpoints.network);
-  return { key, endpoints };
+  const key = resolveEtherscanApiKey((hre.config as any).etherscan.apiKey, endpoints.network);
+  return { key, url: endpoints.urls.apiURL };
 }
 
 /**
- * The Etherscan API parameters from the Hardhat config.
+ * Parameters for calling the Etherscan API.
  */
 export interface EtherscanAPIConfig {
   key: string;
-  endpoints: ChainConfig;
+  url: string;
 }
 
 /**
@@ -83,11 +81,11 @@ export async function verifyAndGetStatus(
   etherscanApi: EtherscanAPIConfig,
 ) {
   const request = toVerifyRequest(params);
-  const response = await verifyContract(etherscanApi.endpoints.urls.apiURL, request);
+  const response = await verifyContract(etherscanApi.url, request);
   const statusRequest = toCheckStatusRequest({
     apiKey: etherscanApi.key,
     guid: response.message,
   });
-  const status = await getVerificationStatus(etherscanApi.endpoints.urls.apiURL, statusRequest);
+  const status = await getVerificationStatus(etherscanApi.url, statusRequest);
   return status;
 }
