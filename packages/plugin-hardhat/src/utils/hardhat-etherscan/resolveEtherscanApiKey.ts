@@ -1,22 +1,19 @@
-import { EtherscanConfig } from "./types";
+import { EtherscanConfig } from './types';
 
-import { UpgradesError } from "@openzeppelin/upgrades-core";
+import { UpgradesError } from '@openzeppelin/upgrades-core';
 
-export const resolveEtherscanApiKey = (
-  apiKey: EtherscanConfig["apiKey"],
-  network: string
-): string => {
-  if (apiKey === undefined || apiKey === "") {
+export const resolveEtherscanApiKey = (apiKey: EtherscanConfig['apiKey'], network: string): string => {
+  if (apiKey === undefined || apiKey === '') {
     throwMissingApiKeyError(network);
   }
 
-  if (typeof apiKey === "string") {
+  if (typeof apiKey === 'string') {
     return apiKey;
   }
 
   const key = (apiKey as any)[network];
 
-  if (key === undefined || key === "") {
+  if (key === undefined || key === '') {
     throwMissingApiKeyError(network);
   }
 
@@ -36,6 +33,6 @@ function throwMissingApiKeyError(network: string): never {
   }
 }
 
-See https://etherscan.io/apis`
+See https://etherscan.io/apis`,
   );
 }

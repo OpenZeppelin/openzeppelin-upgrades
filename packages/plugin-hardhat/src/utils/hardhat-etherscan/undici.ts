@@ -1,8 +1,8 @@
-import type * as Undici from "undici";
+import type * as Undici from 'undici';
 
 function getDispatcher(): Undici.Dispatcher {
-  const { ProxyAgent, getGlobalDispatcher } =
-    require("undici") as typeof Undici;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { ProxyAgent, getGlobalDispatcher } = require('undici') as typeof Undici;
   if (process.env.http_proxy !== undefined) {
     return new ProxyAgent(process.env.http_proxy);
   }
@@ -10,29 +10,24 @@ function getDispatcher(): Undici.Dispatcher {
   return getGlobalDispatcher();
 }
 
-export async function sendGetRequest(
-  url: URL
-): Promise<Undici.Dispatcher.ResponseData> {
-  const { request } = await import("undici");
+export async function sendGetRequest(url: URL): Promise<Undici.Dispatcher.ResponseData> {
+  const { request } = await import('undici');
   const dispatcher = getDispatcher();
 
   return request(url, {
     dispatcher,
-    method: "GET",
+    method: 'GET',
   });
 }
 
-export async function sendPostRequest(
-  url: URL,
-  body: string
-): Promise<Undici.Dispatcher.ResponseData> {
-  const { request } = await import("undici");
+export async function sendPostRequest(url: URL, body: string): Promise<Undici.Dispatcher.ResponseData> {
+  const { request } = await import('undici');
   const dispatcher = getDispatcher();
 
   return request(url, {
     dispatcher,
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   });
 }

@@ -1,25 +1,19 @@
-import { Dispatcher } from "undici";
+import { Dispatcher } from 'undici';
 
-import { sendGetRequest, sendPostRequest } from "./undici";
+import { sendGetRequest, sendPostRequest } from './undici';
 
-import {
-  EtherscanCheckStatusRequest,
-  EtherscanVerifyRequest,
-} from "./EtherscanVerifyContractRequest";
+import { EtherscanCheckStatusRequest, EtherscanVerifyRequest } from './EtherscanVerifyContractRequest';
 
-import { UpgradesError } from "@openzeppelin/upgrades-core";
+import { UpgradesError } from '@openzeppelin/upgrades-core';
 
 export async function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Used for polling the result of the contract verification.
 const verificationIntervalMs = 3000;
 
-export async function verifyContract(
-  url: string,
-  req: EtherscanVerifyRequest
-): Promise<EtherscanResponse> {
+export async function verifyContract(url: string, req: EtherscanVerifyRequest): Promise<EtherscanResponse> {
   const parameters = new URLSearchParams({ ...req });
 
   let response: Dispatcher.ResponseData;
@@ -29,7 +23,7 @@ export async function verifyContract(
     throw new UpgradesError(
       `Failed to send contract verification request.
 Endpoint URL: ${url}
-Reason: ${error.message}`
+Reason: ${error.message}`,
     );
   }
 
@@ -39,7 +33,7 @@ Reason: ${error.message}`
     throw new UpgradesError(
       `Failed to send contract verification request.
 Endpoint URL: ${url}
-The HTTP server response is not ok. Status code: ${response.statusCode} Response text: ${responseText}`
+The HTTP server response is not ok. Status code: ${response.statusCode} Response text: ${responseText}`,
     );
   }
 
@@ -52,23 +46,18 @@ Endpoint URL: ${url}
 Reason: The Etherscan API responded that the address ${req.contractaddress} does not have bytecode.
 This can happen if the contract was recently deployed and this fact hasn't propagated to the backend yet.
 Try waiting for a minute before verifying your contract. If you are invoking this from a script,
-try to wait for five confirmations of your contract deployment transaction before running the verification subtask.`
+try to wait for five confirmations of your contract deployment transaction before running the verification subtask.`,
     );
   }
 
   if (!etherscanResponse.isOk()) {
-    throw new UpgradesError(
-      etherscanResponse.message
-    );
+    throw new UpgradesError(etherscanResponse.message);
   }
 
   return etherscanResponse;
 }
 
-export async function getVerificationStatus(
-  url: string,
-  req: EtherscanCheckStatusRequest
-): Promise<EtherscanResponse> {
+export async function getVerificationStatus(url: string, req: EtherscanCheckStatusRequest): Promise<EtherscanResponse> {
   const parameters = new URLSearchParams({ ...req });
   const urlWithQuery = new URL(url);
   urlWithQuery.search = parameters.toString();
@@ -89,7 +78,7 @@ export async function getVerificationStatus(
       `Failure during etherscan status polling. The verification may still succeed but
 should be checked manually.
 Endpoint URL: ${urlWithQuery.toString()}
-Reason: ${error.message}`
+Reason: ${error.message}`,
     );
   }
 
@@ -109,7 +98,7 @@ Reason: ${error.message}`
     throw new UpgradesError(
       `The Etherscan API responded with a failure status.
 The verification may still succeed but should be checked manually.
-Reason: ${etherscanResponse.message}`
+Reason: ${etherscanResponse.message}`,
     );
   }
 
@@ -127,19 +116,19 @@ export class EtherscanResponse {
   }
 
   public isPending() {
-    return this.message === "Pending in queue";
+    return this.message === 'Pending in queue';
   }
 
   public isVerificationFailure() {
-    return this.message === "Fail - Unable to verify";
+    return this.message === 'Fail - Unable to verify';
   }
 
   public isVerificationSuccess() {
-    return this.message === "Pass - Verified";
+    return this.message === 'Pass - Verified';
   }
 
   public isBytecodeMissingInNetworkError() {
-    return this.message.startsWith("Unable to locate ContractCode at");
+    return this.message.startsWith('Unable to locate ContractCode at');
   }
 
   public isOk() {
@@ -147,14 +136,10 @@ export class EtherscanResponse {
   }
 }
 
-export async function isAlreadyVerified(
-  apiURL: string,
-  apiKey: string,
-  address: string
-): Promise<boolean> {
+export async function isAlreadyVerified(apiURL: string, apiKey: string, address: string): Promise<boolean> {
   const parameters = new URLSearchParams({
-    module: "contract",
-    action: "getsourcecode",
+    module: 'contract',
+    action: 'getsourcecode',
     address,
     apikey: apiKey,
   });
@@ -165,10 +150,10 @@ export async function isAlreadyVerified(
   const response = await sendGetRequest(url);
   const json = await response.body.json();
 
-  if (json.message !== "OK") {
+  if (json.message !== 'OK') {
     return false;
   }
 
   const sourceCode = json?.result?.[0]?.SourceCode;
-  return sourceCode !== undefined && sourceCode !== "";
+  return sourceCode !== undefined && sourceCode !== '';
 }

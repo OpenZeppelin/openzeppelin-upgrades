@@ -1,11 +1,5 @@
-import {
-  toCheckStatusRequest,
-  toVerifyRequest,
-} from './hardhat-etherscan/EtherscanVerifyContractRequest';
-import {
-  getVerificationStatus,
-  verifyContract,
-} from './hardhat-etherscan/EtherscanService';
+import { toCheckStatusRequest, toVerifyRequest } from './hardhat-etherscan/EtherscanVerifyContractRequest';
+import { getVerificationStatus, verifyContract } from './hardhat-etherscan/EtherscanService';
 import { resolveEtherscanApiKey } from './hardhat-etherscan/resolveEtherscanApiKey';
 import { EtherscanConfig, EtherscanNetworkEntry } from './hardhat-etherscan/types';
 
@@ -75,7 +69,18 @@ interface EtherscanResponseBody {
 
 export const RESPONSE_OK = '1';
 
-export async function verifyAndGetStatus(params: { apiKey: string; contractAddress: any; sourceCode: string; sourceName: string; contractName: string; compilerVersion: string; constructorArguments: string; }, etherscanApi: EtherscanAPIConfig) {
+export async function verifyAndGetStatus(
+  params: {
+    apiKey: string;
+    contractAddress: any;
+    sourceCode: string;
+    sourceName: string;
+    contractName: string;
+    compilerVersion: string;
+    constructorArguments: string;
+  },
+  etherscanApi: EtherscanAPIConfig,
+) {
   const request = toVerifyRequest(params);
   const response = await verifyContract(etherscanApi.endpoints.urls.apiURL, request);
   const statusRequest = toCheckStatusRequest({
