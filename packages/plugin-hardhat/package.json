@@ -38,7 +38,8 @@
     "@openzeppelin/upgrades-core": "^1.27.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
-    "proper-lockfile": "^4.1.1"
+    "proper-lockfile": "^4.1.1",
+    "undici": "^5.14.0"
   },
   "peerDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
