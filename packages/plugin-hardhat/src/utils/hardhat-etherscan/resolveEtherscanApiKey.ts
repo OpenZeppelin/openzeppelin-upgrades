@@ -1,6 +1,9 @@
 import { UpgradesError } from '@openzeppelin/upgrades-core';
 
-export const resolveEtherscanApiKey = (apiKey: string | Record<string, string>, network: string): string => {
+export const resolveEtherscanApiKey = (
+  apiKey: string | Record<string, string> | undefined,
+  network: string,
+): string => {
   if (apiKey === undefined || apiKey === '') {
     throwMissingApiKeyError(network);
   }

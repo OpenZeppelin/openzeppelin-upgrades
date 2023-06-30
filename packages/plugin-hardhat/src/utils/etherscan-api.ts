@@ -41,12 +41,21 @@ export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params:
 
 /**
  * Gets the Etherscan API parameters from Hardhat config.
- * Makes use of Hardhat Etherscan for handling cases when Etherscan API parameters are not present in config.
+ * Throws an error if Etherscan API key is not present in config.
  */
 export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Promise<EtherscanAPIConfig> {
-  const endpoints = await getCurrentChainConfig(hre.network, (hre.config as any).etherscan.customChains);
-  const key = resolveEtherscanApiKey((hre.config as any).etherscan.apiKey, endpoints.network);
+  const etherscanConfig: EtherscanConfig | undefined = (hre.config as any).etherscan; // This should never be undefined, but check just in case
+  const endpoints = await getCurrentChainConfig(hre.network, etherscanConfig ? etherscanConfig.customChains : []);
+  const key = resolveEtherscanApiKey(etherscanConfig?.apiKey, endpoints.network);
   return { key, url: endpoints.urls.apiURL };
+}
+
+/**
+ * Etherscan configuration as defined in hardhat-verify.
+ */
+interface EtherscanConfig {
+  apiKey: string | Record<string, string>;
+  customChains: any[];
 }
 
 /**
