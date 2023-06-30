@@ -51,7 +51,7 @@ export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Pro
 }
 
 /**
- * Etherscan configuration as defined in hardhat-verify.
+ * Etherscan configuration for hardhat-verify.
  */
 interface EtherscanConfig {
   apiKey: string | Record<string, string>;
@@ -59,7 +59,7 @@ interface EtherscanConfig {
 }
 
 /**
- * Parameters for calling the Etherscan API.
+ * Parameters for calling the Etherscan API at a specific URL.
  */
 export interface EtherscanAPIConfig {
   key: string;
