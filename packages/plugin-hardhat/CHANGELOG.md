@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Use `hardhat-verify` for proxy verification. ([#829](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/829))
+- Remove address override for deployments. ([#832](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/832))
 
 ## 2.0.0-alpha.0 (2023-06-20)
 
