@@ -1,4 +1,4 @@
-import '@openzeppelin/hardhat-upgrades/dist/type-extensions';
+import '../type-extensions';
 import {
   getAdminAddress,
   getImplementationAddress,
