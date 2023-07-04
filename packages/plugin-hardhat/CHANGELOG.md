@@ -7,11 +7,11 @@
 - Remove address override for deployments. ([#832](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/832))
 
 ### Breaking changes
-This new major version requires `ethers` v6 and `@nomicfoundation/hardhat-ethers` v3 as peer dependencies.
+This new major version requires `ethers` v6 and `@nomicfoundation/hardhat-ethers` v3 as peer dependencies.  
 For Etherscan verification, it also requires `@nomicfoundation/hardhat-verify`.
 
 ### How to update from a previous version
-Update your existing project according to [Hardhat Toolbox v3's release notes](https://github.com/NomicFoundation/hardhat/releases/tag/%40nomicfoundation%2Fhardhat-toolbox%403.0.0).
+Update your existing project according to [Hardhat Toolbox v3's release notes](https://github.com/NomicFoundation/hardhat/releases/tag/%40nomicfoundation%2Fhardhat-toolbox%403.0.0).  
 Then update this plugin, for example: `npm install @openzeppelin/hardhat-upgrades@latest`
 
 ## 1.28.0 (2023-06-14)
