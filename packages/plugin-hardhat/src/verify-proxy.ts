@@ -1,13 +1,4 @@
 import {
-  toCheckStatusRequest,
-  toVerifyRequest,
-} from '@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanVerifyContractRequest';
-import {
-  getVerificationStatus,
-  verifyContract,
-} from '@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanService';
-
-import {
   getTransactionByHash,
   getImplementationAddress,
   getBeaconAddress,
@@ -33,6 +24,7 @@ import { keccak256 } from 'ethereumjs-util';
 
 import debug from './utils/debug';
 import { callEtherscanApi, EtherscanAPIConfig, getEtherscanAPIConfig, RESPONSE_OK } from './utils/etherscan-api';
+import { verifyAndGetStatus } from './utils/etherscan-api';
 
 /**
  * Hardhat artifact for a precompiled contract
@@ -69,26 +61,26 @@ const verifiableContracts = {
 };
 
 /**
- * Overrides hardhat-etherscan's verify:verify subtask to fully verify a proxy or beacon.
+ * Overrides hardhat-verify's verify:etherscan subtask to fully verify a proxy or beacon.
  *
  * Verifies the contract at an address. If the address is an ERC-1967 compatible proxy, verifies the proxy and associated proxy contracts,
- * as well as the implementation. Otherwise, calls hardhat-etherscan's verify function directly.
+ * as well as the implementation. Otherwise, calls hardhat-verify's verify function directly.
  *
- * @param args Args to the hardhat-etherscan verify function
+ * @param args Args to the hardhat-verify verify function
  * @param hre
- * @param runSuper The parent function which is expected to be hardhat-etherscan's verify function
+ * @param runSuper The parent function which is expected to be hardhat-verify's verify function
  * @returns
  */
 export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper: RunSuperFunction<any>) {
   if (!runSuper.isDefined) {
     throw new UpgradesError(
-      'The hardhat-etherscan plugin must be imported before the hardhat-upgrades plugin.',
+      'The hardhat-verify plugin must be imported before the hardhat-upgrades plugin.',
       () =>
         'Import the plugins in the following order in hardhat.config.js:\n' +
-        '  require("@nomiclabs/hardhat-etherscan");\n' +
+        '  require("@nomicfoundation/hardhat-verify");\n' +
         '  require("@openzeppelin/hardhat-upgrades");\n' +
         'Or if you are using TypeScript, import the plugins in the following order in hardhat.config.ts:\n' +
-        '  import "@nomiclabs/hardhat-etherscan";\n' +
+        '  import "@nomicfoundation/hardhat-verify";\n' +
         '  import "@openzeppelin/hardhat-upgrades";\n',
     );
   }
@@ -193,7 +185,7 @@ class BytecodeNotMatchArtifact extends Error {
  *
  * @param hre
  * @param proxyAddress The transparent or UUPS proxy address
- * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
+ * @param hardhatVerify A function that invokes the hardhat-verify plugin's verify command
  * @param errorReport Accumulated verification errors
  */
 async function fullVerifyTransparentOrUUPS(
@@ -259,7 +251,7 @@ async function fullVerifyTransparentOrUUPS(
  *
  * @param hre
  * @param proxyAddress The beacon proxy address
- * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
+ * @param hardhatVerify A function that invokes the hardhat-verify plugin's verify command
  * @param errorReport Accumulated verification errors
  */
 async function fullVerifyBeaconProxy(
@@ -296,7 +288,7 @@ async function fullVerifyBeaconProxy(
  *
  * @param hre
  * @param beaconAddress The beacon address
- * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
+ * @param hardhatVerify A function that invokes the hardhat-verify plugin's verify command
  * @param etherscanApi Configuration for the Etherscan API
  * @param errorReport Accumulated verification errors
  */
@@ -328,9 +320,9 @@ async function fullVerifyBeacon(
 }
 
 /**
- * Runs hardhat-etherscan plugin's verify command on the given implementation address.
+ * Runs hardhat-verify plugin's verify command on the given implementation address.
  *
- * @param hardhatVerify A function that invokes the hardhat-etherscan plugin's verify command
+ * @param hardhatVerify A function that invokes the hardhat-verify plugin's verify command
  * @param implAddress The implementation address
  * @param errorReport Accumulated verification errors
  */
@@ -489,6 +481,7 @@ async function attemptVerifyWithCreationEvent(
     );
   } else {
     await verifyContractWithConstructorArgs(
+      hre,
       etherscanApi,
       address,
       contractInfo.artifact,
@@ -507,6 +500,7 @@ async function attemptVerifyWithCreationEvent(
  * @param constructorArguments The constructor arguments to use for verification.
  */
 async function verifyContractWithConstructorArgs(
+  hre: HardhatRuntimeEnvironment,
   etherscanApi: EtherscanAPIConfig,
   address: any,
   artifact: ContractArtifact,
@@ -525,14 +519,8 @@ async function verifyContractWithConstructorArgs(
     constructorArguments: constructorArguments,
   };
 
-  const request = toVerifyRequest(params);
   try {
-    const response = await verifyContract(etherscanApi.endpoints.urls.apiURL, request);
-    const statusRequest = toCheckStatusRequest({
-      apiKey: etherscanApi.key,
-      guid: response.message,
-    });
-    const status = await getVerificationStatus(etherscanApi.endpoints.urls.apiURL, statusRequest);
+    const status = await verifyAndGetStatus(params, etherscanApi);
 
     if (status.isVerificationSuccess()) {
       console.log(`Successfully verified contract ${artifact.contractName} at ${address}.`);
