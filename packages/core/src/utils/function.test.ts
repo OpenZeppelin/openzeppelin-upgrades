@@ -5,7 +5,7 @@ import { findAll } from 'solidity-ast/utils';
 
 import { getFunctionSignature } from './function';
 import { SolcOutput } from '../solc-api';
-import { astDereferencer } from '../ast-dereferencer';
+import { astDereferencer } from 'solidity-ast/utils';
 
 testContract('ContractFunctionSignatures');
 testContract('LibraryFunctionSignatures');

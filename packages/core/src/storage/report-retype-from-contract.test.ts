@@ -2,7 +2,7 @@ import _test, { TestFn } from 'ava';
 import { ContractDefinition } from 'solidity-ast';
 import { ASTDereferencer, findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
-import { astDereferencer } from '../ast-dereferencer';
+import { astDereferencer } from 'solidity-ast/utils';
 import { extractStorageLayout } from './extract';
 import { StorageLayoutComparator, stripContractSubstrings } from './compare';
 import { StorageLayout, getDetailedLayout } from './layout';

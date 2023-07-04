@@ -7,7 +7,7 @@ import { findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
 
 import { SolcOutput } from '../../solc-api';
-import { astDereferencer } from '../../ast-dereferencer';
+import { astDereferencer } from 'solidity-ast/utils';
 import { extractStorageLayout } from '../../storage/extract';
 import { StorageLayoutComparator } from '../../storage/compare';
 import { StorageLayout, getDetailedLayout } from '../../storage/layout';
