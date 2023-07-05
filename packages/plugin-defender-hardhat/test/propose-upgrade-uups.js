@@ -4,7 +4,6 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
-const { FormatTypes } = require('ethers/lib/utils');
 const { AdminClient } = require('@openzeppelin/defender-admin-client');
 
 const proposalUrl = 'https://example.com';
@@ -39,7 +38,7 @@ test('proposes an upgrade and get tx response', async t => {
 
   const title = 'My upgrade';
   const description = 'My contract upgrade';
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { title, description, multisig });
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2, { title, description, multisig });
 
   t.is(proposal.url, proposalUrl);
 
@@ -47,7 +46,7 @@ test('proposes an upgrade and get tx response', async t => {
   const txReceipt = await proposal.txResponse.wait();
   t.not(txReceipt.contractAddress, undefined);
 
-  const proposal2 = await proposeUpgrade(greeter.address, GreeterV2, { title, description, multisig });
+  const proposal2 = await proposeUpgrade(await greeter.getAddress(), GreeterV2, { title, description, multisig });
 
   // even though impl was already deployed in first proposal, it should still provide a tx response for the same tx hash
   t.is(proposal2.txResponse.hash, proposal.txResponse.hash);
@@ -61,7 +60,7 @@ test('proposes an upgrade', async t => {
 
   const title = 'My upgrade';
   const description = 'My contract upgrade';
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { title, description, multisig });
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2, { title, description, multisig });
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(
@@ -75,9 +74,9 @@ test('proposes an upgrade', async t => {
       viaType: undefined,
     },
     {
-      address: greeter.address,
+      address: await greeter.getAddress(),
       network: 'goerli',
-      abi: GreeterV2.interface.format(FormatTypes.json),
+      abi: GreeterV2.interface.formatJson(),
     },
   );
 });
@@ -89,7 +88,7 @@ test('proposes an upgrade and verifies bytecode', async t => {
 
   const title = 'My upgrade';
   const description = 'My contract upgrade';
-  const proposal = await proposeUpgrade(greeter.address, 'GreeterV2Proxiable', {
+  const proposal = await proposeUpgrade(await greeter.getAddress(), 'GreeterV2Proxiable', {
     title,
     description,
     multisig,
@@ -110,9 +109,9 @@ test('proposes an upgrade and verifies bytecode', async t => {
       viaType: undefined,
     },
     {
-      address: greeter.address,
+      address: await greeter.getAddress(),
       network: 'goerli',
-      abi: GreeterV2.interface.format(FormatTypes.json),
+      abi: GreeterV2.interface.formatJson(),
     },
   );
 
@@ -133,7 +132,7 @@ test('proposes an upgrade with explicit multisig and proxy admin', async t => {
   const proxyAdmin = '0x20cE6FeEf8862CbCe65fd1cafA59ac8bbC77e445';
   const multisigType = 'Gnosis Safe';
   const opts = { title, description, proxyAdmin, multisig, multisigType };
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, opts);
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2, opts);
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(
@@ -147,9 +146,9 @@ test('proposes an upgrade with explicit multisig and proxy admin', async t => {
       viaType: multisigType,
     },
     {
-      address: greeter.address,
+      address: await greeter.getAddress(),
       network: 'goerli',
-      abi: GreeterV2.interface.format(FormatTypes.json),
+      abi: GreeterV2.interface.formatJson(),
     },
   );
 });
@@ -158,8 +157,8 @@ test('proposes an upgrade reusing prepared implementation', async t => {
   const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
   fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
 
-  const greeterV2Impl = await upgrades.prepareUpgrade(greeter.address, GreeterV2);
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { multisig });
+  const greeterV2Impl = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV2);
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2, { multisig });
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(
@@ -173,9 +172,9 @@ test('proposes an upgrade reusing prepared implementation', async t => {
       viaType: undefined,
     },
     {
-      address: greeter.address,
+      address: await greeter.getAddress(),
       network: 'goerli',
-      abi: GreeterV2.interface.format(FormatTypes.json),
+      abi: GreeterV2.interface.formatJson(),
     },
   );
 });
@@ -183,7 +182,8 @@ test('proposes an upgrade reusing prepared implementation', async t => {
 test('fails if multisig address is missing from UUPS proxy', async t => {
   const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
   sinon.assert.notCalled(fakeClient.proposeUpgrade);
-  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), {
+  const addr = await greeter.getAddress();
+  await t.throwsAsync(() => proposeUpgrade(addr, GreeterV2), {
     message: 'Multisig address is a required property for UUPS proxies',
   });
 });

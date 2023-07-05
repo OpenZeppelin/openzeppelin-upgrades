@@ -21,8 +21,8 @@ test('deployProxyAdmin', async t => {
   const adminInstance = await upgrades.admin.getInstance();
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hola admin!'], { kind: 'transparent' });
-  const adminAddress = await adminInstance.getProxyAdmin(greeter.address);
+  const adminAddress = await adminInstance.getProxyAdmin(await greeter.getAddress());
 
-  t.is(adminInstance.address, deployedAdminAddress);
-  t.is(adminInstance.address, adminAddress);
+  t.is(await adminInstance.getAddress(), deployedAdminAddress);
+  t.is(await adminInstance.getAddress(), adminAddress);
 });

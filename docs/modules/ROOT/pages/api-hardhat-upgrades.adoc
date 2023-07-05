@@ -428,7 +428,7 @@ CAUTION: Do not use this function to deploy implementations of upgradeable contr
 * `Contract` - an ethers contract factory to use as the contract to deploy.
 * `opts` - an object with options:
 ** `unsafeAllowDeployContract`: if set to `true`, allows the contract to be deployed even if it looks like an implementation contract. Defaults to `false`.
-** `pollingInterval`: polling interval in milliseconds between checks for the transaction confirmation when calling `.deployed()` on the resulting contract instance. Defaults to `5000`.
+** `pollingInterval`: polling interval in milliseconds between checks for the transaction confirmation when calling `.waitForDeployment()` on the resulting contract instance. Defaults to `5000`.
 
 *Returns:*
 
@@ -680,9 +680,9 @@ Silences all subsequent warnings about the use of unsafe flags. Prints a last wa
 [[verify]]
 == verify
 
-Extends https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan[hardhat-etherscan]'s `verify` task to completely verify a proxy on Etherscan.  This supports verifying proxy contracts that were deployed by the Hardhat Upgrades or Truffle Upgrades plugin.
+Extends https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-verify[hardhat-verify]'s `verify` task to completely verify a proxy on Etherscan.  This supports verifying proxy contracts that were deployed by the Hardhat Upgrades or Truffle Upgrades plugin.
 
-The arguments are the same as for hardhat-etherscan's `verify` task.  If the provided address is a proxy, this task will verify the proxy's implementation contract, the proxy itself and any proxy-related contracts, as well as link the proxy to the implementation contract's ABI on Etherscan.  If the provided address is not a proxy, the regular `verify` task from hardhat-etherscan will be run on the address instead.
+The arguments are the same as for hardhat-verify's `verify` task.  If the provided address is a proxy, this task will verify the proxy's implementation contract, the proxy itself and any proxy-related contracts, as well as link the proxy to the implementation contract's ABI on Etherscan.  If the provided address is not a proxy, the regular `verify` task from hardhat-verify will be run on the address instead.
 
 The following contracts will be verified when you run this task on your proxy address:
 
@@ -693,36 +693,36 @@ The following contracts will be verified when you run this task on your proxy ad
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@1.18.0`
+* `@openzeppelin/hardhat-upgrades@2.0.0`
 
 *Usage:*
 
-To use this task, ensure you have hardhat-etherscan installed:
+To use this task, ensure you have hardhat-verify installed:
 [source,sh]
 ----
-npm install --save-dev @nomiclabs/hardhat-etherscan
+npm install --save-dev @nomicfoundation/hardhat-verify
 ----
 
-Then import the `@nomiclabs/hardhat-etherscan` plugin along with the `@openzeppelin/hardhat-upgrades` plugin in your Hardhat configuration.
+Then import the `@nomicfoundation/hardhat-verify` plugin along with the `@openzeppelin/hardhat-upgrades` plugin in your Hardhat configuration.
 For example, if you are using JavaScript, import the plugins in `hardhat.config.js`:
 [source,js]
 ----
-require("@nomiclabs/hardhat-etherscan");
+require("@nomicfoundation/hardhat-verify");
 require("@openzeppelin/hardhat-upgrades");
 ----
 Or if you are using TypeScript, import the plugins in `hardhat.config.ts`:
 [source,ts]
 ----
-import "@nomiclabs/hardhat-etherscan";
+import "@nomicfoundation/hardhat-verify";
 import "@openzeppelin/hardhat-upgrades";
 ----
 
-Finally, follow https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan#usage[hardhat-etherscan's usage documentation] to configure your Etherscan API key and run the `verify` task from the command line with the proxy address:
+Finally, follow https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-verify#usage[hardhat-verify's usage documentation] to configure your Etherscan API key and run the `verify` task from the command line with the proxy address:
 [source]
 ----
 npx hardhat verify --network mainnet PROXY_ADDRESS
 ----
-or programmatically using the https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan#using-programmatically[`verify:verify` subtask]:
+or programmatically using the https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-verify#using-programmatically[`verify:verify` subtask]:
 [javascript]
 ----
 await hre.run("verify:verify", {
@@ -730,4 +730,4 @@ await hre.run("verify:verify", {
 });
 ----
 
-Note that you do not need to include constructor arguments when verifying if your implementation contract only uses initializers.  However, if your implementation contract has an actual constructor with arguments (such as to set immutable variables), then include constructor arguments according to the usage information for the https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan#usage[task] or https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-etherscan#using-programmatically[subtask].
+Note that you do not need to include constructor arguments when verifying if your implementation contract only uses initializers.  However, if your implementation contract has an actual constructor with arguments (such as to set immutable variables), then include constructor arguments according to the usage information for the https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-verify#usage[task] or https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-verify#using-programmatically[subtask].

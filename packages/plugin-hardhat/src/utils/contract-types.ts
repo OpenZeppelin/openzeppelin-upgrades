@@ -1,9 +1,9 @@
-export type ContractAddressOrInstance = string | { address: string };
+export type ContractAddressOrInstance = string | { getAddress(): Promise<string> };
 
-export function getContractAddress(addressOrInstance: ContractAddressOrInstance): string {
+export async function getContractAddress(addressOrInstance: ContractAddressOrInstance): Promise<string> {
   if (typeof addressOrInstance === 'string') {
     return addressOrInstance;
   } else {
-    return addressOrInstance.address;
+    return await addressOrInstance.getAddress();
   }
 }

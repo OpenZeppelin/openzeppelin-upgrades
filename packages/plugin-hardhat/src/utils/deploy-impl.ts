@@ -10,7 +10,6 @@ import {
   Version,
 } from '@openzeppelin/upgrades-core';
 import type { ContractFactory, ethers } from 'ethers';
-import { FormatTypes } from 'ethers/lib/utils';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';
 import { GetTxResponse, PlatformDeployOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
@@ -20,7 +19,7 @@ import { readValidations } from './validations';
 
 export interface DeployedImpl {
   impl: string;
-  txResponse?: ethers.providers.TransactionResponse;
+  txResponse?: ethers.TransactionResponse;
 }
 
 export interface DeployedProxyImpl extends DeployedImpl {
@@ -111,7 +110,7 @@ async function deployImpl(
     deployData.version,
     deployData.provider,
     async () => {
-      const abi = ImplFactory.interface.format(FormatTypes.minimal) as string[];
+      const abi = ImplFactory.interface.format(true);
       const attemptDeploy = () => {
         if (deployData.fullOpts.useDeployedImplementation || deployData.fullOpts.redeployImplementation === 'never') {
           throw new UpgradesError('The implementation contract was not previously deployed.', () => {
@@ -136,9 +135,9 @@ async function deployImpl(
   let txResponse;
   if (opts.getTxResponse) {
     if ('deployTransaction' in deployment) {
-      txResponse = deployment.deployTransaction;
+      txResponse = deployment.deployTransaction ?? undefined;
     } else if (deployment.txHash !== undefined) {
-      txResponse = await hre.ethers.provider.getTransaction(deployment.txHash);
+      txResponse = (await hre.ethers.provider.getTransaction(deployment.txHash)) ?? undefined;
     }
   }
 

@@ -4,7 +4,6 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
-const { FormatTypes } = require('ethers/lib/utils');
 const { AdminClient } = require('@openzeppelin/defender-admin-client');
 
 const proposalUrl = 'https://example.com';
@@ -34,7 +33,7 @@ test('proposes an upgrade', async t => {
 
   const title = 'My upgrade';
   const description = 'My contract upgrade';
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, {
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2, {
     title,
     description,
     unsafeAllow: ['delegatecall'],
@@ -52,9 +51,9 @@ test('proposes an upgrade', async t => {
       viaType: undefined,
     },
     {
-      address: greeter.address,
+      address: await greeter.getAddress(),
       network: 'goerli',
-      abi: GreeterV2.interface.format(FormatTypes.json),
+      abi: GreeterV2.interface.formatJson(),
     },
   );
 });

@@ -38,7 +38,7 @@ test.afterEach.always(() => {
 test('deploy contract', async t => {
   const { deployContract, NonUpgradeable } = t.context;
   const inst = await deployContract(NonUpgradeable);
-  t.is(inst.address, ADDR);
+  t.is(await inst.getAddress(), ADDR);
 });
 
 test('deploy contract - platform false', async t => {
@@ -50,7 +50,7 @@ test('deploy contract - platform false', async t => {
 test('deploy contract - constructor', async t => {
   const { deployContract, WithConstructor } = t.context;
   const inst = await deployContract(WithConstructor, [10]);
-  t.is(inst.address, ADDR);
+  t.is(await inst.getAddress(), ADDR);
 });
 
 test('deploy contract - constructor using opts', async t => {
@@ -94,7 +94,7 @@ test('deploy contract - is uups custom', async t => {
 test('deploy contract - allow unsafe', async t => {
   const { deployContract, IsUUPS } = t.context;
   const inst = await deployContract(IsUUPS, { unsafeAllowDeployContract: true });
-  t.is(inst.address, ADDR);
+  t.is(await inst.getAddress(), ADDR);
 });
 
 test('await deployed contract', async t => {
@@ -106,9 +106,9 @@ test('await deployed contract', async t => {
     './platform/deploy': {
       platformDeploy: async () => {
         return {
-          address: precreated.address,
-          txHash: precreated.txHash,
-          deployTransaction: precreated.deployTransaction,
+          address: await precreated.getAddress(),
+          txHash: precreated.deploymentTransaction().hash,
+          deployTransaction: precreated.deploymentTransaction(),
           remoteDeploymentId: 'abc',
         };
       },
@@ -117,8 +117,8 @@ test('await deployed contract', async t => {
   }).makeDeployContract(hre, true);
 
   const inst = await deployContract(NonUpgradeable);
-  t.is(inst.address, precreated.address);
-  await inst.deployed();
+  t.is(await inst.getAddress(), await precreated.getAddress());
+  await inst.waitForDeployment();
 });
 
 test('deployed calls wait for deployment', async t => {
@@ -133,7 +133,7 @@ test('deployed calls wait for deployment', async t => {
     './platform/deploy': {
       platformDeploy: async () => {
         return {
-          address: deployed.address,
+          address: await deployed.getAddress(),
           txHash: TX_HASH,
           deployTransaction: undefined,
           remoteDeploymentId: 'abc',
@@ -154,8 +154,8 @@ test('deployed calls wait for deployment', async t => {
   }).makeDeployContract(hre, true);
 
   const inst = await deployContract(NonUpgradeable);
-  t.is(inst.address, deployed.address);
-  await inst.deployed();
+  t.is(await inst.getAddress(), await deployed.getAddress());
+  await inst.waitForDeployment();
 
   t.is(stub.callCount, 1);
 });

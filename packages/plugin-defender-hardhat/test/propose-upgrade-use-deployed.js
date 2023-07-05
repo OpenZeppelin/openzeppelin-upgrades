@@ -4,7 +4,6 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
-const { FormatTypes } = require('ethers/lib/utils');
 const { AdminClient } = require('@openzeppelin/defender-admin-client');
 
 const proposalUrl = 'https://example.com';
@@ -33,7 +32,8 @@ test('proposes an upgrade using deployed implementation - implementation not dep
   const { proposeUpgrade, fakeClient, greeter, GreeterV2 } = t.context;
   fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
 
-  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2, { multisig, useDeployedImplementation: true }), {
+  const addr = await greeter.getAddress();
+  await t.throwsAsync(() => proposeUpgrade(addr, GreeterV2, { multisig, useDeployedImplementation: true }), {
     message: /(The implementation contract was not previously deployed.)/,
   });
 });
@@ -43,7 +43,10 @@ test('proposes an upgrade using deployed implementation', async t => {
   fakeClient.proposeUpgrade.resolves({ url: proposalUrl });
 
   const greeterV2Impl = await upgrades.deployImplementation(GreeterV2);
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { multisig, useDeployedImplementation: true });
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2, {
+    multisig,
+    useDeployedImplementation: true,
+  });
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(
@@ -57,9 +60,9 @@ test('proposes an upgrade using deployed implementation', async t => {
       viaType: undefined,
     },
     {
-      address: greeter.address,
+      address: await greeter.getAddress(),
       network: 'goerli',
-      abi: GreeterV2.interface.format(FormatTypes.json),
+      abi: GreeterV2.interface.formatJson(),
     },
   );
 });

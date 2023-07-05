@@ -4,7 +4,6 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
-const { FormatTypes } = require('ethers/lib/utils');
 
 const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
@@ -50,14 +49,14 @@ test.afterEach.always(() => {
 test('proposes an upgrade and get tx response', async t => {
   const { proposeUpgrade, greeter, GreeterV2 } = t.context;
 
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2);
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2);
   t.is(proposal.url, proposalUrl);
 
   t.not(proposal.txResponse.hash, undefined);
   const txReceipt = await proposal.txResponse.wait();
   t.not(txReceipt.contractAddress, undefined);
 
-  const proposal2 = await proposeUpgrade(greeter.address, GreeterV2);
+  const proposal2 = await proposeUpgrade(await greeter.getAddress(), GreeterV2);
 
   // even though impl was already deployed in first proposal, it should still provide a tx response for the same tx hash
   t.is(proposal2.txResponse.hash, proposal.txResponse.hash);
@@ -68,14 +67,14 @@ test('proposes an upgrade and get tx response', async t => {
 test('proposes an upgrade', async t => {
   const { proposeUpgrade, spy, greeter, GreeterV2 } = t.context;
 
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2);
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2);
 
   t.is(proposal.url, proposalUrl);
   t.is(proposal.proposalId, proposalId);
   sinon.assert.calledWithExactly(spy, {
-    proxyAddress: greeter.address,
+    proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: undefined,
-    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
+    newImplementationABI: GreeterV2.interface.formatJson(),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
     network: 'goerli',
     approvalProcessId: undefined,
@@ -85,13 +84,13 @@ test('proposes an upgrade', async t => {
 test('proposes an upgrade with approvalProcessId', async t => {
   const { proposeUpgrade, spy, greeter, GreeterV2 } = t.context;
 
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2, { approvalProcessId });
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2, { approvalProcessId });
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(spy, {
-    proxyAddress: greeter.address,
+    proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: undefined,
-    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
+    newImplementationABI: GreeterV2.interface.formatJson(),
     newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
     network: 'goerli',
     approvalProcessId,
@@ -101,14 +100,14 @@ test('proposes an upgrade with approvalProcessId', async t => {
 test('proposes an upgrade reusing prepared implementation', async t => {
   const { proposeUpgrade, spy, greeter, GreeterV2 } = t.context;
 
-  const greeterV2Impl = await upgrades.prepareUpgrade(greeter.address, GreeterV2);
-  const proposal = await proposeUpgrade(greeter.address, GreeterV2);
+  const greeterV2Impl = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV2);
+  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2);
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(spy, {
-    proxyAddress: greeter.address,
+    proxyAddress: await greeter.getAddress(),
     proxyAdminAddress: undefined,
-    newImplementationABI: GreeterV2.interface.format(FormatTypes.json),
+    newImplementationABI: GreeterV2.interface.formatJson(),
     newImplementationAddress: greeterV2Impl,
     network: 'goerli',
     approvalProcessId: undefined,

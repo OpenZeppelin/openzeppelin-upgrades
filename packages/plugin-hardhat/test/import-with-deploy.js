@@ -32,23 +32,23 @@ test('import then deploy with same impl', async t => {
   const { GreeterProxiable, ERC1967Proxy } = t.context;
 
   const impl = await GreeterProxiable.deploy();
-  await impl.deployed();
+  await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
-    impl.address,
+    await impl.getAddress(),
     getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
   );
-  await proxy.deployed();
+  await proxy.waitForDeployment();
 
-  const greeter = await upgrades.forceImport(proxy.address, GreeterProxiable);
+  const greeter = await upgrades.forceImport(await proxy.getAddress(), GreeterProxiable);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   const greeter2 = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat 2!']);
-  await greeter2.deployed();
+  await greeter2.waitForDeployment();
   t.is(await greeter2.greet(), 'Hello, Hardhat 2!');
 
   t.is(
-    await upgrades.erc1967.getImplementationAddress(greeter2.address),
-    await upgrades.erc1967.getImplementationAddress(greeter.address),
+    await upgrades.erc1967.getImplementationAddress(await greeter2.getAddress()),
+    await upgrades.erc1967.getImplementationAddress(await greeter.getAddress()),
   );
 });
 
@@ -56,31 +56,31 @@ test('deploy then import with same impl', async t => {
   const { GreeterProxiable, GreeterV2Proxiable, ERC1967Proxy } = t.context;
 
   const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!']);
-  await greeter.deployed();
+  await greeter.waitForDeployment();
 
   const impl = await GreeterProxiable.deploy();
-  await impl.deployed();
+  await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
-    impl.address,
+    await impl.getAddress(),
     getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat 2!']),
   );
-  await proxy.deployed();
+  await proxy.waitForDeployment();
 
-  const greeter2 = await upgrades.forceImport(proxy.address, GreeterProxiable);
+  const greeter2 = await upgrades.forceImport(await proxy.getAddress(), GreeterProxiable);
   t.is(await greeter2.greet(), 'Hello, Hardhat 2!');
 
-  const implAddr1 = await upgrades.erc1967.getImplementationAddress(greeter.address);
-  const implAddr2 = await upgrades.erc1967.getImplementationAddress(greeter2.address);
+  const implAddr1 = await upgrades.erc1967.getImplementationAddress(await greeter.getAddress());
+  const implAddr2 = await upgrades.erc1967.getImplementationAddress(await greeter2.getAddress());
   t.not(implAddr2, implAddr1);
 
   // upgrade imported proxy to the same impl
   await upgrades.upgradeProxy(greeter2, GreeterProxiable);
-  const implAddrUpgraded = await upgrades.erc1967.getImplementationAddress(greeter2.address);
+  const implAddrUpgraded = await upgrades.erc1967.getImplementationAddress(await greeter2.getAddress());
   t.true(implAddrUpgraded === implAddr1 || implAddrUpgraded === implAddr2, implAddrUpgraded);
 
   // upgrade imported proxy to different impl
   await upgrades.upgradeProxy(greeter2, GreeterV2Proxiable);
-  const implAddrUpgraded2 = await upgrades.erc1967.getImplementationAddress(greeter2.address);
+  const implAddrUpgraded2 = await upgrades.erc1967.getImplementationAddress(await greeter2.getAddress());
   t.not(implAddrUpgraded2 !== implAddrUpgraded, implAddrUpgraded2);
 });
 
@@ -88,15 +88,15 @@ test('import previous deployment', async t => {
   const { GreeterProxiable } = t.context;
 
   const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!']);
-  await greeter.deployed();
+  await greeter.waitForDeployment();
 
-  const greeterImported = await upgrades.forceImport(greeter.address, GreeterProxiable);
+  const greeterImported = await upgrades.forceImport(await greeter.getAddress(), GreeterProxiable);
   t.is(await greeterImported.greet(), 'Hello, Hardhat!');
 
-  t.is(greeterImported.address, greeter.address);
+  t.is(await greeterImported.getAddress(), await greeter.getAddress());
   t.is(
-    await upgrades.erc1967.getImplementationAddress(greeterImported.address),
-    await upgrades.erc1967.getImplementationAddress(greeter.address),
+    await upgrades.erc1967.getImplementationAddress(await greeterImported.getAddress()),
+    await upgrades.erc1967.getImplementationAddress(await greeter.getAddress()),
   );
 });
 
@@ -104,20 +104,20 @@ test('import previous import', async t => {
   const { GreeterProxiable, ERC1967Proxy } = t.context;
 
   const impl = await GreeterProxiable.deploy();
-  await impl.deployed();
+  await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
-    impl.address,
+    await impl.getAddress(),
     getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
   );
-  await proxy.deployed();
+  await proxy.waitForDeployment();
 
-  const greeterImported = await upgrades.forceImport(proxy.address, GreeterProxiable);
-  const greeterImportedAgain = await upgrades.forceImport(proxy.address, GreeterProxiable);
+  const greeterImported = await upgrades.forceImport(await proxy.getAddress(), GreeterProxiable);
+  const greeterImportedAgain = await upgrades.forceImport(await proxy.getAddress(), GreeterProxiable);
 
-  t.is(greeterImportedAgain.address, greeterImported.address);
+  t.is(await greeterImportedAgain.getAddress(), await greeterImported.getAddress());
   t.is(
-    await upgrades.erc1967.getImplementationAddress(greeterImportedAgain.address),
-    await upgrades.erc1967.getImplementationAddress(greeterImported.address),
+    await upgrades.erc1967.getImplementationAddress(await greeterImportedAgain.getAddress()),
+    await upgrades.erc1967.getImplementationAddress(await greeterImported.getAddress()),
   );
 });
 
@@ -125,27 +125,27 @@ test('import then deploy transparent with same admin', async t => {
   const { Greeter, GreeterV2, ProxyAdmin, TransparentUpgradableProxy } = t.context;
 
   const impl = await Greeter.deploy();
-  await impl.deployed();
+  await impl.waitForDeployment();
   const admin = await ProxyAdmin.deploy();
-  await admin.deployed();
+  await admin.waitForDeployment();
   const proxy = await TransparentUpgradableProxy.deploy(
-    impl.address,
-    admin.address,
+    await impl.getAddress(),
+    await admin.getAddress(),
     getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
   );
-  await proxy.deployed();
+  await proxy.waitForDeployment();
 
-  const greeter = await upgrades.forceImport(proxy.address, Greeter);
+  const greeter = await upgrades.forceImport(await proxy.getAddress(), Greeter);
   const greeter2 = await upgrades.deployProxy(Greeter, ['Hello, Hardhat 2!']);
-  await greeter2.deployed();
+  await greeter2.waitForDeployment();
 
   t.is(
-    await upgrades.erc1967.getAdminAddress(greeter2.address),
-    await upgrades.erc1967.getAdminAddress(greeter.address),
+    await upgrades.erc1967.getAdminAddress(await greeter2.getAddress()),
+    await upgrades.erc1967.getAdminAddress(await greeter.getAddress()),
   );
 
-  const upgraded = await upgrades.upgradeProxy(greeter.address, GreeterV2);
-  await upgraded.deployed();
-  const upgraded2 = await upgrades.upgradeProxy(greeter2.address, GreeterV2);
-  await upgraded2.deployed();
+  const upgraded = await upgrades.upgradeProxy(await greeter.getAddress(), GreeterV2);
+  await upgraded.waitForDeployment();
+  const upgraded2 = await upgrades.upgradeProxy(await greeter2.getAddress(), GreeterV2);
+  await upgraded2.waitForDeployment();
 });

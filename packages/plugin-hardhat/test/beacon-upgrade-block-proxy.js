@@ -123,7 +123,7 @@ test('block prepareUpgrade on generic contract', async t => {
 test('block prepareUpgrade on generic contract with fallback', async t => {
   const { GreeterFallback, GreeterV2 } = t.context;
   const genericContract = await GreeterFallback.deploy();
-  await genericContract.deployed();
+  await genericContract.waitForDeployment();
 
   try {
     await upgrades.prepareUpgrade(genericContract, GreeterV2, { kind: 'transparent' });

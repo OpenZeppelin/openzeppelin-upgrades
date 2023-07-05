@@ -10,7 +10,7 @@ export type DeployImplementationFunction = (
   opts?: DeployImplementationOptions,
 ) => Promise<DeployImplementationResponse>;
 
-export type DeployImplementationResponse = string | ethers.providers.TransactionResponse;
+export type DeployImplementationResponse = string | ethers.TransactionResponse;
 
 export function makeDeployImplementation(
   hre: HardhatRuntimeEnvironment,
@@ -21,7 +21,7 @@ export function makeDeployImplementation(
 
     const deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts);
 
-    if (opts.getTxResponse && deployedImpl.txResponse !== undefined) {
+    if (opts.getTxResponse && deployedImpl.txResponse) {
       return deployedImpl.txResponse;
     } else {
       return deployedImpl.impl;

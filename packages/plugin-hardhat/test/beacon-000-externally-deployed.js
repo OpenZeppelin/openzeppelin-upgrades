@@ -17,14 +17,14 @@ test('block upgrade to unregistered beacon', async t => {
 
   // deploy beacon without upgrades plugin
   const greeter = await Greeter.deploy();
-  await greeter.deployed();
+  await greeter.waitForDeployment();
 
-  const beacon = await Beacon.deploy(greeter.address);
-  await beacon.deployed();
+  const beacon = await Beacon.deploy(await greeter.getAddress());
+  await beacon.waitForDeployment();
 
   // upgrade beacon to new impl
   try {
-    await upgrades.upgradeBeacon(beacon.address, GreeterV2);
+    await upgrades.upgradeBeacon(await beacon.getAddress(), GreeterV2);
     t.fail('Expected an error due to unregistered deployment');
   } catch (e) {
     t.true(e.message.includes(IS_NOT_REGISTERED), e.message);
@@ -36,13 +36,13 @@ test('add proxy to unregistered beacon using contract factory', async t => {
 
   // deploy beacon without upgrades plugin
   const greeter = await Greeter.deploy();
-  await greeter.deployed();
+  await greeter.waitForDeployment();
 
-  const beacon = await Beacon.deploy(greeter.address);
-  await beacon.deployed();
+  const beacon = await Beacon.deploy(await greeter.getAddress());
+  await beacon.waitForDeployment();
 
   // add proxy to beacon
-  const greeterProxy = await upgrades.deployBeaconProxy(beacon.address, Greeter, ['Hello, proxy!'], {
+  const greeterProxy = await upgrades.deployBeaconProxy(await beacon.getAddress(), Greeter, ['Hello, proxy!'], {
     implementation: Greeter,
   });
   t.is(await greeterProxy.greet(), 'Hello, proxy!');
