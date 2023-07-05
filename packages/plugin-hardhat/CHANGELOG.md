@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 (2023-07-05)
 
 - Use `ethers` v6 and `hardhat-ethers` v3. ([#817](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/817))
 - Use `hardhat-verify` for proxy verification. ([#829](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/829))
