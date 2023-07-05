@@ -9,7 +9,7 @@
 
 ```
 npm install --save-dev @openzeppelin/hardhat-upgrades
-npm install --save-dev @nomiclabs/hardhat-ethers ethers # peer dependencies
+npm install --save-dev @nomicfoundation/hardhat-ethers ethers # peer dependencies
 ```
 
 And register the plugin in your [`hardhat.config.js`](https://hardhat.org/config/):
@@ -35,8 +35,8 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
   const Box = await ethers.getContractFactory("Box");
   const box = await upgrades.deployProxy(Box, [42]);
-  await box.deployed();
-  console.log("Box deployed to:", box.address);
+  await box.waitForDeployment();
+  console.log("Box deployed to:", await box.getAddress());
 }
 
 main();
@@ -75,12 +75,12 @@ async function main() {
   const Box = await ethers.getContractFactory("Box");
 
   const beacon = await upgrades.deployBeacon(Box);
-  await beacon.deployed();
-  console.log("Beacon deployed to:", beacon.address);
+  await beacon.waitForDeployment();
+  console.log("Beacon deployed to:", await beacon.getAddress());
 
   const box = await upgrades.deployBeaconProxy(beacon, Box, [42]);
-  await box.deployed();
-  console.log("Box deployed to:", box.address);
+  await box.waitForDeployment();
+  console.log("Box deployed to:", await box.getAddress());
 }
 
 main();
@@ -119,7 +119,7 @@ describe("Box", function() {
     const BoxV2 = await ethers.getContractFactory("BoxV2");
   
     const instance = await upgrades.deployProxy(Box, [42]);
-    const upgraded = await upgrades.upgradeProxy(instance.address, BoxV2);
+    const upgraded = await upgrades.upgradeProxy(await instance.getAddress(), BoxV2);
 
     const value = await upgraded.value();
     expect(value.toString()).to.equal('42');
@@ -141,7 +141,7 @@ describe("Box", function() {
     const instance = await upgrades.deployBeaconProxy(beacon, Box, [42]);
     
     await upgrades.upgradeBeacon(beacon, BoxV2);
-    const upgraded = BoxV2.attach(instance.address);
+    const upgraded = BoxV2.attach(await instance.getAddress());
 
     const value = await upgraded.value();
     expect(value.toString()).to.equal('42');
