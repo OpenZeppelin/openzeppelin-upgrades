@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Allow assignment of immutable variables if the `state-variable-immutable` override is present.
+
 ## 1.27.1 (2023-06-15)
 
 - Update recommended Foundry config for CLI. ([#818](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/818))
