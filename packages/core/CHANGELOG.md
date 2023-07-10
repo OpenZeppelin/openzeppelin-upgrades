@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.27.2 (2023-07-10)
 
 - Allow assignment of immutable variables if the `state-variable-immutable` override is present.
 
