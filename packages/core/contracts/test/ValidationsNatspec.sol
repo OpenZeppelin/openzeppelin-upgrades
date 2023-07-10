@@ -47,18 +47,18 @@ contract HasStateVariableAssignmentNatspec3 {
   uint y = 2;
 }
 
-/// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+/// @custom:oz-upgrades-unsafe-allow state-variable-immutable
 contract HasImmutableStateVariableNatspec1 {
   uint immutable x = 1;
 }
 
 contract HasImmutableStateVariableNatspec2 {
-  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable
   uint immutable x = 1;
 }
 
 contract HasImmutableStateVariableNatspec3 {
-  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable
   uint immutable x = 1;
   uint immutable y = 2;
 }

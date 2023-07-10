@@ -35,8 +35,10 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     link: 'https://zpl.in/upgrades/error-004',
   },
   'state-variable-immutable': {
-    msg: e => `Variable \`${e.name}\` is immutable`,
-    hint: () => `Use a constant or mutable variable instead`,
+    msg: e => `Variable \`${e.name}\` is immutable and will be initialized on the implementation`,
+    hint: () =>
+      `If by design, annotate with '@custom:oz-upgrades-unsafe-allow state-variable-immutable'\n` +
+      `Otherwise, consider a constant variable or use a mutable variable instead`,
     link: 'https://zpl.in/upgrades/error-005',
   },
   'external-library-linking': {

@@ -87,9 +87,12 @@ In some cases you may want to allow multiple errors in a single line.
 
 [source,solidity]
 ----
+/// @custom:oz-upgrades-unsafe-allow constructor state-variable-immutable
 contract SomeOtherContract {
-  /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
-  uint256 immutable x = 1;
+  uint256 immutable x;
+  constructor() {
+    x = block.number;
+  }
 }
 ----
 
@@ -108,7 +111,7 @@ It may be possible to safely use `delegatecall` and `selfdestruct` if they are g
 [source,solidity]
 ----
 abstract contract OnlyDelegateCall {
-    /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+    /// @custom:oz-upgrades-unsafe-allow state-variable-immutable
     address private immutable self = address(this);
 
     function checkDelegateCall() private view {
