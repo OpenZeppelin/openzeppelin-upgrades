@@ -19,3 +19,27 @@ contract Storage089_V3 {
 
   uint x;
 }
+
+contract Storage089_MappingUVDTKey_V1 {
+  type MyUserValueType is bool;
+
+  mapping (MyUserValueType => uint) m1;
+  mapping (MyUserValueType => uint) m2;
+  mapping (uint8 => uint) m3;
+}
+
+contract Storage089_MappingUVDTKey_V2_Ok {
+  type MyUserValueType is uint8;
+
+  mapping (MyUserValueType => uint) m1;
+  mapping (MyUserValueType => uint) m2;
+  mapping (uint8 => uint) m3;
+}
+
+contract Storage089_MappingUVDTKey_V2_Bad {
+  type MyUserValueType is uint16;
+
+  mapping (MyUserValueType => uint) m1;
+  mapping (MyUserValueType => uint) m2;
+  mapping (uint8 => uint) m3;
+}

@@ -112,3 +112,35 @@ test('renamed retyped - extraction', async t => {
   const layout = await t.context.extractStorageLayout('StorageRenamedRetyped');
   t.snapshot(stabilizeStorageLayout(layout));
 });
+
+test('mapping with user defined value type key - ok', async t => {
+  const v1 = await t.context.extractStorageLayout('Storage089_MappingUVDTKey_V1');
+  const v2 = await t.context.extractStorageLayout('Storage089_MappingUVDTKey_V2_Ok');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, []);
+});
+
+test('mapping with user defined value type key - bad', async t => {
+  const v1 = await t.context.extractStorageLayout('Storage089_MappingUVDTKey_V1');
+  const v2 = await t.context.extractStorageLayout('Storage089_MappingUVDTKey_V2_Bad');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.like(comparison, {
+    length: 2,
+    0: {
+      kind: 'typechange',
+      change: {
+        kind: 'mapping key',
+      },
+      original: { label: 'm1' },
+      updated: { label: 'm1' },
+    },
+    1: {
+      kind: 'typechange',
+      change: {
+        kind: 'mapping key',
+      },
+      original: { label: 'm2' },
+      updated: { label: 'm2' },
+    },
+  });
+});
