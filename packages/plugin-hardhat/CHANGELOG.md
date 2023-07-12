@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Update OpenZeppelin Platform client dependencies.
+- Update OpenZeppelin Platform client dependencies. ([#845](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/845))
 
 ## 2.0.0 (2023-07-05)
 
