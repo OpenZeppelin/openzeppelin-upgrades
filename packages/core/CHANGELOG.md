@@ -1,8 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Support user-defined value types in mappings. ([#844](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/844))
+
 ## 1.27.2 (2023-07-10)
 
-- Allow assignment of immutable variables if the `state-variable-immutable` override is present.
+- Allow assignment of immutable variables if the `state-variable-immutable` override is present. ([#838](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/838))
 
 ## 1.27.1 (2023-06-15)
 
