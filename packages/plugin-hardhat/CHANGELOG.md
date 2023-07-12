@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update OpenZeppelin Platform client dependencies. ([#845](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/845))
+
 ## 2.0.0 (2023-07-05)
 
 - Use `ethers` v6 and `hardhat-ethers` v3. ([#817](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/817))
