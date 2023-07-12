@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.0.1 (2023-07-12)
 
 - Update OpenZeppelin Platform client dependencies. ([#845](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/845))
 
