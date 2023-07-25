@@ -9,7 +9,7 @@ import { Etherscan } from "@nomicfoundation/hardhat-verify/etherscan";
 /**
  * Call the configured Etherscan API with the given parameters.
  *
- * @param etherscanApi The Etherscan API config
+ * @param etherscan Etherscan instance
  * @param params The API parameters to call with
  * @returns The Etherscan API response
  */
@@ -36,7 +36,7 @@ export async function callEtherscanApi(etherscan: Etherscan, params: any): Promi
 }
 
 /**
- * Gets the Etherscan API parameters from Hardhat config.
+ * Gets an Etherscan instance based on Hardhat config.
  * Throws an error if Etherscan API key is not present in config.
  */
 export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Promise<Etherscan> {
@@ -67,22 +67,18 @@ export const RESPONSE_OK = '1';
 
 export async function verifyAndGetStatus(
   params: {
-    apiKey: string;
     contractAddress: any;
     sourceCode: string;
-    sourceName: string;
     contractName: string;
     compilerVersion: string;
     constructorArguments: string;
   },
   etherscan: Etherscan,
 ) {
-
-  console.log(' USING2 the new etherscan api'  );
   const response = await etherscan.verify(
     params.contractAddress,
     params.sourceCode,
-    params.sourceName + ":" + params.contractName,
+    params.contractName,
     params.compilerVersion,
     params.constructorArguments,
   );
