@@ -522,7 +522,7 @@ async function verifyContractWithConstructorArgs(
   try {
     const status = await verifyAndGetStatus(params, etherscanApi);
 
-    if (status.isVerificationSuccess()) {
+    if (status.isSuccess()) {
       console.log(`Successfully verified contract ${artifact.contractName} at ${address}.`);
     } else {
       recordVerificationError(address, artifact.contractName, status.message, errorReport);

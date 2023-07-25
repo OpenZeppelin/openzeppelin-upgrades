@@ -1,14 +1,10 @@
-import { toCheckStatusRequest, toVerifyRequest } from './hardhat-etherscan/EtherscanVerifyContractRequest';
-import { getVerificationStatus, verifyContract } from './hardhat-etherscan/EtherscanService';
-import { resolveEtherscanApiKey } from './hardhat-etherscan/resolveEtherscanApiKey';
-
 import { UpgradesError } from '@openzeppelin/upgrades-core';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 import { request } from 'undici';
 
 import debug from './debug';
-import { getCurrentChainConfig } from '@nomicfoundation/hardhat-verify/dist/src/chain-config';
+import { Etherscan } from "@nomicfoundation/hardhat-verify/etherscan";
 
 /**
  * Call the configured Etherscan API with the given parameters.
@@ -45,9 +41,11 @@ export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params:
  */
 export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Promise<EtherscanAPIConfig> {
   const etherscanConfig: EtherscanConfig | undefined = (hre.config as any).etherscan; // This should never be undefined, but check just in case
-  const endpoints = await getCurrentChainConfig(hre.network, etherscanConfig ? etherscanConfig.customChains : []);
-  const key = resolveEtherscanApiKey(etherscanConfig?.apiKey, endpoints.network);
-  return { key, url: endpoints.urls.apiURL };
+  const endpoints = await Etherscan.getCurrentChainConfig(hre.network.name, hre.network.provider, etherscanConfig ? etherscanConfig.customChains : []);
+
+  const etherscan : Etherscan = Etherscan.fromChainConfig(etherscanConfig?.apiKey, endpoints);
+  const key = Etherscan.resolveApiKey(etherscanConfig?.apiKey, hre.network.name);
+  return { key, url: endpoints.urls.apiURL, etherscan };
 }
 
 /**
@@ -61,10 +59,11 @@ interface EtherscanConfig {
 /**
  * Parameters for calling the Etherscan API at a specific URL.
  */
-export interface EtherscanAPIConfig {
-  key: string;
+export type EtherscanAPIConfig = {
   url: string;
-}
+  key: string;
+  etherscan: Etherscan;
+}; // TODO cleanup
 
 /**
  * The response body from an Etherscan API call.
@@ -89,12 +88,26 @@ export async function verifyAndGetStatus(
   },
   etherscanApi: EtherscanAPIConfig,
 ) {
-  const request = toVerifyRequest(params);
-  const response = await verifyContract(etherscanApi.url, request);
-  const statusRequest = toCheckStatusRequest({
-    apiKey: etherscanApi.key,
-    guid: response.message,
-  });
-  const status = await getVerificationStatus(etherscanApi.url, statusRequest);
+
+  console.log(' USING the new etherscan api'  );
+  const response = await etherscanApi.etherscan.verify(
+    params.contractAddress,
+    params.sourceCode,
+    params.sourceName + ":" + params.contractName,
+    params.compilerVersion,
+    params.constructorArguments,
+  );
+  const status = await etherscanApi.etherscan.getVerificationStatus(response.message);
+  console.log('status', status);
   return status;
+
+
+  // const request = toVerifyRequest(params);
+  // const response = await verifyContract(etherscanApi.url, request);
+  // const statusRequest = toCheckStatusRequest({
+  //   apiKey: etherscanApi.key,
+  //   guid: response.message,
+  // });
+  // const status = await getVerificationStatus(etherscanApi.url, statusRequest);
+  // return status;
 }
