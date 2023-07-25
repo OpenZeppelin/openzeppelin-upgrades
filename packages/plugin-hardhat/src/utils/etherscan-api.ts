@@ -39,7 +39,7 @@ export async function callEtherscanApi(etherscan: Etherscan, params: any): Promi
  * Gets an Etherscan instance based on Hardhat config.
  * Throws an error if Etherscan API key is not present in config.
  */
-export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Promise<Etherscan> {
+export async function getEtherscanInstance(hre: HardhatRuntimeEnvironment): Promise<Etherscan> {
   const etherscanConfig: EtherscanConfig | undefined = (hre.config as any).etherscan; // This should never be undefined, but check just in case
   const chainConfig = await Etherscan.getCurrentChainConfig(hre.network.name, hre.network.provider, etherscanConfig ? etherscanConfig.customChains : []);
 

@@ -23,7 +23,7 @@ import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/cont
 import { keccak256 } from 'ethereumjs-util';
 
 import debug from './utils/debug';
-import { callEtherscanApi, getEtherscanAPIConfig, RESPONSE_OK } from './utils/etherscan-api';
+import { callEtherscanApi, getEtherscanInstance, RESPONSE_OK } from './utils/etherscan-api';
 import { verifyAndGetStatus } from './utils/etherscan-api';
 import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
 
@@ -101,7 +101,7 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
     await fullVerifyBeaconProxy(hre, proxyAddress, hardhatVerify, errorReport);
   } else if (await isBeacon(provider, proxyAddress)) {
     proxy = false;
-    const etherscan = await getEtherscanAPIConfig(hre);
+    const etherscan = await getEtherscanInstance(hre);
     await fullVerifyBeacon(hre, proxyAddress, hardhatVerify, etherscan, errorReport);
   } else {
     // Doesn't look like a proxy, so just verify directly
@@ -199,7 +199,7 @@ async function fullVerifyTransparentOrUUPS(
   const implAddress = await getImplementationAddress(provider, proxyAddress);
   await verifyImplementation(hardhatVerify, implAddress, errorReport);
 
-  const etherscan = await getEtherscanAPIConfig(hre);
+  const etherscan = await getEtherscanInstance(hre);
 
   await verifyTransparentOrUUPS();
   await linkProxyWithImplementationAbi(etherscan, proxyAddress, implAddress, errorReport);
@@ -264,7 +264,7 @@ async function fullVerifyBeaconProxy(
   const provider = hre.network.provider;
   const beaconAddress = await getBeaconAddress(provider, proxyAddress);
   const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
-  const etherscan = await getEtherscanAPIConfig(hre);
+  const etherscan = await getEtherscanInstance(hre);
 
   await fullVerifyBeacon(hre, beaconAddress, hardhatVerify, etherscan, errorReport);
   await verifyBeaconProxy();
