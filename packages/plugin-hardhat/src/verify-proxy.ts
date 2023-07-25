@@ -23,8 +23,9 @@ import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/cont
 import { keccak256 } from 'ethereumjs-util';
 
 import debug from './utils/debug';
-import { callEtherscanApi, EtherscanAPIConfig, getEtherscanAPIConfig, RESPONSE_OK } from './utils/etherscan-api';
+import { callEtherscanApi, getEtherscanAPIConfig, RESPONSE_OK } from './utils/etherscan-api';
 import { verifyAndGetStatus } from './utils/etherscan-api';
+import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
 
 /**
  * Hardhat artifact for a precompiled contract
@@ -296,7 +297,7 @@ async function fullVerifyBeacon(
   hre: HardhatRuntimeEnvironment,
   beaconAddress: any,
   hardhatVerify: (address: string) => Promise<any>,
-  etherscanApi: EtherscanAPIConfig,
+  etherscanApi: Etherscan,
   errorReport: ErrorReport,
 ) {
   const provider = hre.network.provider;
@@ -355,7 +356,7 @@ async function verifyImplementation(
  * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
 async function searchEvent(
-  etherscanApi: EtherscanAPIConfig,
+  etherscanApi: Etherscan,
   address: string,
   possibleContractInfo: VerifiableContractInfo[],
 ) {
@@ -398,7 +399,7 @@ async function searchEvent(
 async function verifyWithArtifactOrFallback(
   hre: HardhatRuntimeEnvironment,
   hardhatVerify: (address: string) => Promise<any>,
-  etherscanApi: EtherscanAPIConfig,
+  etherscanApi: Etherscan,
   address: string,
   possibleContractInfo: VerifiableContractInfo[],
   errorReport: ErrorReport,
@@ -457,7 +458,7 @@ async function verifyWithArtifactOrFallback(
  */
 async function attemptVerifyWithCreationEvent(
   hre: HardhatRuntimeEnvironment,
-  etherscanApi: EtherscanAPIConfig,
+  etherscanApi: Etherscan,
   address: string,
   possibleContractInfo: VerifiableContractInfo[],
   errorReport: ErrorReport,
@@ -501,7 +502,7 @@ async function attemptVerifyWithCreationEvent(
  */
 async function verifyContractWithConstructorArgs(
   hre: HardhatRuntimeEnvironment,
-  etherscanApi: EtherscanAPIConfig,
+  etherscan: Etherscan,
   address: any,
   artifact: ContractArtifact,
   constructorArguments: string,
@@ -510,7 +511,7 @@ async function verifyContractWithConstructorArgs(
   debug(`verifying contract ${address} with constructor args ${constructorArguments}`);
 
   const params = {
-    apiKey: etherscanApi.key,
+    apiKey: etherscan.apiKey,
     contractAddress: address,
     sourceCode: JSON.stringify(artifactsBuildInfo.input),
     sourceName: artifact.sourceName,
@@ -520,7 +521,7 @@ async function verifyContractWithConstructorArgs(
   };
 
   try {
-    const status = await verifyAndGetStatus(params, etherscanApi);
+    const status = await verifyAndGetStatus(params, etherscan);
 
     if (status.isSuccess()) {
       console.log(`Successfully verified contract ${artifact.contractName} at ${address}.`);
@@ -550,7 +551,7 @@ async function verifyContractWithConstructorArgs(
 async function getContractCreationTxHash(
   address: string,
   topic: string,
-  etherscanApi: EtherscanAPIConfig,
+  etherscanApi: Etherscan,
 ): Promise<any> {
   const params = {
     module: 'logs',
@@ -585,7 +586,7 @@ async function getContractCreationTxHash(
  * @param implAddress The implementation address
  */
 async function linkProxyWithImplementationAbi(
-  etherscanApi: EtherscanAPIConfig,
+  etherscanApi: Etherscan,
   proxyAddress: string,
   implAddress: string,
   errorReport: ErrorReport,
@@ -624,14 +625,14 @@ async function linkProxyWithImplementationAbi(
   }
 }
 
-async function checkProxyVerificationStatus(etherscanApi: EtherscanAPIConfig, guid: string) {
+async function checkProxyVerificationStatus(etherscan: Etherscan, guid: string) {
   const checkProxyVerificationParams = {
     module: 'contract',
     action: 'checkproxyverification',
-    apikey: etherscanApi.key,
+    apikey: etherscan.apiKey,
     guid: guid,
   };
-  return await callEtherscanApi(etherscanApi, checkProxyVerificationParams);
+  return await callEtherscanApi(etherscan, checkProxyVerificationParams);
 }
 
 /**
