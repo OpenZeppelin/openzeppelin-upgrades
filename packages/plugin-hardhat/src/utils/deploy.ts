@@ -18,7 +18,10 @@ export async function deploy(
   if (opts?.usePlatformDeploy) {
     return await platformDeploy(hre, factory, opts, ...args);
   } else {
-    return await ethersDeploy(factory, ...args, opts.txOverrides ?? {});
+    if (opts.txOverrides != null) {
+      args.push(opts.txOverrides);
+    }
+    return await ethersDeploy(factory, ...args);
   }
 }
 
