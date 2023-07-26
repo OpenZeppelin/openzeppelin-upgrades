@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Enable storage layout for overrides from Hardhat config. ([#851](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/851))
+
 ## 2.0.1 (2023-07-12)
 
 - Update OpenZeppelin Platform client dependencies. ([#845](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/845))
