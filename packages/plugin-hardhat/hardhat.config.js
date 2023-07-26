@@ -28,6 +28,7 @@ module.exports = {
     overrides: {
       'contracts/GapV1.sol': override,
       'contracts/GapV2.sol': override,
+      'contracts/GapV2_Bad.sol': override,
     },
   },
 };
