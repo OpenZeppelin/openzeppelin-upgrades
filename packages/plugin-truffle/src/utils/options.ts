@@ -32,6 +32,7 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     constructorArgs: opts.constructorArgs ?? [],
     useDeployedImplementation: opts.useDeployedImplementation ?? false,
     redeployImplementation: opts.redeployImplementation ?? 'onchange',
+    txOverrides: opts.txOverrides ?? {},
     ...withValidationDefaults(opts),
   };
 }

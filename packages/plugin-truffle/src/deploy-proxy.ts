@@ -53,7 +53,7 @@ export async function deployProxy(
 
     case 'uups': {
       const ProxyFactory = getProxyFactory(Contract);
-      proxyDeployment = Object.assign({ kind }, await deploy(deployer, ProxyFactory, impl, data));
+      proxyDeployment = Object.assign({ kind }, await deploy(deployer, opts, ProxyFactory, impl, data));
       break;
     }
 
@@ -62,7 +62,7 @@ export async function deployProxy(
       const TransparentUpgradeableProxyFactory = getTransparentUpgradeableProxyFactory(Contract);
       proxyDeployment = Object.assign(
         { kind },
-        await deploy(deployer, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
+        await deploy(deployer, opts, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
       );
       break;
     }

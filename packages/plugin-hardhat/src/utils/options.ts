@@ -31,6 +31,7 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     pollingInterval: opts.pollingInterval ?? 5e3,
     useDeployedImplementation: opts.useDeployedImplementation ?? false,
     redeployImplementation: opts.redeployImplementation ?? 'onchange',
+    txOverrides: opts.txOverrides ?? {},
     ...withValidationDefaults(opts),
   };
 }

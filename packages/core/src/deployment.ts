@@ -1,3 +1,4 @@
+import { Overrides } from 'ethers';
 import { promisify } from 'util';
 
 import debug from './utils/debug';
@@ -39,6 +40,11 @@ export interface DeployOpts {
    * Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract.
    */
   pollingInterval?: number;
+
+  /**
+   * Overrides for the transaction sent to deploy the implementation contract or proxy admin contract.
+   */
+  txOverrides?: Overrides;
 }
 
 /**
