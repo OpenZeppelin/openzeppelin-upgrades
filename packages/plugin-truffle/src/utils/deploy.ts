@@ -8,7 +8,7 @@ export async function deploy(
   contract: ContractClass,
   ...args: unknown[]
 ): Promise<Required<Deployment>> {
-  if (opts.txOverrides != null) {
+  if (opts.txOverrides !== undefined) {
     args.push(opts.txOverrides);
   }
   const { address, transactionHash: txHash } = await deployer.deploy(contract, ...args);
