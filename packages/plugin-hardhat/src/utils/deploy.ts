@@ -2,7 +2,7 @@ import type { Deployment, RemoteDeploymentId } from '@openzeppelin/upgrades-core
 import { ethers, ContractFactory, ContractMethodArgs } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { platformDeploy } from '../platform/deploy';
-import { PlatformDeployOptions, UpgradeOptions } from './options';
+import { EthersDeployOptions, PlatformDeployOptions, UpgradeOptions } from './options';
 
 export interface DeployTransaction {
   deployTransaction?: ethers.TransactionResponse;
@@ -10,7 +10,7 @@ export interface DeployTransaction {
 
 export async function deploy(
   hre: HardhatRuntimeEnvironment,
-  opts: UpgradeOptions & PlatformDeployOptions,
+  opts: UpgradeOptions & EthersDeployOptions & PlatformDeployOptions,
   factory: ContractFactory,
   ...args: unknown[]
 ): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> {
@@ -18,7 +18,7 @@ export async function deploy(
   if (opts?.usePlatformDeploy) {
     return await platformDeploy(hre, factory, opts, ...args);
   } else {
-    if (opts.txOverrides != null) {
+    if (opts.txOverrides !== undefined) {
       args.push(opts.txOverrides);
     }
     return await ethersDeploy(factory, ...args);
