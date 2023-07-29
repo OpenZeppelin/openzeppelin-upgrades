@@ -1,5 +1,5 @@
 import type { FunctionDefinition, TypeName, VariableDeclaration } from 'solidity-ast';
-import { ASTDereferencer } from '../ast-dereferencer';
+import { ASTDereferencer } from 'solidity-ast/utils';
 import { assert, assertUnreachable } from './assert';
 
 function serializeParameterType(parameter: VariableDeclaration, deref: ASTDereferencer): string {

@@ -4,7 +4,7 @@ import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
 
 import { SolcOutput, SolcBytecode } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
-import { astDereferencer } from '../ast-dereferencer';
+import { astDereferencer } from 'solidity-ast/utils';
 import { isNullish } from '../utils/is-nullish';
 import { getFunctionSignature } from '../utils/function';
 import { Version, getVersion } from '../version';

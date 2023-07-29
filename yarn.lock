@@ -11108,10 +11108,10 @@ solc@^0.4.20:
     semver "^5.3.0"
     yargs "^4.7.1"
 
-solidity-ast@^0.4.15:
-  version "0.4.40"
-  resolved "https://registry.yarnpkg.com/solidity-ast/-/solidity-ast-0.4.40.tgz#182709271b4e55efb34e2da934dfaa96ee0cf40b"
-  integrity sha512-M8uLBT2jgFB7B0iVAC5a2l71J8vim7aEm03AZkaHbDqyrl1pE+i5PriMEw6WlwGfHp3/Ym7cn9BqvVLQgRk+Yw==
+solidity-ast@^0.4.26:
+  version "0.4.49"
+  resolved "https://registry.npmjs.org/solidity-ast/-/solidity-ast-0.4.49.tgz#ecba89d10c0067845b7848c3a3e8cc61a4fc5b82"
+  integrity sha512-Pr5sCAj1SFqzwFZw1HPKSq0PehlQNdM8GwKyAVYh2DOn7/cCK8LUKD1HeHnKtTgBW7hi9h4nnnan7hpAg5RhWQ==
 
 sort-keys@^2.0.0:
   version "2.0.0"

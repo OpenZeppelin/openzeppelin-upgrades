@@ -4,7 +4,7 @@ import { findAll } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
 
 import { SolcOutput } from './solc-api';
-import { astDereferencer } from './ast-dereferencer';
+import { astDereferencer } from 'solidity-ast/utils';
 import { getStorageUpgradeErrors } from './storage';
 import { StorageLayout } from './storage/layout';
 import { extractStorageLayout } from './storage/extract';
