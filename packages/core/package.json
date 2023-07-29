@@ -36,7 +36,7 @@
     "openzeppelin-upgrades-core": "./dist/cli/cli.js"
   },
   "devDependencies": {
-    "@ava/typescript": "^2.0.0",
+    "@ava/typescript": "^4.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@openzeppelin/contracts": "4.8.3",
     "@openzeppelin/contracts-upgradeable": "4.8.3",
