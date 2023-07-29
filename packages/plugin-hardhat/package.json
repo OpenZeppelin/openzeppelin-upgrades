@@ -30,7 +30,7 @@
     "fgbg": "^0.1.4",
     "hardhat": "^2.0.2",
     "promisified": "^0.5.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^5.0.0"
   },
   "dependencies": {
     "@openzeppelin/defender-base-client": "^1.47.0",

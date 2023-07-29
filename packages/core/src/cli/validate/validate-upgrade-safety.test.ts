@@ -1,16 +1,13 @@
 import test from 'ava';
 
 import { promises as fs } from 'fs';
-import rimrafAsync from 'rimraf';
-import util from 'util';
+import { rimraf } from 'rimraf';
 import path from 'path';
 import os from 'os';
 
 import { artifacts } from 'hardhat';
 import { validateUpgradeSafety } from './validate-upgrade-safety';
 import { ReferenceContractNotFound } from './upgradeability-assessment';
-
-const rimraf = util.promisify(rimrafAsync);
 
 test.before(async () => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
