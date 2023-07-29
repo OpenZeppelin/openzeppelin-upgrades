@@ -27,7 +27,9 @@ export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, platformModule
 
     const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, getSigner(ImplFactory.runner));
     const beaconContract = attach(UpgradeableBeaconFactory, beaconAddress);
-    const upgradeTx = await beaconContract.upgradeTo(nextImpl);
+
+    const overrides = opts.txOverrides ? [opts.txOverrides] : [];
+    const upgradeTx = await beaconContract.upgradeTo(nextImpl, ...overrides);
 
     // @ts-ignore Won't be readonly because beaconContract was created through attach.
     beaconContract.deployTransaction = upgradeTx;
