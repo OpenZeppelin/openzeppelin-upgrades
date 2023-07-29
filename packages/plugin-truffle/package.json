@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "bn.js": "^5.1.2",
-    "rimraf": "^3.0.2"
+    "rimraf": "^5.0.0"
   },
   "dependencies": {
     "@openzeppelin/upgrades-core": "^1.26.2",
