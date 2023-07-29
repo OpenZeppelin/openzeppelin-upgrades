@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-import '@nomiclabs/hardhat-ethers';
+import '@nomicfoundation/hardhat-ethers';
 import './type-extensions';
 import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
@@ -118,8 +118,8 @@ extendConfig((config: HardhatConfig) => {
   }
 });
 
-if (tryRequire('@nomiclabs/hardhat-etherscan')) {
-  subtask('verify:verify').setAction(async (args, hre, runSuper) => {
+if (tryRequire('@nomicfoundation/hardhat-verify')) {
+  subtask('verify:etherscan').setAction(async (args, hre, runSuper) => {
     const { verify } = await import('./verify-proxy');
     return await verify(args, hre, runSuper);
   });

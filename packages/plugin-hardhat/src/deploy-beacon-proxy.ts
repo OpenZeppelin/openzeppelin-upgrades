@@ -20,6 +20,7 @@ import {
   ContractAddressOrInstance,
   getContractAddress,
   getInitializerData,
+  getSigner,
 } from './utils';
 import { enablePlatform } from './platform/utils';
 import { getContractInstance } from './utils/contract-instance';
@@ -65,7 +66,7 @@ export function makeDeployBeaconProxy(
     }
     opts.kind = 'beacon';
 
-    const beaconAddress = getContractAddress(beacon);
+    const beaconAddress = await getContractAddress(beacon);
     if (!(await isBeacon(provider, beaconAddress))) {
       throw new DeployBeaconProxyUnsupportedError(beaconAddress);
     }
@@ -79,8 +80,8 @@ export function makeDeployBeaconProxy(
       ]);
     }
 
-    const BeaconProxyFactory = await getBeaconProxyFactory(hre, attachTo.signer);
-    const proxyDeployment: Required<ProxyDeployment & DeployTransaction> & RemoteDeploymentId = Object.assign(
+    const BeaconProxyFactory = await getBeaconProxyFactory(hre, getSigner(attachTo.runner));
+    const proxyDeployment: Required<ProxyDeployment> & DeployTransaction & RemoteDeploymentId = Object.assign(
       { kind: opts.kind },
       await deploy(hre, opts, BeaconProxyFactory, beaconAddress, data),
     );

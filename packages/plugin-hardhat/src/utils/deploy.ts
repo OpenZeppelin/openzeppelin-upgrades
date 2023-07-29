@@ -1,13 +1,11 @@
 import type { Deployment, RemoteDeploymentId } from '@openzeppelin/upgrades-core';
-import debug from './debug';
 import type { ethers, ContractFactory } from 'ethers';
-import { getContractAddress } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { platformDeploy } from '../platform/deploy';
 import { PlatformDeployOptions, UpgradeOptions } from './options';
 
 export interface DeployTransaction {
-  deployTransaction: ethers.providers.TransactionResponse;
+  deployTransaction?: ethers.TransactionResponse;
 }
 
 export async function deploy(
@@ -15,7 +13,8 @@ export async function deploy(
   opts: UpgradeOptions & PlatformDeployOptions,
   factory: ContractFactory,
   ...args: unknown[]
-): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
+): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> {
+  // platform always includes RemoteDeploymentId, while ethers always includes DeployTransaction
   if (opts?.usePlatformDeploy) {
     return await platformDeploy(hre, factory, opts, ...args);
   } else {
@@ -23,20 +22,19 @@ export async function deploy(
   }
 }
 
-async function ethersDeploy(factory: ContractFactory, ...args: unknown[]) {
+async function ethersDeploy(
+  factory: ContractFactory,
+  ...args: unknown[]
+): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
   const contractInstance = await factory.deploy(...args);
-  const { deployTransaction } = contractInstance;
 
-  const address: string = getContractAddress({
-    from: await factory.signer.getAddress(),
-    nonce: deployTransaction.nonce,
-  });
-  if (address !== contractInstance.address) {
-    debug(
-      `overriding contract address from ${contractInstance.address} to ${address} for nonce ${deployTransaction.nonce}`,
-    );
+  const deployTransaction = contractInstance.deploymentTransaction();
+  if (deployTransaction === null) {
+    throw new Error('Broken invariant: deploymentTransaction is null');
   }
 
+  const address = await contractInstance.getAddress();
   const txHash = deployTransaction.hash;
+
   return { address, txHash, deployTransaction };
 }

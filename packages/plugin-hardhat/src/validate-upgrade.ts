@@ -44,7 +44,7 @@ export function makeValidateUpgrade(hre: HardhatRuntimeEnvironment): ValidateUpg
         assertStorageUpgradeSafe(origDeployData.layout, newDeployData.layout, newDeployData.fullOpts);
       }
     } else {
-      const referenceAddress = getContractAddress(referenceAddressOrImplFactory);
+      const referenceAddress = await getContractAddress(referenceAddressOrImplFactory);
       const { provider } = hre.network;
       const deployData = await getDeployData(hre, newImplFactory, opts);
       if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {

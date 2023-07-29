@@ -4,6 +4,7 @@ import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract, Signer } from 'ethers';
 import { getProxyAdminFactory } from './utils';
 import { disablePlatform } from './platform/utils';
+import { attach } from './utils/ethers';
 
 const SUCCESS_CHECK = chalk.green('✔') + ' ';
 const FAILURE_CROSS = chalk.red('✘') + ' ';
@@ -17,11 +18,12 @@ export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, platformMod
     disablePlatform(hre, platformModule, {}, changeProxyAdmin.name);
 
     const admin = await getManifestAdmin(hre, signer);
+    const manifestAdminAddress = await admin.getAddress();
     const proxyAdminAddress = await getAdminAddress(hre.network.provider, proxyAddress);
 
-    if (admin.address !== proxyAdminAddress) {
+    if (manifestAdminAddress !== proxyAdminAddress) {
       throw new Error('Proxy admin is not the one registered in the network manifest');
-    } else if (admin.address !== newAdmin) {
+    } else if (manifestAdminAddress !== newAdmin) {
       await admin.changeProxyAdmin(proxyAddress, newAdmin);
     }
   };
@@ -41,7 +43,7 @@ export function makeTransferProxyAdminOwnership(
     const manifest = await Manifest.forNetwork(provider);
     const { proxies } = await manifest.read();
     for (const { address, kind } of proxies) {
-      if (admin.address == (await getAdminAddress(provider, address))) {
+      if ((await admin.getAddress()) == (await getAdminAddress(provider, address))) {
         console.log(SUCCESS_CHECK + `${address} (${kind}) proxy ownership transfered through admin proxy`);
       } else {
         console.log(FAILURE_CROSS + `${address} (${kind}) proxy ownership not affected by admin proxy`);
@@ -66,5 +68,5 @@ export async function getManifestAdmin(hre: HardhatRuntimeEnvironment, signer?: 
   }
 
   const AdminFactory = await getProxyAdminFactory(hre, signer);
-  return AdminFactory.attach(proxyAdminAddress);
+  return attach(AdminFactory, proxyAdminAddress);
 }

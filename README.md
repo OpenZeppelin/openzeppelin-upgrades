@@ -16,7 +16,7 @@
 
 ```
 npm install --save-dev @openzeppelin/hardhat-upgrades
-npm install --save-dev '@nomiclabs/hardhat-ethers@^2.0.0' 'ethers@^5.0.0' # peer dependencies
+npm install --save-dev @nomicfoundation/hardhat-ethers ethers # peer dependencies
 ```
 
 ```js
@@ -46,11 +46,11 @@ async function main() {
   // Deploying
   const Box = await ethers.getContractFactory("Box");
   const instance = await upgrades.deployProxy(Box, [42]);
-  await instance.deployed();
+  await instance.waitForDeployment();
 
   // Upgrading
   const BoxV2 = await ethers.getContractFactory("BoxV2");
-  const upgraded = await upgrades.upgradeProxy(instance.address, BoxV2);
+  const upgraded = await upgrades.upgradeProxy(await instance.getAddress(), BoxV2);
 }
 
 main();
@@ -77,7 +77,7 @@ it('works before and after upgrading', async function () {
   const instance = await upgrades.deployProxy(Box, [42]);
   assert.strictEqual(await instance.retrieve(), 42);
   
-  await upgrades.upgradeProxy(instance.address, BoxV2);
+  await upgrades.upgradeProxy(instance, BoxV2);
   assert.strictEqual(await instance.retrieve(), 42);
 });
 ```

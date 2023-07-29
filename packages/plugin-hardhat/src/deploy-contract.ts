@@ -30,7 +30,7 @@ async function deployNonUpgradeableContract(
     assertNonUpgradeable(deployData);
   }
 
-  const deployment: Required<Deployment & DeployTransaction> & RemoteDeploymentId = await deploy(
+  const deployment: Required<Deployment> & DeployTransaction & RemoteDeploymentId = await deploy(
     hre,
     opts,
     Contract,

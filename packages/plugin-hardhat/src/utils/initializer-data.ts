@@ -1,4 +1,5 @@
-import { Interface } from '@ethersproject/abi';
+import { UpgradesError } from '@openzeppelin/upgrades-core';
+import { Interface } from 'ethers';
 
 export function getInitializerData(
   contractInterface: Interface,
@@ -12,15 +13,18 @@ export function getInitializerData(
   const allowNoInitialization = initializer === undefined && args.length === 0;
   initializer = initializer ?? 'initialize';
 
-  try {
-    const fragment = contractInterface.getFunction(initializer);
-    return contractInterface.encodeFunctionData(fragment, args);
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      if (allowNoInitialization && e.message.includes('no matching function')) {
-        return '0x';
-      }
+  const fragment = contractInterface.getFunction(initializer);
+  if (fragment === null) {
+    if (allowNoInitialization) {
+      return '0x';
+    } else {
+      throw new UpgradesError(
+        `The contract has no initializer function matching the name or signature: ${initializer}`,
+        () =>
+          `Ensure that the initializer function exists, specify an existing function with the 'initializer' option, or set the 'initializer' option to false to omit the initializer call.`,
+      );
     }
-    throw e;
+  } else {
+    return contractInterface.encodeFunctionData(fragment, args);
   }
 }

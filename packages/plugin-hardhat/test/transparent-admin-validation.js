@@ -12,7 +12,7 @@ test.before(async t => {
 test('admin validation', async t => {
   const { Greeter, GreeterV2 } = t.context;
   const greeter = await upgrades.deployProxy(Greeter, ['Hola admin!'], { kind: 'transparent' });
-  await upgrades.admin.changeProxyAdmin(greeter.address, NEW_ADMIN);
+  await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), NEW_ADMIN);
   await t.throwsAsync(
     () => upgrades.upgradeProxy(greeter, GreeterV2),
     undefined,

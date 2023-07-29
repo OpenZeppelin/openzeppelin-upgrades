@@ -48,7 +48,8 @@ test.afterEach.always(() => {
 test('block proposing an upgrade on beacon proxy', async t => {
   const { proposeUpgrade, greeter, GreeterV2 } = t.context;
 
-  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), {
+  const addr = await greeter.getAddress();
+  await t.throwsAsync(() => proposeUpgrade(addr, GreeterV2), {
     message: 'Beacon proxy is not currently supported with platform.proposeUpgrade()',
   });
 });
@@ -56,7 +57,8 @@ test('block proposing an upgrade on beacon proxy', async t => {
 test('block proposing an upgrade on beacon', async t => {
   const { proposeUpgrade, greeterBeacon, GreeterV2 } = t.context;
 
-  await t.throwsAsync(() => proposeUpgrade(greeterBeacon.address, GreeterV2), {
+  const addr = await greeterBeacon.getAddress();
+  await t.throwsAsync(() => proposeUpgrade(addr, GreeterV2), {
     message: /Contract at \S+ doesn't look like an ERC 1967 proxy with a logic contract address/,
   });
 });
@@ -66,7 +68,8 @@ test('block proposing an upgrade on generic contract', async t => {
 
   const genericContract = await Greeter.deploy();
 
-  await t.throwsAsync(() => proposeUpgrade(genericContract.address, GreeterV2), {
+  const addr = await genericContract.getAddress();
+  await t.throwsAsync(() => proposeUpgrade(addr, GreeterV2), {
     message: /Contract at \S+ doesn't look like an ERC 1967 proxy with a logic contract address/,
   });
 });
@@ -74,8 +77,10 @@ test('block proposing an upgrade on generic contract', async t => {
 test('block proposing an upgrade reusing prepared implementation on beacon proxy', async t => {
   const { proposeUpgrade, greeter, GreeterV2 } = t.context;
 
-  await upgrades.prepareUpgrade(greeter.address, GreeterV2);
-  await t.throwsAsync(() => proposeUpgrade(greeter.address, GreeterV2), {
+  const addr = await greeter.getAddress();
+
+  await upgrades.prepareUpgrade(addr, GreeterV2);
+  await t.throwsAsync(() => proposeUpgrade(addr, GreeterV2), {
     message: 'Beacon proxy is not currently supported with platform.proposeUpgrade()',
   });
 });
@@ -83,8 +88,10 @@ test('block proposing an upgrade reusing prepared implementation on beacon proxy
 test('block proposing an upgrade reusing prepared implementation on beacon', async t => {
   const { proposeUpgrade, greeterBeacon, GreeterV2 } = t.context;
 
-  await upgrades.prepareUpgrade(greeterBeacon.address, GreeterV2);
-  await t.throwsAsync(() => proposeUpgrade(greeterBeacon.address, GreeterV2), {
+  const addr = await greeterBeacon.getAddress();
+
+  await upgrades.prepareUpgrade(addr, GreeterV2);
+  await t.throwsAsync(() => proposeUpgrade(addr, GreeterV2), {
     message: /Contract at \S+ doesn't look like an ERC 1967 proxy with a logic contract address/,
   });
 });

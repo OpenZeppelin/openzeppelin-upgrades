@@ -47,8 +47,8 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
   const Box = await ethers.getContractFactory("Box");
   const box = await upgrades.deployProxy(Box, [42]);
-  await box.deployed();
-  console.log("Box deployed to:", box.address);
+  await box.waitForDeployment();
+  console.log("Box deployed to:", await box.getAddress());
 }
 
 main();
@@ -64,8 +64,8 @@ const { ethers, platform } = require("hardhat");
 async function main() {
   const Box = await ethers.getContractFactory("Box");
   const box = await platform.deployProxy(Box, [42]);
-  await box.deployed();
-  console.log("Box deployed to:", box.address);
+  await box.waitForDeployment();
+  console.log("Box deployed to:", await box.getAddress());
 }
 
 main();
@@ -81,8 +81,8 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
   const Box = await ethers.getContractFactory("Box");
   const box = await upgrades.deployProxy(Box, [42], { usePlatformDeploy: true });
-  await box.deployed();
-  console.log("Box deployed to:", box.address);
+  await box.waitForDeployment();
+  console.log("Box deployed to:", await box.getAddress());
 }
 
 main();

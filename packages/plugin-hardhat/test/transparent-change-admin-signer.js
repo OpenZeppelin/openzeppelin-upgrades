@@ -10,8 +10,8 @@ test('changeProxyAdmin - signer', async t => {
   const Greeter = await ethers.getContractFactory('Greeter', signer);
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
-  await upgrades.admin.changeProxyAdmin(greeter.address, testAddress, signer);
-  const newAdmin = await getAdminAddress(network.provider, greeter.address);
+  await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), testAddress, signer);
+  const newAdmin = await getAdminAddress(network.provider, await greeter.getAddress());
 
   t.is(newAdmin, testAddress);
 });

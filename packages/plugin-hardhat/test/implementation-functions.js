@@ -66,7 +66,7 @@ test('deploy implementation - before proxy deployment', async t => {
 
   const greeterImplAddr = await upgrades.deployImplementation(Greeter);
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
-  t.is(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(greeter.address));
+  t.is(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(await greeter.getAddress()));
 });
 
 test('deploy implementation - after proxy deployment', async t => {
@@ -74,7 +74,7 @@ test('deploy implementation - after proxy deployment', async t => {
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
   const greeterImplAddr = await upgrades.deployImplementation(Greeter);
-  t.is(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(greeter.address));
+  t.is(greeterImplAddr, await upgrades.erc1967.getImplementationAddress(await greeter.getAddress()));
 });
 
 test('deploy implementation - with txresponse', async t => {
@@ -82,7 +82,7 @@ test('deploy implementation - with txresponse', async t => {
 
   const txResponse = await upgrades.deployImplementation(Greeter, { getTxResponse: true });
 
-  const precomputedAddress = ethers.utils.getContractAddress(txResponse);
+  const precomputedAddress = ethers.getCreateAddress(txResponse);
   const txReceipt = await txResponse.wait();
 
   t.is(txReceipt.contractAddress, precomputedAddress);
@@ -330,13 +330,13 @@ test('prepare upgrade on deployed implementation, then upgrade proxy', async t =
   const { Greeter, GreeterV2 } = t.context;
 
   const greeterProxy = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!']);
-  const v1Impl = await upgrades.erc1967.getImplementationAddress(greeterProxy.address);
+  const v1Impl = await upgrades.erc1967.getImplementationAddress(await greeterProxy.getAddress());
 
   const v2Impl = await upgrades.prepareUpgrade(v1Impl, GreeterV2, { kind: 'transparent' });
   t.not(v1Impl, v2Impl);
 
   const greeterProxyV2 = await upgrades.upgradeProxy(greeterProxy, GreeterV2);
-  const v2ImplUpgraded = await upgrades.erc1967.getImplementationAddress(greeterProxy.address);
+  const v2ImplUpgraded = await upgrades.erc1967.getImplementationAddress(await greeterProxy.getAddress());
   t.is(await greeterProxyV2.greet(), 'Hello, Hardhat!');
 
   t.is(v2Impl, v2ImplUpgraded);

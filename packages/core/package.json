@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/upgrades-core",
-  "version": "1.27.1",
+  "version": "1.27.2",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/core",
   "license": "MIT",
@@ -37,8 +37,7 @@
   },
   "devDependencies": {
     "@ava/typescript": "^2.0.0",
-    "@nomiclabs/hardhat-ethers": "^2.0.2",
-    "@nomiclabs/hardhat-etherscan": "^3.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@openzeppelin/contracts": "4.8.3",
     "@openzeppelin/contracts-upgradeable": "4.8.3",
     "@types/cbor": "^5.0.0",
@@ -58,7 +57,7 @@
   "dependencies": {
     "cbor": "^8.0.0",
     "chalk": "^4.1.0",
-    "compare-versions": "^5.0.0",
+    "compare-versions": "^6.0.0",
     "debug": "^4.1.1",
     "ethereumjs-util": "^7.0.3",
     "minimist": "^1.2.7",

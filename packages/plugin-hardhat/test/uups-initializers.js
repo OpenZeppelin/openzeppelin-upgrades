@@ -25,6 +25,17 @@ test('unique function selector', async t => {
   t.is((await instance.x()).toString(), '42');
 });
 
+test('invalid function selector', async t => {
+  const { InitializerOverloaded } = t.context;
+  const error = await t.throwsAsync(
+    upgrades.deployProxy(InitializerOverloaded, [42], {
+      kind: 'uups',
+      initializer: 'invalid(uint256)',
+    }),
+  );
+  t.regex(error.message, /The contract has no initializer function matching the name or signature: invalid\(uint256\)/);
+});
+
 test('no initialize function and no args', async t => {
   const { InitializerMissing } = t.context;
   await upgrades.deployProxy(InitializerMissing, { kind: 'uups' });
