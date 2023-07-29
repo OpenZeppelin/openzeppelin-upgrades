@@ -4,11 +4,10 @@ import { exec } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import rimrafAsync from 'rimraf';
+import { rimraf } from 'rimraf';
 import { artifacts } from 'hardhat';
 
 const execAsync = promisify(exec);
-const rimraf = promisify(rimrafAsync);
 
 const CLI = 'node dist/cli/cli.js';
 

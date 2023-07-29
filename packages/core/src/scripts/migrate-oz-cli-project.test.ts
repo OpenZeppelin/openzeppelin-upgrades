@@ -1,8 +1,7 @@
 import os from 'os';
 import test from 'ava';
 import path from 'path';
-import util from 'util';
-import rimrafAsync from 'rimraf';
+import { rimraf } from 'rimraf';
 import { promises as fs } from 'fs';
 import { compare as compareVersions } from 'compare-versions';
 import {
@@ -13,7 +12,6 @@ import {
   migrateLegacyProject,
 } from './migrate-oz-cli-project';
 
-const rimraf = util.promisify(rimrafAsync);
 const BASE_PATH = 'src/scripts';
 const OPENZEPPELIN_FOLDER = '.openzeppelin';
 const PROJECT_FILE = path.join(OPENZEPPELIN_FOLDER, 'project.json');
