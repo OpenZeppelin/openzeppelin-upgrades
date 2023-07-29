@@ -2,19 +2,33 @@ import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract, Signer } from 'ethers';
-import { getProxyAdminFactory } from './utils';
+import { EthersDeployOptions, getProxyAdminFactory } from './utils';
 import { disablePlatform } from './platform/utils';
 import { attach } from './utils/ethers';
 
 const SUCCESS_CHECK = chalk.green('✔') + ' ';
 const FAILURE_CROSS = chalk.red('✘') + ' ';
 
-export type ChangeAdminFunction = (proxyAddress: string, newAdmin: string, signer?: Signer) => Promise<void>;
-export type TransferProxyAdminOwnershipFunction = (newOwner: string, signer?: Signer) => Promise<void>;
+export type ChangeAdminFunction = (
+  proxyAddress: string,
+  newAdmin: string,
+  signer?: Signer,
+  opts?: EthersDeployOptions,
+) => Promise<void>;
+export type TransferProxyAdminOwnershipFunction = (
+  newOwner: string,
+  signer?: Signer,
+  opts?: EthersDeployOptions,
+) => Promise<void>;
 export type GetInstanceFunction = (signer?: Signer) => Promise<Contract>;
 
 export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, platformModule: boolean): ChangeAdminFunction {
-  return async function changeProxyAdmin(proxyAddress, newAdmin, signer?: Signer) {
+  return async function changeProxyAdmin(
+    proxyAddress: string,
+    newAdmin: string,
+    signer?: Signer,
+    opts: EthersDeployOptions = {},
+  ) {
     disablePlatform(hre, platformModule, {}, changeProxyAdmin.name);
 
     const admin = await getManifestAdmin(hre, signer);
@@ -24,7 +38,8 @@ export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, platformMod
     if (manifestAdminAddress !== proxyAdminAddress) {
       throw new Error('Proxy admin is not the one registered in the network manifest');
     } else if (manifestAdminAddress !== newAdmin) {
-      await admin.changeProxyAdmin(proxyAddress, newAdmin);
+      const overrides = opts.txOverrides ? [opts.txOverrides] : [];
+      await admin.changeProxyAdmin(proxyAddress, newAdmin, ...overrides);
     }
   };
 }
@@ -33,11 +48,13 @@ export function makeTransferProxyAdminOwnership(
   hre: HardhatRuntimeEnvironment,
   platformModule: boolean,
 ): TransferProxyAdminOwnershipFunction {
-  return async function transferProxyAdminOwnership(newOwner, signer?: Signer) {
+  return async function transferProxyAdminOwnership(newOwner: string, signer?: Signer, opts: EthersDeployOptions = {}) {
     disablePlatform(hre, platformModule, {}, transferProxyAdminOwnership.name);
 
     const admin = await getManifestAdmin(hre, signer);
-    await admin.transferOwnership(newOwner);
+
+    const overrides = opts.txOverrides ? [opts.txOverrides] : [];
+    await admin.transferOwnership(newOwner, ...overrides);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);

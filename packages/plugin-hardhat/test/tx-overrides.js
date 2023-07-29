@@ -107,14 +107,29 @@ test('prepareUpgrade', async t => {
   await assertGasLimit(t, oldBlockNumber, 10000007n, 1);
 });
 
-// test('changeProxyAdmin', async t => {
-//   const { Greeter } = t.context;
-//   const greeter = await upgrades.deployProxy(Greeter, ['Hello']);
-//   const oldBlockNumber = await ethers.provider.getBlockNumber();
+test('changeProxyAdmin', async t => {
+  const { Greeter } = t.context;
+  const greeter = await upgrades.deployProxy(Greeter, ['Hello']);
+  const oldBlockNumber = await ethers.provider.getBlockNumber();
 
-//   const [deployer] = await ethers.getSigners();
+  const [deployer, newAdmin] = await ethers.getSigners();
 
-//   await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), '0x0011223344556677889900112233445566778899', deployer);
+  await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), newAdmin.address, deployer, {
+    txOverrides: { gasLimit: 10000008n },
+  });
 
-//   await assertGasLimit(t, oldBlockNumber, 10000008n, 1);
-// });
+  await assertGasLimit(t, oldBlockNumber, 10000008n, 1);
+});
+
+test('transferProxyAdminOwnership', async t => {
+  await upgrades.deployProxyAdmin();
+  const oldBlockNumber = await ethers.provider.getBlockNumber();
+
+  const [deployer, newOwner] = await ethers.getSigners();
+
+  await upgrades.admin.transferProxyAdminOwnership(newOwner.address, deployer, {
+    txOverrides: { gasLimit: 10000009n },
+  });
+
+  await assertGasLimit(t, oldBlockNumber, 10000009n, 1);
+});
