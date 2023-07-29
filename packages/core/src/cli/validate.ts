@@ -101,7 +101,7 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
 }
 
 function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['kind'][] {
-  type errorKindsType = typeof errorKinds[number];
+  type errorKindsType = (typeof errorKinds)[number];
 
   if (unsafeAllow === undefined) {
     return [];

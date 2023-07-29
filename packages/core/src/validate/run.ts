@@ -48,7 +48,7 @@ export type ValidationError =
 
 interface ValidationErrorBase {
   src: string;
-  kind: typeof errorKinds[number];
+  kind: (typeof errorKinds)[number];
 }
 
 interface ValidationErrorWithName extends ValidationErrorBase {

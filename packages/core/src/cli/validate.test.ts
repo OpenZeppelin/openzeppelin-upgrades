@@ -99,7 +99,7 @@ test('withDefaults - all', t => {
   t.is(opts.unsafeSkipStorageCheck, true);
   t.is(opts.unsafeAllowCustomTypes, true);
   t.is(opts.unsafeAllowLinkedLibraries, true);
-  t.true(opts.unsafeAllow.every((kind: string) => errorKinds.includes(kind as typeof errorKinds[number])));
+  t.true(opts.unsafeAllow.every((kind: string) => errorKinds.includes(kind as (typeof errorKinds)[number])));
 });
 
 test('withDefaults - invalid unsafeAllow', t => {

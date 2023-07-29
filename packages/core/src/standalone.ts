@@ -23,7 +23,12 @@ export class UpgradeableContract {
   readonly errors: ValidationError[];
   readonly layout: StorageLayout;
 
-  constructor(readonly name: string, solcInput: SolcInput, solcOutput: SolcOutput, opts: ValidationOptions = {}) {
+  constructor(
+    readonly name: string,
+    solcInput: SolcInput,
+    solcOutput: SolcOutput,
+    opts: ValidationOptions = {},
+  ) {
     const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
     const validation = validate(solcOutput, decodeSrc);
     this.version = getContractVersion(validation, name);
