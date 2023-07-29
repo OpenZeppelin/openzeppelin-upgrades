@@ -2251,10 +2251,10 @@
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
 
-"@openzeppelin/platform-deploy-client@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/platform-deploy-client/-/platform-deploy-client-0.9.0.tgz#6d7092066d1c5cf4c25ba6f9d8164e8d1c425b61"
-  integrity sha512-VepsNJu5B5xhrKMg//hROFljlxlNhlkcgLSKl8rqapKiRFN/dxXtSVmmpNmySrCFnbbV/6twfhuhYGAZiG7oAw==
+"@openzeppelin/platform-deploy-client@^1.0.0":
+  version "1.47.1"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/platform-deploy-client/-/platform-deploy-client-1.47.1.tgz#a07a8b056d77480a4c3cf2a0b5317d56017fbf09"
+  integrity sha512-cMJxDiauk2ej1pfDvfVafIwTQUA+AH6OkGV+a4KG2mGQ3XRR5hstOLzHR/2BofAL8rNjpmFaYI8Sdlbx7Xt+Yw==
   dependencies:
     "@ethersproject/abi" "^5.6.3"
     "@openzeppelin/defender-base-client" "^1.47.0"

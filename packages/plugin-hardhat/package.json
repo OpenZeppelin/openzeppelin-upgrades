@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@openzeppelin/defender-base-client": "^1.47.0",
-    "@openzeppelin/platform-deploy-client": "^0.9.0",
+    "@openzeppelin/platform-deploy-client": "^1.0.0",
     "@openzeppelin/upgrades-core": "^1.27.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
