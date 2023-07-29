@@ -128,13 +128,13 @@
   dependencies:
     xss "^1.0.8"
 
-"@ava/typescript@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@ava/typescript/-/typescript-2.0.0.tgz#519aff16ce53bec7f323cae0bcf427a957679ba3"
-  integrity sha512-sn+upcMk81AMrlnx/hb/9T7gCGuBfw7hi+p79NPSSQMvY2G64mOB7qRaDExiHiZfZ7FN9j7HwQeFhHZLGD/NWQ==
+"@ava/typescript@^4.0.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@ava/typescript/-/typescript-4.1.0.tgz#0dde7b3bbcfe59c1424fb20eb289b4a2b3694418"
+  integrity sha512-1iWZQ/nr9iflhLK9VN8H+1oDZqe93qxNnyYUz+jTzkYPAHc5fdZXBrqmNIgIfFhWYXK5OaQ5YtC7OmLeTNhVEg==
   dependencies:
-    escape-string-regexp "^4.0.0"
-    execa "^5.0.0"
+    escape-string-regexp "^5.0.0"
+    execa "^7.1.1"
 
 "@aws-crypto/sha256-js@1.2.2":
   version "1.2.2"
