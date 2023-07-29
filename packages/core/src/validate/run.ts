@@ -1,10 +1,9 @@
 import { Node } from 'solidity-ast/node';
-import { isNodeType, findAll, ASTDereferencer } from 'solidity-ast/utils';
+import { isNodeType, findAll, ASTDereferencer, astDereferencer } from 'solidity-ast/utils';
 import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
 
 import { SolcOutput, SolcBytecode } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
-import { astDereferencer } from 'solidity-ast/utils';
 import { isNullish } from '../utils/is-nullish';
 import { getFunctionSignature } from '../utils/function';
 import { Version, getVersion } from '../version';

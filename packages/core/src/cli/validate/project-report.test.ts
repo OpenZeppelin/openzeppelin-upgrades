@@ -3,11 +3,10 @@ import { UpgradeableContractErrorReport } from '../../validate';
 
 import _test, { TestFn } from 'ava';
 import { ContractDefinition } from 'solidity-ast';
-import { findAll } from 'solidity-ast/utils';
+import { findAll, astDereferencer } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
 
 import { SolcOutput } from '../../solc-api';
-import { astDereferencer } from 'solidity-ast/utils';
 import { extractStorageLayout } from '../../storage/extract';
 import { StorageLayoutComparator } from '../../storage/compare';
 import { StorageLayout, getDetailedLayout } from '../../storage/layout';

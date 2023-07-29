@@ -1,9 +1,8 @@
 import _test, { TestFn } from 'ava';
-import { findAll } from 'solidity-ast/utils';
+import { findAll, astDereferencer } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
 
 import { SolcOutput } from './solc-api';
-import { astDereferencer } from 'solidity-ast/utils';
 import { getStorageUpgradeErrors } from './storage';
 import { extractStorageLayout } from './storage/extract';
 import { BuildInfo } from 'hardhat/types';

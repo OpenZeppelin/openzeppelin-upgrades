@@ -6,11 +6,10 @@ import {
   TypeDescriptions,
   VariableDeclaration,
 } from 'solidity-ast';
-import { isNodeType, findAll } from 'solidity-ast/utils';
+import { isNodeType, findAll, ASTDereferencer } from 'solidity-ast/utils';
 import { StorageLayout, TypeItem } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
-import { ASTDereferencer } from 'solidity-ast/utils';
 import { mapValues } from '../utils/map-values';
 import { pick } from '../utils/pick';
 import { execall } from '../utils/execall';

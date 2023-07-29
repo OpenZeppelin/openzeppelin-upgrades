@@ -1,11 +1,10 @@
 import test from 'ava';
 import { artifacts } from 'hardhat';
 import { FunctionDefinition } from 'solidity-ast';
-import { findAll } from 'solidity-ast/utils';
+import { findAll, astDereferencer } from 'solidity-ast/utils';
 
 import { getFunctionSignature } from './function';
 import { SolcOutput } from '../solc-api';
-import { astDereferencer } from 'solidity-ast/utils';
 
 testContract('ContractFunctionSignatures');
 testContract('LibraryFunctionSignatures');
