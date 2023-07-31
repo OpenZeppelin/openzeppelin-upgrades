@@ -24,6 +24,7 @@ The following options are common to some functions.
 ** If set to `"always"`, the implementation contract is always redeployed even if it was previously deployed with the same bytecode.
 ** If set to `"never"`, the implementation contract is never redeployed. If the implementation contract was not previously deployed or is not found in the network file, an error will be thrown.
 ** If set to `"onchange"`, the implementation contract is redeployed only if the bytecode has changed from previous deployments.
+* `txOverrides`: (`TruffleTxOptions`) A Truffle https://trufflesuite.com/docs/truffle/how-to/contracts/run-migrations/#deployerdeploycontract-args-options[options] object to override transaction parameters, such as `gas` and `gasPrice`. Applies to all transactions sent by a function with this option, even if the function sends multiple transactions.
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -49,6 +50,7 @@ async function deployProxy(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: TruffleTxOptions,
     kind?: 'uups' | 'transparent',
   },
 ): Promise<ContractInstance>
@@ -90,6 +92,7 @@ async function upgradeProxy(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: TruffleTxOptions,
     kind?: 'uups' | 'transparent',
   },
 ): Promise<ContractInstance>
@@ -123,6 +126,7 @@ async function deployBeacon(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: TruffleTxOptions,
   },
 ): Promise<ContractInstance>
 ----
@@ -160,6 +164,7 @@ async function upgradeBeacon(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: TruffleTxOptions,
   },
 ): Promise<ContractInstance>
 ----
@@ -193,6 +198,7 @@ async function deployBeaconProxy(
   opts?: {
     deployer?: Deployer,
     initializer?: string | false,
+    txOverrides?: TruffleTxOptions,
   },
 ): Promise<ContractInstance>
 ----
@@ -290,6 +296,7 @@ async function deployImplementation(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: TruffleTxOptions,
     kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<string>
@@ -379,6 +386,7 @@ async function prepareUpgrade(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: TruffleTxOptions,
     kind?: 'uups' | 'transparent' | 'beacon',
   },
 ): Promise<string>
@@ -407,6 +415,7 @@ async function deployProxyAdmin(
     deployer?: Deployer,
     timeout?: number,
     pollingInterval?: number,
+    txOverrides?: TruffleTxOptions,
   },
 ): Promise<string>
 ----
@@ -434,6 +443,10 @@ Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy
 async function changeProxyAdmin(
   proxyAddress: string,
   newAdmin: string,
+  opts?: {
+    deployer?: Deployer,
+    txOverrides?: TruffleTxOptions,
+  },
 ): Promise<void>
 ----
 
@@ -443,6 +456,8 @@ Changes the admin for a specific proxy.
 
 * `proxyAddress` - the address of the proxy to change.
 * `newAdmin` - the new admin address.
+* `opts` - an object with options:
+** See <<common-options>>.
 
 [[admin-transfer-proxy-admin-ownership]]
 == admin.transferProxyAdminOwnership
@@ -451,6 +466,11 @@ Changes the admin for a specific proxy.
 ----
 async function transferProxyAdminOwnership(
   newAdmin: string,
+  opts?: {
+    deployer?: Deployer,
+    txOverrides?: TruffleTxOptions,
+  },
+
 ): Promise<void>
 ----
 
@@ -459,6 +479,8 @@ Changes the owner of the proxy admin contract, which is the default admin for up
 *Parameters:*
 
 * `newAdmin` - the new admin address.
+* `opts` - an object with options:
+** See <<common-options>>.
 
 [[erc1967]]
 == erc1967
