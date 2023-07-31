@@ -83,8 +83,7 @@ export type DeployImplementationOptions = EthersDeployOptions &
   StandaloneOptions &
   GetTxResponse &
   PlatformDeployOptions;
-export type DeployContractOptions = EthersDeployOptions &
-  StandaloneOptions &
+export type DeployContractOptions = StandaloneOptions &
   GetTxResponse &
   PlatformDeployOptions & {
     unsafeAllowDeployContract?: boolean;
