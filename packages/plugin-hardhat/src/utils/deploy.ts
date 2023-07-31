@@ -1,5 +1,5 @@
 import type { Deployment, RemoteDeploymentId } from '@openzeppelin/upgrades-core';
-import { ethers, ContractFactory, ContractMethodArgs } from 'ethers';
+import type { ethers, ContractFactory, ContractMethodArgs } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { platformDeploy } from '../platform/deploy';
 import { EthersDeployOptions, PlatformDeployOptions, UpgradeOptions } from './options';
