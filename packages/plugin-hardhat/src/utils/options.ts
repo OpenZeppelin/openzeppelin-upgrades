@@ -11,7 +11,8 @@ import { Overrides } from 'ethers';
  * Options for functions that can deploy an implementation contract.
  */
 export type StandaloneOptions = StandaloneValidationOptions &
-  DeployOpts & {
+  DeployOpts &
+  EthersDeployOptions & {
     constructorArgs?: unknown[];
     /**
      * @deprecated Use `redeployImplementation = 'never'` instead.
@@ -32,6 +33,7 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     pollingInterval: opts.pollingInterval ?? 5e3,
     useDeployedImplementation: opts.useDeployedImplementation ?? false,
     redeployImplementation: opts.redeployImplementation ?? 'onchange',
+    txOverrides: opts.txOverrides ?? {},
     ...withValidationDefaults(opts),
   };
 }
@@ -78,24 +80,20 @@ export type DeployBeaconProxyOptions = EthersDeployOptions &
   ProxyKindOption &
   Initializer &
   PlatformDeployOptions;
-export type DeployBeaconOptions = EthersDeployOptions & StandaloneOptions & Platform;
-export type DeployImplementationOptions = EthersDeployOptions &
-  StandaloneOptions &
-  GetTxResponse &
-  PlatformDeployOptions;
-export type DeployContractOptions = StandaloneOptions &
+export type DeployBeaconOptions = StandaloneOptions & Platform;
+export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & PlatformDeployOptions;
+export type DeployContractOptions = Omit<StandaloneOptions, 'txOverrides'> & // ethers not supported for deployContract
   GetTxResponse &
   PlatformDeployOptions & {
     unsafeAllowDeployContract?: boolean;
   };
 export type DeployProxyAdminOptions = EthersDeployOptions & DeployOpts & Platform;
-export type DeployProxyOptions = EthersDeployOptions & StandaloneOptions & Initializer & PlatformDeployOptions;
+export type DeployProxyOptions = StandaloneOptions & Initializer & PlatformDeployOptions;
 export type ForceImportOptions = ProxyKindOption;
-export type PrepareUpgradeOptions = EthersDeployOptions & UpgradeOptions & GetTxResponse & PlatformDeployOptions;
-export type UpgradeBeaconOptions = EthersDeployOptions & UpgradeOptions & Platform;
-export type UpgradeProxyOptions = EthersDeployOptions &
-  UpgradeOptions & {
-    call?: { fn: string; args?: unknown[] } | string;
-  } & Platform;
+export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & PlatformDeployOptions;
+export type UpgradeBeaconOptions = UpgradeOptions & Platform;
+export type UpgradeProxyOptions = UpgradeOptions & {
+  call?: { fn: string; args?: unknown[] } | string;
+} & Platform;
 export type ValidateImplementationOptions = StandaloneValidationOptions;
 export type ValidateUpgradeOptions = ValidationOptions;
