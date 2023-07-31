@@ -1,4 +1,4 @@
-import { Deployer, ContractClass, ContractInstance, getTruffleConfig } from './truffle';
+import { Deployer, ContractClass, ContractInstance, getTruffleConfig, TruffleTxOptions } from './truffle';
 import {
   DeployOpts,
   ProxyKindOption,
@@ -13,7 +13,7 @@ type TruffleDeployer = {
   /**
    * Overrides for the transaction sent to deploy a contract.
    */
-  txOverrides?: unknown;
+  txOverrides?: TruffleTxOptions;
 };
 
 export type StandaloneOptions = StandaloneValidationOptions &
