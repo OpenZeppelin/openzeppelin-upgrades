@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `txOverrides` option for overriding transaction parameters. ([#852](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/852))
+
 ## 1.19.0 (2023-05-26)
 
 - Add `redeployImplementation` option, deprecate `useDeployedImplementation`. ([#804](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/804))
