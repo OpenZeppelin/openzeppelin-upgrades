@@ -82,7 +82,7 @@ export type DeployBeaconProxyOptions = EthersDeployOptions &
   PlatformDeployOptions;
 export type DeployBeaconOptions = StandaloneOptions & Platform;
 export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & PlatformDeployOptions;
-export type DeployContractOptions = Omit<StandaloneOptions, 'txOverrides'> & // ethers not supported for deployContract
+export type DeployContractOptions = Omit<StandaloneOptions, 'txOverrides'> & // ethers deployment not supported for deployContract
   GetTxResponse &
   PlatformDeployOptions & {
     unsafeAllowDeployContract?: boolean;
