@@ -257,7 +257,11 @@ export async function waitAndValidateDeployment(
 }
 
 export class TransactionMinedTimeout extends UpgradesError {
-  constructor(readonly deployment: Deployment & RemoteDeploymentId, type?: string, configurableTimeout?: boolean) {
+  constructor(
+    readonly deployment: Deployment & RemoteDeploymentId,
+    type?: string,
+    configurableTimeout?: boolean,
+  ) {
     super(
       `Timed out waiting for ${type ? type + ' ' : ''}contract deployment to address ${deployment.address} with ${
         deployment.remoteDeploymentId

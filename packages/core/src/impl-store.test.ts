@@ -1,8 +1,7 @@
 import test from 'ava';
 
 import { promises as fs } from 'fs';
-import rimrafAsync from 'rimraf';
-import util from 'util';
+import { rimraf } from 'rimraf';
 import path from 'path';
 import os from 'os';
 import sinon from 'sinon';
@@ -11,8 +10,6 @@ import { fetchOrDeploy, fetchOrDeployGetDeployment, mergeAddresses } from './imp
 import { getVersion } from './version';
 import { stubProvider } from './stub-provider';
 import { ImplDeployment } from './manifest';
-
-const rimraf = util.promisify(rimrafAsync);
 
 test.before(async () => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));
