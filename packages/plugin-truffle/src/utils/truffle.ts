@@ -124,7 +124,7 @@ export type TruffleTxOptions = {
    * This should be a bytestring (even-length hex string, with "0x")
    */
   data?: string;
-  nonce?: string | number;
+  nonce?: string | number | typeof BN;
   /**
    * This represents a number, but for compatibility purposes
    * it should be given as a hex string.  It should be in the
