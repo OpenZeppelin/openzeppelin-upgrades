@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Support `contract` and `reference` options for CLI.
+- Support `contract` and `reference` options for CLI. ([#856](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/856))
 
 ## 1.27.3 (2023-07-12)
 
