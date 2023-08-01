@@ -63,17 +63,30 @@ export class UpgradeableContractReport implements Report {
  *
  * @param sourceContracts The source contracts to check, which must include all contracts that are referenced by the given contracts. Can also include non-upgradeable contracts, which will be ignored.
  * @param opts The validation options.
+ * @param contract If specified, only this single contract will be checked.
+ * @param referenceContract If specified, this contract will be used as the reference contract for the single contract check.
  * @returns The upgradeable contract reports.
  */
-export function getContractReports(sourceContracts: SourceContract[], opts: ValidateUpgradeSafetyOptions) {
+export function getContractReports(
+  sourceContracts: SourceContract[],
+  opts: ValidateUpgradeSafetyOptions,
+  contract?: SourceContract,
+  referenceContract?: SourceContract,
+) {
   const upgradeableContractReports: UpgradeableContractReport[] = [];
-  for (const sourceContract of sourceContracts) {
-    const upgradeabilityAssessment = getUpgradeabilityAssessment(sourceContract, sourceContracts);
-    if (upgradeabilityAssessment.upgradeable) {
-      const reference = upgradeabilityAssessment.referenceContract;
-      const uups = upgradeabilityAssessment.uups;
-      const kind = uups ? 'uups' : 'transparent';
 
+  const singleContract = contract !== undefined;
+  if (referenceContract !== undefined && !singleContract) {
+    throw new Error('Broken invariant: referenceContract should only be specified when checking a single contract');
+  }
+
+  const contractsToReport: SourceContract[] = singleContract ? [contract] : sourceContracts;
+
+  for (const sourceContract of contractsToReport) {
+    const upgradeabilityAssessment = getUpgradeabilityAssessment(sourceContract, sourceContracts);
+    if (singleContract || upgradeabilityAssessment.upgradeable) {
+      const reference = referenceContract ?? upgradeabilityAssessment.referenceContract;
+      const kind = upgradeabilityAssessment.uups ? 'uups' : 'transparent';
       const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind });
       if (report !== undefined) {
         upgradeableContractReports.push(report);

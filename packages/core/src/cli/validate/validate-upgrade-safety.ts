@@ -3,7 +3,7 @@ import { ValidationOptions } from '../..';
 import { getBuildInfoFiles } from './build-info-file';
 import { getContractReports } from './contract-report';
 import { ProjectReport, getProjectReport } from './project-report';
-import { validateBuildInfoContracts } from './validations';
+import { SourceContract, validateBuildInfoContracts } from './validations';
 
 /**
  * Validation options for upgrade safety checks.
@@ -21,9 +21,34 @@ export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'>;
 export async function validateUpgradeSafety(
   buildInfoDir?: string,
   opts: ValidateUpgradeSafetyOptions = {},
+  contract?: string,
+  reference?: string,
 ): Promise<ProjectReport> {
   const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
   const sourceContracts = validateBuildInfoContracts(buildInfoFiles);
-  const contractReports = getContractReports(sourceContracts, opts);
+
+  const { sourceContract, referenceContract } = findContracts(sourceContracts, contract, reference);
+
+  const contractReports = getContractReports(sourceContracts, opts, sourceContract, referenceContract);
   return getProjectReport(contractReports);
+}
+
+function findContracts(sourceContracts: SourceContract[], contract?: string, reference?: string) {
+  if (reference !== undefined && contract === undefined) {
+    throw new Error(`The reference option can only be specified when the contract option is also specified.`);
+  }
+  const sourceContract = findContract(sourceContracts, contract, 'contract');
+  const referenceContract = findContract(sourceContracts, reference, 'reference');
+  return { sourceContract, referenceContract };
+}
+
+function findContract(sourceContracts: SourceContract[], contractName: string | undefined, optionName: string) {
+  let result = undefined;
+  if (contractName !== undefined) {
+    result = sourceContracts.find(c => c.name === contractName || c.fullyQualifiedName === contractName);
+    if (result === undefined) {
+      throw new Error(`Cannot find contract ${contractName} specified by the ${optionName} option`);
+    }
+  }
+  return result;
 }
