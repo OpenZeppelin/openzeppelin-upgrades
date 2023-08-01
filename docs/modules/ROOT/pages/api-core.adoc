@@ -116,6 +116,8 @@ If any errors are found, the command will exit with a non-zero exit code and pri
 
 *Options:*
 
+* `--contract <CONTRACT>`  The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
+* `--reference <REFERENCE_CONTRACT>`  The name or fully qualified name of the reference contract to use for storage layout comparisons. Can only be used along with the `--contract` option. If not specified, uses the `@custom:oz-upgrades-from` annotation in the contract that is being validated.
 * `--unsafeAllow "<VALIDATION_ERRORS>"` - Selectively disable one or more validation errors. Comma-separated list with one or more of the following: `state-variable-assignment, state-variable-immutable, external-library-linking, struct-definition, enum-definition, constructor, delegatecall, selfdestruct, missing-public-upgradeto`
 * `--unsafeAllowRenames` - Configure storage layout check to allow variable renaming.
 * `--unsafeSkipStorageCheck` - Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
