@@ -28,9 +28,9 @@ export async function main(args: string[]): Promise<void> {
     const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
     const result = await validateUpgradeSafety(
       functionArgs.buildInfoDir,
-      functionArgs.opts,
       functionArgs.contract,
       functionArgs.reference,
+      functionArgs.opts,
     );
     console.log(result.explain());
     process.exitCode = result.ok ? 0 : 1;
@@ -66,9 +66,9 @@ function help(parsedArgs: minimist.ParsedArgs, extraArgs: string[]): boolean {
 
 interface FunctionArgs {
   buildInfoDir?: string;
-  opts: Required<ValidateUpgradeSafetyOptions>;
   contract?: string;
   reference?: string;
+  opts: Required<ValidateUpgradeSafetyOptions>;
 }
 
 /**
@@ -85,13 +85,13 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     throw new Error('The validate command takes only one argument: the build info directory.');
   } else {
     const buildInfoDir = extraArgs.length === 1 ? undefined : extraArgs[1];
-    const opts = withDefaults(parsedArgs);
     const contract = parsedArgs['contract'];
     const reference = parsedArgs['reference'];
     if (reference !== undefined && contract === undefined) {
       throw new Error('The --reference option can only be used along with the --contract option.');
     }
-    return { buildInfoDir, opts, contract, reference };
+    const opts = withDefaults(parsedArgs);
+    return { buildInfoDir, contract, reference, opts };
   }
 }
 

@@ -15,14 +15,16 @@ export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'>;
  * Only contracts that are detected as upgradeable will be validated.
  *
  * @param buildInfoDir Absolute path of build info directory, or undefined to use the default Hardhat or Foundry build-info dir.
+ * @param contract The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
+ * @param reference The name or fully qualified name of the reference contract to use for storage layout comparisons. Can only be used along with `contract`. If not specified, uses the `@custom:oz-upgrades-from` annotation in the contract that is being validated.
  * @param opts Validation options, or undefined to use the default validation options.
  * @returns The project report.
  */
 export async function validateUpgradeSafety(
   buildInfoDir?: string,
-  opts: ValidateUpgradeSafetyOptions = {},
   contract?: string,
   reference?: string,
+  opts: ValidateUpgradeSafetyOptions = {},
 ): Promise<ProjectReport> {
   const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
   const sourceContracts = validateBuildInfoContracts(buildInfoFiles);

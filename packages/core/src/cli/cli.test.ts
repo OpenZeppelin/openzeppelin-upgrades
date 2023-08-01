@@ -88,8 +88,7 @@ test('validate - reference without contract option', async t => {
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --reference StorageV1`));
-  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
-  t.snapshot(expectation.join('\n'));
+  t.true(error?.message.includes('The --reference option can only be used along with the --contract option.'));
 });
 
 test('validate - no upgradeable', async t => {
