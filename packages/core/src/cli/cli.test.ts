@@ -70,6 +70,18 @@ test('validate - single contract, reference overrides upgrades-from', async t =>
   t.snapshot(expectation.join('\n'));
 });
 
+test('validate - single contract, reference is uups, overrides upgrades-from', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:UnsafeAndStorageLayoutErrors`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(`${CLI} validate ${temp} --contract BecomesBadLayout --reference HasUpgradeTo`),
+  );
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
 test('validate - single contract, reference', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);

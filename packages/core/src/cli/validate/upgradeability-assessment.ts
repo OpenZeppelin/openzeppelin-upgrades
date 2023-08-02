@@ -35,6 +35,7 @@ export interface UpgradeabilityAssessment {
 export function getUpgradeabilityAssessment(
   contract: SourceContract,
   allContracts: SourceContract[],
+  overrideReferenceContract?: SourceContract,
 ): UpgradeabilityAssessment {
   const fullContractName = contract.fullyQualifiedName;
   const contractValidation = contract.validationData[fullContractName];
@@ -42,26 +43,26 @@ export function getUpgradeabilityAssessment(
   const isUUPS = inferUUPS(contract.validationData, fullContractName);
 
   const annotationAssessment = getAnnotationAssessment(contract);
-  if (annotationAssessment.upgradeable) {
-    let referenceContract = undefined;
-    let isReferenceUUPS = false;
-    if (annotationAssessment.referenceName !== undefined) {
-      referenceContract = getReferenceContract(annotationAssessment.referenceName, contract, allContracts);
-      isReferenceUUPS = inferUUPS(referenceContract.validationData, referenceContract.fullyQualifiedName);
-    }
 
-    return {
-      upgradeable: true,
-      referenceContract: referenceContract,
-      uups: isReferenceUUPS || isUUPS,
-    };
-  } else {
-    const initializable = inferInitializable(contractValidation);
-    return {
-      upgradeable: initializable || isUUPS,
-      uups: isUUPS,
-    };
+  let referenceContract = overrideReferenceContract ?? undefined;
+  if (referenceContract === undefined && annotationAssessment.referenceName !== undefined) {
+    referenceContract = getReferenceContract(annotationAssessment.referenceName, contract, allContracts);
   }
+
+  let isReferenceUUPS = false;
+  if (referenceContract !== undefined) {
+    isReferenceUUPS = inferUUPS(referenceContract.validationData, referenceContract.fullyQualifiedName);
+  }
+
+  return {
+    upgradeable:
+      referenceContract !== undefined ||
+      annotationAssessment.upgradeable ||
+      inferInitializable(contractValidation) ||
+      isUUPS,
+    referenceContract: referenceContract,
+    uups: isReferenceUUPS || isUUPS,
+  };
 }
 
 function getReferenceContract(reference: string, origin: SourceContract, allContracts: SourceContract[]) {

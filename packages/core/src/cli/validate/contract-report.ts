@@ -83,9 +83,9 @@ export function getContractReports(
   const contractsToReport: SourceContract[] = singleContract ? [contract] : sourceContracts;
 
   for (const sourceContract of contractsToReport) {
-    const upgradeabilityAssessment = getUpgradeabilityAssessment(sourceContract, sourceContracts);
+    const upgradeabilityAssessment = getUpgradeabilityAssessment(sourceContract, sourceContracts, referenceContract);
     if (singleContract || upgradeabilityAssessment.upgradeable) {
-      const reference = referenceContract ?? upgradeabilityAssessment.referenceContract;
+      const reference = upgradeabilityAssessment.referenceContract;
       const kind = upgradeabilityAssessment.uups ? 'uups' : 'transparent';
       const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind });
       if (report !== undefined) {
