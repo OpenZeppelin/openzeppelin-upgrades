@@ -1,25 +1,8 @@
 import { getAnnotationArgs, getDocumentation } from '../../utils/annotations';
 import { inferInitializable, inferUUPS } from '../../validate/query';
 import { ValidateCommandError } from './error';
+import { findContract } from './find-contract';
 import { SourceContract } from './validations';
-
-export class ReferenceContractNotFound extends Error {
-  /**
-   * The contract reference that could not be found.
-   */
-  readonly reference: string;
-
-  /**
-   * The fully qualified name of the contract that referenced the missing contract.
-   */
-  readonly origin: string;
-
-  constructor(reference: string, origin: string) {
-    super(`Could not find contract ${reference} referenced in ${origin}.`);
-    this.reference = reference;
-    this.origin = origin;
-  }
-}
 
 interface AnnotationAssessment {
   upgradeable: boolean;
@@ -46,7 +29,7 @@ export function getUpgradeabilityAssessment(
 
   let referenceContract = overrideReferenceContract ?? undefined;
   if (referenceContract === undefined && annotationAssessment.referenceName !== undefined) {
-    referenceContract = getReferenceContract(annotationAssessment.referenceName, contract, allContracts);
+    referenceContract = findContract(annotationAssessment.referenceName, contract, allContracts);
   }
 
   let isReferenceUUPS = false;
@@ -63,22 +46,6 @@ export function getUpgradeabilityAssessment(
     referenceContract: referenceContract,
     uups: isReferenceUUPS || isUUPS,
   };
-}
-
-function getReferenceContract(reference: string, origin: SourceContract, allContracts: SourceContract[]) {
-  const referenceContracts = allContracts.filter(c => c.fullyQualifiedName === reference || c.name === reference);
-
-  if (referenceContracts.length > 1) {
-    throw new ValidateCommandError(
-      `Found multiple contracts with name ${reference} referenced in ${origin.fullyQualifiedName}.`,
-      () =>
-        `This may be caused by old copies of build info files. Clean and recompile your project, then run the command again with the updated files.`,
-    );
-  } else if (referenceContracts.length === 1) {
-    return referenceContracts[0];
-  } else {
-    throw new ReferenceContractNotFound(reference, origin.fullyQualifiedName);
-  }
 }
 
 function getAnnotationAssessment(contract: SourceContract): AnnotationAssessment {

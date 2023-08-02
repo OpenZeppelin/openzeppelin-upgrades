@@ -100,7 +100,30 @@ test('validate - reference without contract option', async t => {
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --reference StorageV1`));
-  t.true(error?.message.includes('The --reference option can only be used along with the --contract option.'));
+  t.true(
+    error?.message.includes('The --reference option can only be used along with the --contract option.'),
+    error?.message,
+  );
+});
+
+test('validate - single contract not found', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract NonExistent`));
+  t.true(error?.message.includes('Could not find contract NonExistent.'), error?.message);
+});
+
+test('validate - reference not found', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(`${CLI} validate ${temp} --contract BecomesBadLayout --reference NonExistent`),
+  );
+  t.true(error?.message.includes('Could not find contract NonExistent.'), error?.message);
 });
 
 test('validate - no upgradeable', async t => {

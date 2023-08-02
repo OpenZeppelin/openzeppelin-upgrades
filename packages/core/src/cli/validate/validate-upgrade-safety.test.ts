@@ -7,7 +7,7 @@ import os from 'os';
 
 import { artifacts } from 'hardhat';
 import { validateUpgradeSafety } from './validate-upgrade-safety';
-import { ReferenceContractNotFound } from './upgradeability-assessment';
+import { ReferenceContractNotFound } from './find-contract';
 
 test.before(async () => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'upgrades-core-test-')));

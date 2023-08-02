@@ -2,6 +2,7 @@ import { ValidationOptions } from '../..';
 
 import { getBuildInfoFiles } from './build-info-file';
 import { getContractReports } from './contract-report';
+import { findContract } from './find-contract';
 import { ProjectReport, getProjectReport } from './project-report';
 import { SourceContract, validateBuildInfoContracts } from './validations';
 
@@ -39,18 +40,7 @@ function findContracts(sourceContracts: SourceContract[], contract?: string, ref
   if (reference !== undefined && contract === undefined) {
     throw new Error(`The reference option can only be specified when the contract option is also specified.`);
   }
-  const sourceContract = findContract(sourceContracts, contract, 'contract');
-  const referenceContract = findContract(sourceContracts, reference, 'reference');
+  const sourceContract = contract !== undefined ? findContract(contract, undefined, sourceContracts) : undefined;
+  const referenceContract = reference !== undefined ? findContract(reference, undefined, sourceContracts) : undefined;
   return { sourceContract, referenceContract };
-}
-
-function findContract(sourceContracts: SourceContract[], contractName: string | undefined, optionName: string) {
-  let result = undefined;
-  if (contractName !== undefined) {
-    result = sourceContracts.find(c => c.name === contractName || c.fullyQualifiedName === contractName);
-    if (result === undefined) {
-      throw new Error(`Cannot find contract ${contractName} specified by the ${optionName} option`);
-    }
-  }
-  return result;
 }
