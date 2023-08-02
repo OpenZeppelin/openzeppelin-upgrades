@@ -11,6 +11,11 @@ import { SourceContract, validateBuildInfoContracts } from './validations';
  */
 export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'>;
 
+export type SpecifiedContracts = {
+  contract: SourceContract;
+  reference?: SourceContract;
+};
+
 /**
  * Validates the upgrade safety of all contracts in the build info dir's build info files.
  * Only contracts that are detected as upgradeable will be validated.
@@ -30,17 +35,25 @@ export async function validateUpgradeSafety(
   const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
   const sourceContracts = validateBuildInfoContracts(buildInfoFiles);
 
-  const { sourceContract, referenceContract } = findContracts(sourceContracts, contract, reference);
+  const specifiedContracts = findSpecifiedContracts(sourceContracts, contract, reference);
 
-  const contractReports = getContractReports(sourceContracts, opts, sourceContract, referenceContract);
+  const contractReports = getContractReports(sourceContracts, opts, specifiedContracts);
   return getProjectReport(contractReports);
 }
 
-function findContracts(sourceContracts: SourceContract[], contract?: string, reference?: string) {
-  if (reference !== undefined && contract === undefined) {
+function findSpecifiedContracts(
+  sourceContracts: SourceContract[],
+  contractName?: string,
+  referenceName?: string,
+): SpecifiedContracts | undefined {
+  if (contractName !== undefined) {
+    return {
+      contract: findContract(contractName, undefined, sourceContracts),
+      reference: referenceName !== undefined ? findContract(referenceName, undefined, sourceContracts) : undefined,
+    };
+  } else if (referenceName !== undefined) {
     throw new Error(`The reference option can only be specified when the contract option is also specified.`);
+  } else {
+    return undefined;
   }
-  const sourceContract = contract !== undefined ? findContract(contract, undefined, sourceContracts) : undefined;
-  const referenceContract = reference !== undefined ? findContract(reference, undefined, sourceContracts) : undefined;
-  return { sourceContract, referenceContract };
 }
