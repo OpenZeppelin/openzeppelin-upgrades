@@ -4,7 +4,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { request } from 'undici';
 
 import debug from './debug';
-import { Etherscan } from "@nomicfoundation/hardhat-verify/etherscan";
+import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
 
 /**
  * Call the configured Etherscan API with the given parameters.
@@ -41,7 +41,11 @@ export async function callEtherscanApi(etherscan: Etherscan, params: any): Promi
  */
 export async function getEtherscanInstance(hre: HardhatRuntimeEnvironment): Promise<Etherscan> {
   const etherscanConfig: EtherscanConfig | undefined = (hre.config as any).etherscan; // This should never be undefined, but check just in case
-  const chainConfig = await Etherscan.getCurrentChainConfig(hre.network.name, hre.network.provider, etherscanConfig ? etherscanConfig.customChains : []);
+  const chainConfig = await Etherscan.getCurrentChainConfig(
+    hre.network.name,
+    hre.network.provider,
+    etherscanConfig ? etherscanConfig.customChains : [],
+  );
 
   return Etherscan.fromChainConfig(etherscanConfig?.apiKey, chainConfig);
 }

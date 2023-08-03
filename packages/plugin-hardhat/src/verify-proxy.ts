@@ -355,11 +355,7 @@ async function verifyImplementation(
  * @returns the VerifiableContractInfo and txHash for the first event found
  * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
-async function searchEvent(
-  etherscan: Etherscan,
-  address: string,
-  possibleContractInfo: VerifiableContractInfo[],
-) {
+async function searchEvent(etherscan: Etherscan, address: string, possibleContractInfo: VerifiableContractInfo[]) {
   for (let i = 0; i < possibleContractInfo.length; i++) {
     const contractInfo = possibleContractInfo[i];
     const txHash = await getContractCreationTxHash(address, contractInfo.event, etherscan);
@@ -546,11 +542,7 @@ async function verifyContractWithConstructorArgs(
  *   the address is not a contract.
  * @throws {UpgradesError} if the Etherscan API returned with not OK status
  */
-async function getContractCreationTxHash(
-  address: string,
-  topic: string,
-  etherscan: Etherscan,
-): Promise<any> {
+async function getContractCreationTxHash(address: string, topic: string, etherscan: Etherscan): Promise<any> {
   const params = {
     module: 'logs',
     action: 'getLogs',
