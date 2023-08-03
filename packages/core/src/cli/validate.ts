@@ -13,6 +13,8 @@ Arguments:
   <BUILD_INFO_DIR>  Optional path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to 'artifacts/build-info' for Hardhat projects or 'out/build-info' for Foundry projects. If your project uses a custom output directory, you must specify its build info directory here.
 
 Options:
+  --contract <CONTRACT>  The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
+  --reference <REFERENCE_CONTRACT>  The name or fully qualified name of the reference contract to use for storage layout comparisons. Can only be used along with the --contract option. If not specified, uses the @custom:oz-upgrades-from annotation in the contract that is being validated.
   --unsafeAllow "<VALIDATION_ERRORS>"  Selectively disable one or more validation errors. Comma-separated list with one or more of the following: ${errorKinds.join(
     ', ',
   )}
@@ -24,7 +26,12 @@ export async function main(args: string[]): Promise<void> {
 
   if (!help(parsedArgs, extraArgs)) {
     const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
-    const result = await validateUpgradeSafety(functionArgs.buildInfoDir, functionArgs.opts);
+    const result = await validateUpgradeSafety(
+      functionArgs.buildInfoDir,
+      functionArgs.contract,
+      functionArgs.reference,
+      functionArgs.opts,
+    );
     console.log(result.explain());
     process.exitCode = result.ok ? 0 : 1;
   }
@@ -39,7 +46,7 @@ function parseArgs(args: string[]) {
       'unsafeAllowCustomTypes',
       'unsafeAllowLinkedLibraries',
     ],
-    string: ['unsafeAllow'],
+    string: ['unsafeAllow', 'contract', 'reference'],
     alias: { h: 'help' },
   });
   const extraArgs = parsedArgs._;
@@ -59,6 +66,8 @@ function help(parsedArgs: minimist.ParsedArgs, extraArgs: string[]): boolean {
 
 interface FunctionArgs {
   buildInfoDir?: string;
+  contract?: string;
+  reference?: string;
   opts: Required<ValidateUpgradeSafetyOptions>;
 }
 
@@ -76,9 +85,22 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     throw new Error('The validate command takes only one argument: the build info directory.');
   } else {
     const buildInfoDir = extraArgs.length === 1 ? undefined : extraArgs[1];
+    const contract = getAndValidateString(parsedArgs, 'contract');
+    const reference = getAndValidateString(parsedArgs, 'reference');
+    if (reference !== undefined && contract === undefined) {
+      throw new Error('The --reference option can only be used along with the --contract option.');
+    }
     const opts = withDefaults(parsedArgs);
-    return { buildInfoDir, opts };
+    return { buildInfoDir, contract, reference, opts };
   }
+}
+
+function getAndValidateString(parsedArgs: minimist.ParsedArgs, option: string): string | undefined {
+  const value = parsedArgs[option];
+  if (value !== undefined && value.trim().length === 0) {
+    throw new Error(`Invalid option: --${option} cannot be empty`);
+  }
+  return value;
 }
 
 function validateOptions(parsedArgs: minimist.ParsedArgs) {
@@ -93,6 +115,8 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
         'unsafeAllowCustomTypes',
         'unsafeAllowLinkedLibraries',
         'unsafeAllow',
+        'contract',
+        'reference',
       ].includes(key),
   );
   if (invalidArgs.length > 0) {
