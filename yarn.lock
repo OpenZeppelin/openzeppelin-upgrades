@@ -1847,10 +1847,10 @@
   dependencies:
     debug "^4.1.1"
 
-"@nomicfoundation/hardhat-verify@^1.0.0":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-verify/-/hardhat-verify-1.0.3.tgz#573b326fe0f58dcdc527e8c11bd5a6336eb52bc4"
-  integrity sha512-KUj4O/Hd8QB6cr/rxEmRG0zcDjRUNYhWbjtGGwE4lUNuaEhVIDt/cHGJtF/A6lANQR0mpaxC6fwojhzice/ykQ==
+"@nomicfoundation/hardhat-verify@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-verify/-/hardhat-verify-1.1.0.tgz#36c7f78adebd641d641ab5dd4660111520bb3055"
+  integrity sha512-mXHP17gz4wDsWiXIz8fBRE/8T2KJglWE/QGk5A6nwsubyeqWgjqimfbwTLyaPESphKvis3hX6G75QP5a9Cd8cQ==
   dependencies:
     "@ethersproject/abi" "^5.1.2"
     "@ethersproject/address" "^5.0.2"
