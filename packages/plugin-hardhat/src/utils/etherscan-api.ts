@@ -71,7 +71,7 @@ export const RESPONSE_OK = '1';
 
 export async function verifyAndGetStatus(
   params: {
-    contractAddress: any;
+    contractAddress: string;
     sourceCode: string;
     contractName: string;
     compilerVersion: string;

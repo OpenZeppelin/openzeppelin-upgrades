@@ -478,7 +478,6 @@ async function attemptVerifyWithCreationEvent(
     );
   } else {
     await verifyContractWithConstructorArgs(
-      hre,
       etherscan,
       address,
       contractInfo.artifact,
@@ -497,9 +496,8 @@ async function attemptVerifyWithCreationEvent(
  * @param constructorArguments The constructor arguments to use for verification.
  */
 async function verifyContractWithConstructorArgs(
-  hre: HardhatRuntimeEnvironment,
   etherscan: Etherscan,
-  address: any,
+  address: string,
   artifact: ContractArtifact,
   constructorArguments: string,
   errorReport: ErrorReport,
