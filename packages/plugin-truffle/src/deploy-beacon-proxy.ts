@@ -76,7 +76,7 @@ export async function deployBeaconProxy(
 
   const proxyDeployment: Required<ProxyDeployment> = Object.assign(
     { kind: opts.kind },
-    await deploy(deployer, BeaconProxyFactory, beaconAddress, data),
+    await deploy(deployer, opts, BeaconProxyFactory, beaconAddress, data),
   );
 
   await manifest.addProxy(proxyDeployment);

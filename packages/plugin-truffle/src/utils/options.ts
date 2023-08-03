@@ -1,4 +1,4 @@
-import { Deployer, ContractClass, ContractInstance, getTruffleConfig } from './truffle';
+import { Deployer, ContractClass, ContractInstance, getTruffleConfig, TruffleTxOptions } from './truffle';
 import {
   DeployOpts,
   ProxyKindOption,
@@ -9,6 +9,11 @@ import {
 
 type TruffleDeployer = {
   deployer?: Deployer;
+
+  /**
+   * Overrides for the transaction sent to deploy a contract.
+   */
+  txOverrides?: TruffleTxOptions;
 };
 
 export type StandaloneOptions = StandaloneValidationOptions &
@@ -32,6 +37,7 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     constructorArgs: opts.constructorArgs ?? [],
     useDeployedImplementation: opts.useDeployedImplementation ?? false,
     redeployImplementation: opts.redeployImplementation ?? 'onchange',
+    txOverrides: opts.txOverrides ?? {},
     ...withValidationDefaults(opts),
   };
 }

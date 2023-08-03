@@ -29,7 +29,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule:
 
     const { impl: nextImpl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress);
     // upgrade kind is inferred above
-    const upgradeTo = await getUpgrader(proxyAddress, getSigner(ImplFactory.runner));
+    const upgradeTo = await getUpgrader(proxyAddress, opts, getSigner(ImplFactory.runner));
     const call = encodeCall(ImplFactory, opts.call);
     const upgradeTx = await upgradeTo(nextImpl, call);
 
@@ -41,18 +41,21 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule:
 
   type Upgrader = (nextImpl: string, call?: string) => Promise<ethers.TransactionResponse>;
 
-  async function getUpgrader(proxyAddress: string, signer?: Signer): Promise<Upgrader> {
+  async function getUpgrader(proxyAddress: string, opts: UpgradeProxyOptions, signer?: Signer): Promise<Upgrader> {
     const { provider } = hre.network;
 
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     const adminBytecode = await getCode(provider, adminAddress);
+
+    const overrides = opts.txOverrides ? [opts.txOverrides] : [];
 
     if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
       // No admin contract: use ITransparentUpgradeableProxyFactory to get proxiable interface
       const ITransparentUpgradeableProxyFactory = await getITransparentUpgradeableProxyFactory(hre, signer);
       const proxy = attach(ITransparentUpgradeableProxyFactory, proxyAddress);
 
-      return (nextImpl, call) => (call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl));
+      return (nextImpl, call) =>
+        call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
     } else {
       // Admin contract: redirect upgrade call through it
       const manifest = await Manifest.forNetwork(provider);
@@ -65,7 +68,9 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule:
       }
 
       return (nextImpl, call) =>
-        call ? admin.upgradeAndCall(proxyAddress, nextImpl, call) : admin.upgrade(proxyAddress, nextImpl);
+        call
+          ? admin.upgradeAndCall(proxyAddress, nextImpl, call, ...overrides)
+          : admin.upgrade(proxyAddress, nextImpl, ...overrides);
     }
   }
 }

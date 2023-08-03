@@ -18,7 +18,9 @@ export async function upgradeBeacon(
 
   const UpgradeableBeaconFactory = getUpgradeableBeaconFactory(Contract);
   const beaconContract = new UpgradeableBeaconFactory(beaconAddress);
-  const { tx: upgradeTx } = await beaconContract.upgradeTo(nextImpl);
+
+  const overrides = opts.txOverrides ? [opts.txOverrides] : [];
+  const { tx: upgradeTx } = await beaconContract.upgradeTo(nextImpl, ...overrides);
 
   beaconContract.transactionHash = upgradeTx;
   return beaconContract;

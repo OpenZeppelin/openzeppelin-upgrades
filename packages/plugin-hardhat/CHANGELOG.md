@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `txOverrides` option for overriding transaction parameters. ([#852](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/852))
+
 ## 2.0.2 (2023-07-26)
 
 - Enable storage layout for overrides from Hardhat config. ([#851](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/851))

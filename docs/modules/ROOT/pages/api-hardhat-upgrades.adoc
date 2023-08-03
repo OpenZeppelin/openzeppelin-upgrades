@@ -25,6 +25,7 @@ The following options are common to some functions.
 ** If set to `"always"`, the implementation contract is always redeployed even if it was previously deployed with the same bytecode. This can be used with the `salt` option when deploying a proxy through OpenZeppelin Platform to ensure that the implementation contract is deployed with the same salt as the proxy.
 ** If set to `"never"`, the implementation contract is never redeployed. If the implementation contract was not previously deployed or is not found in the network file, an error will be thrown.
 ** If set to `"onchange"`, the implementation contract is redeployed only if the bytecode has changed from previous deployments.
+* `txOverrides`: (`ethers.Overrides`) An ethers.js https://docs.ethers.org/v6/api/contract/#Overrides[Overrides] object to override transaction parameters, such as `gasLimit` and `gasPrice`. Applies to all transactions sent by a function with this option, even if the function sends multiple transactions.
 * `usePlatformDeploy`: (`boolean`) Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform]. **Note**: OpenZeppelin Platform is in beta and functionality related to Platform is subject to change.
 * `verifySourceCode`: (`boolean`) When using Platform, whether to verify source code on block explorers. Defaults to `true`.
 * `relayerId`: (`string`) When using Platform, the ID of the relayer to use for the deployment. Defaults to the relayer configured for your deployment environment on Platform.
@@ -53,6 +54,7 @@ async function deployProxy(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: ethers.Overrides,
     kind?: 'uups' | 'transparent',
     usePlatformDeploy?: boolean,
   },
@@ -92,6 +94,7 @@ async function upgradeProxy(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: ethers.Overrides,
     kind?: 'uups' | 'transparent',
   },
 ): Promise<ethers.Contract>
@@ -124,6 +127,7 @@ async function deployBeacon(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: ethers.Overrides,
   },
 ): Promise<ethers.Contract>
 ----
@@ -160,6 +164,7 @@ async function upgradeBeacon(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: ethers.Overrides,
   },
 ): Promise<ethers.Contract>
 ----
@@ -192,6 +197,7 @@ async function deployBeaconProxy(
   args: unknown[] = [],
   opts?: {
     initializer?: string | false,
+    txOverrides?: ethers.Overrides,
     usePlatformDeploy?: boolean,
   },
 ): Promise<ethers.Contract>
@@ -290,6 +296,7 @@ async function deployImplementation(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: ethers.Overrides,
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
     usePlatformDeploy?: boolean,
@@ -381,6 +388,7 @@ async function prepareUpgrade(
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
+    txOverrides?: ethers.Overrides,
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
     usePlatformDeploy?: boolean,
@@ -566,6 +574,7 @@ async function deployProxyAdmin(
   opts?: {
     timeout?: number,
     pollingInterval?: number,
+    txOverrides?: ethers.Overrides,
   },
 ): Promise<string>
 ----
@@ -595,6 +604,9 @@ async function changeProxyAdmin(
   proxyAddress: string,
   newAdmin: string,
   signer?: ethers.Signer,
+  opts?: {
+    txOverrides?: ethers.Overrides,
+  }
 ): Promise<void>
 ----
 
@@ -605,6 +617,8 @@ Changes the admin for a specific proxy.
 * `proxyAddress` - the address of the proxy to change.
 * `newAdmin` - the new admin address.
 * `signer` - the signer to use for the transaction.
+* `opts` - an object with options:
+** additional options as described in <<common-options>>.
 
 [[admin-transfer-proxy-admin-ownership]]
 == admin.transferProxyAdminOwnership
@@ -614,6 +628,9 @@ Changes the admin for a specific proxy.
 async function transferProxyAdminOwnership(
   newAdmin: string,
   signer?: ethers.Signer,
+  opts?: {
+    txOverrides?: ethers.Overrides,
+  }
 ): Promise<void>
 ----
 
@@ -623,6 +640,8 @@ Changes the owner of the proxy admin contract, which is the default admin for up
 
 * `newAdmin` - the new admin address.
 * `signer` - the signer to use for the transaction.
+* `opts` - an object with options:
+** additional options as described in <<common-options>>.
 
 [[erc1967]]
 == erc1967

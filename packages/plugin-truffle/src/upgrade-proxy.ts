@@ -23,7 +23,7 @@ export async function upgradeProxy(
 
   const proxyAddress = getContractAddress(proxy);
 
-  const upgradeTo = await getUpgrader(provider, Contract, proxyAddress);
+  const upgradeTo = await getUpgrader(provider, Contract, opts, proxyAddress);
   const { impl: nextImpl } = await deployProxyImpl(Contract, opts, proxyAddress);
   const call = encodeCall(Contract, opts.call);
   const { tx: txHash } = await upgradeTo(nextImpl, call);
@@ -40,10 +40,13 @@ type Upgrader = (nextImpl: string, call?: string) => Promise<{ tx: string }>;
 async function getUpgrader(
   provider: EthereumProvider,
   contractTemplate: ContractClass,
+  opts: UpgradeProxyOptions,
   proxyAddress: string,
 ): Promise<Upgrader> {
   const adminAddress = await getAdminAddress(provider, proxyAddress);
   const adminBytecode = await getCode(provider, adminAddress);
+
+  const overrides = opts.txOverrides ? [opts.txOverrides] : [];
 
   if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
     // No admin contract: use ITransparentUpgradeableProxyFactory to get proxiable interface
@@ -51,7 +54,7 @@ async function getUpgrader(
     const proxy = new ITransparentUpgradeableProxyFactory(proxyAddress);
 
     return (nextImpl, call) => {
-      return call ? proxy.upgradeToAndCall(nextImpl, call) : proxy.upgradeTo(nextImpl);
+      return call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
     };
   } else {
     // Admin contract: redirect upgrade call through it
@@ -65,7 +68,9 @@ async function getUpgrader(
     }
 
     return (nextImpl, call) => {
-      return call ? admin.upgradeAndCall(proxyAddress, nextImpl, call) : admin.upgrade(proxyAddress, nextImpl);
+      return call
+        ? admin.upgradeAndCall(proxyAddress, nextImpl, call, ...overrides)
+        : admin.upgrade(proxyAddress, nextImpl, ...overrides);
     };
   }
 }

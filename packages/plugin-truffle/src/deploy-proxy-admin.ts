@@ -7,5 +7,5 @@ export async function deployProxyAdmin(opts: DeployProxyAdminOptions = {}): Prom
   const provider = wrapProvider(deployer.provider);
 
   const AdminFactory = getProxyAdminFactory();
-  return await fetchOrDeployAdmin(provider, () => deploy(deployer, AdminFactory));
+  return await fetchOrDeployAdmin(provider, () => deploy(deployer, opts, AdminFactory));
 }
