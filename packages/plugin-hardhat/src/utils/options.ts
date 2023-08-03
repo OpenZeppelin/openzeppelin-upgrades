@@ -5,12 +5,14 @@ import {
   ValidationOptions,
   withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
+import { Overrides } from 'ethers';
 
 /**
  * Options for functions that can deploy an implementation contract.
  */
 export type StandaloneOptions = StandaloneValidationOptions &
-  DeployOpts & {
+  DeployOpts &
+  EthersDeployOptions & {
     constructorArgs?: unknown[];
     /**
      * @deprecated Use `redeployImplementation = 'never'` instead.
@@ -31,6 +33,7 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     pollingInterval: opts.pollingInterval ?? 5e3,
     useDeployedImplementation: opts.useDeployedImplementation ?? false,
     redeployImplementation: opts.redeployImplementation ?? 'onchange',
+    txOverrides: opts.txOverrides ?? {},
     ...withValidationDefaults(opts),
   };
 }
@@ -62,15 +65,29 @@ export type PlatformDeployOptions = Platform & {
   salt?: string;
 };
 
-export type DeployBeaconProxyOptions = DeployOpts & ProxyKindOption & Initializer & PlatformDeployOptions;
+/**
+ * Options for functions that support deployments through ethers.js.
+ */
+export type EthersDeployOptions = {
+  /**
+   * Overrides for the transaction sent to deploy a contract.
+   */
+  txOverrides?: Overrides;
+};
+
+export type DeployBeaconProxyOptions = EthersDeployOptions &
+  DeployOpts &
+  ProxyKindOption &
+  Initializer &
+  PlatformDeployOptions;
 export type DeployBeaconOptions = StandaloneOptions & Platform;
 export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & PlatformDeployOptions;
-export type DeployContractOptions = StandaloneOptions &
+export type DeployContractOptions = Omit<StandaloneOptions, 'txOverrides'> & // ethers deployment not supported for deployContract
   GetTxResponse &
   PlatformDeployOptions & {
     unsafeAllowDeployContract?: boolean;
   };
-export type DeployProxyAdminOptions = DeployOpts & Platform;
+export type DeployProxyAdminOptions = EthersDeployOptions & DeployOpts & Platform;
 export type DeployProxyOptions = StandaloneOptions & Initializer & PlatformDeployOptions;
 export type ForceImportOptions = ProxyKindOption;
 export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & PlatformDeployOptions;

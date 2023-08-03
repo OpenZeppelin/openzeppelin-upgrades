@@ -111,7 +111,7 @@ async function deployImpl(deployData: DeployData, Contract: ContractClass, opts:
             }
           });
         } else {
-          return deploy(deployData.fullOpts.deployer, Contract, ...deployData.fullOpts.constructorArgs);
+          return deploy(deployData.fullOpts.deployer, opts, Contract, ...deployData.fullOpts.constructorArgs);
         }
       };
       const deployment = Object.assign({ abi }, await attemptDeploy());

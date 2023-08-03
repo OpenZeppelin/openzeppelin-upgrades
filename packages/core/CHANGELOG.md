@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.28.0 (2023-08-03)
+
+- Support `contract` and `reference` options for CLI. ([#856](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/856))
+
 ## 1.27.3 (2023-07-12)
 
 - Support user-defined value types in mappings. ([#844](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/844))

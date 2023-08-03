@@ -116,6 +116,8 @@ If any errors are found, the command will exit with a non-zero exit code and pri
 
 *Options:*
 
+* `--contract <CONTRACT>`  The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
+* `--reference <REFERENCE_CONTRACT>`  The name or fully qualified name of the reference contract to use for storage layout comparisons. Can only be used along with the `--contract` option. If not specified, uses the `@custom:oz-upgrades-from` annotation in the contract that is being validated.
 * `--unsafeAllow "<VALIDATION_ERRORS>"` - Selectively disable one or more validation errors. Comma-separated list with one or more of the following: `state-variable-assignment, state-variable-immutable, external-library-linking, struct-definition, enum-definition, constructor, delegatecall, selfdestruct, missing-public-upgradeto`
 * `--unsafeAllowRenames` - Configure storage layout check to allow variable renaming.
 * `--unsafeSkipStorageCheck` - Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
@@ -144,6 +146,8 @@ Then call the function to validate your contracts and get a project report with 
 ----
 validateUpgradeSafety(
   buildInfoDir?: string,
+  contract?: string,
+  reference?: string,
   opts: ValidateUpgradeSafetyOptions = {},
 ): Promise<ProjectReport>
 ----
@@ -155,6 +159,8 @@ Note that this function does not throw validation errors directly. Instead, you 
 *Parameters:*
 
 * `buildInfoDir` - the path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to `artifacts/build-info` for Hardhat projects or `out/build-info` for Foundry projects. If your project uses a custom output directory, you must specify its build info directory here.
+* `contract` - The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
+* `reference` - The name or fully qualified name of the reference contract to use for storage layout comparisons. Can only be used along with `contract`. If not specified, uses the `@custom:oz-upgrades-from` annotation in the contract that is being validated.
 * `opts` - an object with the following options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options]:
 ** `unsafeAllow`
 ** `unsafeAllowRenames`

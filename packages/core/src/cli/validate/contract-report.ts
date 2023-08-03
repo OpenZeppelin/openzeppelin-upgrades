@@ -17,6 +17,7 @@ import { getUpgradeabilityAssessment } from './upgradeability-assessment';
 import { SourceContract } from './validations';
 import { LayoutCompatibilityReport } from '../../storage/report';
 import { indent } from '../../utils/indent';
+import { SpecifiedContracts } from './validate-upgrade-safety';
 
 /**
  * Report for an upgradeable contract.
@@ -63,17 +64,28 @@ export class UpgradeableContractReport implements Report {
  *
  * @param sourceContracts The source contracts to check, which must include all contracts that are referenced by the given contracts. Can also include non-upgradeable contracts, which will be ignored.
  * @param opts The validation options.
+ * @param specifiedContracts If provided, only the specified contract (upgrading from its reference contract) will be reported.
  * @returns The upgradeable contract reports.
  */
-export function getContractReports(sourceContracts: SourceContract[], opts: ValidateUpgradeSafetyOptions) {
+export function getContractReports(
+  sourceContracts: SourceContract[],
+  opts: ValidateUpgradeSafetyOptions,
+  specifiedContracts?: SpecifiedContracts,
+) {
   const upgradeableContractReports: UpgradeableContractReport[] = [];
-  for (const sourceContract of sourceContracts) {
-    const upgradeabilityAssessment = getUpgradeabilityAssessment(sourceContract, sourceContracts);
-    if (upgradeabilityAssessment.upgradeable) {
-      const reference = upgradeabilityAssessment.referenceContract;
-      const uups = upgradeabilityAssessment.uups;
-      const kind = uups ? 'uups' : 'transparent';
 
+  const contractsToReport: SourceContract[] =
+    specifiedContracts !== undefined ? [specifiedContracts.contract] : sourceContracts;
+
+  for (const sourceContract of contractsToReport) {
+    const upgradeabilityAssessment = getUpgradeabilityAssessment(
+      sourceContract,
+      sourceContracts,
+      specifiedContracts?.reference,
+    );
+    if (specifiedContracts !== undefined || upgradeabilityAssessment.upgradeable) {
+      const reference = upgradeabilityAssessment.referenceContract;
+      const kind = upgradeabilityAssessment.uups ? 'uups' : 'transparent';
       const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind });
       if (report !== undefined) {
         upgradeableContractReports.push(report);

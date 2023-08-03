@@ -14,7 +14,8 @@ async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Up
   if (admin.address !== proxyAdminAddress) {
     throw new Error('Proxy admin is not the one registered in the network manifest');
   } else if (admin.address !== newAdmin) {
-    await admin.changeProxyAdmin(proxyAddress, newAdmin);
+    const overrides = opts.txOverrides ? [opts.txOverrides] : [];
+    await admin.changeProxyAdmin(proxyAddress, newAdmin, ...overrides);
   }
 }
 
@@ -22,7 +23,9 @@ async function transferProxyAdminOwnership(newOwner: string, opts: UpgradeOption
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
   const admin = await getManifestAdmin(provider);
-  await admin.transferOwnership(newOwner);
+
+  const overrides = opts.txOverrides ? [opts.txOverrides] : [];
+  await admin.transferOwnership(newOwner, ...overrides);
 
   const manifest = await Manifest.forNetwork(provider);
   const { proxies } = await manifest.read();

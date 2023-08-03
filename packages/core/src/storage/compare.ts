@@ -103,7 +103,10 @@ export class StorageLayoutComparator {
   stack = new Set<string>();
   cache = new Map<string, TypeChange | undefined>();
 
-  constructor(readonly unsafeAllowCustomTypes = false, readonly unsafeAllowRenames = false) {}
+  constructor(
+    readonly unsafeAllowCustomTypes = false,
+    readonly unsafeAllowRenames = false,
+  ) {}
 
   compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
     return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
