@@ -27,7 +27,7 @@ export function getUpgradeabilityAssessment(
 
   const annotationAssessment = getAnnotationAssessment(contract);
 
-  let referenceContract = overrideReferenceContract ?? undefined;
+  let referenceContract = overrideReferenceContract;
   if (referenceContract === undefined && annotationAssessment.referenceName !== undefined) {
     referenceContract = findContract(annotationAssessment.referenceName, contract, allContracts);
   }

@@ -85,14 +85,22 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     throw new Error('The validate command takes only one argument: the build info directory.');
   } else {
     const buildInfoDir = extraArgs.length === 1 ? undefined : extraArgs[1];
-    const contract = parsedArgs['contract'];
-    const reference = parsedArgs['reference'];
+    const contract = getAndValidateString(parsedArgs, 'contract');
+    const reference = getAndValidateString(parsedArgs, 'reference');
     if (reference !== undefined && contract === undefined) {
       throw new Error('The --reference option can only be used along with the --contract option.');
     }
     const opts = withDefaults(parsedArgs);
     return { buildInfoDir, contract, reference, opts };
   }
+}
+
+function getAndValidateString(parsedArgs: minimist.ParsedArgs, option: string): string | undefined {
+  const value = parsedArgs[option];
+  if (value !== undefined && value.trim().length === 0) {
+    throw new Error(`Invalid option: --${option} cannot be empty`);
+  }
+  return value;
 }
 
 function validateOptions(parsedArgs: minimist.ParsedArgs) {

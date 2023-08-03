@@ -94,6 +94,20 @@ test('validate - single contract, reference', async t => {
   t.snapshot(expectation.join('\n'));
 });
 
+test('validate - single contract, reference, fully qualified names', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(
+      `${CLI} validate ${temp} --contract contracts/test/cli/Validate.sol:BecomesBadLayout --reference contracts/test/cli/Validate.sol:StorageV1`,
+    ),
+  );
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
 test('validate - reference without contract option', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV1`);
@@ -104,6 +118,33 @@ test('validate - reference without contract option', async t => {
     error?.message.includes('The --reference option can only be used along with the --contract option.'),
     error?.message,
   );
+});
+
+test('validate - emtpy contract string', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV1`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract --reference StorageV1`));
+  t.true(error?.message.includes('Invalid option: --contract cannot be empty'), error?.message);
+});
+
+test('validate - blank contract string', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV1`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract '    ' --reference StorageV1`));
+  t.true(error?.message.includes('Invalid option: --contract cannot be empty'), error?.message);
+});
+
+test('validate - empty reference string', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV1`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract StorageV1 --reference`));
+  t.true(error?.message.includes('Invalid option: --reference cannot be empty'), error?.message);
 });
 
 test('validate - single contract not found', async t => {
