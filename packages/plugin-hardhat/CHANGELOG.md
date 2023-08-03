@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Use public Etherscan API from `hardhat-verify`. ([#857](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/857))
+
 ## 2.1.0 (2023-08-03)
 
 - Add `txOverrides` option for overriding transaction parameters. ([#852](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/852))
