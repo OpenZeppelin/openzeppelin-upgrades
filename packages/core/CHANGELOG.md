@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.28.0 (2023-08-03)
 
 - Support `contract` and `reference` options for CLI. ([#856](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/856))
 
