@@ -1,26 +1,22 @@
-import { toCheckStatusRequest, toVerifyRequest } from './hardhat-etherscan/EtherscanVerifyContractRequest';
-import { getVerificationStatus, verifyContract } from './hardhat-etherscan/EtherscanService';
-import { resolveEtherscanApiKey } from './hardhat-etherscan/resolveEtherscanApiKey';
-
 import { UpgradesError } from '@openzeppelin/upgrades-core';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 import { request } from 'undici';
 
 import debug from './debug';
-import { getCurrentChainConfig } from '@nomicfoundation/hardhat-verify/dist/src/chain-config';
+import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
 
 /**
  * Call the configured Etherscan API with the given parameters.
  *
- * @param etherscanApi The Etherscan API config
+ * @param etherscan Etherscan instance
  * @param params The API parameters to call with
  * @returns The Etherscan API response
  */
-export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params: any): Promise<EtherscanResponseBody> {
-  const parameters = new URLSearchParams({ ...params, apikey: etherscanApi.key });
+export async function callEtherscanApi(etherscan: Etherscan, params: any): Promise<EtherscanResponseBody> {
+  const parameters = new URLSearchParams({ ...params, apikey: etherscan.apiKey });
 
-  const response = await request(etherscanApi.url, {
+  const response = await request(etherscan.apiUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: parameters.toString(),
@@ -40,14 +36,18 @@ export async function callEtherscanApi(etherscanApi: EtherscanAPIConfig, params:
 }
 
 /**
- * Gets the Etherscan API parameters from Hardhat config.
+ * Gets an Etherscan instance based on Hardhat config.
  * Throws an error if Etherscan API key is not present in config.
  */
-export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Promise<EtherscanAPIConfig> {
+export async function getEtherscanInstance(hre: HardhatRuntimeEnvironment): Promise<Etherscan> {
   const etherscanConfig: EtherscanConfig | undefined = (hre.config as any).etherscan; // This should never be undefined, but check just in case
-  const endpoints = await getCurrentChainConfig(hre.network, etherscanConfig ? etherscanConfig.customChains : []);
-  const key = resolveEtherscanApiKey(etherscanConfig?.apiKey, endpoints.network);
-  return { key, url: endpoints.urls.apiURL };
+  const chainConfig = await Etherscan.getCurrentChainConfig(
+    hre.network.name,
+    hre.network.provider,
+    etherscanConfig?.customChains ?? [],
+  );
+
+  return Etherscan.fromChainConfig(etherscanConfig?.apiKey, chainConfig);
 }
 
 /**
@@ -56,14 +56,6 @@ export async function getEtherscanAPIConfig(hre: HardhatRuntimeEnvironment): Pro
 interface EtherscanConfig {
   apiKey: string | Record<string, string>;
   customChains: any[];
-}
-
-/**
- * Parameters for calling the Etherscan API at a specific URL.
- */
-export interface EtherscanAPIConfig {
-  key: string;
-  url: string;
 }
 
 /**
@@ -79,22 +71,20 @@ export const RESPONSE_OK = '1';
 
 export async function verifyAndGetStatus(
   params: {
-    apiKey: string;
-    contractAddress: any;
+    contractAddress: string;
     sourceCode: string;
-    sourceName: string;
     contractName: string;
     compilerVersion: string;
     constructorArguments: string;
   },
-  etherscanApi: EtherscanAPIConfig,
+  etherscan: Etherscan,
 ) {
-  const request = toVerifyRequest(params);
-  const response = await verifyContract(etherscanApi.url, request);
-  const statusRequest = toCheckStatusRequest({
-    apiKey: etherscanApi.key,
-    guid: response.message,
-  });
-  const status = await getVerificationStatus(etherscanApi.url, statusRequest);
-  return status;
+  const response = await etherscan.verify(
+    params.contractAddress,
+    params.sourceCode,
+    params.contractName,
+    params.compilerVersion,
+    params.constructorArguments,
+  );
+  return etherscan.getVerificationStatus(response.message);
 }

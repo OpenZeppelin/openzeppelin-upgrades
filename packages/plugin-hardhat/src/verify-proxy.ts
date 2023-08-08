@@ -23,8 +23,9 @@ import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/cont
 import { keccak256 } from 'ethereumjs-util';
 
 import debug from './utils/debug';
-import { callEtherscanApi, EtherscanAPIConfig, getEtherscanAPIConfig, RESPONSE_OK } from './utils/etherscan-api';
+import { callEtherscanApi, getEtherscanInstance, RESPONSE_OK } from './utils/etherscan-api';
 import { verifyAndGetStatus } from './utils/etherscan-api';
+import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
 
 /**
  * Hardhat artifact for a precompiled contract
@@ -100,8 +101,8 @@ export async function verify(args: any, hre: HardhatRuntimeEnvironment, runSuper
     await fullVerifyBeaconProxy(hre, proxyAddress, hardhatVerify, errorReport);
   } else if (await isBeacon(provider, proxyAddress)) {
     proxy = false;
-    const etherscanApi = await getEtherscanAPIConfig(hre);
-    await fullVerifyBeacon(hre, proxyAddress, hardhatVerify, etherscanApi, errorReport);
+    const etherscan = await getEtherscanInstance(hre);
+    await fullVerifyBeacon(hre, proxyAddress, hardhatVerify, etherscan, errorReport);
   } else {
     // Doesn't look like a proxy, so just verify directly
     return hardhatVerify(proxyAddress);
@@ -198,10 +199,10 @@ async function fullVerifyTransparentOrUUPS(
   const implAddress = await getImplementationAddress(provider, proxyAddress);
   await verifyImplementation(hardhatVerify, implAddress, errorReport);
 
-  const etherscanApi = await getEtherscanAPIConfig(hre);
+  const etherscan = await getEtherscanInstance(hre);
 
   await verifyTransparentOrUUPS();
-  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress, errorReport);
+  await linkProxyWithImplementationAbi(etherscan, proxyAddress, implAddress, errorReport);
   // Either UUPS or Transparent proxy could have admin slot set, although typically this should only be for Transparent
   await verifyAdmin();
 
@@ -213,7 +214,7 @@ async function fullVerifyTransparentOrUUPS(
         await verifyWithArtifactOrFallback(
           hre,
           hardhatVerify,
-          etherscanApi,
+          etherscan,
           adminAddress,
           [verifiableContracts.proxyAdmin],
           errorReport,
@@ -236,7 +237,7 @@ async function fullVerifyTransparentOrUUPS(
     await verifyWithArtifactOrFallback(
       hre,
       hardhatVerify,
-      etherscanApi,
+      etherscan,
       proxyAddress,
       [verifiableContracts.transparentUpgradeableProxy, verifiableContracts.erc1967proxy],
       errorReport,
@@ -263,18 +264,18 @@ async function fullVerifyBeaconProxy(
   const provider = hre.network.provider;
   const beaconAddress = await getBeaconAddress(provider, proxyAddress);
   const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
-  const etherscanApi = await getEtherscanAPIConfig(hre);
+  const etherscan = await getEtherscanInstance(hre);
 
-  await fullVerifyBeacon(hre, beaconAddress, hardhatVerify, etherscanApi, errorReport);
+  await fullVerifyBeacon(hre, beaconAddress, hardhatVerify, etherscan, errorReport);
   await verifyBeaconProxy();
-  await linkProxyWithImplementationAbi(etherscanApi, proxyAddress, implAddress, errorReport);
+  await linkProxyWithImplementationAbi(etherscan, proxyAddress, implAddress, errorReport);
 
   async function verifyBeaconProxy() {
     console.log(`Verifying beacon proxy: ${proxyAddress}`);
     await verifyWithArtifactOrFallback(
       hre,
       hardhatVerify,
-      etherscanApi,
+      etherscan,
       proxyAddress,
       [verifiableContracts.beaconProxy],
       errorReport,
@@ -289,14 +290,14 @@ async function fullVerifyBeaconProxy(
  * @param hre
  * @param beaconAddress The beacon address
  * @param hardhatVerify A function that invokes the hardhat-verify plugin's verify command
- * @param etherscanApi Configuration for the Etherscan API
+ * @param etherscan Etherscan instance
  * @param errorReport Accumulated verification errors
  */
 async function fullVerifyBeacon(
   hre: HardhatRuntimeEnvironment,
   beaconAddress: any,
   hardhatVerify: (address: string) => Promise<any>,
-  etherscanApi: EtherscanAPIConfig,
+  etherscan: Etherscan,
   errorReport: ErrorReport,
 ) {
   const provider = hre.network.provider;
@@ -310,7 +311,7 @@ async function fullVerifyBeacon(
     await verifyWithArtifactOrFallback(
       hre,
       hardhatVerify,
-      etherscanApi,
+      etherscan,
       beaconAddress,
       [verifiableContracts.upgradeableBeacon],
       errorReport,
@@ -347,21 +348,17 @@ async function verifyImplementation(
  * Looks for any of the possible events (in array order) at the specified address using Etherscan API,
  * and returns the corresponding VerifiableContractInfo and txHash for the first event found.
  *
- * @param etherscanApi The Etherscan API config
+ * @param etherscan Etherscan instance
  * @param address The contract address for which to look for events
  * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
  * @returns the VerifiableContractInfo and txHash for the first event found
  * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
-async function searchEvent(
-  etherscanApi: EtherscanAPIConfig,
-  address: string,
-  possibleContractInfo: VerifiableContractInfo[],
-) {
+async function searchEvent(etherscan: Etherscan, address: string, possibleContractInfo: VerifiableContractInfo[]) {
   for (let i = 0; i < possibleContractInfo.length; i++) {
     const contractInfo = possibleContractInfo[i];
-    const txHash = await getContractCreationTxHash(address, contractInfo.event, etherscanApi);
+    const txHash = await getContractCreationTxHash(address, contractInfo.event, etherscan);
     if (txHash !== undefined) {
       return { contractInfo, txHash };
     }
@@ -386,7 +383,7 @@ async function searchEvent(
  * If the fallback also fails, records errors for both the original and fallback attempts.
  *
  * @param hre
- * @param etherscanApi The Etherscan API config
+ * @param etherscan Etherscan instance
  * @param address The contract address to verify
  * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
@@ -398,14 +395,14 @@ async function searchEvent(
 async function verifyWithArtifactOrFallback(
   hre: HardhatRuntimeEnvironment,
   hardhatVerify: (address: string) => Promise<any>,
-  etherscanApi: EtherscanAPIConfig,
+  etherscan: Etherscan,
   address: string,
   possibleContractInfo: VerifiableContractInfo[],
   errorReport: ErrorReport,
   convertErrorsToWarningsOnFallbackSuccess: boolean,
 ) {
   try {
-    await attemptVerifyWithCreationEvent(hre, etherscanApi, address, possibleContractInfo, errorReport);
+    await attemptVerifyWithCreationEvent(hre, etherscan, address, possibleContractInfo, errorReport);
     return true;
   } catch (origError: any) {
     if (origError instanceof BytecodeNotMatchArtifact || origError instanceof EventNotFound) {
@@ -447,7 +444,7 @@ async function verifyWithArtifactOrFallback(
  * Iterates through each element of possibleContractInfo to look for that element's event, until an event is found.
  *
  * @param hre
- * @param etherscanApi The Etherscan API config
+ * @param etherscan Etherscan instance
  * @param address The contract address to verify
  * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
@@ -457,12 +454,12 @@ async function verifyWithArtifactOrFallback(
  */
 async function attemptVerifyWithCreationEvent(
   hre: HardhatRuntimeEnvironment,
-  etherscanApi: EtherscanAPIConfig,
+  etherscan: Etherscan,
   address: string,
   possibleContractInfo: VerifiableContractInfo[],
   errorReport: ErrorReport,
 ) {
-  const { contractInfo, txHash } = await searchEvent(etherscanApi, address, possibleContractInfo);
+  const { contractInfo, txHash } = await searchEvent(etherscan, address, possibleContractInfo);
   debug(`verifying contract ${contractInfo.artifact.contractName} at ${address}`);
 
   const tx = await getTransactionByHash(hre.network.provider, txHash);
@@ -481,8 +478,7 @@ async function attemptVerifyWithCreationEvent(
     );
   } else {
     await verifyContractWithConstructorArgs(
-      hre,
-      etherscanApi,
+      etherscan,
       address,
       contractInfo.artifact,
       constructorArguments,
@@ -494,15 +490,14 @@ async function attemptVerifyWithCreationEvent(
 /**
  * Verifies a contract using the given constructor args.
  *
- * @param etherscanApi The Etherscan API config
+ * @param etherscan Etherscan instance
  * @param address The address of the contract to verify
  * @param artifact The contract artifact to use for verification.
  * @param constructorArguments The constructor arguments to use for verification.
  */
 async function verifyContractWithConstructorArgs(
-  hre: HardhatRuntimeEnvironment,
-  etherscanApi: EtherscanAPIConfig,
-  address: any,
+  etherscan: Etherscan,
+  address: string,
   artifact: ContractArtifact,
   constructorArguments: string,
   errorReport: ErrorReport,
@@ -510,19 +505,17 @@ async function verifyContractWithConstructorArgs(
   debug(`verifying contract ${address} with constructor args ${constructorArguments}`);
 
   const params = {
-    apiKey: etherscanApi.key,
     contractAddress: address,
     sourceCode: JSON.stringify(artifactsBuildInfo.input),
-    sourceName: artifact.sourceName,
-    contractName: artifact.contractName,
+    contractName: `${artifact.sourceName}:${artifact.contractName}`,
     compilerVersion: `v${artifactsBuildInfo.solcLongVersion}`,
     constructorArguments: constructorArguments,
   };
 
   try {
-    const status = await verifyAndGetStatus(params, etherscanApi);
+    const status = await verifyAndGetStatus(params, etherscan);
 
-    if (status.isVerificationSuccess()) {
+    if (status.isSuccess()) {
       console.log(`Successfully verified contract ${artifact.contractName} at ${address}.`);
     } else {
       recordVerificationError(address, artifact.contractName, status.message, errorReport);
@@ -542,16 +535,12 @@ async function verifyContractWithConstructorArgs(
  *
  * @param address The address to get the creation txhash for.
  * @param topic The event topic string that should have been logged.
- * @param etherscanApi The Etherscan API config
+ * @param etherscan Etherscan instance
  * @returns The txhash corresponding to the logged event, or undefined if not found or if
  *   the address is not a contract.
  * @throws {UpgradesError} if the Etherscan API returned with not OK status
  */
-async function getContractCreationTxHash(
-  address: string,
-  topic: string,
-  etherscanApi: EtherscanAPIConfig,
-): Promise<any> {
+async function getContractCreationTxHash(address: string, topic: string, etherscan: Etherscan): Promise<any> {
   const params = {
     module: 'logs',
     action: 'getLogs',
@@ -561,7 +550,7 @@ async function getContractCreationTxHash(
     topic0: '0x' + keccak256(Buffer.from(topic)).toString('hex'),
   };
 
-  const responseBody = await callEtherscanApi(etherscanApi, params);
+  const responseBody = await callEtherscanApi(etherscan, params);
 
   if (responseBody.status === RESPONSE_OK) {
     const result = responseBody.result;
@@ -580,12 +569,12 @@ async function getContractCreationTxHash(
 /**
  * Calls the Etherscan API to link a proxy with its implementation ABI.
  *
- * @param etherscanApi The Etherscan API config
+ * @param etherscan Etherscan instance
  * @param proxyAddress The proxy address
  * @param implAddress The implementation address
  */
 async function linkProxyWithImplementationAbi(
-  etherscanApi: EtherscanAPIConfig,
+  etherscan: Etherscan,
   proxyAddress: string,
   implAddress: string,
   errorReport: ErrorReport,
@@ -597,16 +586,16 @@ async function linkProxyWithImplementationAbi(
     address: proxyAddress,
     expectedimplementation: implAddress,
   };
-  let responseBody = await callEtherscanApi(etherscanApi, params);
+  let responseBody = await callEtherscanApi(etherscan, params);
 
   if (responseBody.status === RESPONSE_OK) {
     // initial call was OK, but need to send a status request using the returned guid to get the actual verification status
     const guid = responseBody.result;
-    responseBody = await checkProxyVerificationStatus(etherscanApi, guid);
+    responseBody = await checkProxyVerificationStatus(etherscan, guid);
 
     while (responseBody.result === 'Pending in queue') {
       await delay(3000);
-      responseBody = await checkProxyVerificationStatus(etherscanApi, guid);
+      responseBody = await checkProxyVerificationStatus(etherscan, guid);
     }
   }
 
@@ -624,14 +613,14 @@ async function linkProxyWithImplementationAbi(
   }
 }
 
-async function checkProxyVerificationStatus(etherscanApi: EtherscanAPIConfig, guid: string) {
+async function checkProxyVerificationStatus(etherscan: Etherscan, guid: string) {
   const checkProxyVerificationParams = {
     module: 'contract',
     action: 'checkproxyverification',
-    apikey: etherscanApi.key,
+    apikey: etherscan.apiKey,
     guid: guid,
   };
-  return await callEtherscanApi(etherscanApi, checkProxyVerificationParams);
+  return await callEtherscanApi(etherscan, checkProxyVerificationParams);
 }
 
 /**
