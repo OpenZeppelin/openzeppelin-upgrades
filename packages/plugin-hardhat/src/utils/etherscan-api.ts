@@ -86,7 +86,5 @@ export async function verifyAndGetStatus(
     params.compilerVersion,
     params.constructorArguments,
   );
-  const status = await etherscan.getVerificationStatus(response.message);
-  console.log('status', status);
-  return status;
+  return etherscan.getVerificationStatus(response.message);
 }
