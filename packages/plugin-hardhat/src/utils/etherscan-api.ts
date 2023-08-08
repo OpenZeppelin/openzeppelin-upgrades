@@ -44,7 +44,7 @@ export async function getEtherscanInstance(hre: HardhatRuntimeEnvironment): Prom
   const chainConfig = await Etherscan.getCurrentChainConfig(
     hre.network.name,
     hre.network.provider,
-    etherscanConfig ? etherscanConfig.customChains : [],
+    etherscanConfig?.customChains ?? [],
   );
 
   return Etherscan.fromChainConfig(etherscanConfig?.apiKey, chainConfig);
