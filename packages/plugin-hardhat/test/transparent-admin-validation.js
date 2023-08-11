@@ -1,8 +1,9 @@
 const test = require('ava');
 
-const { ethers, upgrades } = require('hardhat');
+const hre = require('hardhat');
+const { getProxyAdminFactory } = require('@openzeppelin/hardhat-upgrades/dist/utils/factories.js');
 
-const NEW_ADMIN = '0xeAD9C93b79Ae7C1591b1FB5323BD777E86e150d4';
+const { ethers, upgrades } = hre;
 
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
@@ -12,10 +13,16 @@ test.before(async t => {
 test('admin validation', async t => {
   const { Greeter, GreeterV2 } = t.context;
   const greeter = await upgrades.deployProxy(Greeter, ['Hola admin!'], { kind: 'transparent' });
-  await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), NEW_ADMIN);
-  await t.throwsAsync(
-    () => upgrades.upgradeProxy(greeter, GreeterV2),
-    undefined,
-    'Proxy admin is not the one registered in the network manifest',
-  );
+
+  const [, signer] = await ethers.getSigners();
+  const AdminFactory = await getProxyAdminFactory(hre, signer);
+  const deployedAdmin = await AdminFactory.deploy();
+  const deployedAdminAddress = await deployedAdmin.getAddress();
+  await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), deployedAdminAddress);
+
+  // Old admin signer cannot upgrade this
+  await t.throwsAsync(() => upgrades.upgradeProxy(greeter, GreeterV2));
+
+  const GreeterV3 = Greeter.connect(signer);
+  await upgrades.upgradeProxy(greeter, GreeterV3);
 });

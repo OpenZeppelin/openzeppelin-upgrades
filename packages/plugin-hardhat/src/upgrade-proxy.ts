@@ -63,8 +63,10 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule:
       const admin = attach(AdminFactory, adminAddress);
       const manifestAdmin = await manifest.getAdmin();
 
-      if ((await admin.getAddress()) !== manifestAdmin?.address) {
-        throw new Error('Proxy admin is not the one registered in the network manifest');
+      if (adminAddress !== manifestAdmin?.address) {
+        console.log(
+          `Proxy admin ${adminAddress} is not the one registered in the network manifest ${manifestAdmin?.address}`,
+        );
       }
 
       return (nextImpl, call) =>
