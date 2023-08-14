@@ -20,7 +20,7 @@ import type { ValidateUpgradeFunction } from './validate-upgrade';
 import type { DeployImplementationFunction } from './deploy-implementation';
 import { DeployAdminFunction, makeDeployProxyAdmin } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
-import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade';
+import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade-with-approval';
 import type { GetDefaultApprovalProcessFunction } from './defender/get-default-approval-process';
 
 export interface HardhatUpgrades {
@@ -191,7 +191,7 @@ function makeUpgradesFunctions(hre: HardhatRuntimeEnvironment): HardhatUpgrades 
 
 function makeDefenderFunctions(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrades {
   const { makeDeployContract } = require('./deploy-contract');
-  const { makeProposeUpgradeWithApproval } = require('./defender/propose-upgrade');
+  const { makeProposeUpgradeWithApproval } = require('./defender/propose-upgrade-with-approval');
   const { makeGetDefaultApprovalProcess } = require('./defender/get-default-approval-process');
 
   return {

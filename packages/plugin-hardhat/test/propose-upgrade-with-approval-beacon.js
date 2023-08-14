@@ -25,7 +25,7 @@ test.beforeEach(async t => {
 
   t.context.spy = sinon.spy(t.context.fakeDefenderClient.Upgrade, 'upgrade');
 
-  t.context.proposeUpgradeWithApproval = proxyquire('../dist/defender/propose-upgrade', {
+  t.context.proposeUpgradeWithApproval = proxyquire('../dist/defender/propose-upgrade-with-approval', {
     './utils': {
       ...require('../dist/defender/utils'),
       getNetwork: () => t.context.fakeChainId,

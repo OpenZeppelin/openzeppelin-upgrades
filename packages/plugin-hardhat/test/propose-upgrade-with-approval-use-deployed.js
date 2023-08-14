@@ -25,7 +25,7 @@ test.beforeEach(async t => {
 
   t.context.spy = sinon.spy(t.context.fakeDefenderClient.Upgrade, 'upgrade');
 
-  t.context.proposeUpgradeWithApproval = proxyquire('../dist/defender/propose-upgrade', {
+  t.context.proposeUpgradeWithApproval = proxyquire('../dist/defender/propose-upgrade-with-approval', {
     './utils': {
       ...require('../dist/defender/utils'),
       getNetwork: () => t.context.fakeChainId,
@@ -33,29 +33,38 @@ test.beforeEach(async t => {
     },
   }).makeProposeUpgradeWithApproval(hre);
 
-  t.context.Greeter = await ethers.getContractFactory('GreeterDefender');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterDefenderV2Bad');
-  t.context.greeter = await upgrades.deployProxy(t.context.Greeter, { kind: 'transparent' });
-  t.context.proxyAdmin = await upgrades.erc1967.getAdminAddress(await t.context.greeter.getAddress());
+  t.context.Greeter = await ethers.getContractFactory('GreeterDefenderProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('GreeterDefenderV2Proxiable');
+  t.context.greeter = await upgrades.deployProxy(t.context.Greeter, { kind: 'uups' });
 });
 
 test.afterEach.always(() => {
   sinon.restore();
 });
 
-test('proposes an upgrade', async t => {
-  const { proposeUpgradeWithApproval, spy, proxyAdmin, greeter, GreeterV2 } = t.context;
+test('proposes an upgrade using deployed implementation - implementation not deployed', async t => {
+  const { proposeUpgradeWithApproval, greeter, GreeterV2 } = t.context;
 
+  const addr = await greeter.getAddress();
+  await t.throwsAsync(() => proposeUpgradeWithApproval(addr, GreeterV2, { useDeployedImplementation: true }), {
+    message: /(The implementation contract was not previously deployed.)/,
+  });
+});
+
+test('proposes an upgrade using deployed implementation', async t => {
+  const { proposeUpgradeWithApproval, spy, greeter, GreeterV2 } = t.context;
+
+  const greeterV2Impl = await upgrades.deployImplementation(GreeterV2);
   const proposal = await proposeUpgradeWithApproval(await greeter.getAddress(), GreeterV2, {
-    unsafeAllow: ['delegatecall'],
+    useDeployedImplementation: true,
   });
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(spy, {
     proxyAddress: await greeter.getAddress(),
-    proxyAdminAddress: proxyAdmin,
+    proxyAdminAddress: undefined,
     newImplementationABI: GreeterV2.interface.formatJson(),
-    newImplementationAddress: sinon.match(/^0x[A-Fa-f0-9]{40}$/),
+    newImplementationAddress: greeterV2Impl,
     network: 'goerli',
     approvalProcessId: undefined,
   });
