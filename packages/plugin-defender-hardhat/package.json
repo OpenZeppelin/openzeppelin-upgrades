@@ -33,7 +33,7 @@
   "dependencies": {
     "@openzeppelin/defender-admin-client": "^1.46.0",
     "@openzeppelin/defender-base-client": "^1.46.0",
-    "@openzeppelin/hardhat-upgrades": "^2.0.0",
+    "@openzeppelin/hardhat-upgrades": "^2.2.0",
     "ethereumjs-util": "^7.1.5"
   }
 }
