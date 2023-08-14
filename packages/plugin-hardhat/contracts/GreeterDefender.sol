@@ -1,18 +1,18 @@
 pragma solidity >= 0.4.22 <0.8.0;
 
-contract GreeterPlatform {
+contract GreeterDefender {
     function version() external pure returns (uint256) {
       return 1;
     }
 }
 
-contract GreeterPlatformV2 {
+contract GreeterDefenderV2 {
     function version() external pure returns (uint256) {
       return 2;
     }
 }
 
-contract GreeterPlatformV2Bad {
+contract GreeterDefenderV2Bad {
   function x() public {
     (bool ok, ) = address(this).delegatecall("");
     require(ok);
@@ -20,5 +20,5 @@ contract GreeterPlatformV2Bad {
 }
 
 import "./utils/Proxiable.sol";
-contract GreeterPlatformProxiable is GreeterPlatform, Proxiable {}
-contract GreeterPlatformV2Proxiable is GreeterPlatformV2, Proxiable {}
+contract GreeterDefenderProxiable is GreeterDefender, Proxiable {}
+contract GreeterDefenderV2Proxiable is GreeterDefenderV2, Proxiable {}

@@ -17,19 +17,19 @@ import {
   UpgradeClient,
 } from '@openzeppelin/platform-deploy-client';
 
-import { HardhatPlatformConfig } from '../type-extensions';
-import { Platform } from '../utils';
+import { HardhatDefenderConfig } from '../type-extensions';
+import { DefenderDeploy } from '../utils';
 import debug from '../utils/debug';
 
 import { promisify } from 'util';
 const sleep = promisify(setTimeout);
 
-export function getPlatformApiKey(hre: HardhatRuntimeEnvironment): HardhatPlatformConfig {
-  const cfg = hre.config.platform;
+export function getDefenderApiKey(hre: HardhatRuntimeEnvironment): HardhatDefenderConfig {
+  const cfg = hre.config.defender;
   if (!cfg || !cfg.apiKey || !cfg.apiSecret) {
     const sampleConfig = JSON.stringify({ apiKey: 'YOUR_API_KEY', apiSecret: 'YOUR_API_SECRET' }, null, 2);
     throw new Error(
-      `Missing OpenZeppelin Platform API key and secret in hardhat config. Add the following to your hardhat.config.js configuration:\nplatform: ${sampleConfig}\n`,
+      `Missing OpenZeppelin Defender API key and secret in hardhat config. Add the following to your hardhat.config.js configuration:\ndefender: ${sampleConfig}\n`,
     );
   }
   return cfg;
@@ -40,20 +40,20 @@ export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Networ
   const chainId = hre.network.config.chainId ?? (await getChainId(provider));
   const network = fromChainId(chainId);
   if (network === undefined) {
-    throw new Error(`Network ${chainId} is not supported by the OpenZeppelin Platform`);
+    throw new Error(`Network ${chainId} is not supported by OpenZeppelin Defender`);
   }
   return network;
 }
 
-export function enablePlatform<T extends Platform>(
+export function enableDefender<T extends DefenderDeploy>(
   hre: HardhatRuntimeEnvironment,
-  platformModule: boolean,
+  defenderModule: boolean,
   opts: T,
 ): T {
-  if ((hre.config.platform?.usePlatformDeploy || platformModule) && opts.usePlatformDeploy === undefined) {
+  if ((hre.config.defender?.useDefenderDeploy || defenderModule) && opts.useDefenderDeploy === undefined) {
     return {
       ...opts,
-      usePlatformDeploy: true,
+      useDefenderDeploy: true,
     };
   } else {
     return opts;
@@ -61,46 +61,46 @@ export function enablePlatform<T extends Platform>(
 }
 
 /**
- * Disables Platform for a function that does not support it.
- * If opts.usePlatformDeploy or platformModule is true, throws an error.
- * If hre.config.platform.usePlatformDeploy is true, logs a debug message and passes (to allow fallback to Hardhat signer).
+ * Disables Defender for a function that does not support it.
+ * If opts.useDefenderDeploy or defenderModule is true, throws an error.
+ * If hre.config.defender.useDefenderDeploy is true, logs a debug message and passes (to allow fallback to Hardhat signer).
  *
  * @param hre The Hardhat runtime environment
- * @param platformModule Whether the function was called from the platform module
+ * @param defenderModule Whether the function was called from the defender module
  * @param opts The options passed to the function
- * @param unsupportedFunction The name of the function that does not support Platform
+ * @param unsupportedFunction The name of the function that does not support Defender
  */
-export function disablePlatform(
+export function disableDefender(
   hre: HardhatRuntimeEnvironment,
-  platformModule: boolean,
-  opts: Platform,
+  defenderModule: boolean,
+  opts: DefenderDeploy,
   unsupportedFunction: string,
 ): void {
-  if (opts.usePlatformDeploy) {
+  if (opts.useDefenderDeploy) {
     throw new UpgradesError(
-      `The function ${unsupportedFunction} is not supported with the \`usePlatformDeploy\` option.`,
+      `The function ${unsupportedFunction} is not supported with the \`useDefenderDeploy\` option.`,
     );
-  } else if (platformModule) {
+  } else if (defenderModule) {
     throw new UpgradesError(
-      `The function ${unsupportedFunction} is not supported with the \`platform\` module.`,
+      `The function ${unsupportedFunction} is not supported with the \`defender\` module.`,
       () => `Call the function as upgrades.${unsupportedFunction} to use the Hardhat signer.`,
     );
-  } else if (hre.config.platform?.usePlatformDeploy) {
+  } else if (hre.config.defender?.useDefenderDeploy) {
     debug(
-      `The function ${unsupportedFunction} is not supported with the \`platform.usePlatformDeploy\` configuration option. Using the Hardhat signer instead.`,
+      `The function ${unsupportedFunction} is not supported with the \`defender.useDefenderDeploy\` configuration option. Using the Hardhat signer instead.`,
     );
   }
 }
 
-interface PlatformClient {
+interface DefenderClient {
   Deployment: DeploymentClient;
   DeploymentConfig: DeploymentConfigClient;
   BlockExplorerApiKey: BlockExplorerApiKeyClient;
   Upgrade: UpgradeClient;
 }
 
-export function getPlatformClient(hre: HardhatRuntimeEnvironment): PlatformClient {
-  return PlatformClient(getPlatformApiKey(hre));
+export function getDefenderClient(hre: HardhatRuntimeEnvironment): DefenderClient {
+  return PlatformClient(getDefenderApiKey(hre));
 }
 
 /**
@@ -115,7 +115,7 @@ export async function getRemoteDeployment(
   hre: HardhatRuntimeEnvironment,
   remoteDeploymentId: string,
 ): Promise<RemoteDeployment | undefined> {
-  const client = getPlatformClient(hre);
+  const client = getDefenderClient(hre);
   try {
     return (await client.Deployment.get(remoteDeploymentId)) as RemoteDeployment;
   } catch (e) {

@@ -27,7 +27,7 @@ const DATA = '0x05';
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
 
-  t.context.fakePlatformClient = {
+  t.context.fakeDefenderClient = {
     Deployment: {
       deploy: () => {
         return {
@@ -45,14 +45,14 @@ test.beforeEach(async t => {
       },
     },
   };
-  t.context.spy = sinon.spy(t.context.fakePlatformClient.Deployment, 'deploy');
+  t.context.spy = sinon.spy(t.context.fakeDefenderClient.Deployment, 'deploy');
 
-  t.context.deploy = proxyquire('../dist/platform/deploy', {
+  t.context.deploy = proxyquire('../dist/defender/deploy', {
     './utils': {
-      ...require('../dist/platform/utils'),
+      ...require('../dist/defender/utils'),
       getNetwork: () => t.context.fakeChainId,
       getAdminClient: () => t.context.fakeAdminClient,
-      getPlatformClient: () => t.context.fakePlatformClient,
+      getDefenderClient: () => t.context.fakeDefenderClient,
     },
     '../utils/etherscan-api': {
       getEtherscanAPIConfig: () => {
@@ -89,14 +89,14 @@ function assertResult(t, result) {
   });
 }
 
-test('calls platform deploy', async t => {
+test('calls defender deploy', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
-  const result = await deploy.platformDeploy(fakeHre, factory, {});
+  const result = await deploy.defenderDeploy(fakeHre, factory, {});
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(spy, {
@@ -114,14 +114,14 @@ test('calls platform deploy', async t => {
   assertResult(t, result);
 });
 
-test('calls platform deploy with relayerId', async t => {
+test('calls defender deploy with relayerId', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
-  const result = await deploy.platformDeploy(fakeHre, factory, { relayerId: RELAYER_ID });
+  const result = await deploy.defenderDeploy(fakeHre, factory, { relayerId: RELAYER_ID });
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(spy, {
@@ -139,14 +139,14 @@ test('calls platform deploy with relayerId', async t => {
   assertResult(t, result);
 });
 
-test('calls platform deploy with salt', async t => {
+test('calls defender deploy with salt', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
-  const result = await deploy.platformDeploy(fakeHre, factory, { salt: SALT });
+  const result = await deploy.defenderDeploy(fakeHre, factory, { salt: SALT });
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(spy, {
@@ -164,14 +164,14 @@ test('calls platform deploy with salt', async t => {
   assertResult(t, result);
 });
 
-test('calls platform deploy with license', async t => {
+test('calls defender deploy with license', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/WithLicense.sol';
   const contractName = 'WithLicense';
 
   const factory = await ethers.getContractFactory(contractName);
-  const result = await deploy.platformDeploy(fakeHre, factory, {});
+  const result = await deploy.defenderDeploy(fakeHre, factory, {});
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(spy, {
@@ -189,14 +189,14 @@ test('calls platform deploy with license', async t => {
   assertResult(t, result);
 });
 
-test('calls platform deploy with constructor args', async t => {
+test('calls defender deploy with constructor args', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Constructor.sol';
   const contractName = 'WithConstructor';
 
   const factory = await ethers.getContractFactory(contractName);
-  const result = await deploy.platformDeploy(fakeHre, factory, {}, 10);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {}, 10);
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(spy, {
@@ -214,14 +214,14 @@ test('calls platform deploy with constructor args', async t => {
   assertResult(t, result);
 });
 
-test('calls platform deploy with verify false', async t => {
+test('calls defender deploy with verify false', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
-  const result = await deploy.platformDeploy(fakeHre, factory, { verifySourceCode: false });
+  const result = await deploy.defenderDeploy(fakeHre, factory, { verifySourceCode: false });
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(spy, {
@@ -239,14 +239,14 @@ test('calls platform deploy with verify false', async t => {
   assertResult(t, result);
 });
 
-test('calls platform deploy with ERC1967Proxy', async t => {
+test('calls defender deploy with ERC1967Proxy', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
   const contractName = 'ERC1967Proxy';
   const factory = await getProxyFactory(hre);
 
-  const result = await deploy.platformDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, DATA);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, DATA);
   assertResult(t, result);
 
   sinon.assert.calledWithExactly(spy, {
@@ -262,14 +262,14 @@ test('calls platform deploy with ERC1967Proxy', async t => {
   });
 });
 
-test('calls platform deploy with BeaconProxy', async t => {
+test('calls defender deploy with BeaconProxy', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
   const contractName = 'BeaconProxy';
   const factory = await getBeaconProxyFactory(hre);
 
-  const result = await deploy.platformDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, DATA);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, DATA);
   assertResult(t, result);
 
   sinon.assert.calledWithExactly(spy, {
@@ -285,14 +285,14 @@ test('calls platform deploy with BeaconProxy', async t => {
   });
 });
 
-test('calls platform deploy with TransparentUpgradeableProxy', async t => {
+test('calls defender deploy with TransparentUpgradeableProxy', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
   const contractName = 'TransparentUpgradeableProxy';
   const factory = await getTransparentUpgradeableProxyFactory(hre);
 
-  const result = await deploy.platformDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, ADMIN_ADDRESS, DATA);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, ADMIN_ADDRESS, DATA);
   assertResult(t, result);
 
   sinon.assert.calledWithExactly(spy, {

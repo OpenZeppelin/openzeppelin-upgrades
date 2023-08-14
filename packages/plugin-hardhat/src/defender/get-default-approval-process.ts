@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
-import { getNetwork, getPlatformClient } from './utils';
+import { getNetwork, getDefenderClient } from './utils';
 
 export interface ApprovalProcess {
   approvalProcessId: string;
@@ -11,7 +11,7 @@ export type GetDefaultApprovalProcessFunction = () => Promise<ApprovalProcess>;
 
 export function makeGetDefaultApprovalProcess(hre: HardhatRuntimeEnvironment): GetDefaultApprovalProcessFunction {
   return async function getDefaultApprovalProcess() {
-    const client = getPlatformClient(hre);
+    const client = getDefenderClient(hre);
     const network = await getNetwork(hre);
 
     const response = await client.Upgrade.getApprovalProcess(network);

@@ -22,7 +22,7 @@ import {
   getInitializerData,
   getSigner,
 } from './utils';
-import { enablePlatform } from './platform/utils';
+import { enableDefender } from './defender/utils';
 import { getContractInstance } from './utils/contract-instance';
 
 export interface DeployBeaconProxyFunction {
@@ -37,7 +37,7 @@ export interface DeployBeaconProxyFunction {
 
 export function makeDeployBeaconProxy(
   hre: HardhatRuntimeEnvironment,
-  platformModule: boolean,
+  defenderModule: boolean,
 ): DeployBeaconProxyFunction {
   return async function deployBeaconProxy(
     beacon: ContractAddressOrInstance,
@@ -56,7 +56,7 @@ export function makeDeployBeaconProxy(
       args = [];
     }
 
-    opts = enablePlatform(hre, platformModule, opts);
+    opts = enableDefender(hre, defenderModule, opts);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);

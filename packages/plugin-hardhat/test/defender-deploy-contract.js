@@ -17,8 +17,8 @@ test.before(async t => {
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
 
   t.context.deployContract = proxyquire('../dist/deploy-contract', {
-    './platform/deploy': {
-      platformDeploy: async () => {
+    './defender/deploy': {
+      defenderDeploy: async () => {
         return {
           address: ADDR,
           txHash: TX_HASH,
@@ -41,10 +41,10 @@ test('deploy contract', async t => {
   t.is(await inst.getAddress(), ADDR);
 });
 
-test('deploy contract - platform false', async t => {
+test('deploy contract - defender false', async t => {
   const { deployContract, NonUpgradeable } = t.context;
-  const error = await t.throwsAsync(() => deployContract(NonUpgradeable, { usePlatformDeploy: false }));
-  t.regex(error.message, /The deployContract function cannot have the `usePlatformDeploy` option disabled./);
+  const error = await t.throwsAsync(() => deployContract(NonUpgradeable, { useDefenderDeploy: false }));
+  t.regex(error.message, /The deployContract function cannot have the `useDefenderDeploy` option disabled./);
 });
 
 test('deploy contract - constructor', async t => {
@@ -103,8 +103,8 @@ test('await deployed contract', async t => {
   const precreated = await NonUpgradeable.deploy();
 
   const deployContract = proxyquire('../dist/deploy-contract', {
-    './platform/deploy': {
-      platformDeploy: async () => {
+    './defender/deploy': {
+      defenderDeploy: async () => {
         return {
           address: await precreated.getAddress(),
           txHash: precreated.deploymentTransaction().hash,
@@ -130,8 +130,8 @@ test('deployed calls wait for deployment', async t => {
   const deployed = await NonUpgradeable.deploy();
 
   const deployContract = proxyquire('../dist/deploy-contract', {
-    './platform/deploy': {
-      platformDeploy: async () => {
+    './defender/deploy': {
+      defenderDeploy: async () => {
         return {
           address: await deployed.getAddress(),
           txHash: TX_HASH,
@@ -141,12 +141,12 @@ test('deployed calls wait for deployment', async t => {
       },
       '@global': true,
     },
-    './platform/utils': {
+    './defender/utils': {
       waitForDeployment: stub,
-      enablePlatform: (hre, platformModule, opts) => {
+      enableDefender: (hre, defenderModule, opts) => {
         return {
           ...opts,
-          usePlatformDeploy: true,
+          useDefenderDeploy: true,
         };
       },
       '@global': true,

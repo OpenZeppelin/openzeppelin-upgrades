@@ -21,7 +21,7 @@ test.beforeEach(async t => {
   t.context.deployProxy = proxyquire('../dist/deploy-proxy', {
     './utils/deploy': {
       deploy: async (hre, opts, factory, ...args) => {
-        opts.usePlatformDeploy = false;
+        opts.useDefenderDeploy = false;
         return {
           // just do regular deploy but add a deployment id
           ...(await require('../dist/utils/deploy').deploy(hre, opts, factory, ...args)),
@@ -68,7 +68,7 @@ test('deployed calls wait for deployment', async t => {
 
   // predeploy a proxy normally for two reasons:
   // 1. so we have a real address
-  // 2. so it predeploys the implementation since we are assuming the impl is being deployed by Platform
+  // 2. so it predeploys the implementation since we are assuming the impl is being deployed by Defender
   const realProxy = await hre.upgrades.deployProxy(GreeterProxiable, ['Hello World']);
 
   // stub proxy deployment
@@ -84,16 +84,16 @@ test('deployed calls wait for deployment', async t => {
   const waitStub = sinon.stub();
 
   const deployProxy = proxyquire('../dist/deploy-proxy', {
-    './platform/deploy': {
-      platformDeploy: deployStub,
+    './defender/deploy': {
+      defenderDeploy: deployStub,
       '@global': true,
     },
-    './platform/utils': {
+    './defender/utils': {
       waitForDeployment: waitStub,
-      enablePlatform: (hre, platformModule, opts) => {
+      enableDefender: (hre, defenderModule, opts) => {
         return {
           ...opts,
-          usePlatformDeploy: true,
+          useDefenderDeploy: true,
         };
       },
       '@global': true,

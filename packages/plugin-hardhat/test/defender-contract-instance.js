@@ -31,13 +31,13 @@ test('get contract instance - tx hash not updated', async t => {
   const waitStub = sinon.stub();
 
   const getContractInstance = proxyquire('../dist/utils/contract-instance', {
-    '../platform/utils': {
+    '../defender/utils': {
       waitForDeployment: waitStub,
       '@global': true,
     },
   }).getContractInstance;
 
-  const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { usePlatformDeploy: true }, deployment);
+  const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { useDefenderDeploy: true }, deployment);
   await stubbedInstance.waitForDeployment();
 
   t.is(waitStub.callCount, 1);
@@ -66,13 +66,13 @@ test('get contract instance - tx hash updated', async t => {
   const waitStub = sinon.stub().returns(second.deploymentTransaction().hash);
 
   const getContractInstance = proxyquire('../dist/utils/contract-instance', {
-    '../platform/utils': {
+    '../defender/utils': {
       waitForDeployment: waitStub,
       '@global': true,
     },
   }).getContractInstance;
 
-  const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { usePlatformDeploy: true }, deployment);
+  const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { useDefenderDeploy: true }, deployment);
 
   // assert the tx hash not updated yet
   t.not(stubbedInstance.deploymentTransaction().hash, undefined);

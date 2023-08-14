@@ -11,7 +11,7 @@ const proposalUrl = 'https://example.com';
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
 
-  t.context.fakePlatformClient = {
+  t.context.fakeDefenderClient = {
     Upgrade: {
       upgrade: () => {
         return {
@@ -23,18 +23,18 @@ test.beforeEach(async t => {
     },
   };
 
-  t.context.spy = sinon.spy(t.context.fakePlatformClient.Upgrade, 'upgrade');
+  t.context.spy = sinon.spy(t.context.fakeDefenderClient.Upgrade, 'upgrade');
 
-  t.context.proposeUpgrade = proxyquire('../dist/platform/propose-upgrade', {
+  t.context.proposeUpgradeWithApproval = proxyquire('../dist/defender/propose-upgrade', {
     './utils': {
-      ...require('../dist/platform/utils'),
+      ...require('../dist/defender/utils'),
       getNetwork: () => t.context.fakeChainId,
-      getPlatformClient: () => t.context.fakePlatformClient,
+      getDefenderClient: () => t.context.fakeDefenderClient,
     },
-  }).makeProposeUpgrade(hre);
+  }).makeProposeUpgradeWithApproval(hre);
 
-  t.context.Greeter = await ethers.getContractFactory('GreeterPlatformProxiable');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterPlatformV2Proxiable');
+  t.context.Greeter = await ethers.getContractFactory('GreeterDefenderProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('GreeterDefenderV2Proxiable');
   t.context.greeter = await upgrades.deployProxy(t.context.Greeter, { kind: 'uups' });
 });
 
@@ -43,19 +43,21 @@ test.afterEach.always(() => {
 });
 
 test('proposes an upgrade using deployed implementation - implementation not deployed', async t => {
-  const { proposeUpgrade, greeter, GreeterV2 } = t.context;
+  const { proposeUpgradeWithApproval, greeter, GreeterV2 } = t.context;
 
   const addr = await greeter.getAddress();
-  await t.throwsAsync(() => proposeUpgrade(addr, GreeterV2, { useDeployedImplementation: true }), {
+  await t.throwsAsync(() => proposeUpgradeWithApproval(addr, GreeterV2, { useDeployedImplementation: true }), {
     message: /(The implementation contract was not previously deployed.)/,
   });
 });
 
 test('proposes an upgrade using deployed implementation', async t => {
-  const { proposeUpgrade, spy, greeter, GreeterV2 } = t.context;
+  const { proposeUpgradeWithApproval, spy, greeter, GreeterV2 } = t.context;
 
   const greeterV2Impl = await upgrades.deployImplementation(GreeterV2);
-  const proposal = await proposeUpgrade(await greeter.getAddress(), GreeterV2, { useDeployedImplementation: true });
+  const proposal = await proposeUpgradeWithApproval(await greeter.getAddress(), GreeterV2, {
+    useDeployedImplementation: true,
+  });
 
   t.is(proposal.url, proposalUrl);
   sinon.assert.calledWithExactly(spy, {

@@ -19,8 +19,8 @@ import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppel
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
-import { getNetwork, getPlatformClient } from './utils';
-import { DeployTransaction, PlatformDeployOptions, UpgradeOptions } from '../utils';
+import { getNetwork, getDefenderClient } from './utils';
+import { DeployTransaction, DefenderDeployOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
@@ -54,13 +54,13 @@ type CompilerOutputWithMetadata = CompilerOutputContract & {
   metadata?: string;
 };
 
-export async function platformDeploy(
+export async function defenderDeploy(
   hre: HardhatRuntimeEnvironment,
   factory: ContractFactory,
-  opts: UpgradeOptions & PlatformDeployOptions,
+  opts: UpgradeOptions & DefenderDeployOptions,
   ...args: unknown[]
 ): Promise<Required<Deployment & RemoteDeploymentId> & DeployTransaction> {
-  const client = getPlatformClient(hre);
+  const client = getDefenderClient(hre);
 
   const constructorArgs = [...args] as (string | number | boolean)[];
   const contractInfo = await getContractInfo(hre, factory, { constructorArgs, ...opts });

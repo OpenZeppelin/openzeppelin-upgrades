@@ -19,7 +19,7 @@ import {
   getInitializerData,
   getSigner,
 } from './utils';
-import { enablePlatform } from './platform/utils';
+import { enableDefender } from './defender/utils';
 import { getContractInstance } from './utils/contract-instance';
 
 export interface DeployFunction {
@@ -27,7 +27,7 @@ export interface DeployFunction {
   (ImplFactory: ContractFactory, opts?: DeployProxyOptions): Promise<Contract>;
 }
 
-export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: boolean): DeployFunction {
+export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: boolean): DeployFunction {
   return async function deployProxy(
     ImplFactory: ContractFactory,
     args: unknown[] | DeployProxyOptions = [],
@@ -38,7 +38,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, platformModule: 
       args = [];
     }
 
-    opts = enablePlatform(hre, platformModule, opts);
+    opts = enableDefender(hre, defenderModule, opts);
 
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);

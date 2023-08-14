@@ -20,8 +20,8 @@ import type { ValidateUpgradeFunction } from './validate-upgrade';
 import type { DeployImplementationFunction } from './deploy-implementation';
 import { DeployAdminFunction, makeDeployProxyAdmin } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
-import type { ProposeUpgradeFunction } from './platform/propose-upgrade';
-import type { GetDefaultApprovalProcessFunction } from './platform/get-default-approval-process';
+import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade';
+import type { GetDefaultApprovalProcessFunction } from './defender/get-default-approval-process';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -51,9 +51,9 @@ export interface HardhatUpgrades {
   };
 }
 
-export interface PlatformHardhatUpgrades extends HardhatUpgrades {
+export interface DefenderHardhatUpgrades extends HardhatUpgrades {
   deployContract: DeployContractFunction;
-  proposeUpgrade: ProposeUpgradeFunction;
+  proposeUpgradeWithApproval: ProposeUpgradeWithApprovalFunction;
   getDefaultApprovalProcess: GetDefaultApprovalProcessFunction;
 }
 
@@ -100,8 +100,8 @@ extendEnvironment(hre => {
     return makeUpgradesFunctions(hre);
   });
 
-  hre.platform = lazyObject((): PlatformHardhatUpgrades => {
-    return makePlatformFunctions(hre);
+  hre.defender = lazyObject((): DefenderHardhatUpgrades => {
+    return makeDefenderFunctions(hre);
   });
 });
 
@@ -136,7 +136,7 @@ if (tryRequire('@nomicfoundation/hardhat-verify')) {
   });
 }
 
-function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
+function makeFunctions(hre: HardhatRuntimeEnvironment, defender: boolean) {
   const {
     silenceWarnings,
     getAdminAddress,
@@ -157,21 +157,21 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
 
   return {
     silenceWarnings,
-    deployProxy: makeDeployProxy(hre, platform),
-    upgradeProxy: makeUpgradeProxy(hre, platform), // block on platform
+    deployProxy: makeDeployProxy(hre, defender),
+    upgradeProxy: makeUpgradeProxy(hre, defender), // block on defender
     validateImplementation: makeValidateImplementation(hre),
     validateUpgrade: makeValidateUpgrade(hre),
-    deployImplementation: makeDeployImplementation(hre, platform),
-    prepareUpgrade: makePrepareUpgrade(hre, platform),
-    deployBeacon: makeDeployBeacon(hre, platform), // block on platform
-    deployBeaconProxy: makeDeployBeaconProxy(hre, platform),
-    upgradeBeacon: makeUpgradeBeacon(hre, platform), // block on platform
-    deployProxyAdmin: makeDeployProxyAdmin(hre, platform), // block on platform
+    deployImplementation: makeDeployImplementation(hre, defender),
+    prepareUpgrade: makePrepareUpgrade(hre, defender),
+    deployBeacon: makeDeployBeacon(hre, defender), // block on defender
+    deployBeaconProxy: makeDeployBeaconProxy(hre, defender),
+    upgradeBeacon: makeUpgradeBeacon(hre, defender), // block on defender
+    deployProxyAdmin: makeDeployProxyAdmin(hre, defender), // block on defender
     forceImport: makeForceImport(hre),
     admin: {
       getInstance: makeGetInstanceFunction(hre),
-      changeProxyAdmin: makeChangeProxyAdmin(hre, platform), // block on platform
-      transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre, platform), // block on platform
+      changeProxyAdmin: makeChangeProxyAdmin(hre, defender), // block on defender
+      transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre, defender), // block on defender
     },
     erc1967: {
       getAdminAddress: (proxyAddress: string) => getAdminAddress(hre.network.provider, proxyAddress),
@@ -189,15 +189,15 @@ function makeUpgradesFunctions(hre: HardhatRuntimeEnvironment): HardhatUpgrades 
   return makeFunctions(hre, false);
 }
 
-function makePlatformFunctions(hre: HardhatRuntimeEnvironment): PlatformHardhatUpgrades {
+function makeDefenderFunctions(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrades {
   const { makeDeployContract } = require('./deploy-contract');
-  const { makeProposeUpgrade } = require('./platform/propose-upgrade');
-  const { makeGetDefaultApprovalProcess } = require('./platform/get-default-approval-process');
+  const { makeProposeUpgradeWithApproval } = require('./defender/propose-upgrade');
+  const { makeGetDefaultApprovalProcess } = require('./defender/get-default-approval-process');
 
   return {
     ...makeFunctions(hre, true),
     deployContract: makeDeployContract(hre, true),
-    proposeUpgrade: makeProposeUpgrade(hre, true),
+    proposeUpgradeWithApproval: makeProposeUpgradeWithApproval(hre, true),
     getDefaultApprovalProcess: makeGetDefaultApprovalProcess(hre),
   };
 }

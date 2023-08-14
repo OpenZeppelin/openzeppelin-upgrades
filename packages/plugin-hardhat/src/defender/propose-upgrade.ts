@@ -7,8 +7,8 @@ import {
 } from '@openzeppelin/upgrades-core';
 import { ContractFactory, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { PlatformDeployOptions, UpgradeOptions } from '../utils';
-import { getNetwork, enablePlatform, getPlatformClient } from './utils';
+import { DefenderDeployOptions, UpgradeOptions } from '../utils';
+import { getNetwork, enableDefender, getDefenderClient } from './utils';
 import { deployImplForUpgrade } from '../prepare-upgrade';
 
 export interface UpgradeProposalResponse {
@@ -17,25 +17,28 @@ export interface UpgradeProposalResponse {
   txResponse?: ethers.TransactionResponse;
 }
 
-export type ProposeUpgradeFunction = (
+export type ProposeUpgradeWithApprovalFunction = (
   proxyAddress: string,
   contractNameOrImplFactory: string | ContractFactory,
   opts?: ProposalOptions,
 ) => Promise<UpgradeProposalResponse>;
 
-export interface ProposalOptions extends UpgradeOptions, PlatformDeployOptions {
+export interface ProposalOptions extends UpgradeOptions, DefenderDeployOptions {
   approvalProcessId?: string;
 }
 
-export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment, platformModule: boolean): ProposeUpgradeFunction {
-  return async function proposeUpgrade(proxyAddress, contractNameOrImplFactory, opts = {}) {
-    opts = enablePlatform(hre, platformModule, opts);
+export function makeProposeUpgradeWithApproval(
+  hre: HardhatRuntimeEnvironment,
+  defenderModule: boolean,
+): ProposeUpgradeWithApprovalFunction {
+  return async function proposeUpgradeWithApproval(proxyAddress, contractNameOrImplFactory, opts = {}) {
+    opts = enableDefender(hre, defenderModule, opts);
 
-    const client = getPlatformClient(hre);
+    const client = getDefenderClient(hre);
     const network = await getNetwork(hre);
 
     if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
-      throw new Error(`Beacon proxy is not currently supported with platform.proposeUpgrade()`);
+      throw new Error(`Beacon proxy is not currently supported with defender.proposeUpgradeWithApproval()`);
     } else {
       // try getting the implementation address so that it will give an error if it's not a transparent/uups proxy
       await getImplementationAddress(hre.network.provider, proxyAddress);
