@@ -11,7 +11,6 @@ import { ContractFactory, getCreateAddress, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getAdminClient, getNetwork } from './utils';
 import type { VerificationResponse } from './verify-deployment';
-import { HardhatDefender } from '.';
 
 export interface ExtendedProposalResponse extends ProposalResponse {
   txResponse?: ethers.TransactionResponse;
@@ -76,11 +75,7 @@ export function makeProposeUpgrade(hre: HardhatRuntimeEnvironment): ProposeUpgra
 
     const verificationResponse =
       contractName && opts.bytecodeVerificationReferenceUrl
-        ? await (hre.defender as HardhatDefender).verifyDeployment(
-            newImplementation,
-            contractName,
-            opts.bytecodeVerificationReferenceUrl,
-          )
+        ? await hre.defender.verifyDeployment(newImplementation, contractName, opts.bytecodeVerificationReferenceUrl)
         : undefined;
 
     const proposalResponse = await client.proposeUpgrade(

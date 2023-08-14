@@ -189,7 +189,7 @@ function makeUpgradesFunctions(hre: HardhatRuntimeEnvironment): HardhatUpgrades 
   return makeFunctions(hre, false);
 }
 
-export function makeDefenderFunctions(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrades {
+function makeDefenderFunctions(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrades {
   const { makeDeployContract } = require('./deploy-contract');
   const { makeProposeUpgradeWithApproval } = require('./defender/propose-upgrade');
   const { makeGetDefaultApprovalProcess } = require('./defender/get-default-approval-process');

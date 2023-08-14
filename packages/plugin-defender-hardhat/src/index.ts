@@ -12,15 +12,19 @@ import type {
   VerifyDeployFunction,
   VerifyDeployWithUploadedArtifactFunction,
 } from './verify-deployment';
-import { DefenderHardhatUpgrades, makeDefenderFunctions } from '@openzeppelin/hardhat-upgrades';
 
-export interface HardhatDefender extends DefenderHardhatUpgrades {
+export interface HardhatDefender {
   proposeUpgrade: ProposeUpgradeFunction;
   verifyDeployment: VerifyDeployFunction;
   verifyDeploymentWithUploadedArtifact: VerifyDeployWithUploadedArtifactFunction;
   getDeploymentArtifact: GetVerifyDeployArtifactFunction;
   getDeploymentBuildInfo: GetVerifyDeployBuildInfoFunction;
   getBytecodeDigest: GetBytecodeDigestFunction;
+}
+
+export interface HardhatDefenderConfig {
+  apiKey: string;
+  apiSecret: string;
 }
 
 extendEnvironment(hre => {
@@ -33,8 +37,6 @@ extendEnvironment(hre => {
       makeGetBytecodeDigest,
     } = require('./verify-deployment');
     return {
-      ...makeDefenderFunctions(hre),
-
       // We wrap this one on a lazy function so we can delay the require of the upgrades plugin
       proposeUpgrade: lazyFunction(() => {
         const { makeProposeUpgrade } = require('./propose-upgrade');
