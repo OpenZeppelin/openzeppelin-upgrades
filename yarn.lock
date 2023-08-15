@@ -2339,10 +2339,32 @@
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-"@openzeppelin/defender-base-client@1.47.0", "@openzeppelin/defender-base-client@^1.46.0", "@openzeppelin/defender-base-client@^1.47.0":
+"@openzeppelin/defender-admin-client@^1.48.0":
+  version "1.48.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-admin-client/-/defender-admin-client-1.48.0.tgz#acb8d6677a0b1bca463f9017aefaf4b6720123e1"
+  integrity sha512-MN29JD6jA3PgOxF2tG0aZbMIwOCieYWkK9UbHCq1UzGPrMgGV9NVMUyVdqpv7Ynplwsjp5ZTBDOyttwvTlchHg==
+  dependencies:
+    "@openzeppelin/defender-base-client" "1.48.0"
+    axios "^1.4.0"
+    ethers "^5.7.2"
+    lodash "^4.17.19"
+    node-fetch "^2.6.0"
+
+"@openzeppelin/defender-base-client@1.47.0", "@openzeppelin/defender-base-client@^1.46.0":
   version "1.47.0"
   resolved "https://registry.yarnpkg.com/@openzeppelin/defender-base-client/-/defender-base-client-1.47.0.tgz#f9d47f4cf0a75b4e4e5139dec780a3f26f5e2019"
   integrity sha512-y9dDm+gX0MHHEn17W7f7oO3X083JAVMk3YcuXHavSE7kjiCLoFOaZ23joYqoHeaccL10nGt7KOOzZ0sh9iJHTQ==
+  dependencies:
+    amazon-cognito-identity-js "^6.0.1"
+    async-retry "^1.3.3"
+    axios "^1.4.0"
+    lodash "^4.17.19"
+    node-fetch "^2.6.0"
+
+"@openzeppelin/defender-base-client@1.48.0", "@openzeppelin/defender-base-client@^1.48.0", "@openzeppelin/defender-base-client@^1.48.0-rc.1":
+  version "1.48.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-base-client/-/defender-base-client-1.48.0.tgz#9103b1b036db0451b52d7899a277bf24db4c4b06"
+  integrity sha512-HFO87s010hRrMjyh2xYOCEAkLe21BfIbho7n5/kikA6A1ZgXi7MsEiqnQv1zP4bxMJgxGZ5b3t4tt6fWrakbag==
   dependencies:
     amazon-cognito-identity-js "^6.0.1"
     async-retry "^1.3.3"
@@ -2365,13 +2387,13 @@
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
 
-"@openzeppelin/platform-deploy-client@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/platform-deploy-client/-/platform-deploy-client-0.9.0.tgz#6d7092066d1c5cf4c25ba6f9d8164e8d1c425b61"
-  integrity sha512-VepsNJu5B5xhrKMg//hROFljlxlNhlkcgLSKl8rqapKiRFN/dxXtSVmmpNmySrCFnbbV/6twfhuhYGAZiG7oAw==
+"@openzeppelin/platform-deploy-client@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/platform-deploy-client/-/platform-deploy-client-0.10.0.tgz#017599612ed3b898f94f281b378ac50626365617"
+  integrity sha512-jayQPeXqw4LnWIrNhNqgikJSre+n2NRrnEu76niSdVXc/faQkG3PmaHtRPJMFgsYxjjAiAfcMYyV95YBDuLexA==
   dependencies:
     "@ethersproject/abi" "^5.6.3"
-    "@openzeppelin/defender-base-client" "^1.47.0"
+    "@openzeppelin/defender-base-client" "^1.48.0-rc.1"
     axios "^1.4.0"
     lodash "^4.17.19"
     node-fetch "^2.6.0"
