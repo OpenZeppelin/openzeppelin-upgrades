@@ -22,6 +22,14 @@ import { DeployAdminFunction, makeDeployProxyAdmin } from './deploy-proxy-admin'
 import type { DeployContractFunction } from './deploy-contract';
 import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade-with-approval';
 import type { GetDefaultApprovalProcessFunction } from './defender/get-default-approval-process';
+import { ProposeUpgradeFunction } from './defender-v1/propose-upgrade';
+import {
+  VerifyDeployFunction,
+  VerifyDeployWithUploadedArtifactFunction,
+  GetVerifyDeployArtifactFunction,
+  GetVerifyDeployBuildInfoFunction,
+  GetBytecodeDigestFunction,
+} from './defender-v1/verify-deployment';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -51,7 +59,16 @@ export interface HardhatUpgrades {
   };
 }
 
-export interface DefenderHardhatUpgrades extends HardhatUpgrades {
+export interface DefenderV1HardhatUpgrades {
+  proposeUpgrade: ProposeUpgradeFunction;
+  verifyDeployment: VerifyDeployFunction;
+  verifyDeploymentWithUploadedArtifact: VerifyDeployWithUploadedArtifactFunction;
+  getDeploymentArtifact: GetVerifyDeployArtifactFunction;
+  getDeploymentBuildInfo: GetVerifyDeployBuildInfoFunction;
+  getBytecodeDigest: GetBytecodeDigestFunction;
+}
+
+export interface DefenderHardhatUpgrades extends HardhatUpgrades, DefenderV1HardhatUpgrades {
   deployContract: DeployContractFunction;
   proposeUpgradeWithApproval: ProposeUpgradeWithApprovalFunction;
   getDefaultApprovalProcess: GetDefaultApprovalProcessFunction;
@@ -189,6 +206,26 @@ function makeUpgradesFunctions(hre: HardhatRuntimeEnvironment): HardhatUpgrades 
   return makeFunctions(hre, false);
 }
 
+function makeDefenderV1Functions(hre: HardhatRuntimeEnvironment): DefenderV1HardhatUpgrades {
+  const {
+    makeVerifyDeploy,
+    makeVerifyDeployWithUploadedArtifact,
+    makeGetVerifyDeployBuildInfo,
+    makeGetVerifyDeployArtifact,
+    makeGetBytecodeDigest,
+  } = require('./defender-v1/verify-deployment');
+  const { makeProposeUpgrade } = require('./defender-v1/propose-upgrade');
+
+  return {
+    proposeUpgrade: makeProposeUpgrade(hre),
+    verifyDeployment: makeVerifyDeploy(hre),
+    verifyDeploymentWithUploadedArtifact: makeVerifyDeployWithUploadedArtifact(hre),
+    getDeploymentArtifact: makeGetVerifyDeployArtifact(hre),
+    getDeploymentBuildInfo: makeGetVerifyDeployBuildInfo(hre),
+    getBytecodeDigest: makeGetBytecodeDigest(hre),
+  };
+}
+
 function makeDefenderFunctions(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrades {
   const { makeDeployContract } = require('./deploy-contract');
   const { makeProposeUpgradeWithApproval } = require('./defender/propose-upgrade-with-approval');
@@ -196,6 +233,7 @@ function makeDefenderFunctions(hre: HardhatRuntimeEnvironment): DefenderHardhatU
 
   return {
     ...makeFunctions(hre, true),
+    ...makeDefenderV1Functions(hre),
     deployContract: makeDeployContract(hre, true),
     proposeUpgradeWithApproval: makeProposeUpgradeWithApproval(hre, true),
     getDefaultApprovalProcess: makeGetDefaultApprovalProcess(hre),

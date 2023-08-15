@@ -31,4 +31,8 @@ module.exports = {
       'contracts/GapV2_Bad.sol': override,
     },
   },
+  defender: {
+    apiKey: 'KEY',
+    apiSecret: 'SECRET',
+  },
 };

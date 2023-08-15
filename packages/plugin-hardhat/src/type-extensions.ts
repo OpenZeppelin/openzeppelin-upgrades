@@ -1,4 +1,5 @@
 import 'hardhat/types/runtime';
+import 'hardhat/types/config';
 
 import type { HardhatUpgrades, DefenderHardhatUpgrades } from '.';
 
