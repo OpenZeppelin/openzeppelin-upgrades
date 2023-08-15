@@ -547,7 +547,7 @@ async function proposeUpgrade(
   }>
 ----
 
-NOTE: This method requires the https://www.npmjs.com/package/@openzeppelin/hardhat-defender[`@openzeppelin/hardhat-defender`] package, as well as configuring a Defender Team API Key.
+NOTE: This method requires configuring a Defender Team API Key.
 
 Proposes an upgrade using https://docs.openzeppelin.com/defender/admin[Defender Admin].
 
