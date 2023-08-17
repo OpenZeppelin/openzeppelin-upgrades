@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Rename Platform to Defender. ([#863](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/863))
+
+**Note**: Functions that were for OpenZeppelin Platform have breaking changes since the previous release and have been renamed for OpenZeppelin Defender. See ([#863](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/863)) for details. OpenZeppelin Defender deployments is in beta and its functionality is subject to change.
+
 ## 2.1.1 (2023-08-08)
 
 - Use public Etherscan API from `hardhat-verify`. ([#857](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/857))
