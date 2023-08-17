@@ -1,5 +1,8 @@
 # OpenZeppelin Hardhat Defender
 
+> **Note**
+> This package is deprecated. This functionality is now included as part of the [Hardhat Upgrades](../plugin-hardhat/README.md) plugin.
+
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins/hardhat-upgrades)
 [![NPM Package](https://img.shields.io/npm/v/@openzeppelin/hardhat-defender.svg)](https://www.npmjs.org/package/@openzeppelin/hardhat-defender)
 

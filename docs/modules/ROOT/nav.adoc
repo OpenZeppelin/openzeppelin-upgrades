@@ -1,7 +1,7 @@
 * xref:index.adoc[Overview]
 * xref:truffle-upgrades.adoc[Using with Truffle]
 * xref:hardhat-upgrades.adoc[Using with Hardhat]
-** xref:platform-deploy.adoc[Using with OpenZeppelin Platform]
+** xref:defender-deploy.adoc[OpenZeppelin Defender integration]
 * xref:writing-upgradeable.adoc[Writing Upgradeable Contracts]
 * xref:proxies.adoc[Proxy Upgrade Pattern]
 * xref:network-files.adoc[Network Files]

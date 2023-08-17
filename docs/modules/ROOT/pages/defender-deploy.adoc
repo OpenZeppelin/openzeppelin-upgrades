@@ -1,0 +1,89 @@
+= OpenZeppelin Defender integration
+
+The Hardhat Upgrades package can use https://docs.openzeppelin.com/defender/[OpenZeppelin Defender] for deployments instead of ethers.js, which allows for features such as gas pricing estimation, resubmissions, and automated bytecode and source code verification.
+
+NOTE: OpenZeppelin Defender deployments is in beta and the functionality described here is subject to change.
+
+[[configuration]]
+== Configuration
+
+Create a deployment environment on OpenZeppelin Defender and provide the Team API Key and secret in your `hardhat.config.js` or `hardhat.config.ts` file under `defender`:
+
+[source,js]
+----
+module.exports = {
+  defender: {
+    apiKey: process.env.API_KEY,
+    apiSecret: process.env.API_SECRET,
+  }
+}
+----
+
+[[usage]]
+== Usage
+
+When using the xref:api-hardhat-upgrades.adoc[Hardhat Upgrades API functions], enable OpenZeppelin Defender deployments using any of the ways below.
+
+NOTE: Only functions that have the `useDefenderDeploy` option in their API reference support deployments through OpenZeppelin Defender. If you enable the following but use functions that do not support `useDefenderDeploy`, the first way below will cause those functions to deploy using ethers.js, whereas the second and third ways will cause those functions to give an error.
+
+- Recommended: In `hardhat.config.js` or `hardhat.config.ts`, set `useDefenderDeploy: true` under `defender`. For example:
+
+[source,js]
+----
+module.exports = {
+  defender: {
+    apiKey: process.env.API_KEY,
+    apiSecret: process.env.API_SECRET,
+    useDefenderDeploy: true,
+  }
+}
+----
+
+[source,js]
+----
+// scripts/create-box.js
+const { ethers, upgrades } = require("hardhat");
+
+async function main() {
+  const Box = await ethers.getContractFactory("Box");
+  const box = await upgrades.deployProxy(Box, [42]);
+  await box.waitForDeployment();
+  console.log("Box deployed to:", await box.getAddress());
+}
+
+main();
+----
+
+- Use the `defender` module instead of `upgrades` from the Hardhat Runtime Environment. Use this if you want to make sure Defender is used and want to see an error if the function does not support Defender. For example:
+
+[source,js]
+----
+// scripts/create-box.js
+const { ethers, defender } = require("hardhat");
+
+async function main() {
+  const Box = await ethers.getContractFactory("Box");
+  const box = await defender.deployProxy(Box, [42]);
+  await box.waitForDeployment();
+  console.log("Box deployed to:", await box.getAddress());
+}
+
+main();
+----
+
+- Use the `useDefenderDeploy` common option. Setting this option overrides the above for specific functions. For example:
+
+[source,js]
+----
+// scripts/create-box.js
+const { ethers, upgrades } = require("hardhat");
+
+async function main() {
+  const Box = await ethers.getContractFactory("Box");
+  const box = await upgrades.deployProxy(Box, [42], { useDefenderDeploy: true });
+  await box.waitForDeployment();
+  console.log("Box deployed to:", await box.getAddress());
+}
+
+main();
+----

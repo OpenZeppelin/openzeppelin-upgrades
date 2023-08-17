@@ -6,7 +6,12 @@ import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
 import { HardhatConfig, HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getImplementationAddressFromBeacon, silenceWarnings, SolcInput } from '@openzeppelin/upgrades-core';
+import {
+  getImplementationAddressFromBeacon,
+  logWarning,
+  silenceWarnings,
+  SolcInput,
+} from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { PrepareUpgradeFunction } from './prepare-upgrade';
 import type { UpgradeFunction } from './upgrade-proxy';
@@ -20,8 +25,16 @@ import type { ValidateUpgradeFunction } from './validate-upgrade';
 import type { DeployImplementationFunction } from './deploy-implementation';
 import { DeployAdminFunction, makeDeployProxyAdmin } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
-import type { ProposeUpgradeFunction } from './platform/propose-upgrade';
-import type { GetDefaultApprovalProcessFunction } from './platform/get-default-approval-process';
+import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade-with-approval';
+import type { GetDefaultApprovalProcessFunction } from './defender/get-default-approval-process';
+import { ProposeUpgradeFunction } from './defender-v1/propose-upgrade';
+import {
+  VerifyDeployFunction,
+  VerifyDeployWithUploadedArtifactFunction,
+  GetVerifyDeployArtifactFunction,
+  GetVerifyDeployBuildInfoFunction,
+  GetBytecodeDigestFunction,
+} from './defender-v1/verify-deployment';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -51,9 +64,18 @@ export interface HardhatUpgrades {
   };
 }
 
-export interface PlatformHardhatUpgrades extends HardhatUpgrades {
-  deployContract: DeployContractFunction;
+export interface DefenderV1HardhatUpgrades {
   proposeUpgrade: ProposeUpgradeFunction;
+  verifyDeployment: VerifyDeployFunction;
+  verifyDeploymentWithUploadedArtifact: VerifyDeployWithUploadedArtifactFunction;
+  getDeploymentArtifact: GetVerifyDeployArtifactFunction;
+  getDeploymentBuildInfo: GetVerifyDeployBuildInfoFunction;
+  getBytecodeDigest: GetBytecodeDigestFunction;
+}
+
+export interface DefenderHardhatUpgrades extends HardhatUpgrades, DefenderV1HardhatUpgrades {
+  deployContract: DeployContractFunction;
+  proposeUpgradeWithApproval: ProposeUpgradeWithApprovalFunction;
   getDefaultApprovalProcess: GetDefaultApprovalProcessFunction;
 }
 
@@ -100,10 +122,21 @@ extendEnvironment(hre => {
     return makeUpgradesFunctions(hre);
   });
 
-  hre.platform = lazyObject((): PlatformHardhatUpgrades => {
-    return makePlatformFunctions(hre);
+  warnOnHardhatDefender();
+
+  hre.defender = lazyObject((): DefenderHardhatUpgrades => {
+    return makeDefenderFunctions(hre);
   });
 });
+
+function warnOnHardhatDefender() {
+  if (tryRequire('@openzeppelin/hardhat-defender', true)) {
+    logWarning('The @openzeppelin/hardhat-defender package is deprecated.', [
+      'Uninstall the @openzeppelin/hardhat-defender package.',
+      'OpenZeppelin Defender integration is included as part of the Hardhat Upgrades plugin.',
+    ]);
+  }
+}
 
 extendConfig((config: HardhatConfig) => {
   // Accumulate references to all the compiler settings, including overrides
@@ -136,7 +169,7 @@ if (tryRequire('@nomicfoundation/hardhat-verify')) {
   });
 }
 
-function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
+function makeFunctions(hre: HardhatRuntimeEnvironment, defender: boolean) {
   const {
     silenceWarnings,
     getAdminAddress,
@@ -157,21 +190,21 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, platform: boolean) {
 
   return {
     silenceWarnings,
-    deployProxy: makeDeployProxy(hre, platform),
-    upgradeProxy: makeUpgradeProxy(hre, platform), // block on platform
+    deployProxy: makeDeployProxy(hre, defender),
+    upgradeProxy: makeUpgradeProxy(hre, defender), // block on defender
     validateImplementation: makeValidateImplementation(hre),
     validateUpgrade: makeValidateUpgrade(hre),
-    deployImplementation: makeDeployImplementation(hre, platform),
-    prepareUpgrade: makePrepareUpgrade(hre, platform),
-    deployBeacon: makeDeployBeacon(hre, platform), // block on platform
-    deployBeaconProxy: makeDeployBeaconProxy(hre, platform),
-    upgradeBeacon: makeUpgradeBeacon(hre, platform), // block on platform
-    deployProxyAdmin: makeDeployProxyAdmin(hre, platform), // block on platform
+    deployImplementation: makeDeployImplementation(hre, defender),
+    prepareUpgrade: makePrepareUpgrade(hre, defender),
+    deployBeacon: makeDeployBeacon(hre, defender), // block on defender
+    deployBeaconProxy: makeDeployBeaconProxy(hre, defender),
+    upgradeBeacon: makeUpgradeBeacon(hre, defender), // block on defender
+    deployProxyAdmin: makeDeployProxyAdmin(hre, defender), // block on defender
     forceImport: makeForceImport(hre),
     admin: {
       getInstance: makeGetInstanceFunction(hre),
-      changeProxyAdmin: makeChangeProxyAdmin(hre, platform), // block on platform
-      transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre, platform), // block on platform
+      changeProxyAdmin: makeChangeProxyAdmin(hre, defender), // block on defender
+      transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre, defender), // block on defender
     },
     erc1967: {
       getAdminAddress: (proxyAddress: string) => getAdminAddress(hre.network.provider, proxyAddress),
@@ -189,22 +222,43 @@ function makeUpgradesFunctions(hre: HardhatRuntimeEnvironment): HardhatUpgrades 
   return makeFunctions(hre, false);
 }
 
-function makePlatformFunctions(hre: HardhatRuntimeEnvironment): PlatformHardhatUpgrades {
+function makeDefenderV1Functions(hre: HardhatRuntimeEnvironment): DefenderV1HardhatUpgrades {
+  const {
+    makeVerifyDeploy,
+    makeVerifyDeployWithUploadedArtifact,
+    makeGetVerifyDeployBuildInfo,
+    makeGetVerifyDeployArtifact,
+    makeGetBytecodeDigest,
+  } = require('./defender-v1/verify-deployment');
+  const { makeProposeUpgrade } = require('./defender-v1/propose-upgrade');
+
+  return {
+    proposeUpgrade: makeProposeUpgrade(hre),
+    verifyDeployment: makeVerifyDeploy(hre),
+    verifyDeploymentWithUploadedArtifact: makeVerifyDeployWithUploadedArtifact(hre),
+    getDeploymentArtifact: makeGetVerifyDeployArtifact(hre),
+    getDeploymentBuildInfo: makeGetVerifyDeployBuildInfo(hre),
+    getBytecodeDigest: makeGetBytecodeDigest(hre),
+  };
+}
+
+function makeDefenderFunctions(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrades {
   const { makeDeployContract } = require('./deploy-contract');
-  const { makeProposeUpgrade } = require('./platform/propose-upgrade');
-  const { makeGetDefaultApprovalProcess } = require('./platform/get-default-approval-process');
+  const { makeProposeUpgradeWithApproval } = require('./defender/propose-upgrade-with-approval');
+  const { makeGetDefaultApprovalProcess } = require('./defender/get-default-approval-process');
 
   return {
     ...makeFunctions(hre, true),
+    ...makeDefenderV1Functions(hre),
     deployContract: makeDeployContract(hre, true),
-    proposeUpgrade: makeProposeUpgrade(hre, true),
+    proposeUpgradeWithApproval: makeProposeUpgradeWithApproval(hre, true),
     getDefaultApprovalProcess: makeGetDefaultApprovalProcess(hre),
   };
 }
 
-function tryRequire(id: string) {
+function tryRequire(id: string, resolveOnly?: boolean) {
   try {
-    require(id);
+    resolveOnly ? require.resolve(id) : require(id);
     return true;
   } catch (e: any) {
     // do nothing

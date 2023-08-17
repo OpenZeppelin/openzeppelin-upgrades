@@ -12,7 +12,7 @@ import {
   ContractAddressOrInstance,
   getSigner,
 } from './utils';
-import { disablePlatform } from './platform/utils';
+import { disableDefender } from './defender/utils';
 import { attach } from './utils/ethers';
 
 export type UpgradeFunction = (
@@ -21,9 +21,9 @@ export type UpgradeFunction = (
   opts?: UpgradeProxyOptions,
 ) => Promise<Contract>;
 
-export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, platformModule: boolean): UpgradeFunction {
+export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule: boolean): UpgradeFunction {
   return async function upgradeProxy(proxy, ImplFactory, opts: UpgradeProxyOptions = {}) {
-    disablePlatform(hre, platformModule, opts, upgradeProxy.name);
+    disableDefender(hre, defenderModule, opts, upgradeProxy.name);
 
     const proxyAddress = await getContractAddress(proxy);
 

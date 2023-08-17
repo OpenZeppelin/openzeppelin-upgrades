@@ -3,7 +3,7 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract, Signer } from 'ethers';
 import { EthersDeployOptions, getProxyAdminFactory } from './utils';
-import { disablePlatform } from './platform/utils';
+import { disableDefender } from './defender/utils';
 import { attach } from './utils/ethers';
 
 const SUCCESS_CHECK = chalk.green('✔') + ' ';
@@ -22,14 +22,14 @@ export type TransferProxyAdminOwnershipFunction = (
 ) => Promise<void>;
 export type GetInstanceFunction = (signer?: Signer) => Promise<Contract>;
 
-export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, platformModule: boolean): ChangeAdminFunction {
+export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, defenderModule: boolean): ChangeAdminFunction {
   return async function changeProxyAdmin(
     proxyAddress: string,
     newAdmin: string,
     signer?: Signer,
     opts: EthersDeployOptions = {},
   ) {
-    disablePlatform(hre, platformModule, {}, changeProxyAdmin.name);
+    disableDefender(hre, defenderModule, {}, changeProxyAdmin.name);
 
     const admin = await getManifestAdmin(hre, signer);
     const manifestAdminAddress = await admin.getAddress();
@@ -46,10 +46,10 @@ export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, platformMod
 
 export function makeTransferProxyAdminOwnership(
   hre: HardhatRuntimeEnvironment,
-  platformModule: boolean,
+  defenderModule: boolean,
 ): TransferProxyAdminOwnershipFunction {
   return async function transferProxyAdminOwnership(newOwner: string, signer?: Signer, opts: EthersDeployOptions = {}) {
-    disablePlatform(hre, platformModule, {}, transferProxyAdminOwnership.name);
+    disableDefender(hre, defenderModule, {}, transferProxyAdminOwnership.name);
 
     const admin = await getManifestAdmin(hre, signer);
 

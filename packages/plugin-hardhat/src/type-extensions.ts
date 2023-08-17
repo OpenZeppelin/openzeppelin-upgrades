@@ -1,26 +1,27 @@
 import 'hardhat/types/runtime';
+import 'hardhat/types/config';
 
-import type { HardhatUpgrades, PlatformHardhatUpgrades } from '.';
+import type { HardhatUpgrades, DefenderHardhatUpgrades } from '.';
 
 declare module 'hardhat/types/runtime' {
   export interface HardhatRuntimeEnvironment {
     upgrades: HardhatUpgrades;
-    platform: PlatformHardhatUpgrades;
+    defender: DefenderHardhatUpgrades;
   }
 }
 
-export interface HardhatPlatformConfig {
+export interface HardhatDefenderConfig {
   apiKey: string;
   apiSecret: string;
-  usePlatformDeploy?: boolean;
+  useDefenderDeploy?: boolean;
 }
 
 declare module 'hardhat/types/config' {
   export interface HardhatUserConfig {
-    platform?: HardhatPlatformConfig;
+    defender?: HardhatDefenderConfig;
   }
 
   export interface HardhatConfig {
-    platform?: HardhatPlatformConfig;
+    defender?: HardhatDefenderConfig;
   }
 }

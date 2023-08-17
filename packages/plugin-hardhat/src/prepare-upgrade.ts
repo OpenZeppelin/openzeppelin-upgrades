@@ -16,7 +16,7 @@ import {
   PrepareUpgradeRequiresKindError,
 } from '@openzeppelin/upgrades-core';
 import { DeployImplementationResponse } from './deploy-implementation';
-import { enablePlatform } from './platform/utils';
+import { enableDefender } from './defender/utils';
 import { deployUpgradeableImpl, DeployedImpl } from './utils/deploy-impl';
 
 export type PrepareUpgradeFunction = (
@@ -25,9 +25,9 @@ export type PrepareUpgradeFunction = (
   opts?: PrepareUpgradeOptions,
 ) => Promise<DeployImplementationResponse>;
 
-export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, platformModule: boolean): PrepareUpgradeFunction {
+export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, defenderModule: boolean): PrepareUpgradeFunction {
   return async function prepareUpgrade(referenceAddressOrContract, ImplFactory, opts: PrepareUpgradeOptions = {}) {
-    opts = enablePlatform(hre, platformModule, opts);
+    opts = enableDefender(hre, defenderModule, opts);
 
     const deployedImpl = await deployImplForUpgrade(hre, referenceAddressOrContract, ImplFactory, opts);
 

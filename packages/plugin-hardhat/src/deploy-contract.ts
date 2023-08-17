@@ -3,7 +3,7 @@ import type { ContractFactory, Contract } from 'ethers';
 
 import { deploy, DeployContractOptions, DeployTransaction } from './utils';
 import { DeployData, getDeployData } from './utils/deploy-impl';
-import { enablePlatform } from './platform/utils';
+import { enableDefender } from './defender/utils';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -53,7 +53,7 @@ function assertNonUpgradeable(deployData: DeployData) {
   }
 }
 
-export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModule: boolean): DeployContractFunction {
+export function makeDeployContract(hre: HardhatRuntimeEnvironment, defenderModule: boolean): DeployContractFunction {
   return async function deployContract(
     Contract,
     args: unknown[] | DeployContractOptions = [],
@@ -64,10 +64,10 @@ export function makeDeployContract(hre: HardhatRuntimeEnvironment, platformModul
       args = [];
     }
 
-    opts = enablePlatform(hre, platformModule, opts);
+    opts = enableDefender(hre, defenderModule, opts);
 
-    if (!opts.usePlatformDeploy) {
-      throw new Error(`The ${deployContract.name} function cannot have the \`usePlatformDeploy\` option disabled.`);
+    if (!opts.useDefenderDeploy) {
+      throw new Error(`The ${deployContract.name} function cannot have the \`useDefenderDeploy\` option disabled.`);
     }
 
     if (opts.constructorArgs !== undefined) {

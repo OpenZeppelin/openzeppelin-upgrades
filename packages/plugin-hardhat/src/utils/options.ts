@@ -50,16 +50,16 @@ type Initializer = {
 };
 
 /**
- * Option to enable or disable Platform deployments.
+ * Option to enable or disable Defender deployments.
  */
-export type Platform = {
-  usePlatformDeploy?: boolean;
+export type DefenderDeploy = {
+  useDefenderDeploy?: boolean;
 };
 
 /**
- * Options for functions that support Platform deployments.
+ * Options for functions that support Defender deployments.
  */
-export type PlatformDeployOptions = Platform & {
+export type DefenderDeployOptions = DefenderDeploy & {
   verifySourceCode?: boolean;
   relayerId?: string;
   salt?: string;
@@ -79,21 +79,21 @@ export type DeployBeaconProxyOptions = EthersDeployOptions &
   DeployOpts &
   ProxyKindOption &
   Initializer &
-  PlatformDeployOptions;
-export type DeployBeaconOptions = StandaloneOptions & Platform;
-export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & PlatformDeployOptions;
+  DefenderDeployOptions;
+export type DeployBeaconOptions = StandaloneOptions & DefenderDeploy;
+export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & DefenderDeployOptions;
 export type DeployContractOptions = Omit<StandaloneOptions, 'txOverrides'> & // ethers deployment not supported for deployContract
   GetTxResponse &
-  PlatformDeployOptions & {
+  DefenderDeployOptions & {
     unsafeAllowDeployContract?: boolean;
   };
-export type DeployProxyAdminOptions = EthersDeployOptions & DeployOpts & Platform;
-export type DeployProxyOptions = StandaloneOptions & Initializer & PlatformDeployOptions;
+export type DeployProxyAdminOptions = EthersDeployOptions & DeployOpts & DefenderDeploy;
+export type DeployProxyOptions = StandaloneOptions & Initializer & DefenderDeployOptions;
 export type ForceImportOptions = ProxyKindOption;
-export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & PlatformDeployOptions;
-export type UpgradeBeaconOptions = UpgradeOptions & Platform;
+export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & DefenderDeployOptions;
+export type UpgradeBeaconOptions = UpgradeOptions & DefenderDeploy;
 export type UpgradeProxyOptions = UpgradeOptions & {
   call?: { fn: string; args?: unknown[] } | string;
-} & Platform;
+} & DefenderDeploy;
 export type ValidateImplementationOptions = StandaloneValidationOptions;
 export type ValidateUpgradeOptions = ValidationOptions;
