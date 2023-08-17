@@ -6,7 +6,12 @@ import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
 import { HardhatConfig, HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getImplementationAddressFromBeacon, silenceWarnings, SolcInput } from '@openzeppelin/upgrades-core';
+import {
+  getImplementationAddressFromBeacon,
+  logWarning,
+  silenceWarnings,
+  SolcInput,
+} from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { PrepareUpgradeFunction } from './prepare-upgrade';
 import type { UpgradeFunction } from './upgrade-proxy';
@@ -117,10 +122,24 @@ extendEnvironment(hre => {
     return makeUpgradesFunctions(hre);
   });
 
+  warnOnHardhatDefender();
+
   hre.defender = lazyObject((): DefenderHardhatUpgrades => {
     return makeDefenderFunctions(hre);
   });
 });
+
+function warnOnHardhatDefender() {
+  try {
+    require.resolve('@openzeppelin/hardhat-defender');
+    logWarning('The @openzeppelin/hardhat-defender package is deprecated.', [
+      'Uninstall the @openzeppelin/hardhat-defender package.',
+      'OpenZeppelin Defender integration is included as part of the Hardhat Upgrades plugin.',
+    ]);
+  } catch (e) {
+    // Do nothing
+  }
+}
 
 extendConfig((config: HardhatConfig) => {
   // Accumulate references to all the compiler settings, including overrides
