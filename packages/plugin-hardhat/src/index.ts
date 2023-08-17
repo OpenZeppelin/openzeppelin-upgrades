@@ -130,14 +130,11 @@ extendEnvironment(hre => {
 });
 
 function warnOnHardhatDefender() {
-  try {
-    require.resolve('@openzeppelin/hardhat-defender');
+  if (tryRequire('@openzeppelin/hardhat-defender', true)) {
     logWarning('The @openzeppelin/hardhat-defender package is deprecated.', [
       'Uninstall the @openzeppelin/hardhat-defender package.',
       'OpenZeppelin Defender integration is included as part of the Hardhat Upgrades plugin.',
     ]);
-  } catch (e) {
-    // Do nothing
   }
 }
 
@@ -259,9 +256,9 @@ function makeDefenderFunctions(hre: HardhatRuntimeEnvironment): DefenderHardhatU
   };
 }
 
-function tryRequire(id: string) {
+function tryRequire(id: string, resolveOnly?: boolean) {
   try {
-    require(id);
+    resolveOnly ? require.resolve(id) : require(id);
     return true;
   } catch (e: any) {
     // do nothing
