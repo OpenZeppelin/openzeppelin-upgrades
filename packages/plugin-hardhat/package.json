@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-upgrades",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
@@ -41,9 +41,9 @@
     "@openzeppelin/upgrades-core": "^1.27.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
+    "ethereumjs-util": "^7.1.5",
     "proper-lockfile": "^4.1.1",
-    "undici": "^5.14.0",
-    "ethereumjs-util": "^7.1.5"
+    "undici": "^5.14.0"
   },
   "peerDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",

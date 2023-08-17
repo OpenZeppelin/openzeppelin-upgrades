@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.2.0 (2023-08-17)
 
 - Rename Platform to Defender. ([#863](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/863))
 
