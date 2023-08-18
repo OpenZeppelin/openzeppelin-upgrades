@@ -9,14 +9,7 @@ const {
 } = require('@openzeppelin/truffle-upgrades/dist/utils/factories.js');
 const { getInitializerData } = require('@openzeppelin/truffle-upgrades/dist/utils/initializer-data');
 
-const {
-  forceImport,
-  deployProxy,
-  upgradeProxy,
-  upgradeBeacon,
-  prepareUpgrade,
-  erc1967,
-} = require('@openzeppelin/truffle-upgrades');
+const { forceImport, deployProxy, upgradeProxy, upgradeBeacon, erc1967 } = require('@openzeppelin/truffle-upgrades');
 
 const { deployer } = withDefaults({});
 
@@ -27,7 +20,6 @@ const GreeterV2Proxiable = artifacts.require('GreeterV2Proxiable');
 const CustomProxy = artifacts.require('CustomProxy');
 const CustomProxyWithAdmin = artifacts.require('CustomProxyWithAdmin');
 
-const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the network manifest';
 const REQUESTED_UPGRADE_WRONG_KIND = 'Requested an upgrade of kind uups but proxy is transparent';
 
 contract('Greeter', function () {
@@ -260,13 +252,7 @@ contract('Greeter', function () {
 
     assert.notEqual(await erc1967.getAdminAddress(greeter2.address), await erc1967.getAdminAddress(greeter.address));
 
-    // cannot upgrade directly
-    await assert.rejects(upgradeProxy(proxy.address, GreeterV2), error => NOT_REGISTERED_ADMIN === error.message);
-
-    // prepare upgrades instead
-    const greeterV2ImplAddr = await prepareUpgrade(greeter.address, GreeterV2);
-    const greeterV2ImplAddr_2 = await prepareUpgrade(greeter2.address, GreeterV2);
-
-    assert.equal(greeterV2ImplAddr_2, greeterV2ImplAddr);
+    // proxy with a different admin can be imported
+    await upgradeProxy(proxy.address, GreeterV2);
   });
 });
