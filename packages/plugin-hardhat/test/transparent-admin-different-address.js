@@ -10,24 +10,25 @@ test.before(async t => {
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
 });
 
-test('admin validation', async t => {
+test('use different admin address than manifest', async t => {
+  // Deploy a proxy
   const { Greeter, GreeterV2 } = t.context;
   const greeter = await upgrades.deployProxy(Greeter, ['Hola admin!'], { kind: 'transparent' });
 
+  // Change to new admin owned by signer 2
   const [, signer] = await ethers.getSigners();
   const AdminFactory = await getProxyAdminFactory(hre, signer);
   const deployedAdmin = await AdminFactory.deploy();
-  const deployedAdminAddress = await deployedAdmin.getAddress();
-  await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), deployedAdminAddress);
+  await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), await deployedAdmin.getAddress());
 
-  // Old admin signer cannot upgrade this
+  // Signer 1 cannot upgrade since it doesn't own the new admin
   await t.throwsAsync(() => upgrades.upgradeProxy(greeter, GreeterV2));
 
+  // Upgrade using signer 2
   const GreeterV3 = Greeter.connect(signer);
   await upgrades.upgradeProxy(greeter, GreeterV3);
 
-  // Upgrade again to ensure
-  // multiple upgrades can proceed
-  const GreeterV4 = GreeterV2.connect(signer);
-  await upgrades.upgradeProxy(greeter, GreeterV4);
+  // Change the admin again, even though current admin is not the one in the manifest
+  const deployedAdmin2 = await AdminFactory.deploy();
+  await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), await deployedAdmin2.getAddress(), signer);
 });

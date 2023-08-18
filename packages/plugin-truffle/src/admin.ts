@@ -12,7 +12,7 @@ async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: Up
 
   if (proxyAdminAddress !== newAdmin) {
     const overrides = opts.txOverrides ? [opts.txOverrides] : [];
-    const AdminFactory = await getProxyAdminFactory();
+    const AdminFactory = getProxyAdminFactory();
     const admin = new AdminFactory(proxyAdminAddress);
     await admin.changeProxyAdmin(proxyAddress, newAdmin, ...overrides);
   }
