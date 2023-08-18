@@ -25,4 +25,9 @@ test('admin validation', async t => {
 
   const GreeterV3 = Greeter.connect(signer);
   await upgrades.upgradeProxy(greeter, GreeterV3);
+
+  // Upgrade again to ensure
+  // multiple upgrades can proceed
+  const GreeterV4 = GreeterV2.connect(signer);
+  await upgrades.upgradeProxy(greeter, GreeterV4);
 });
