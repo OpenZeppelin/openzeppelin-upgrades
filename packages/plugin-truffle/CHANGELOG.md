@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Allow using proxy with different admin address than manifest. ([#859](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/859))
+
 ## 1.20.0 (2023-08-03)
 
 - Add `txOverrides` option for overriding transaction parameters. ([#852](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/852))

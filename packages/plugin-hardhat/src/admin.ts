@@ -31,13 +31,12 @@ export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, defenderMod
   ) {
     disableDefender(hre, defenderModule, {}, changeProxyAdmin.name);
 
-    const admin = await getManifestAdmin(hre, signer);
-    const manifestAdminAddress = await admin.getAddress();
     const proxyAdminAddress = await getAdminAddress(hre.network.provider, proxyAddress);
 
-    if (manifestAdminAddress !== proxyAdminAddress) {
-      throw new Error('Proxy admin is not the one registered in the network manifest');
-    } else if (manifestAdminAddress !== newAdmin) {
+    if (proxyAdminAddress !== newAdmin) {
+      const AdminFactory = await getProxyAdminFactory(hre, signer);
+      const admin = attach(AdminFactory, proxyAdminAddress);
+
       const overrides = opts.txOverrides ? [opts.txOverrides] : [];
       await admin.changeProxyAdmin(proxyAddress, newAdmin, ...overrides);
     }

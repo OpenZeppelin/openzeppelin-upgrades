@@ -1,4 +1,4 @@
-import { Manifest, getAdminAddress, getCode, EthereumProvider, isEmptySlot } from '@openzeppelin/upgrades-core';
+import { getAdminAddress, getCode, EthereumProvider, isEmptySlot } from '@openzeppelin/upgrades-core';
 
 import {
   ContractClass,
@@ -58,14 +58,8 @@ async function getUpgrader(
     };
   } else {
     // Admin contract: redirect upgrade call through it
-    const manifest = await Manifest.forNetwork(provider);
     const AdminFactory = getProxyAdminFactory(contractTemplate);
     const admin = new AdminFactory(adminAddress);
-    const manifestAdmin = await manifest.getAdmin();
-
-    if (admin.address !== manifestAdmin?.address) {
-      throw new Error('Proxy admin is not the one registered in the network manifest');
-    }
 
     return (nextImpl, call) => {
       return call

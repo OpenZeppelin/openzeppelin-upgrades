@@ -21,8 +21,8 @@ export async function simulateDeployAdmin(
     logWarning(
       `Imported proxy with admin at '${adminAddress}' which differs from previously deployed admin '${manifestAdminAddress}'`,
       [
-        `The imported proxy admin is different from the proxy admin that was previously deployed on this network. This proxy will not be upgradable directly by the plugin.`,
-        `To upgrade this proxy, use the prepareUpgrade or defender.proposeUpgradeWithApproval function and then upgrade it using the admin at '${adminAddress}'.`,
+        `The imported proxy admin is different from the proxy admin that was previously deployed on this network.`,
+        `New proxy deployments will continue to use the admin '${manifestAdminAddress}'.`,
       ],
     );
   }

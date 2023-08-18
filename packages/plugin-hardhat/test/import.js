@@ -38,7 +38,6 @@ function getInitializerData(contractInterface, args) {
   return contractInterface.encodeFunctionData(fragment, args);
 }
 
-const NOT_REGISTERED_ADMIN = 'Proxy admin is not the one registered in the network manifest';
 const REQUESTED_UPGRADE_WRONG_KIND = 'Requested an upgrade of kind uups but proxy is transparent';
 
 test('implementation happy path', async t => {
@@ -329,14 +328,7 @@ test('import transparents with different admin', async t => {
     await upgrades.erc1967.getAdminAddress(await greeter.getAddress()),
   );
 
-  // cannot upgrade directly
+  // proxy with a different admin can be imported
   const proxyAddress = await proxy.getAddress();
-  const e = await t.throwsAsync(() => upgrades.upgradeProxy(proxyAddress, GreeterV2));
-  t.is(NOT_REGISTERED_ADMIN, e.message, e.message);
-
-  // prepare upgrades instead
-  const greeterV2ImplAddr = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV2);
-  const greeterV2ImplAddr_2 = await upgrades.prepareUpgrade(await greeter2.getAddress(), GreeterV2);
-
-  t.is(greeterV2ImplAddr_2, greeterV2ImplAddr);
+  await upgrades.upgradeProxy(proxyAddress, GreeterV2);
 });

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Allow using proxy with different admin address than manifest. ([#859](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/859))
+
 ## 2.2.0 (2023-08-17)
 
 - Rename Platform to Defender. ([#863](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/863))

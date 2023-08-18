@@ -8,13 +8,12 @@ const FAILURE_CROSS = chalk.red('✘') + ' ';
 async function changeProxyAdmin(proxyAddress: string, newAdmin: string, opts: UpgradeOptions = {}): Promise<void> {
   const { deployer } = withDefaults(opts);
   const provider = wrapProvider(deployer.provider);
-  const admin = await getManifestAdmin(provider);
   const proxyAdminAddress = await getAdminAddress(provider, proxyAddress);
 
-  if (admin.address !== proxyAdminAddress) {
-    throw new Error('Proxy admin is not the one registered in the network manifest');
-  } else if (admin.address !== newAdmin) {
+  if (proxyAdminAddress !== newAdmin) {
     const overrides = opts.txOverrides ? [opts.txOverrides] : [];
+    const AdminFactory = getProxyAdminFactory();
+    const admin = new AdminFactory(proxyAdminAddress);
     await admin.changeProxyAdmin(proxyAddress, newAdmin, ...overrides);
   }
 }
