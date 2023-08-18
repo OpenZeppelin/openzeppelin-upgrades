@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.20.1 (2023-08-18)
 
 - Allow using proxy with different admin address than manifest. ([#859](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/859))
 
