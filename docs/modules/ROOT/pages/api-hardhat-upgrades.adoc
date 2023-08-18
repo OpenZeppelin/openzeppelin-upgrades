@@ -22,14 +22,14 @@ The following options are common to some functions.
 * `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `60000`. Use `0` to wait indefinitely. 
 * `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `5000`.
 * `redeployImplementation`: (`"always" | "never" | "onchange"`) Determines whether the implementation contract will be redeployed. Defaults to `"onchange"`.
-** If set to `"always"`, the implementation contract is always redeployed even if it was previously deployed with the same bytecode. This can be used with the `salt` option when deploying a proxy through OpenZeppelin Platform to ensure that the implementation contract is deployed with the same salt as the proxy.
+** If set to `"always"`, the implementation contract is always redeployed even if it was previously deployed with the same bytecode. This can be used with the `salt` option when deploying a proxy through OpenZeppelin Defender to ensure that the implementation contract is deployed with the same salt as the proxy.
 ** If set to `"never"`, the implementation contract is never redeployed. If the implementation contract was not previously deployed or is not found in the network file, an error will be thrown.
 ** If set to `"onchange"`, the implementation contract is redeployed only if the bytecode has changed from previous deployments.
 * `txOverrides`: (`ethers.Overrides`) An ethers.js https://docs.ethers.org/v6/api/contract/#Overrides[Overrides] object to override transaction parameters, such as `gasLimit` and `gasPrice`. Applies to all transactions sent by a function with this option, even if the function sends multiple transactions.
-* `usePlatformDeploy`: (`boolean`) Deploy contracts using the OpenZeppelin Platform instead of ethers.js. See xref:platform-deploy.adoc[Using with OpenZeppelin Platform]. **Note**: OpenZeppelin Platform is in beta and functionality related to Platform is subject to change.
-* `verifySourceCode`: (`boolean`) When using Platform, whether to verify source code on block explorers. Defaults to `true`.
-* `relayerId`: (`string`) When using Platform, the ID of the relayer to use for the deployment. Defaults to the relayer configured for your deployment environment on Platform.
-* `salt`: (`string`) When using Platform, deployments are performed using the CREATE2 opcode. Use this option to provide the salt for the deployment. Defaults to a random salt.
+* `useDefenderDeploy`: (`boolean`) Deploy contracts using OpenZeppelin Defender instead of ethers.js. See xref:defender-deploy.adoc[Using with OpenZeppelin Defender]. **Note**: OpenZeppelin Defender deployments is in beta and functionality related to it is subject to change.
+* `verifySourceCode`: (`boolean`) When using OpenZeppelin Defender deployments, whether to verify source code on block explorers. Defaults to `true`.
+* `relayerId`: (`string`) When using OpenZeppelin Defender deployments, the ID of the relayer to use for the deployment. Defaults to the relayer configured for your deployment environment on Defender.
+* `salt`: (`string`) When using OpenZeppelin Defender deployments, deployments are performed using the CREATE2 opcode. Use this option to provide the salt for the deployment. Defaults to a random salt.
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -56,7 +56,7 @@ async function deployProxy(
     redeployImplementation?: 'always' | 'never' | 'onchange',
     txOverrides?: ethers.Overrides,
     kind?: 'uups' | 'transparent',
-    usePlatformDeploy?: boolean,
+    useDefenderDeploy?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -198,7 +198,7 @@ async function deployBeaconProxy(
   opts?: {
     initializer?: string | false,
     txOverrides?: ethers.Overrides,
-    usePlatformDeploy?: boolean,
+    useDefenderDeploy?: boolean,
   },
 ): Promise<ethers.Contract>
 ----
@@ -299,7 +299,7 @@ async function deployImplementation(
     txOverrides?: ethers.Overrides,
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
-    usePlatformDeploy?: boolean,
+    useDefenderDeploy?: boolean,
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -391,7 +391,7 @@ async function prepareUpgrade(
     txOverrides?: ethers.Overrides,
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
-    usePlatformDeploy?: boolean,
+    useDefenderDeploy?: boolean,
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -410,8 +410,8 @@ Validates and deploys a new implementation contract, and returns its address. If
 
 * the address or an ethers transaction response corresponding to the deployment of the new implementation contract.
 
-[[platform-deploy-contract]]
-== platform.deployContract
+[[defender-deploy-contract]]
+== defender.deployContract
 
 [source,ts]
 ----
@@ -425,9 +425,9 @@ async function deployContract(
 ): Promise<ethers.Contract>
 ----
 
-**Note**: OpenZeppelin Platform is in beta and this function is subject to change.
+**Note**: OpenZeppelin Defender deployments is in beta and this function is subject to change.
 
-Deploys a non-upgradeable contract using the OpenZeppelin Platform, and returns a contract instance. Throws an error if the contract looks like an implementation contract.
+Deploys a non-upgradeable contract using OpenZeppelin Defender, and returns a contract instance. Throws an error if the contract looks like an implementation contract.
 
 CAUTION: Do not use this function to deploy implementations of upgradeable contracts, because upgrade safety validations are not performed with this function. For implementation contracts, use <<deploy-implementation>> instead.
 
@@ -444,14 +444,38 @@ CAUTION: Do not use this function to deploy implementations of upgradeable contr
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@1.25.0`
+* `@openzeppelin/hardhat-upgrades@2.2.0`
 
-[[platform-propose-upgrade]]
-== platform.proposeUpgrade
+[[defender-get-default-approval-process]]
+== defender.getDefaultApprovalProcess
 
 [source,ts]
 ----
-async function proposeUpgrade(
+async function getDefaultApprovalProcess(
+): Promise<{
+    approvalProcessId: string,
+    address?: string,
+  }>
+----
+
+**Note**: OpenZeppelin Defender deployments is in beta and this function is subject to change.
+
+Gets the default upgrade approval process configured for your deployment environment on OpenZeppelin Defender. For example, this is useful for determining the default multisig wallet that you can use in your scripts to assign as the owner of your proxy.
+
+*Returns:*
+
+* an object with the default upgrade approval process ID and the associated address, such as a multisig or governor contract address.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@2.2.0`
+
+[[defender-propose-upgrade-with-approval]]
+== defender.proposeUpgradeWithApproval
+
+[source,ts]
+----
+async function proposeUpgradeWithApproval(
   proxyAddress: string,
   ImplFactory: ContractFactory,
   opts?: {
@@ -463,7 +487,7 @@ async function proposeUpgrade(
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
     kind?: 'uups' | 'transparent' | 'beacon',
-    usePlatformDeploy?: boolean,
+    useDefenderDeploy?: boolean,
     approvalProcessId?: string,
   },
 ): Promise<{
@@ -473,49 +497,27 @@ async function proposeUpgrade(
   }>
 ----
 
-**Note**: OpenZeppelin Platform is in beta and this function is subject to change.
+**Note**: OpenZeppelin Defender deployments is in beta and this function is subject to change.
 
-Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal through the OpenZeppelin Platform, for review and approval by the upgrade administrators. Supported for UUPS or Transparent proxies. Not currently supported for beacon proxies or beacons. For beacons, use `prepareUpgrade` along with a transaction proposal on Platform to upgrade the beacon to the deployed implementation.
+Proposes an upgrade using an upgrade approval process on OpenZeppelin Defender.
+
+Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also proposes an upgrade using an upgrade approval process on OpenZeppelin Defender. Supported for UUPS or Transparent proxies. Not currently supported for beacon proxies or beacons. For beacons, use `prepareUpgrade` along with a transaction proposal on Defender to upgrade the beacon to the deployed implementation.
 
 *Parameters:*
 
 * `proxyAddress` - the proxy address.
 * `ImplFactory` - the new implementation contract.
 * `opts` - an object with options:
-** `approvalProcessId`: The ID of the upgrade approval process. Defaults to the upgrade approval process configured for your deployment environment on Platform.
+** `approvalProcessId`: The ID of the upgrade approval process. Defaults to the upgrade approval process configured for your deployment environment on Defender.
 ** additional options as described in <<common-options>>.
 
 *Returns:*
 
-* an object with the Platform proposal ID, the URL of the proposal in Safe App if applicable, and the ethers transaction response corresponding to the deployment of the new implementation contract. Note that if the new implementation contract was originally imported as a result of `forceImport`, the ethers transaction response will be undefined.
+* an object with the Defender proposal ID, the URL of the proposal in Safe App if applicable, and the ethers transaction response corresponding to the deployment of the new implementation contract. Note that if the new implementation contract was originally imported as a result of `forceImport`, the ethers transaction response will be undefined.
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@1.26.0`
-
-[[platform-get-default-approval-process]]
-== platform.getDefaultApprovalProcess
-
-[source,ts]
-----
-async function getDefaultApprovalProcess(
-): Promise<{
-    approvalProcessId: string,
-    address?: string,
-  }>
-----
-
-**Note**: OpenZeppelin Platform is in beta and this function is subject to change.
-
-Gets the default upgrade approval process configured for your deployment environment on Platform. For example, this is useful for determining the default multisig wallet that you can use in your scripts to assign as the owner of your proxy.
-
-*Returns:*
-
-* an object with the default upgrade approval process ID and the associated address, such as a multisig or governor contract address.
-
-*Since:*
-
-* `@openzeppelin/hardhat-upgrades@1.26.0`
+* `@openzeppelin/hardhat-upgrades@2.2.0`
 
 [[defender-propose-upgrade]]
 == defender.proposeUpgrade
@@ -545,9 +547,11 @@ async function proposeUpgrade(
   }>
 ----
 
-NOTE: This method requires the https://www.npmjs.com/package/@openzeppelin/hardhat-defender[`@openzeppelin/hardhat-defender`] package, as well as configuring a Defender Team API Key.
+NOTE: This method requires configuring a Defender Team API Key.
 
-Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in https://docs.openzeppelin.com/defender/admin[Defender Admin], for review and approval by the upgrade administrators. Supported for UUPS or Transparent proxies. Not currently supported for beacon proxies or beacons. For beacons, use `prepareUpgrade` along with a custom action in Defender Admin to upgrade the beacon to the deployed implementation.
+Proposes an upgrade using https://docs.openzeppelin.com/defender/admin[Defender Admin].
+
+Similar to `prepareUpgrade`. This method validates and deploys the new implementation contract, but also creates an upgrade proposal in Defender Admin, for review and approval by the upgrade administrators. Supported for UUPS or Transparent proxies. Not currently supported for beacon proxies or beacons. For beacons, use `prepareUpgrade` along with a custom action in Defender Admin to upgrade the beacon to the deployed implementation.
 
 *Parameters:*
 

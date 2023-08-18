@@ -10,7 +10,7 @@ import {
   attach,
   getSigner,
 } from './utils';
-import { disablePlatform } from './platform/utils';
+import { disableDefender } from './defender/utils';
 
 export type UpgradeBeaconFunction = (
   beacon: ContractAddressOrInstance,
@@ -18,9 +18,9 @@ export type UpgradeBeaconFunction = (
   opts?: UpgradeBeaconOptions,
 ) => Promise<Contract>;
 
-export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, platformModule: boolean): UpgradeBeaconFunction {
+export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, defenderModule: boolean): UpgradeBeaconFunction {
   return async function upgradeBeacon(beacon, ImplFactory, opts: UpgradeBeaconOptions = {}) {
-    disablePlatform(hre, platformModule, opts, upgradeBeacon.name);
+    disableDefender(hre, defenderModule, opts, upgradeBeacon.name);
 
     const beaconAddress = await getContractAddress(beacon);
     const { impl: nextImpl } = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);

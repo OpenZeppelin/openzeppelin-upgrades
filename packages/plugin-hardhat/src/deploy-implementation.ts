@@ -3,7 +3,7 @@ import type { ContractFactory, ethers } from 'ethers';
 
 import { DeployImplementationOptions } from './utils';
 import { deployUpgradeableImpl } from './utils/deploy-impl';
-import { enablePlatform } from './platform/utils';
+import { enableDefender } from './defender/utils';
 
 export type DeployImplementationFunction = (
   ImplFactory: ContractFactory,
@@ -14,10 +14,10 @@ export type DeployImplementationResponse = string | ethers.TransactionResponse;
 
 export function makeDeployImplementation(
   hre: HardhatRuntimeEnvironment,
-  platformModule: boolean,
+  defenderModule: boolean,
 ): DeployImplementationFunction {
   return async function deployImplementation(ImplFactory, opts: DeployImplementationOptions = {}) {
-    opts = enablePlatform(hre, platformModule, opts);
+    opts = enableDefender(hre, defenderModule, opts);
 
     const deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts);
 
