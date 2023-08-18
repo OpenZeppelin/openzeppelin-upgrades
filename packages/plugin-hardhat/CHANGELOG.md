@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Allow using proxy with different admin address than manifest. ([#859](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/859))
+
 ## 2.1.1 (2023-08-08)
 
 - Use public Etherscan API from `hardhat-verify`. ([#857](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/857))
