@@ -7,6 +7,26 @@ import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/
 import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
 
+/**
+ * Loads namespaces and namespaced type information into the storage layout.
+ *
+ * The given compilation context can represent either the original compilation or a namespaced
+ * compilation where contracts have been modified to include namespaced type information.
+ *
+ * If the given compilation context has namespaced type information, storage slots and offsets
+ * will be included in the loaded namespaces and types.
+ *
+ * This function looks up namespaces and their members from the given compilation context's AST
+ * (meaning node ids would be from the namespaced compilation if that is what's provided in the
+ * compilation context), and looks up slots and offsets from the compiled type information.
+ * However, it saves the original source locations from `origContractDef` so that line numbers are
+ * consistent with the original source code.
+ *
+ * @param decodeSrc Source decoder for the original source code.
+ * @param layout The storage layout object to load namespaces into.
+ * @param context The given compilation context, which can represent either the original compilation or a namespaced compilation.
+ * @param origContractDef The original contract definition, which is used to lookup original source locations.
+ */
 export function loadNamespaces(
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
@@ -18,7 +38,7 @@ export function loadNamespaces(
   const namespaces: Record<string, StorageItem[]> = {};
   for (const node of context.contractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
-      const storageLocation = getNamespacedStorageLocation(node);
+      const storageLocation = getCustomStorageLocation(node);
       if (storageLocation !== undefined) {
         namespaces[storageLocation] = getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef);
       }
@@ -27,11 +47,28 @@ export function loadNamespaces(
   layout.namespaces = namespaces;
 }
 
-export function getNamespacedStorageLocation(node: Node) {
+/**
+ * Gets the storage location string from the `@custom:storage-location` annotation.
+ *
+ * For example, when using ERC-7201 (https://eips.ethereum.org/EIPS/eip-7201), the result will be `erc7201:<NAMESPACE_ID>`
+ *
+ * @param node The node that may have a `@custom:storage-location` annotation.
+ * @returns The storage location string, or undefined if the node does not have a `@custom:storage-location` annotation.
+ */
+export function getCustomStorageLocation(node: Node) {
   const doc = getDocumentation(node);
   if (hasAnnotationTag(doc, 'storage-location')) {
     return getStorageLocation(doc);
   }
+}
+
+function getStorageLocation(doc: string) {
+  const storageLocationArgs = getAnnotationArgs(doc, 'storage-location');
+  if (storageLocationArgs.length !== 1) {
+    throw new Error('@custom:storage-location annotation must have exactly one argument');
+  }
+  const storageLocation = storageLocationArgs[0];
+  return storageLocation;
 }
 
 function getNamespacedStorageItems(
@@ -87,9 +124,6 @@ function getNamespacedStorageItems(
   return storageItems;
 }
 
-/**
- * Lookup the original source location of a struct member.
- */
 function getOriginalSrc(canonicalName: string, memberLabel: string, origContractDef: ContractDefinition) {
   for (const node of origContractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
@@ -125,15 +159,6 @@ function getStructMemberFromLayoutTypes(
     }
   }
   return undefined;
-}
-
-function getStorageLocation(doc: string) {
-  const storageLocationArgs = getAnnotationArgs(doc, 'storage-location');
-  if (storageLocationArgs.length !== 1) {
-    throw new Error('@custom:storage-location annotation must have exactly one argument');
-  }
-  const storageLocation = storageLocationArgs[0];
-  return storageLocation;
 }
 
 function findTypeWithLabel(types: Record<string, TypeItem>, label: string) {

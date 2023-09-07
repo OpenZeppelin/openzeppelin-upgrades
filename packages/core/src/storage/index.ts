@@ -1,5 +1,5 @@
 export * from './compat';
-export { getNamespacedStorageLocation } from './namespace';
+export { getCustomStorageLocation } from './namespace';
 
 import { UpgradesError } from '../error';
 import { StorageLayout, getDetailedLayout } from './layout';
