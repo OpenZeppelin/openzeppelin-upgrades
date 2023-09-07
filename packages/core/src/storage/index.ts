@@ -78,9 +78,7 @@ function getNamespacedStorageOperations(
       }
       const updatedNamespaceDetailed = getDetailedLayout({ storage: updatedNamespaceLayout, types: updated.types });
 
-      const namespaceOps = comparator.getStorageOperations(origNamespaceDetailed, updatedNamespaceDetailed);
-
-      results.push(...namespaceOps);
+      results.push(...comparator.getStorageOperations(origNamespaceDetailed, updatedNamespaceDetailed));
     }
   }
   return results;
