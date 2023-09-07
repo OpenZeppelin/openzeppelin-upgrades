@@ -198,6 +198,7 @@ export function validate(
         );
 
         // TODO report errors here if there are namespace conflicts, based on if validation[key].layout.namespaces has any conflicts?
+        // TODO and include the lines where the conflicts are
 
         validation[key].methods = [...findAll('FunctionDefinition', contractDef)]
           .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
