@@ -6,7 +6,7 @@ import { ValidationOptions, processExceptions } from './overrides';
 import { ContractSourceNotFoundError, ValidationErrors } from './error';
 import { ValidationData, normalizeValidationData } from './data';
 import { ProxyDeployment } from '../manifest';
-import { DuplicateCustomStorageLocationError } from '../usage-error';
+import { DuplicateCustomStorageLocationError } from '../storage/namespace';
 
 const upgradeToSignature = 'upgradeTo(address)';
 

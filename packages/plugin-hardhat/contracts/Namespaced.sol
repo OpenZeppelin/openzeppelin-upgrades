@@ -24,6 +24,13 @@ contract Example {
     }
 }
 
+contract ConflictingNamespace is Example {
+    /// @custom:storage-location erc7201:example.main
+    struct Conflicting1 {
+        uint256 a;
+    }
+}
+
 contract ExampleV2_Ok {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -167,5 +174,3 @@ contract TripleStructV2_Bad {
 // TODO:
 
 // mixed usage of regular variables and namespaces
-
-// multiple namespaces

@@ -12,6 +12,15 @@ test.before(async t => {
   t.context.TripleStruct = await ethers.getContractFactory('TripleStruct');
   t.context.TripleStructV2_Ok = await ethers.getContractFactory('TripleStructV2_Ok');
   t.context.TripleStructV2_Bad = await ethers.getContractFactory('TripleStructV2_Bad');
+  t.context.ConflictingNamespace = await ethers.getContractFactory('ConflictingNamespace');
+});
+
+test('conflicting namespaces', async t => {
+  const { ConflictingNamespace } = t.context;
+
+  await t.throwsAsync(() => upgrades.validateImplementation(ConflictingNamespace), {
+    message: /(Custom storage location erc7201:example.main is defined multiple times for contract contracts\/Namespaced.sol:ConflictingNamespace)/,
+  });
 });
 
 test('validate namespace - ok', async t => {
