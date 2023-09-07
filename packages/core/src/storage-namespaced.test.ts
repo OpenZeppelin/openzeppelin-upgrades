@@ -40,6 +40,15 @@ test('layout', t => {
   t.snapshot(stabilizeStorageLayout(layout));
 });
 
+test('duplicate namespace', t => {
+  t.throws(() => t.context.extractStorageLayout('DuplicateNamespace'));
+});
+
+test('multiple namespaces', t => {
+  const layout = t.context.extractStorageLayout('MultipleNamespaces');
+  t.snapshot(stabilizeStorageLayout(layout));
+});
+
 test('namespaced upgrade ok', t => {
   const v1 = t.context.extractStorageLayout('Example');
   const v2 = t.context.extractStorageLayout('ExampleV2_Ok');

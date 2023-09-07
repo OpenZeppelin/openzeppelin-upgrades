@@ -6,6 +6,7 @@ import { SrcDecoder } from '../src-decoder';
 import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/annotations';
 import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
+import { DuplicateCustomStorageLocationError } from '../usage-error';
 
 /**
  * Loads namespaces and namespaced type information into the storage layout.
@@ -40,7 +41,11 @@ export function loadNamespaces(
     if (isNodeType('StructDefinition', node)) {
       const storageLocation = getCustomStorageLocation(node);
       if (storageLocation !== undefined) {
-        namespaces[storageLocation] = getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef);
+        if (namespaces[storageLocation] !== undefined) {
+          throw new DuplicateCustomStorageLocationError(storageLocation, origContractDef.canonicalName ?? origContractDef.name);
+        } else {
+          namespaces[storageLocation] = getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef);
+        }
       }
     }
   }

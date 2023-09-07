@@ -95,6 +95,15 @@ export class PrepareUpgradeRequiresKindError extends UpgradesError {
   }
 }
 
+export class DuplicateCustomStorageLocationError extends UpgradesError {
+  constructor(customStorageLocation: string, contractName: string) {
+    super(
+      `Custom storage location ${customStorageLocation} is defined multiple times for contract ${contractName}`,
+      () => `Custom storage locations must be unique within a contract and its inheritance tree.`,
+    );
+  }
+}
+
 export async function assertNotProxy(provider: EthereumProvider, address: string) {
   if (await isTransparentOrUUPSProxy(provider, address)) {
     throw new UpgradesError(

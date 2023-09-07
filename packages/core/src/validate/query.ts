@@ -6,6 +6,7 @@ import { ValidationOptions, processExceptions } from './overrides';
 import { ContractSourceNotFoundError, ValidationErrors } from './error';
 import { ValidationData, normalizeValidationData } from './data';
 import { ProxyDeployment } from '../manifest';
+import { DuplicateCustomStorageLocationError } from '../usage-error';
 
 const upgradeToSignature = 'upgradeTo(address)';
 
@@ -102,14 +103,14 @@ export function unfoldStorageLayout(runData: ValidationRunData, fullContractName
 
       const contractSpecificNamespaces = runData[name].layout.namespaces;
       if (contractSpecificNamespaces !== undefined) {
-        Object.entries(contractSpecificNamespaces).forEach(([namespace, items]) => {
+        Object.entries(contractSpecificNamespaces).forEach(([customStorageLocation, items]) => {
           if (layout.namespaces === undefined) {
             layout.namespaces = {};
           }
-          if (layout.namespaces[namespace] !== undefined) {
-            throw new Error(`Namespace ${namespace} is defined multiple times or in multiple contracts in the inheritance tree of ${fullContractName}`);
+          if (layout.namespaces[customStorageLocation] !== undefined) {
+            throw new DuplicateCustomStorageLocationError(customStorageLocation, fullContractName);
           } else {
-            layout.namespaces[namespace] = items;
+            layout.namespaces[customStorageLocation] = items;
           }
         });
       }
