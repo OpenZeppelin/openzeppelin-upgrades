@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { ContractDefinition, StructDefinition } from 'solidity-ast';
 import { isNodeType } from 'solidity-ast/utils';
-import { StorageItem, StorageLayout, TypeItem } from './layout';
+import { Namespace, StorageItem, StorageLayout, TypeItem } from './layout';
 import { SrcDecoder } from '../src-decoder';
 import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/annotations';
 import { Node } from 'solidity-ast/node';
@@ -36,15 +36,17 @@ export function loadNamespaces(
 ) {
   // TODO if there is a namespace annotation in source code, check if solidity version is >= 0.8.20
 
-  const namespaces: Record<string, StorageItem[]> = {};
+  const namespaces: Record<string, Namespace> = {};
   for (const node of context.contractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
       const storageLocation = getCustomStorageLocation(node);
       if (storageLocation !== undefined) {
         if (namespaces[storageLocation] !== undefined) {
-          throw new DuplicateCustomStorageLocationError(storageLocation, origContractDef.canonicalName ?? origContractDef.name);
+          namespaces[storageLocation].conflict = true;
         } else {
-          namespaces[storageLocation] = getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef);
+          namespaces[storageLocation] = {
+            items: getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef),
+          };
         }
       }
     }

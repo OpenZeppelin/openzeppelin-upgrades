@@ -103,14 +103,15 @@ export function unfoldStorageLayout(runData: ValidationRunData, fullContractName
 
       const contractSpecificNamespaces = runData[name].layout.namespaces;
       if (contractSpecificNamespaces !== undefined) {
-        Object.entries(contractSpecificNamespaces).forEach(([customStorageLocation, items]) => {
+        Object.entries(contractSpecificNamespaces).forEach(([customStorageLocation, namespace]) => {
           if (layout.namespaces === undefined) {
             layout.namespaces = {};
           }
-          if (layout.namespaces[customStorageLocation] !== undefined) {
+          if (layout.namespaces[customStorageLocation] !== undefined || namespace.conflict) {
+            // TODO should this check be run when looking up validations instead?
             throw new DuplicateCustomStorageLocationError(customStorageLocation, fullContractName);
           } else {
-            layout.namespaces[customStorageLocation] = items;
+            layout.namespaces[customStorageLocation] = namespace;
           }
         });
       }
