@@ -116,7 +116,12 @@ function skipCheck(error: string, node: Node): boolean {
   return getAllowed(node, false).includes(error) || getAllowed(node, true).includes(error);
 }
 
-export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVersion?: string): ValidationRunData {
+export function validate(
+  solcOutput: SolcOutput,
+  decodeSrc: SrcDecoder,
+  solcVersion?: string,
+  namespacedOutput?: SolcOutput, // TODO document this
+): ValidationRunData {
   const validation: ValidationRunData = {};
   const fromId: Record<number, string> = {};
   const inheritIds: Record<string, number[]> = {};
@@ -176,7 +181,9 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
           decodeSrc,
           deref,
           solcOutput.contracts[source][contractDef.name].storageLayout,
+          getNamespacedCompilationContext(source, contractDef, namespacedOutput),
         );
+
         validation[key].methods = [...findAll('FunctionDefinition', contractDef)]
           .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
           .map(fnDef => getFunctionSignature(fnDef, deref));
@@ -193,6 +200,36 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
   }
 
   return validation;
+}
+
+function getNamespacedCompilationContext(
+  source: string,
+  contractDef: ContractDefinition,
+  namespacedOutput: SolcOutput | undefined,
+) {
+  if (namespacedOutput === undefined || contractDef.canonicalName === undefined) {
+    return undefined;
+  }
+
+  const namespacedContractDef = namespacedOutput?.sources[source].ast.nodes.find(node => {
+    const nodeName: string = (node as any).canonicalName;
+    return nodeName !== undefined && nodeName === contractDef.canonicalName;
+  }) as ContractDefinition | undefined;
+
+  if (namespacedContractDef === undefined) {
+    throw new Error(`Contract definition with name ${contractDef.canonicalName} not found in namespaced solc output`);
+  }
+
+  const storageLayout = namespacedOutput.contracts[source][contractDef.name].storageLayout;
+  if (storageLayout === undefined) {
+    throw new Error(`Storage layout for contract ${contractDef.canonicalName} not found in namespaced solc output`);
+  }
+
+  return {
+    contractDef: namespacedContractDef,
+    deref: astDereferencer(namespacedOutput),
+    storageLayout: storageLayout,
+  };
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {

@@ -5,14 +5,16 @@ import {
   EnumDefinition,
   TypeDescriptions,
   VariableDeclaration,
+  TypeName,
 } from 'solidity-ast';
 import { isNodeType, findAll, ASTDereferencer } from 'solidity-ast/utils';
-import { StorageLayout, TypeItem } from './layout';
+import { StorageLayout, StructMember, TypeItem } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
 import { mapValues } from '../utils/map-values';
 import { pick } from '../utils/pick';
 import { execall } from '../utils/execall';
+import { loadNamespaces } from './namespace';
 
 const currentLayoutVersion = '1.2';
 
@@ -20,31 +22,39 @@ export function isCurrentLayoutVersion(layout: StorageLayout): boolean {
   return layout?.layoutVersion === currentLayoutVersion;
 }
 
+export interface CompilationContext {
+  deref: ASTDereferencer;
+  contractDef: ContractDefinition;
+  storageLayout?: StorageLayout;
+}
+
 export function extractStorageLayout(
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
   deref: ASTDereferencer,
-  storageLayout?: StorageLayout | undefined,
+  storageLayout?: StorageLayout,
+  namespacedContext?: CompilationContext,
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
-  if (storageLayout !== undefined) {
-    layout.types = mapValues(storageLayout.types, m => {
-      return {
-        label: m.label,
-        members: m.members?.map(m =>
-          typeof m === 'string' ? m : pick(m, ['label', 'type', 'offset', 'slot']),
-        ) as TypeItem['members'],
-        numberOfBytes: m.numberOfBytes,
-      };
-    });
 
+  layout.types = mapValues({ ...namespacedContext?.storageLayout?.types, ...storageLayout?.types }, m => {
+    return {
+      label: m.label,
+      members: m.members?.map(m =>
+        typeof m === 'string' ? m : pick(m, ['label', 'type', 'offset', 'slot']),
+      ) as TypeItem['members'],
+      numberOfBytes: m.numberOfBytes,
+    };
+  });
+
+  if (storageLayout !== undefined) {
     for (const storage of storageLayout.storage) {
       const origin = getOriginContract(contractDef, storage.astId, deref);
       assert(origin, `Did not find variable declaration node for '${storage.label}'`);
       const { varDecl, contract } = origin;
       const { renamedFrom, retypedFrom } = getRetypedRenamed(varDecl);
       // Solc layout doesn't bring members for enums so we get them using the ast method
-      loadLayoutType(varDecl, layout, deref);
+      loadLayoutType(varDecl.typeName, layout, deref);
       const { label, offset, slot, type } = storage;
       const src = decodeSrc(varDecl);
       layout.storage.push({ label, offset, slot, type, contract, src, retypedFrom, renamedFrom });
@@ -65,11 +75,15 @@ export function extractStorageLayout(
             renamedFrom,
           });
 
-          loadLayoutType(varDecl, layout, deref);
+          loadLayoutType(varDecl.typeName, layout, deref);
         }
       }
     }
   }
+
+  const context = namespacedContext ?? { deref, contractDef, storageLayout };
+  loadNamespaces(decodeSrc, layout, context, contractDef);
+
   return layout;
 }
 
@@ -92,14 +106,24 @@ function typeDescriptions(x: { typeDescriptions: TypeDescriptions }): RequiredTy
   return x.typeDescriptions as RequiredTypeDescriptions;
 }
 
-function getTypeMembers(typeDef: StructDefinition | EnumDefinition): TypeItem['members'] {
+export function getTypeMembers(
+  typeDef: StructDefinition | EnumDefinition,
+  includeFields: { src?: boolean; typeName?: boolean } = {},
+): TypeItem['members'] {
   if (typeDef.nodeType === 'StructDefinition') {
     return typeDef.members.map(m => {
       assert(typeof m.typeDescriptions.typeIdentifier === 'string');
-      return {
+      let member: StructMember = {
         label: m.name,
         type: normalizeTypeIdentifier(m.typeDescriptions.typeIdentifier),
       };
+      if (includeFields.src && m.src) {
+        member = { ...member, src: m.src };
+      }
+      if (includeFields.typeName && m.typeName) {
+        member = { ...member, typeName: m.typeName };
+      }
+      return member;
     });
   } else {
     return typeDef.members.map(m => m.name);
@@ -116,16 +140,16 @@ function getOriginContract(contract: ContractDefinition, astId: number | undefin
   }
 }
 
-function loadLayoutType(varDecl: VariableDeclaration, layout: StorageLayout, deref: ASTDereferencer) {
+export function loadLayoutType(typeName: TypeName | null | undefined, layout: StorageLayout, deref: ASTDereferencer) {
   // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
   const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition', 'UserDefinedValueTypeDefinition']);
 
-  assert(varDecl.typeName != null);
+  assert(typeName != null);
 
   // We will recursively look for all types involved in this variable declaration in order to store their type
   // information. We iterate over a Map that is indexed by typeIdentifier to ensure we visit each type only once.
   // Note that there can be recursive types.
-  const typeNames = new Map([...findTypeNames(varDecl.typeName)].map(n => [typeDescriptions(n).typeIdentifier, n]));
+  const typeNames = new Map([...findTypeNames(typeName)].map(n => [typeDescriptions(n).typeIdentifier, n]));
 
   for (const typeName of typeNames.values()) {
     const { typeIdentifier, typeString: label } = typeDescriptions(typeName);

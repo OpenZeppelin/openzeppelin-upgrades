@@ -108,8 +108,12 @@ export class StorageLayoutComparator {
     readonly unsafeAllowRenames = false,
   ) {}
 
+  getStorageOperations(original: StorageItem[], updated: StorageItem[]): StorageOperation<StorageItem>[] {
+    return this.layoutLevenshtein(original, updated, { allowAppend: true });
+  }
+
   compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
-    return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
+    return new LayoutCompatibilityReport(this.getStorageOperations(original, updated));
   }
 
   private layoutLevenshtein<F extends StorageField>(

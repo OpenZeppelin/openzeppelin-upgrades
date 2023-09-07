@@ -1,4 +1,5 @@
 export * from './compat';
+export { getNamespacedStorageLocation } from './namespace';
 
 import { UpgradesError } from '../error';
 import { StorageLayout, getDetailedLayout } from './layout';
@@ -44,7 +45,10 @@ export function getStorageUpgradeReport(
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
   const comparator = new StorageLayoutComparator(opts.unsafeAllowCustomTypes, opts.unsafeAllowRenames);
-  const report = comparator.compareLayouts(originalDetailed, updatedDetailed);
+  const ops = comparator.getStorageOperations(originalDetailed, updatedDetailed);
+  ops.push(...getNamespacedStorageOperations(comparator, original, updated));
+
+  const report = new LayoutCompatibilityReport(ops);
 
   if (comparator.hasAllowedUncheckedCustomTypes) {
     logWarning(`Potentially unsafe deployment`, [
@@ -56,6 +60,29 @@ export function getStorageUpgradeReport(
   }
 
   return report;
+}
+
+function getNamespacedStorageOperations(
+  comparator: StorageLayoutComparator,
+  original: StorageLayout,
+  updated: StorageLayout,
+) {
+  const results: StorageOperation<StorageItem>[] = [];
+  if (original.namespaces !== undefined) {
+    for (const [namespace, origNamespaceLayout] of Object.entries(original.namespaces)) {
+      const origNamespaceDetailed = getDetailedLayout({ storage: origNamespaceLayout, types: original.types });
+
+      const updatedNamespaceLayout = updated.namespaces?.[namespace];
+      if (updatedNamespaceLayout === undefined) {
+        throw new Error(`Namespace ${namespace} not found in updated layout`);
+      }
+      const updatedNamespaceDetailed = getDetailedLayout({ storage: updatedNamespaceLayout, types: updated.types });
+      const namespaceOps = comparator.getStorageOperations(origNamespaceDetailed, updatedNamespaceDetailed);
+
+      results.push(...namespaceOps);
+    }
+  }
+  return results;
 }
 
 export class StorageUpgradeErrors extends UpgradesError {

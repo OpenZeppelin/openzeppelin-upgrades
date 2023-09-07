@@ -1,3 +1,4 @@
+import { TypeName } from 'solidity-ast';
 import { parseTypeId, ParsedTypeId } from '../utils/parse-type-id';
 
 // The interfaces below are generic in the way types are represented (through the parameter `Type`). When stored on
@@ -11,6 +12,7 @@ export interface StorageLayout {
   storage: StorageItem[];
   types: Record<string, TypeItem>;
   flat?: boolean;
+  namespaces?: Record<string, StorageItem[]>;
 }
 
 export type StorageField<Type = string> = StorageItem<Type> | StructMember<Type>;
@@ -43,6 +45,8 @@ export interface StructMember<Type = string> {
   renamedFrom?: string;
   offset?: number;
   slot?: string;
+  src?: string;
+  typeName?: TypeName | null;
 }
 
 export type EnumMember = string;

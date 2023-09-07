@@ -92,12 +92,24 @@ export function unfoldStorageLayout(runData: ValidationRunData, fullContractName
       solcVersion,
       storage: c.layout.storage,
       types: c.layout.types,
+      namespaces: c.layout.namespaces,
     };
   } else {
-    const layout: StorageLayout = { solcVersion, storage: [], types: {} };
+    const layout: StorageLayout = { solcVersion, storage: [], types: {}, namespaces: {} };
     for (const name of [fullContractName].concat(c.inherit)) {
       layout.storage.unshift(...runData[name].layout.storage);
       Object.assign(layout.types, runData[name].layout.types);
+
+      const contractSpecificNamespace = runData[name].layout.namespaces;
+      if (contractSpecificNamespace !== undefined) {
+        Object.entries(contractSpecificNamespace).forEach(([namespace, items]) => {
+          if (layout.namespaces === undefined) {
+            // TODO see how to get this to compile since it should never be undefined at this point
+            layout.namespaces = {};
+          }
+          layout.namespaces[namespace] = items;
+        });
+      }
     }
     return layout;
   }

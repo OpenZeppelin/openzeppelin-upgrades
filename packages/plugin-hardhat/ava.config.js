@@ -4,4 +4,5 @@ module.exports = {
   ignoredByWatcher: ['**/*.ts', '.openzeppelin'],
   serial: true,
   failWithoutAssertions: false,
+  snapshotDir: '.',
 };

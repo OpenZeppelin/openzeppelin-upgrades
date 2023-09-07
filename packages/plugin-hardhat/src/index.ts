@@ -8,9 +8,11 @@ import { lazyObject } from 'hardhat/plugins';
 import { HardhatConfig, HardhatRuntimeEnvironment } from 'hardhat/types';
 import {
   getImplementationAddressFromBeacon,
+  getNamespacedStorageLocation,
   logWarning,
   silenceWarnings,
   SolcInput,
+  SolcOutput,
 } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { PrepareUpgradeFunction } from './prepare-upgrade';
@@ -35,6 +37,8 @@ import {
   GetVerifyDeployBuildInfoFunction,
   GetBytecodeDigestFunction,
 } from './defender-v1/verify-deployment';
+import { isNodeType, findAll } from 'solidity-ast/utils';
+import debug from './utils/debug';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -110,12 +114,118 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
   const { isFullSolcOutput } = await import('./utils/is-full-solc-output');
   if (isFullSolcOutput(output)) {
     const decodeSrc = solcInputOutputDecoder(args.input, output);
-    const validations = validate(output, decodeSrc, args.solcVersion);
+
+    const namespacedInput = makeNamespacedInputCopy(args.input, output);
+    const { output: namespacedOutput } = await runSuper({ ...args, input: namespacedInput });
+    checkNamespacedCompileErrors(namespacedInput, namespacedOutput);
+
+    const validations = validate(output, decodeSrc, args.solcVersion, namespacedOutput);
     await writeValidations(hre, validations);
   }
 
   return { output, solcBuild };
 });
+
+/**
+ * Makes a copy of the contracts to add state variables for each namespaced struct definition,
+ * so that the compiler will generate their types in the storage layout.
+ *
+ * This deletes all functions for efficiency, since they are not needed for storage layout.
+ * We also need to delete modifiers and immutable variables to avoid compilation errors due to deleted
+ * functions and constructors.
+ */
+function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput) {
+  const modifiedInput: SolcInput = JSON.parse(JSON.stringify(input));
+  for (const [sourcePath] of Object.entries(modifiedInput.sources)) {
+    const source = modifiedInput.sources[sourcePath];
+    if (source.content === undefined) {
+      continue;
+    }
+
+    // Collect all contract definitions
+    const contractDefs = [];
+    for (const contractDef of findAll('ContractDefinition', output.sources[sourcePath].ast)) {
+      contractDefs.push(contractDef);
+    }
+
+    // Iterate backwards so we can delete source code without affecting remaining indices
+    for (let i = contractDefs.length - 1; i >= 0; i--) {
+      const contractDef = contractDefs[i];
+      const nodes = contractDef.nodes;
+      for (let j = nodes.length - 1; j >= 0; j--) {
+        const node = nodes[j];
+        if (
+          isNodeType('FunctionDefinition', node) ||
+          isNodeType('ModifierDefinition', node) ||
+          (isNodeType('VariableDeclaration', node) && node.mutability === 'immutable')
+        ) {
+          const orig = Buffer.from(source.content);
+
+          const [start, length] = node.src.split(':').map(Number);
+          let end = start + length;
+
+          // If the next character is a semicolon (e.g. for immutable variables), delete it too
+          if (end + 1 < orig.length && orig.subarray(end, end + 1).toString() === ';') {
+            end += 1;
+          }
+
+          // Delete the source code segment
+          const buf = Buffer.concat([orig.subarray(0, start), orig.subarray(end)]);
+
+          source.content = buf.toString();
+        } else if (isNodeType('StructDefinition', node)) {
+          const storageLocation = getNamespacedStorageLocation(node);
+          if (storageLocation !== undefined) {
+            const orig = Buffer.from(source.content);
+
+            const [start, length] = node.src.split(':').map(Number);
+            const end = start + length;
+
+            const structName = node.name;
+            const variableName = `$${structName}`;
+
+            // Insert the variable declaration for the namespaced struct
+            const buf = Buffer.concat([
+              orig.subarray(0, end),
+              Buffer.from(` ${structName} ${variableName};`),
+              orig.subarray(end),
+            ]);
+
+            source.content = buf.toString();
+          }
+        }
+      }
+    }
+  }
+  return modifiedInput;
+}
+
+/**
+ * Checks for compile errors in the modified contracts for namespaced storage.
+ * If errors are found, throws an error with the compile error messages, and logs
+ * the modified contract source code as debug.
+ */
+function checkNamespacedCompileErrors(namespacedInput: SolcInput, namespacedOutput: SolcOutput) {
+  const errors = [];
+  if (namespacedOutput.errors !== undefined) {
+    for (const error of namespacedOutput.errors) {
+      if (error.severity === 'error') {
+        const msg = error.formattedMessage;
+
+        debug('Compile error in modified contract for namespaced storage.');
+        debug('Error:', msg);
+        if (error.sourceLocation !== undefined && error.sourceLocation.file in namespacedInput.sources) {
+          debug('Modified contract source:', namespacedInput.sources[error.sourceLocation.file].content);
+        }
+
+        errors.push(msg);
+      }
+    }
+  }
+  if (errors.length > 0) {
+    throw new Error(`Failed to compile modified contracts for namespaced storage:\n\n${errors.join('\n')}`);
+  }
+}
 
 extendEnvironment(hre => {
   hre.upgrades = lazyObject((): HardhatUpgrades => {
