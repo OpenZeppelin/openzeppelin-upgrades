@@ -100,14 +100,17 @@ export function unfoldStorageLayout(runData: ValidationRunData, fullContractName
       layout.storage.unshift(...runData[name].layout.storage);
       Object.assign(layout.types, runData[name].layout.types);
 
-      const contractSpecificNamespace = runData[name].layout.namespaces;
-      if (contractSpecificNamespace !== undefined) {
-        Object.entries(contractSpecificNamespace).forEach(([namespace, items]) => {
+      const contractSpecificNamespaces = runData[name].layout.namespaces;
+      if (contractSpecificNamespaces !== undefined) {
+        Object.entries(contractSpecificNamespaces).forEach(([namespace, items]) => {
           if (layout.namespaces === undefined) {
-            // TODO see how to get this to compile since it should never be undefined at this point
             layout.namespaces = {};
           }
-          layout.namespaces[namespace] = items;
+          if (layout.namespaces[namespace] !== undefined) {
+            throw new Error(`Namespace ${namespace} is defined multiple times or in multiple contracts in the inheritance tree of ${fullContractName}`);
+          } else {
+            layout.namespaces[namespace] = items;
+          }
         });
       }
     }
