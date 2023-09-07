@@ -40,12 +40,6 @@ test('layout', t => {
   t.snapshot(stabilizeStorageLayout(layout));
 });
 
-test('duplicate namespace', t => {
-  t.throws(() => t.context.extractStorageLayout('DuplicateNamespace'), {
-    message: /(Custom storage location erc7201:conflicting is defined multiple times for contract DuplicateNamespace)/,
-  });
-});
-
 test('multiple namespaces', t => {
   const layout = t.context.extractStorageLayout('MultipleNamespaces');
   t.snapshot(stabilizeStorageLayout(layout));

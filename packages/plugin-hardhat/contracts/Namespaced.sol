@@ -31,6 +31,18 @@ contract ConflictingNamespace is Example {
     }
 }
 
+contract DuplicateNamespace {
+    /// @custom:storage-location erc7201:conflicting
+    struct Conflicting1 {
+        uint256 a;
+    }
+
+    /// @custom:storage-location erc7201:conflicting
+    struct Conflicting2 {
+        uint256 a;
+    }
+}
+
 contract ExampleV2_Ok {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
