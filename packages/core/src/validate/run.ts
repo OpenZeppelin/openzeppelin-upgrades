@@ -116,11 +116,24 @@ function skipCheck(error: string, node: Node): boolean {
   return getAllowed(node, false).includes(error) || getAllowed(node, true).includes(error);
 }
 
+/**
+ * Runs validations on the given solc output.
+ *
+ * If `namespacedOutput` is provided, it is used to extract storage layout information for namespaced types.
+ * It must be from a compilation with the same sources as `solcOutput`, but with storage variables injected
+ * for each namespaced struct so that the types are available in the storage layout.
+ *
+ * @param solcOutput Solc output to validate
+ * @param decodeSrc Source decoder for the original source code
+ * @param solcVersion The version of solc used to compile the contracts
+ * @param namespacedOutput Namespaced solc output to extract storage layout information for namespaced types
+ * @returns A record of validation results for each fully qualified contract name
+ */
 export function validate(
   solcOutput: SolcOutput,
   decodeSrc: SrcDecoder,
   solcVersion?: string,
-  namespacedOutput?: SolcOutput, // TODO document this
+  namespacedOutput?: SolcOutput,
 ): ValidationRunData {
   const validation: ValidationRunData = {};
   const fromId: Record<number, string> = {};
@@ -184,6 +197,8 @@ export function validate(
           getNamespacedCompilationContext(source, contractDef, namespacedOutput),
         );
 
+        // TODO report errors here if there are namespace conflicts, based on if validation[key].layout.namespaces has any conflicts?
+
         validation[key].methods = [...findAll('FunctionDefinition', contractDef)]
           .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
           .map(fnDef => getFunctionSignature(fnDef, deref));
@@ -205,7 +220,7 @@ export function validate(
 function getNamespacedCompilationContext(
   source: string,
   contractDef: ContractDefinition,
-  namespacedOutput: SolcOutput | undefined,
+  namespacedOutput?: SolcOutput,
 ) {
   if (namespacedOutput === undefined || contractDef.canonicalName === undefined) {
     return undefined;
