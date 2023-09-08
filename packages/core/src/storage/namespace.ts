@@ -34,27 +34,9 @@ export function loadNamespaces(
 ) {
   // TODO if there is a namespace annotation in source code, check if solidity version is >= 0.8.20
 
-  const context = namespacedContext ?? origContext;
-
   const namespaces: Record<string, StorageItem[]> = {};
-  pushDirectNamespaces(namespaces, decodeSrc, layout, context, origContext.contractDef);
-
-  const origInheritIds = origContext.contractDef.linearizedBaseContracts.slice(1);
-  const inheritIds = context.contractDef.linearizedBaseContracts.slice(1);
-
-  assert(inheritIds.length === origInheritIds.length);
-  for (let i = 0; i < inheritIds.length; i++) {
-    const origInherit = origContext.deref(['ContractDefinition'], origInheritIds[i]);
-    const inherit = context.deref(['ContractDefinition'], inheritIds[i]);
-    if (origInherit === undefined) {
-      throw new Error(`Could not find original contract definition with id ${origInheritIds[i]}`);
-    } else if (inherit === undefined) {
-      throw new Error(`Could not find contract definition with id ${inheritIds[i]}`);
-    } else {
-      pushDirectNamespaces(namespaces, decodeSrc, layout, { ...context, contractDef: inherit }, origInherit);
-    }
-  }
-
+  pushDirectNamespaces(namespaces, decodeSrc, layout, namespacedContext ?? origContext, origContext.contractDef);
+  pushInheritedNamespaces(namespaces, decodeSrc, layout, origContext, namespacedContext);
   layout.namespaces = namespaces;
 }
 
@@ -76,6 +58,36 @@ function pushDirectNamespaces(
           namespaces[storageLocationArg] = getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef);
         }
       }
+    }
+  }
+}
+
+function pushInheritedNamespaces(
+  namespaces: Record<string, StorageItem<string>[]>,
+  decodeSrc: SrcDecoder,
+  layout: StorageLayout,
+  origContext: CompilationContext,
+  namespacedContext?: CompilationContext,
+) {
+  const origInheritIds = origContext.contractDef.linearizedBaseContracts.slice(1);
+  if (namespacedContext === undefined) {
+    for (let i = 0; i < origInheritIds.length; i++) {
+      const origInherit = origContext.deref(['ContractDefinition'], origInheritIds[i]);
+      pushDirectNamespaces(namespaces, decodeSrc, layout, origContext, origInherit);
+    }
+  } else {
+    const namespacedInheritIds = namespacedContext.contractDef.linearizedBaseContracts.slice(1);
+    assert(origInheritIds.length === namespacedInheritIds.length);
+    for (let i = 0; i < origInheritIds.length; i++) {
+      const origInherit = origContext.deref(['ContractDefinition'], origInheritIds[i]);
+      const namespacedInherit = namespacedContext?.deref(['ContractDefinition'], namespacedInheritIds[i]);
+      pushDirectNamespaces(
+        namespaces,
+        decodeSrc,
+        layout,
+        { ...namespacedContext, contractDef: namespacedInherit },
+        origInherit,
+      );
     }
   }
 }
