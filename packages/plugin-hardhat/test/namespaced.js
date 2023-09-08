@@ -24,6 +24,9 @@ test.before(async t => {
     'MultipleNamespacesAndRegularVariablesV2_Bad',
   );
   t.context.NoNamespace = await ethers.getContractFactory('NoNamespace');
+  t.context.InheritsNamespace = await ethers.getContractFactory('InheritsNamespace');
+  t.context.InheritsNamespaceV2_Ok = await ethers.getContractFactory('InheritsNamespaceV2_Ok');
+  t.context.InheritsNamespaceV2_Bad = await ethers.getContractFactory('InheritsNamespaceV2_Bad');
 });
 
 test('conflicting namespaces through inheritance', async t => {
@@ -212,5 +215,25 @@ test('delete namespace - bad', async t => {
   const { Example, NoNamespace } = t.context;
 
   const error = await t.throwsAsync(() => upgrades.validateUpgrade(Example, NoNamespace));
+  t.snapshot(error.message);
+});
+
+test('moving namespace between inherited contract - ok', async t => {
+  const { InheritsNamespace, Example } = t.context;
+
+  await upgrades.validateUpgrade(Example, InheritsNamespace);
+  await upgrades.validateUpgrade(InheritsNamespace, Example);
+});
+
+test('moving namespace to inherited contract - add variable - ok', async t => {
+  const { Example, InheritsNamespaceV2_Ok } = t.context;
+
+  await upgrades.validateUpgrade(Example, InheritsNamespaceV2_Ok);
+});
+
+test('moving namespace to inherited contract - delete variable bad', async t => {
+  const { Example, InheritsNamespaceV2_Bad } = t.context;
+
+  const error = await t.throwsAsync(() => upgrades.validateUpgrade(Example, InheritsNamespaceV2_Bad));
   t.snapshot(error.message);
 });
