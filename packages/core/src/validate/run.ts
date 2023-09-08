@@ -232,7 +232,7 @@ interface NamespaceSourceLocation {
 function getNamespaceConflicts(contractDef: ContractDefinition, deref: ASTDereferencer, decodeSrc: SrcDecoder) {
   const result: ValidationErrorNamespaceConflict[] = [];
 
-  const namespaceSourceLocations = getNamespaceSourceLocations(contractDef, decodeSrc, deref);
+  const namespaceSourceLocations = getNamespaceSrcs(contractDef, decodeSrc, deref);
   for (const n of namespaceSourceLocations) {
     const conflictsWith = namespaceSourceLocations.filter(other => other.namespace === n.namespace);
     if (conflictsWith.length > 1) {
@@ -249,34 +249,35 @@ function getNamespaceConflicts(contractDef: ContractDefinition, deref: ASTDerefe
 /**
  * Get all namespace source locations for a contract definition, including inherited contracts.
  */
-function getNamespaceSourceLocations(contractDef: ContractDefinition, decodeSrc: SrcDecoder, deref: ASTDereferencer) {
+function getNamespaceSrcs(contractDef: ContractDefinition, decodeSrc: SrcDecoder, deref: ASTDereferencer) {
   const result: NamespaceSourceLocation[] = [];
-  result.push(...getDirectNamespaceSourceLocations(contractDef, decodeSrc));
+  pushDirectNamespaceSrcs(result, contractDef, decodeSrc);
 
   const inheritIds = contractDef.linearizedBaseContracts.slice(1);
-  // get all namespaces from inherited contracts
   for (const id of inheritIds) {
-    const node = deref(['ContractDefinition'], id);
-    result.push(...getDirectNamespaceSourceLocations(node, decodeSrc));
+    const inherit = deref(['ContractDefinition'], id);
+    pushDirectNamespaceSrcs(result, inherit, decodeSrc);
   }
   return result;
 }
 
 /**
- * Get direct namespace source locations for a contract definition, excluding inherited contracts.
+ * Pushes namespace source locations for a contract definition into an array, excluding inherited contracts.
  */
-function getDirectNamespaceSourceLocations(contractDef: ContractDefinition, decodeSrc: SrcDecoder) {
-  const result: NamespaceSourceLocation[] = [];
+function pushDirectNamespaceSrcs(
+  accum: NamespaceSourceLocation[],
+  contractDef: ContractDefinition,
+  decodeSrc: SrcDecoder,
+) {
   for (const node of findAll('StructDefinition', contractDef)) {
     const storageLocationArg = getStorageLocationArg(node);
     if (storageLocationArg !== undefined) {
-      result.push({
+      accum.push({
         namespace: storageLocationArg,
         src: decodeSrc(node),
       });
     }
   }
-  return result;
 }
 
 function getNamespacedCompilationContext(
