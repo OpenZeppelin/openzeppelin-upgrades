@@ -11,30 +11,30 @@ import debug from '../utils/debug';
 /**
  * Loads namespaces and namespaced type information into the storage layout.
  *
- * The given compilation context can represent either the original compilation or a namespaced
- * compilation where contracts have been modified to include namespaced type information.
+ * The provided compilation contexts must include both the original compilation and optionally
+ * a namespaced compilation where contracts have been modified to include namespaced type information.
  *
- * If the given compilation context has namespaced type information, storage slots and offsets
- * will be included in the loaded namespaces and types.
+ * If namespaced compilation is included, storage slots and offsets will be included in the loaded namespaces and types.
  *
- * This function looks up namespaces and their members from the given compilation context's AST
- * (meaning node ids would be from the namespaced compilation if that is what's provided in the
- * compilation context), and looks up slots and offsets from the compiled type information.
- * However, it saves the original source locations from `origContext` so that line numbers are
+ * This function looks up namespaces and their members from the namespaced compilation context's AST if available
+ * (meaning node ids would be from the namespaced compilation), and looks up slots and offsets from the compiled type information.
+ * However, it saves the original source locations from the original context so that line numbers are
  * consistent with the original source code.
  *
  * @param decodeSrc Source decoder for the original source code.
  * @param layout The storage layout object to load namespaces into.
  * @param origContext The original compilation context, which is used to lookup original source locations.
- * @param context The given compilation context, which can represent either the original compilation or a namespaced compilation.
+ * @param namespacedContext The namespaced compilation context, which represents a namespaced compilation.
  */
 export function loadNamespaces(
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
   origContext: CompilationContext,
-  context: CompilationContext,
+  namespacedContext?: CompilationContext,
 ) {
   // TODO if there is a namespace annotation in source code, check if solidity version is >= 0.8.20
+
+  const context = namespacedContext ?? origContext;
 
   const namespaces: Record<string, StorageItem[]> = {};
   pushDirectNamespaces(namespaces, decodeSrc, layout, context, origContext.contractDef);
