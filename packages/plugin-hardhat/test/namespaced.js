@@ -23,6 +23,7 @@ test.before(async t => {
   t.context.MultipleNamespacesAndRegularVariablesV2_Bad = await ethers.getContractFactory(
     'MultipleNamespacesAndRegularVariablesV2_Bad',
   );
+  t.context.NoNamespace = await ethers.getContractFactory('NoNamespace');
 });
 
 test('conflicting namespaces through inheritance', async t => {
@@ -198,5 +199,18 @@ test('multiple namespaces and regular variables - bad', async t => {
   const error = await t.throwsAsync(() =>
     upgrades.validateUpgrade(MultipleNamespacesAndRegularVariables, MultipleNamespacesAndRegularVariablesV2_Bad),
   );
+  t.snapshot(error.message);
+});
+
+test('add namespace - ok', async t => {
+  const { NoNamespace, Example } = t.context;
+
+  await upgrades.validateUpgrade(NoNamespace, Example);
+});
+
+test('delete namespace - bad', async t => {
+  const { Example, NoNamespace } = t.context;
+
+  const error = await t.throwsAsync(() => upgrades.validateUpgrade(Example, NoNamespace));
   t.snapshot(error.message);
 });

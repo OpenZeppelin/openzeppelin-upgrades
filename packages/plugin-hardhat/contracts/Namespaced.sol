@@ -245,3 +245,6 @@ contract MultipleNamespacesAndRegularVariablesV2_Bad {
     uint256 public b;
     uint256 public c;
 }
+
+contract NoNamespace {
+}
