@@ -14,9 +14,8 @@ export function stabilizeStorageLayout(layout: StorageLayout) {
       return [stabilizeTypeIdentifier(type), { ...item, members }];
     }),
     namespaces: layout.namespaces
-      ? Object.entries(layout.namespaces).map(([storageLocation, namespace]) => {
-          const items = namespace.items.map(item => ({ ...item, type: stabilizeTypeIdentifier(item.type) }));
-          return [storageLocation, { items: items, conflict: namespace.conflict }];
+      ? Object.entries(layout.namespaces).map(([ns, items]) => {
+          return [ns, items.map(item => ({ ...item, type: stabilizeTypeIdentifier(item.type) }))];
         })
       : undefined,
   };

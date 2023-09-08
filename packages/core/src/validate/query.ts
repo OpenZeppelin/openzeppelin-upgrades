@@ -6,6 +6,7 @@ import { ValidationOptions, processExceptions } from './overrides';
 import { ContractSourceNotFoundError, ValidationErrors } from './error';
 import { ValidationData, normalizeValidationData } from './data';
 import { ProxyDeployment } from '../manifest';
+import debug from '../utils/debug';
 
 const upgradeToSignature = 'upgradeTo(address)';
 
@@ -102,12 +103,16 @@ export function unfoldStorageLayout(runData: ValidationRunData, fullContractName
 
       const contractSpecificNamespaces = runData[name].layout.namespaces;
       if (contractSpecificNamespaces !== undefined) {
-        Object.entries(contractSpecificNamespaces).forEach(([customStorageLocation, namespace]) => {
+        Object.entries(contractSpecificNamespaces).forEach(([customStorageLocation, items]) => {
           if (layout.namespaces === undefined) {
             layout.namespaces = {};
           }
-          layout.namespaces[customStorageLocation] = namespace;
-          // TODO should this do any sort of conflict checking, even though conflicts are already stored in the validation data?
+          if (layout.namespaces[customStorageLocation] !== undefined) {
+            // This is checked when running validations, so just log a debug message here
+            debug(`Duplicate namespace ${customStorageLocation} in contract ${fullContractName}`);
+          } else {
+            layout.namespaces[customStorageLocation] = items;
+          }
         });
       }
     }

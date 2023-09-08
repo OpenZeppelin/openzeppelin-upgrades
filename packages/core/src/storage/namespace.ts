@@ -1,11 +1,12 @@
 import assert from 'assert';
 import { ContractDefinition, StructDefinition } from 'solidity-ast';
 import { isNodeType } from 'solidity-ast/utils';
-import { Namespace, StorageItem, StorageLayout, TypeItem } from './layout';
+import { StorageItem, StorageLayout, TypeItem } from './layout';
 import { SrcDecoder } from '../src-decoder';
 import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/annotations';
 import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
+import debug from '../utils/debug';
 
 /**
  * Loads namespaces and namespaced type information into the storage layout.
@@ -35,17 +36,16 @@ export function loadNamespaces(
 ) {
   // TODO if there is a namespace annotation in source code, check if solidity version is >= 0.8.20
 
-  const namespaces: Record<string, Namespace> = {};
+  const namespaces: Record<string, StorageItem[]> = {};
   for (const node of context.contractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
       const storageLocation = getCustomStorageLocation(node);
       if (storageLocation !== undefined) {
         if (namespaces[storageLocation] !== undefined) {
-          namespaces[storageLocation].conflict = true;
+          // This is checked when running validations, so just log a debug message here
+          debug(`Duplicate namespace ${storageLocation} in contract ${context.contractDef.name}`);
         } else {
-          namespaces[storageLocation] = {
-            items: getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef),
-          };
+          namespaces[storageLocation] = getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef);
         }
       }
     }

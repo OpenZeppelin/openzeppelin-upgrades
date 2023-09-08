@@ -12,19 +12,8 @@ export interface StorageLayout {
   storage: StorageItem[];
   types: Record<string, TypeItem>;
   flat?: boolean;
-  namespaces?: Record<string, Namespace>;
+  namespaces?: Record<string, StorageItem[]>;
 }
-
-/**
- * Represents a namespace, including its storage items and whether there is a conflict.
- *
- * WARNING: If conflict is true, the namespace has a conflict within the contract so its items are not valid
- * (since they only represent one of the conflicting namespaces).
- */
-export type Namespace = {
-  items: StorageItem[];
-  conflict?: boolean;
-};
 
 export type StorageField<Type = string> = StorageItem<Type> | StructMember<Type>;
 
