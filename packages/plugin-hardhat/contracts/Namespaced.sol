@@ -262,3 +262,6 @@ contract InheritsNamespaceV2_Ok is ExampleV2_Ok {
 
 contract InheritsNamespaceV2_Bad is ExampleV2_Bad {
 }
+
+contract InheritsConflictingNamespace is ConflictingNamespace {
+}
