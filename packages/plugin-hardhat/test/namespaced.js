@@ -14,6 +14,9 @@ test.before(async t => {
   t.context.TripleStructV2_Bad = await ethers.getContractFactory('TripleStructV2_Bad');
   t.context.ConflictingNamespace = await ethers.getContractFactory('ConflictingNamespace');
   t.context.DuplicateNamespace = await ethers.getContractFactory('DuplicateNamespace');
+  t.context.MultipleNamespacesAndRegularVariables = await ethers.getContractFactory('MultipleNamespacesAndRegularVariables');
+  t.context.MultipleNamespacesAndRegularVariablesV2_Ok = await ethers.getContractFactory('MultipleNamespacesAndRegularVariablesV2_Ok');
+  t.context.MultipleNamespacesAndRegularVariablesV2_Bad = await ethers.getContractFactory('MultipleNamespacesAndRegularVariablesV2_Bad');
 });
 
 test('conflicting namespaces through inheritance', async t => {
@@ -175,4 +178,17 @@ test('validate namespace - triple struct - bad', async t => {
 
     t.snapshot(e.message);
   }
+});
+
+test('multiple namespaces and regular variables - ok', async t => {
+  const { MultipleNamespacesAndRegularVariables, MultipleNamespacesAndRegularVariablesV2_Ok } = t.context;
+
+  await upgrades.validateUpgrade(MultipleNamespacesAndRegularVariables, MultipleNamespacesAndRegularVariablesV2_Ok);
+});
+
+test('multiple namespaces and regular variables - bad', async t => {
+  const { MultipleNamespacesAndRegularVariables, MultipleNamespacesAndRegularVariablesV2_Bad } = t.context;
+
+  const error = await t.throwsAsync(() => upgrades.validateUpgrade(MultipleNamespacesAndRegularVariables, MultipleNamespacesAndRegularVariablesV2_Bad));
+  t.snapshot(error.message);
 });

@@ -183,6 +183,65 @@ contract TripleStructV2_Bad {
     }
 }
 
-// TODO:
+contract MultipleNamespacesAndRegularVariables {
+    /// @custom:storage-location erc7201:one
+    struct S1 {
+        uint128 a;
+        uint256 b;
+    }
 
-// mixed usage of regular variables and namespaces
+    /// @custom:storage-location erc7201:two
+    struct S2 {
+        uint128 a;
+        uint256 b;
+    }
+
+    uint128 public a;
+    uint256 public b;
+}
+
+contract MultipleNamespacesAndRegularVariablesV2_Ok {
+    /// @custom:storage-location erc7201:one
+    struct S1 {
+        uint128 a;
+        uint128 a2;
+        uint256 b;
+        uint256 c;
+    }
+
+    /// @custom:storage-location erc7201:two
+    struct S2 {
+        uint128 a;
+        uint128 a2;
+        uint256 b;
+        uint256 c;
+    }
+
+    uint128 public a;
+    uint128 public a2;
+    uint256 public b;
+    uint256 public c;
+}
+
+contract MultipleNamespacesAndRegularVariablesV2_Bad {
+    /// @custom:storage-location erc7201:one
+    struct S1 {
+        uint128 a;
+        uint256 a2;
+        uint256 b;
+        uint256 c;
+    }
+
+    /// @custom:storage-location erc7201:two
+    struct S2 {
+        uint128 a;
+        uint256 a2;
+        uint256 b;
+        uint256 c;
+    }
+
+    uint128 public a;
+    uint256 public a2;
+    uint256 public b;
+    uint256 public c;
+}
