@@ -66,7 +66,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   'namespace-conflict': {
     msg: e => `Namespace \`${e.namespace}\` is defined multiple times`,
     hint: () =>
-      `Use a unique namespace id for each struct that has \`@custom:storage-location\` in your contract and its inheritance tree`,
+      `Use a unique namespace id for each struct annotated with '@custom:storage-location erc7201:<NAMESPACE_ID>' in your contract and its inherited contracts`,
   },
 };
 
