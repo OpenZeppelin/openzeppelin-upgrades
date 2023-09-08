@@ -20,23 +20,45 @@ import debug from '../utils/debug';
  * This function looks up namespaces and their members from the given compilation context's AST
  * (meaning node ids would be from the namespaced compilation if that is what's provided in the
  * compilation context), and looks up slots and offsets from the compiled type information.
- * However, it saves the original source locations from `origContractDef` so that line numbers are
+ * However, it saves the original source locations from `origContext` so that line numbers are
  * consistent with the original source code.
  *
  * @param decodeSrc Source decoder for the original source code.
  * @param layout The storage layout object to load namespaces into.
+ * @param origContext The original compilation context, which is used to lookup original source locations.
  * @param context The given compilation context, which can represent either the original compilation or a namespaced compilation.
- * @param origContractDef The original contract definition, which is used to lookup original source locations.
  */
 export function loadNamespaces(
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
+  origContext: CompilationContext,
   context: CompilationContext,
-  origContractDef: ContractDefinition,
 ) {
   // TODO if there is a namespace annotation in source code, check if solidity version is >= 0.8.20
 
   const namespaces: Record<string, StorageItem[]> = {};
+  pushDirectNamespaces(namespaces, decodeSrc, layout, context, origContext.contractDef);
+
+  const origInheritIds = origContext.contractDef.linearizedBaseContracts.slice(1);
+  const inheritIds = context.contractDef.linearizedBaseContracts.slice(1);
+
+  assert(inheritIds.length === origInheritIds.length);
+  for (let i = 0; i < inheritIds.length; i++) {
+    const origInherit = origContext.deref(['ContractDefinition'], origInheritIds[i]);
+    const inherit = context.deref(['ContractDefinition'], inheritIds[i]);
+    if (origInherit === undefined) {
+      throw new Error(`Could not find original contract definition with id ${origInheritIds[i]}`);
+    } else if (inherit === undefined) {
+      throw new Error(`Could not find contract definition with id ${inheritIds[i]}`);
+    } else {
+      pushDirectNamespaces(namespaces, decodeSrc, layout, { ...context, contractDef: inherit }, origInherit);
+    }
+  }
+
+  layout.namespaces = namespaces;
+}
+
+function pushDirectNamespaces(namespaces: Record<string, StorageItem<string>[]>, decodeSrc: SrcDecoder, layout: StorageLayout, context: CompilationContext, origContractDef: ContractDefinition) {
   for (const node of context.contractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
       const storageLocation = getCustomStorageLocation(node);
@@ -50,7 +72,6 @@ export function loadNamespaces(
       }
     }
   }
-  layout.namespaces = namespaces;
 }
 
 /**

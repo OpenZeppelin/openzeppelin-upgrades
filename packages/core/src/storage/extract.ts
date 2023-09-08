@@ -81,8 +81,9 @@ export function extractStorageLayout(
     }
   }
 
+  const origContext = { deref, contractDef, storageLayout };
   const context = namespacedContext ?? { deref, contractDef, storageLayout };
-  loadNamespaces(decodeSrc, layout, context, contractDef);
+  loadNamespaces(decodeSrc, layout, origContext, context);
 
   return layout;
 }
