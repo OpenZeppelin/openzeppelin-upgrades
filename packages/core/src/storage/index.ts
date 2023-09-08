@@ -69,16 +69,22 @@ function getNamespacedStorageOperations(
 ) {
   const results: StorageOperation<StorageItem>[] = [];
   if (original.namespaces !== undefined) {
-    for (const [customStorageLocation, origNamespaceLayout] of Object.entries(original.namespaces)) {
+    for (const [storageLocation, origNamespaceLayout] of Object.entries(original.namespaces)) {
       const origNamespaceDetailed = getDetailedLayout({ storage: origNamespaceLayout, types: original.types });
 
-      const updatedNamespaceLayout = updated.namespaces?.[customStorageLocation];
-      if (updatedNamespaceLayout === undefined) {
-        throw new Error(`Namespace ${customStorageLocation} not found in updated layout`);
+      const updatedNamespaceLayout = updated.namespaces?.[storageLocation];
+      if (updatedNamespaceLayout !== undefined) {
+        const updatedNamespaceDetailed = getDetailedLayout({ storage: updatedNamespaceLayout, types: updated.types });
+        results.push(...comparator.getStorageOperations(origNamespaceDetailed, updatedNamespaceDetailed));
+      } else if (origNamespaceLayout.length > 0) {
+        results.push({
+          kind: 'delete-namespace',
+          namespace: storageLocation,
+          original: {
+            contract: origNamespaceLayout[0].contract,
+          },
+        });
       }
-      const updatedNamespaceDetailed = getDetailedLayout({ storage: updatedNamespaceLayout, types: updated.types });
-
-      results.push(...comparator.getStorageOperations(origNamespaceDetailed, updatedNamespaceDetailed));
     }
   }
   return results;

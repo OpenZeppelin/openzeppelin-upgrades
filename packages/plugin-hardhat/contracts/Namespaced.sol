@@ -247,4 +247,9 @@ contract MultipleNamespacesAndRegularVariablesV2_Bad {
 }
 
 contract NoNamespace {
+    // not annotated as a namespace
+    struct MainStorage {
+        uint256 x;
+        uint256 y;
+    }
 }

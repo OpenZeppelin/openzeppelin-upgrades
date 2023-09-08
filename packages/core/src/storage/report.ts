@@ -154,6 +154,11 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
           hints.push('Keep the variable even if unused');
           break;
         }
+
+        case 'delete-namespace': {
+          hints.push(`Keep the struct with annotation '@custom:storage-location ${op.namespace}' even if unused`);
+          break;
+        }
       }
 
       return printWithHints({ title, hints });
@@ -299,6 +304,9 @@ function explainBasicOperation<T>(op: BasicOperation<T>, getName: (t: T) => stri
 
     case 'append':
       return `Added \`${getName(op.updated)}\``;
+
+    case 'delete-namespace':
+      return `Deleted namespace \`${op.namespace}\``;
   }
 }
 
