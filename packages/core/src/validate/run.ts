@@ -12,6 +12,7 @@ import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
+import { getCustomStorageLocation } from '../storage';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -37,13 +38,15 @@ export const errorKinds = [
   'delegatecall',
   'selfdestruct',
   'missing-public-upgradeto',
+  'namespace-conflict',
 ] as const;
 
 export type ValidationError =
   | ValidationErrorConstructor
   | ValidationErrorOpcode
   | ValidationErrorWithName
-  | ValidationErrorUpgradeability;
+  | ValidationErrorUpgradeability
+  | ValidationErrorNamespaceConflict;
 
 interface ValidationErrorBase {
   src: string;
@@ -67,6 +70,11 @@ interface ValidationErrorConstructor extends ValidationErrorBase {
 
 interface ValidationErrorOpcode extends ValidationErrorBase {
   kind: 'delegatecall' | 'selfdestruct';
+}
+
+interface ValidationErrorNamespaceConflict extends ValidationErrorBase {
+  kind: 'namespace-conflict';
+  namespace: string;
 }
 
 interface OpcodePattern {
@@ -187,6 +195,7 @@ export function validate(
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
+          ...getNamespaceConflicts(contractDef, deref, decodeSrc),
         ];
 
         validation[key].layout = extractStorageLayout(
@@ -196,9 +205,6 @@ export function validate(
           solcOutput.contracts[source][contractDef.name].storageLayout,
           getNamespacedCompilationContext(source, contractDef, namespacedOutput),
         );
-
-        // TODO report errors here if there are namespace conflicts, based on if validation[key].layout.namespaces has any conflicts?
-        // TODO and include the lines where the conflicts are
 
         validation[key].methods = [...findAll('FunctionDefinition', contractDef)]
           .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
@@ -216,6 +222,65 @@ export function validate(
   }
 
   return validation;
+}
+
+interface NamespaceSourceLocation {
+  namespace: string;
+  src: string;
+}
+
+function getNamespaceConflicts(contractDef: ContractDefinition, deref: ASTDereferencer, decodeSrc: SrcDecoder) {
+  const result: ValidationErrorNamespaceConflict[] = [];
+
+  const namespaceSourceLocations = getNamespaceSourceLocations(contractDef, decodeSrc, deref);
+  for (const n of namespaceSourceLocations) {
+    const conflictsWith = namespaceSourceLocations.filter(other => other.namespace === n.namespace);
+    if (conflictsWith.length > 1) {
+      result.push({
+        kind: 'namespace-conflict',
+        namespace: n.namespace,
+        src: n.src,
+      });
+    }
+  }
+  return result;
+}
+
+/**
+ * Get all namespace source locations for a contract definition, including inherited contracts.
+ */
+function getNamespaceSourceLocations(contractDef: ContractDefinition, decodeSrc: SrcDecoder, deref: ASTDereferencer) {
+  const result: NamespaceSourceLocation[] = [];
+  result.push(...getDirectNamespaceSourceLocations(contractDef, decodeSrc));
+
+  const inheritIds = contractDef.linearizedBaseContracts.slice(1);
+  // get all namespaces from inherited contracts
+  for (const id of inheritIds) {
+    const node = deref(['ContractDefinition'], id);
+    if (node !== undefined) {
+      result.push(...getDirectNamespaceSourceLocations(node, decodeSrc));
+    } else {
+      throw new Error(`Could not find contract definition with id ${id}`);
+    }
+  }
+  return result;
+}
+
+/**
+ * Get direct namespace source locations for a contract definition, excluding inherited contracts.
+ */
+function getDirectNamespaceSourceLocations(contractDef: ContractDefinition, decodeSrc: SrcDecoder) {
+  const result: NamespaceSourceLocation[] = [];
+  for (const node of findAll('StructDefinition', contractDef)) {
+    const namespace = getCustomStorageLocation(node);
+    if (namespace !== undefined) {
+      result.push({
+        namespace,
+        src: decodeSrc(node),
+      });
+    }
+  }
+  return result;
 }
 
 function getNamespacedCompilationContext(

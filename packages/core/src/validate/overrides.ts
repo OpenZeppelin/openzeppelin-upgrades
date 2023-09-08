@@ -76,6 +76,7 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
     `Not having a public upgradeTo function in your implementation can break upgradeability.`,
     `Some implementation might check that onchain, and cause the upgrade to revert.`,
   ],
+  'namespace-conflict': [`You are using the \`unsafeAllow.namespace-conflict\` flag.`],
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {

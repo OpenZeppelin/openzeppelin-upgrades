@@ -6,7 +6,6 @@ import { SrcDecoder } from '../src-decoder';
 import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/annotations';
 import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
-import { UpgradesError } from '../error';
 
 /**
  * Loads namespaces and namespaced type information into the storage layout.
@@ -52,15 +51,6 @@ export function loadNamespaces(
     }
   }
   layout.namespaces = namespaces;
-}
-
-export class DuplicateCustomStorageLocationError extends UpgradesError {
-  constructor(customStorageLocation: string, contractName: string) {
-    super(
-      `Custom storage location ${customStorageLocation} is defined multiple times for contract ${contractName}`,
-      () => `Custom storage locations must be unique within a contract and its inheritance tree.`,
-    );
-  }
 }
 
 /**

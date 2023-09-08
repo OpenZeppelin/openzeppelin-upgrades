@@ -6,7 +6,6 @@ import { ValidationOptions, processExceptions } from './overrides';
 import { ContractSourceNotFoundError, ValidationErrors } from './error';
 import { ValidationData, normalizeValidationData } from './data';
 import { ProxyDeployment } from '../manifest';
-import { DuplicateCustomStorageLocationError } from '../storage/namespace';
 
 const upgradeToSignature = 'upgradeTo(address)';
 
@@ -107,12 +106,8 @@ export function unfoldStorageLayout(runData: ValidationRunData, fullContractName
           if (layout.namespaces === undefined) {
             layout.namespaces = {};
           }
-          if (layout.namespaces[customStorageLocation] !== undefined || namespace.conflict) {
-            // TODO should this check be run when looking up validations instead?
-            throw new DuplicateCustomStorageLocationError(customStorageLocation, fullContractName);
-          } else {
-            layout.namespaces[customStorageLocation] = namespace;
-          }
+          layout.namespaces[customStorageLocation] = namespace;
+          // TODO should this do any sort of conflict checking, even though conflicts are already stored in the validation data?
         });
       }
     }
