@@ -27,9 +27,13 @@ test.before(async t => {
   t.context.InheritsNamespace = await ethers.getContractFactory('InheritsNamespace');
   t.context.InheritsNamespaceV2_Ok = await ethers.getContractFactory('InheritsNamespaceV2_Ok');
   t.context.InheritsNamespaceV2_Bad = await ethers.getContractFactory('InheritsNamespaceV2_Bad');
-  t.context.InheritsNamespaceV2_BadAndHasLayout = await ethers.getContractFactory('InheritsNamespaceV2_BadAndHasLayout');
+  t.context.InheritsNamespaceV2_BadAndHasLayout = await ethers.getContractFactory(
+    'InheritsNamespaceV2_BadAndHasLayout',
+  );
   t.context.InheritsConflictingNamespace = await ethers.getContractFactory('InheritsConflictingNamespace');
-  t.context.InheritsConflictingNamespaceAndHasLayout = await ethers.getContractFactory('InheritsConflictingNamespaceAndHasLayout');
+  t.context.InheritsConflictingNamespaceAndHasLayout = await ethers.getContractFactory(
+    'InheritsConflictingNamespaceAndHasLayout',
+  );
 });
 
 test('conflicting namespaces through inheritance', async t => {

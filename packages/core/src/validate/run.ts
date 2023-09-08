@@ -12,7 +12,7 @@ import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
-import { getCustomStorageLocation } from '../storage';
+import { getStorageLocationArg } from '../storage';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -272,10 +272,10 @@ function getNamespaceSourceLocations(contractDef: ContractDefinition, decodeSrc:
 function getDirectNamespaceSourceLocations(contractDef: ContractDefinition, decodeSrc: SrcDecoder) {
   const result: NamespaceSourceLocation[] = [];
   for (const node of findAll('StructDefinition', contractDef)) {
-    const namespace = getCustomStorageLocation(node);
-    if (namespace !== undefined) {
+    const storageLocationArg = getStorageLocationArg(node);
+    if (storageLocationArg !== undefined) {
       result.push({
-        namespace,
+        namespace: storageLocationArg,
         src: decodeSrc(node),
       });
     }

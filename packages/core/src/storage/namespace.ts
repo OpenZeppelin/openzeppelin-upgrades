@@ -58,16 +58,22 @@ export function loadNamespaces(
   layout.namespaces = namespaces;
 }
 
-function pushDirectNamespaces(namespaces: Record<string, StorageItem<string>[]>, decodeSrc: SrcDecoder, layout: StorageLayout, context: CompilationContext, origContractDef: ContractDefinition) {
+function pushDirectNamespaces(
+  namespaces: Record<string, StorageItem<string>[]>,
+  decodeSrc: SrcDecoder,
+  layout: StorageLayout,
+  context: CompilationContext,
+  origContractDef: ContractDefinition,
+) {
   for (const node of context.contractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
-      const storageLocation = getCustomStorageLocation(node);
-      if (storageLocation !== undefined) {
-        if (namespaces[storageLocation] !== undefined) {
+      const storageLocationArg = getStorageLocationArg(node);
+      if (storageLocationArg !== undefined) {
+        if (namespaces[storageLocationArg] !== undefined) {
           // This is checked when running validations, so just log a debug message here
-          debug(`Duplicate namespace ${storageLocation} in contract ${context.contractDef.name}`);
+          debug(`Duplicate namespace ${storageLocationArg} in contract ${context.contractDef.name}`);
         } else {
-          namespaces[storageLocation] = getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef);
+          namespaces[storageLocationArg] = getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef);
         }
       }
     }
@@ -82,7 +88,7 @@ function pushDirectNamespaces(namespaces: Record<string, StorageItem<string>[]>,
  * @param node The node that may have a `@custom:storage-location` annotation.
  * @returns The storage location string, or undefined if the node does not have a `@custom:storage-location` annotation.
  */
-export function getCustomStorageLocation(node: Node) {
+export function getStorageLocationArg(node: Node) {
   const doc = getDocumentation(node);
   if (hasAnnotationTag(doc, 'storage-location')) {
     return getStorageLocation(doc);

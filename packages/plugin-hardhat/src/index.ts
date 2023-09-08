@@ -8,7 +8,7 @@ import { lazyObject } from 'hardhat/plugins';
 import { HardhatConfig, HardhatRuntimeEnvironment } from 'hardhat/types';
 import {
   getImplementationAddressFromBeacon,
-  getCustomStorageLocation,
+  getStorageLocationArg,
   logWarning,
   silenceWarnings,
   SolcInput,
@@ -174,8 +174,8 @@ function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput) {
 
           source.content = buf.toString();
         } else if (isNodeType('StructDefinition', node)) {
-          const storageLocation = getCustomStorageLocation(node);
-          if (storageLocation !== undefined) {
+          const storageLocationArg = getStorageLocationArg(node);
+          if (storageLocationArg !== undefined) {
             const orig = Buffer.from(source.content);
 
             const [start, length] = node.src.split(':').map(Number);
