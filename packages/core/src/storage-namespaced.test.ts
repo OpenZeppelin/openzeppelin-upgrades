@@ -103,3 +103,49 @@ test('recursive struct bad', t => {
     },
   });
 });
+
+test('multiple namespaces and regular variables ok', t => {
+  const v1 = t.context.extractStorageLayout('MultipleNamespacesAndRegularVariables');
+  const v2 = t.context.extractStorageLayout('MultipleNamespacesAndRegularVariablesV2_Ok');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, []);
+});
+
+test('multiple namespaces and regular variables bad', t => {
+  const v1 = t.context.extractStorageLayout('MultipleNamespacesAndRegularVariables');
+  const v2 = t.context.extractStorageLayout('MultipleNamespacesAndRegularVariablesV2_Bad');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.like(comparison, {
+    length: 5,
+    0: {
+      kind: 'insert',
+      updated: {
+        label: 'c',
+      },
+    },
+    1: {
+      kind: 'layoutchange',
+      updated: {
+        label: 'a', // layout available for regular variable outside of namespace
+      },
+    },
+    2: {
+      kind: 'layoutchange',
+      updated: {
+        label: 'b', // layout available for regular variable outside of namespace
+      },
+    },
+    3: {
+      kind: 'insert',
+      updated: {
+        label: 'c',
+      },
+    },
+    4: {
+      kind: 'insert',
+      updated: {
+        label: 'c',
+      },
+    },
+  });
+});
