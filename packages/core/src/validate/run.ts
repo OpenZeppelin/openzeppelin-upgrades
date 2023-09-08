@@ -257,11 +257,7 @@ function getNamespaceSourceLocations(contractDef: ContractDefinition, decodeSrc:
   // get all namespaces from inherited contracts
   for (const id of inheritIds) {
     const node = deref(['ContractDefinition'], id);
-    if (node !== undefined) {
-      result.push(...getDirectNamespaceSourceLocations(node, decodeSrc));
-    } else {
-      throw new Error(`Could not find contract definition with id ${id}`);
-    }
+    result.push(...getDirectNamespaceSourceLocations(node, decodeSrc));
   }
   return result;
 }
