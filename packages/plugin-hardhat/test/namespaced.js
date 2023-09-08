@@ -27,6 +27,7 @@ test.before(async t => {
   t.context.InheritsNamespace = await ethers.getContractFactory('InheritsNamespace');
   t.context.InheritsNamespaceV2_Ok = await ethers.getContractFactory('InheritsNamespaceV2_Ok');
   t.context.InheritsNamespaceV2_Bad = await ethers.getContractFactory('InheritsNamespaceV2_Bad');
+  t.context.InheritsNamespaceV2_BadAndHasLayout = await ethers.getContractFactory('InheritsNamespaceV2_BadAndHasLayout');
   t.context.InheritsConflictingNamespace = await ethers.getContractFactory('InheritsConflictingNamespace');
   t.context.InheritsConflictingNamespaceAndHasLayout = await ethers.getContractFactory('InheritsConflictingNamespaceAndHasLayout');
 });
@@ -237,6 +238,13 @@ test('moving namespace to inherited contract - delete variable - bad', async t =
   const { Example, InheritsNamespaceV2_Bad } = t.context;
 
   const error = await t.throwsAsync(() => upgrades.validateUpgrade(Example, InheritsNamespaceV2_Bad));
+  t.snapshot(error.message);
+});
+
+test('moving namespace to inherited contract - delete variable and has layout - bad', async t => {
+  const { Example, InheritsNamespaceV2_BadAndHasLayout } = t.context;
+
+  const error = await t.throwsAsync(() => upgrades.validateUpgrade(Example, InheritsNamespaceV2_BadAndHasLayout));
   t.snapshot(error.message);
 });
 

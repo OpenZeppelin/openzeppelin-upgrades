@@ -263,9 +263,14 @@ contract InheritsNamespaceV2_Ok is ExampleV2_Ok {
 contract InheritsNamespaceV2_Bad is ExampleV2_Bad {
 }
 
+contract InheritsNamespaceV2_BadAndHasLayout is ExampleV2_Bad {
+    uint256 public a;
+}
+
 contract InheritsConflictingNamespace is ConflictingNamespace {
 }
 
 contract InheritsConflictingNamespaceAndHasLayout is ConflictingNamespace {
+    // inherits conflicting namespace - should be reported through the inherits list
     uint256 public a;
 }
