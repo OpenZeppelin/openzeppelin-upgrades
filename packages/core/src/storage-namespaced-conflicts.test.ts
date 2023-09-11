@@ -16,7 +16,7 @@ const test = _test as TestFn<Context>;
 
 test.before(async t => {
   const buildInfo = await artifacts.getBuildInfo(
-    'contracts/test/NamespacedConflictsStructsOnly.sol:DuplicateNamespace',
+    'contracts/test/NamespacedConflicts.sol:DuplicateNamespace',
   );
   if (buildInfo === undefined) {
     throw new Error('Build info not found');
@@ -26,12 +26,12 @@ test.before(async t => {
   const storageLayouts: Record<string, StorageLayout> = {};
   for (const def of findAll(
     'ContractDefinition',
-    solcOutput.sources['contracts/test/NamespacedConflictsStructsOnly.sol'].ast,
+    solcOutput.sources['contracts/test/NamespacedConflicts.sol'].ast,
   )) {
     contracts[def.name] = def;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     storageLayouts[def.name] =
-      solcOutput.contracts['contracts/test/NamespacedConflictsStructsOnly.sol'][def.name].storageLayout!;
+      solcOutput.contracts['contracts/test/NamespacedConflicts.sol'][def.name].storageLayout!;
   }
   const deref = astDereferencer(solcOutput);
   const decodeSrc = solcInputOutputDecoder(buildInfo.input, solcOutput);
