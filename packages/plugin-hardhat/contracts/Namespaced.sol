@@ -24,25 +24,6 @@ contract Example {
     }
 }
 
-contract ConflictingNamespace is Example {
-    /// @custom:storage-location erc7201:example.main
-    struct Conflicting1 {
-        uint256 a;
-    }
-}
-
-contract DuplicateNamespace {
-    /// @custom:storage-location erc7201:conflicting
-    struct Conflicting1 {
-        uint256 a;
-    }
-
-    /// @custom:storage-location erc7201:conflicting
-    struct Conflicting2 {
-        uint256 a;
-    }
-}
-
 contract ExampleV2_Ok {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -264,13 +245,5 @@ contract InheritsNamespaceV2_Bad is ExampleV2_Bad {
 }
 
 contract InheritsNamespaceV2_BadAndHasLayout is ExampleV2_Bad {
-    uint256 public a;
-}
-
-contract InheritsConflictingNamespace is ConflictingNamespace {
-}
-
-contract InheritsConflictingNamespaceAndHasLayout is ConflictingNamespace {
-    // inherits conflicting namespace - should be reported through the inherits list
     uint256 public a;
 }

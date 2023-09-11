@@ -21,7 +21,22 @@ contract DuplicateNamespace {
     }
 }
 
-contract ConflictsWithParent is DuplicateNamespace {
+contract Parent {
+    function foo5() public pure returns (uint256) {
+        return 0;
+    }
+
+    /// @custom:storage-location erc7201:conflicting
+    struct Conflicting0 {
+        uint256 a;
+    }
+
+    function foo6() public pure returns (uint256) {
+        return 0;
+    }
+}
+
+contract ConflictsWithParent is Parent {
     function foo3() public pure returns (uint256) {
         return 0;
     }
@@ -37,4 +52,8 @@ contract ConflictsWithParent is DuplicateNamespace {
 }
 
 contract ConflictsInBothParents is DuplicateNamespace, ConflictsWithParent {
+    uint256 a;
+}
+
+contract InheritsDuplicate is DuplicateNamespace {
 }

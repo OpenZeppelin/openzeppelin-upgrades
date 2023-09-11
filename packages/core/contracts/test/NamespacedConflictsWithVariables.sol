@@ -13,7 +13,14 @@ contract DuplicateNamespace {
     } Conflicting2 $Conflicting2;
 }
 
-contract ConflictsWithParent is DuplicateNamespace {
+contract Parent {
+    /// @custom:storage-location erc7201:conflicting
+    struct Conflicting0 {
+        uint256 a;
+    } Conflicting0 $Conflicting0;
+}
+
+contract ConflictsWithParent is Parent {
     /// @custom:storage-location erc7201:conflicting
     struct Conflicting {
         uint256 a;
@@ -21,4 +28,8 @@ contract ConflictsWithParent is DuplicateNamespace {
 }
 
 contract ConflictsInBothParents is DuplicateNamespace, ConflictsWithParent {
+    uint256 a;
+}
+
+contract InheritsDuplicate is DuplicateNamespace {
 }

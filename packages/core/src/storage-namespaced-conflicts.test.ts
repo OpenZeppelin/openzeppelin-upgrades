@@ -44,6 +44,11 @@ test('duplicate namespace', t => {
   t.snapshot(error?.message);
 });
 
+test('inherits duplicate', t => {
+  const error = t.throws(() => t.context.extractStorageLayout('InheritsDuplicate'));
+  t.snapshot(error?.message);
+});
+
 test('conflicts with parent', t => {
   const error = t.throws(() => t.context.extractStorageLayout('ConflictsWithParent'));
   t.snapshot(error?.message);

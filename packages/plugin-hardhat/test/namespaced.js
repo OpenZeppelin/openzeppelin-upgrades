@@ -12,8 +12,6 @@ test.before(async t => {
   t.context.TripleStruct = await ethers.getContractFactory('TripleStruct');
   t.context.TripleStructV2_Ok = await ethers.getContractFactory('TripleStructV2_Ok');
   t.context.TripleStructV2_Bad = await ethers.getContractFactory('TripleStructV2_Bad');
-  t.context.ConflictingNamespace = await ethers.getContractFactory('ConflictingNamespace');
-  t.context.DuplicateNamespace = await ethers.getContractFactory('DuplicateNamespace');
   t.context.MultipleNamespacesAndRegularVariables = await ethers.getContractFactory(
     'MultipleNamespacesAndRegularVariables',
   );
@@ -30,24 +28,6 @@ test.before(async t => {
   t.context.InheritsNamespaceV2_BadAndHasLayout = await ethers.getContractFactory(
     'InheritsNamespaceV2_BadAndHasLayout',
   );
-  t.context.InheritsConflictingNamespace = await ethers.getContractFactory('InheritsConflictingNamespace');
-  t.context.InheritsConflictingNamespaceAndHasLayout = await ethers.getContractFactory(
-    'InheritsConflictingNamespaceAndHasLayout',
-  );
-});
-
-test('conflicting namespaces through inheritance', async t => {
-  const { ConflictingNamespace } = t.context;
-
-  const error = await t.throwsAsync(() => upgrades.validateImplementation(ConflictingNamespace));
-  t.snapshot(error.message);
-});
-
-test('duplicate namespaces in same contract', async t => {
-  const { DuplicateNamespace } = t.context;
-
-  const error = await t.throwsAsync(() => upgrades.validateImplementation(DuplicateNamespace));
-  t.snapshot(error.message);
 });
 
 test('validate namespace - ok', async t => {
@@ -249,19 +229,5 @@ test('moving namespace to inherited contract - delete variable and has layout - 
   const { Example, InheritsNamespaceV2_BadAndHasLayout } = t.context;
 
   const error = await t.throwsAsync(() => upgrades.validateUpgrade(Example, InheritsNamespaceV2_BadAndHasLayout));
-  t.snapshot(error.message);
-});
-
-test('moving namespace to inherited contract - conflicting namespace - bad', async t => {
-  const { Example, InheritsConflictingNamespace } = t.context;
-
-  const error = await t.throwsAsync(() => upgrades.validateUpgrade(Example, InheritsConflictingNamespace));
-  t.snapshot(error.message);
-});
-
-test('moving namespace to inherited contract - conflicting namespace and has layout - bad', async t => {
-  const { Example, InheritsConflictingNamespaceAndHasLayout } = t.context;
-
-  const error = await t.throwsAsync(() => upgrades.validateUpgrade(Example, InheritsConflictingNamespaceAndHasLayout));
   t.snapshot(error.message);
 });
