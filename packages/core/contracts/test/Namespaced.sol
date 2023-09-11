@@ -8,9 +8,9 @@ contract Example {
         uint256 y;
     }
 
-    // keccak256(abi.encode(uint256(keccak256("example.main")) - 1));
+    // keccak256(abi.encode(uint256(keccak256("example.main")) - 1)) & ~bytes32(uint256(0xff));
     bytes32 private constant MAIN_STORAGE_LOCATION =
-        0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab5da;
+        0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab500;
 
     function _getMainStorage() private pure returns (MainStorage storage $) {
         assembly {
@@ -56,9 +56,9 @@ contract ExampleV2_Ok {
         uint256 z;
     }
 
-    // keccak256(abi.encode(uint256(keccak256("example.main")) - 1));
+    // keccak256(abi.encode(uint256(keccak256("example.main")) - 1)) & ~bytes32(uint256(0xff));
     bytes32 private constant MAIN_STORAGE_LOCATION =
-        0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab5da;
+        0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab500;
 
     function _getMainStorage() private pure returns (MainStorage storage $) {
         assembly {
@@ -78,9 +78,9 @@ contract ExampleV2_Bad {
         uint256 y;
     }
 
-    // keccak256(abi.encode(uint256(keccak256("example.main")) - 1));
+    // keccak256(abi.encode(uint256(keccak256("example.main")) - 1)) & ~bytes32(uint256(0xff));
     bytes32 private constant MAIN_STORAGE_LOCATION =
-        0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab5da;
+        0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab500;
 
     function _getMainStorage() private pure returns (MainStorage storage $) {
         assembly {
