@@ -61,7 +61,7 @@ class DuplicateNamespaceError extends UpgradesError {
     super(
       `Namespace ${id} is defined multiple times for contract ${contractName}`,
       () => `\
-The namespace ${id} was found in:
+The namespace ${id} was found in structs at the following locations:
 - ${srcs.join('\n- ')}
 
 Use a unique namespace id for each struct annotated with '@custom:storage-location erc7201:<NAMESPACE_ID>' in your contract and its inherited contracts.`,
@@ -111,7 +111,7 @@ function pushInheritedNamespaces(
   if (namespacedContext === undefined) {
     for (let i = 0; i < origInheritIds.length; i++) {
       const origInherit = origContext.deref(['ContractDefinition'], origInheritIds[i]);
-      pushDirectNamespaces(namespaces, decodeSrc, layout, origContext, origInherit);
+      pushDirectNamespaces(namespaces, decodeSrc, layout, { ...origContext, contractDef: origInherit }, origInherit);
     }
   } else {
     const namespacedInheritIds = namespacedContext.contractDef.linearizedBaseContracts.slice(1);
@@ -215,7 +215,7 @@ function getOriginalStruct(structCanonicalName: string, origContractDef: Contrac
       }
     }
   }
-  throw new Error(`Could not find original source location for namespace struct with name ${structCanonicalName}`);
+  throw new Error(`Could not find original source location for namespace struct with name ${structCanonicalName} from contract ${origContractDef.name}`);
 }
 
 function getOriginalMemberSrc(structCanonicalName: string, memberLabel: string, origContractDef: ContractDefinition) {
