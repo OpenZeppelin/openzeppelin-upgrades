@@ -71,7 +71,7 @@ test.before(async t => {
     extractStorageLayout(origContracts[name], decodeSrc, origDeref, origStorageLayouts[name], {
       deref: namespacedDeref,
       contractDef: namespacedContracts[name],
-      storageLayout: origStorageLayouts[name],
+      storageLayout: namespacedStorageLayouts[name],
     });
 });
 
