@@ -15,9 +15,7 @@ interface Context {
 const test = _test as TestFn<Context>;
 
 test.before(async t => {
-  const origBuildInfo = await artifacts.getBuildInfo(
-    'contracts/test/NamespacedConflicts.sol:DuplicateNamespace',
-  );
+  const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedConflicts.sol:DuplicateNamespace');
   const namespacedBuildInfo = await artifacts.getBuildInfo(
     'contracts/test/NamespacedConflictsWithLayout.sol:DuplicateNamespace',
   );
@@ -58,9 +56,7 @@ test.before(async t => {
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     origStorageLayouts[origContractDef.name] =
-      origSolcOutput.contracts['contracts/test/NamespacedConflicts.sol'][
-        origContractDef.name
-      ].storageLayout!;
+      origSolcOutput.contracts['contracts/test/NamespacedConflicts.sol'][origContractDef.name].storageLayout!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     namespacedStorageLayouts[namespacedContractDef.name] =
       namespacedSolcOutput.contracts['contracts/test/NamespacedConflictsWithLayout.sol'][
