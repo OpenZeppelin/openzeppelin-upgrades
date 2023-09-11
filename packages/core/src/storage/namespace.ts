@@ -6,7 +6,7 @@ import { SrcDecoder } from '../src-decoder';
 import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/annotations';
 import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
-import debug from '../utils/debug';
+import { UpgradesError } from '../error';
 
 /**
  * Loads namespaces and namespaced type information into the storage layout.
@@ -34,14 +34,48 @@ export function loadNamespaces(
 ) {
   // TODO if there is a namespace annotation in source code, check if solidity version is >= 0.8.20
 
-  const namespaces: Record<string, StorageItem[]> = {};
-  pushDirectNamespaces(namespaces, decodeSrc, layout, namespacedContext ?? origContext, origContext.contractDef);
-  pushInheritedNamespaces(namespaces, decodeSrc, layout, origContext, namespacedContext);
+  const origContract = origContext.contractDef;
+
+  const namespacesWithSrcs: Record<string, NamespaceWithSrcs> = {};
+  pushDirectNamespaces(namespacesWithSrcs, decodeSrc, layout, namespacedContext ?? origContext, origContract);
+  pushInheritedNamespaces(namespacesWithSrcs, decodeSrc, layout, origContext, namespacedContext);
+
+  const namespaces: Record<string, StorageItem<string>[]> = {};
+
+  // Check for duplicate namespaces and throw an error if any are found, otherwise add them to the layout
+  for (const [id, namespaceWithSrcs] of Object.entries(namespacesWithSrcs)) {
+    const { namespace, srcs } = namespaceWithSrcs;
+    if (srcs.length > 1) {
+      const contractName = origContract.canonicalName ?? origContract.name;
+      throw new DuplicateNamespaceError(id, contractName, srcs);
+    } else {
+      // The src locations of the namespace structs are no longer needed at this point, so remove them
+      namespaces[id] = namespace;
+    }
+  }
   layout.namespaces = namespaces;
 }
 
+class DuplicateNamespaceError extends UpgradesError {
+  constructor(id: string, contractName: string, srcs: string[]) {
+    super(
+      `Namespace ${id} is defined multiple times for contract ${contractName}`,
+      () => `\
+The namespace ${id} was found in:
+- ${srcs.join('\n- ')}
+
+Use a unique namespace id for each struct annotated with '@custom:storage-location erc7201:<NAMESPACE_ID>' in your contract and its inherited contracts.`,
+    );
+  }
+}
+
+interface NamespaceWithSrcs {
+  namespace: StorageItem<string>[];
+  srcs: string[];
+}
+
 function pushDirectNamespaces(
-  namespaces: Record<string, StorageItem<string>[]>,
+  namespaces: Record<string, NamespaceWithSrcs>,
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
   context: CompilationContext,
@@ -51,11 +85,15 @@ function pushDirectNamespaces(
     if (isNodeType('StructDefinition', node)) {
       const storageLocationArg = getStorageLocationArg(node);
       if (storageLocationArg !== undefined) {
+        const origSrc = decodeSrc(getOriginalStruct(node.canonicalName, origContractDef));
+
         if (namespaces[storageLocationArg] !== undefined) {
-          // This is checked when running validations, so just log a debug message here
-          debug(`Duplicate namespace ${storageLocationArg} in contract ${context.contractDef.name}`);
+          namespaces[storageLocationArg].srcs.push(origSrc);
         } else {
-          namespaces[storageLocationArg] = getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef);
+          namespaces[storageLocationArg] = {
+            namespace: getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef),
+            srcs: [origSrc],
+          };
         }
       }
     }
@@ -63,7 +101,7 @@ function pushDirectNamespaces(
 }
 
 function pushInheritedNamespaces(
-  namespaces: Record<string, StorageItem<string>[]>,
+  namespaces: Record<string, NamespaceWithSrcs>,
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
   origContext: CompilationContext,
@@ -133,7 +171,7 @@ function getNamespacedStorageItems(
       const label = member.label;
       const type = member.type;
 
-      const originalSrc = getOriginalSrc(node.canonicalName, member.label, origContractDef);
+      const originalSrc = getOriginalMemberSrc(node.canonicalName, member.label, origContractDef);
       if (originalSrc === undefined) {
         throw new Error(
           `Could not find original source location for namespace struct with name ${node.canonicalName} and member ${member.label}`,
@@ -169,19 +207,29 @@ function getNamespacedStorageItems(
   return storageItems;
 }
 
-function getOriginalSrc(canonicalName: string, memberLabel: string, origContractDef: ContractDefinition) {
+function getOriginalStruct(structCanonicalName: string, origContractDef: ContractDefinition) {
   for (const node of origContractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
-      if (node.canonicalName === canonicalName) {
-        const typeMembers = getTypeMembers(node, { src: true });
-        assert(typeMembers !== undefined);
+      if (node.canonicalName === structCanonicalName) {
+        return node;
+      }
+    }
+  }
+  throw new Error(
+    `Could not find original source location for namespace struct with name ${structCanonicalName}`,
+  );
+}
 
-        for (const member of typeMembers) {
-          if (typeof member !== 'string') {
-            if (member.label === memberLabel) {
-              return member.src;
-            }
-          }
+function getOriginalMemberSrc(structCanonicalName: string, memberLabel: string, origContractDef: ContractDefinition) {
+  const node = getOriginalStruct(structCanonicalName, origContractDef);
+  if (node !== undefined) {
+    const typeMembers = getTypeMembers(node, { src: true });
+    assert(typeMembers !== undefined);
+
+    for (const member of typeMembers) {
+      if (typeof member !== 'string') {
+        if (member.label === memberLabel) {
+          return member.src;
         }
       }
     }
