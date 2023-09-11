@@ -40,7 +40,9 @@ module.exports = {
     ],
     overrides: {
       'contracts/test/Namespaced.sol': { version: '0.8.20', settings },
-      'contracts/test/NamespacedConflicts.sol': { version: '0.8.20', settings },
+      'contracts/test/NamespacedConflictsStructsOnly.sol': { version: '0.8.20', settings },
+      'contracts/test/NamespacedConflictsWithVariables.sol': { version: '0.8.20', settings },
+      'contracts/test/NamespacedConflictsWithFunctions.sol': { version: '0.8.20', settings },
     },
   },
   etherscan: {
