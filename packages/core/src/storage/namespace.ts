@@ -215,9 +215,7 @@ function getOriginalStruct(structCanonicalName: string, origContractDef: Contrac
       }
     }
   }
-  throw new Error(
-    `Could not find original source location for namespace struct with name ${structCanonicalName}`,
-  );
+  throw new Error(`Could not find original source location for namespace struct with name ${structCanonicalName}`);
 }
 
 function getOriginalMemberSrc(structCanonicalName: string, memberLabel: string, origContractDef: ContractDefinition) {

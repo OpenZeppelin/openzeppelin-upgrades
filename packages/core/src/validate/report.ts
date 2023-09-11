@@ -63,11 +63,6 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
       `    @openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol`,
     link: 'https://zpl.in/upgrades/error-008',
   },
-  'namespace-conflict': {
-    msg: e => `Namespace \`${e.namespace}\` is defined multiple times`,
-    hint: () =>
-      `Use a unique namespace id for each struct annotated with '@custom:storage-location erc7201:<NAMESPACE_ID>' in your contract and its inherited contracts`,
-  },
 };
 
 function describeError(e: ValidationError, color = true): string {

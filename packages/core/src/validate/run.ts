@@ -12,7 +12,6 @@ import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
-import { getStorageLocationArg } from '../storage';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -38,15 +37,13 @@ export const errorKinds = [
   'delegatecall',
   'selfdestruct',
   'missing-public-upgradeto',
-  'namespace-conflict',
 ] as const;
 
 export type ValidationError =
   | ValidationErrorConstructor
   | ValidationErrorOpcode
   | ValidationErrorWithName
-  | ValidationErrorUpgradeability
-  | ValidationErrorNamespaceConflict;
+  | ValidationErrorUpgradeability;
 
 interface ValidationErrorBase {
   src: string;
@@ -70,11 +67,6 @@ interface ValidationErrorConstructor extends ValidationErrorBase {
 
 interface ValidationErrorOpcode extends ValidationErrorBase {
   kind: 'delegatecall' | 'selfdestruct';
-}
-
-interface ValidationErrorNamespaceConflict extends ValidationErrorBase {
-  kind: 'namespace-conflict';
-  namespace: string;
 }
 
 interface OpcodePattern {
@@ -195,7 +187,6 @@ export function validate(
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
-          ...getNamespaceConflicts(contractDef, deref, decodeSrc),
         ];
 
         validation[key].layout = extractStorageLayout(
@@ -222,62 +213,6 @@ export function validate(
   }
 
   return validation;
-}
-
-interface NamespaceSourceLocation {
-  namespace: string;
-  src: string;
-}
-
-function getNamespaceConflicts(contractDef: ContractDefinition, deref: ASTDereferencer, decodeSrc: SrcDecoder) {
-  const result: ValidationErrorNamespaceConflict[] = [];
-
-  const namespaceSourceLocations = getNamespaceSrcs(contractDef, decodeSrc, deref);
-  for (const n of namespaceSourceLocations) {
-    const conflictsWith = namespaceSourceLocations.filter(other => other.namespace === n.namespace);
-    if (conflictsWith.length > 1) {
-      result.push({
-        kind: 'namespace-conflict',
-        namespace: n.namespace,
-        src: n.src,
-      });
-    }
-  }
-  return result;
-}
-
-/**
- * Get all namespace source locations for a contract definition, including inherited contracts.
- */
-function getNamespaceSrcs(contractDef: ContractDefinition, decodeSrc: SrcDecoder, deref: ASTDereferencer) {
-  const result: NamespaceSourceLocation[] = [];
-  pushDirectNamespaceSrcs(result, contractDef, decodeSrc);
-
-  const inheritIds = contractDef.linearizedBaseContracts.slice(1);
-  for (const id of inheritIds) {
-    const inherit = deref(['ContractDefinition'], id);
-    pushDirectNamespaceSrcs(result, inherit, decodeSrc);
-  }
-  return result;
-}
-
-/**
- * Pushes namespace source locations for a contract definition into an array, excluding inherited contracts.
- */
-function pushDirectNamespaceSrcs(
-  accum: NamespaceSourceLocation[],
-  contractDef: ContractDefinition,
-  decodeSrc: SrcDecoder,
-) {
-  for (const node of findAll('StructDefinition', contractDef)) {
-    const storageLocationArg = getStorageLocationArg(node);
-    if (storageLocationArg !== undefined) {
-      accum.push({
-        namespace: storageLocationArg,
-        src: decodeSrc(node),
-      });
-    }
-  }
 }
 
 function getNamespacedCompilationContext(
