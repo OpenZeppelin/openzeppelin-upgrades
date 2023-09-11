@@ -37,8 +37,10 @@ module.exports = {
       { version: '0.7.6', settings },
       { version: '0.8.8', settings },
       { version: '0.8.9', settings },
-      { version: '0.8.20', settings },
     ],
+    overrides: {
+      'contracts/test/Namespaced.sol': { version: '0.8.20', settings },
+    },
   },
   etherscan: {
     apiKey: {
