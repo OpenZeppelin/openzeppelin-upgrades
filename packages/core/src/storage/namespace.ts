@@ -90,15 +90,10 @@ function loadNamespacesWithSrcs(
 ) {
   const result: Record<string, NamespaceWithSrcs> = {};
 
-  const id = origContext.contractDef.id;
   const origLinearizedIds = origContext.contractDef.linearizedBaseContracts;
   if (namespacedContext === undefined) {
     for (let i = 0; i < origLinearizedIds.length; i++) {
-      const parentId = origLinearizedIds[i];
-
-      // Avoids an extra dereference for the original contract
-      const origInherit =
-        parentId === id ? origContext.contractDef : origContext.deref(['ContractDefinition'], parentId);
+      const origInherit = getReferencedContract(origLinearizedIds[i], origContext);
 
       pushNamespacesForSingleContract(
         result,
@@ -112,16 +107,8 @@ function loadNamespacesWithSrcs(
     const namespacedLinearizedIds = namespacedContext.contractDef.linearizedBaseContracts;
     assert(origLinearizedIds.length === namespacedLinearizedIds.length);
     for (let i = 0; i < origLinearizedIds.length; i++) {
-      const parentId = origLinearizedIds[i];
-      const namespacedParentId = namespacedLinearizedIds[i];
-
-      // Avoids an extra dereference for the original contract
-      const origInherit =
-        parentId === id ? origContext.contractDef : origContext.deref(['ContractDefinition'], parentId);
-      const namespacedInherit =
-        namespacedParentId === id
-          ? namespacedContext.contractDef
-          : namespacedContext.deref(['ContractDefinition'], namespacedParentId);
+      const origInherit = getReferencedContract(origLinearizedIds[i], origContext);
+      const namespacedInherit = getReferencedContract(namespacedLinearizedIds[i], namespacedContext);
 
       pushNamespacesForSingleContract(
         result,
@@ -134,6 +121,12 @@ function loadNamespacesWithSrcs(
   }
 
   return result;
+}
+
+function getReferencedContract(referencedId: number, context: CompilationContext) {
+  return context.contractDef.id === referencedId
+    ? context.contractDef
+    : context.deref(['ContractDefinition'], referencedId);
 }
 
 function pushNamespacesForSingleContract(
