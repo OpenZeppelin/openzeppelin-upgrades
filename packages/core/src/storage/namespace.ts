@@ -82,6 +82,9 @@ function checkAndSaveLayout(
   layout.namespaces = namespaces;
 }
 
+/**
+ * Load namespaces (including loading recursive type information) and original source locations.
+ */
 function loadNamespacesWithSrcs(
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
@@ -93,43 +96,41 @@ function loadNamespacesWithSrcs(
   const origLinearizedIds = origContext.contractDef.linearizedBaseContracts;
   if (namespacedContext === undefined) {
     for (let i = 0; i < origLinearizedIds.length; i++) {
-      const origInherit = getReferencedContract(origContext, origLinearizedIds[i]);
+      const origReferencedContract = getReferencedContract(origContext, origLinearizedIds[i]);
 
-      pushNamespacesForSingleContract(
-        result,
-        decodeSrc,
-        layout,
-        { ...origContext, contractDef: origInherit },
-        origInherit,
-      );
+      const context = { ...origContext, contractDef: origReferencedContract };
+      addContractNamespacesWithSrcs(result, decodeSrc, layout, context, origReferencedContract);
     }
   } else {
     const namespacedLinearizedIds = namespacedContext.contractDef.linearizedBaseContracts;
     assert(origLinearizedIds.length === namespacedLinearizedIds.length);
     for (let i = 0; i < origLinearizedIds.length; i++) {
-      const origInherit = getReferencedContract(origContext, origLinearizedIds[i]);
-      const namespacedInherit = getReferencedContract(namespacedContext, namespacedLinearizedIds[i]);
+      const origReferencedContract = getReferencedContract(origContext, origLinearizedIds[i]);
+      const namespacedReferencedContract = getReferencedContract(namespacedContext, namespacedLinearizedIds[i]);
 
-      pushNamespacesForSingleContract(
-        result,
-        decodeSrc,
-        layout,
-        { ...namespacedContext, contractDef: namespacedInherit },
-        origInherit,
-      );
+      const context = { ...namespacedContext, contractDef: namespacedReferencedContract };
+      addContractNamespacesWithSrcs(result, decodeSrc, layout, context, origReferencedContract);
     }
   }
 
   return result;
 }
 
+/**
+ * Gets the contract definition for the given referenced id.
+ */
 function getReferencedContract(context: CompilationContext, referencedId: number) {
+  // Optimization to avoid dereferencing if the referenced id is the same as the current contract
   return context.contractDef.id === referencedId
     ? context.contractDef
     : context.deref(['ContractDefinition'], referencedId);
 }
 
-function pushNamespacesForSingleContract(
+/**
+ * Add namespaces and source locations for the given compilation context's contract.
+ * Does not include inherited contracts.
+ */
+function addContractNamespacesWithSrcs(
   namespaces: Record<string, NamespaceWithSrcs>,
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
@@ -179,6 +180,10 @@ function getStorageLocation(doc: string) {
   return storageLocation;
 }
 
+/**
+ * Gets the storage items for the given struct node.
+ * Includes loading recursive type information, and adds slot and offset if they are available in the given compilation context's layout.
+ */
 function getNamespacedStorageItems(
   node: StructDefinition,
   decodeSrc: SrcDecoder,
@@ -232,6 +237,9 @@ function getNamespacedStorageItems(
   return storageItems;
 }
 
+/**
+ * Gets the struct definition matching the given canonical name from the original contract definition.
+ */
 function getOriginalStruct(structCanonicalName: string, origContractDef: ContractDefinition) {
   for (const node of origContractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
@@ -245,6 +253,9 @@ function getOriginalStruct(structCanonicalName: string, origContractDef: Contrac
   );
 }
 
+/**
+ * Gets the original source location for the given struct canonical name and struct member label.
+ */
 function getOriginalMemberSrc(structCanonicalName: string, memberLabel: string, origContractDef: ContractDefinition) {
   const node = getOriginalStruct(structCanonicalName, origContractDef);
   if (node !== undefined) {
@@ -261,12 +272,15 @@ function getOriginalMemberSrc(structCanonicalName: string, memberLabel: string, 
   }
 }
 
+/**
+ * From the given layout types, gets the struct member matching the given struct canonical name and struct member label.
+ */
 function getStructMemberFromLayoutTypes(
-  namespaceTypes: Record<string, TypeItem<string>>,
-  structName: string,
+  types: Record<string, TypeItem<string>>,
+  structCanonicalName: string,
   memberLabel: string,
 ) {
-  const structType = findTypeWithLabel(namespaceTypes, `struct ${structName}`);
+  const structType = findTypeWithLabel(types, `struct ${structCanonicalName}`);
   const structMembers = structType?.members;
   if (structMembers !== undefined) {
     for (const structMember of structMembers) {
@@ -279,6 +293,9 @@ function getStructMemberFromLayoutTypes(
   return undefined;
 }
 
+/**
+ * From the given layout types, gets the type matching the given type label.
+ */
 function findTypeWithLabel(types: Record<string, TypeItem>, label: string) {
   for (const type of Object.values(types)) {
     if (type.label === label) {
