@@ -62,6 +62,7 @@ interface NamespaceWithSrcs {
 
 /**
  * Check for duplicate namespaces and throw an error if any are found, otherwise add them to the layout
+ * (without the source locations of the namespace structs since they are no longer needed).
  */
 function checkAndSaveLayout(
   namespacesWithSrcs: Record<string, NamespaceWithSrcs>,
