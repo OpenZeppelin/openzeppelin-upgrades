@@ -34,26 +34,8 @@ export function loadNamespaces(
 ) {
   // TODO if there is a namespace annotation in source code, check if solidity version is >= 0.8.20
 
-  const origContract = origContext.contractDef;
-
-  const namespacesWithSrcs: Record<string, NamespaceWithSrcs> = {};
-  pushDirectNamespaces(namespacesWithSrcs, decodeSrc, layout, namespacedContext ?? origContext, origContract);
-  pushInheritedNamespaces(namespacesWithSrcs, decodeSrc, layout, origContext, namespacedContext);
-
-  const namespaces: Record<string, StorageItem<string>[]> = {};
-
-  // Check for duplicate namespaces and throw an error if any are found, otherwise add them to the layout
-  for (const [id, namespaceWithSrcs] of Object.entries(namespacesWithSrcs)) {
-    const { namespace, srcs } = namespaceWithSrcs;
-    if (srcs.length > 1) {
-      const contractName = origContract.canonicalName ?? origContract.name;
-      throw new DuplicateNamespaceError(id, contractName, srcs);
-    } else {
-      // The src locations of the namespace structs are no longer needed at this point, so remove them
-      namespaces[id] = namespace;
-    }
-  }
-  layout.namespaces = namespaces;
+  const namespacesWithSrcs = loadNamespacesWithSrcs(decodeSrc, layout, origContext, namespacedContext);
+  checkAndSaveLayout(namespacesWithSrcs, origContext.contractDef, layout);
 }
 
 class DuplicateNamespaceError extends UpgradesError {
@@ -69,12 +51,92 @@ Use a unique namespace id for each struct annotated with '@custom:storage-locati
   }
 }
 
+/**
+ * Namespaced storage items, along with the original source locations of the namespace structs
+ * including where the namespace is defined in multiple places.
+ */
 interface NamespaceWithSrcs {
   namespace: StorageItem<string>[];
   srcs: string[];
 }
 
-function pushDirectNamespaces(
+/**
+ * Check for duplicate namespaces and throw an error if any are found, otherwise add them to the layout
+ */
+function checkAndSaveLayout(
+  namespacesWithSrcs: Record<string, NamespaceWithSrcs>,
+  origContract: ContractDefinition,
+  layout: StorageLayout,
+) {
+  const namespaces: Record<string, StorageItem<string>[]> = {};
+  for (const [id, namespaceWithSrcs] of Object.entries(namespacesWithSrcs)) {
+    const { namespace, srcs } = namespaceWithSrcs;
+    if (srcs.length > 1) {
+      const contractName = origContract.canonicalName ?? origContract.name;
+      throw new DuplicateNamespaceError(id, contractName, srcs);
+    } else {
+      // The src locations of the namespace structs are no longer needed at this point, so remove them
+      namespaces[id] = namespace;
+    }
+  }
+  layout.namespaces = namespaces;
+}
+
+function loadNamespacesWithSrcs(
+  decodeSrc: SrcDecoder,
+  layout: StorageLayout,
+  origContext: CompilationContext,
+  namespacedContext?: CompilationContext,
+) {
+  const result: Record<string, NamespaceWithSrcs> = {};
+
+  const id = origContext.contractDef.id;
+  const origLinearizedIds = origContext.contractDef.linearizedBaseContracts;
+  if (namespacedContext === undefined) {
+    for (let i = 0; i < origLinearizedIds.length; i++) {
+      const parentId = origLinearizedIds[i];
+
+      // Avoids an extra dereference for the original contract
+      const origInherit =
+        parentId === id ? origContext.contractDef : origContext.deref(['ContractDefinition'], parentId);
+
+      pushNamespacesForSingleContract(
+        result,
+        decodeSrc,
+        layout,
+        { ...origContext, contractDef: origInherit },
+        origInherit,
+      );
+    }
+  } else {
+    const namespacedLinearizedIds = namespacedContext.contractDef.linearizedBaseContracts;
+    assert(origLinearizedIds.length === namespacedLinearizedIds.length);
+    for (let i = 0; i < origLinearizedIds.length; i++) {
+      const parentId = origLinearizedIds[i];
+      const namespacedParentId = namespacedLinearizedIds[i];
+
+      // Avoids an extra dereference for the original contract
+      const origInherit =
+        parentId === id ? origContext.contractDef : origContext.deref(['ContractDefinition'], parentId);
+      const namespacedInherit =
+        namespacedParentId === id
+          ? namespacedContext.contractDef
+          : namespacedContext.deref(['ContractDefinition'], namespacedParentId);
+
+      pushNamespacesForSingleContract(
+        result,
+        decodeSrc,
+        layout,
+        { ...namespacedContext, contractDef: namespacedInherit },
+        origInherit,
+      );
+    }
+  }
+
+  return result;
+}
+
+function pushNamespacesForSingleContract(
   namespaces: Record<string, NamespaceWithSrcs>,
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
@@ -96,36 +158,6 @@ function pushDirectNamespaces(
           };
         }
       }
-    }
-  }
-}
-
-function pushInheritedNamespaces(
-  namespaces: Record<string, NamespaceWithSrcs>,
-  decodeSrc: SrcDecoder,
-  layout: StorageLayout,
-  origContext: CompilationContext,
-  namespacedContext?: CompilationContext,
-) {
-  const origInheritIds = origContext.contractDef.linearizedBaseContracts.slice(1);
-  if (namespacedContext === undefined) {
-    for (let i = 0; i < origInheritIds.length; i++) {
-      const origInherit = origContext.deref(['ContractDefinition'], origInheritIds[i]);
-      pushDirectNamespaces(namespaces, decodeSrc, layout, { ...origContext, contractDef: origInherit }, origInherit);
-    }
-  } else {
-    const namespacedInheritIds = namespacedContext.contractDef.linearizedBaseContracts.slice(1);
-    assert(origInheritIds.length === namespacedInheritIds.length);
-    for (let i = 0; i < origInheritIds.length; i++) {
-      const origInherit = origContext.deref(['ContractDefinition'], origInheritIds[i]);
-      const namespacedInherit = namespacedContext?.deref(['ContractDefinition'], namespacedInheritIds[i]);
-      pushDirectNamespaces(
-        namespaces,
-        decodeSrc,
-        layout,
-        { ...namespacedContext, contractDef: namespacedInherit },
-        origInherit,
-      );
     }
   }
 }
