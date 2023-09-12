@@ -93,7 +93,7 @@ function loadNamespacesWithSrcs(
   const origLinearizedIds = origContext.contractDef.linearizedBaseContracts;
   if (namespacedContext === undefined) {
     for (let i = 0; i < origLinearizedIds.length; i++) {
-      const origInherit = getReferencedContract(origLinearizedIds[i], origContext);
+      const origInherit = getReferencedContract(origContext, origLinearizedIds[i]);
 
       pushNamespacesForSingleContract(
         result,
@@ -107,8 +107,8 @@ function loadNamespacesWithSrcs(
     const namespacedLinearizedIds = namespacedContext.contractDef.linearizedBaseContracts;
     assert(origLinearizedIds.length === namespacedLinearizedIds.length);
     for (let i = 0; i < origLinearizedIds.length; i++) {
-      const origInherit = getReferencedContract(origLinearizedIds[i], origContext);
-      const namespacedInherit = getReferencedContract(namespacedLinearizedIds[i], namespacedContext);
+      const origInherit = getReferencedContract(origContext, origLinearizedIds[i]);
+      const namespacedInherit = getReferencedContract(namespacedContext, namespacedLinearizedIds[i]);
 
       pushNamespacesForSingleContract(
         result,
@@ -123,7 +123,7 @@ function loadNamespacesWithSrcs(
   return result;
 }
 
-function getReferencedContract(referencedId: number, context: CompilationContext) {
+function getReferencedContract(context: CompilationContext, referencedId: number) {
   return context.contractDef.id === referencedId
     ? context.contractDef
     : context.deref(['ContractDefinition'], referencedId);
