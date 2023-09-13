@@ -23,7 +23,8 @@ test('namespace outside contract', async t => {
   const error = t.throws(() => validate(solcOutput, decodeSrc));
   t.assert(
     error?.message.includes(
-      'Struct MainStorage in source file contracts/test/NamespacedOutsideContract.sol is defined outside of a contract',
+      'contracts/test/NamespacedOutsideContract.sol:7: struct MainStorage is defined outside of a contract',
     ),
+    error?.message,
   );
 });

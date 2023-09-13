@@ -150,7 +150,7 @@ export function validate(
   for (const source in solcOutput.contracts) {
     // TODO: for each source, check if there are namespaces outside of a contract or if namespace is used with solidity < 0.8.20
 
-    checkNamespacesOutsideContract(solcOutput, source);
+    checkNamespacesOutsideContract(solcOutput, source, decodeSrc);
 
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.bytecode;
@@ -221,15 +221,17 @@ export function validate(
   return validation;
 }
 
-function checkNamespacesOutsideContract(solcOutput: SolcOutput, source: string) {
-  for (const structDef of findAll('StructDefinition', solcOutput.sources[source].ast)) {
-    const storageLocationArg = getStorageLocationArg(structDef);
-    if (storageLocationArg !== undefined) {
-      throw new UpgradesError(
-        `Struct ${structDef.name} in source file ${source} is defined outside of a contract`,
-        () =>
-          `Structs with the @custom:storage-location annotation must be defined within a contract. Move the struct definition into a contract, or remove the annotation if the struct is not used for namespaced storage.`,
-      );
+function checkNamespacesOutsideContract(solcOutput: SolcOutput, source: string, decodeSrc: SrcDecoder) {
+  for (const node of solcOutput.sources[source].ast.nodes) {
+    if (isNodeType('StructDefinition', node)) {
+      const storageLocationArg = getStorageLocationArg(node);
+      if (storageLocationArg !== undefined) {
+        throw new UpgradesError(
+          `${decodeSrc(node)}: struct ${node.name} is defined outside of a contract`,
+          () =>
+            `Structs with the @custom:storage-location annotation must be defined within a contract. Move the struct definition into a contract, or remove the annotation if the struct is not used for namespaced storage.`,
+        );
+      }
     }
   }
 }
