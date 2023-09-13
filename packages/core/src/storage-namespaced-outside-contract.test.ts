@@ -1,14 +1,8 @@
-import _test, { TestFn } from 'ava';
+import test from 'ava';
 import { artifacts } from 'hardhat';
 
-import { validate, RunValidation } from './validate';
+import { validate } from './validate';
 import { solcInputOutputDecoder } from './src-decoder';
-
-interface Context {
-  validation: RunValidation;
-}
-
-const test = _test as TestFn<Context>;
 
 test('namespace outside contract', async t => {
   const contract = 'contracts/test/NamespacedOutsideContract.sol:Example';

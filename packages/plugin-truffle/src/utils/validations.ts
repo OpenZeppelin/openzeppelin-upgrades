@@ -18,7 +18,7 @@ export async function validateArtifacts(artifactsPath: string, sourcesPath: stri
   const artifacts = await readArtifacts(artifactsPath);
   const { input, output, solcVersion } = reconstructSolcInputOutput(artifacts);
   const srcDecoder = solcInputOutputDecoder(input, output, sourcesPath);
-  return validate(output, srcDecoder, solcVersion);
+  return validate(output, srcDecoder, solcVersion, input);
 }
 
 async function readArtifacts(artifactsPath: string): Promise<TruffleArtifact[]> {

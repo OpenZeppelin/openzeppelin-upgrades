@@ -119,7 +119,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
     const { output: namespacedOutput } = await runSuper({ ...args, input: namespacedInput });
     checkNamespacedCompileErrors(namespacedInput, namespacedOutput);
 
-    const validations = validate(output, decodeSrc, args.solcVersion, namespacedOutput);
+    const validations = validate(output, decodeSrc, args.solcVersion, args.input, namespacedOutput);
     await writeValidations(hre, validations);
   }
 

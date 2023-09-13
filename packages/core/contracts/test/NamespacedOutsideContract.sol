@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-// This is NOT valid according to ERC-7201.
+// This is not valid according to ERC-7201 because the namespaced struct is outside of a contract.
 
 /// @custom:storage-location erc7201:example.main
 struct MainStorage {

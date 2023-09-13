@@ -1,8 +1,10 @@
 import { Node } from 'solidity-ast/node';
 import { isNodeType, findAll, ASTDereferencer, astDereferencer } from 'solidity-ast/utils';
 import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
+import debug from '../utils/debug';
+import * as versions from 'compare-versions';
 
-import { SolcOutput, SolcBytecode } from '../solc-api';
+import { SolcOutput, SolcBytecode, SolcInput } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
 import { isNullish } from '../utils/is-nullish';
 import { getFunctionSignature } from '../utils/function';
@@ -128,6 +130,7 @@ function skipCheck(error: string, node: Node): boolean {
  * @param solcOutput Solc output to validate
  * @param decodeSrc Source decoder for the original source code
  * @param solcVersion The version of solc used to compile the contracts
+ * @param solcInput Solc input that the compiler was invoked with
  * @param namespacedOutput Namespaced solc output to extract storage layout information for namespaced types
  * @returns A record of validation results for each fully qualified contract name
  */
@@ -135,6 +138,7 @@ export function validate(
   solcOutput: SolcOutput,
   decodeSrc: SrcDecoder,
   solcVersion?: string,
+  solcInput?: SolcInput,
   namespacedOutput?: SolcOutput,
 ): ValidationRunData {
   const validation: ValidationRunData = {};
@@ -148,9 +152,8 @@ export function validate(
   const selfDestructCache = initOpcodeCache();
 
   for (const source in solcOutput.contracts) {
-    // TODO: for each source, check if there are namespaces outside of a contract or if namespace is used with solidity < 0.8.20
-
-    checkNamespacesOutsideContract(solcOutput, source, decodeSrc);
+    checkNamespaceSolidityVersion(source, solcVersion, solcInput);
+    checkNamespacesOutsideContract(source, solcOutput, decodeSrc);
 
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.bytecode;
@@ -221,7 +224,25 @@ export function validate(
   return validation;
 }
 
-function checkNamespacesOutsideContract(solcOutput: SolcOutput, source: string, decodeSrc: SrcDecoder) {
+function checkNamespaceSolidityVersion(source: string, solcVersion?: string, solcInput?: SolcInput) {
+  if (solcVersion === undefined || solcInput === undefined) {
+    debug('Cannot check solidity version for namespaces because solcVersion or solcInput is undefined');
+  } else {
+    // Solc versions older than 0.8.20 do not have documentation for structs.
+    // Use a regex to check for strings that look like namespace annotations, and if found, check that the compiler version is >= 0.8.20
+    const content = solcInput.sources[source].content;
+    const hasMatch = content !== undefined && content.match(/@custom:storage-location\s+/);
+    if (hasMatch && versions.compare(solcVersion, '0.8.20', '<')) {
+      throw new UpgradesError(
+        `${source}: Namespace annotations require Solidity version >= 0.8.20, but ${solcVersion} was used`,
+        () =>
+          `Structs with the @custom:storage-location annotation can only be used with Solidity version 0.8.20 or higher. Use a newer version of Solidity, or remove the annotation if the struct is not used for namespaced storage.`,
+      );
+    }
+  }
+}
+
+function checkNamespacesOutsideContract(source: string, solcOutput: SolcOutput, decodeSrc: SrcDecoder) {
   for (const node of solcOutput.sources[source].ast.nodes) {
     if (isNodeType('StructDefinition', node)) {
       const storageLocationArg = getStorageLocationArg(node);
