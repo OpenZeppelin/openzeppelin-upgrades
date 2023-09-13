@@ -37,6 +37,13 @@ export interface SolcInput {
       content?: string;
     };
   };
+  settings?: {
+    outputSelection?: {
+      [file in string]: {
+        [contract in string]: string[];
+      };
+    };
+  };
 }
 
 export type SolcLinkReferences = {

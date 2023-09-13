@@ -127,15 +127,27 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 });
 
 /**
- * Makes a copy of the contracts to add state variables for each namespaced struct definition,
+ * Makes a modified copy of the solc input to add state variables in each contract for namespaced struct definitions,
  * so that the compiler will generate their types in the storage layout.
  *
  * This deletes all functions for efficiency, since they are not needed for storage layout.
  * We also need to delete modifiers and immutable variables to avoid compilation errors due to deleted
  * functions and constructors.
+ *
+ * Also sets the outputSelection to only include storageLayout and ast, since the other outputs are not needed.
  */
-function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput) {
+function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput): SolcInput {
   const modifiedInput: SolcInput = JSON.parse(JSON.stringify(input));
+
+  modifiedInput.settings = {
+    outputSelection: {
+      '*': {
+        '*': ['storageLayout'],
+        '': ['ast'],
+      },
+    },
+  };
+
   for (const [sourcePath] of Object.entries(modifiedInput.sources)) {
     const source = modifiedInput.sources[sourcePath];
     if (source.content === undefined) {
