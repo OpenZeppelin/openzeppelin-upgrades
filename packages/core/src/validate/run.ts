@@ -226,7 +226,9 @@ export function validate(
 
 function checkNamespaceSolidityVersion(source: string, solcVersion?: string, solcInput?: SolcInput) {
   if (solcVersion === undefined || solcInput === undefined) {
-    debug('Cannot check solidity version for namespaces because solcVersion or solcInput is undefined');
+    // These params should only be missing if using an old version of the Hardhat or Truffle plugin.
+    // Even without these params, namespace layout checks would still occur if compiled with solc version >= 0.8.20
+    debug('Cannot check Solidity version for namespaces because solcVersion or solcInput is undefined');
   } else {
     // Solc versions older than 0.8.20 do not have documentation for structs.
     // Use a regex to check for strings that look like namespace annotations, and if found, check that the compiler version is >= 0.8.20
