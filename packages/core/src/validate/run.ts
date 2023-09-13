@@ -12,6 +12,8 @@ import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
+import { getStorageLocationArg } from '../storage';
+import { UpgradesError } from '../error';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -146,6 +148,10 @@ export function validate(
   const selfDestructCache = initOpcodeCache();
 
   for (const source in solcOutput.contracts) {
+    // TODO: for each source, check if there are namespaces outside of a contract or if namespace is used with solidity < 0.8.20
+
+    checkNamespacesOutsideContract(solcOutput, source);
+
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.bytecode;
       const version = bytecode.object === '' ? undefined : getVersion(bytecode.object);
@@ -213,6 +219,19 @@ export function validate(
   }
 
   return validation;
+}
+
+function checkNamespacesOutsideContract(solcOutput: SolcOutput, source: string) {
+  for (const structDef of findAll('StructDefinition', solcOutput.sources[source].ast)) {
+    const storageLocationArg = getStorageLocationArg(structDef);
+    if (storageLocationArg !== undefined) {
+      throw new UpgradesError(
+        `Struct ${structDef.name} in source file ${source} is defined outside of a contract`,
+        () =>
+          `Structs with the @custom:storage-location annotation must be defined within a contract. Move the struct definition into a contract, or remove the annotation if the struct is not used for namespaced storage.`,
+      );
+    }
+  }
 }
 
 function getNamespacedCompilationContext(

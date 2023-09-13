@@ -21,6 +21,16 @@ const settings = {
   },
 };
 
+function getNamespacedOverrides() {
+  const contracts = fs.readdirSync(path.join(__dirname, 'contracts', 'test'));
+  const namespacedContracts = contracts.filter(c => c.startsWith('Namespaced'));
+  const overrides = {};
+  for (const c of namespacedContracts) {
+    overrides[`contracts/test/${c}`] = { version: '0.8.20', settings };
+  }
+  return overrides;
+}
+
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
@@ -38,12 +48,7 @@ module.exports = {
       { version: '0.8.8', settings },
       { version: '0.8.9', settings },
     ],
-    overrides: {
-      'contracts/test/Namespaced.sol': { version: '0.8.20', settings },
-      'contracts/test/NamespacedConflicts.sol': { version: '0.8.20', settings },
-      'contracts/test/NamespacedConflictsWithLayout.sol': { version: '0.8.20', settings },
-      'contracts/test/NamespacedLayout.sol': { version: '0.8.20', settings },
-    },
+    overrides: getNamespacedOverrides(),
   },
   etherscan: {
     apiKey: {
