@@ -6,7 +6,6 @@ import { ValidationOptions, processExceptions } from './overrides';
 import { ContractSourceNotFoundError, ValidationErrors } from './error';
 import { ValidationData, normalizeValidationData } from './data';
 import { ProxyDeployment } from '../manifest';
-import debug from '../utils/debug';
 
 const upgradeToSignature = 'upgradeTo(address)';
 
@@ -96,25 +95,11 @@ export function unfoldStorageLayout(runData: ValidationRunData, fullContractName
       namespaces: c.layout.namespaces,
     };
   } else {
-    const layout: StorageLayout = { solcVersion, storage: [], types: {}, namespaces: {} };
+    // Namespaces are pre-flattened
+    const layout: StorageLayout = { solcVersion, storage: [], types: {}, namespaces: c.layout.namespaces };
     for (const name of [fullContractName].concat(c.inherit)) {
       layout.storage.unshift(...runData[name].layout.storage);
       Object.assign(layout.types, runData[name].layout.types);
-
-      const contractSpecificNamespaces = runData[name].layout.namespaces;
-      if (contractSpecificNamespaces !== undefined) {
-        Object.entries(contractSpecificNamespaces).forEach(([customStorageLocation, items]) => {
-          if (layout.namespaces === undefined) {
-            layout.namespaces = {};
-          }
-          if (layout.namespaces[customStorageLocation] !== undefined) {
-            // This is checked when running validations, so just log a debug message here
-            debug(`Duplicate namespace ${customStorageLocation} in contract ${fullContractName}`);
-          } else {
-            layout.namespaces[customStorageLocation] = items;
-          }
-        });
-      }
     }
     return layout;
   }
