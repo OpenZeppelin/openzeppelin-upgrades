@@ -7,6 +7,7 @@ import { SolcOutput } from './solc-api';
 import { getStorageUpgradeErrors } from './storage';
 import { StorageLayout } from './storage/layout';
 import { extractStorageLayout } from './storage/extract';
+import { solcInputOutputDecoder } from './src-decoder';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
@@ -15,40 +16,80 @@ interface Context {
 const test = _test as TestFn<Context>;
 
 test.before(async t => {
-  const buildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedUDVT.sol:NamespacedUVDT_MappingKey_V1');
-  if (buildInfo === undefined) {
+  const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedUDVT.sol:NamespacedUDVT');
+  const namespacedBuildInfo = await artifacts.getBuildInfo(
+    'contracts/test/NamespacedUDVTLayout.sol:NamespacedUDVT',
+  );
+
+  if (origBuildInfo === undefined || namespacedBuildInfo === undefined) {
     throw new Error('Build info not found');
   }
-  const solcOutput: SolcOutput = buildInfo.output;
-  const contracts: Record<string, ContractDefinition> = {};
-  const storageLayouts: Record<string, StorageLayout> = {};
-  for (const def of findAll('ContractDefinition', solcOutput.sources['contracts/test/NamespacedUDVT.sol'].ast)) {
-    contracts[def.name] = def;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    storageLayouts[def.name] = solcOutput.contracts['contracts/test/NamespacedUDVT.sol'][def.name].storageLayout!;
+
+  const origSolcOutput: SolcOutput = origBuildInfo.output;
+  const origContracts: Record<string, ContractDefinition> = {};
+  const origStorageLayouts: Record<string, StorageLayout> = {};
+
+  const namespacedSolcOutput: SolcOutput = namespacedBuildInfo.output;
+  const namespacedContracts: Record<string, ContractDefinition> = {};
+  const namespacedStorageLayouts: Record<string, StorageLayout> = {};
+
+  const origContractDefs = [];
+  for (const def of findAll(
+    'ContractDefinition',
+    origSolcOutput.sources['contracts/test/NamespacedUDVT.sol'].ast,
+  )) {
+    origContractDefs.push(def);
   }
-  const deref = astDereferencer(solcOutput);
+  const namespacedContractDefs = [];
+  for (const def of findAll(
+    'ContractDefinition',
+    namespacedSolcOutput.sources['contracts/test/NamespacedUDVTLayout.sol'].ast,
+  )) {
+    namespacedContractDefs.push(def);
+  }
+
+  for (let i = 0; i < origContractDefs.length; i++) {
+    const origContractDef = origContractDefs[i];
+    const namespacedContractDef = namespacedContractDefs[i];
+
+    origContracts[origContractDef.name] = origContractDef;
+    namespacedContracts[namespacedContractDef.name] = namespacedContractDef;
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    origStorageLayouts[origContractDef.name] =
+      origSolcOutput.contracts['contracts/test/NamespacedUDVT.sol'][origContractDef.name].storageLayout!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    namespacedStorageLayouts[namespacedContractDef.name] =
+      namespacedSolcOutput.contracts['contracts/test/NamespacedUDVTLayout.sol'][
+        namespacedContractDef.name
+      ].storageLayout!;
+  }
+  const origDeref = astDereferencer(origSolcOutput);
+  const namespacedDeref = astDereferencer(namespacedSolcOutput);
+
+  const decodeSrc = solcInputOutputDecoder(origBuildInfo.input, origSolcOutput);
   t.context.extractStorageLayout = name =>
-    extractStorageLayout(contracts[name], dummyDecodeSrc, deref, storageLayouts[name]);
+    extractStorageLayout(origContracts[name], decodeSrc, origDeref, origStorageLayouts[name], {
+      deref: namespacedDeref,
+      contractDef: namespacedContracts[name],
+      storageLayout: namespacedStorageLayouts[name],
+    });
 });
 
-const dummyDecodeSrc = () => 'file.sol:1';
-
 test('user defined value types - no layout info', async t => {
-  const v1 = t.context.extractStorageLayout('NamespacedUDVT_NoLayout');
-  const v2 = t.context.extractStorageLayout('NamespacedUDVT_NoLayout_V2_Ok');
+  const v1 = t.context.extractStorageLayout('NamespacedUDVT');
+  const v2 = t.context.extractStorageLayout('NamespacedUDVT_V2_Ok');
   const comparison = getStorageUpgradeErrors(v1, v2);
   t.deepEqual(comparison, []);
 });
 
 test('user defined value types - layout info - bad underlying type', async t => {
-  const v1 = t.context.extractStorageLayout('NamespacedUDVT_Layout');
-  const v2 = t.context.extractStorageLayout('NamespacedUDVT_Layout_V2_Bad');
+  const v1 = t.context.extractStorageLayout('NamespacedUDVT');
+  const v2 = t.context.extractStorageLayout('NamespacedUDVT_V2_Resize');
   const comparison = getStorageUpgradeErrors(v1, v2);
   t.like(comparison, {
-    length: 2,
-    // index 0 is only the $MainStorage variable which we added for the test to get storage layouts
-    1: {
+    length: 1,
+    0: {
       kind: 'typechange',
       change: {
         kind: 'type resize',
@@ -60,20 +101,19 @@ test('user defined value types - layout info - bad underlying type', async t => 
 });
 
 test('mapping with user defined value type key - ok', t => {
-  const v1 = t.context.extractStorageLayout('NamespacedUVDT_MappingKey_V1');
-  const v2 = t.context.extractStorageLayout('NamespacedUVDT_MappingKey_V2_Ok');
+  const v1 = t.context.extractStorageLayout('NamespacedUDVT_MappingKey_V1');
+  const v2 = t.context.extractStorageLayout('NamespacedUDVT_MappingKey_V2_Ok');
   const comparison = getStorageUpgradeErrors(v1, v2);
   t.deepEqual(comparison, []);
 });
 
 test('mapping with user defined value type key - bad', t => {
-  const v1 = t.context.extractStorageLayout('NamespacedUVDT_MappingKey_V1');
-  const v2 = t.context.extractStorageLayout('NamespacedUVDT_MappingKey_V2_Bad');
+  const v1 = t.context.extractStorageLayout('NamespacedUDVT_MappingKey_V1');
+  const v2 = t.context.extractStorageLayout('NamespacedUDVT_MappingKey_V2_Bad');
   const comparison = getStorageUpgradeErrors(v1, v2);
   t.like(comparison, {
-    length: 3,
-    // index 0 is only the $MainStorage variable which we added for the test to get storage layouts
-    1: {
+    length: 2,
+    0: {
       kind: 'typechange',
       change: {
         kind: 'mapping key',
@@ -81,7 +121,7 @@ test('mapping with user defined value type key - bad', t => {
       original: { label: 'm1' },
       updated: { label: 'm1' },
     },
-    2: {
+    1: {
       kind: 'typechange',
       change: {
         kind: 'mapping key',

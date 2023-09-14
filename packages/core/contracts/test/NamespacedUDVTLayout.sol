@@ -8,6 +8,8 @@ contract NamespacedUDVT {
     struct MainStorage {
         MyUserValueType my_user_value;
     }
+
+    MainStorage $MainStorage;
 }
 
 contract NamespacedUDVT_V2_Ok {
@@ -18,6 +20,8 @@ contract NamespacedUDVT_V2_Ok {
         MyUserValueType my_user_value;
         uint x;
     }
+
+    MainStorage $MainStorage;
 }
 
 contract NamespacedUDVT_V2_Resize {
@@ -28,6 +32,8 @@ contract NamespacedUDVT_V2_Resize {
         MyUserValueType my_user_value;
         uint x;
     }
+
+    MainStorage $MainStorage;
 }
 
 contract NamespacedUDVT_MappingKey_V1 {
@@ -39,6 +45,8 @@ contract NamespacedUDVT_MappingKey_V1 {
         mapping (MyUserValueType => uint) m2;
         mapping (uint8 => uint) m3;
     }
+
+    MainStorage $MainStorage;
 }
 
 contract NamespacedUDVT_MappingKey_V2_Ok {
@@ -50,6 +58,8 @@ contract NamespacedUDVT_MappingKey_V2_Ok {
         mapping (MyUserValueType => uint) m2;
         mapping (uint8 => uint) m3;
     }
+
+    MainStorage $MainStorage;
 }
 
 contract NamespacedUDVT_MappingKey_V2_Bad {
@@ -61,4 +71,6 @@ contract NamespacedUDVT_MappingKey_V2_Bad {
         mapping (MyUserValueType => uint) m2;
         mapping (uint8 => uint) m3;
     }
+
+    MainStorage $MainStorage;
 }
