@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add validations for namespaced storage layout. ([#876](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/876))
+
 ## 2.2.1 (2023-08-18)
 
 - Allow using proxy with different admin address than manifest. ([#859](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/859))
