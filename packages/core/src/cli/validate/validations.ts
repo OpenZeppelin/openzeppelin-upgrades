@@ -1,4 +1,4 @@
-import { solcInputOutputDecoder, validate, SolcOutput, SolcInput, ValidationRunData } from '../..';
+import { solcInputOutputDecoder, validate, ValidationRunData } from '../..';
 
 import debug from '../../utils/debug';
 
@@ -7,7 +7,6 @@ import { ContractDefinition } from 'solidity-ast';
 
 import { getFullyQualifiedName } from '../../utils/contract-name';
 import { BuildInfoFile } from './build-info-file';
-import { version } from 'os';
 
 export interface SourceContract {
   node: ContractDefinition;
