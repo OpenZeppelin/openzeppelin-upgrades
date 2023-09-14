@@ -32,8 +32,6 @@ export function loadNamespaces(
   origContext: CompilationContext,
   namespacedContext?: CompilationContext,
 ) {
-  // TODO if there is a namespace annotation in source code, check if solidity version is >= 0.8.20
-
   const namespacesWithSrcs = loadNamespacesWithSrcs(decodeSrc, layout, origContext, namespacedContext);
   checkAndSaveLayout(namespacesWithSrcs, origContext.contractDef, layout);
 }
