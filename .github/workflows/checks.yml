@@ -54,4 +54,4 @@ jobs:
     - name: Run coverage
       run: yarn coverage
 
-    - uses: codecov/codecov-action@v3
+    - uses: codecov/codecov-action@v4
