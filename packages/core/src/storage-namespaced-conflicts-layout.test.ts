@@ -17,7 +17,7 @@ const test = _test as TestFn<Context>;
 test.before(async t => {
   const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedConflicts.sol:DuplicateNamespace');
   const namespacedBuildInfo = await artifacts.getBuildInfo(
-    'contracts/test/NamespacedConflictsWithLayout.sol:DuplicateNamespace',
+    'contracts/test/NamespacedConflictsLayout.sol:DuplicateNamespace',
   );
 
   if (origBuildInfo === undefined || namespacedBuildInfo === undefined) {
@@ -42,7 +42,7 @@ test.before(async t => {
   const namespacedContractDefs = [];
   for (const def of findAll(
     'ContractDefinition',
-    namespacedSolcOutput.sources['contracts/test/NamespacedConflictsWithLayout.sol'].ast,
+    namespacedSolcOutput.sources['contracts/test/NamespacedConflictsLayout.sol'].ast,
   )) {
     namespacedContractDefs.push(def);
   }
@@ -59,7 +59,7 @@ test.before(async t => {
       origSolcOutput.contracts['contracts/test/NamespacedConflicts.sol'][origContractDef.name].storageLayout!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     namespacedStorageLayouts[namespacedContractDef.name] =
-      namespacedSolcOutput.contracts['contracts/test/NamespacedConflictsWithLayout.sol'][
+      namespacedSolcOutput.contracts['contracts/test/NamespacedConflictsLayout.sol'][
         namespacedContractDef.name
       ].storageLayout!;
   }
