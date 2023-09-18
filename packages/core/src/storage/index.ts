@@ -44,9 +44,16 @@ export function getStorageUpgradeReport(
 ): LayoutCompatibilityReport {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
+  const originalDetailedNamespaces = getDetailedNamespacedLayout(original);
+  const updatedDetailedNamespaces = getDetailedNamespacedLayout(updated);
+
   const comparator = new StorageLayoutComparator(opts.unsafeAllowCustomTypes, opts.unsafeAllowRenames);
-  const ops = comparator.getStorageOperations(originalDetailed, updatedDetailed);
-  ops.push(...getNamespacedStorageOperations(comparator, original, updated));
+  const ops = comparator.getStorageOperations(
+    originalDetailed,
+    updatedDetailed,
+    originalDetailedNamespaces,
+    updatedDetailedNamespaces,
+  );
 
   const report = new LayoutCompatibilityReport(ops);
 
@@ -62,32 +69,17 @@ export function getStorageUpgradeReport(
   return report;
 }
 
-function getNamespacedStorageOperations(
-  comparator: StorageLayoutComparator,
-  original: StorageLayout,
-  updated: StorageLayout,
-) {
-  const results: StorageOperation<StorageItem>[] = [];
-  if (original.namespaces !== undefined) {
-    for (const [storageLocation, origNamespaceLayout] of Object.entries(original.namespaces)) {
-      const origNamespaceDetailed = getDetailedLayout({ storage: origNamespaceLayout, types: original.types });
-
-      const updatedNamespaceLayout = updated.namespaces?.[storageLocation];
-      if (updatedNamespaceLayout !== undefined) {
-        const updatedNamespaceDetailed = getDetailedLayout({ storage: updatedNamespaceLayout, types: updated.types });
-        results.push(...comparator.getStorageOperations(origNamespaceDetailed, updatedNamespaceDetailed));
-      } else if (origNamespaceLayout.length > 0) {
-        results.push({
-          kind: 'delete-namespace',
-          namespace: storageLocation,
-          original: {
-            contract: origNamespaceLayout[0].contract,
-          },
-        });
-      }
+function getDetailedNamespacedLayout(layout: StorageLayout): Record<string, StorageItem[]> {
+  const detailedNamespaces: Record<string, StorageItem[]> = {};
+  if (layout.namespaces !== undefined) {
+    for (const [storageLocation, namespacedLayout] of Object.entries(layout.namespaces)) {
+      detailedNamespaces[storageLocation] = getDetailedLayout({
+        storage: namespacedLayout,
+        types: layout.types,
+      });
     }
   }
-  return results;
+  return detailedNamespaces;
 }
 
 export class StorageUpgradeErrors extends UpgradesError {
