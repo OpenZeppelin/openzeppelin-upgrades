@@ -464,4 +464,4 @@ This convention involves placing all storage variables of a contract into one or
 
 When using namespaced storage layouts, the OpenZeppelin Upgrades plugins will automatically detect the namespace ids and validate that each change within a namespace during an upgrade is safe according to the same rules as described in <<modifying-your-contracts>>.
 
-WARNING: Solidity version 0.8.20 or higher is recommended when using namespaced storage layouts. Using a lower version of the Solidity compiler will cause the `@custom:storage-location` annotations to be ignored, which results in upgrade safety checks being skipped for the namespaces.
+NOTE: Solidity version 0.8.20 or higher is required in order to use the Upgrades plugins with namespaced storage layouts. The plugins will give an error if they detect `@custom:storage-location` annotations with an older version of Solidity, because older versions of the compiler do not produce sufficient information for validation of namespaced storage layouts.
