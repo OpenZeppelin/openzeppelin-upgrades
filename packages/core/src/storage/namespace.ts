@@ -1,12 +1,13 @@
 import assert from 'assert';
 import { ContractDefinition, StructDefinition } from 'solidity-ast';
-import { isNodeType } from 'solidity-ast/utils';
+import { findAll, isNodeType } from 'solidity-ast/utils';
 import { StorageItem, StorageLayout, TypeItem } from './layout';
 import { SrcDecoder } from '../src-decoder';
 import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/annotations';
 import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
 import { UpgradesError } from '../error';
+import { SolcInput, SolcOutput } from '../solc-api';
 
 /**
  * Loads namespaces and namespaced type information into the storage layout.
@@ -302,4 +303,94 @@ function findTypeWithLabel(types: Record<string, TypeItem>, label: string) {
     }
   }
   return undefined;
+}
+
+/**
+ * Makes a modified copy of the solc input to add state variables in each contract for namespaced struct definitions,
+ * so that the compiler will generate their types in the storage layout.
+ *
+ * This deletes all functions for efficiency, since they are not needed for storage layout.
+ * We also need to delete modifiers and immutable variables to avoid compilation errors due to deleted
+ * functions and constructors.
+ *
+ * Also sets the outputSelection to only include storageLayout and ast, since the other outputs are not needed.
+ *
+ * @param input The original solc input.
+ * @param output The original solc output.
+ * @returns The modified solc input with storage layout that includes namespaced type information.
+ */
+export function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput): SolcInput {
+  const modifiedInput: SolcInput = JSON.parse(JSON.stringify(input));
+
+  modifiedInput.settings = {
+    outputSelection: {
+      '*': {
+        '*': ['storageLayout'],
+        '': ['ast'],
+      },
+    },
+  };
+
+  for (const [sourcePath] of Object.entries(modifiedInput.sources)) {
+    const source = modifiedInput.sources[sourcePath];
+    if (source.content === undefined) {
+      continue;
+    }
+
+    // Collect all contract definitions
+    const contractDefs = [];
+    for (const contractDef of findAll('ContractDefinition', output.sources[sourcePath].ast)) {
+      contractDefs.push(contractDef);
+    }
+
+    // Iterate backwards so we can delete source code without affecting remaining indices
+    for (let i = contractDefs.length - 1; i >= 0; i--) {
+      const contractDef = contractDefs[i];
+      const nodes = contractDef.nodes;
+      for (let j = nodes.length - 1; j >= 0; j--) {
+        const node = nodes[j];
+        if (
+          isNodeType('FunctionDefinition', node) ||
+          isNodeType('ModifierDefinition', node) ||
+          (isNodeType('VariableDeclaration', node) && node.mutability === 'immutable')
+        ) {
+          const orig = Buffer.from(source.content);
+
+          const [start, length] = node.src.split(':').map(Number);
+          let end = start + length;
+
+          // If the next character is a semicolon (e.g. for immutable variables), delete it too
+          if (end + 1 < orig.length && orig.subarray(end, end + 1).toString() === ';') {
+            end += 1;
+          }
+
+          // Delete the source code segment
+          const buf = Buffer.concat([orig.subarray(0, start), orig.subarray(end)]);
+
+          source.content = buf.toString();
+        } else if (isNodeType('StructDefinition', node)) {
+          const storageLocationArg = getStorageLocationArg(node);
+          if (storageLocationArg !== undefined) {
+            const orig = Buffer.from(source.content);
+
+            const [start, length] = node.src.split(':').map(Number);
+            const end = start + length;
+
+            const structName = node.name;
+            const variableName = `$${structName}`;
+
+            // Insert the variable declaration for the namespaced struct
+            const buf = Buffer.concat([
+              orig.subarray(0, end),
+              Buffer.from(` ${structName} ${variableName};`),
+              orig.subarray(end),
+            ]);
+
+            source.content = buf.toString();
+          }
+        }
+      }
+    }
+  }
+  return modifiedInput;
 }

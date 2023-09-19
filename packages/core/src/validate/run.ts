@@ -14,7 +14,7 @@ import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
-import { getStorageLocationArg } from '../storage';
+import { getStorageLocationArg } from '../storage/namespace';
 import { UpgradesError } from '../error';
 
 export type ValidationRunData = Record<string, ContractValidation>;
