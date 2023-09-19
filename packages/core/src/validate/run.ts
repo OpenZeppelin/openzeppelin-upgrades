@@ -250,7 +250,7 @@ function checkNamespacesOutsideContract(source: string, solcOutput: SolcOutput, 
       const storageLocationArg = getStorageLocationArg(node);
       if (storageLocationArg !== undefined) {
         throw new UpgradesError(
-          `${decodeSrc(node)}: struct ${node.name} is defined outside of a contract`,
+          `${decodeSrc(node)}: Namespace struct ${node.name} is defined outside of a contract`,
           () =>
             `Structs with the @custom:storage-location annotation must be defined within a contract. Move the struct definition into a contract, or remove the annotation if the struct is not used for namespaced storage.`,
         );
