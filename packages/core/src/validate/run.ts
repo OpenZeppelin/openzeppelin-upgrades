@@ -270,10 +270,9 @@ function getNamespacedCompilationContext(
     return undefined;
   }
 
-  const namespacedContractDef = namespacedOutput?.sources[source].ast.nodes.find(node => {
-    const nodeName: string = (node as any).canonicalName;
-    return nodeName !== undefined && nodeName === contractDef.canonicalName;
-  }) as ContractDefinition | undefined;
+  const namespacedContractDef = namespacedOutput.sources[source].ast.nodes
+    .filter(isNodeType('ContractDefinition'))
+    .find(c => c.canonicalName === contractDef.canonicalName);
 
   if (namespacedContractDef === undefined) {
     throw new Error(`Contract definition with name ${contractDef.canonicalName} not found in namespaced solc output`);
