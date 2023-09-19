@@ -8,7 +8,7 @@ import {
   TypeName,
 } from 'solidity-ast';
 import { isNodeType, findAll, ASTDereferencer } from 'solidity-ast/utils';
-import { StorageLayout, StructMember, TypeItem } from './layout';
+import { StorageLayout, StructMember, TypeItem, isStructMembers } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
 import { mapValues } from '../utils/map-values';
@@ -43,9 +43,10 @@ export function extractStorageLayout(
   layout.types = mapValues({ ...namespacedContext?.storageLayout?.types, ...storageLayout?.types }, m => {
     return {
       label: m.label,
-      members: m.members?.map(m =>
-        typeof m === 'string' ? m : pick(m, ['label', 'type', 'offset', 'slot']),
-      ) as TypeItem['members'],
+      members:
+        m.members && isStructMembers(m.members)
+          ? m.members.map(m => pick(m, ['label', 'type', 'offset', 'slot']))
+          : m.members,
       numberOfBytes: m.numberOfBytes,
     };
   });
