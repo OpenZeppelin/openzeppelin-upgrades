@@ -352,20 +352,15 @@ export function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput): S
         if (
           isNodeType('FunctionDefinition', node) ||
           isNodeType('ModifierDefinition', node) ||
-          (isNodeType('VariableDeclaration', node) && node.mutability === 'immutable')
+          isNodeType('VariableDeclaration', node)
         ) {
           const orig = Buffer.from(source.content);
+          let buf = deleteNodeFromSource(node, orig);
 
-          const [start, length] = node.src.split(':').map(Number);
-          let end = start + length;
-
-          // If the next character is a semicolon (e.g. for immutable variables), delete it too
-          if (end + 1 < orig.length && orig.subarray(end, end + 1).toString() === ';') {
-            end += 1;
+          const doc = node.documentation;
+          if (doc) {
+            buf = deleteNodeFromSource(doc, buf);
           }
-
-          // Delete the source code segment
-          const buf = Buffer.concat([orig.subarray(0, start), orig.subarray(end)]);
 
           source.content = buf.toString();
         } else if (isNodeType('StructDefinition', node)) {
@@ -393,4 +388,17 @@ export function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput): S
     }
   }
   return modifiedInput;
+}
+function deleteNodeFromSource(node: Node, orig: Buffer) {
+  const [start, length] = node.src.split(':').map(Number);
+  let end = start + length;
+
+  // If the next character is a semicolon (e.g. for immutable variables), delete it too
+  if (end + 1 < orig.length && orig.subarray(end, end + 1).toString() === ';') {
+    end += 1;
+  }
+
+  // Delete the source code segment
+  const buf = Buffer.concat([orig.subarray(0, start), orig.subarray(end)]);
+  return buf;
 }
