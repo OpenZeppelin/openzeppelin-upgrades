@@ -37,6 +37,9 @@ export function extractStorageLayout(
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
 
+  // The namespaced context will contain the types of namespaces that may not be included
+  // in the original storage layout. Some types will be present in both and they will be
+  // exactly equivalent.
   layout.types = mapValues({ ...namespacedContext?.storageLayout?.types, ...storageLayout?.types }, m => {
     return {
       label: m.label,
