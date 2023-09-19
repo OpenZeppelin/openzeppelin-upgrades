@@ -233,7 +233,7 @@ function checkNamespaceSolidityVersion(source: string, solcVersion?: string, sol
     // Solc versions older than 0.8.20 do not have documentation for structs.
     // Use a regex to check for strings that look like namespace annotations, and if found, check that the compiler version is >= 0.8.20
     const content = solcInput.sources[source].content;
-    const hasMatch = content !== undefined && content.match(/@custom:storage-location\s+/);
+    const hasMatch = content !== undefined && content.match(/@custom:storage-location/);
     if (hasMatch && versions.compare(solcVersion, '0.8.20', '<')) {
       throw new UpgradesError(
         `${source}: Namespace annotations require Solidity version >= 0.8.20, but ${solcVersion} was used`,
