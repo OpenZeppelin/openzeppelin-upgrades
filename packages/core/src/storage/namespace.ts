@@ -338,10 +338,7 @@ export function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput): S
     }
 
     // Collect all contract definitions
-    const contractDefs = [];
-    for (const contractDef of findAll('ContractDefinition', output.sources[sourcePath].ast)) {
-      contractDefs.push(contractDef);
-    }
+    const contractDefs = [...findAll('ContractDefinition', output.sources[sourcePath].ast)];
 
     // Iterate backwards so we can delete source code without affecting remaining indices
     for (let i = contractDefs.length - 1; i >= 0; i--) {
