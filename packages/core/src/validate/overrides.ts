@@ -73,7 +73,7 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
   selfdestruct: [`You are using the \`unsafeAllow.selfdestruct\` flag.`],
   'missing-public-upgradeto': [
     `You are using the \`unsafeAllow.missing-public-upgradeto\` flag with uups proxy.`,
-    `Not having a public upgradeTo function in your implementation can break upgradeability.`,
+    `Not having a public upgradeTo or upgradeToAndCall function in your implementation can break upgradeability.`,
     `Some implementation might check that onchain, and cause the upgrade to revert.`,
   ],
 };

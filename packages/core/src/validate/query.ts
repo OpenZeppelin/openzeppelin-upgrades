@@ -8,6 +8,7 @@ import { ValidationData, normalizeValidationData } from './data';
 import { ProxyDeployment } from '../manifest';
 
 const upgradeToSignature = 'upgradeTo(address)';
+const upgradeToAndCallSignature = 'upgradeToAndCall(address,bytes)';
 
 export function assertUpgradeSafe(data: ValidationData, version: Version, opts: ValidationOptions): void {
   const dataV3 = normalizeValidationData(data);
@@ -147,7 +148,10 @@ export function getErrors(data: ValidationData, version: Version, opts: Validati
 
   const selfAndInheritedMethods = getAllMethods(runValidation, fullContractName);
 
-  if (!selfAndInheritedMethods.includes(upgradeToSignature)) {
+  if (
+    !selfAndInheritedMethods.includes(upgradeToSignature) &&
+    !selfAndInheritedMethods.includes(upgradeToAndCallSignature)
+  ) {
     errors.push({
       src: c.src,
       kind: 'missing-public-upgradeto',
