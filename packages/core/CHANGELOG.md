@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.29.0 (2023-09-19)
 
 - Support implementations with upgradeTo or upgradeToAndCall. ([#880](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/880))
 
