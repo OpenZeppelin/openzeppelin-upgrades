@@ -114,7 +114,7 @@ function getDelete(node: Node, orig: Buffer): Modification {
   const positions = getPositions(node);
   let end = positions.end;
   // If the next character is a semicolon (e.g. for variables), skip over it
-  if (end + 1 < orig.length && orig.subarray(end, end + 1).toString() === ';') {
+  if (end + 1 < orig.length && orig.toString('utf8', end, end + 1) === ';') {
     end += 1;
   }
   return { start: positions.start, end };
