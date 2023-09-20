@@ -337,65 +337,87 @@ export function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput): S
       continue;
     }
 
-    // Collect all contract definitions
-    const contractDefs = [...findAll('ContractDefinition', output.sources[sourcePath].ast)];
+    const modifications: Modification[] = [];
 
-    // Iterate backwards so we can delete source code without affecting remaining indices
-    for (let i = contractDefs.length - 1; i >= 0; i--) {
-      const contractDef = contractDefs[i];
+    for (const contractDef of findAll('ContractDefinition', output.sources[sourcePath].ast)) {
       const nodes = contractDef.nodes;
-      for (let j = nodes.length - 1; j >= 0; j--) {
-        const node = nodes[j];
+      for (const node of nodes) {
         if (
           isNodeType('FunctionDefinition', node) ||
           isNodeType('ModifierDefinition', node) ||
           isNodeType('VariableDeclaration', node)
         ) {
-          const orig = Buffer.from(source.content);
-          let buf = deleteNodeFromSource(node, orig);
-
           const doc = node.documentation;
           if (doc) {
-            buf = deleteNodeFromSource(doc, buf);
+            modifications.push(getDelete(doc));
           }
-
-          source.content = buf.toString();
+          modifications.push(getDelete(node));
         } else if (isNodeType('StructDefinition', node)) {
           const storageLocationArg = getStorageLocationArg(node);
           if (storageLocationArg !== undefined) {
-            const orig = Buffer.from(source.content);
-
-            const [start, length] = node.src.split(':').map(Number);
-            const end = start + length;
-
             const structName = node.name;
             const variableName = `$${structName}`;
+            const insertText = ` ${structName} ${variableName};`;
 
-            // Insert the variable declaration for the namespaced struct
-            const buf = Buffer.concat([
-              orig.subarray(0, end),
-              Buffer.from(` ${structName} ${variableName};`),
-              orig.subarray(end),
-            ]);
-
-            source.content = buf.toString();
+            modifications.push(getInsert(node, insertText));
           }
         }
       }
     }
+
+    source.content = getModifiedSource(source.content, modifications);
   }
   return modifiedInput;
 }
-function deleteNodeFromSource(node: Node, orig: Buffer) {
-  const [start, length] = node.src.split(':').map(Number);
-  let end = start + length;
 
-  // If the next character is a semicolon (e.g. for immutable variables), delete it too
-  if (end + 1 < orig.length && orig.subarray(end, end + 1).toString() === ';') {
-    end += 1;
+interface Modification {
+  start: number;
+  end: number;
+  kind: 'insert' | 'delete';
+  text?: string;
+}
+
+function getPositions(node: Node) {
+  const [start, length] = node.src.split(':').map(Number);
+  const end = start + length;
+  return { start, end };
+}
+
+function getInsert(node: Node, text: string): Modification {
+  const { end } = getPositions(node);
+  return { start: end, end: end, kind: 'insert' as const, text };
+}
+
+function getDelete(node: Node): Modification {
+  const { start, end } = getPositions(node);
+  return { start, end, kind: 'delete' as const };
+}
+
+function getModifiedSource(sourceContent: string, modifications: Modification[]): string {
+  const orig = Buffer.from(sourceContent, 'utf8');
+
+  let result = '';
+  let copyFromIndex = 0;
+
+  for (const modification of modifications) {
+    result += orig.subarray(copyFromIndex, modification.start).toString();
+    if (modification.kind === 'insert') {
+      result += modification.text;
+    } else {
+      // If the next character is a semicolon (e.g. for variables), skip over it
+      if (
+        modification.end + 1 < orig.length &&
+        orig.subarray(modification.end, modification.end + 1).toString() === ';'
+      ) {
+        modification.end += 1;
+      }
+    }
+    copyFromIndex = modification.end;
   }
 
-  // Delete the source code segment
-  const buf = Buffer.concat([orig.subarray(0, start), orig.subarray(end)]);
-  return buf;
+  if (copyFromIndex < orig.length) {
+    result += orig.subarray(copyFromIndex).toString();
+  }
+
+  return result;
 }
