@@ -125,7 +125,7 @@ function getModifiedSource(orig: Buffer, modifications: Modification[]): string 
   let copyFromIndex = 0;
 
   for (const modification of modifications) {
-    result += orig.subarray(copyFromIndex, modification.start).toString();
+    result += orig.toString('utf8', copyFromIndex, modification.start);
 
     if (modification.text !== undefined) {
       result += modification.text;
