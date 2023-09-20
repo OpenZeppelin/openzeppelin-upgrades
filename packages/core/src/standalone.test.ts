@@ -61,3 +61,29 @@ test('dont report renamed version update', t => {
   const goodReport2 = v2.getStorageUpgradeReport(v3);
   t.true(goodReport2.ok);
 });
+
+test('namespaced output', async t => {
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/Namespaced.sol:Example');
+  if (buildInfo === undefined) {
+    throw new Error('Build info not found');
+  }
+
+  const impl = new UpgradeableContract('Example', buildInfo.input, buildInfo.output, {}, '0.8.20');
+  const report = impl.getErrorReport();
+  t.true(report.ok);
+});
+
+test('namespaced output without version', async t => {
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/Namespaced.sol:Example');
+  if (buildInfo === undefined) {
+    throw new Error('Build info not found');
+  }
+
+  const error = t.throws(() => new UpgradeableContract('Example', buildInfo.input, buildInfo.output));
+  t.assert(
+    error?.message.includes(
+      `contracts/test/Namespaced.sol: Namespace annotations require Solidity version >= 0.8.20, but no solcVersion parameter was provided`,
+    ),
+    error?.message,
+  );
+});

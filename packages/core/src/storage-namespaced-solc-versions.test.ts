@@ -49,6 +49,11 @@ test('namespace with newer solc version', async t => {
 
 test('namespace with no solc version', async t => {
   const { validate } = t.context;
-  validate(undefined);
-  t.pass();
+  const error = t.throws(() => validate(undefined));
+  t.assert(
+    error?.message.includes(
+      `contracts/test/Namespaced.sol: Namespace annotations require Solidity version >= 0.8.20, but no solcVersion parameter was provided`,
+    ),
+    error?.message,
+  );
 });

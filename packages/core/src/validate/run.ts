@@ -227,21 +227,29 @@ export function validate(
 }
 
 function checkNamespaceSolidityVersion(source: string, solcVersion?: string, solcInput?: SolcInput) {
-  if (solcVersion === undefined || solcInput === undefined) {
-    // These params should only be missing if using an old version of the Hardhat or Truffle plugin.
-    // Even without these params, namespace layout checks would still occur if compiled with solc version >= 0.8.20
-    debug('Cannot check Solidity version for namespaces because solcVersion or solcInput is undefined');
+  if (solcInput === undefined) {
+    // This should only be missing if using an old version of the Hardhat or Truffle plugin.
+    // Even without this param, namespace layout checks would still occur if compiled with solc version >= 0.8.20
+    debug('Cannot check Solidity version for namespaces because solcInput is undefined');
   } else {
     // Solc versions older than 0.8.20 do not have documentation for structs.
     // Use a regex to check for strings that look like namespace annotations, and if found, check that the compiler version is >= 0.8.20
     const content = solcInput.sources[source].content;
     const hasMatch = content !== undefined && content.match(/@custom:storage-location/);
-    if (hasMatch && versions.compare(solcVersion, '0.8.20', '<')) {
-      throw new UpgradesError(
-        `${source}: Namespace annotations require Solidity version >= 0.8.20, but ${solcVersion} was used`,
-        () =>
-          `Structs with the @custom:storage-location annotation can only be used with Solidity version 0.8.20 or higher. Use a newer version of Solidity, or remove the annotation if the struct is not used for namespaced storage.`,
-      );
+    if (hasMatch) {
+      if (solcVersion === undefined) {
+        throw new UpgradesError(
+          `${source}: Namespace annotations require Solidity version >= 0.8.20, but no solcVersion parameter was provided`,
+          () =>
+            `Structs with the @custom:storage-location annotation can only be used with Solidity version 0.8.20 or higher. Pass the solcVersion parameter to the validate function, or remove the annotation if the struct is not used for namespaced storage.`,
+        );
+      } else if (versions.compare(solcVersion, '0.8.20', '<')) {
+        throw new UpgradesError(
+          `${source}: Namespace annotations require Solidity version >= 0.8.20, but ${solcVersion} was used`,
+          () =>
+            `Structs with the @custom:storage-location annotation can only be used with Solidity version 0.8.20 or higher. Use a newer version of Solidity, or remove the annotation if the struct is not used for namespaced storage.`,
+        );
+      }
     }
   }
 }
