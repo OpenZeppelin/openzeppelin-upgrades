@@ -30,7 +30,7 @@ test('make namespaced input', async t => {
   t.is(modifiedOutput.errors, undefined);
 });
 
-export async function hardhatCompile(input: SolcInput): Promise<SolcOutput> {
+async function hardhatCompile(input: SolcInput): Promise<SolcOutput> {
   const solcBuild: SolcBuild = await run(TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD, {
     quiet: true,
     solcVersion: '0.8.20',
