@@ -401,18 +401,22 @@ function getModifiedSource(sourceContent: string, modifications: Modification[])
 
   for (const modification of modifications) {
     result += orig.subarray(copyFromIndex, modification.start).toString();
+
     if (modification.kind === 'insert') {
       result += modification.text;
+      copyFromIndex = modification.end;
     } else {
-      // If the next character is a semicolon (e.g. for variables), skip over it
+      // delete
       if (
         modification.end + 1 < orig.length &&
         orig.subarray(modification.end, modification.end + 1).toString() === ';'
       ) {
-        modification.end += 1;
+        // If the next character is a semicolon (e.g. for variables), skip over it
+        copyFromIndex = modification.end + 1;
+      } else {
+        copyFromIndex = modification.end;
       }
     }
-    copyFromIndex = modification.end;
   }
 
   if (copyFromIndex < orig.length) {
