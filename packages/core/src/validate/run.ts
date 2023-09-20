@@ -270,6 +270,10 @@ function getNamespacedCompilationContext(
     return undefined;
   }
 
+  if (namespacedOutput.sources[source] === undefined) {
+    throw new Error(`Source ${source} not found in namespaced solc output`);
+  }
+
   const namespacedContractDef = namespacedOutput.sources[source].ast.nodes
     .filter(isNodeType('ContractDefinition'))
     .find(c => c.canonicalName === contractDef.canonicalName);
