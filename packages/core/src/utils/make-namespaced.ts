@@ -3,12 +3,10 @@ import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationArg } from '../storage/namespace';
 
-const SETTINGS = {
-  outputSelection: {
-    '*': {
-      '*': ['storageLayout'],
-      '': ['ast'],
-    },
+const OUTPUT_SELECTION = {
+  '*': {
+    '*': ['storageLayout'],
+    '': ['ast'],
   },
 };
 
@@ -68,7 +66,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
     modifiedSources[sourcePath] = { ...source, content: getModifiedSource(source.content, modifications) };
   }
 
-  return { ...input, sources: modifiedSources, settings: SETTINGS };
+  return { ...input, sources: modifiedSources, settings: { ...input.settings, outputSelection: OUTPUT_SELECTION } };
 }
 
 interface Modification {
