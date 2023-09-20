@@ -3,8 +3,17 @@ import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationArg } from '../storage/namespace';
 
+const SETTINGS = {
+  outputSelection: {
+    '*': {
+      '*': ['storageLayout'],
+      '': ['ast'],
+    },
+  },
+};
+
 /**
- * Makes a modified copy of the solc input to add state variables in each contract for namespaced struct definitions,
+ * Makes a modified version of the solc input to add state variables in each contract for namespaced struct definitions,
  * so that the compiler will generate their types in the storage layout.
  *
  * This deletes all functions for efficiency, since they are not needed for storage layout.
@@ -17,21 +26,14 @@ import { getStorageLocationArg } from '../storage/namespace';
  * @param output The original solc output.
  * @returns The modified solc input with storage layout that includes namespaced type information.
  */
-export function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput): SolcInput {
-  const modifiedInput: SolcInput = JSON.parse(JSON.stringify(input));
+export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcInput {
+  const modifiedSources: Record<string, { content?: string }> = {};
 
-  modifiedInput.settings = {
-    outputSelection: {
-      '*': {
-        '*': ['storageLayout'],
-        '': ['ast'],
-      },
-    },
-  };
+  for (const [sourcePath] of Object.entries(input.sources)) {
+    const source = input.sources[sourcePath];
 
-  for (const [sourcePath] of Object.entries(modifiedInput.sources)) {
-    const source = modifiedInput.sources[sourcePath];
     if (source.content === undefined) {
+      modifiedSources[sourcePath] = source;
       continue;
     }
 
@@ -63,9 +65,10 @@ export function makeNamespacedInputCopy(input: SolcInput, output: SolcOutput): S
       }
     }
 
-    source.content = getModifiedSource(source.content, modifications);
+    modifiedSources[sourcePath] = { ...source, content: getModifiedSource(source.content, modifications) };
   }
-  return modifiedInput;
+
+  return { ...input, sources: modifiedSources, settings: SETTINGS };
 }
 
 interface Modification {

@@ -58,4 +58,4 @@ export {
 
 export { ValidateUpgradeSafetyOptions, validateUpgradeSafety, ProjectReport, ReferenceContractNotFound } from './cli';
 
-export { makeNamespacedInputCopy } from './utils/make-namespaced';
+export { makeNamespacedInput } from './utils/make-namespaced';

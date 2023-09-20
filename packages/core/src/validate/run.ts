@@ -126,7 +126,7 @@ function skipCheck(error: string, node: Node): boolean {
  * If `namespacedOutput` is provided, it is used to extract storage layout information for namespaced types.
  * It must be from a compilation with the same sources as `solcInput` and `solcOutput`, but with storage variables
  * injected for each namespaced struct so that the types are available in the storage layout. This can be obtained by
- * calling the `makeNamespacedInputCopy` function from this package to create modified solc input, then compiling
+ * calling the `makeNamespacedInput` function from this package to create modified solc input, then compiling
  * that modified solc input to get the namespaced output.
  *
  * @param solcOutput Solc output to validate

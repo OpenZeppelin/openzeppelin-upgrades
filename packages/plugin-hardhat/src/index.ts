@@ -9,7 +9,7 @@ import { HardhatConfig, HardhatRuntimeEnvironment } from 'hardhat/types';
 import {
   getImplementationAddressFromBeacon,
   logWarning,
-  makeNamespacedInputCopy,
+  makeNamespacedInput,
   silenceWarnings,
   SolcInput,
   SolcOutput,
@@ -114,7 +114,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
   if (isFullSolcOutput(output)) {
     const decodeSrc = solcInputOutputDecoder(args.input, output);
 
-    const namespacedInput = makeNamespacedInputCopy(args.input, output);
+    const namespacedInput = makeNamespacedInput(args.input, output);
     const { output: namespacedOutput } = await runSuper({ ...args, input: namespacedInput });
     checkNamespacedCompileErrors(namespacedInput, namespacedOutput);
 
