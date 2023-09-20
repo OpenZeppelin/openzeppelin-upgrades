@@ -135,7 +135,7 @@ function getModifiedSource(orig: Buffer, modifications: Modification[]): string 
   }
 
   if (copyFromIndex < orig.length) {
-    result += orig.subarray(copyFromIndex).toString();
+    result += orig.toString('utf8', copyFromIndex);
   }
 
   return result;
