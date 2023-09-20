@@ -18,6 +18,9 @@ export interface Report {
   explain(color?: boolean): string;
 }
 
+/**
+ * @deprecated Use `validateUpgradeSafety` instead.
+ */
 export class UpgradeableContract {
   readonly version: Version;
   readonly errors: ValidationError[];
