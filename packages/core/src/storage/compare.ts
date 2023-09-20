@@ -108,16 +108,16 @@ export class StorageLayoutComparator {
     readonly unsafeAllowRenames = false,
   ) {}
 
-  getStorageOperations(
+  compareLayouts(
     original: StorageItem[],
     updated: StorageItem[],
     originalNamespaces?: Record<string, StorageItem[]>,
     updatedNamespaces?: Record<string, StorageItem[]>,
-  ): StorageOperation<StorageItem>[] {
+  ): LayoutCompatibilityReport {
     const ops = this.layoutLevenshtein(original, updated, { allowAppend: true });
     const namespacedOps = this.getNamespacedStorageOperations(originalNamespaces, updatedNamespaces);
 
-    return [...ops, ...namespacedOps];
+    return new LayoutCompatibilityReport([...ops, ...namespacedOps]);
   }
 
   private getNamespacedStorageOperations(
@@ -142,10 +142,6 @@ export class StorageLayoutComparator {
       }
     }
     return ops;
-  }
-
-  compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
-    return new LayoutCompatibilityReport(this.getStorageOperations(original, updated));
   }
 
   private layoutLevenshtein<F extends StorageField>(

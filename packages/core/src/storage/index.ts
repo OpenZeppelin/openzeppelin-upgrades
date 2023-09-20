@@ -47,14 +47,12 @@ export function getStorageUpgradeReport(
   const updatedDetailedNamespaces = getDetailedNamespacedLayout(updated);
 
   const comparator = new StorageLayoutComparator(opts.unsafeAllowCustomTypes, opts.unsafeAllowRenames);
-  const ops = comparator.getStorageOperations(
+  const report = comparator.compareLayouts(
     originalDetailed,
     updatedDetailed,
     originalDetailedNamespaces,
     updatedDetailedNamespaces,
   );
-
-  const report = new LayoutCompatibilityReport(ops);
 
   if (comparator.hasAllowedUncheckedCustomTypes) {
     logWarning(`Potentially unsafe deployment`, [
