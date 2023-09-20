@@ -76,7 +76,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
             const variableName = `$${structName}`;
             const insertText = ` ${structName} ${variableName};`;
 
-            modifications.push(getInsert(node, insertText));
+            modifications.push(getInsertAfter(node, insertText));
           }
         }
       }
@@ -105,7 +105,7 @@ function getReplace(node: Node, text: string): Modification {
   return { start, end, text };
 }
 
-function getInsert(node: Node, text: string): Modification {
+function getInsertAfter(node: Node, text: string): Modification {
   const { end } = getPositions(node);
   return { start: end, end, text };
 }
