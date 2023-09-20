@@ -169,7 +169,18 @@ contract HasUpgradeToFunction {
   function upgradeTo(address) public {}
 }
 
+contract HasInternalUpgradeToAndCallFunction {
+  function upgradeToAndCall(address newImplementation, bytes memory data) internal {}
+}
+
+contract HasUpgradeToAndCallFunction {
+  function upgradeToAndCall(address newImplementation, bytes memory data) public {}
+}
+
 contract ParentHasUpgradeToFunction is HasUpgradeToFunction {
+}
+
+contract ParentHasUpgradeToAndCallFunction is HasUpgradeToAndCallFunction {
 }
 
 contract HasInlineAssembly {

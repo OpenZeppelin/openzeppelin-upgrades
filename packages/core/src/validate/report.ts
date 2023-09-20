@@ -57,9 +57,10 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     hint: () => `Update your dependency and run again`,
   },
   'missing-public-upgradeto': {
-    msg: () => `Implementation is missing a public \`upgradeTo(address)\` function`,
+    msg: () =>
+      `Implementation is missing a public \`upgradeTo(address)\` or \`upgradeToAndCall(address,bytes)\` function`,
     hint: () =>
-      `Inherit UUPSUpgradeable to include this function in your contract\n` +
+      `Inherit UUPSUpgradeable to include one or both of these functions in your contract\n` +
       `    @openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol`,
     link: 'https://zpl.in/upgrades/error-008',
   },

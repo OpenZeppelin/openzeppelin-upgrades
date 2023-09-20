@@ -99,7 +99,10 @@ testOverride('UsesExplicitSafeExternalLibrary', 'transparent', { unsafeAllow: ['
 testValid('HasEmptyConstructor', 'uups', false);
 testValid('HasInternalUpgradeToFunction', 'uups', false);
 testValid('HasUpgradeToFunction', 'uups', true);
+testValid('HasInternalUpgradeToAndCallFunction', 'uups', false);
+testValid('HasUpgradeToAndCallFunction', 'uups', true);
 testValid('ParentHasUpgradeToFunction', 'uups', true);
+testValid('ParentHasUpgradeToAndCallFunction', 'uups', true);
 testValid('ChildOfProxiable', 'uups', true);
 
 testValid('HasNonEmptyConstructorNatspec1', 'transparent', true);
