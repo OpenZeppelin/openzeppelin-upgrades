@@ -1,7 +1,7 @@
 import test from 'ava';
 import { artifacts } from 'hardhat';
 
-import { makeNamespacedInputCopy } from './namespace';
+import { makeNamespacedInputCopy } from './make-namespaced';
 
 test('make namespaced input copy', async t => {
   const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedToModify.sol:Example');

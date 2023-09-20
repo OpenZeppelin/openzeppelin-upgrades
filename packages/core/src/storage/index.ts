@@ -1,5 +1,4 @@
 export * from './compat';
-export { makeNamespacedInputCopy } from './namespace';
 
 import { UpgradesError } from '../error';
 import { StorageLayout, getDetailedLayout } from './layout';
