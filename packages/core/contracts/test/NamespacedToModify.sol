@@ -59,9 +59,25 @@ contract Example {
 
 contract A {
   constructor(uint) {}
-  function foo() pure internal returns (uint) {}
+  function foo() pure public returns (uint) {}
 }
 
 contract B is A(1) {
   uint x = foo();
+}
+
+function bar() pure returns (bytes4) {
+    return A.foo.selector; // <- A.foo deleted
+}
+
+bytes4 constant fooConst = A.foo.selector; // <- A.foo deleted
+
+contract C {
+  function foo() pure public returns (bytes4) {
+    return bar(); // Uses free function
+  }
+
+  function foo2() pure public returns (bytes4) {
+    return fooConst; // Uses constant
+  }
 }

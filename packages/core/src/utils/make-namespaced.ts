@@ -1,4 +1,4 @@
-import { findAll, isNodeType } from 'solidity-ast/utils';
+import { isNodeType } from 'solidity-ast/utils';
 import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationAnnotation } from '../storage/namespace';
@@ -40,38 +40,47 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
 
     const modifications: Modification[] = [];
 
-    for (const contractDef of findAll('ContractDefinition', output.sources[sourcePath].ast)) {
-      // Remove any calls to parent constructors from the inheritance list
-      const inherits = contractDef.baseContracts;
-      for (const inherit of inherits) {
-        if (isNodeType('InheritanceSpecifier', inherit)) {
-          assert(inherit.baseName.name !== undefined);
-          modifications.push(makeReplace(inherit, inherit.baseName.name));
-        }
-      }
+    for (const node of output.sources[sourcePath].ast.nodes) {
+      if (isNodeType('ContractDefinition', node)) {
+        const contractDef = node;
 
-      const nodes = contractDef.nodes;
-      for (const node of nodes) {
-        if (
-          isNodeType('FunctionDefinition', node) ||
-          isNodeType('ModifierDefinition', node) ||
-          isNodeType('VariableDeclaration', node)
-        ) {
-          const doc = node.documentation;
-          if (doc) {
-            modifications.push(makeDelete(doc, orig));
-          }
-          modifications.push(makeDelete(node, orig));
-        } else if (isNodeType('StructDefinition', node)) {
-          const storageLocation = getStorageLocationAnnotation(node);
-          if (storageLocation !== undefined) {
-            const structName = node.name;
-            const variableName = `$${structName}_${(Math.random() * 1e6).toFixed(0)}`;
-            const insertText = ` ${structName} ${variableName};`;
-
-            modifications.push(makeInsertAfter(node, insertText));
+        // Remove any calls to parent constructors from the inheritance list
+        const inherits = contractDef.baseContracts;
+        for (const inherit of inherits) {
+          if (isNodeType('InheritanceSpecifier', inherit)) {
+            assert(inherit.baseName.name !== undefined);
+            modifications.push(makeReplace(inherit, orig, inherit.baseName.name));
           }
         }
+
+        const contractNodes = contractDef.nodes;
+        for (const contractNode of contractNodes) {
+          if (
+            isNodeType('FunctionDefinition', contractNode) ||
+            isNodeType('ModifierDefinition', contractNode) ||
+            isNodeType('VariableDeclaration', contractNode)
+          ) {
+            const doc = contractNode.documentation;
+            if (doc) {
+              modifications.push(makeDelete(doc, orig));
+            }
+            modifications.push(makeDelete(contractNode, orig));
+          } else if (isNodeType('StructDefinition', contractNode)) {
+            const storageLocation = getStorageLocationAnnotation(contractNode);
+            if (storageLocation !== undefined) {
+              const structName = contractNode.name;
+              const variableName = `$${structName}_${(Math.random() * 1e6).toFixed(0)}`;
+              const insertText = ` ${structName} ${variableName};`;
+
+              modifications.push(makeInsertAfter(contractNode, insertText));
+            }
+          }
+        }
+      } else if (isNodeType('FunctionDefinition', node) || isNodeType('VariableDeclaration', node)) {
+        // Replace with a dummy variable of arbitrary type
+        const name = node.name;
+        const insertText = `uint256 constant ${name} = 0;`;
+        modifications.push(makeReplace(node, orig, insertText));
       }
     }
 
@@ -93,8 +102,9 @@ function getPositions(node: Node) {
   return { start, end };
 }
 
-function makeReplace(node: Node, text: string): Modification {
-  const { start, end } = getPositions(node);
+function makeReplace(node: Node, orig: Buffer, text: string): Modification {
+  // Replace is a delete and insert
+  const { start, end } = makeDelete(node, orig);
   return { start, end, text };
 }
 
