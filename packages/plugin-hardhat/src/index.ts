@@ -37,7 +37,6 @@ import {
   GetVerifyDeployBuildInfoFunction,
   GetBytecodeDigestFunction,
 } from './defender-v1/verify-deployment';
-import debug from './utils/debug';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -116,7 +115,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 
     const namespacedInput = makeNamespacedInput(args.input, output);
     const { output: namespacedOutput } = await runSuper({ ...args, quiet: true, input: namespacedInput });
-    checkNamespacedCompileErrors(namespacedInput, namespacedOutput);
+    await checkNamespacedCompileErrors(namespacedOutput);
 
     const validations = validate(output, decodeSrc, args.solcVersion, args.input, namespacedOutput);
     await writeValidations(hre, validations);
@@ -127,28 +126,23 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 
 /**
  * Checks for compile errors in the modified contracts for namespaced storage.
- * If errors are found, throws an error with the compile error messages, and logs
- * the modified contract source code as debug.
+ * If errors are found, throws an error with the compile error messages.
  */
-function checkNamespacedCompileErrors(namespacedInput: SolcInput, namespacedOutput: SolcOutput) {
+async function checkNamespacedCompileErrors(namespacedOutput: SolcOutput) {
   const errors = [];
   if (namespacedOutput.errors !== undefined) {
     for (const error of namespacedOutput.errors) {
       if (error.severity === 'error') {
-        const msg = error.formattedMessage;
-
-        debug('Compile error in modified contract for namespaced storage.');
-        debug('Error:', msg);
-        if (error.sourceLocation !== undefined && error.sourceLocation.file in namespacedInput.sources) {
-          debug('Modified contract source:', namespacedInput.sources[error.sourceLocation.file].content);
-        }
-
-        errors.push(msg);
+        errors.push(error.formattedMessage);
       }
     }
   }
   if (errors.length > 0) {
-    throw new Error(`Failed to compile modified contracts for namespaced storage:\n\n${errors.join('\n')}`);
+    const { UpgradesError } = await import('@openzeppelin/upgrades-core');
+    throw new UpgradesError(
+      `Failed to compile modified contracts for namespaced storage:\n\n${errors.join('\n')}`,
+      () => 'Please report this at https://zpl.in/upgrades/report',
+    );
   }
 }
 
