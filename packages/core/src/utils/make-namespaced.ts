@@ -66,7 +66,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           const storageLocation = getStorageLocationAnnotation(node);
           if (storageLocation !== undefined) {
             const structName = node.name;
-            const variableName = `$${structName}`;
+            const variableName = `$${structName}_${(Math.random() * 1e6).toFixed(0)}`;
             const insertText = ` ${structName} ${variableName};`;
 
             modifications.push(makeInsertAfter(node, insertText));

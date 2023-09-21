@@ -20,6 +20,7 @@ test('make namespaced input', async t => {
   const origInput = JSON.parse(JSON.stringify(origBuildInfo.input));
 
   const modifiedInput = makeNamespacedInput(origBuildInfo.input, origBuildInfo.output);
+  normalizeStateVariableNames(modifiedInput);
   t.snapshot(modifiedInput);
 
   t.deepEqual(origBuildInfo.input, origInput);
@@ -29,6 +30,14 @@ test('make namespaced input', async t => {
   const modifiedOutput = await hardhatCompile(modifiedInput);
   t.is(modifiedOutput.errors, undefined);
 });
+
+function normalizeStateVariableNames(input: SolcInput): void {
+  for (const source of Object.values(input.sources)) {
+    if (source.content !== undefined) {
+      source.content = source.content.replace(/\$MainStorage_\d{1,6};/g, '$MainStorage_random;');
+    }
+  }
+}
 
 async function hardhatCompile(input: SolcInput): Promise<SolcOutput> {
   const solcBuild: SolcBuild = await run(TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD, {
