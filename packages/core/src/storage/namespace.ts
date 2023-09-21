@@ -158,21 +158,17 @@ function addContractNamespacesWithSrcs(
  *
  * @param node The node that may have a `@custom:storage-location` annotation.
  * @returns The storage location string, or undefined if the node does not have a `@custom:storage-location` annotation.
+ * @throws Error if the node has the annotation `@custom:storage-location` but it does not have exactly one argument.
  */
 export function getStorageLocationAnnotation(node: Node) {
   const doc = getDocumentation(node);
   if (hasAnnotationTag(doc, 'storage-location')) {
-    return getStorageLocation(doc);
+    const storageLocationArgs = getAnnotationArgs(doc, 'storage-location');
+    if (storageLocationArgs.length !== 1) {
+      throw new Error('@custom:storage-location annotation must have exactly one argument');
+    }
+    return storageLocationArgs[0];
   }
-}
-
-function getStorageLocation(doc: string) {
-  const storageLocationArgs = getAnnotationArgs(doc, 'storage-location');
-  if (storageLocationArgs.length !== 1) {
-    throw new Error('@custom:storage-location annotation must have exactly one argument');
-  }
-  const storageLocation = storageLocationArgs[0];
-  return storageLocation;
 }
 
 /**
