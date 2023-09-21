@@ -138,14 +138,14 @@ function addContractNamespacesWithSrcs(
 ) {
   for (const node of context.contractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
-      const storageLocationArg = getStorageLocationArg(node);
-      if (storageLocationArg !== undefined) {
+      const storageLocation = getStorageLocationAnnotation(node);
+      if (storageLocation !== undefined) {
         const origSrc = decodeSrc(getOriginalStruct(node.canonicalName, origContractDef));
 
-        if (namespaces[storageLocationArg] !== undefined) {
-          namespaces[storageLocationArg].srcs.push(origSrc);
+        if (namespaces[storageLocation] !== undefined) {
+          namespaces[storageLocation].srcs.push(origSrc);
         } else {
-          namespaces[storageLocationArg] = {
+          namespaces[storageLocation] = {
             namespace: getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef),
             srcs: [origSrc],
           };
@@ -163,7 +163,7 @@ function addContractNamespacesWithSrcs(
  * @param node The node that may have a `@custom:storage-location` annotation.
  * @returns The storage location string, or undefined if the node does not have a `@custom:storage-location` annotation.
  */
-export function getStorageLocationArg(node: Node) {
+export function getStorageLocationAnnotation(node: Node) {
   const doc = getDocumentation(node);
   if (hasAnnotationTag(doc, 'storage-location')) {
     return getStorageLocation(doc);

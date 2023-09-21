@@ -14,7 +14,7 @@ import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
-import { getStorageLocationArg } from '../storage/namespace';
+import { getStorageLocationAnnotation } from '../storage/namespace';
 import { UpgradesError } from '../error';
 
 export type ValidationRunData = Record<string, ContractValidation>;
@@ -257,8 +257,8 @@ function checkNamespaceSolidityVersion(source: string, solcVersion?: string, sol
 function checkNamespacesOutsideContract(source: string, solcOutput: SolcOutput, decodeSrc: SrcDecoder) {
   for (const node of solcOutput.sources[source].ast.nodes) {
     if (isNodeType('StructDefinition', node)) {
-      const storageLocationArg = getStorageLocationArg(node);
-      if (storageLocationArg !== undefined) {
+      const storageLocation = getStorageLocationAnnotation(node);
+      if (storageLocation !== undefined) {
         throw new UpgradesError(
           `${decodeSrc(node)}: Namespace struct ${node.name} is defined outside of a contract`,
           () =>

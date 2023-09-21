@@ -1,7 +1,7 @@
 import { findAll, isNodeType } from 'solidity-ast/utils';
 import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
-import { getStorageLocationArg } from '../storage/namespace';
+import { getStorageLocationAnnotation } from '../storage/namespace';
 import { assert } from './assert';
 
 const OUTPUT_SELECTION = {
@@ -46,7 +46,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
       for (const inherit of inherits) {
         if (isNodeType('InheritanceSpecifier', inherit)) {
           assert(inherit.baseName.name !== undefined);
-          modifications.push(getReplace(inherit, inherit.baseName.name));
+          modifications.push(makeReplace(inherit, inherit.baseName.name));
         }
       }
 
@@ -59,17 +59,17 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         ) {
           const doc = node.documentation;
           if (doc) {
-            modifications.push(getDelete(doc, orig));
+            modifications.push(makeDelete(doc, orig));
           }
-          modifications.push(getDelete(node, orig));
+          modifications.push(makeDelete(node, orig));
         } else if (isNodeType('StructDefinition', node)) {
-          const storageLocationArg = getStorageLocationArg(node);
-          if (storageLocationArg !== undefined) {
+          const storageLocation = getStorageLocationAnnotation(node);
+          if (storageLocation !== undefined) {
             const structName = node.name;
             const variableName = `$${structName}`;
             const insertText = ` ${structName} ${variableName};`;
 
-            modifications.push(getInsertAfter(node, insertText));
+            modifications.push(makeInsertAfter(node, insertText));
           }
         }
       }
@@ -93,17 +93,17 @@ function getPositions(node: Node) {
   return { start, end };
 }
 
-function getReplace(node: Node, text: string): Modification {
+function makeReplace(node: Node, text: string): Modification {
   const { start, end } = getPositions(node);
   return { start, end, text };
 }
 
-function getInsertAfter(node: Node, text: string): Modification {
+function makeInsertAfter(node: Node, text: string): Modification {
   const { end } = getPositions(node);
   return { start: end, end, text };
 }
 
-function getDelete(node: Node, orig: Buffer): Modification {
+function makeDelete(node: Node, orig: Buffer): Modification {
   const positions = getPositions(node);
   let end = positions.end;
   // If the next character is a semicolon (e.g. for variables), skip over it
@@ -118,6 +118,7 @@ function getModifiedSource(orig: Buffer, modifications: Modification[]): string 
   let copyFromIndex = 0;
 
   for (const modification of modifications) {
+    assert(modification.start >= copyFromIndex);
     result += orig.toString('utf8', copyFromIndex, modification.start);
 
     if (modification.text !== undefined) {
@@ -127,9 +128,8 @@ function getModifiedSource(orig: Buffer, modifications: Modification[]): string 
     copyFromIndex = modification.end;
   }
 
-  if (copyFromIndex < orig.length) {
-    result += orig.toString('utf8', copyFromIndex);
-  }
+  assert(copyFromIndex <= orig.length);
+  result += orig.toString('utf8', copyFromIndex);
 
   return result;
 }
