@@ -44,16 +44,8 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
       const inherits = contractDef.baseContracts;
       for (const inherit of inherits) {
         if (isNodeType('InheritanceSpecifier', inherit)) {
-          const baseName = inherit.baseName;
-
-          let name;
-          if (isNodeType('UserDefinedTypeName', baseName)) {
-            name = (baseName.name ?? baseName.pathNode?.name)!;
-          } else {
-            name = baseName.name;
-          }
-
-          modifications.push(getReplace(inherit, name));
+          assert(inherit.baseName.name !== undefined);
+          modifications.push(getReplace(inherit, inherit.baseName.name));
         }
       }
 
