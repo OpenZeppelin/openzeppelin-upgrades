@@ -2,6 +2,7 @@ import { findAll, isNodeType } from 'solidity-ast/utils';
 import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationArg } from '../storage/namespace';
+import { assert } from './assert';
 
 const OUTPUT_SELECTION = {
   '*': {
