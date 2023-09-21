@@ -141,7 +141,7 @@ async function checkNamespacedCompileErrors(namespacedOutput: SolcOutput) {
     const { UpgradesError } = await import('@openzeppelin/upgrades-core');
     throw new UpgradesError(
       `Failed to compile modified contracts for namespaced storage:\n\n${errors.join('\n')}`,
-      () => 'Please report this at https://zpl.in/upgrades/report',
+      () => 'Please report this at https://zpl.in/upgrades/report. If possible, include the source code for the contracts mentioned in the errors above.',
     );
   }
 }
