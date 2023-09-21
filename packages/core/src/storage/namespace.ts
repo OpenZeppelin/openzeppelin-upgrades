@@ -186,47 +186,37 @@ function getNamespacedStorageItems(
   context: CompilationContext,
   origContractDef: ContractDefinition,
 ): StorageItem[] {
-  const typeMembers = getTypeMembers(node, { typeName: true });
-  assert(typeMembers !== undefined);
+  const astTypeMembers = getTypeMembers(node, { typeName: true });
+  assert(astTypeMembers !== undefined);
 
   const storageItems: StorageItem[] = [];
-  for (const member of typeMembers) {
-    if (typeof member !== 'string') {
-      const contract = context.contractDef.name;
-      const label = member.label;
-      const type = member.type;
 
-      const originalSrc = getOriginalMemberSrc(node.canonicalName, member.label, origContractDef);
-      if (originalSrc === undefined) {
-        throw new Error(
-          `Could not find original source location for namespace struct with name ${node.canonicalName} and member ${member.label}`,
-        );
-      }
+  for (const astMember of astTypeMembers) {
+    if (typeof astMember !== 'string') {
+      let item: StorageItem = {
+        contract: context.contractDef.name,
+        label: astMember.label,
+        type: astMember.type,
+        src: decodeSrc({ src: getOriginalMemberSrc(node.canonicalName, astMember.label, origContractDef) }),
+      };
 
-      const src = decodeSrc({ src: originalSrc });
-
-      const structMemberFromTypes = getStructMemberFromLayoutTypes(
+      const layoutMember = findLayoutStructMember(
         { ...context.storageLayout?.types },
         node.canonicalName,
-        member.label,
+        astMember.label,
       );
 
-      let item: StorageItem = {
-        contract,
-        label,
-        type,
-        src,
-      };
-      if (structMemberFromTypes?.offset !== undefined && structMemberFromTypes?.slot !== undefined) {
+      if (layoutMember?.offset !== undefined && layoutMember?.slot !== undefined) {
         item = {
           ...item,
-          offset: structMemberFromTypes.offset,
-          slot: structMemberFromTypes.slot,
+          offset: layoutMember.offset,
+          slot: layoutMember.slot,
         };
       }
+
       storageItems.push(item);
 
-      loadLayoutType(member.typeName, layout, context.deref);
+      loadLayoutType(astMember.typeName, layout, context.deref);
     }
   }
   return storageItems;
@@ -252,6 +242,8 @@ function getOriginalStruct(structCanonicalName: string, origContractDef: Contrac
  * Gets the original source location for the given struct canonical name and struct member label.
  */
 function getOriginalMemberSrc(structCanonicalName: string, memberLabel: string, origContractDef: ContractDefinition) {
+  let result;
+
   const node = getOriginalStruct(structCanonicalName, origContractDef);
   if (node !== undefined) {
     const typeMembers = getTypeMembers(node, { src: true });
@@ -260,17 +252,26 @@ function getOriginalMemberSrc(structCanonicalName: string, memberLabel: string, 
     for (const member of typeMembers) {
       if (typeof member !== 'string') {
         if (member.label === memberLabel) {
-          return member.src;
+          result = member.src;
+          break;
         }
       }
     }
+  }
+
+  if (result !== undefined) {
+    return result;
+  } else {
+    throw new Error(
+      `Could not find original source location for namespace struct with name ${structCanonicalName} and member ${memberLabel}`,
+    );
   }
 }
 
 /**
  * From the given layout types, gets the struct member matching the given struct canonical name and struct member label.
  */
-function getStructMemberFromLayoutTypes(
+function findLayoutStructMember(
   types: Record<string, TypeItem<string>>,
   structCanonicalName: string,
   memberLabel: string,
@@ -284,18 +285,13 @@ function getStructMemberFromLayoutTypes(
         return structMember;
       }
     }
+    return undefined;
   }
-  return undefined;
 }
 
 /**
  * From the given layout types, gets the type matching the given type label.
  */
 function findTypeWithLabel(types: Record<string, TypeItem>, label: string) {
-  for (const type of Object.values(types)) {
-    if (type.label === label) {
-      return type;
-    }
-  }
-  return undefined;
+  return Object.values(types).find(type => type.label === label);
 }
