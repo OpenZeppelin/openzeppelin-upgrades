@@ -115,7 +115,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
     const decodeSrc = solcInputOutputDecoder(args.input, output);
 
     const namespacedInput = makeNamespacedInput(args.input, output);
-    const { output: namespacedOutput } = await runSuper({ ...args, input: namespacedInput });
+    const { output: namespacedOutput } = await runSuper({ ...args, quiet: true, input: namespacedInput });
     checkNamespacedCompileErrors(namespacedInput, namespacedOutput);
 
     const validations = validate(output, decodeSrc, args.solcVersion, args.input, namespacedOutput);
