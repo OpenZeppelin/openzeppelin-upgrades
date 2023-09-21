@@ -9,7 +9,7 @@ import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
 import { UpgradesError } from '../error';
 
 /**
- * Loads namespaces and namespaced type information into the storage layout.
+ * Loads a contract's namespaces and namespaced type information into the storage layout.
  *
  * The provided compilation contexts must include both the original compilation and optionally
  * a namespaced compilation where contracts have been modified to include namespaced type information.
@@ -82,7 +82,8 @@ function checkAndSaveLayout(
 }
 
 /**
- * Load namespaces (including loading recursive type information) and original source locations.
+ * Extract namespaces and load their recursive type information into the layout. Returns all extracted
+ * namespaces by id along with their original source locations.
  */
 function loadNamespacesWithSrcs(
   decodeSrc: SrcDecoder,
@@ -189,7 +190,7 @@ function getNamespacedStorageItems(
   layout: StorageLayout,
   context: CompilationContext,
   origContractDef: ContractDefinition,
-) {
+): StorageItem[] {
   const typeMembers = getTypeMembers(node, { typeName: true });
   assert(typeMembers !== undefined);
 
