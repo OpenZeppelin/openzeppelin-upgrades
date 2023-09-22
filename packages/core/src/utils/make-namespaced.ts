@@ -15,9 +15,12 @@ const OUTPUT_SELECTION = {
  * Makes a modified version of the solc input to add state variables in each contract for namespaced struct definitions,
  * so that the compiler will generate their types in the storage layout.
  *
- * This deletes all functions for efficiency, since they are not needed for storage layout.
- * We also need to delete modifiers, variables, and parent constructor invocations to avoid compilation errors due to deleted
- * functions and constructors.
+ * This makes the following modifications to the input:
+ * - Adds a state variable for each namespaced struct definition
+ * - Deletes all contracts' functions since they are not needed for storage layout
+ * - Deletes all contracts' modifiers, variables, and parent constructor invocations to avoid compilation errors due to deleted functions and constructors
+ * - Deletes all using for directives (at file level and in contracts) since they may reference deleted functions
+ * - Converts all free functions and constants (at file level) to dummy variables (do not delete them since they might be imported by other files)
  *
  * Also sets the outputSelection to only include storageLayout and ast, since the other outputs are not needed.
  *
@@ -65,6 +68,8 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
               modifications.push(makeDelete(doc, orig));
             }
             modifications.push(makeDelete(contractNode, orig));
+          } else if (isNodeType('UsingForDirective', contractNode)) {
+            modifications.push(makeDelete(contractNode, orig));
           } else if (isNodeType('StructDefinition', contractNode)) {
             const storageLocation = getStorageLocationAnnotation(contractNode);
             if (storageLocation !== undefined) {
@@ -81,6 +86,8 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         const name = node.name;
         const insertText = `uint256 constant ${name} = 0;`;
         modifications.push(makeReplace(node, orig, insertText));
+      } else if (isNodeType('UsingForDirective', node)) {
+        modifications.push(makeDelete(node, orig));
       }
     }
 
