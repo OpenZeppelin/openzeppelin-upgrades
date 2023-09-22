@@ -26,7 +26,9 @@ function getNamespacedOverrides() {
   const namespacedContracts = contracts.filter(c => c.startsWith('Namespaced'));
   const overrides = {};
   for (const c of namespacedContracts) {
-    overrides[`contracts/test/${c}`] = { version: '0.8.20', settings };
+    if (c !== 'NamespacedToModify07.sol') {
+      overrides[`contracts/test/${c}`] = { version: '0.8.20', settings };
+    }
   }
   return overrides;
 }

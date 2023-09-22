@@ -1,4 +1,4 @@
-import test from 'ava';
+import test, { ExecutionContext } from 'ava';
 import { artifacts, run } from 'hardhat';
 import {
   TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD,
@@ -9,9 +9,23 @@ import {
 import { makeNamespacedInput } from './make-namespaced';
 import { SolcBuild } from 'hardhat/types/builtin-tasks';
 import { SolcInput, SolcOutput } from '../solc-api';
+import { BuildInfo } from 'hardhat/types';
 
 test('make namespaced input', async t => {
   const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedToModify.sol:Example');
+  await testMakeNamespaced(origBuildInfo, t, '0.8.20');
+});
+
+test('make namespaced input - solc 0.7', async t => {
+  const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedToModify07.sol:HasFunction');
+  await testMakeNamespaced(origBuildInfo, t, '0.7.6');
+});
+
+async function testMakeNamespaced(
+  origBuildInfo: BuildInfo | undefined,
+  t: ExecutionContext<unknown>,
+  solcVersion: string,
+) {
   if (origBuildInfo === undefined) {
     throw new Error('Build info not found');
   }
@@ -21,16 +35,15 @@ test('make namespaced input', async t => {
 
   const modifiedInput = makeNamespacedInput(origBuildInfo.input, origBuildInfo.output);
   normalizeStateVariableNames(modifiedInput);
-  // console.log(JSON.stringify(modifiedInput, null, 2));
   t.snapshot(modifiedInput);
 
   t.deepEqual(origBuildInfo.input, origInput);
   t.notDeepEqual(modifiedInput, origInput);
 
   // Run hardhat compile on the modified input and make sure it has no errors
-  const modifiedOutput = await hardhatCompile(modifiedInput);
+  const modifiedOutput = await hardhatCompile(modifiedInput, solcVersion);
   t.is(modifiedOutput.errors, undefined);
-});
+}
 
 function normalizeStateVariableNames(input: SolcInput): void {
   for (const source of Object.values(input.sources)) {
@@ -40,10 +53,10 @@ function normalizeStateVariableNames(input: SolcInput): void {
   }
 }
 
-async function hardhatCompile(input: SolcInput): Promise<SolcOutput> {
+async function hardhatCompile(input: SolcInput, solcVersion: string): Promise<SolcOutput> {
   const solcBuild: SolcBuild = await run(TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD, {
     quiet: true,
-    solcVersion: '0.8.20',
+    solcVersion,
   });
 
   if (solcBuild.isSolcJs) {
