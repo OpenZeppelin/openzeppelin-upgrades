@@ -57,37 +57,55 @@ contract Example {
     function foo4() public {}
 }
 
-contract A {
+contract HasFunction {
   constructor(uint) {}
   function foo() pure public returns (uint) {}
 }
 
-contract B is A(1) {
+contract UsingFunction is HasFunction(1) {
   uint x = foo();
 }
 
-function bar() pure returns (bytes4) {
-    return A.foo.selector; // <- A.foo deleted
+function FreeFunctionUsingSelector() pure returns (bytes4) {
+    return HasFunction.foo.selector;
 }
 
-bytes4 constant barConst = A.foo.selector; // <- A.foo deleted
+bytes4 constant CONSTANT_USING_SELECTOR = HasFunction.foo.selector;
 
 library Lib {
-  function barFromLib() pure public returns (bytes4) {
-    return A.foo.selector; // <- A.foo deleted
+  function usingSelector() pure public returns (bytes4) {
+    return HasFunction.foo.selector;
+  }
+
+  function plusOne(uint x) pure public returns (uint) {
+    return x + 1;
   }
 }
 
-contract C {
-  function usingBar() pure public returns (bytes4) {
-    return bar(); // Uses free function
+contract Consumer {
+  function usingFreeFunction() pure public returns (bytes4) {
+    return FreeFunctionUsingSelector();
   }
 
-  function usingBarConst() pure public returns (bytes4) {
-    return barConst; // Uses constant
+  function usingConstant() pure public returns (bytes4) {
+    return CONSTANT_USING_SELECTOR;
   }
 
-  function usingBarFromLib() pure public returns (bytes4) {
-    return Lib.barFromLib(); // Uses library function
+  function usingLibraryFunction() pure public returns (bytes4) {
+    return Lib.usingSelector();
+  }
+}
+
+function plusTwo(uint x) pure returns (uint) {
+  return x + 2;
+}
+
+using {plusTwo} for uint;
+
+contract UsingForDirectives {
+  using {Lib.plusOne} for uint;
+
+  function usingFor(uint x) pure public returns (uint) {
+    return x.plusOne() + x.plusTwo();
   }
 }
