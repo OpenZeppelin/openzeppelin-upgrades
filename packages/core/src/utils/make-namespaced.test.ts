@@ -21,6 +21,7 @@ test('make namespaced input', async t => {
 
   const modifiedInput = makeNamespacedInput(origBuildInfo.input, origBuildInfo.output);
   normalizeStateVariableNames(modifiedInput);
+  // console.log(JSON.stringify(modifiedInput, null, 2));
   t.snapshot(modifiedInput);
 
   t.deepEqual(origBuildInfo.input, origInput);

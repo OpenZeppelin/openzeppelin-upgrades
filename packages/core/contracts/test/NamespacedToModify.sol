@@ -70,14 +70,24 @@ function bar() pure returns (bytes4) {
     return A.foo.selector; // <- A.foo deleted
 }
 
-bytes4 constant fooConst = A.foo.selector; // <- A.foo deleted
+bytes4 constant barConst = A.foo.selector; // <- A.foo deleted
+
+library Lib {
+  function barFromLib() pure public returns (bytes4) {
+    return A.foo.selector; // <- A.foo deleted
+  }
+}
 
 contract C {
-  function foo() pure public returns (bytes4) {
+  function usingBar() pure public returns (bytes4) {
     return bar(); // Uses free function
   }
 
-  function foo2() pure public returns (bytes4) {
-    return fooConst; // Uses constant
+  function usingBarConst() pure public returns (bytes4) {
+    return barConst; // Uses constant
+  }
+
+  function usingBarFromLib() pure public returns (bytes4) {
+    return Lib.barFromLib(); // Uses library function
   }
 }
