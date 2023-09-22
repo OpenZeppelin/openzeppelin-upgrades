@@ -17,6 +17,7 @@ test('make namespaced input', async t => {
 });
 
 test('make namespaced input - solc 0.7', async t => {
+  // The nameNamespacedInput function must work for different solc versions, since it is called before we check whether namespaces are used with solc >= 0.8.20
   const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedToModify07.sol:HasFunction');
   await testMakeNamespaced(origBuildInfo, t, '0.7.6');
 });
