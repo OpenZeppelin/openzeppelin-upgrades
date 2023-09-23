@@ -17,7 +17,10 @@ function makeProviderError(msg: string): EthereumProvider {
 }
 
 test('getUpgradeInterfaceVersion returns version', async t => {
-  const provider = makeProviderReturning('5.0.0');
+  // abi encoding of '5.0.0'
+  const provider = makeProviderReturning(
+    '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000005352e302e30000000000000000000000000000000000000000000000000000000',
+  );
   t.is(await getUpgradeInterfaceVersion(provider, hash), '5.0.0');
 });
 

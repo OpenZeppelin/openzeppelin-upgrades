@@ -62,7 +62,9 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
         } else if (upgradeInterfaceVersion === '5.0.0') {
           return proxy.upgradeToAndCall(nextImpl, call ?? '0x', ...overrides);
         } else {
-          throw new Error(`Unknown upgrade interface version ${upgradeInterfaceVersion}`);
+          throw new Error(
+            `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
+          );
         }
       };
     } else {
@@ -80,7 +82,9 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
         } else if (upgradeInterfaceVersion === '5.0.0') {
           return admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
         } else {
-          throw new Error(`Unknown upgrade interface version ${upgradeInterfaceVersion}`);
+          throw new Error(
+            `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
+          );
         }
       };
     }
