@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Support UUPS implementations that use OpenZeppelin Contracts 5.0. ([#883](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/883))
+  - Note that deploying or importing version 5.0 proxies are not supported yet.
+
 ## 2.2.1 (2023-08-18)
 
 - Allow using proxy with different admin address than manifest. ([#859](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/859))

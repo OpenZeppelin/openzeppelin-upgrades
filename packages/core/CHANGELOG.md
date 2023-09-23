@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support getting `UPGRADE_INTERFACE_VERSION`, fix inferring of UUPS proxies with `upgradeToAndCall`. ([883](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/883))
+
 ## 1.29.0 (2023-09-19)
 
 - Support implementations with upgradeTo or upgradeToAndCall. ([#880](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/880))
