@@ -2,8 +2,7 @@
 
 ## Unreleased
 
-- Support UUPS implementations that use OpenZeppelin Contracts 5.0. ([#883](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/883))
-  - Note that deploying or importing version 5.0 proxies are not supported yet.
+- Enable upgrading UUPS implementations depending on upgrade interface version. ([#883](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/883))
 
 ## 2.2.1 (2023-08-18)
 
