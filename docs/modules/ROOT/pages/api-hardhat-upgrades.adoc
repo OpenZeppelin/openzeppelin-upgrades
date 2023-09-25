@@ -616,7 +616,7 @@ async function changeProxyAdmin(
 
 Changes the admin for a specific proxy.
 
-NOTE: This function is not supported with transparent proxies from OpenZeppelin Contracts 5.x, since those use immutable values for their admin address.
+NOTE: This function is not supported with admins or proxies from OpenZeppelin Contracts 5.x.
 
 *Parameters:*
 
