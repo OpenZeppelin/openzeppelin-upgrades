@@ -133,13 +133,12 @@ function typeDescriptions(x: { typeDescriptions: TypeDescriptions }): RequiredTy
   return x.typeDescriptions as RequiredTypeDescriptions;
 }
 
-type GotTypeMembers<D extends EnumDefinition | StructDefinition, F extends 'src' | 'typeName'> =
-  D extends infer D0
+type GotTypeMembers<D extends EnumDefinition | StructDefinition, F extends 'src' | 'typeName'> = D extends infer D0
   ? D0 extends EnumDefinition
-  ? EnumMember[]
-  : D0 extends StructDefinition
-  ? (StructMember & Pick<VariableDeclaration, F>)[]
-  : never
+    ? EnumMember[]
+    : D0 extends StructDefinition
+    ? (StructMember & Pick<VariableDeclaration, F>)[]
+    : never
   : never;
 
 export function getTypeMembers<D extends EnumDefinition | StructDefinition>(typeDef: D): GotTypeMembers<D, never>;
@@ -154,7 +153,7 @@ export function getTypeMembers(
   if (typeDef.nodeType === 'StructDefinition') {
     return typeDef.members.map(m => {
       assert(typeof m.typeDescriptions.typeIdentifier === 'string');
-      let member: StructMember & Partial<Pick<VariableDeclaration, 'src' | 'typeName'>> = {
+      const member: StructMember & Partial<Pick<VariableDeclaration, 'src' | 'typeName'>> = {
         label: m.name,
         type: normalizeTypeIdentifier(m.typeDescriptions.typeIdentifier),
       };
