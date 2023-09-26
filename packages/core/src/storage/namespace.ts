@@ -32,66 +32,7 @@ export function loadNamespaces(
   origContext: CompilationContext,
   namespacedContext?: CompilationContext,
 ) {
-  const namespacesWithSrcs = loadNamespacesWithSrcs(decodeSrc, layout, origContext, namespacedContext);
-  checkAndSaveLayout(namespacesWithSrcs, origContext.contractDef, layout);
-}
-
-class DuplicateNamespaceError extends UpgradesError {
-  constructor(id: string, contractName: string, srcs: string[]) {
-    super(
-      `Namespace ${id} is defined multiple times for contract ${contractName}`,
-      () => `\
-The namespace ${id} was found in structs at the following locations:
-- ${srcs.join('\n- ')}
-
-Use a unique namespace id for each struct annotated with '@custom:storage-location erc7201:<NAMESPACE_ID>' in your contract and its inherited contracts.`,
-    );
-  }
-}
-
-/**
- * Namespaced storage items, along with the original source locations of the namespace structs
- * including where the namespace is defined in multiple places.
- */
-interface NamespaceWithSrcs {
-  namespace: StorageItem<string>[];
-  srcs: string[];
-}
-
-/**
- * Check for duplicate namespaces and throw an error if any are found, otherwise add them to the layout
- * (without the source locations of the namespace structs since they are no longer needed).
- */
-function checkAndSaveLayout(
-  namespacesWithSrcs: Record<string, NamespaceWithSrcs>,
-  origContract: ContractDefinition,
-  layout: StorageLayout,
-) {
-  const namespaces: Record<string, StorageItem<string>[]> = {};
-  for (const [id, namespaceWithSrcs] of Object.entries(namespacesWithSrcs)) {
-    const { namespace, srcs } = namespaceWithSrcs;
-    if (srcs.length > 1) {
-      const contractName = origContract.canonicalName ?? origContract.name;
-      throw new DuplicateNamespaceError(id, contractName, srcs);
-    } else {
-      // The src locations of the namespace structs are no longer needed at this point, so remove them
-      namespaces[id] = namespace;
-    }
-  }
-  layout.namespaces = namespaces;
-}
-
-/**
- * Extract namespaces and load their recursive type information into the layout. Returns all extracted
- * namespaces by id along with their original source locations.
- */
-function loadNamespacesWithSrcs(
-  decodeSrc: SrcDecoder,
-  layout: StorageLayout,
-  origContext: CompilationContext,
-  namespacedContext?: CompilationContext,
-) {
-  const result: Record<string, NamespaceWithSrcs> = {};
+  const namespacesWithSrc: Record<string, NamespaceWithSrc> = {};
 
   const origLinearized = origContext.contractDef.linearizedBaseContracts.map(id =>
     getReferencedContract(origContext, id),
@@ -105,10 +46,43 @@ function loadNamespacesWithSrcs(
   for (const [i, contractDef] of linearized.entries()) {
     const origContractDef = origLinearized[i];
     const contractContext = { ...context, contractDef };
-    addContractNamespacesWithSrcs(result, decodeSrc, layout, contractContext, origContractDef);
+    addContractNamespacesWithSrc(
+      namespacesWithSrc,
+      decodeSrc,
+      layout,
+      contractContext,
+      origContractDef,
+      origContext.contractDef.canonicalName ?? origContext.contractDef.name,
+    );
   }
 
-  return result;
+  // Add to layout without the namespaced structs' src locations, since those are no longer needed
+  // as they were only used to give duplicate namespace errors above.
+  layout.namespaces = Object.fromEntries(
+    Object.entries(namespacesWithSrc).map(([id, namespaceWithSrc]) => [id, namespaceWithSrc.namespace]),
+  );
+}
+
+class DuplicateNamespaceError extends UpgradesError {
+  constructor(id: string, contractName: string, src1: string, src2: string) {
+    super(
+      `Namespace ${id} is defined multiple times for contract ${contractName}`,
+      () => `\
+The namespace ${id} was found in structs at the following locations:
+- ${src1}
+- ${src2}
+
+Use a unique namespace id for each struct annotated with '@custom:storage-location erc7201:<NAMESPACE_ID>' in your contract and its inherited contracts.`,
+    );
+  }
+}
+
+/**
+ * Namespaced storage items, along with the original source location of the namespace struct.
+ */
+interface NamespaceWithSrc {
+  namespace: StorageItem<string>[];
+  src: string;
 }
 
 /**
@@ -124,26 +98,40 @@ function getReferencedContract(context: CompilationContext, referencedId: number
 /**
  * Add namespaces and source locations for the given compilation context's contract.
  * Does not include inherited contracts.
+ *
+ * @param namespaces The record of namespaces with source locations to add to.
+ * @param decodeSrc Source decoder for the original source code.
+ * @param layout The storage layout object to load types into.
+ * @param contractContext The compilation context for this specific contract to load namespaces for.
+ * @param origContractDef The AST node for this specific contract but from the original compilation context.
+ * @param leastDerivedContractName The name of the least derived contract in the inheritance list.
+ * @throws DuplicateNamespaceError if a duplicate namespace is found when adding to the `namespaces` record.
  */
-function addContractNamespacesWithSrcs(
-  namespaces: Record<string, NamespaceWithSrcs>,
+function addContractNamespacesWithSrc(
+  namespaces: Record<string, NamespaceWithSrc>,
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
-  context: CompilationContext,
+  contractContext: CompilationContext,
   origContractDef: ContractDefinition,
+  leastDerivedContractName: string,
 ) {
-  for (const node of context.contractDef.nodes) {
+  for (const node of contractContext.contractDef.nodes) {
     if (isNodeType('StructDefinition', node)) {
       const storageLocation = getStorageLocationAnnotation(node);
       if (storageLocation !== undefined) {
         const origSrc = decodeSrc(getOriginalStruct(node.canonicalName, origContractDef));
 
         if (namespaces[storageLocation] !== undefined) {
-          namespaces[storageLocation].srcs.push(origSrc);
+          throw new DuplicateNamespaceError(
+            storageLocation,
+            leastDerivedContractName,
+            namespaces[storageLocation].src,
+            origSrc,
+          );
         } else {
           namespaces[storageLocation] = {
-            namespace: getNamespacedStorageItems(node, decodeSrc, layout, context, origContractDef),
-            srcs: [origSrc],
+            namespace: getNamespacedStorageItems(node, decodeSrc, layout, contractContext, origContractDef),
+            src: origSrc,
           };
         }
       }
