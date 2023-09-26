@@ -99,7 +99,7 @@ function getReferencedContract(context: CompilationContext, referencedId: number
  * Add namespaces and source locations for the given compilation context's contract.
  * Does not include inherited contracts.
  *
- * @param namespaces The record of namespaces with source locations to add to.
+ * @param namespacesWithSrc The record of namespaces with source locations to add to.
  * @param decodeSrc Source decoder for the original source code.
  * @param layout The storage layout object to load types into.
  * @param contractContext The compilation context for this specific contract to load namespaces for.
@@ -108,7 +108,7 @@ function getReferencedContract(context: CompilationContext, referencedId: number
  * @throws DuplicateNamespaceError if a duplicate namespace is found when adding to the `namespaces` record.
  */
 function addContractNamespacesWithSrc(
-  namespaces: Record<string, NamespaceWithSrc>,
+  namespacesWithSrc: Record<string, NamespaceWithSrc>,
   decodeSrc: SrcDecoder,
   layout: StorageLayout,
   contractContext: CompilationContext,
@@ -121,15 +121,15 @@ function addContractNamespacesWithSrc(
       if (storageLocation !== undefined) {
         const origSrc = decodeSrc(getOriginalStruct(node.canonicalName, origContractDef));
 
-        if (namespaces[storageLocation] !== undefined) {
+        if (namespacesWithSrc[storageLocation] !== undefined) {
           throw new DuplicateNamespaceError(
             storageLocation,
             leastDerivedContractName,
-            namespaces[storageLocation].src,
+            namespacesWithSrc[storageLocation].src,
             origSrc,
           );
         } else {
-          namespaces[storageLocation] = {
+          namespacesWithSrc[storageLocation] = {
             namespace: getNamespacedStorageItems(node, decodeSrc, layout, contractContext, origContractDef),
             src: origSrc,
           };
