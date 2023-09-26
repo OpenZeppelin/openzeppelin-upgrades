@@ -268,7 +268,6 @@ function findLayoutStructMember(
         return structMember;
       }
     }
-    return undefined;
   }
 }
 
