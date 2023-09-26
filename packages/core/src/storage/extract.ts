@@ -42,8 +42,13 @@ export function extractStorageLayout(
   // Some types will be present in both and they must be exactly equivalent.
   // If they are not, we throw an error because this may be a clash between different types.
   const combinedTypes = { ...namespacedContext?.storageLayout?.types, ...storageLayout?.types };
-  assertContainsAll(combinedTypes, storageLayout?.types);
-  assertContainsAll(combinedTypes, namespacedContext?.storageLayout?.types);
+  if (namespacedContext?.storageLayout?.types) {
+    for (const t in storageLayout?.types) {
+       if (t in namespacedContext.storageLayout.types) {
+         assert.deepEqual(namespacedContext.storageLayout.types[t], storageLayout.types[t]);
+       }
+    }
+  }
 
   layout.types = mapValues(combinedTypes, m => {
     return {
