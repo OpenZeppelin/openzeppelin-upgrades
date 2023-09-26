@@ -195,7 +195,7 @@ function getNamespacedStorageItems(
     };
 
     const layoutMember = findLayoutStructMember(
-      { ...context.storageLayout?.types },
+      context.storageLayout?.types ?? {},
       node.canonicalName,
       astMember.label,
     );
