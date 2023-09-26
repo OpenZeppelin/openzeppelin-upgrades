@@ -227,9 +227,7 @@ function getOriginalStruct(structCanonicalName: string, origContractDef: Contrac
 function getOriginalMemberSrc(structCanonicalName: string, memberLabel: string, origContractDef: ContractDefinition) {
   const node = getOriginalStruct(structCanonicalName, origContractDef);
   if (node !== undefined) {
-    const typeMembers = getTypeMembers(node, { src: true });
-
-    for (const member of typeMembers) {
+    for (const member of getTypeMembers(node, { src: true })) {
       if (member.label === memberLabel) {
         return member.src;
       }
