@@ -1,4 +1,3 @@
-import { TypeName } from 'solidity-ast';
 import { parseTypeId, ParsedTypeId } from '../utils/parse-type-id';
 
 // The interfaces below are generic in the way types are represented (through the parameter `Type`). When stored on
