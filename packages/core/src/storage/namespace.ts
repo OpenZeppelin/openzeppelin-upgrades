@@ -173,7 +173,7 @@ function getNamespacedStorageItems(
   const storageItems: StorageItem[] = [];
 
   for (const astMember of getTypeMembers(node, { typeName: true })) {
-    let item: StorageItem = {
+    const item: StorageItem = {
       contract: context.contractDef.name,
       label: astMember.label,
       type: astMember.type,
