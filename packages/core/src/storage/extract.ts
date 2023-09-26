@@ -40,13 +40,13 @@ export function extractStorageLayout(
   // The namespaced context will contain the types of namespaces that may not be included
   // in the original storage layout.
   // Some types will be present in both and they must be exactly equivalent.
-  // If they are not, we throw an error because this may be a clash between different types.
+  // If they are not, it fails an assertion because this may be a clash between different types.
   const combinedTypes = { ...namespacedContext?.storageLayout?.types, ...storageLayout?.types };
   if (namespacedContext?.storageLayout?.types) {
     for (const t in storageLayout?.types) {
-       if (t in namespacedContext.storageLayout.types) {
-         assert.deepEqual(namespacedContext.storageLayout.types[t], storageLayout.types[t]);
-       }
+      if (t in namespacedContext.storageLayout.types) {
+        assert.deepEqual(namespacedContext.storageLayout.types[t], storageLayout.types[t]);
+      }
     }
   }
 
@@ -99,24 +99,6 @@ export function extractStorageLayout(
   loadNamespaces(decodeSrc, layout, origContext, namespacedContext);
 
   return layout;
-}
-
-/**
- * Assert that combinedTypes is a superset of types.
- */
-function assertContainsAll(combinedTypes: Record<string, TypeItem<string>>, types?: Record<string, TypeItem<string>>) {
-  if (types) {
-    for (const [typeId, type] of Object.entries(types)) {
-      if (combinedTypes[typeId] !== undefined) {
-        const expected = JSON.stringify(type);
-        const actual = JSON.stringify(combinedTypes[typeId]);
-        assert(
-          expected === actual,
-          `Type ${typeId} is different in the original and namespaced layout. Expected ${expected}, found ${actual}`,
-        );
-      }
-    }
-  }
 }
 
 const findTypeNames = findAll([
