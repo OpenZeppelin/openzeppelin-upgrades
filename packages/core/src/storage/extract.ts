@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'assert/strict';
 import {
   ContractDefinition,
   StructDefinition,
@@ -45,7 +45,7 @@ export function extractStorageLayout(
   if (namespacedContext?.storageLayout?.types) {
     for (const t in storageLayout?.types) {
       if (t in namespacedContext.storageLayout.types) {
-        assert.deepEqual(namespacedContext.storageLayout.types[t], storageLayout.types[t]);
+        assert.deepEqual(namespacedContext.storageLayout.types[t], storageLayout?.types[t]);
       }
     }
   }
