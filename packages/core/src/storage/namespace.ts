@@ -210,6 +210,8 @@ function getNamespacedStorageItems(
 
     storageItems.push(item);
 
+    // If context is namespaced, we have storage layout, and this will fill in enum members just like in extractStorageLayout.
+    // If context is original, this will add the types from the namespace structs to the layout.
     loadLayoutType(astMember.typeName, layout, context.deref);
   }
   return storageItems;
