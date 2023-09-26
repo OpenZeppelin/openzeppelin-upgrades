@@ -81,6 +81,9 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           }
         }
       } else if (isNodeType('FunctionDefinition', node) || isNodeType('VariableDeclaration', node)) {
+        if (node.documentation) {
+          modifications.push(makeDelete(node.documentation, orig));
+        }
         // Replace with a dummy variable of arbitrary type
         const name = node.name;
         const insertText = `uint256 constant ${name} = 0;`;
