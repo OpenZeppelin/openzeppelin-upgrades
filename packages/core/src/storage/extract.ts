@@ -8,7 +8,7 @@ import {
   TypeName,
 } from 'solidity-ast';
 import { isNodeType, findAll, ASTDereferencer } from 'solidity-ast/utils';
-import { StorageLayout, StructMember, TypeItem, isStructMembers } from './layout';
+import { StorageLayout, StructMember, TypeItem, isStructMembers, EnumMember } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
 import { mapValues } from '../utils/map-values';
@@ -133,6 +133,20 @@ function typeDescriptions(x: { typeDescriptions: TypeDescriptions }): RequiredTy
   return x.typeDescriptions as RequiredTypeDescriptions;
 }
 
+type GotTypeMembers<D extends EnumDefinition | StructDefinition, F extends 'src' | 'typeName'> =
+  D extends infer D0
+  ? D0 extends EnumDefinition
+  ? EnumMember[]
+  : D0 extends StructDefinition
+  ? (StructMember & Pick<VariableDeclaration, F>)[]
+  : never
+  : never;
+
+export function getTypeMembers<D extends EnumDefinition | StructDefinition>(typeDef: D): GotTypeMembers<D, never>;
+export function getTypeMembers<D extends EnumDefinition | StructDefinition, F extends 'src' | 'typeName'>(
+  typeDef: D,
+  includeFields: { [f in F]: true },
+): GotTypeMembers<D, F>;
 export function getTypeMembers(
   typeDef: StructDefinition | EnumDefinition,
   includeFields: { src?: boolean; typeName?: boolean } = {},
@@ -140,15 +154,15 @@ export function getTypeMembers(
   if (typeDef.nodeType === 'StructDefinition') {
     return typeDef.members.map(m => {
       assert(typeof m.typeDescriptions.typeIdentifier === 'string');
-      let member: StructMember = {
+      let member: StructMember & Partial<Pick<VariableDeclaration, 'src' | 'typeName'>> = {
         label: m.name,
         type: normalizeTypeIdentifier(m.typeDescriptions.typeIdentifier),
       };
       if (includeFields.src && m.src) {
-        member = { ...member, src: m.src };
+        member.src = m.src;
       }
       if (includeFields.typeName && m.typeName) {
-        member = { ...member, typeName: m.typeName };
+        member.typeName = m.typeName;
       }
       return member;
     });

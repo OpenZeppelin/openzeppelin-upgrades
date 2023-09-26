@@ -183,37 +183,34 @@ function getNamespacedStorageItems(
   origContractDef: ContractDefinition,
 ): StorageItem[] {
   const astTypeMembers = getTypeMembers(node, { typeName: true });
-  assert(astTypeMembers !== undefined);
 
   const storageItems: StorageItem[] = [];
 
   for (const astMember of astTypeMembers) {
-    if (typeof astMember !== 'string') {
-      let item: StorageItem = {
-        contract: context.contractDef.name,
-        label: astMember.label,
-        type: astMember.type,
-        src: decodeSrc({ src: getOriginalMemberSrc(node.canonicalName, astMember.label, origContractDef) }),
+    let item: StorageItem = {
+      contract: context.contractDef.name,
+      label: astMember.label,
+      type: astMember.type,
+      src: decodeSrc({ src: getOriginalMemberSrc(node.canonicalName, astMember.label, origContractDef) }),
+    };
+
+    const layoutMember = findLayoutStructMember(
+      { ...context.storageLayout?.types },
+      node.canonicalName,
+      astMember.label,
+    );
+
+    if (layoutMember?.offset !== undefined && layoutMember?.slot !== undefined) {
+      item = {
+        ...item,
+        offset: layoutMember.offset,
+        slot: layoutMember.slot,
       };
-
-      const layoutMember = findLayoutStructMember(
-        { ...context.storageLayout?.types },
-        node.canonicalName,
-        astMember.label,
-      );
-
-      if (layoutMember?.offset !== undefined && layoutMember?.slot !== undefined) {
-        item = {
-          ...item,
-          offset: layoutMember.offset,
-          slot: layoutMember.slot,
-        };
-      }
-
-      storageItems.push(item);
-
-      loadLayoutType(astMember.typeName, layout, context.deref);
     }
+
+    storageItems.push(item);
+
+    loadLayoutType(astMember.typeName, layout, context.deref);
   }
   return storageItems;
 }
@@ -238,30 +235,20 @@ function getOriginalStruct(structCanonicalName: string, origContractDef: Contrac
  * Gets the original source location for the given struct canonical name and struct member label.
  */
 function getOriginalMemberSrc(structCanonicalName: string, memberLabel: string, origContractDef: ContractDefinition) {
-  let result;
-
   const node = getOriginalStruct(structCanonicalName, origContractDef);
   if (node !== undefined) {
     const typeMembers = getTypeMembers(node, { src: true });
-    assert(typeMembers !== undefined);
 
     for (const member of typeMembers) {
-      if (typeof member !== 'string') {
-        if (member.label === memberLabel) {
-          result = member.src;
-          break;
-        }
+      if (member.label === memberLabel) {
+        return member.src;
       }
     }
   }
 
-  if (result !== undefined) {
-    return result;
-  } else {
-    throw new Error(
-      `Could not find original source location for namespace struct with name ${structCanonicalName} and member ${memberLabel}`,
-    );
-  }
+  throw new Error(
+    `Could not find original source location for namespace struct with name ${structCanonicalName} and member ${memberLabel}`,
+  );
 }
 
 /**

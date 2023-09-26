@@ -45,8 +45,6 @@ export interface StructMember<Type = string> {
   renamedFrom?: string;
   offset?: number;
   slot?: string;
-  src?: string;
-  typeName?: TypeName | null;
 }
 
 export type EnumMember = string;
