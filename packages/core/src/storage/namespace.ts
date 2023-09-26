@@ -187,11 +187,8 @@ function getNamespacedStorageItems(
     );
 
     if (layoutMember?.offset !== undefined && layoutMember?.slot !== undefined) {
-      item = {
-        ...item,
-        offset: layoutMember.offset,
-        slot: layoutMember.slot,
-      };
+      item.offset = layoutMember.offset;
+      item.slot = layoutMember.slot;
     }
 
     storageItems.push(item);
