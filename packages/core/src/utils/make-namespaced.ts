@@ -50,7 +50,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         // Remove any calls to parent constructors from the inheritance list
         const inherits = contractDef.baseContracts;
         for (const inherit of inherits) {
-          if (isNodeType('InheritanceSpecifier', inherit)) {
+          if (Array.isArray(inherit.arguments)) {
             assert(inherit.baseName.name !== undefined);
             modifications.push(makeReplace(inherit, orig, inherit.baseName.name));
           }
