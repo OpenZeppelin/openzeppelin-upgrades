@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { ContractDefinition, StructDefinition } from 'solidity-ast';
 import { isNodeType } from 'solidity-ast/utils';
-import { StorageItem, StorageLayout, TypeItem } from './layout';
+import { StorageItem, StorageLayout, TypeItem, isStructMembers } from './layout';
 import { SrcDecoder } from '../src-decoder';
 import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/annotations';
 import { Node } from 'solidity-ast/node';
@@ -262,8 +262,8 @@ function findLayoutStructMember(
   const structType = findTypeWithLabel(types, `struct ${structCanonicalName}`);
   const structMembers = structType?.members;
   if (structMembers !== undefined) {
+    assert(isStructMembers(structMembers));
     for (const structMember of structMembers) {
-      assert(typeof structMember !== 'string');
       if (structMember.label === memberLabel) {
         return structMember;
       }
