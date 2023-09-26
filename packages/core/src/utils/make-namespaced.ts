@@ -63,9 +63,8 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
             isNodeType('ModifierDefinition', contractNode) ||
             isNodeType('VariableDeclaration', contractNode)
           ) {
-            const doc = contractNode.documentation;
-            if (doc) {
-              modifications.push(makeDelete(doc, orig));
+            if (contractNode.documentation) {
+              modifications.push(makeDelete(contractNode.documentation, orig));
             }
             modifications.push(makeDelete(contractNode, orig));
           } else if (isNodeType('UsingForDirective', contractNode)) {
