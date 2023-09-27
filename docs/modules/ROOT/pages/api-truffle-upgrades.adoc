@@ -1,5 +1,7 @@
 = OpenZeppelin Truffle Upgrades API
 
+WARNING: This package is deprecated. The recommended alternative is to use https://hardhat.org/[Hardhat] along with the xref:hardhat-upgrades.adoc[Hardhat Upgrades] plugin.
+
 Both `deployProxy` and `upgradeProxy` functions will return instances of https://www.trufflesuite.com/docs/truffle/reference/contract-abstractions[Truffle contracts], and require Truffle contract classes (retrieved via `artifacts.require`) as arguments. For https://docs.openzeppelin.com/contracts/4.x/api/proxy#beacon[beacons], `deployBeacon` and `upgradeBeacon` will both return an upgradable beacon instance that can be used with a beacon proxy. All deploy and upgrade functions validate that the implementation contract is upgrade-safe, and will fail otherwise.
 
 [[common-options]]

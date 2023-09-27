@@ -6,6 +6,13 @@ export type BasicOperation<T> =
   | {
       kind: 'delete';
       original: T;
+    }
+  | {
+      kind: 'delete-namespace';
+      namespace: string;
+      original: {
+        contract: string;
+      };
     };
 
 export type Operation<T, C> = C | BasicOperation<T>;

@@ -93,9 +93,11 @@ export function unfoldStorageLayout(runData: ValidationRunData, fullContractName
       solcVersion,
       storage: c.layout.storage,
       types: c.layout.types,
+      namespaces: c.layout.namespaces,
     };
   } else {
-    const layout: StorageLayout = { solcVersion, storage: [], types: {} };
+    // Namespaces are pre-flattened
+    const layout: StorageLayout = { solcVersion, storage: [], types: {}, namespaces: c.layout.namespaces };
     for (const name of [fullContractName].concat(c.inherit)) {
       layout.storage.unshift(...runData[name].layout.storage);
       Object.assign(layout.types, runData[name].layout.types);

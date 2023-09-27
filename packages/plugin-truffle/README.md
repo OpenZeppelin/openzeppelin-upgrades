@@ -1,5 +1,8 @@
 # OpenZeppelin Truffle Upgrades
 
+> **Warning**
+> This package is deprecated. The recommended alternative is to use [Hardhat](https://hardhat.org/) along with the [Hardhat Upgrades](https://docs.openzeppelin.com/upgrades-plugins/hardhat-upgrades) plugin.
+
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins/truffle-upgrades)
 [![NPM Package](https://img.shields.io/npm/v/@openzeppelin/truffle-upgrades.svg)](https://www.npmjs.org/package/@openzeppelin/truffle-upgrades)
 

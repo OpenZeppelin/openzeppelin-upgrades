@@ -32,6 +32,11 @@ Then recompile your contracts with '${FOUNDRY_COMPILE_COMMAND}' and try again.`;
  */
 export interface BuildInfoFile {
   /**
+   * The Solidity compiler version.
+   */
+  solcVersion: string;
+
+  /**
    * The Solidity compiler input JSON object.
    */
   input: SolcInput;
@@ -119,9 +124,13 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
 
   for (const buildInfoFilePath of buildInfoFilePaths) {
     const buildInfoJson = await readJSON(buildInfoFilePath);
-    if (buildInfoJson.input === undefined || buildInfoJson.output === undefined) {
+    if (
+      buildInfoJson.input === undefined ||
+      buildInfoJson.output === undefined ||
+      buildInfoJson.solcVersion === undefined
+    ) {
       throw new ValidateCommandError(
-        `Build info file ${buildInfoFilePath} must contain Solidity compiler input and output.`,
+        `Build info file ${buildInfoFilePath} must contain Solidity compiler input, output, and solcVersion.`,
       );
     } else {
       if (!hasStorageLayoutSetting(buildInfoJson)) {
@@ -134,6 +143,7 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
       buildInfoFiles.push({
         input: buildInfoJson.input,
         output: buildInfoJson.output,
+        solcVersion: buildInfoJson.solcVersion,
       });
     }
   }

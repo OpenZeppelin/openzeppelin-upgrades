@@ -59,3 +59,4 @@ export {
 export { ValidateUpgradeSafetyOptions, validateUpgradeSafety, ProjectReport, ReferenceContractNotFound } from './cli';
 
 export { getUpgradeInterfaceVersion } from './upgrade-interface-version';
+export { makeNamespacedInput } from './utils/make-namespaced';

@@ -1,8 +1,10 @@
 import { Node } from 'solidity-ast/node';
 import { isNodeType, findAll, ASTDereferencer, astDereferencer } from 'solidity-ast/utils';
 import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
+import debug from '../utils/debug';
+import * as versions from 'compare-versions';
 
-import { SolcOutput, SolcBytecode } from '../solc-api';
+import { SolcOutput, SolcBytecode, SolcInput } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
 import { isNullish } from '../utils/is-nullish';
 import { getFunctionSignature } from '../utils/function';
@@ -12,6 +14,8 @@ import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
+import { getStorageLocationAnnotation } from '../storage/namespace';
+import { UpgradesError } from '../error';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -116,7 +120,29 @@ function skipCheck(error: string, node: Node): boolean {
   return getAllowed(node, false).includes(error) || getAllowed(node, true).includes(error);
 }
 
-export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVersion?: string): ValidationRunData {
+/**
+ * Runs validations on the given solc output.
+ *
+ * If `namespacedOutput` is provided, it is used to extract storage layout information for namespaced types.
+ * It must be from a compilation with the same sources as `solcInput` and `solcOutput`, but with storage variables
+ * injected for each namespaced struct so that the types are available in the storage layout. This can be obtained by
+ * calling the `makeNamespacedInput` function from this package to create modified solc input, then compiling
+ * that modified solc input to get the namespaced output.
+ *
+ * @param solcOutput Solc output to validate
+ * @param decodeSrc Source decoder for the original source code
+ * @param solcVersion The version of solc used to compile the contracts
+ * @param solcInput Solc input that the compiler was invoked with
+ * @param namespacedOutput Namespaced solc output to extract storage layout information for namespaced types
+ * @returns A record of validation results for each fully qualified contract name
+ */
+export function validate(
+  solcOutput: SolcOutput,
+  decodeSrc: SrcDecoder,
+  solcVersion?: string,
+  solcInput?: SolcInput,
+  namespacedOutput?: SolcOutput,
+): ValidationRunData {
   const validation: ValidationRunData = {};
   const fromId: Record<number, string> = {};
   const inheritIds: Record<string, number[]> = {};
@@ -128,6 +154,9 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
   const selfDestructCache = initOpcodeCache();
 
   for (const source in solcOutput.contracts) {
+    checkNamespaceSolidityVersion(source, solcVersion, solcInput);
+    checkNamespacesOutsideContract(source, solcOutput, decodeSrc);
+
     for (const contractName in solcOutput.contracts[source]) {
       const bytecode = solcOutput.contracts[source][contractName].evm.bytecode;
       const version = bytecode.object === '' ? undefined : getVersion(bytecode.object);
@@ -176,7 +205,9 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
           decodeSrc,
           deref,
           solcOutput.contracts[source][contractDef.name].storageLayout,
+          getNamespacedCompilationContext(source, contractDef, namespacedOutput),
         );
+
         validation[key].methods = [...findAll('FunctionDefinition', contractDef)]
           .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
           .map(fnDef => getFunctionSignature(fnDef, deref));
@@ -193,6 +224,82 @@ export function validate(solcOutput: SolcOutput, decodeSrc: SrcDecoder, solcVers
   }
 
   return validation;
+}
+
+function checkNamespaceSolidityVersion(source: string, solcVersion?: string, solcInput?: SolcInput) {
+  if (solcInput === undefined) {
+    // This should only be missing if using an old version of the Hardhat or Truffle plugin.
+    // Even without this param, namespace layout checks would still occur if compiled with solc version >= 0.8.20
+    debug('Cannot check Solidity version for namespaces because solcInput is undefined');
+  } else {
+    // Solc versions older than 0.8.20 do not have documentation for structs.
+    // Use a regex to check for strings that look like namespace annotations, and if found, check that the compiler version is >= 0.8.20
+    const content = solcInput.sources[source].content;
+    const hasMatch = content !== undefined && content.match(/@custom:storage-location/);
+    if (hasMatch) {
+      if (solcVersion === undefined) {
+        throw new UpgradesError(
+          `${source}: Namespace annotations require Solidity version >= 0.8.20, but no solcVersion parameter was provided`,
+          () =>
+            `Structs with the @custom:storage-location annotation can only be used with Solidity version 0.8.20 or higher. Pass the solcVersion parameter to the validate function, or remove the annotation if the struct is not used for namespaced storage.`,
+        );
+      } else if (versions.compare(solcVersion, '0.8.20', '<')) {
+        throw new UpgradesError(
+          `${source}: Namespace annotations require Solidity version >= 0.8.20, but ${solcVersion} was used`,
+          () =>
+            `Structs with the @custom:storage-location annotation can only be used with Solidity version 0.8.20 or higher. Use a newer version of Solidity, or remove the annotation if the struct is not used for namespaced storage.`,
+        );
+      }
+    }
+  }
+}
+
+function checkNamespacesOutsideContract(source: string, solcOutput: SolcOutput, decodeSrc: SrcDecoder) {
+  for (const node of solcOutput.sources[source].ast.nodes) {
+    if (isNodeType('StructDefinition', node)) {
+      const storageLocation = getStorageLocationAnnotation(node);
+      if (storageLocation !== undefined) {
+        throw new UpgradesError(
+          `${decodeSrc(node)}: Namespace struct ${node.name} is defined outside of a contract`,
+          () =>
+            `Structs with the @custom:storage-location annotation must be defined within a contract. Move the struct definition into a contract, or remove the annotation if the struct is not used for namespaced storage.`,
+        );
+      }
+    }
+  }
+}
+
+function getNamespacedCompilationContext(
+  source: string,
+  contractDef: ContractDefinition,
+  namespacedOutput?: SolcOutput,
+) {
+  if (namespacedOutput === undefined || contractDef.canonicalName === undefined) {
+    return undefined;
+  }
+
+  if (namespacedOutput.sources[source] === undefined) {
+    throw new Error(`Source ${source} not found in namespaced solc output`);
+  }
+
+  const namespacedContractDef = namespacedOutput.sources[source].ast.nodes
+    .filter(isNodeType('ContractDefinition'))
+    .find(c => c.canonicalName === contractDef.canonicalName);
+
+  if (namespacedContractDef === undefined) {
+    throw new Error(`Contract definition with name ${contractDef.canonicalName} not found in namespaced solc output`);
+  }
+
+  const storageLayout = namespacedOutput.contracts[source][contractDef.name].storageLayout;
+  if (storageLayout === undefined) {
+    throw new Error(`Storage layout for contract ${contractDef.canonicalName} not found in namespaced solc output`);
+  }
+
+  return {
+    contractDef: namespacedContractDef,
+    deref: astDereferencer(namespacedOutput),
+    storageLayout: storageLayout,
+  };
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {

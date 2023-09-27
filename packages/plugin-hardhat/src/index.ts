@@ -6,12 +6,7 @@ import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
 import { HardhatConfig, HardhatRuntimeEnvironment } from 'hardhat/types';
-import {
-  getImplementationAddressFromBeacon,
-  logWarning,
-  silenceWarnings,
-  SolcInput,
-} from '@openzeppelin/upgrades-core';
+import type { silenceWarnings, SolcInput, SolcOutput } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { PrepareUpgradeFunction } from './prepare-upgrade';
 import type { UpgradeFunction } from './upgrade-proxy';
@@ -23,12 +18,12 @@ import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction, GetInsta
 import type { ValidateImplementationFunction } from './validate-implementation';
 import type { ValidateUpgradeFunction } from './validate-upgrade';
 import type { DeployImplementationFunction } from './deploy-implementation';
-import { DeployAdminFunction, makeDeployProxyAdmin } from './deploy-proxy-admin';
+import type { DeployAdminFunction } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
 import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade-with-approval';
 import type { GetDefaultApprovalProcessFunction } from './defender/get-default-approval-process';
-import { ProposeUpgradeFunction } from './defender-v1/propose-upgrade';
-import {
+import type { ProposeUpgradeFunction } from './defender-v1/propose-upgrade';
+import type {
   VerifyDeployFunction,
   VerifyDeployWithUploadedArtifactFunction,
   GetVerifyDeployArtifactFunction,
@@ -82,6 +77,7 @@ export interface DefenderHardhatUpgrades extends HardhatUpgrades, DefenderV1Hard
 interface RunCompilerArgs {
   input: SolcInput;
   solcVersion: string;
+  quiet: boolean;
 }
 
 subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) => {
@@ -101,7 +97,7 @@ subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) =
 });
 
 subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
-  const { validate, solcInputOutputDecoder } = await import('@openzeppelin/upgrades-core');
+  const { validate, solcInputOutputDecoder, makeNamespacedInput } = await import('@openzeppelin/upgrades-core');
   const { writeValidations } = await import('./utils/validations');
 
   // TODO: patch input
@@ -110,12 +106,40 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
   const { isFullSolcOutput } = await import('./utils/is-full-solc-output');
   if (isFullSolcOutput(output)) {
     const decodeSrc = solcInputOutputDecoder(args.input, output);
-    const validations = validate(output, decodeSrc, args.solcVersion);
+
+    const namespacedInput = makeNamespacedInput(args.input, output);
+    const { output: namespacedOutput } = await runSuper({ ...args, quiet: true, input: namespacedInput });
+    await checkNamespacedCompileErrors(namespacedOutput);
+
+    const validations = validate(output, decodeSrc, args.solcVersion, args.input, namespacedOutput);
     await writeValidations(hre, validations);
   }
 
   return { output, solcBuild };
 });
+
+/**
+ * Checks for compile errors in the modified contracts for namespaced storage.
+ * If errors are found, throws an error with the compile error messages.
+ */
+async function checkNamespacedCompileErrors(namespacedOutput: SolcOutput) {
+  const errors = [];
+  if (namespacedOutput.errors !== undefined) {
+    for (const error of namespacedOutput.errors) {
+      if (error.severity === 'error') {
+        errors.push(error.formattedMessage);
+      }
+    }
+  }
+  if (errors.length > 0) {
+    const { UpgradesError } = await import('@openzeppelin/upgrades-core');
+    throw new UpgradesError(
+      `Failed to compile modified contracts for namespaced storage:\n\n${errors.join('\n')}`,
+      () =>
+        'Please report this at https://zpl.in/upgrades/report. If possible, include the source code for the contracts mentioned in the errors above.',
+    );
+  }
+}
 
 extendEnvironment(hre => {
   hre.upgrades = lazyObject((): HardhatUpgrades => {
@@ -131,6 +155,7 @@ extendEnvironment(hre => {
 
 function warnOnHardhatDefender() {
   if (tryRequire('@openzeppelin/hardhat-defender', true)) {
+    const { logWarning } = require('@openzeppelin/upgrades-core');
     logWarning('The @openzeppelin/hardhat-defender package is deprecated.', [
       'Uninstall the @openzeppelin/hardhat-defender package.',
       'OpenZeppelin Defender integration is included as part of the Hardhat Upgrades plugin.',
@@ -175,6 +200,7 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, defender: boolean) {
     getAdminAddress,
     getImplementationAddress,
     getBeaconAddress,
+    getImplementationAddressFromBeacon,
   } = require('@openzeppelin/upgrades-core');
   const { makeDeployProxy } = require('./deploy-proxy');
   const { makeUpgradeProxy } = require('./upgrade-proxy');
@@ -187,6 +213,7 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, defender: boolean) {
   const { makeUpgradeBeacon } = require('./upgrade-beacon');
   const { makeForceImport } = require('./force-import');
   const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
+  const { makeDeployProxyAdmin } = require('./deploy-proxy-admin');
 
   return {
     silenceWarnings,

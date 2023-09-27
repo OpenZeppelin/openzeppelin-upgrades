@@ -1,5 +1,7 @@
 = Using with Truffle
 
+WARNING: This package is deprecated. The recommended alternative is to use https://hardhat.org/[Hardhat] along with the xref:hardhat-upgrades.adoc[Hardhat Upgrades] plugin.
+
 This package adds functions to your Truffle migrations and tests so you can deploy and upgrade proxies for your contracts.
 
 NOTE: Usage from https://www.trufflesuite.com/docs/truffle/getting-started/writing-external-scripts[Truffle external scripts] is not yet supported.
