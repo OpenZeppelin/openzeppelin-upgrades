@@ -13,5 +13,10 @@ export function stabilizeStorageLayout(layout: StorageLayout) {
           : item.members.map(m => ({ ...m, type: stabilizeTypeIdentifier(m.type) })));
       return [stabilizeTypeIdentifier(type), { ...item, members }];
     }),
+    namespaces: layout.namespaces
+      ? Object.entries(layout.namespaces).map(([ns, items]) => {
+          return [ns, items.map(item => ({ ...item, type: stabilizeTypeIdentifier(item.type) }))];
+        })
+      : undefined,
   };
 }

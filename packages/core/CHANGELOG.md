@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add validations for namespaced storage layout. ([#876](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/876))
+- Deprecate low-level API. Use [CLI or high-level API](https://docs.openzeppelin.com/upgrades-plugins/1.x/api-core) instead.
+
 ## 1.29.0 (2023-09-19)
 
 - Support implementations with upgradeTo or upgradeToAndCall. ([#880](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/880))

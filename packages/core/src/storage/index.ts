@@ -43,8 +43,16 @@ export function getStorageUpgradeReport(
 ): LayoutCompatibilityReport {
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
+  const originalDetailedNamespaces = getDetailedNamespacedLayout(original);
+  const updatedDetailedNamespaces = getDetailedNamespacedLayout(updated);
+
   const comparator = new StorageLayoutComparator(opts.unsafeAllowCustomTypes, opts.unsafeAllowRenames);
-  const report = comparator.compareLayouts(originalDetailed, updatedDetailed);
+  const report = comparator.compareLayouts(
+    originalDetailed,
+    updatedDetailed,
+    originalDetailedNamespaces,
+    updatedDetailedNamespaces,
+  );
 
   if (comparator.hasAllowedUncheckedCustomTypes) {
     logWarning(`Potentially unsafe deployment`, [
@@ -56,6 +64,19 @@ export function getStorageUpgradeReport(
   }
 
   return report;
+}
+
+function getDetailedNamespacedLayout(layout: StorageLayout): Record<string, StorageItem[]> {
+  const detailedNamespaces: Record<string, StorageItem[]> = {};
+  if (layout.namespaces !== undefined) {
+    for (const [storageLocation, namespacedLayout] of Object.entries(layout.namespaces)) {
+      detailedNamespaces[storageLocation] = getDetailedLayout({
+        storage: namespacedLayout,
+        types: layout.types,
+      });
+    }
+  }
+  return detailedNamespaces;
 }
 
 export class StorageUpgradeErrors extends UpgradesError {

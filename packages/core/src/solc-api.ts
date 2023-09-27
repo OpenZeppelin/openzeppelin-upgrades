@@ -22,12 +22,26 @@ export interface SolcOutput {
       id: number;
     };
   };
+  errors?: {
+    severity: 'error' | 'warning';
+    formattedMessage: string;
+    sourceLocation?: {
+      file: string;
+    };
+  }[];
 }
 
 export interface SolcInput {
   sources: {
     [source in string]: {
       content?: string;
+    };
+  };
+  settings?: {
+    outputSelection?: {
+      [file in string]: {
+        [contract in string]: string[];
+      };
     };
   };
 }

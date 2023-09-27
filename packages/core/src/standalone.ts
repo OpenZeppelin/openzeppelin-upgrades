@@ -18,6 +18,9 @@ export interface Report {
   explain(color?: boolean): string;
 }
 
+/**
+ * @deprecated Use `validateUpgradeSafety` instead.
+ */
 export class UpgradeableContract {
   readonly version: Version;
   readonly errors: ValidationError[];
@@ -28,11 +31,12 @@ export class UpgradeableContract {
     solcInput: SolcInput,
     solcOutput: SolcOutput,
     opts: ValidationOptions = {},
+    solcVersion?: string,
   ) {
     const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
-    const validation = validate(solcOutput, decodeSrc);
+    const validation = validate(solcOutput, decodeSrc, solcVersion, solcInput);
     this.version = getContractVersion(validation, name);
-    this.errors = getErrors(validation, this.version, opts);
+    this.errors = getErrors(validation, this.version, withValidationDefaults(opts));
     this.layout = getStorageLayout(validation, this.version);
   }
 

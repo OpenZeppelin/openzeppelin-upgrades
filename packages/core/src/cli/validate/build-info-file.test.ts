@@ -15,6 +15,7 @@ test.afterEach(async () => {
 });
 
 const BUILD_INFO = {
+  solcVersion: '0.8.9',
   input: {
     language: 'Solidity',
     sources: {
@@ -41,6 +42,7 @@ const BUILD_INFO = {
 };
 
 const BUILD_INFO_2 = {
+  solcVersion: '0.8.9',
   input: {
     language: 'Solidity',
     sources: {
@@ -67,6 +69,7 @@ const BUILD_INFO_2 = {
 };
 
 const BUILD_INFO_NO_LAYOUT = {
+  solcVersion: '0.8.9',
   input: {
     language: 'Solidity',
     sources: {
@@ -165,7 +168,7 @@ test.serial('invalid build info file', async t => {
 
   await fs.writeFile('invalid-build-info/invalid.json', JSON.stringify({ output: {} }));
   const error = await t.throwsAsync(getBuildInfoFiles('invalid-build-info'));
-  t.true(error?.message.includes('must contain Solidity compiler input and output'));
+  t.true(error?.message.includes('must contain Solidity compiler input, output, and solcVersion'));
 });
 
 test.serial('dir does not exist', async t => {

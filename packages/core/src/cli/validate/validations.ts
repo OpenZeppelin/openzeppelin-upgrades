@@ -1,4 +1,4 @@
-import { solcInputOutputDecoder, validate, SolcOutput, SolcInput, ValidationRunData } from '../..';
+import { solcInputOutputDecoder, validate, ValidationRunData } from '../..';
 
 import debug from '../../utils/debug';
 
@@ -18,15 +18,16 @@ export interface SourceContract {
 export function validateBuildInfoContracts(buildInfoFiles: BuildInfoFile[]): SourceContract[] {
   const sourceContracts: SourceContract[] = [];
   for (const buildInfoFile of buildInfoFiles) {
-    const validations = runValidations(buildInfoFile.input, buildInfoFile.output);
+    const validations = runValidations(buildInfoFile);
     addContractsFromBuildInfo(buildInfoFile, validations, sourceContracts);
   }
   return sourceContracts;
 }
 
-function runValidations(solcInput: SolcInput, solcOutput: SolcOutput) {
-  const decodeSrc = solcInputOutputDecoder(solcInput, solcOutput);
-  const validation = validate(solcOutput, decodeSrc);
+function runValidations(buildInfoFile: BuildInfoFile) {
+  const { input, output, solcVersion } = buildInfoFile;
+  const decodeSrc = solcInputOutputDecoder(input, output);
+  const validation = validate(output, decodeSrc, solcVersion, input);
   return validation;
 }
 

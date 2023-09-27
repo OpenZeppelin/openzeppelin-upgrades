@@ -108,8 +108,40 @@ export class StorageLayoutComparator {
     readonly unsafeAllowRenames = false,
   ) {}
 
-  compareLayouts(original: StorageItem[], updated: StorageItem[]): LayoutCompatibilityReport {
-    return new LayoutCompatibilityReport(this.layoutLevenshtein(original, updated, { allowAppend: true }));
+  compareLayouts(
+    original: StorageItem[],
+    updated: StorageItem[],
+    originalNamespaces?: Record<string, StorageItem[]>,
+    updatedNamespaces?: Record<string, StorageItem[]>,
+  ): LayoutCompatibilityReport {
+    const ops = this.layoutLevenshtein(original, updated, { allowAppend: true });
+    const namespacedOps = this.getNamespacedStorageOperations(originalNamespaces, updatedNamespaces);
+
+    return new LayoutCompatibilityReport([...ops, ...namespacedOps]);
+  }
+
+  private getNamespacedStorageOperations(
+    originalNamespaces?: Record<string, StorageItem[]>,
+    updatedNamespaces?: Record<string, StorageItem[]>,
+  ) {
+    const ops: StorageOperation<StorageItem>[] = [];
+    if (originalNamespaces !== undefined) {
+      for (const [storageLocation, origNamespacedLayout] of Object.entries(originalNamespaces)) {
+        const updatedNamespacedLayout = updatedNamespaces?.[storageLocation];
+        if (updatedNamespacedLayout !== undefined) {
+          ops.push(...this.layoutLevenshtein(origNamespacedLayout, updatedNamespacedLayout, { allowAppend: true }));
+        } else if (origNamespacedLayout.length > 0) {
+          ops.push({
+            kind: 'delete-namespace',
+            namespace: storageLocation,
+            original: {
+              contract: origNamespacedLayout[0].contract,
+            },
+          });
+        }
+      }
+    }
+    return ops;
   }
 
   private layoutLevenshtein<F extends StorageField>(

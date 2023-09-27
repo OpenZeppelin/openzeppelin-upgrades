@@ -122,6 +122,7 @@ If any errors are found, the command will exit with a non-zero exit code and pri
 * `--unsafeAllowRenames` - Configure storage layout check to allow variable renaming.
 * `--unsafeSkipStorageCheck` - Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
 
+[[high-level-api]]
 == High-Level API
 
 The high-level API is a programmatic equivalent to the <<validate-command, validate command>>. Use this API if you want to validate all of your project's upgradeable contracts from a JavaScript or TypeScript environment.
@@ -193,6 +194,8 @@ An object that represents the result of upgrade safety checks and storage layout
 
 == Low-Level API
 
+NOTE: This low-level API is deprecated. Use the <<high-level-api>> instead.
+
 The low-level API works with https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description[Solidity input and output JSON objects] and lets you perform upgrade safety checks and storage layout comparisons on individual contracts. Use this API if you want to validate specific contracts rather than a whole project.
 
 === Prerequisites
@@ -229,6 +232,7 @@ constructor UpgradeableContract(
     unsafeSkipStorageCheck?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
   },
+  solcVersion?: string,
 ): UpgradeableContract
 ----
 
@@ -244,6 +248,7 @@ Creates a new instance of `UpgradeableContract`.
 ** `unsafeAllow`
 ** `unsafeAllowRenames`
 ** `unsafeSkipStorageCheck`
+* `solcVersion` - the Solidity version used to compile the implementation contract.
 
 TIP: In Hardhat, `solcInput` and `solcOutput` can be obtained from the Build Info file, which itself can be retrieved with `hre.artifacts.getBuildInfo`.
 

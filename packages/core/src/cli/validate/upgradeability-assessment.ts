@@ -1,4 +1,4 @@
-import { getAnnotationArgs, getDocumentation } from '../../utils/annotations';
+import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../../utils/annotations';
 import { inferInitializable, inferUUPS } from '../../validate/query';
 import { ValidateCommandError } from './error';
 import { findContract } from './find-contract';
@@ -87,11 +87,6 @@ function getAndValidateAnnotationArgs(doc: string, tag: string, contract: Source
     );
   }
   return annotationArgs;
-}
-
-function hasAnnotationTag(doc: string, tag: string): boolean {
-  const regex = new RegExp(`^\\s*(@custom:${tag})(\\s|$)`, 'm');
-  return regex.test(doc);
 }
 
 function getUpgradesFrom(doc: string, contract: SourceContract): string | undefined {
