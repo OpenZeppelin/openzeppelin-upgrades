@@ -1,11 +1,11 @@
-import { callOptionalSelector } from './call-optional-selector';
+import { callOptionalSignature } from './call-optional-signature';
 import { EthereumProvider } from './provider';
 
 export async function getUpgradeInterfaceVersion(
   provider: EthereumProvider,
   address: string,
 ): Promise<string | undefined> {
-  const encodedVersion = await callOptionalSelector(provider, address, 'UPGRADE_INTERFACE_VERSION()');
+  const encodedVersion = await callOptionalSignature(provider, address, 'UPGRADE_INTERFACE_VERSION()');
   if (encodedVersion !== undefined) {
     // Encoded string
     const buf = Buffer.from(encodedVersion.replace(/^0x/, ''), 'hex');

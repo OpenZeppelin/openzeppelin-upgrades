@@ -5,7 +5,7 @@ import {
   getImplementationAddress,
   UpgradesError,
 } from '.';
-import { callOptionalSelector } from './call-optional-selector';
+import { callOptionalSignature } from './call-optional-signature';
 
 import { EthereumProvider } from './provider';
 import { parseAddress } from './utils/address';
@@ -23,7 +23,7 @@ export async function getImplementationAddressFromBeacon(
   provider: EthereumProvider,
   beaconAddress: string,
 ): Promise<string> {
-  const impl = await callOptionalSelector(provider, beaconAddress, 'implementation()');
+  const impl = await callOptionalSignature(provider, beaconAddress, 'implementation()');
   let parsedImplAddress;
   if (impl !== undefined) {
     parsedImplAddress = parseAddress(impl);
