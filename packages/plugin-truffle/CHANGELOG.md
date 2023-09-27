@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.21.0 (2023-09-27)
+
+> **Warning**
+> This package is deprecated. The recommended alternative is to use [Hardhat](https://hardhat.org/) along with the [Hardhat Upgrades](https://docs.openzeppelin.com/upgrades-plugins/hardhat-upgrades) plugin.
 
 - Add validations for namespaced storage layout. ([#876](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/876))
 
