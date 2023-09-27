@@ -7,16 +7,14 @@ export async function callOptionalSignature(provider: EthereumProvider, address:
     return await call(provider, address, data);
   } catch (e: any) {
     if (
-      !(
-        e.message.includes('function selector was not recognized') ||
-        e.message.includes('invalid opcode') ||
-        e.message.includes('revert') ||
-        e.message.includes('execution error')
-      )
+      e.message.includes('function selector was not recognized') ||
+      e.message.includes('invalid opcode') ||
+      e.message.includes('revert') ||
+      e.message.includes('execution error')
     ) {
-      throw e;
-    } else {
       return undefined;
+    } else {
+      throw e;
     }
   }
 }
