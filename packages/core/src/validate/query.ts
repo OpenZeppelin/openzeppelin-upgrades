@@ -194,7 +194,7 @@ export function isUpgradeSafe(data: ValidationData, version: Version): boolean {
 
 export function inferUUPS(runValidation: ValidationRunData, fullContractName: string): boolean {
   const methods = getAllMethods(runValidation, fullContractName);
-  return methods.includes(upgradeToSignature);
+  return methods.includes(upgradeToSignature) || methods.includes(upgradeToAndCallSignature);
 }
 
 export function inferProxyKind(data: ValidationData, version: Version): ProxyDeployment['kind'] {

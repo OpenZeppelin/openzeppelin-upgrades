@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Support new upgrade interface in OpenZeppelin Contracts 5.0. ([883](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/883))
 - Add validations for namespaced storage layout. ([#876](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/876))
 - Deprecate low-level API. Use [CLI or high-level API](https://docs.openzeppelin.com/upgrades-plugins/1.x/api-core) instead.
 

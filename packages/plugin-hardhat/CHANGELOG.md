@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Support new upgrade interface in OpenZeppelin Contracts 5.0. ([#883](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/883))
+- Support importing and upgrading 5.0 proxies.
+  - **Note**: Deploying 5.0 proxies is not supported yet.
 - Add validations for namespaced storage layout. ([#876](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/876))
 
 ## 2.2.1 (2023-08-18)

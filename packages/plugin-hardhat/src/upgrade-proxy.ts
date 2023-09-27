@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
 
-import { getAdminAddress, getCode, isEmptySlot } from '@openzeppelin/upgrades-core';
+import { getAdminAddress, getCode, getUpgradeInterfaceVersion, isEmptySlot } from '@openzeppelin/upgrades-core';
 
 import {
   UpgradeProxyOptions,
@@ -54,17 +54,39 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
       const ITransparentUpgradeableProxyFactory = await getITransparentUpgradeableProxyFactory(hre, signer);
       const proxy = attach(ITransparentUpgradeableProxyFactory, proxyAddress);
 
-      return (nextImpl, call) =>
-        call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
+      const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, proxyAddress);
+
+      return (nextImpl, call) => {
+        if (upgradeInterfaceVersion === undefined) {
+          return call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
+        } else if (upgradeInterfaceVersion === '5.0.0') {
+          return proxy.upgradeToAndCall(nextImpl, call ?? '0x', ...overrides);
+        } else {
+          throw new Error(
+            `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
+          );
+        }
+      };
     } else {
       // Admin contract: redirect upgrade call through it
       const AdminFactory = await getProxyAdminFactory(hre, signer);
       const admin = attach(AdminFactory, adminAddress);
 
-      return (nextImpl, call) =>
-        call
-          ? admin.upgradeAndCall(proxyAddress, nextImpl, call, ...overrides)
-          : admin.upgrade(proxyAddress, nextImpl, ...overrides);
+      const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress);
+
+      return (nextImpl, call) => {
+        if (upgradeInterfaceVersion === undefined) {
+          return call
+            ? admin.upgradeAndCall(proxyAddress, nextImpl, call, ...overrides)
+            : admin.upgrade(proxyAddress, nextImpl, ...overrides);
+        } else if (upgradeInterfaceVersion === '5.0.0') {
+          return admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
+        } else {
+          throw new Error(
+            `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
+          );
+        }
+      };
     }
   }
 }
