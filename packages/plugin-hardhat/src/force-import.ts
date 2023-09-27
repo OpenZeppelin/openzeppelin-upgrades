@@ -13,6 +13,8 @@ import {
   ProxyDeployment,
   hasCode,
   NoContractImportError,
+  isEmptySlot,
+  UpgradesError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -108,5 +110,14 @@ async function addAdminToManifest(
   opts: ForceImportOptions,
 ) {
   const adminAddress = await getAdminAddress(provider, proxyAddress);
+  if (isEmptySlot(adminAddress)) {
+    // Asser that the admin slot of a transparent proxy is not zero, otherwise the simulation below would fail due to no code at the address.
+    // Note: Transparent proxies should not have the zero address as the admin, according to TransparentUpgradeableProxy's _setAdmin function.
+    throw new UpgradesError(
+      `Proxy at ${proxyAddress} doesn't look like a transparent proxy`,
+      () =>
+        `Set the \`kind\` option to the kind of proxy that was deployed at ${proxyAddress} (either 'uups' or 'beacon')`,
+    );
+  }
   await simulateDeployAdmin(hre, ImplFactory, opts, adminAddress);
 }
