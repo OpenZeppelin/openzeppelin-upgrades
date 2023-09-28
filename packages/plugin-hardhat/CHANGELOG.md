@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.3.1 (2023-09-28)
 
 - Check for non-zero admin address when importing transparent proxy. ([#887](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/887))
 
