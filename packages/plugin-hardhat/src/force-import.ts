@@ -116,6 +116,7 @@ async function addAdminToManifest(
     throw new UpgradesError(
       `Proxy at ${proxyAddress} doesn't look like a transparent proxy`,
       () =>
+        `The proxy doesn't look like a transparent proxy because its admin address slot is empty. ` +
         `Set the \`kind\` option to the kind of proxy that was deployed at ${proxyAddress} (either 'uups' or 'beacon')`,
     );
   }
