@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Check for non-zero admin address when importing transparent proxy. ([#887](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/887))
+
 ## 2.3.0 (2023-09-27)
 
 - Support new upgrade interface in OpenZeppelin Contracts 5.0. ([#883](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/883))

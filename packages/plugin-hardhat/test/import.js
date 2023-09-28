@@ -38,7 +38,7 @@ function getInitializerData(contractInterface, args) {
   return contractInterface.encodeFunctionData(fragment, args);
 }
 
-const REQUESTED_UPGRADE_WRONG_KIND = 'Requested an upgrade of kind uups but proxy is transparent';
+const NOT_TRANSPARENT_PROXY = `doesn't look like a transparent proxy`;
 
 test('implementation happy path', async t => {
   const { GreeterProxiable } = t.context;
@@ -180,13 +180,16 @@ test('wrong kind', async t => {
   );
   await proxy.waitForDeployment();
 
-  // specify wrong kind
-  const greeter = await upgrades.forceImport(await proxy.getAddress(), GreeterProxiable, { kind: 'transparent' });
-  t.is(await greeter.greet(), 'Hello, Hardhat!');
+  // specify wrong kind.
+  // an error is expected since the admin adress is zero
+  const e = await t.throwsAsync(async () =>
+    upgrades.forceImport(await proxy.getAddress(), GreeterProxiable, { kind: 'transparent' }),
+  );
+  t.true(e.message.includes(NOT_TRANSPARENT_PROXY), e.message);
 
-  // an error is expected since the user force imported the wrong kind
-  const e = await t.throwsAsync(() => upgrades.upgradeProxy(greeter, GreeterV2Proxiable));
-  t.true(e.message.startsWith(REQUESTED_UPGRADE_WRONG_KIND), e.message);
+  // import with correct kind
+  const greeter = await upgrades.forceImport(await proxy.getAddress(), GreeterProxiable, { kind: 'uups' });
+  await upgrades.upgradeProxy(greeter, GreeterV2Proxiable);
 });
 
 test('import custom UUPS proxy', async t => {
