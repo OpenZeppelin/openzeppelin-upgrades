@@ -38,7 +38,7 @@
   "dependencies": {
     "@openzeppelin/defender-admin-client": "^1.48.0",
     "@openzeppelin/defender-base-client": "^1.48.0",
-    "@openzeppelin/platform-deploy-client": "^0.10.0",
+    "@openzeppelin/platform-deploy-client": "^1.0.0",
     "@openzeppelin/upgrades-core": "^1.30.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",

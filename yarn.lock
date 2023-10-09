@@ -2344,10 +2344,21 @@
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-"@openzeppelin/defender-base-client@1.48.0", "@openzeppelin/defender-base-client@^1.48.0", "@openzeppelin/defender-base-client@^1.48.0-rc.1":
+"@openzeppelin/defender-base-client@1.48.0", "@openzeppelin/defender-base-client@^1.48.0":
   version "1.48.0"
   resolved "https://registry.yarnpkg.com/@openzeppelin/defender-base-client/-/defender-base-client-1.48.0.tgz#9103b1b036db0451b52d7899a277bf24db4c4b06"
   integrity sha512-HFO87s010hRrMjyh2xYOCEAkLe21BfIbho7n5/kikA6A1ZgXi7MsEiqnQv1zP4bxMJgxGZ5b3t4tt6fWrakbag==
+  dependencies:
+    amazon-cognito-identity-js "^6.0.1"
+    async-retry "^1.3.3"
+    axios "^1.4.0"
+    lodash "^4.17.19"
+    node-fetch "^2.6.0"
+
+"@openzeppelin/defender-base-client@^1.49.0":
+  version "1.49.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-base-client/-/defender-base-client-1.49.0.tgz#01a95103b1584b787a2516b22bc31c032d58c9c0"
+  integrity sha512-nG2jslaAUbo2ZW9yBStstxTPscAchN/vRdJ16M34whuZRtUp1bccCBVLdv3oiPOdjwFaa1OBXJkheN+eF8alzA==
   dependencies:
     amazon-cognito-identity-js "^6.0.1"
     async-retry "^1.3.3"
@@ -2370,13 +2381,13 @@
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
 
-"@openzeppelin/platform-deploy-client@^0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/platform-deploy-client/-/platform-deploy-client-0.10.0.tgz#017599612ed3b898f94f281b378ac50626365617"
-  integrity sha512-jayQPeXqw4LnWIrNhNqgikJSre+n2NRrnEu76niSdVXc/faQkG3PmaHtRPJMFgsYxjjAiAfcMYyV95YBDuLexA==
+"@openzeppelin/platform-deploy-client@^1.0.0":
+  version "1.49.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/platform-deploy-client/-/platform-deploy-client-1.49.0.tgz#1ab35299d731bcd9cce62eb2b4ecd78e5d5a5aee"
+  integrity sha512-CCBitp3hwgiKjIPBm+8o+xB2OfGBN6tSzRa+8SzFOaXVEjXp399lrfsyvrM/qsWOFPMrKJPHDHrKKFUIIFwwzg==
   dependencies:
     "@ethersproject/abi" "^5.6.3"
-    "@openzeppelin/defender-base-client" "^1.48.0-rc.1"
+    "@openzeppelin/defender-base-client" "^1.49.0"
     axios "^1.4.0"
     lodash "^4.17.19"
     node-fetch "^2.6.0"
