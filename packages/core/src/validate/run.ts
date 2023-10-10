@@ -2,7 +2,6 @@ import { Node } from 'solidity-ast/node';
 import { isNodeType, findAll, ASTDereferencer, astDereferencer } from 'solidity-ast/utils';
 import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
 import debug from '../utils/debug';
-import * as versions from 'compare-versions';
 
 import { SolcOutput, SolcBytecode, SolcInput } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
@@ -14,7 +13,7 @@ import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
-import { getStorageLocationAnnotation } from '../storage/namespace';
+import { getStorageLocationAnnotation, isNamespaceSupported } from '../storage/namespace';
 import { UpgradesError } from '../error';
 
 export type ValidationRunData = Record<string, ContractValidation>;
@@ -243,7 +242,7 @@ function checkNamespaceSolidityVersion(source: string, solcVersion?: string, sol
           () =>
             `Structs with the @custom:storage-location annotation can only be used with Solidity version 0.8.20 or higher. Pass the solcVersion parameter to the validate function, or remove the annotation if the struct is not used for namespaced storage.`,
         );
-      } else if (versions.compare(solcVersion, '0.8.20', '<')) {
+      } else if (!isNamespaceSupported(solcVersion)) {
         throw new UpgradesError(
           `${source}: Namespace annotations require Solidity version >= 0.8.20, but ${solcVersion} was used`,
           () =>
