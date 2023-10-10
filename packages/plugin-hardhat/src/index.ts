@@ -97,7 +97,9 @@ subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) =
 });
 
 subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
-  const { isNamespaceSupported, validate, solcInputOutputDecoder, makeNamespacedInput } = await import('@openzeppelin/upgrades-core');
+  const { isNamespaceSupported, validate, solcInputOutputDecoder, makeNamespacedInput } = await import(
+    '@openzeppelin/upgrades-core'
+  );
   const { writeValidations } = await import('./utils/validations');
 
   // TODO: patch input
