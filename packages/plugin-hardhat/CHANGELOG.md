@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update OpenZeppelin Defender deployments to use Defender SDK ([#888](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/888))
+
 ## 2.3.2 (2023-10-11)
 
 - Fix Hardhat compile error when using Solidity 0.5.x. ([#892](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/892))
