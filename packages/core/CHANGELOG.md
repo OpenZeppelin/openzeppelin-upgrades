@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fix Hardhat compile error with older versions of Solidity. ([#892](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/892))
+- Fix Hardhat compile error when using Solidity 0.5.x. ([#892](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/892))
 
 ## 1.30.0 (2023-09-27)
 
