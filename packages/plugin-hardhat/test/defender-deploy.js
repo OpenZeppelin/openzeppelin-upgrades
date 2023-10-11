@@ -28,31 +28,21 @@ test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
 
   t.context.fakeDefenderClient = {
-    Deployment: {
-      deploy: () => {
-        return {
-          txHash: TX_HASH,
-          deploymentId: DEPLOYMENT_ID,
-          address: ADDRESS,
-        };
-      },
-    },
-    DeploymentConfig: {},
-    BlockExplorerApiKey: {
-      list: () => [{ network: t.context.fakeChainId }],
-      create: () => {
-        return;
-      },
+    deployContract: () => {
+      return {
+        txHash: TX_HASH,
+        deploymentId: DEPLOYMENT_ID,
+        address: ADDRESS,
+      };
     },
   };
-  t.context.spy = sinon.spy(t.context.fakeDefenderClient.Deployment, 'deploy');
+  t.context.spy = sinon.spy(t.context.fakeDefenderClient, 'deployContract');
 
   t.context.deploy = proxyquire('../dist/defender/deploy', {
     './utils': {
       ...require('../dist/defender/utils'),
       getNetwork: () => t.context.fakeChainId,
-      getAdminClient: () => t.context.fakeAdminClient,
-      getDefenderClient: () => t.context.fakeDefenderClient,
+      getDeployClient: () => t.context.fakeDefenderClient,
     },
     '../utils/etherscan-api': {
       getEtherscanAPIConfig: () => {
