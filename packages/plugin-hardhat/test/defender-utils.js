@@ -1,6 +1,6 @@
 const test = require('ava');
 const sinon = require('sinon');
-const { getNetwork, getDefenderClient, disableDefender, enableDefender } = require('../dist/defender/utils');
+const { getNetwork, disableDefender, enableDefender, getDeployClient } = require('../dist/defender/utils');
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x05';
@@ -29,14 +29,14 @@ test('fails if chain id is not accepted', async t => {
 
 test('fails if defender config is missing', async t => {
   delete t.context.fakeHre.config.defender;
-  t.throws(() => getDefenderClient(t.context.fakeHre), {
+  t.throws(() => getDeployClient(t.context.fakeHre), {
     message: /Missing OpenZeppelin Defender API key and secret in hardhat config/,
   });
 });
 
 test('fails if defender api key is missing in config', async t => {
   delete t.context.fakeHre.config.defender.apiKey;
-  t.throws(() => getDefenderClient(t.context.fakeHre), {
+  t.throws(() => getDeployClient(t.context.fakeHre), {
     message: /Missing OpenZeppelin Defender API key and secret in hardhat config/,
   });
 });
