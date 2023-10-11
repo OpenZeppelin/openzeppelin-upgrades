@@ -9,14 +9,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from '@openzeppelin/defender-base-client';
-import {
-  // BlockExplorerApiKeyClient,
-  // DeploymentClient,
-  // DeploymentConfigClient,
-  // PlatformClient,
-  // UpgradeClient,
-  DeployClient,
-} from '@openzeppelin/defender-sdk-deploy-client';
+import { DeployClient } from '@openzeppelin/defender-sdk-deploy-client';
 
 import { HardhatDefenderConfig } from '../type-extensions';
 import { DefenderDeploy } from '../utils';
