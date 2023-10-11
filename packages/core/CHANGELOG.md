@@ -1,8 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Fix Hardhat compile error when using Solidity 0.5.x. ([#892](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/892))
+
 ## 1.30.0 (2023-09-27)
 
-- Support new upgrade interface in OpenZeppelin Contracts 5.0. ([883](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/883))
+- Support new upgrade interface in OpenZeppelin Contracts 5.0. ([#883](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/883))
 - Add validations for namespaced storage layout. ([#876](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/876))
 - Deprecate low-level API. Use [CLI or high-level API](https://docs.openzeppelin.com/upgrades-plugins/1.x/api-core) instead.
 

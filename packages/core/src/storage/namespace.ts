@@ -7,6 +7,7 @@ import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/
 import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
 import { UpgradesError } from '../error';
+import * as versions from 'compare-versions';
 
 /**
  * Loads a contract's namespaces and namespaced type information into the storage layout.
@@ -259,4 +260,8 @@ function findLayoutStructMember(
  */
 function findTypeWithLabel(types: Record<string, TypeItem>, label: string) {
   return Object.values(types).find(type => type.label === label);
+}
+
+export function isNamespaceSupported(solcVersion: string) {
+  return versions.compare(solcVersion, '0.8.20', '>=');
 }

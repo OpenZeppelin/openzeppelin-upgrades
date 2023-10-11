@@ -97,7 +97,9 @@ subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) =
 });
 
 subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
-  const { validate, solcInputOutputDecoder, makeNamespacedInput } = await import('@openzeppelin/upgrades-core');
+  const { isNamespaceSupported, validate, solcInputOutputDecoder, makeNamespacedInput } = await import(
+    '@openzeppelin/upgrades-core'
+  );
   const { writeValidations } = await import('./utils/validations');
 
   // TODO: patch input
@@ -107,9 +109,12 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
   if (isFullSolcOutput(output)) {
     const decodeSrc = solcInputOutputDecoder(args.input, output);
 
-    const namespacedInput = makeNamespacedInput(args.input, output);
-    const { output: namespacedOutput } = await runSuper({ ...args, quiet: true, input: namespacedInput });
-    await checkNamespacedCompileErrors(namespacedOutput);
+    let namespacedOutput = undefined;
+    if (isNamespaceSupported(args.solcVersion)) {
+      const namespacedInput = makeNamespacedInput(args.input, output);
+      namespacedOutput = (await runSuper({ ...args, quiet: true, input: namespacedInput })).output;
+      await checkNamespacedCompileErrors(namespacedOutput);
+    }
 
     const validations = validate(output, decodeSrc, args.solcVersion, args.input, namespacedOutput);
     await writeValidations(hre, validations);

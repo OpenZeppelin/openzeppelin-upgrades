@@ -60,3 +60,4 @@ export { ValidateUpgradeSafetyOptions, validateUpgradeSafety, ProjectReport, Ref
 
 export { getUpgradeInterfaceVersion } from './upgrade-interface-version';
 export { makeNamespacedInput } from './utils/make-namespaced';
+export { isNamespaceSupported } from './storage/namespace';

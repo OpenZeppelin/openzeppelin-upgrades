@@ -28,6 +28,7 @@ test.before(async t => {
   t.context.InheritsNamespaceV2_BadAndHasLayout = await ethers.getContractFactory(
     'InheritsNamespaceV2_BadAndHasLayout',
   );
+  t.context.MakeNamespaced0516 = await ethers.getContractFactory('MakeNamespaced0516');
 });
 
 test('validate namespace - ok', async t => {
@@ -230,4 +231,10 @@ test('moving namespace to inherited contract - delete variable and has layout - 
 
   const error = await t.throwsAsync(() => upgrades.validateUpgrade(Example, InheritsNamespaceV2_BadAndHasLayout));
   t.snapshot(error.message);
+});
+
+test('validate 0.5.16 contract without namespaces - ok', async t => {
+  const { MakeNamespaced0516 } = t.context;
+
+  await upgrades.validateImplementation(MakeNamespaced0516);
 });
