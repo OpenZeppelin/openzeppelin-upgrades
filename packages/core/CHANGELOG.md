@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.30.1 (2023-10-11)
 
 - Fix Hardhat compile error when using Solidity 0.5.x. ([#892](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/892))
 
