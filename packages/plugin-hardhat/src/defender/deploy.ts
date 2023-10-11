@@ -3,7 +3,7 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { DeploymentResponse, SourceCodeLicense } from '@openzeppelin/platform-deploy-client';
+import { DeploymentResponse, SourceCodeLicense } from '@openzeppelin/defender-sdk-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -19,7 +19,7 @@ import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppel
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
-import { getNetwork, getDefenderClient } from './utils';
+import { getNetwork, getDeployClient } from './utils';
 import { DeployTransaction, DefenderDeployOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
@@ -60,7 +60,7 @@ export async function defenderDeploy(
   opts: UpgradeOptions & DefenderDeployOptions,
   ...args: unknown[]
 ): Promise<Required<Deployment & RemoteDeploymentId> & DeployTransaction> {
-  const client = getDefenderClient(hre);
+  const client = getDeployClient(hre);
 
   const constructorArgs = [...args] as (string | number | boolean)[];
   const contractInfo = await getContractInfo(hre, factory, { constructorArgs, ...opts });
@@ -82,7 +82,7 @@ export async function defenderDeploy(
 
   let deploymentResponse: DeploymentResponse;
   try {
-    deploymentResponse = await client.Deployment.deploy({
+    deploymentResponse = await client.deployContract({
       contractName: contractInfo.contractName,
       contractPath: contractInfo.sourceName,
       network: network,

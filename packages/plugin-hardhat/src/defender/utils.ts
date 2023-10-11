@@ -10,12 +10,13 @@ import {
 
 import { Network, fromChainId } from '@openzeppelin/defender-base-client';
 import {
-  BlockExplorerApiKeyClient,
-  DeploymentClient,
-  DeploymentConfigClient,
-  PlatformClient,
-  UpgradeClient,
-} from '@openzeppelin/platform-deploy-client';
+  // BlockExplorerApiKeyClient,
+  // DeploymentClient,
+  // DeploymentConfigClient,
+  // PlatformClient,
+  // UpgradeClient,
+  DeployClient
+} from '@openzeppelin/defender-sdk-deploy-client';
 
 import { HardhatDefenderConfig } from '../type-extensions';
 import { DefenderDeploy } from '../utils';
@@ -92,15 +93,8 @@ export function disableDefender(
   }
 }
 
-interface DefenderClient {
-  Deployment: DeploymentClient;
-  DeploymentConfig: DeploymentConfigClient;
-  BlockExplorerApiKey: BlockExplorerApiKeyClient;
-  Upgrade: UpgradeClient;
-}
-
-export function getDefenderClient(hre: HardhatRuntimeEnvironment): DefenderClient {
-  return PlatformClient(getDefenderApiKey(hre));
+export function getDeployClient(hre: HardhatRuntimeEnvironment): DeployClient {
+  return new DeployClient(getDefenderApiKey(hre));
 }
 
 /**
@@ -115,9 +109,9 @@ export async function getRemoteDeployment(
   hre: HardhatRuntimeEnvironment,
   remoteDeploymentId: string,
 ): Promise<RemoteDeployment | undefined> {
-  const client = getDefenderClient(hre);
+  const client = getDeployClient(hre);
   try {
-    return (await client.Deployment.get(remoteDeploymentId)) as RemoteDeployment;
+    return (await client.getDeployedContract(remoteDeploymentId)) as RemoteDeployment;
   } catch (e) {
     const message = (e as any).response?.data?.message;
     if (message?.match(/deployment with id .* not found\./)) {
