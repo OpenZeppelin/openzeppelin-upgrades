@@ -31,7 +31,6 @@ test.beforeEach(async t => {
     },
   }).makeProposeUpgradeWithApproval(hre);
 
-
   t.context.Greeter = await ethers.getContractFactory('GreeterDefenderProxiable');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterDefenderV2Proxiable');
   t.context.greeter = await upgrades.deployProxy(t.context.Greeter, { kind: 'uups' });

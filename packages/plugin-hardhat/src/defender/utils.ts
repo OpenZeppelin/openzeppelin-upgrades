@@ -15,7 +15,7 @@ import {
   // DeploymentConfigClient,
   // PlatformClient,
   // UpgradeClient,
-  DeployClient
+  DeployClient,
 } from '@openzeppelin/defender-sdk-deploy-client';
 
 import { HardhatDefenderConfig } from '../type-extensions';
