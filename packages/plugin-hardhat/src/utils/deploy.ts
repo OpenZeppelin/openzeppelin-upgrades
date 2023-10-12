@@ -8,21 +8,31 @@ export interface DeployTransaction {
   deployTransaction?: ethers.TransactionResponse;
 }
 
+export type DeployResponse = Required<Deployment> & DeployTransaction & RemoteDeploymentId;
+
 export async function deploy(
   hre: HardhatRuntimeEnvironment,
   opts: UpgradeOptions & EthersDeployOptions & DefenderDeployOptions,
   factory: ContractFactory,
   ...args: unknown[]
-): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> {
+): Promise<DeployResponse> {
   // defender always includes RemoteDeploymentId, while ethers always includes DeployTransaction
+  let response: DeployResponse;
   if (opts?.useDefenderDeploy) {
-    return await defenderDeploy(hre, factory, opts, ...args);
+    response = await defenderDeploy(hre, factory, opts, ...args);
   } else {
     if (opts.txOverrides !== undefined) {
       args.push(opts.txOverrides);
     }
-    return await ethersDeploy(factory, ...args);
+    response = await ethersDeploy(factory, ...args);
   }
+
+  await hre.run("verify:verify", {
+    address: response.address,
+    constructorArguments: opts.constructorArgs ?? []
+  });
+
+  return response;
 }
 
 async function ethersDeploy(
