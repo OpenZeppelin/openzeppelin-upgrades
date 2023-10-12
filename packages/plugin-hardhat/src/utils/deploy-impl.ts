@@ -141,5 +141,10 @@ async function deployImpl(
     }
   }
 
+  await hre.run("verify:verify", {
+    address: deployment.address,
+    constructorArguments: opts.constructorArgs ?? []
+  });
+
   return { impl: deployment.address, txResponse };
 }
