@@ -14,24 +14,22 @@ test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
 
   t.context.fakeDefenderClient = {
-    Upgrade: {
-      upgrade: () => {
-        return {
-          proposalId: proposalId,
-          externalUrl: proposalUrl,
-          transaction: {},
-        };
-      },
+    upgradeContract: () => {
+      return {
+        proposalId: proposalId,
+        externalUrl: proposalUrl,
+        transaction: {},
+      };
     },
   };
 
-  t.context.spy = sinon.spy(t.context.fakeDefenderClient.Upgrade, 'upgrade');
+  t.context.spy = sinon.spy(t.context.fakeDefenderClient, 'upgradeContract');
 
   t.context.proposeUpgradeWithApproval = proxyquire('../dist/defender/propose-upgrade-with-approval', {
     './utils': {
       ...require('../dist/defender/utils'),
       getNetwork: () => t.context.fakeChainId,
-      getDefenderClient: () => t.context.fakeDefenderClient,
+      getDeployClient: () => t.context.fakeDefenderClient,
     },
   }).makeProposeUpgradeWithApproval(hre);
 

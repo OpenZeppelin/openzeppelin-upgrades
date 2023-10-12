@@ -8,7 +8,7 @@ import {
 import { ContractFactory, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DefenderDeployOptions, UpgradeOptions } from '../utils';
-import { getNetwork, enableDefender, getDefenderClient } from './utils';
+import { getNetwork, enableDefender, getDeployClient } from './utils';
 import { deployImplForUpgrade } from '../prepare-upgrade';
 
 export interface UpgradeProposalResponse {
@@ -34,7 +34,7 @@ export function makeProposeUpgradeWithApproval(
   return async function proposeUpgradeWithApproval(proxyAddress, contractNameOrImplFactory, opts = {}) {
     opts = enableDefender(hre, defenderModule, opts);
 
-    const client = getDefenderClient(hre);
+    const client = getDeployClient(hre);
     const network = await getNetwork(hre);
 
     if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
@@ -64,7 +64,7 @@ export function makeProposeUpgradeWithApproval(
     const txResponse = deployedImpl.txResponse;
     const newImplementation = deployedImpl.impl;
 
-    const upgradeProposalResponse = await client.Upgrade.upgrade({
+    const upgradeProposalResponse = await client.upgradeContract({
       proxyAddress: proxyAddress,
       proxyAdminAddress: proxyAdmin,
       newImplementationABI: abi,

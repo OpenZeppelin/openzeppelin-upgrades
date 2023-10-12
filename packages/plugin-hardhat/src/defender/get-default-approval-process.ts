@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
-import { getNetwork, getDefenderClient } from './utils';
+import { getNetwork, getDeployClient } from './utils';
 
 export interface ApprovalProcess {
   approvalProcessId: string;
@@ -11,10 +11,10 @@ export type GetDefaultApprovalProcessFunction = () => Promise<ApprovalProcess>;
 
 export function makeGetDefaultApprovalProcess(hre: HardhatRuntimeEnvironment): GetDefaultApprovalProcessFunction {
   return async function getDefaultApprovalProcess() {
-    const client = getDefenderClient(hre);
+    const client = getDeployClient(hre);
     const network = await getNetwork(hre);
 
-    const response = await client.Upgrade.getApprovalProcess(network);
+    const response = await client.getUpgradeApprovalProcess(network);
 
     if (response.network !== network) {
       // This should not happen
