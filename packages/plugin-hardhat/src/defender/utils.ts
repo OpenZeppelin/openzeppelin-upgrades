@@ -8,7 +8,7 @@ import {
   UpgradesError,
 } from '@openzeppelin/upgrades-core';
 
-import { Network, fromChainId } from '@openzeppelin/defender-base-client';
+import { Network, fromChainId } from '@openzeppelin/defender-sdk-base-client';
 import { DeployClient } from '@openzeppelin/defender-sdk-deploy-client';
 
 import { HardhatDefenderConfig } from '../type-extensions';
