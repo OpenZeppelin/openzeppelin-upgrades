@@ -64,6 +64,10 @@ const verifiableContracts = {
 };
 
 export async function runVerify(hre: HardhatRuntimeEnvironment, address: string, constructorArguments: unknown[] = []) {
+  if (hre.network.name === HARDHAT_NETWORK_NAME) {
+    // Don't verify on hardhat network
+    return;
+  }
   try {
     await hre.run(TASK_VERIFY_VERIFY, {
       address,
