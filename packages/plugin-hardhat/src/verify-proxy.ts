@@ -1,3 +1,4 @@
+import { TASK_VERIFY_VERIFY } from '@nomicfoundation/hardhat-verify/internal/task-names';
 import {
   getTransactionByHash,
   getImplementationAddress,
@@ -11,6 +12,7 @@ import {
   isEmptySlot,
 } from '@openzeppelin/upgrades-core';
 import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info.json';
+import { HARDHAT_NETWORK_NAME } from 'hardhat/plugins';
 
 import { HardhatRuntimeEnvironment, RunSuperFunction } from 'hardhat/types';
 
@@ -60,6 +62,17 @@ const verifiableContracts = {
   transparentUpgradeableProxy: { artifact: TransparentUpgradeableProxy, event: 'AdminChanged(address,address)' },
   proxyAdmin: { artifact: ProxyAdmin, event: 'OwnershipTransferred(address,address)' },
 };
+
+export async function runVerify(hre: HardhatRuntimeEnvironment, address: string, constructorArguments: unknown[] = []) {
+  try {
+    await hre.run(TASK_VERIFY_VERIFY, {
+      address,
+      constructorArguments,
+    });
+  } catch (e) {
+    // fail silently
+  }
+}
 
 /**
  * Overrides hardhat-verify's verify:etherscan subtask to fully verify a proxy or beacon.

@@ -2,6 +2,7 @@ import type { Deployment, RemoteDeploymentId } from '@openzeppelin/upgrades-core
 import type { ethers, ContractFactory, ContractMethodArgs } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { defenderDeploy } from '../defender/deploy';
+import { runVerify } from '../verify-proxy';
 import { EthersDeployOptions, DefenderDeployOptions, UpgradeOptions } from './options';
 
 export interface DeployTransaction {
@@ -27,10 +28,7 @@ export async function deploy(
     response = await ethersDeploy(factory, ...args);
   }
 
-  await hre.run('verify:verify', {
-    address: response.address,
-    constructorArguments: opts.constructorArgs ?? [],
-  });
+  await runVerify(hre, response.address, opts.constructorArgs);
 
   return response;
 }
