@@ -133,7 +133,7 @@ async function deployImpl(
     remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId),
   );
 
-  let txResponse;
+  let txResponse: ethers.TransactionResponse | undefined;
   if (opts.getTxResponse) {
     if ('deployTransaction' in deployment) {
       txResponse = deployment.deployTransaction ?? undefined;
@@ -142,7 +142,10 @@ async function deployImpl(
     }
   }
 
-  await runVerify(hre, deployment.address, opts.constructorArgs);
+  if (txResponse) {
+    await txResponse.wait(1);
+    await runVerify(hre, deployment.address, opts.constructorArgs);
+  }
 
   return { impl: deployment.address, txResponse };
 }

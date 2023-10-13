@@ -28,7 +28,10 @@ export async function deploy(
     response = await ethersDeploy(factory, ...args);
   }
 
-  await runVerify(hre, response.address, opts.constructorArgs);
+  if (response.deployTransaction) {
+    await response.deployTransaction.wait(1);
+    await runVerify(hre, response.address, opts.constructorArgs);
+  }
 
   return response;
 }
