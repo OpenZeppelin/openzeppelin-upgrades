@@ -27,9 +27,9 @@ export async function deploy(
     response = await ethersDeploy(factory, ...args);
   }
 
-  await hre.run("verify:verify", {
+  await hre.run('verify:verify', {
     address: response.address,
-    constructorArguments: opts.constructorArgs ?? []
+    constructorArguments: opts.constructorArgs ?? [],
   });
 
   return response;
