@@ -83,7 +83,11 @@ export function getContractReports(
       sourceContracts,
       specifiedContracts?.reference,
     );
-    if (specifiedContracts !== undefined || upgradeabilityAssessment.upgradeable) {
+    if (opts.requireReference && upgradeabilityAssessment.referenceContract === undefined) {
+      throw new Error(
+        `The contract ${sourceContract.fullyQualifiedName} does not specify what contract it upgrades from. Add the \`@custom:oz-upgrades-from <REFERENCE_CONTRACT>\` annotation to the contract, or include the reference contract name when running the validate command or function.`,
+      );
+    } else if (specifiedContracts !== undefined || upgradeabilityAssessment.upgradeable) {
       const reference = upgradeabilityAssessment.referenceContract;
       const kind = upgradeabilityAssessment.uups ? 'uups' : 'transparent';
       const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind });
