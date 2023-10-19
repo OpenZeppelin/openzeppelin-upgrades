@@ -14,7 +14,8 @@ Arguments:
 
 Options:
   --contract <CONTRACT>  The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
-  --reference <REFERENCE_CONTRACT>  The name or fully qualified name of the reference contract to use for storage layout comparisons. Can only be used along with the --contract option. If not specified, uses the @custom:oz-upgrades-from annotation in the contract that is being validated.
+  --reference <REFERENCE_CONTRACT>  Can only be used when the --contract option is also provided. The name or fully qualified name of the reference contract to use for storage layout comparisons. If not specified, uses the @custom:oz-upgrades-from annotation if it is defined in the contract that is being validated.
+  --requireReference  Can only be used when the --contract option is also provided. If specified, either the --reference option must also be provided or the contract must have a @custom:oz-upgrades-from annotation, otherwise an error will be thrown.
   --unsafeAllow "<VALIDATION_ERRORS>"  Selectively disable one or more validation errors. Comma-separated list with one or more of the following: ${errorKinds.join(
     ', ',
   )}
