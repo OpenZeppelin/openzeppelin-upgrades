@@ -140,3 +140,15 @@ contract BothAnnotationsUnsafe {
     selfdestruct(payable(msg.sender));
   }
 }
+
+contract StorageV2_Bad_NoAnnotation {
+  uint256 public x;
+  uint256 public y;
+  uint256[49] private __gap;
+}
+
+contract StorageV2_Ok_NoAnnotation {
+  uint256 public x;
+  uint256 public y;
+  uint256[48] private __gap;
+}
