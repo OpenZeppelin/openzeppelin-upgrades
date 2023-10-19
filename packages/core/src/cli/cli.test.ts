@@ -185,12 +185,7 @@ test('validate - requireReference - no reference, no upgradesFrom', async t => {
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract StorageV1 --requireReference`));
-  t.true(
-    error?.message.includes(
-      'does not specify what contract it upgrades from',
-    ),
-    error?.message,
-  );
+  t.true(error?.message.includes('does not specify what contract it upgrades from'), error?.message);
 });
 
 test('validate - requireReference - no reference, has upgradesFrom - safe', async t => {
@@ -198,7 +193,7 @@ test('validate - requireReference - no reference, has upgradesFrom - safe', asyn
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesSafe`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
-  const output = (await (execAsync(`${CLI} validate ${temp} --contract BecomesSafe --requireReference`))).stdout;
+  const output = (await execAsync(`${CLI} validate ${temp} --contract BecomesSafe --requireReference`)).stdout;
   t.snapshot(output);
 });
 
@@ -219,7 +214,9 @@ test('validate - requireReference - has reference - unsafe', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV2_Bad_NoAnnotation`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
-  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract StorageV2_Bad_NoAnnotation --reference StorageV1 --requireReference`));
+  const error = await t.throwsAsync(
+    execAsync(`${CLI} validate ${temp} --contract StorageV2_Bad_NoAnnotation --reference StorageV1 --requireReference`),
+  );
   const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
   t.snapshot(expectation.join('\n'));
 });
@@ -229,7 +226,11 @@ test('validate - requireReference - has reference - safe', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV2_Ok_NoAnnotation`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
-  const output = (await (execAsync(`${CLI} validate ${temp} --contract StorageV2_Ok_NoAnnotation --reference StorageV1 --requireReference`))).stdout;
+  const output = (
+    await execAsync(
+      `${CLI} validate ${temp} --contract StorageV2_Ok_NoAnnotation --reference StorageV1 --requireReference`,
+    )
+  ).stdout;
   t.snapshot(output);
 });
 

@@ -11,7 +11,7 @@ import { SourceContract, validateBuildInfoContracts } from './validations';
  */
 export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'> & {
   requireReference?: boolean;
-}
+};
 
 export type SpecifiedContracts = {
   contract: SourceContract;
