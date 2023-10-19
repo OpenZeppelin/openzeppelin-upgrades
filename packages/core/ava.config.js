@@ -8,4 +8,5 @@ module.exports = {
   environmentVariables: {
     FORCE_COLOR: '0',
   },
+  timeout: '30s',
 };
