@@ -34,18 +34,20 @@ export async function validateUpgradeSafety(
   reference?: string,
   opts: ValidateUpgradeSafetyOptions = {},
 ): Promise<ProjectReport> {
+  const allOpts = withCliDefaults(opts);
+
   const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
   const sourceContracts = validateBuildInfoContracts(buildInfoFiles);
 
-  const specifiedContracts = findSpecifiedContracts(sourceContracts, contract, reference);
+  const specifiedContracts = findSpecifiedContracts(sourceContracts, allOpts, contract, reference);
 
-  const allOpts = withCliDefaults(opts);
   const contractReports = getContractReports(sourceContracts, allOpts, specifiedContracts);
   return getProjectReport(contractReports);
 }
 
 function findSpecifiedContracts(
   sourceContracts: SourceContract[],
+  opts: Required<ValidateUpgradeSafetyOptions>,
   contractName?: string,
   referenceName?: string,
 ): SpecifiedContracts | undefined {
@@ -56,6 +58,8 @@ function findSpecifiedContracts(
     };
   } else if (referenceName !== undefined) {
     throw new Error(`The reference option can only be specified when the contract option is also specified.`);
+  } else if (opts.requireReference) {
+    throw new Error(`The requireReference option can only be specified when the contract option is also specified.`);
   } else {
     return undefined;
   }

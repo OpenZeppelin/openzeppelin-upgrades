@@ -3,6 +3,7 @@ import _test, { ExecutionContext, TestFn } from 'ava';
 import { artifacts } from 'hardhat';
 import { validateBuildInfoContracts } from './validations';
 import { UpgradeableContractReport, getContractReports } from './contract-report';
+import { withCliDefaults } from './validate-upgrade-safety';
 
 interface Context {
   reports: UpgradeableContractReport[];
@@ -19,7 +20,7 @@ test.before(async t => {
     t.fail();
   } else {
     const sourceContracts = validateBuildInfoContracts([buildInfo]);
-    t.context.reports = getContractReports(sourceContracts, {});
+    t.context.reports = getContractReports(sourceContracts, withCliDefaults({}));
   }
 });
 

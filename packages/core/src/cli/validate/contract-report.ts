@@ -69,7 +69,7 @@ export class UpgradeableContractReport implements Report {
  */
 export function getContractReports(
   sourceContracts: SourceContract[],
-  opts: ValidateUpgradeSafetyOptions,
+  opts: Required<ValidateUpgradeSafetyOptions>,
   specifiedContracts?: SpecifiedContracts,
 ) {
   const upgradeableContractReports: UpgradeableContractReport[] = [];
