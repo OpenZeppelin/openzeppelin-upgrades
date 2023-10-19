@@ -89,10 +89,15 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     const buildInfoDir = extraArgs.length === 1 ? undefined : extraArgs[1];
     const contract = getAndValidateString(parsedArgs, 'contract');
     const reference = getAndValidateString(parsedArgs, 'reference');
-    if (reference !== undefined && contract === undefined) {
-      throw new Error('The --reference option can only be used along with the --contract option.');
-    }
     const opts = withDefaults(parsedArgs);
+
+    if (contract === undefined) {
+      if (reference !== undefined) {
+        throw new Error('The --reference option can only be used along with the --contract option.');
+      } else if (opts.requireReference) {
+        throw new Error('The --requireReference option can only be used along with the --contract option.');
+      }
+    }
     return { buildInfoDir, contract, reference, opts };
   }
 }

@@ -167,6 +167,18 @@ test('validate - reference not found', async t => {
   t.true(error?.message.includes('Could not find contract NonExistent.'), error?.message);
 });
 
+test('validate - requireReference without contract option', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV1`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --requireReference`));
+  t.true(
+    error?.message.includes('The --requireReference option can only be used along with the --contract option.'),
+    error?.message,
+  );
+});
+
 test('validate - no upgradeable', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage088.sol:Storage088`);

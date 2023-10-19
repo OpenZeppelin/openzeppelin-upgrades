@@ -68,6 +68,6 @@ function findSpecifiedContracts(
 export function withCliDefaults(opts: ValidateUpgradeSafetyOptions): Required<ValidateUpgradeSafetyOptions> {
   return {
     ...withValidationDefaults(opts),
-    requireReference: false,
+    requireReference: opts.requireReference ?? false,
   };
 }
