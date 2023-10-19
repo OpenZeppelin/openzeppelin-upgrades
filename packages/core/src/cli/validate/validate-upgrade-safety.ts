@@ -1,4 +1,4 @@
-import { ValidationOptions } from '../..';
+import { ValidationOptions, withValidationDefaults } from '../..';
 
 import { getBuildInfoFiles } from './build-info-file';
 import { getContractReports } from './contract-report';
@@ -9,7 +9,9 @@ import { SourceContract, validateBuildInfoContracts } from './validations';
 /**
  * Validation options for upgrade safety checks.
  */
-export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'>;
+export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'> & {
+  requireReference?: boolean;
+}
 
 export type SpecifiedContracts = {
   contract: SourceContract;
@@ -37,7 +39,8 @@ export async function validateUpgradeSafety(
 
   const specifiedContracts = findSpecifiedContracts(sourceContracts, contract, reference);
 
-  const contractReports = getContractReports(sourceContracts, opts, specifiedContracts);
+  const allOpts = withCliDefaults(opts);
+  const contractReports = getContractReports(sourceContracts, allOpts, specifiedContracts);
   return getProjectReport(contractReports);
 }
 
@@ -56,4 +59,11 @@ function findSpecifiedContracts(
   } else {
     return undefined;
   }
+}
+
+export function withCliDefaults(opts: ValidateUpgradeSafetyOptions): Required<ValidateUpgradeSafetyOptions> {
+  return {
+    ...withValidationDefaults(opts),
+    requireReference: false,
+  };
 }
