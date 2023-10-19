@@ -46,6 +46,7 @@ function parseArgs(args: string[]) {
       'unsafeSkipStorageCheck',
       'unsafeAllowCustomTypes',
       'unsafeAllowLinkedLibraries',
+      'requireReference',
     ],
     string: ['unsafeAllow', 'contract', 'reference'],
     alias: { h: 'help' },

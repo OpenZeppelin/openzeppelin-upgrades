@@ -150,7 +150,6 @@ validateUpgradeSafety(
   buildInfoDir?: string,
   contract?: string,
   reference?: string,
-  requireReference?: boolean,
   opts: ValidateUpgradeSafetyOptions = {},
 ): Promise<ProjectReport>
 ----
@@ -164,11 +163,11 @@ Note that this function does not throw validation errors directly. Instead, you 
 * `buildInfoDir` - the path to the build info directory which contains JSON files with Solidity compiler input and output. Defaults to `artifacts/build-info` for Hardhat projects or `out/build-info` for Foundry projects. If your project uses a custom output directory, you must specify its build info directory here.
 * `contract` - The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
 * `reference` - Can only be used when the `contract` argument is also provided. The name or fully qualified name of the reference contract to use for storage layout comparisons. If not specified, uses the `@custom:oz-upgrades-from` annotation if it is defined in the contract that is being validated.
-* `requireReference` - Can only be used when the `contract` argument is also provided. If specified, either the `reference` argument must also be provided or the contract must have a `@custom:oz-upgrades-from` annotation, otherwise an error will be thrown.
 * `opts` - an object with the following options as defined in xref:api-hardhat-upgrades.adoc#common-options[Common Options]:
 ** `unsafeAllow`
 ** `unsafeAllowRenames`
 ** `unsafeSkipStorageCheck`
+** `requireReference` - Can only be used when the `contract` argument is also provided. If specified, either the `reference` argument must also be provided or the contract must have a `@custom:oz-upgrades-from` annotation, otherwise an error will be thrown.
 
 *Returns:*
 
