@@ -45,7 +45,7 @@ export async function validateUpgradeSafety(
   return getProjectReport(contractReports);
 }
 
-function findSpecifiedContracts(
+export function findSpecifiedContracts(
   sourceContracts: SourceContract[],
   opts: Required<ValidateUpgradeSafetyOptions>,
   contractName?: string,
