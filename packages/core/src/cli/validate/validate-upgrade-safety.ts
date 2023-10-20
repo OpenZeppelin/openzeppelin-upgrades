@@ -42,7 +42,7 @@ export async function validateUpgradeSafety(
   const specifiedContracts = findSpecifiedContracts(sourceContracts, allOpts, contract, reference);
 
   const contractReports = getContractReports(sourceContracts, allOpts, specifiedContracts);
-  return getProjectReport(contractReports);
+  return getProjectReport(contractReports, specifiedContracts !== undefined);
 }
 
 export function findSpecifiedContracts(

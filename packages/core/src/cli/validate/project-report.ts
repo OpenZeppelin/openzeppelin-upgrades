@@ -2,7 +2,10 @@ import { UpgradeableContractReport } from './contract-report';
 import { Report } from '../../standalone';
 
 export class ProjectReport implements Report {
-  constructor(readonly upgradeableContractReports: UpgradeableContractReport[]) {}
+  constructor(
+    readonly upgradeableContractReports: UpgradeableContractReport[],
+    readonly specifiedContract?: boolean,
+  ) {}
 
   get ok(): boolean {
     return this.upgradeableContractReports.every(r => r.ok);
@@ -13,13 +16,17 @@ export class ProjectReport implements Report {
       return 'No upgradeable contracts detected.';
     } else {
       const lines = this.upgradeableContractReports.map(r => r.explain(color));
-      const numFailed = this.numTotal - this.numPassed;
-      const plural = numFailed === 1 ? '' : 's';
       const status = this.ok ? 'SUCCESS' : 'FAILED';
 
-      lines.push(
-        `${status} (${this.numTotal} upgradeable contract${plural} detected, ${this.numPassed} passed, ${numFailed} failed)`,
-      );
+      if (this.specifiedContract) {
+        lines.push(`${status}`);
+      } else {
+        const numFailed = this.numTotal - this.numPassed;
+        const plural = this.numTotal === 1 ? '' : 's';
+        lines.push(
+          `${status} (${this.numTotal} upgradeable contract${plural} detected, ${this.numPassed} passed, ${numFailed} failed)`,
+        );
+      }
       return lines.join('\n\n');
     }
   }
@@ -39,6 +46,9 @@ export class ProjectReport implements Report {
   }
 }
 
-export function getProjectReport(upgradeableContractReports: UpgradeableContractReport[]): ProjectReport {
-  return new ProjectReport(upgradeableContractReports);
+export function getProjectReport(
+  upgradeableContractReports: UpgradeableContractReport[],
+  specifiedContract?: boolean,
+): ProjectReport {
+  return new ProjectReport(upgradeableContractReports, specifiedContract);
 }

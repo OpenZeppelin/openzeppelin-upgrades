@@ -62,7 +62,7 @@ test('get project report - ok - console', async t => {
   t.true(report.ok);
   t.is(report.numPassed, 1);
   t.is(report.numTotal, 1);
-  t.regex(report.explain(), /SUCCESS \(1 upgradeable contracts detected, 1 passed, 0 failed\)/);
+  t.regex(report.explain(), /SUCCESS \(1 upgradeable contract detected, 1 passed, 0 failed\)/);
 });
 
 test('get project report - errors - console', async t => {
