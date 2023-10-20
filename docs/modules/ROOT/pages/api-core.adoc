@@ -5,7 +5,7 @@ The `@openzeppelin/upgrades-core` package provides a `validate` command to check
 It also provides APIs to perform these checks programmatically, and contains the core logic for these checks to be performed with the OpenZeppelin Upgrades plugins.
 
 [[validate-command]]
-== Validate Command
+== CLI: Validate Command
 
 Detects upgradeable contracts from a directory containing build info files and validates whether they are upgrade safe. Use this if you want to validate all of your project's upgradeable contracts from the command line, in a script, or as part of your CI/CD pipeline.
 
@@ -20,7 +20,7 @@ Before using the `validate` command, you must define upgradeable contracts so th
 The `validate` command performs upgrade safety checks on contracts that look like upgradeable contracts. Specifically, it performs checks on implementation contracts that meet any of the following criteria:
 
 - Inherits https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/Initializable.sol[`Initializable`].
-- Has an `upgradeTo(address)` function. This is the case for contracts that inherit https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/UUPSUpgradeable.sol[`UUPSUpgradeable`].
+- Has an `upgradeTo(address)` or `upgradeToAndCall(address,bytes)` function. This is the case for contracts that inherit https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/UUPSUpgradeable.sol[`UUPSUpgradeable`].
 - Has the NatSpec annotation `@custom:oz-upgrades`
 - Has the NatSpec annotation `@custom:oz-upgrades-from <reference>` according to <<define-reference-contracts, Define Reference Contracts>> below.
 
