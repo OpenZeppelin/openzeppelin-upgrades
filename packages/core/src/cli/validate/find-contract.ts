@@ -23,7 +23,13 @@ export class ReferenceContractNotFound extends Error {
   }
 }
 
-export function findContract(contractName: string, origin: SourceContract | undefined, allContracts: SourceContract[]) {
+type SourceContractIdentifier = Pick<SourceContract, 'name' | 'fullyQualifiedName'>;
+
+export function findContract<T extends SourceContractIdentifier>(
+  contractName: string,
+  origin: T | undefined,
+  allContracts: T[],
+): T {
   const foundContracts = allContracts.filter(c => isMatch(contractName, c));
 
   if (foundContracts.length > 1) {
@@ -43,9 +49,7 @@ export function findContract(contractName: string, origin: SourceContract | unde
   }
 }
 
-type SourceContractIdentifier = Pick<SourceContract, 'name' | 'fullyQualifiedName'>;
-
-export function isMatch(contractName: string, contract: SourceContractIdentifier) {
+function isMatch(contractName: string, contract: SourceContractIdentifier) {
   return (
     contract.fullyQualifiedName === contractName || // contracts/MyContract.sol:MyContract
     contract.name === contractName || // MyContract
