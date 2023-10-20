@@ -5,4 +5,7 @@ module.exports = {
   serial: true,
   failWithoutAssertions: false,
   snapshotDir: '.',
+  environmentVariables: {
+    FORCE_COLOR: '0',
+  },
 };
