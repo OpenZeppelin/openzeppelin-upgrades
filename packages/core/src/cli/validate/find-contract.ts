@@ -24,7 +24,7 @@ export class ReferenceContractNotFound extends Error {
 }
 
 export function findContract(contractName: string, origin: SourceContract | undefined, allContracts: SourceContract[]) {
-  const foundContracts = allContracts.filter(c => c.fullyQualifiedName === contractName || c.name === contractName);
+  const foundContracts = allContracts.filter(c => isMatch(contractName, c));
 
   if (foundContracts.length > 1) {
     const msg =
@@ -41,4 +41,39 @@ export function findContract(contractName: string, origin: SourceContract | unde
   } else {
     throw new ReferenceContractNotFound(contractName, origin?.fullyQualifiedName);
   }
+}
+
+export function isMatch(contractName: string, contract: SourceContract) {
+  return (
+    contract.fullyQualifiedName === contractName || // contracts/MyContract.sol:MyContract
+    contract.name === contractName || // MyContract
+    matchesDotSolAndName(contractName, contract) || // MyContract.sol:MyContract
+    matchesDotSol(contractName, contract) // MyContract.sol
+  );
+}
+
+function matchesDotSolAndName(contractName: string, contract: SourceContract) {
+  if (contractName.includes('.sol:')) {
+    const [fileWithoutExtension, name] = contractName.split('.sol:');
+    return matchesFullyQualifiedName(fileWithoutExtension, name, contract);
+  } else {
+    return false;
+  }
+}
+
+function matchesDotSol(contractName: string, contract: SourceContract) {
+  if (contractName.endsWith('.sol')) {
+    const name = contractName.slice(0, contractName.length - 4);
+    return matchesFullyQualifiedName(name, name, contract);
+  } else {
+    return false;
+  }
+}
+
+function matchesFullyQualifiedName(fileNameWithoutExtension: string, name: string, contract: SourceContract) {
+  const lastSlash = contract.fullyQualifiedName.lastIndexOf('/');
+  const fullyQualifiedWithoutPath =
+    lastSlash >= 0 ? contract.fullyQualifiedName.slice(lastSlash + 1) : contract.fullyQualifiedName;
+
+  return contract.name === name && fullyQualifiedWithoutPath === `${fileNameWithoutExtension}.sol:${name}`;
 }
