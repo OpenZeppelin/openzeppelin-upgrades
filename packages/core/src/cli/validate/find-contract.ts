@@ -43,7 +43,9 @@ export function findContract(contractName: string, origin: SourceContract | unde
   }
 }
 
-export function isMatch(contractName: string, contract: SourceContract) {
+type SourceContractIdentifier = Pick<SourceContract, 'name' | 'fullyQualifiedName'>;
+
+export function isMatch(contractName: string, contract: SourceContractIdentifier) {
   return (
     contract.fullyQualifiedName === contractName || // contracts/MyContract.sol:MyContract
     contract.name === contractName || // MyContract
@@ -52,7 +54,7 @@ export function isMatch(contractName: string, contract: SourceContract) {
   );
 }
 
-function matchesDotSolAndName(contractName: string, contract: SourceContract) {
+function matchesDotSolAndName(contractName: string, contract: SourceContractIdentifier) {
   if (contractName.includes('.sol:')) {
     const [fileWithoutExtension, name] = contractName.split('.sol:');
     return matchesFullyQualifiedName(fileWithoutExtension, name, contract);
@@ -61,7 +63,7 @@ function matchesDotSolAndName(contractName: string, contract: SourceContract) {
   }
 }
 
-function matchesDotSol(contractName: string, contract: SourceContract) {
+function matchesDotSol(contractName: string, contract: SourceContractIdentifier) {
   if (contractName.endsWith('.sol')) {
     const name = contractName.slice(0, contractName.length - 4);
     return matchesFullyQualifiedName(name, name, contract);
@@ -70,7 +72,7 @@ function matchesDotSol(contractName: string, contract: SourceContract) {
   }
 }
 
-function matchesFullyQualifiedName(fileNameWithoutExtension: string, name: string, contract: SourceContract) {
+function matchesFullyQualifiedName(fileNameWithoutExtension: string, name: string, contract: SourceContractIdentifier) {
   const lastSlash = contract.fullyQualifiedName.lastIndexOf('/');
   const fullyQualifiedWithoutPath =
     lastSlash >= 0 ? contract.fullyQualifiedName.slice(lastSlash + 1) : contract.fullyQualifiedName;

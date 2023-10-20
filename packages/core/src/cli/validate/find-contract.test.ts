@@ -8,7 +8,7 @@ test('fully qualified - match', async t => {
     fullyQualifiedName: 'contracts/MyContract.sol:Foo',
   };
 
-  t.true(isMatch('contracts/MyContract.sol:Foo', sourceContract as any));
+  t.true(isMatch('contracts/MyContract.sol:Foo', sourceContract));
 });
 
 test('fully qualified without folder - match', async t => {
@@ -17,7 +17,7 @@ test('fully qualified without folder - match', async t => {
     fullyQualifiedName: 'MyContract.sol:Foo',
   };
 
-  t.true(isMatch('MyContract.sol:Foo', sourceContract as any));
+  t.true(isMatch('MyContract.sol:Foo', sourceContract));
 });
 
 test('short name - match', async t => {
@@ -26,7 +26,7 @@ test('short name - match', async t => {
     fullyQualifiedName: 'contracts/MyContract.sol:Foo',
   };
 
-  t.true(isMatch('Foo', sourceContract as any));
+  t.true(isMatch('Foo', sourceContract));
 });
 
 test('short name - match without folder', async t => {
@@ -35,7 +35,7 @@ test('short name - match without folder', async t => {
     fullyQualifiedName: 'MyContract.sol:Foo',
   };
 
-  t.true(isMatch('Foo', sourceContract as any));
+  t.true(isMatch('Foo', sourceContract));
 });
 
 test('short name with .sol - no match', async t => {
@@ -44,8 +44,8 @@ test('short name with .sol - no match', async t => {
     fullyQualifiedName: 'contracts/MyContract.sol:Foo',
   };
 
-  t.false(isMatch('MyContract.sol', sourceContract as any));
-  t.false(isMatch('Foo.sol', sourceContract as any));
+  t.false(isMatch('MyContract.sol', sourceContract));
+  t.false(isMatch('Foo.sol', sourceContract));
 });
 
 test('short name with .sol - match', async t => {
@@ -54,7 +54,7 @@ test('short name with .sol - match', async t => {
     fullyQualifiedName: 'contracts/Foo.sol:Foo',
   };
 
-  t.true(isMatch('Foo.sol', sourceContract as any));
+  t.true(isMatch('Foo.sol', sourceContract));
 });
 
 test('short name with .sol - match without folder', async t => {
@@ -63,5 +63,5 @@ test('short name with .sol - match without folder', async t => {
     fullyQualifiedName: 'Foo.sol:Foo',
   };
 
-  t.true(isMatch('Foo.sol', sourceContract as any));
+  t.true(isMatch('Foo.sol', sourceContract));
 });
