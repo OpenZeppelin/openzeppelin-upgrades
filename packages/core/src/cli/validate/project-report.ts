@@ -14,7 +14,7 @@ export class ProjectReport implements Report {
     } else {
       const lines = this.upgradeableContractReports.map(r => r.explain(color));
       const numFailed = this.numTotal - this.numPassed;
-      const plural = numFailed === 1 ? '' : 's';
+      const plural = this.numTotal === 1 ? '' : 's';
       const status = this.ok ? 'SUCCESS' : 'FAILED';
 
       lines.push(
