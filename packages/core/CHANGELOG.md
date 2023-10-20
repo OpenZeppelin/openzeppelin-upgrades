@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Add `requireReference` option for CLI. ([#900](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/900))
+- CLI: Add `--requireReference` option. ([#900](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/900))
 
 ## 1.30.1 (2023-10-11)
 
