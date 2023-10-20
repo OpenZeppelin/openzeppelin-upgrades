@@ -167,6 +167,73 @@ test('validate - reference not found', async t => {
   t.true(error?.message.includes('Could not find contract NonExistent.'), error?.message);
 });
 
+test('validate - requireReference - no contract option', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV1`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --requireReference`));
+  t.true(
+    error?.message.includes('The --requireReference option can only be used along with the --contract option.'),
+    error?.message,
+  );
+});
+
+test('validate - requireReference - no reference, no upgradesFrom', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV1`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract StorageV1 --requireReference`));
+  t.true(error?.message.includes('does not specify what contract it upgrades from'), error?.message);
+});
+
+test('validate - requireReference - no reference, has upgradesFrom - safe', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesSafe`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = (await execAsync(`${CLI} validate ${temp} --contract BecomesSafe --requireReference`)).stdout;
+  t.snapshot(output);
+});
+
+test('validate - requireReference - no reference, has upgradesFrom - unsafe', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(`${CLI} validate ${temp} --contract BecomesBadLayout --requireReference`),
+  );
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - requireReference - has reference - unsafe', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV2_Bad_NoAnnotation`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(`${CLI} validate ${temp} --contract StorageV2_Bad_NoAnnotation --reference StorageV1 --requireReference`),
+  );
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - requireReference - has reference - safe', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV2_Ok_NoAnnotation`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = (
+    await execAsync(
+      `${CLI} validate ${temp} --contract StorageV2_Ok_NoAnnotation --reference StorageV1 --requireReference`,
+    )
+  ).stdout;
+  t.snapshot(output);
+});
+
 test('validate - no upgradeable', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Storage088.sol:Storage088`);

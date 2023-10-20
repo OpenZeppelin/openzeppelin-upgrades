@@ -1,4 +1,4 @@
-import { ValidationOptions } from '../..';
+import { ValidationOptions, withValidationDefaults } from '../..';
 
 import { getBuildInfoFiles } from './build-info-file';
 import { getContractReports } from './contract-report';
@@ -9,7 +9,9 @@ import { SourceContract, validateBuildInfoContracts } from './validations';
 /**
  * Validation options for upgrade safety checks.
  */
-export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'>;
+export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'> & {
+  requireReference?: boolean;
+};
 
 export type SpecifiedContracts = {
   contract: SourceContract;
@@ -32,17 +34,20 @@ export async function validateUpgradeSafety(
   reference?: string,
   opts: ValidateUpgradeSafetyOptions = {},
 ): Promise<ProjectReport> {
+  const allOpts = withCliDefaults(opts);
+
   const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
   const sourceContracts = validateBuildInfoContracts(buildInfoFiles);
 
-  const specifiedContracts = findSpecifiedContracts(sourceContracts, contract, reference);
+  const specifiedContracts = findSpecifiedContracts(sourceContracts, allOpts, contract, reference);
 
-  const contractReports = getContractReports(sourceContracts, opts, specifiedContracts);
+  const contractReports = getContractReports(sourceContracts, allOpts, specifiedContracts);
   return getProjectReport(contractReports);
 }
 
-function findSpecifiedContracts(
+export function findSpecifiedContracts(
   sourceContracts: SourceContract[],
+  opts: Required<ValidateUpgradeSafetyOptions>,
   contractName?: string,
   referenceName?: string,
 ): SpecifiedContracts | undefined {
@@ -53,7 +58,16 @@ function findSpecifiedContracts(
     };
   } else if (referenceName !== undefined) {
     throw new Error(`The reference option can only be specified when the contract option is also specified.`);
+  } else if (opts.requireReference) {
+    throw new Error(`The requireReference option can only be specified when the contract option is also specified.`);
   } else {
     return undefined;
   }
+}
+
+export function withCliDefaults(opts: ValidateUpgradeSafetyOptions): Required<ValidateUpgradeSafetyOptions> {
+  return {
+    ...withValidationDefaults(opts),
+    requireReference: opts.requireReference ?? false,
+  };
 }

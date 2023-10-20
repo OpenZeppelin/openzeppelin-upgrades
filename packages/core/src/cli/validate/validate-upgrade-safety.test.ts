@@ -6,7 +6,7 @@ import path from 'path';
 import os from 'os';
 
 import { artifacts } from 'hardhat';
-import { validateUpgradeSafety } from './validate-upgrade-safety';
+import { findSpecifiedContracts, validateUpgradeSafety, withCliDefaults } from './validate-upgrade-safety';
 import { ReferenceContractNotFound } from './find-contract';
 
 test.before(async () => {
@@ -96,4 +96,16 @@ test('invalid annotation args - upgrades', async t => {
     ),
   );
   t.true(error?.message.includes('Found 1, expected 0'));
+});
+
+test('findSpecifiedContracts - requireReference option without contract', async t => {
+  try {
+    findSpecifiedContracts([], withCliDefaults({ requireReference: true }));
+  } catch (e: any) {
+    t.true(
+      e.message.includes(
+        'The requireReference option can only be specified when the contract option is also specified.',
+      ),
+    );
+  }
 });
