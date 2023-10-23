@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.31.0 (2023-10-23)
 
 - CLI: Add `--requireReference` option. ([#900](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/900))
 - CLI: Simplify summary message when using `--contract`. ([#905](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/905))
