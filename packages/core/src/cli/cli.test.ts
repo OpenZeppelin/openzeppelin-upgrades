@@ -188,6 +188,17 @@ test('validate - requireReference - no reference, no upgradesFrom', async t => {
   t.true(error?.message.includes('does not specify what contract it upgrades from'), error?.message);
 });
 
+test('validate - requireReference - no reference, no upgradesFrom - skip storage check', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV1`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = (
+    await execAsync(`${CLI} validate ${temp} --contract StorageV1 --requireReference --unsafeSkipStorageCheck`)
+  ).stdout;
+  t.snapshot(output);
+});
+
 test('validate - requireReference - no reference, has upgradesFrom - safe', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesSafe`);
