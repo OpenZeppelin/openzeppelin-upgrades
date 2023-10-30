@@ -118,7 +118,7 @@ If any errors are found, the command will exit with a non-zero exit code and pri
 
 * `--contract <CONTRACT>`  The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
 * `--reference <REFERENCE_CONTRACT>`  Can only be used when the `--contract` option is also provided. The name or fully qualified name of the reference contract to use for storage layout comparisons. If not specified, uses the `@custom:oz-upgrades-from` annotation if it is defined in the contract that is being validated.
-* `--requireReference`  Can only be used when the `--contract` option is also provided. If specified, requires either the `--reference` option to be provided or the contract to have a `@custom:oz-upgrades-from` annotation.
+* `--requireReference`  Can only be used when the `--contract` option is also provided. Not compatible with `--unsafeSkipStorageCheck`. If specified, requires either the `--reference` option to be provided or the contract to have a `@custom:oz-upgrades-from` annotation.
 * `--unsafeAllow "<VALIDATION_ERRORS>"` - Selectively disable one or more validation errors. Comma-separated list with one or more of the following: `state-variable-assignment, state-variable-immutable, external-library-linking, struct-definition, enum-definition, constructor, delegatecall, selfdestruct, missing-public-upgradeto`
 * `--unsafeAllowRenames` - Configure storage layout check to allow variable renaming.
 * `--unsafeSkipStorageCheck` - Skips checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
@@ -167,7 +167,7 @@ Note that this function does not throw validation errors directly. Instead, you 
 ** `unsafeAllow`
 ** `unsafeAllowRenames`
 ** `unsafeSkipStorageCheck`
-** `requireReference` - Can only be used when the `contract` argument is also provided. If specified, requires either the `reference` argument to be provided or the contract to have a `@custom:oz-upgrades-from` annotation.
+** `requireReference` - Can only be used when the `contract` argument is also provided. Not compatible with the `unsafeSkipStorageCheck` option. If specified, requires either the `reference` argument to be provided or the contract to have a `@custom:oz-upgrades-from` annotation.
 
 *Returns:*
 

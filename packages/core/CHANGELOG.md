@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- CLI: Throw error if `--requireReference` and `--unsafeSkipStorageCheck` are both enabled. ([#913](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/913))
+
 ## 1.31.0 (2023-10-23)
 
 - CLI: Add `--requireReference` option. ([#900](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/900))
