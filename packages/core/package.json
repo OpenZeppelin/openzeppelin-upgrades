@@ -46,7 +46,7 @@
     "@types/node": "^16.11.7",
     "@types/proper-lockfile": "^4.1.1",
     "@types/rimraf": "^3.0.0",
-    "@types/sinon": "^10.0.13",
+    "@types/sinon": "^17.0.0",
     "ava": "^5.0.0",
     "dotenv": "^16.0.0",
     "fgbg": "^0.1.4",
