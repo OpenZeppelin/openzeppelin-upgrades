@@ -44,52 +44,69 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
     const modifications: Modification[] = [];
 
     for (const node of output.sources[sourcePath].ast.nodes) {
-      if (isNodeType('ContractDefinition', node)) {
-        const contractDef = node;
+      switch (node.nodeType) {
+        case 'ContractDefinition':
+          const contractDef = node;
 
-        // Remove any calls to parent constructors from the inheritance list
-        const inherits = contractDef.baseContracts;
-        for (const inherit of inherits) {
-          if (Array.isArray(inherit.arguments)) {
-            assert(inherit.baseName.name !== undefined);
-            modifications.push(makeReplace(inherit, orig, inherit.baseName.name));
-          }
-        }
-
-        const contractNodes = contractDef.nodes;
-        for (const contractNode of contractNodes) {
-          if (
-            isNodeType('FunctionDefinition', contractNode) ||
-            isNodeType('ModifierDefinition', contractNode) ||
-            isNodeType('VariableDeclaration', contractNode)
-          ) {
-            if (contractNode.documentation) {
-              modifications.push(makeDelete(contractNode.documentation, orig));
-            }
-            modifications.push(makeDelete(contractNode, orig));
-          } else if (isNodeType('UsingForDirective', contractNode)) {
-            modifications.push(makeDelete(contractNode, orig));
-          } else if (isNodeType('StructDefinition', contractNode)) {
-            const storageLocation = getStorageLocationAnnotation(contractNode);
-            if (storageLocation !== undefined) {
-              const structName = contractNode.name;
-              const variableName = `$${structName}_${(Math.random() * 1e6).toFixed(0)}`;
-              const insertText = ` ${structName} ${variableName};`;
-
-              modifications.push(makeInsertAfter(contractNode, insertText));
+          // Remove any calls to parent constructors from the inheritance list
+          const inherits = contractDef.baseContracts;
+          for (const inherit of inherits) {
+            if (Array.isArray(inherit.arguments)) {
+              assert(inherit.baseName.name !== undefined);
+              modifications.push(makeReplace(inherit, orig, inherit.baseName.name));
             }
           }
-        }
-      } else if (isNodeType('FunctionDefinition', node) || isNodeType('VariableDeclaration', node)) {
-        if (node.documentation) {
-          modifications.push(makeDelete(node.documentation, orig));
-        }
-        // Replace with a dummy variable of arbitrary type
-        const name = node.name;
-        const insertText = `uint256 constant ${name} = 0;`;
-        modifications.push(makeReplace(node, orig, insertText));
-      } else if (isNodeType('UsingForDirective', node)) {
-        modifications.push(makeDelete(node, orig));
+
+          const contractNodes = contractDef.nodes;
+          for (const contractNode of contractNodes) {
+            switch(contractNode.nodeType) {
+              case 'FunctionDefinition':
+              case 'ModifierDefinition':
+              case 'VariableDeclaration':
+                if (contractNode.documentation) {
+                  modifications.push(makeDelete(contractNode.documentation, orig));
+                }
+                modifications.push(makeDelete(contractNode, orig));
+                break;
+
+              case 'UsingForDirective':
+                modifications.push(makeDelete(contractNode, orig));
+                break;
+
+              case 'StructDefinition':
+                const storageLocation = getStorageLocationAnnotation(contractNode);
+                if (storageLocation !== undefined) {
+                  const structName = contractNode.name;
+                  const variableName = `$${structName}_${(Math.random() * 1e6).toFixed(0)}`;
+                  const insertText = ` ${structName} ${variableName};`;
+
+                  modifications.push(makeInsertAfter(contractNode, insertText));
+                }
+                break;
+
+              case 'EnumDefinition':
+              case 'ErrorDefinition':
+              case 'EventDefinition':
+              case 'UserDefinedValueTypeDefinition':
+                // nothing
+                break;
+            }
+          }
+          break;
+
+        case 'FunctionDefinition':
+        case 'UsingForDirective':
+        case 'VariableDeclaration':
+          modifications.push(makeDelete(node, orig));
+          break;
+
+        case 'EnumDefinition':
+        case 'ErrorDefinition':
+        case 'ImportDirective':
+        case 'PragmaDirective':
+        case 'StructDefinition':
+        case 'UserDefinedValueTypeDefinition':
+          break;
       }
     }
 

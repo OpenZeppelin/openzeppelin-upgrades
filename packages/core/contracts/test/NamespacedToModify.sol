@@ -83,6 +83,8 @@ library Lib {
 }
 
 contract Consumer {
+  bytes4 public variableFromConstant = CONSTANT_USING_SELECTOR;
+
   function usingFreeFunction() pure public returns (bytes4) {
     return FreeFunctionUsingSelector();
   }
@@ -98,6 +100,14 @@ contract Consumer {
 
 function plusTwo(uint x) pure returns (uint) {
   return x + 2;
+}
+
+function plusThree(uint x) pure returns (uint) {
+  return x + 3;
+}
+
+function plusThree(uint x, uint y) pure returns (uint) {
+  return x + y + 3;
 }
 
 using {plusTwo} for uint;
