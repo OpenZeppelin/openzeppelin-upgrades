@@ -60,6 +60,8 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           const contractNodes = contractDef.nodes;
           for (const contractNode of contractNodes) {
             switch (contractNode.nodeType) {
+              case 'ErrorDefinition':
+              case 'EventDefinition':
               case 'FunctionDefinition':
               case 'ModifierDefinition':
               case 'VariableDeclaration': {
@@ -85,16 +87,15 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
                 break;
               }
               case 'EnumDefinition':
-              case 'ErrorDefinition':
-              case 'EventDefinition':
               case 'UserDefinedValueTypeDefinition': {
-                // nothing
+                // keep: it may be used in structures with storage locations
                 break;
               }
             }
           }
           break;
         }
+        case 'ErrorDefinition':
         case 'FunctionDefinition':
         case 'UsingForDirective':
         case 'VariableDeclaration': {
@@ -102,12 +103,15 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           break;
         }
         case 'EnumDefinition':
-        case 'ErrorDefinition':
         case 'ImportDirective':
         case 'PragmaDirective':
         case 'StructDefinition':
         case 'UserDefinedValueTypeDefinition': {
-          // nothing
+          // - EnumDefinition may be used in structures with storage locations
+          // - ImportDirective may import types used in structures with storage locations
+          // - PragmaDirective is necessary for compilation
+          // - StructDefinition may be used in structures with storage locations
+          // - UserDefinedValueTypeDefinition may be used in structures with storage locations
           break;
         }
       }
