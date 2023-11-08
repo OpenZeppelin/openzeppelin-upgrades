@@ -87,31 +87,29 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
                 break;
               }
               case 'EnumDefinition':
-              case 'UserDefinedValueTypeDefinition': {
-                // keep: it may be used in structures with storage locations
+              case 'UserDefinedValueTypeDefinition':
+              default: {
+                // - EnumDefinition may be used in structures with storage locations
+                // - UserDefinedValueTypeDefinition may be used in structures with storage locations
+                // - default: in case unexpected ast nodes show up
                 break;
               }
             }
           }
           break;
         }
-        case 'ErrorDefinition':
-        case 'FunctionDefinition':
-        case 'UsingForDirective':
-        case 'VariableDeclaration': {
-          modifications.push(makeDelete(node, orig));
-          break;
-        }
         case 'EnumDefinition':
         case 'ImportDirective':
         case 'PragmaDirective':
         case 'StructDefinition':
-        case 'UserDefinedValueTypeDefinition': {
+        case 'UserDefinedValueTypeDefinition':
+        default: {
           // - EnumDefinition may be used in structures with storage locations
           // - ImportDirective may import types used in structures with storage locations
           // - PragmaDirective is necessary for compilation
           // - StructDefinition may be used in structures with storage locations
           // - UserDefinedValueTypeDefinition may be used in structures with storage locations
+          // - default: in case unexpected ast nodes show up (file-level events since 0.8.22)
           break;
         }
       }
