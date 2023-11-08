@@ -45,7 +45,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
 
     for (const node of output.sources[sourcePath].ast.nodes) {
       switch (node.nodeType) {
-        case 'ContractDefinition':
+        case 'ContractDefinition': {
           const contractDef = node;
 
           // Remove any calls to parent constructors from the inheritance list
@@ -59,21 +59,21 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
 
           const contractNodes = contractDef.nodes;
           for (const contractNode of contractNodes) {
-            switch(contractNode.nodeType) {
+            switch (contractNode.nodeType) {
               case 'FunctionDefinition':
               case 'ModifierDefinition':
-              case 'VariableDeclaration':
+              case 'VariableDeclaration': {
                 if (contractNode.documentation) {
                   modifications.push(makeDelete(contractNode.documentation, orig));
                 }
                 modifications.push(makeDelete(contractNode, orig));
                 break;
-
-              case 'UsingForDirective':
+              }
+              case 'UsingForDirective': {
                 modifications.push(makeDelete(contractNode, orig));
                 break;
-
-              case 'StructDefinition':
+              }
+              case 'StructDefinition': {
                 const storageLocation = getStorageLocationAnnotation(contractNode);
                 if (storageLocation !== undefined) {
                   const structName = contractNode.name;
@@ -83,30 +83,33 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
                   modifications.push(makeInsertAfter(contractNode, insertText));
                 }
                 break;
-
+              }
               case 'EnumDefinition':
               case 'ErrorDefinition':
               case 'EventDefinition':
-              case 'UserDefinedValueTypeDefinition':
+              case 'UserDefinedValueTypeDefinition': {
                 // nothing
                 break;
+              }
             }
           }
           break;
-
+        }
         case 'FunctionDefinition':
         case 'UsingForDirective':
-        case 'VariableDeclaration':
+        case 'VariableDeclaration': {
           modifications.push(makeDelete(node, orig));
           break;
-
+        }
         case 'EnumDefinition':
         case 'ErrorDefinition':
         case 'ImportDirective':
         case 'PragmaDirective':
         case 'StructDefinition':
-        case 'UserDefinedValueTypeDefinition':
+        case 'UserDefinedValueTypeDefinition': {
+          // nothing
           break;
+        }
       }
     }
 
