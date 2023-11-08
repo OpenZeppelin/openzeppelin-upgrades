@@ -12,7 +12,7 @@ import { SolcInput, SolcOutput } from '../solc-api';
 import { BuildInfo } from 'hardhat/types';
 
 test('make namespaced input', async t => {
-  const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedToModify.sol:Example');
+  const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedToModifyImported.sol:Example');
   await testMakeNamespaced(origBuildInfo, t, '0.8.20');
 });
 
