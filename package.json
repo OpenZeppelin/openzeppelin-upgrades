@@ -8,7 +8,7 @@
     "prepare": "wsrun -ms prepare && tsc -b",
     "lint": "yarn lint:path .",
     "lint:path": "eslint --ignore-path .gitignore --max-warnings 0",
-    "test": "tsc -b && wsrun -ms test",
+    "test": "wsrun -ms test",
     "coverage": "nyc yarn test"
   },
   "devDependencies": {
