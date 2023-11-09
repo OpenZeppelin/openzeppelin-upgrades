@@ -8,3 +8,9 @@ export * from './contract-types';
 export * from './options';
 export * from './initializer-data';
 export { attach, getSigner } from './ethers';
+export {
+  attachITransparentUpgradeableProxyV4,
+  attachITransparentUpgradeableProxyV5,
+  attachProxyAdminV4,
+  attachProxyAdminV5,
+} from './attach-abi';

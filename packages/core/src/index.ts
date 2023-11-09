@@ -53,6 +53,7 @@ export {
   NoContractImportError,
   ValidateUpdateRequiresKindError,
   PrepareUpgradeRequiresKindError,
+  InitialOwnerUnsupportedKindError,
   assertNotProxy,
 } from './usage-error';
 

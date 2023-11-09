@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- Deploy proxies from OpenZeppelin Contracts 5.0.
+- Support `initialOwner` option when deploying a transparent proxy or beacon. If not set, the externally owned account used during deployment will be the default owner for the transparent proxy's admin or the beacon, respectively.
+
+### Breaking changes
+- `deployProxy`, `deployBeacon`, `deployBeaconProxy`: Deploys proxy contracts from [OpenZeppelin Contracts 5.0](https://docs.openzeppelin.com/contracts/5.x/api/proxy).
+- `deployProxy`:
+  - Deploying a transparent proxy automatically causes a new proxy admin contract to be deployed along with the proxy.
+  - New transparent proxy deployments no longer use an existing proxy admin, even if one was previously recorded in the network file.
+  - New proxy admins are no longer recorded in the network file.
+- `deployProxyAdmin`: Removed, since proxy admins are deployed automatically by transparent proxies.
+- `admin.changeProxyAdmin`: Not supported with admins or proxies from OpenZeppelin Contracts 5.0. Only supported for previously deployed admins and proxies from OpenZeppelin Contracts 4.x or below.
+- `admin.transferProxyAdminOwnership`: This function no longer uses the proxy admin from the network file. It now requires a `proxyAddress` argument to be passed in.
+
 ## 2.3.3 (2023-10-12)
 
 - Update OpenZeppelin Defender deployments to use Defender SDK ([#888](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/888))

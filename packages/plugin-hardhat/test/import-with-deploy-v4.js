@@ -10,8 +10,8 @@ const ERC1967Proxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppeli
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable40');
+  t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable40');
 
   t.context.ProxyAdmin = await ethers.getContractFactory(ProxyAdmin.abi, ProxyAdmin.bytecode);
   t.context.TransparentUpgradableProxy = await ethers.getContractFactory(
@@ -121,7 +121,7 @@ test('import previous import', async t => {
   );
 });
 
-test('import then deploy transparent with same admin', async t => {
+test('import then deploy transparent (manually) with same admin', async t => {
   const { Greeter, GreeterV2, ProxyAdmin, TransparentUpgradableProxy } = t.context;
 
   const impl = await Greeter.deploy();
@@ -136,7 +136,12 @@ test('import then deploy transparent with same admin', async t => {
   await proxy.waitForDeployment();
 
   const greeter = await upgrades.forceImport(await proxy.getAddress(), Greeter);
-  const greeter2 = await upgrades.deployProxy(Greeter, ['Hello, Hardhat 2!']);
+
+  const greeter2 = await TransparentUpgradableProxy.deploy(
+    await impl.getAddress(),
+    await admin.getAddress(),
+    getInitializerData(Greeter.interface, ['Hello, Hardhat 2!']),
+  );
   await greeter2.waitForDeployment();
 
   t.is(

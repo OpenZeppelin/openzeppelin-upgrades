@@ -4,7 +4,6 @@ import type { ContractFactory, Contract } from 'ethers';
 import {
   Manifest,
   getImplementationAddressFromProxy,
-  getAdminAddress,
   addProxyToManifest,
   isBeacon,
   getImplementationAddressFromBeacon,
@@ -13,6 +12,7 @@ import {
   ProxyDeployment,
   hasCode,
   NoContractImportError,
+  getAdminAddress,
   isEmptySlot,
   UpgradesError,
 } from '@openzeppelin/upgrades-core';
@@ -24,7 +24,6 @@ import {
   getUpgradeableBeaconFactory,
   ForceImportOptions,
 } from './utils';
-import { simulateDeployAdmin } from './utils/simulate-deploy';
 import { getDeployData } from './utils/deploy-impl';
 import { attach, getSigner } from './utils/ethers';
 
@@ -88,8 +87,9 @@ async function importProxyToManifest(
   }
 
   if (importKind === 'transparent') {
-    await addAdminToManifest(provider, hre, proxyAddress, ImplFactory, opts);
+    await assertNonEmptyAdminSlot(provider, proxyAddress);
   }
+
   await addProxyToManifest(importKind, proxyAddress, manifest);
 }
 
@@ -102,16 +102,10 @@ async function addImplToManifest(
   await simulateDeployImpl(hre, ImplFactory, opts, implAddress);
 }
 
-async function addAdminToManifest(
-  provider: EthereumProvider,
-  hre: HardhatRuntimeEnvironment,
-  proxyAddress: string,
-  ImplFactory: ContractFactory,
-  opts: ForceImportOptions,
-) {
+async function assertNonEmptyAdminSlot(provider: EthereumProvider, proxyAddress: string) {
   const adminAddress = await getAdminAddress(provider, proxyAddress);
   if (isEmptySlot(adminAddress)) {
-    // Assert that the admin slot of a transparent proxy is not zero, otherwise the simulation below would fail due to no code at the address.
+    // Assert that the admin slot of a transparent proxy is not zero, otherwise the wrong kind may be imported.
     // Note: Transparent proxies should not have the zero address as the admin, according to TransparentUpgradeableProxy's _setAdmin function.
     throw new UpgradesError(
       `Proxy at ${proxyAddress} doesn't look like a transparent proxy`,
@@ -120,5 +114,4 @@ async function addAdminToManifest(
         `Set the \`kind\` option to the kind of proxy that was deployed at ${proxyAddress} (either 'uups' or 'beacon')`,
     );
   }
-  await simulateDeployAdmin(hre, ImplFactory, opts, adminAddress);
 }

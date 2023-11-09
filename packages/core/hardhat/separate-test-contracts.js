@@ -15,6 +15,8 @@ task(TASK_COMPILE_SOLIDITY_GET_COMPILATION_JOB_FOR_FILE, async (params, _, runSu
     // This is needed because CLI tests validate the entire build-info file, so each build-info should include only relevant contracts.
     if (params.file.sourceName.startsWith('contracts/test/cli/')) {
       mark(job, params.file.sourceName);
+    } else if (params.file.sourceName.startsWith('contracts/test/Namespaced')) {
+      mark(job, 'testNamespaced');
     } else {
       mark(job, 'test');
     }

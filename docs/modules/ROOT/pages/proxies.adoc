@@ -185,7 +185,7 @@ Assuming a proxy with an `owner()` and an `upgradeTo()` function, that delegates
 |Other |returns erc20.owner() |fails |returns erc20.transfer()
 |==============================================================
 
-Fortunately, OpenZeppelin Upgrades accounts for this situation, and creates an intermediary ProxyAdmin contract that is in charge of all the proxies you create via the Upgrades plugins. Even if you call the `deploy` command from your node's default account, the ProxyAdmin contract will be the actual admin of all your proxies. This means that you will be able to interact with the proxies from any of your node's accounts, without having to worry about the nuances of the transparent proxy pattern. Only advanced users that create proxies from Solidity need to be aware of the transparent proxies pattern.
+Fortunately, OpenZeppelin Upgrades accounts for this situation, and uses an intermediary ProxyAdmin contract for each transparent proxy. Even if you call the `deploy` command from your node's default account, the ProxyAdmin contracts will be the actual admins of your transparent proxies. This means that you will be able to interact with the proxies from any of your node's accounts, without having to worry about the nuances of the transparent proxy pattern. Only advanced users that create proxies from Solidity need to be aware of the transparent proxies pattern.
 
 [[summary]]
 == Summary

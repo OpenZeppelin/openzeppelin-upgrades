@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support deploying proxies from OpenZeppelin Contracts 5.0.
+
 ## 1.31.1 (2023-11-01)
 
 - CLI: Throw error if `--requireReference` and `--unsafeSkipStorageCheck` are both enabled. ([#913](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/913))

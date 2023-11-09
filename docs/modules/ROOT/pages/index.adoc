@@ -112,17 +112,15 @@ it('works before and after upgrading', async function () {
 [[how-plugins-work]]
 == How the plugins work
 
-Both plugins provide functions which take care of managing upgradeable deployments of your contracts.
+The plugins provide functions which take care of managing upgradeable deployments of your contracts.
 
 For example, `deployProxy` does the following:
 
 1. Validate that the implementation is xref:faq.adoc#what-does-it-mean-for-a-contract-to-be-upgrade-safe[upgrade safe].
 
-2. Deploy a xref:faq.adoc#what-is-a-proxy-admin[proxy admin] for your project (if needed).
+2. Deploy the xref:faq.adoc#what-is-an-implementation-contract[implementation contract].
 
-3. Deploy the xref:faq.adoc#what-is-an-implementation-contract[implementation contract].
-
-4. Create and initialize the proxy contract.
+3. Create and initialize the proxy contract, along with a xref:faq.adoc#what-is-a-proxy-admin[proxy admin] (if needed).
 
 And when you call `upgradeProxy`:
 

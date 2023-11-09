@@ -5,9 +5,7 @@ pragma solidity >= 0.4.22 <0.8.0;
 contract Proxiable {
     bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
 
-    function upgradeTo(address newImplementation) external {
-        _setImplementation(newImplementation);
-    }
+    string public constant UPGRADE_INTERFACE_VERSION = "5.0.0";
 
     function upgradeToAndCall(address newImplementation, bytes calldata data) external {
         _setImplementation(newImplementation);
@@ -27,6 +25,14 @@ contract Proxiable {
              */
             (bool success, ) = address(this).call(data);
             require(success, "upgrade call reverted");
+        } else {
+            _checkNonPayable();
+        }
+    }
+
+    function _checkNonPayable() private {
+        if (msg.value > 0) {
+            revert('non-payable upgrade call');
         }
     }
 
