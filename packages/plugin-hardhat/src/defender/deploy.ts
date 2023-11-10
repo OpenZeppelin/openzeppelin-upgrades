@@ -17,7 +17,6 @@ import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/co
 import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
 import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
-import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
 import { getNetwork, getDeployClient } from './utils';
 import { DeployTransaction, DefenderDeployOptions, UpgradeOptions } from '../utils';
@@ -30,7 +29,6 @@ const deployableProxyContracts = [
   BeaconProxy,
   UpgradeableBeacon,
   TransparentUpgradeableProxy,
-  ProxyAdmin,
 ];
 
 interface ReducedBuildInfo {
