@@ -163,9 +163,9 @@ function recordError(message: string, errorReport: ErrorReport) {
 }
 
 /**
- * Indicates that the expected event topic was not found in the contract's logs according to the Etherscan API.
+ * Indicates that the expected event topic was not found in the contract's logs according to the Etherscan API, or an expected function was not found.
  */
-class EventNotFound extends UpgradesError {}
+class EventOrFunctionNotFound extends UpgradesError {}
 
 /**
  * Indicates that the contract's bytecode does not match with the plugin's artifact.
@@ -214,15 +214,11 @@ async function fullVerifyTransparentOrUUPS(
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
-
-      const owner = await getOwner(hre, adminAddress);
-      // todo skip if owner function does not exist
-
       await verifyAdminOrFallback(
+        hre,
         hardhatVerify,
         etherscan,
         adminAddress,
-        owner,
         errorReport,
       );
     }
@@ -234,33 +230,44 @@ async function fullVerifyTransparentOrUUPS(
   }
 
   async function verifyAdminOrFallback(
+    hre: HardhatRuntimeEnvironment,
     hardhatVerify: (address: string) => Promise<any>,
     etherscan: Etherscan,
     adminAddress: string,
-    owner: string,
     errorReport: ErrorReport,
   ) {
     const attemptVerify = async () => {
-      const proxyAdminArtifact = verifiableContracts.proxyAdmin.artifact;
+      let owner;
+      try {
+        owner = await getOwner(hre, adminAddress);
+      } catch (e: any) {
+        if (e.message.toLowerCase().includes('not a function')) {
+          throw new EventOrFunctionNotFound(
+            `Could not find a function with signature 'owner()' in the proxy admin contract`,
+            () => `The contract at ${adminAddress} does not appear to be a known proxy admin contract.`,
+          );
+        }
+      }
 
+      const artifact = verifiableContracts.proxyAdmin.artifact;
       const deployedBytecode = await getCode(provider, adminAddress);
-      if (deployedBytecode !== proxyAdminArtifact.deployedBytecode) {
+      if (deployedBytecode !== artifact.deployedBytecode) {
         throw new BytecodeNotMatchArtifact(
-          `Bytecode does not match with the current version of ${proxyAdminArtifact.contractName} in the Hardhat Upgrades plugin.`,
-          proxyAdminArtifact.contractName,
+          `Bytecode does not match with the current version of ${artifact.contractName} in the Hardhat Upgrades plugin.`,
+          artifact.contractName,
         );
       }
 
       const constructorArgs = ethers.AbiCoder.defaultAbiCoder().encode(['address'], [owner]).replace(/^0x/, '');
-      
       await verifyContractWithConstructorArgs(
         etherscan,
         adminAddress,
-        proxyAdminArtifact,
+        artifact,
         constructorArgs,
         errorReport,
       );
     }
+    
     await verifyOrFallback(
       attemptVerify,
       hardhatVerify,
@@ -393,7 +400,7 @@ async function verifyImplementation(
  * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
  * @returns the VerifiableContractInfo and txHash for the first event found
- * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
+ * @throws {EventOrFunctionNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
 async function searchEvent(etherscan: Etherscan, address: string, possibleContractInfo: VerifiableContractInfo[]) {
   for (let i = 0; i < possibleContractInfo.length; i++) {
@@ -407,7 +414,7 @@ async function searchEvent(etherscan: Etherscan, address: string, possibleContra
   const events = possibleContractInfo.map(contractInfo => {
     return contractInfo.event;
   });
-  throw new EventNotFound(
+  throw new EventOrFunctionNotFound(
     `Could not find an event with any of the following topics in the logs for address ${address}: ${events.join(', ')}`,
     () =>
       'If the proxy was recently deployed, the transaction may not be available on Etherscan yet. Try running the verify task again after waiting a few blocks.',
@@ -438,7 +445,7 @@ async function verifyOrFallback(
     await attemptVerify();
     return true;
   } catch (origError: any) {
-    if (origError instanceof BytecodeNotMatchArtifact || origError instanceof EventNotFound) {
+    if (origError instanceof BytecodeNotMatchArtifact || origError instanceof EventOrFunctionNotFound) {
       // Try falling back to regular hardhat verify in case the source code is available in the user's project.
       try {
         await hardhatVerify(address);
@@ -518,7 +525,7 @@ async function verifyWithArtifactOrFallback(
  * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
  * @param errorReport Accumulated verification errors
- * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
+ * @throws {EventOrFunctionNotFound} if none of the events were found in the contract's logs according to Etherscan.
  * @throws {BytecodeNotMatchArtifact} if the contract's bytecode does not match with the plugin's known artifact.
  */
 async function attemptVerifyWithCreationEvent(
