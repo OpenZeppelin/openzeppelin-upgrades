@@ -256,7 +256,7 @@ async function fullVerifyTransparentOrUUPS(
       await verifyContractWithConstructorArgs(etherscan, adminAddress, artifact, constructorArgs, errorReport);
     };
 
-    await verifyOrFallback(
+    await attemptVerifyOrFallback(
       attemptVerify,
       hardhatVerify,
       adminAddress,
@@ -415,14 +415,16 @@ async function searchEvent(etherscan: Etherscan, address: string, possibleContra
  * If the fallback passes, logs as success.
  * If the fallback also fails, records errors for both the original and fallback attempts.
  *
- * @param attemptVerify A function that attempts to verify the contract. Must throw BytecodeNotMatchArtifact if the contract's bytecode does not match with the plugin's known artifact.
+ * @param attemptVerify A function that attempts to verify the contract.
+ *  Should throw EventOrFunctionNotFound if the contract does not contain an expected event in its logs or function in its bytecode,
+ *  or BytecodeNotMatchArtifact if the contract's bytecode does not match with the plugin's known artifact.
  * @param hardhatVerify A function that invokes the hardhat-verify plugin's verify command
  * @param address The contract address to verify
  * @param errorReport Accumulated verification errors
  * @param convertErrorsToWarningsOnFallbackSuccess If fallback verification occurred and succeeded, whether any
  *  previously accumulated errors should be converted into warnings in the final summary.
  */
-async function verifyOrFallback(
+async function attemptVerifyOrFallback(
   attemptVerify: () => Promise<any>,
   hardhatVerify: (address: string) => Promise<any>,
   address: string,
@@ -493,7 +495,7 @@ async function verifyWithArtifactOrFallback(
 ) {
   const attemptVerify = () =>
     attemptVerifyWithCreationEvent(hre, etherscan, address, possibleContractInfo, errorReport);
-  return await verifyOrFallback(
+  return await attemptVerifyOrFallback(
     attemptVerify,
     hardhatVerify,
     address,
