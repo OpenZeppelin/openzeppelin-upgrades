@@ -24,12 +24,7 @@ import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
 
-const deployableProxyContracts = [
-  ERC1967Proxy,
-  BeaconProxy,
-  UpgradeableBeacon,
-  TransparentUpgradeableProxy,
-];
+const deployableProxyContracts = [ERC1967Proxy, BeaconProxy, UpgradeableBeacon, TransparentUpgradeableProxy];
 
 interface ReducedBuildInfo {
   _format: string;

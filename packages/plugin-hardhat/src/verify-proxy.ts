@@ -214,13 +214,7 @@ async function fullVerifyTransparentOrUUPS(
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
-      await verifyAdminOrFallback(
-        hre,
-        hardhatVerify,
-        etherscan,
-        adminAddress,
-        errorReport,
-      );
+      await verifyAdminOrFallback(hre, hardhatVerify, etherscan, adminAddress, errorReport);
     }
   }
 
@@ -259,15 +253,9 @@ async function fullVerifyTransparentOrUUPS(
       }
 
       const constructorArgs = ethers.AbiCoder.defaultAbiCoder().encode(['address'], [owner]).replace(/^0x/, '');
-      await verifyContractWithConstructorArgs(
-        etherscan,
-        adminAddress,
-        artifact,
-        constructorArgs,
-        errorReport,
-      );
-    }
-    
+      await verifyContractWithConstructorArgs(etherscan, adminAddress, artifact, constructorArgs, errorReport);
+    };
+
     await verifyOrFallback(
       attemptVerify,
       hardhatVerify,
@@ -503,7 +491,8 @@ async function verifyWithArtifactOrFallback(
   errorReport: ErrorReport,
   convertErrorsToWarningsOnFallbackSuccess: boolean,
 ) {
-  const attemptVerify = () => attemptVerifyWithCreationEvent(hre, etherscan, address, possibleContractInfo, errorReport);
+  const attemptVerify = () =>
+    attemptVerifyWithCreationEvent(hre, etherscan, address, possibleContractInfo, errorReport);
   return await verifyOrFallback(
     attemptVerify,
     hardhatVerify,
