@@ -9,6 +9,7 @@ import {
   isBeacon,
   isBeaconProxy,
   isEmptySlot,
+  getCode,
 } from '@openzeppelin/upgrades-core';
 import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json';
 
@@ -26,6 +27,8 @@ import debug from './utils/debug';
 import { callEtherscanApi, getEtherscanInstance, RESPONSE_OK } from './utils/etherscan-api';
 import { verifyAndGetStatus } from './utils/etherscan-api';
 import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
+import { attachProxyAdminV5 } from './utils';
+import { ethers } from 'ethers';
 
 /**
  * Hardhat artifact for a precompiled contract
@@ -35,6 +38,7 @@ interface ContractArtifact {
   sourceName: string;
   abi: any;
   bytecode: any;
+  deployedBytecode: any;
 }
 
 /**
@@ -210,26 +214,62 @@ async function fullVerifyTransparentOrUUPS(
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
-      try {
-        await verifyWithArtifactOrFallback(
-          hre,
-          hardhatVerify,
-          etherscan,
-          adminAddress,
-          [verifiableContracts.proxyAdmin],
-          errorReport,
-          // The user provided the proxy address to verify, whereas this function is only verifying the related proxy admin.
-          // So even if this falls back and succeeds, we want to keep any errors that might have occurred while verifying the proxy itself.
-          false,
-        );
-      } catch (e: any) {
-        if (e instanceof EventNotFound) {
-          console.log(
-            'Verification skipped for proxy admin - the admin address does not appear to contain a ProxyAdmin contract.',
-          );
-        }
-      }
+
+      const owner = await getOwner(hre, adminAddress);
+      // todo skip if owner function does not exist
+
+      await verifyAdminOrFallback(
+        hardhatVerify,
+        etherscan,
+        adminAddress,
+        owner,
+        errorReport,
+      );
     }
+  }
+
+  async function getOwner(hre: HardhatRuntimeEnvironment, adminAddress: string) {
+    const admin = await attachProxyAdminV5(hre, adminAddress);
+    return await admin.owner();
+  }
+
+  async function verifyAdminOrFallback(
+    hardhatVerify: (address: string) => Promise<any>,
+    etherscan: Etherscan,
+    adminAddress: string,
+    owner: string,
+    errorReport: ErrorReport,
+  ) {
+    const attemptVerify = async () => {
+      const proxyAdminArtifact = verifiableContracts.proxyAdmin.artifact;
+
+      const deployedBytecode = await getCode(provider, adminAddress);
+      if (deployedBytecode !== proxyAdminArtifact.deployedBytecode) {
+        throw new BytecodeNotMatchArtifact(
+          `Bytecode does not match with the current version of ${proxyAdminArtifact.contractName} in the Hardhat Upgrades plugin.`,
+          proxyAdminArtifact.contractName,
+        );
+      }
+
+      const constructorArgs = ethers.AbiCoder.defaultAbiCoder().encode(['address'], [owner]).replace(/^0x/, '');
+      
+      await verifyContractWithConstructorArgs(
+        etherscan,
+        adminAddress,
+        proxyAdminArtifact,
+        constructorArgs,
+        errorReport,
+      );
+    }
+    await verifyOrFallback(
+      attemptVerify,
+      hardhatVerify,
+      adminAddress,
+      errorReport,
+      // The user provided the proxy address to verify, whereas this function is only verifying the related proxy admin.
+      // So even if this falls back and succeeds, we want to keep any errors that might have occurred while verifying the proxy itself.
+      false,
+    );
   }
 
   async function verifyTransparentOrUUPS() {
@@ -375,34 +415,27 @@ async function searchEvent(etherscan: Etherscan, address: string, possibleContra
 }
 
 /**
- * Verifies a contract by matching with known artifacts.
- *
- * If a match was not found, falls back to verify directly using the regular hardhat verify task.
+ * Verifies a contract using the attemptVerify function. If it fails, falls back to verify directly using the regular hardhat verify task.
  *
  * If the fallback passes, logs as success.
  * If the fallback also fails, records errors for both the original and fallback attempts.
  *
- * @param hre
- * @param etherscan Etherscan instance
+ * @param attemptVerify A function that attempts to verify the contract. Must throw BytecodeNotMatchArtifact if the contract's bytecode does not match with the plugin's known artifact.
+ * @param hardhatVerify A function that invokes the hardhat-verify plugin's verify command
  * @param address The contract address to verify
- * @param possibleContractInfo An array of possible contract artifacts to use for verification along
- *  with the corresponding creation event expected in the logs.
  * @param errorReport Accumulated verification errors
  * @param convertErrorsToWarningsOnFallbackSuccess If fallback verification occurred and succeeded, whether any
  *  previously accumulated errors should be converted into warnings in the final summary.
- * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
-async function verifyWithArtifactOrFallback(
-  hre: HardhatRuntimeEnvironment,
+async function verifyOrFallback(
+  attemptVerify: () => Promise<any>,
   hardhatVerify: (address: string) => Promise<any>,
-  etherscan: Etherscan,
   address: string,
-  possibleContractInfo: VerifiableContractInfo[],
   errorReport: ErrorReport,
   convertErrorsToWarningsOnFallbackSuccess: boolean,
 ) {
   try {
-    await attemptVerifyWithCreationEvent(hre, etherscan, address, possibleContractInfo, errorReport);
+    await attemptVerify();
     return true;
   } catch (origError: any) {
     if (origError instanceof BytecodeNotMatchArtifact || origError instanceof EventNotFound) {
@@ -435,6 +468,42 @@ async function verifyWithArtifactOrFallback(
       throw origError;
     }
   }
+}
+
+/**
+ * Verifies a contract by matching with known artifacts.
+ *
+ * If a match was not found, falls back to verify directly using the regular hardhat verify task.
+ *
+ * If the fallback passes, logs as success.
+ * If the fallback also fails, records errors for both the original and fallback attempts.
+ *
+ * @param hre
+ * @param etherscan Etherscan instance
+ * @param address The contract address to verify
+ * @param possibleContractInfo An array of possible contract artifacts to use for verification along
+ *  with the corresponding creation event expected in the logs.
+ * @param errorReport Accumulated verification errors
+ * @param convertErrorsToWarningsOnFallbackSuccess If fallback verification occurred and succeeded, whether any
+ *  previously accumulated errors should be converted into warnings in the final summary.
+ */
+async function verifyWithArtifactOrFallback(
+  hre: HardhatRuntimeEnvironment,
+  hardhatVerify: (address: string) => Promise<any>,
+  etherscan: Etherscan,
+  address: string,
+  possibleContractInfo: VerifiableContractInfo[],
+  errorReport: ErrorReport,
+  convertErrorsToWarningsOnFallbackSuccess: boolean,
+) {
+  const attemptVerify = () => attemptVerifyWithCreationEvent(hre, etherscan, address, possibleContractInfo, errorReport);
+  return await verifyOrFallback(
+    attemptVerify,
+    hardhatVerify,
+    address,
+    errorReport,
+    convertErrorsToWarningsOnFallbackSuccess,
+  );
 }
 
 /**
