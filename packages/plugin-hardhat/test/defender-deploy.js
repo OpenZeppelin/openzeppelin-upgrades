@@ -19,6 +19,7 @@ const TX_RESPONSE = 'mocked response';
 const ETHERSCAN_API_KEY = 'fakeKey';
 const RELAYER_ID = '123-abc';
 const SALT = 'customsalt';
+const CREATE_FACTORY = '0x0000000000000000000000000000000000000010';
 
 const LOGIC_ADDRESS = '0x0000000000000000000000000000000000000003';
 const ADMIN_ADDRESS = '0x0000000000000000000000000000000000000004';
@@ -99,6 +100,7 @@ test('calls defender deploy', async t => {
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
+    createFactoryAddress: undefined,
   });
 
   assertResult(t, result);
@@ -124,6 +126,7 @@ test('calls defender deploy with relayerId', async t => {
     verifySourceCode: true,
     relayerId: RELAYER_ID,
     salt: undefined,
+    createFactoryAddress: undefined,
   });
 
   assertResult(t, result);
@@ -149,6 +152,33 @@ test('calls defender deploy with salt', async t => {
     verifySourceCode: true,
     relayerId: undefined,
     salt: SALT,
+    createFactoryAddress: undefined,
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy with createFactoryAddress', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Greeter.sol';
+  const contractName = 'Greeter';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, { createFactoryAddress: CREATE_FACTORY });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'None',
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: CREATE_FACTORY,
   });
 
   assertResult(t, result);
@@ -174,6 +204,7 @@ test('calls defender deploy with license', async t => {
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
+    createFactoryAddress: undefined,
   });
 
   assertResult(t, result);
@@ -199,6 +230,7 @@ test('calls defender deploy with constructor args', async t => {
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
+    createFactoryAddress: undefined,
   });
 
   assertResult(t, result);
@@ -224,6 +256,7 @@ test('calls defender deploy with verify false', async t => {
     verifySourceCode: false,
     relayerId: undefined,
     salt: undefined,
+    createFactoryAddress: undefined,
   });
 
   assertResult(t, result);
@@ -249,6 +282,7 @@ test('calls defender deploy with ERC1967Proxy', async t => {
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
+    createFactoryAddress: undefined,
   });
 });
 
@@ -272,6 +306,7 @@ test('calls defender deploy with BeaconProxy', async t => {
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
+    createFactoryAddress: undefined,
   });
 });
 
@@ -295,5 +330,6 @@ test('calls defender deploy with TransparentUpgradeableProxy', async t => {
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
+    createFactoryAddress: undefined,
   });
 });

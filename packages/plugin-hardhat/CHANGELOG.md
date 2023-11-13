@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add `createFactoryAddress` option for Defender deployments. ([#920](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/920))
+
+**Note**: OpenZeppelin Defender deployments is in beta and its functionality is subject to change.
+
 ## 2.3.3 (2023-10-12)
 
 - Update OpenZeppelin Defender deployments to use Defender SDK ([#888](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/888))

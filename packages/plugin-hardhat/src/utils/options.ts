@@ -63,6 +63,7 @@ export type DefenderDeployOptions = DefenderDeploy & {
   verifySourceCode?: boolean;
   relayerId?: string;
   salt?: string;
+  createFactoryAddress?: string;
 };
 
 /**
