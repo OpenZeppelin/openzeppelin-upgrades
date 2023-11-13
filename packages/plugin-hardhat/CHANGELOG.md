@@ -15,6 +15,12 @@
 - `admin.changeProxyAdmin`: Not supported with admins or proxies from OpenZeppelin Contracts 5.0. Only supported for previously deployed admins and proxies from OpenZeppelin Contracts 4.x or below.
 - `admin.transferProxyAdminOwnership`: This function no longer uses the proxy admin from the network file. It now requires a `proxyAddress` argument to be passed in.
 
+## 2.4.0 (2023-11-13)
+
+- Add `createFactoryAddress` option for Defender deployments. ([#920](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/920))
+
+**Note**: OpenZeppelin Defender deployments is in beta and its functionality is subject to change.
+
 ## 2.3.3 (2023-10-12)
 
 - Update OpenZeppelin Defender deployments to use Defender SDK ([#888](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/888))
