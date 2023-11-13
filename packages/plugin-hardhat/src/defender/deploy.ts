@@ -3,7 +3,7 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { DeploymentResponse, SourceCodeLicense } from '@openzeppelin/defender-sdk-deploy-client';
+import { DeploymentResponse, SourceCodeLicense, DeployContractRequest } from '@openzeppelin/defender-sdk-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -54,6 +54,11 @@ type CompilerOutputWithMetadata = CompilerOutputContract & {
   metadata?: string;
 };
 
+type DeployRequest = DeployContractRequest & {
+  // TODO: remove this when defender-sdk-deploy-client dependency is updated
+  createFactoryAddress?: string;
+};
+
 export async function defenderDeploy(
   hre: HardhatRuntimeEnvironment,
   factory: ContractFactory,
@@ -80,19 +85,22 @@ export async function defenderDeploy(
     debug(`Salt: ${opts.salt}`);
   }
 
+  const deploymentRequest: DeployRequest = {
+    contractName: contractInfo.contractName,
+    contractPath: contractInfo.sourceName,
+    network: network,
+    artifactPayload: JSON.stringify(contractInfo.buildInfo),
+    licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
+    constructorInputs: constructorArgs,
+    verifySourceCode: verifySourceCode,
+    relayerId: opts.relayerId,
+    salt: opts.salt,
+    createFactoryAddress: opts.createFactoryAddress,
+  };
+
   let deploymentResponse: DeploymentResponse;
   try {
-    deploymentResponse = await client.deployContract({
-      contractName: contractInfo.contractName,
-      contractPath: contractInfo.sourceName,
-      network: network,
-      artifactPayload: JSON.stringify(contractInfo.buildInfo),
-      licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
-      constructorInputs: constructorArgs,
-      verifySourceCode: verifySourceCode,
-      relayerId: opts.relayerId,
-      salt: opts.salt,
-    });
+    deploymentResponse = await client.deployContract(deploymentRequest);
   } catch (e: any) {
     if (e.response?.data?.message?.includes('licenseType should be equal to one of the allowed values')) {
       throw new UpgradesError(
