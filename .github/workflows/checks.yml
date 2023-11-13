@@ -23,14 +23,6 @@ jobs:
       run: yarn lint
 
   tests:
-    strategy:
-      matrix:
-        package:
-          - core
-          - plugin-hardhat
-          - plugin-truffle
-          - plugin-defender-hardhat
-
     runs-on: ubuntu-latest
 
     steps:
@@ -40,7 +32,7 @@ jobs:
       uses: ./.github/actions/setup
 
     - name: Run tests
-      run: yarn --cwd "packages/${{matrix.package}}" run test
+      run: yarn test
 
   coverage:
     runs-on: ubuntu-latest
