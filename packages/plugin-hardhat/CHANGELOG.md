@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Add `createFactoryAddress` option for Defender deployments.
+- Add `createFactoryAddress` option for Defender deployments. ([#920](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/920))
 
 **Note**: OpenZeppelin Defender deployments is in beta and its functionality is subject to change.
 
