@@ -30,6 +30,7 @@ jobs:
           - plugin-hardhat
           - plugin-truffle
           - plugin-defender-hardhat
+      max-parallel: 1
 
     runs-on: ubuntu-latest
 
