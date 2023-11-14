@@ -1,8 +1,8 @@
 # Changelog
 
-## Unrelease
+## Unreleased
 
-- Update Defender SDK.
+- Update Defender SDK. ([#924](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/924))
 - Throw error if not using a relayer for deployments, until other types of deployments are supported.
 
 **Note**: OpenZeppelin Defender deployments is in beta and its functionality is subject to change.
