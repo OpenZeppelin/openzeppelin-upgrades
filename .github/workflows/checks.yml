@@ -28,7 +28,6 @@ jobs:
         package:
           - core
           - plugin-hardhat
-          - plugin-truffle
 
     runs-on: ubuntu-latest
 

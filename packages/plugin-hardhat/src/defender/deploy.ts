@@ -54,11 +54,6 @@ type CompilerOutputWithMetadata = CompilerOutputContract & {
   metadata?: string;
 };
 
-type DeployRequest = DeployContractRequest & {
-  // TODO: remove this when defender-sdk-deploy-client dependency is updated
-  createFactoryAddress?: string;
-};
-
 export async function defenderDeploy(
   hre: HardhatRuntimeEnvironment,
   factory: ContractFactory,
@@ -85,7 +80,7 @@ export async function defenderDeploy(
     debug(`Salt: ${opts.salt}`);
   }
 
-  const deploymentRequest: DeployRequest = {
+  const deploymentRequest: DeployContractRequest = {
     contractName: contractInfo.contractName,
     contractPath: contractInfo.sourceName,
     network: network,
@@ -110,6 +105,22 @@ export async function defenderDeploy(
     } else {
       throw e;
     }
+  }
+
+  if (deploymentResponse.address === undefined) {
+    throw new UpgradesError(
+      `Deployment response with id ${deploymentResponse.deploymentId} does not include a contract address`,
+      () =>
+        'The Hardhat Upgrades plugin is not currently compatible with this type of deployment. Use a relayer for your default deploy approval process in Defender.',
+    );
+  }
+
+  if (deploymentResponse.txHash === undefined) {
+    throw new UpgradesError(
+      `Deployment response with id ${deploymentResponse.deploymentId} does not include a transaction hash`,
+      () =>
+        'The Hardhat Upgrades plugin is not currently compatible with this type of deployment. Use a relayer for your default deploy approval process in Defender.',
+    );
   }
 
   const txResponse = (await hre.ethers.provider.getTransaction(deploymentResponse.txHash)) ?? undefined;

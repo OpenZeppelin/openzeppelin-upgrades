@@ -2393,21 +2393,21 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.8.3.tgz#cbef3146bfc570849405f59cba18235da95a252a"
   integrity sha512-bQHV8R9Me8IaJoJ2vPG4rXcL7seB7YVuskr4f+f5RyOStSZetwzkWtoqDMl5erkBJy0lDRUnIR2WIkPiC0GJlg==
 
-"@openzeppelin/defender-admin-client@^1.48.0":
-  version "1.48.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-admin-client/-/defender-admin-client-1.48.0.tgz#acb8d6677a0b1bca463f9017aefaf4b6720123e1"
-  integrity sha512-MN29JD6jA3PgOxF2tG0aZbMIwOCieYWkK9UbHCq1UzGPrMgGV9NVMUyVdqpv7Ynplwsjp5ZTBDOyttwvTlchHg==
+"@openzeppelin/defender-admin-client@^1.52.0":
+  version "1.52.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-admin-client/-/defender-admin-client-1.52.0.tgz#9788dc839ae1d31c82c57d3e277c1c1ecb149740"
+  integrity sha512-CKs5mMLL7+nXyugsHaAw0aPfLwFNA+vq7ftuJ3sWUKdbQRZsJ+/189HAwp2/BJC64yUbarEeWqOh3jNpaKRJLw==
   dependencies:
-    "@openzeppelin/defender-base-client" "1.48.0"
+    "@openzeppelin/defender-base-client" "1.52.0"
     axios "^1.4.0"
     ethers "^5.7.2"
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-"@openzeppelin/defender-base-client@1.48.0", "@openzeppelin/defender-base-client@^1.48.0":
-  version "1.48.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-base-client/-/defender-base-client-1.48.0.tgz#9103b1b036db0451b52d7899a277bf24db4c4b06"
-  integrity sha512-HFO87s010hRrMjyh2xYOCEAkLe21BfIbho7n5/kikA6A1ZgXi7MsEiqnQv1zP4bxMJgxGZ5b3t4tt6fWrakbag==
+"@openzeppelin/defender-base-client@1.52.0", "@openzeppelin/defender-base-client@^1.52.0":
+  version "1.52.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-base-client/-/defender-base-client-1.52.0.tgz#7a000eeba9705c75e6be5de5d32e07d377aed55d"
+  integrity sha512-VFNu/pjVpAnFKIfuKT1cn9dRpbcO8FO8EAmVZ2XrrAsKXEWDZ3TNBtACxmj7fAu0ad/TzRkb66o5rMts7Fv7jw==
   dependencies:
     amazon-cognito-identity-js "^6.0.1"
     async-retry "^1.3.3"
@@ -2415,21 +2415,21 @@
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-"@openzeppelin/defender-sdk-base-client@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-base-client/-/defender-sdk-base-client-1.2.0.tgz#4ed527939e3b8f0db1bd8a8b35f39effb795c3c8"
-  integrity sha512-v/nzOABW4RH4wqVPG8gUICV48eZeO0kf6ZvNsd1aUP4i7NyCPv80gErjtW08SFzR/sTqsDN6PS3D+les8mGXvg==
+"@openzeppelin/defender-sdk-base-client@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-base-client/-/defender-sdk-base-client-1.5.0.tgz#82d2b45c84822dfadaba8b7cfe215df7ac3c4bec"
+  integrity sha512-8aN4sEE15/6LctA14ADr8c6QvEzEXfAtFlxo/Ys0N6UVfp8lRAYqDOpHd4mb8dMfkRzq5izMCuMYgAjC9GFflQ==
   dependencies:
-    amazon-cognito-identity-js "^6.0.1"
+    amazon-cognito-identity-js "^6.3.6"
     async-retry "^1.3.3"
 
-"@openzeppelin/defender-sdk-deploy-client@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-deploy-client/-/defender-sdk-deploy-client-1.2.0.tgz#76381c8f3c2821ec2856e70d1d562d3fbfe7c88d"
-  integrity sha512-kUBRKMSQiTZ8urP236L68k5X8Eg1ys2FDYMeuJ22GhXFAC2M1l6OaXNFolFBSzmS5t/x8BkJU6+RCyoCqO2qxg==
+"@openzeppelin/defender-sdk-deploy-client@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-deploy-client/-/defender-sdk-deploy-client-1.5.0.tgz#b0bdadc0f00a44c49a3f96e85673394f94f99d6c"
+  integrity sha512-DbE4Rpa90vSN7o5/sim5qzAVVsSWkZBJ+Z9yjkc8qPRheh2dRk6oe2GhVoQfXI/04XwMb2uNvtfU1VAH8AzgaQ==
   dependencies:
-    "@ethersproject/abi" "^5.6.3"
-    "@openzeppelin/defender-sdk-base-client" "^1.2.0"
+    "@ethersproject/abi" "^5.7.0"
+    "@openzeppelin/defender-sdk-base-client" "^1.5.0"
     axios "^1.4.0"
     lodash "^4.17.21"
 
@@ -3629,6 +3629,17 @@ amazon-cognito-identity-js@^6.0.1:
   version "6.3.1"
   resolved "https://registry.yarnpkg.com/amazon-cognito-identity-js/-/amazon-cognito-identity-js-6.3.1.tgz#d9a4c1a92f4b059330df8ea075f65106d2605409"
   integrity sha512-PxBdufgS8uZShrcIFAsRjmqNXsh/4fXOWUGQOUhKLHWWK1pcp/y+VeFF48avXIWefM8XwsT3JlN6m9J2eHt4LA==
+  dependencies:
+    "@aws-crypto/sha256-js" "1.2.2"
+    buffer "4.9.2"
+    fast-base64-decode "^1.0.0"
+    isomorphic-unfetch "^3.0.0"
+    js-cookie "^2.2.1"
+
+amazon-cognito-identity-js@^6.3.6:
+  version "6.3.7"
+  resolved "https://registry.yarnpkg.com/amazon-cognito-identity-js/-/amazon-cognito-identity-js-6.3.7.tgz#65c3d7ee4e0c0a1ffea01927248989c5bd1d1868"
+  integrity sha512-tSjnM7KyAeOZ7UMah+oOZ6cW4Gf64FFcc7BE2l7MTcp7ekAPrXaCbpcW2xEpH1EiDS4cPcAouHzmCuc2tr72vQ==
   dependencies:
     "@aws-crypto/sha256-js" "1.2.2"
     buffer "4.9.2"
