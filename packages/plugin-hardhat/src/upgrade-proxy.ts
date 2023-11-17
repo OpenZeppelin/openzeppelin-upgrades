@@ -1,5 +1,6 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
+import debug from './utils/debug';
 
 import { getAdminAddress, getCode, getUpgradeInterfaceVersion, isEmptySlot } from '@openzeppelin/upgrades-core';
 
@@ -57,14 +58,17 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, proxyAddress);
 
       return (nextImpl, call) => {
-        if (upgradeInterfaceVersion === undefined) {
-          return call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
-        } else if (upgradeInterfaceVersion === '5.0.0') {
+        if (upgradeInterfaceVersion === '5.0.0') {
           return proxy.upgradeToAndCall(nextImpl, call ?? '0x', ...overrides);
         } else {
-          throw new Error(
-            `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
-          );
+          if (upgradeInterfaceVersion !== undefined) {
+            // Log as debug if the interface version is an unknown string.
+            // Do not throw an error because this could be caused by a fallback function.
+            debug(
+              `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
+            );
+          }
+          return call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
         }
       };
     } else {
@@ -75,16 +79,19 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress);
 
       return (nextImpl, call) => {
-        if (upgradeInterfaceVersion === undefined) {
+        if (upgradeInterfaceVersion === '5.0.0') {
+          return admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
+        } else {
+          if (upgradeInterfaceVersion !== undefined) {
+            // Log as debug if the interface version is an unknown string.
+            // Do not throw an error because this could be caused by a fallback function.
+            debug(
+              `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
+            );
+          }
           return call
             ? admin.upgradeAndCall(proxyAddress, nextImpl, call, ...overrides)
             : admin.upgrade(proxyAddress, nextImpl, ...overrides);
-        } else if (upgradeInterfaceVersion === '5.0.0') {
-          return admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
-        } else {
-          throw new Error(
-            `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
-          );
         }
       };
     }
