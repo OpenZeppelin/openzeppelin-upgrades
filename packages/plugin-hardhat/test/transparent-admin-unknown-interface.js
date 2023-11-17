@@ -10,7 +10,9 @@ test.before(async t => {
   t.context.UnsafeAdminFallback = await ethers.getContractFactory('UnsafeAdminFallback');
 
   t.context.GreeterTransparent40FallbackString = await ethers.getContractFactory('GreeterTransparent40FallbackString');
-  t.context.GreeterTransparent40FallbackStringV2 = await ethers.getContractFactory('GreeterTransparent40FallbackStringV2');
+  t.context.GreeterTransparent40FallbackStringV2 = await ethers.getContractFactory(
+    'GreeterTransparent40FallbackStringV2',
+  );
   t.context.UnsafeAdminFallbackString = await ethers.getContractFactory('UnsafeAdminFallbackString');
 
   t.context.TransparentUpgradableProxy = await ethers.getContractFactory(
@@ -26,7 +28,12 @@ function getInitializerData(contractInterface, args) {
 }
 
 test('admin with unknown upgrades interface version due to fallback returning non-string', async t => {
-  const { GreeterTransparent40Fallback, GreeterTransparent40FallbackV2, UnsafeAdminFallback, TransparentUpgradableProxy } = t.context;
+  const {
+    GreeterTransparent40Fallback,
+    GreeterTransparent40FallbackV2,
+    UnsafeAdminFallback,
+    TransparentUpgradableProxy,
+  } = t.context;
 
   const impl = await GreeterTransparent40Fallback.deploy();
   await impl.waitForDeployment();
@@ -46,7 +53,12 @@ test('admin with unknown upgrades interface version due to fallback returning no
 });
 
 test('admin with unknown upgrades interface version due to fallback returning string', async t => {
-  const { GreeterTransparent40FallbackString, GreeterTransparent40FallbackStringV2, UnsafeAdminFallbackString, TransparentUpgradableProxy } = t.context;
+  const {
+    GreeterTransparent40FallbackString,
+    GreeterTransparent40FallbackStringV2,
+    UnsafeAdminFallbackString,
+    TransparentUpgradableProxy,
+  } = t.context;
 
   const impl = await GreeterTransparent40FallbackString.deploy();
   await impl.waitForDeployment();
