@@ -5,7 +5,7 @@ import {
   isTransparentOrUUPSProxy,
   isTransparentProxy,
 } from '@openzeppelin/upgrades-core';
-import { ProposalResponse } from '@openzeppelin/defender-admin-client';
+import { ProposalResponse, CreateProposalRequest } from '@openzeppelin/defender-admin-client';
 import { ContractFactory, getCreateAddress, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getAdminClient, getNetwork } from './utils';
@@ -28,7 +28,7 @@ export interface ProposalOptions extends UpgradeOptions {
   description?: string;
   proxyAdmin?: string;
   multisig?: string;
-  multisigType?: 'Gnosis Safe' | 'Gnosis Multisig' | 'EOA';
+  multisigType?: CreateProposalRequest['viaType'];
   bytecodeVerificationReferenceUrl?: string;
 }
 
