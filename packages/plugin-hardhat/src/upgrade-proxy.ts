@@ -57,7 +57,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
     if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
       // No admin contract: use ITransparentUpgradeableProxy to get proxiable interface
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, proxyAddress);
-      switch(upgradeInterfaceVersion) {
+      switch (upgradeInterfaceVersion) {
         case undefined: {
           const proxy = await attachITransparentUpgradeableProxyV4(hre, proxyAddress, signer);
           return (nextImpl, call) => call 
@@ -76,7 +76,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
     } else {
       // Admin contract: redirect upgrade call through it
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress);
-      switch(upgradeInterfaceVersion) {
+      switch (upgradeInterfaceVersion) {
         case undefined: {
           const admin = await attachProxyAdminV4(hre, adminAddress, signer);
           return (nextImpl, call) => call
