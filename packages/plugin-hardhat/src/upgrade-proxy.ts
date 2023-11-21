@@ -60,8 +60,8 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
       switch (upgradeInterfaceVersion) {
         case undefined: {
           const proxy = await attachITransparentUpgradeableProxyV4(hre, proxyAddress, signer);
-          return (nextImpl, call) => call 
-            ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) 
+          return (nextImpl, call) => call
+            ? proxy.upgradeToAndCall(nextImpl, call, ...overrides)
             : proxy.upgradeTo(nextImpl, ...overrides);
         }
         case '5.0.0': {
@@ -73,6 +73,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
             `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
           );
         }
+      }
     } else {
       // Admin contract: redirect upgrade call through it
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress);
