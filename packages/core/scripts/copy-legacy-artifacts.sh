@@ -6,8 +6,8 @@ set -euo pipefail
 
 mkdir -p artifacts
 
-# Assert that a previous version of @openzeppelin/upgrades-core is installed, which contains legacy artifacts
-if ! grep -q '"version": "1.31.1"' ../../node_modules/@openzeppelin/upgrades-core-legacy/package.json; then
+# Assert that a previous version of @openzeppelin/upgrades-core is installed, which contains legacy artifacts.
+if ! jq -r .version ../../node_modules/@openzeppelin/upgrades-core-legacy/package.json | grep -q '^1.31.1$'; then
   echo "Error: @openzeppelin/upgrades-core must depend on a previous version of itself at version 1.31.1"
   exit 1
 fi
