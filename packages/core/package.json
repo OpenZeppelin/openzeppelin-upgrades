@@ -32,7 +32,7 @@
     "clean": "hardhat clean && rimraf dist *.tsbuildinfo",
     "compile": "tsc -b && yarn compile:contracts",
     "compile:contracts": "hardhat compile",
-    "copyfiles": "node scripts/copy-build-info-v5.js && bash scripts/copy-artifacts.sh",
+    "copyfiles": "node scripts/copy-build-info-v5.js && bash scripts/copy-legacy-artifacts.sh",
     "prepare": "yarn clean && yarn compile && yarn copyfiles",
     "test": "tsc -b && hardhat compile --force && yarn copyfiles && ava",
     "test:watch": "hardhat compile --force && yarn copyfiles && fgbg 'ava --watch' 'tsc -b --watch' --",
