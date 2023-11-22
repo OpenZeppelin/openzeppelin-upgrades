@@ -57,36 +57,42 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
     if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
       // No admin contract: use ITransparentUpgradeableProxy to get proxiable interface
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, proxyAddress);
-      if (upgradeInterfaceVersion === undefined) {
-        const proxy = await attachITransparentUpgradeableProxyV4(hre, proxyAddress, signer);
-        return (nextImpl, call) => {
-          return call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
-        };
-      } else if (upgradeInterfaceVersion === '5.0.0') {
-        const proxy = await attachITransparentUpgradeableProxyV5(hre, proxyAddress, signer);
-        return (nextImpl, call) => proxy.upgradeToAndCall(nextImpl, call ?? '0x', ...overrides);
-      } else {
-        throw new Error(
-          `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
-        );
+      switch (upgradeInterfaceVersion) {
+        case undefined: {
+          const proxy = await attachITransparentUpgradeableProxyV4(hre, proxyAddress, signer);
+          return (nextImpl, call) =>
+            call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
+        }
+        case '5.0.0': {
+          const proxy = await attachITransparentUpgradeableProxyV5(hre, proxyAddress, signer);
+          return (nextImpl, call) => proxy.upgradeToAndCall(nextImpl, call ?? '0x', ...overrides);
+        }
+        default: {
+          throw new Error(
+            `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
+          );
+        }
       }
     } else {
       // Admin contract: redirect upgrade call through it
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress);
-      if (upgradeInterfaceVersion === undefined) {
-        const admin = await attachProxyAdminV4(hre, adminAddress, signer);
-        return (nextImpl, call) => {
-          return call
-            ? admin.upgradeAndCall(proxyAddress, nextImpl, call, ...overrides)
-            : admin.upgrade(proxyAddress, nextImpl, ...overrides);
-        };
-      } else if (upgradeInterfaceVersion === '5.0.0') {
-        const admin = await attachProxyAdminV5(hre, adminAddress, signer);
-        return (nextImpl, call) => admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
-      } else {
-        throw new Error(
-          `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
-        );
+      switch (upgradeInterfaceVersion) {
+        case undefined: {
+          const admin = await attachProxyAdminV4(hre, adminAddress, signer);
+          return (nextImpl, call) =>
+            call
+              ? admin.upgradeAndCall(proxyAddress, nextImpl, call, ...overrides)
+              : admin.upgrade(proxyAddress, nextImpl, ...overrides);
+        }
+        case '5.0.0': {
+          const admin = await attachProxyAdminV5(hre, adminAddress, signer);
+          return (nextImpl, call) => admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
+        }
+        default: {
+          throw new Error(
+            `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
+          );
+        }
       }
     }
   }
