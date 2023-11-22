@@ -27,7 +27,7 @@ function getNamespacedOverrides() {
   const overrides = {};
   for (const c of namespacedContracts) {
     if (c !== 'NamespacedToModify07.sol') {
-      overrides[`contracts/test/${c}`] = { version: '0.8.20', settings };
+      overrides[`contracts/test/${c}`] = { version: '0.8.20', settings: { ...settings, evmVersion: 'paris' } };
     }
   }
   return overrides;

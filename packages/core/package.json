@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@ava/typescript": "^4.0.0",
-    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
     "@openzeppelin/contracts": "4.8.3",
     "@openzeppelin/contracts-upgradeable": "4.8.3",
     "@types/cbor": "^5.0.0",
@@ -50,7 +50,7 @@
     "ava": "^5.0.0",
     "dotenv": "^16.0.0",
     "fgbg": "^0.1.4",
-    "hardhat": "^2.0.2",
+    "hardhat": "^2.19.1",
     "rimraf": "^5.0.0",
     "typescript": "^4.0.0"
   },
