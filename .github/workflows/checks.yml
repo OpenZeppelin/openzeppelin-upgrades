@@ -28,7 +28,6 @@ jobs:
         package:
           - core
           - plugin-hardhat
-      fail-fast: true
 
     runs-on: ubuntu-latest
 
