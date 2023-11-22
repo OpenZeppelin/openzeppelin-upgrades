@@ -3,7 +3,7 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { DeploymentResponse, SourceCodeLicense } from '@openzeppelin/defender-sdk-deploy-client';
+import { DeploymentResponse, SourceCodeLicense, DeployContractRequest } from '@openzeppelin/defender-sdk-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -73,19 +73,22 @@ export async function defenderDeploy(
     debug(`Salt: ${opts.salt}`);
   }
 
+  const deploymentRequest: DeployContractRequest = {
+    contractName: contractInfo.contractName,
+    contractPath: contractInfo.sourceName,
+    network: network,
+    artifactPayload: JSON.stringify(contractInfo.buildInfo),
+    licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
+    constructorInputs: constructorArgs,
+    verifySourceCode: verifySourceCode,
+    relayerId: opts.relayerId,
+    salt: opts.salt,
+    createFactoryAddress: opts.createFactoryAddress,
+  };
+
   let deploymentResponse: DeploymentResponse;
   try {
-    deploymentResponse = await client.deployContract({
-      contractName: contractInfo.contractName,
-      contractPath: contractInfo.sourceName,
-      network: network,
-      artifactPayload: JSON.stringify(contractInfo.buildInfo),
-      licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
-      constructorInputs: constructorArgs,
-      verifySourceCode: verifySourceCode,
-      relayerId: opts.relayerId,
-      salt: opts.salt,
-    });
+    deploymentResponse = await client.deployContract(deploymentRequest);
   } catch (e: any) {
     if (e.response?.data?.message?.includes('licenseType should be equal to one of the allowed values')) {
       throw new UpgradesError(
@@ -95,6 +98,22 @@ export async function defenderDeploy(
     } else {
       throw e;
     }
+  }
+
+  if (deploymentResponse.address === undefined) {
+    throw new UpgradesError(
+      `Deployment response with id ${deploymentResponse.deploymentId} does not include a contract address`,
+      () =>
+        'The Hardhat Upgrades plugin is not currently compatible with this type of deployment. Use a relayer for your default deploy approval process in Defender.',
+    );
+  }
+
+  if (deploymentResponse.txHash === undefined) {
+    throw new UpgradesError(
+      `Deployment response with id ${deploymentResponse.deploymentId} does not include a transaction hash`,
+      () =>
+        'The Hardhat Upgrades plugin is not currently compatible with this type of deployment. Use a relayer for your default deploy approval process in Defender.',
+    );
   }
 
   const txResponse = (await hre.ethers.provider.getTransaction(deploymentResponse.txHash)) ?? undefined;

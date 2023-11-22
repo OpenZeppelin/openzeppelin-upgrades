@@ -21,12 +21,14 @@ const settings = {
   },
 };
 
+const settingsWithParisEVM = {
+  ...settings,
+  evmVersion: 'paris',
+};
+
 const proxyCompiler = {
   version: require('./src/solidity-version.json'),
-  settings: {
-    ...settings,
-    evmVersion: 'paris',
-  },
+  settings: settingsWithParisEVM,
 };
 
 function getNamespacedOverrides() {
@@ -37,7 +39,7 @@ function getNamespacedOverrides() {
     if (c === 'NamespacedToModify07.sol') {
       overrides[`contracts/test/${c}`] = { version: '0.7.6', settings };
     } else {
-      overrides[`contracts/test/${c}`] = { version: '0.8.20', settings };
+      overrides[`contracts/test/${c}`] = { version: '0.8.20', settings: settingsWithParisEVM };
     }
   }
   return overrides;
