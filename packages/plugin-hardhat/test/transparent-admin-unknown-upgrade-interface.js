@@ -22,9 +22,7 @@ test.before(async t => {
 });
 
 function getInitializerData(contractInterface, args) {
-  const initializer = 'initialize';
-  const fragment = contractInterface.getFunction(initializer);
-  return contractInterface.encodeFunctionData(fragment, args);
+  return contractInterface.encodeFunctionData('initialize', args);
 }
 
 test('admin with unknown upgrades interface version due to fallback returning non-string', async t => {
