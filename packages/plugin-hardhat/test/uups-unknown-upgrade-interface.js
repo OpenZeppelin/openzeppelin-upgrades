@@ -14,16 +14,20 @@ test('unknown upgrades interface version due to fallback returning non-string', 
   const { GreeterProxiable40Fallback, GreeterProxiable40FallbackV2 } = t.context;
 
   const greeter = await upgrades.deployProxy(GreeterProxiable40Fallback, ['Hello, Hardhat!'], { kind: 'uups' });
+  t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   const greeter2 = await upgrades.upgradeProxy(greeter, GreeterProxiable40FallbackV2);
   await greeter2.resetGreeting();
+  t.is(await greeter2.greet(), 'Hello World');
 });
 
 test('unknown upgrades interface version due to fallback returning string', async t => {
   const { GreeterProxiable40FallbackString, GreeterProxiable40FallbackStringV2 } = t.context;
 
   const greeter = await upgrades.deployProxy(GreeterProxiable40FallbackString, ['Hello, Hardhat!'], { kind: 'uups' });
+  t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   const greeter2 = await upgrades.upgradeProxy(greeter, GreeterProxiable40FallbackStringV2);
   await greeter2.resetGreeting();
+  t.is(await greeter2.greet(), 'Hello World');
 });

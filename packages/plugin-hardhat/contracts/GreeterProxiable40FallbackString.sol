@@ -3,7 +3,6 @@ pragma solidity >= 0.6.0 <0.8.0;
 import { Proxiable } from "./utils/Proxiable.sol";
 
 contract GreeterProxiable40FallbackString is Proxiable {
-
     string greeting;
 
     function initialize(string memory _greeting) public {
@@ -12,10 +11,6 @@ contract GreeterProxiable40FallbackString is Proxiable {
 
     function greet() public view returns (string memory) {
         return greeting;
-    }
-
-    function setGreeting(string memory _greeting) public {
-        greeting = _greeting;
     }
 
     fallback(bytes calldata) external returns (bytes memory) {

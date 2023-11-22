@@ -44,10 +44,14 @@ test('admin with unknown upgrades interface version due to fallback returning no
   );
   await proxy.waitForDeployment();
 
+  const greeter = GreeterTransparent40Fallback.attach(await proxy.getAddress());
+  t.is(await greeter.greet(), 'Hello, Hardhat!');
+
   await upgrades.forceImport(await proxy.getAddress(), GreeterTransparent40Fallback);
 
   const greeter2 = await upgrades.upgradeProxy(proxy, GreeterTransparent40FallbackV2);
   await greeter2.resetGreeting();
+  t.is(await greeter2.greet(), 'Hello World');
 });
 
 test('admin with unknown upgrades interface version due to fallback returning string', async t => {
@@ -69,8 +73,12 @@ test('admin with unknown upgrades interface version due to fallback returning st
   );
   await proxy.waitForDeployment();
 
+  const greeter = GreeterTransparent40FallbackString.attach(await proxy.getAddress());
+  t.is(await greeter.greet(), 'Hello, Hardhat!');
+
   await upgrades.forceImport(await proxy.getAddress(), GreeterTransparent40FallbackString);
 
   const greeter2 = await upgrades.upgradeProxy(proxy, GreeterTransparent40FallbackStringV2);
   await greeter2.resetGreeting();
+  t.is(await greeter2.greet(), 'Hello World');
 });

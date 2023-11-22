@@ -37,10 +37,6 @@ contract GreeterTransparent40FallbackString {
     function greet() public view returns (string memory) {
         return greeting;
     }
-
-    function setGreeting(string memory _greeting) public {
-        greeting = _greeting;
-    }
 }
 
 contract GreeterTransparent40FallbackStringV2 is GreeterTransparent40FallbackString {

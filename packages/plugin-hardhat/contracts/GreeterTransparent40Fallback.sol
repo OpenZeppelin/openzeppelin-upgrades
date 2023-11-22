@@ -8,7 +8,7 @@ interface ITransparentUpgradeableProxy {
 }
 
 contract UnsafeAdminFallback {
-    // NOT SAFE FOR PRODUCTION USE
+    // NOT SAFE FOR PRODUCTION USE. ANYONE CAN UPGRADE THE PROXY THROUGH THE BELOW.
 
     function upgrade(ITransparentUpgradeableProxy proxy, address implementation) public virtual {
         proxy.upgradeTo(implementation);
@@ -34,10 +34,6 @@ contract GreeterTransparent40Fallback {
 
     function greet() public view returns (string memory) {
         return greeting;
-    }
-
-    function setGreeting(string memory _greeting) public {
-        greeting = _greeting;
     }
 }
 
