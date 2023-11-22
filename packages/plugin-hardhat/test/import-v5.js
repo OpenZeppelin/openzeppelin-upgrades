@@ -30,12 +30,6 @@ test.before(async t => {
   t.context.UpgradableBeacon = await ethers.getContractFactory(UpgradableBeacon.abi, UpgradableBeacon.bytecode);
 });
 
-function getInitializerData(contractInterface, args) {
-  const initializer = 'initialize';
-  const fragment = contractInterface.getFunction(initializer);
-  return contractInterface.encodeFunctionData(fragment, args);
-}
-
 const NOT_TRANSPARENT_PROXY = `doesn't look like a transparent proxy`;
 
 test('implementation happy path', async t => {
@@ -73,7 +67,7 @@ test('transparent happy path', async t => {
   const proxy = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
     owner,
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -94,7 +88,7 @@ test('uups happy path', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -119,7 +113,7 @@ test('beacon proxy happy path', async t => {
   await beacon.waitForDeployment();
   const proxy = await BeaconProxy.deploy(
     await beacon.getAddress(),
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -157,7 +151,7 @@ test('import proxy using contract instance', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -178,7 +172,7 @@ test('wrong kind', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -201,7 +195,7 @@ test('import custom UUPS proxy', async t => {
   await impl.waitForDeployment();
   const proxy = await CustomProxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -218,7 +212,7 @@ test('import custom UUPS proxy with admin', async t => {
   await impl.waitForDeployment();
   const proxy = await CustomProxyWithAdmin.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -238,7 +232,7 @@ test('wrong implementation', async t => {
   const proxy = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
     owner,
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -257,7 +251,7 @@ test('multiple identical implementations', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -265,7 +259,7 @@ test('multiple identical implementations', async t => {
   await impl2.waitForDeployment();
   const proxy2 = await ERC1967Proxy.deploy(
     await impl2.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat 2!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat 2!']),
   );
   await proxy2.waitForDeployment();
 
@@ -285,12 +279,12 @@ test('same implementation', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
   const proxy2 = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat 2!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat 2!']),
   );
   await proxy2.waitForDeployment();
 
@@ -312,7 +306,7 @@ test('import transparents with different admin', async t => {
   const proxy = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
     owner,
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -321,7 +315,7 @@ test('import transparents with different admin', async t => {
   const proxy2 = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
     owner2,
-    getInitializerData(Greeter.interface, ['Hello, Hardhat 2!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat 2!']),
   );
   await proxy2.waitForDeployment();
 
@@ -348,7 +342,7 @@ test('import transparent then upgrade with call', async t => {
   const proxy = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
     owner,
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 

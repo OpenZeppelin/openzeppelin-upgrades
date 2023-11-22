@@ -15,12 +15,6 @@ test.before(async t => {
   );
 });
 
-function getInitializerData(contractInterface, args) {
-  const initializer = 'initialize';
-  const fragment = contractInterface.getFunction(initializer);
-  return contractInterface.encodeFunctionData(fragment, args);
-}
-
 async function assertGasLimit(t, oldBlockNumber, expectedGasLimit, minExpectedBlocks) {
   const newBlockNumber = await ethers.provider.getBlockNumber();
   t.true(
@@ -132,7 +126,7 @@ test('changeProxyAdmin', async t => {
   const greeter = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
     await admin.getAddress(),
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await greeter.waitForDeployment();
 
@@ -158,7 +152,7 @@ test('transferProxyAdminOwnership', async t => {
   const greeter = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
     await admin.getAddress(),
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await greeter.waitForDeployment();
 

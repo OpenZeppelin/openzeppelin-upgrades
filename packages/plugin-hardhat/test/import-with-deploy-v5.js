@@ -22,12 +22,6 @@ test.before(async t => {
   t.context.ERC1967Proxy = await ethers.getContractFactory(ERC1967Proxy.abi, ERC1967Proxy.bytecode);
 });
 
-function getInitializerData(contractInterface, args) {
-  const initializer = 'initialize';
-  const fragment = contractInterface.getFunction(initializer);
-  return contractInterface.encodeFunctionData(fragment, args);
-}
-
 test('import then deploy with same impl', async t => {
   const { GreeterProxiable, ERC1967Proxy } = t.context;
 
@@ -35,7 +29,7 @@ test('import then deploy with same impl', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -62,7 +56,7 @@ test('deploy then import with same impl', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat 2!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat 2!']),
   );
   await proxy.waitForDeployment();
 
@@ -107,7 +101,7 @@ test('import previous import', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -131,7 +125,7 @@ test('import then deploy transparent (with deployProxy) with different admin', a
   const proxy = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
     owner,
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 

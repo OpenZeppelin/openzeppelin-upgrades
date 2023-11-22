@@ -17,12 +17,6 @@ test.before(async t => {
   );
 });
 
-function getInitializerData(contractInterface, args) {
-  const initializer = 'initialize';
-  const fragment = contractInterface.getFunction(initializer);
-  return contractInterface.encodeFunctionData(fragment, args);
-}
-
 test('use different admin addresses', async t => {
   const { Greeter, GreeterV2, ProxyAdmin, TransparentUpgradableProxy } = t.context;
 
@@ -34,7 +28,7 @@ test('use different admin addresses', async t => {
   const proxy = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
     await admin.getAddress(),
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   const greeter = await upgrades.forceImport(await proxy.getAddress(), Greeter);
 
