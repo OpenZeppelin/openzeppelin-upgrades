@@ -27,8 +27,6 @@ import debug from './utils/debug';
 import { callEtherscanApi, getEtherscanInstance, RESPONSE_OK } from './utils/etherscan-api';
 import { verifyAndGetStatus } from './utils/etherscan-api';
 import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
-import { attachProxyAdminV5 } from './utils';
-import { ethers } from 'ethers';
 
 /**
  * Hardhat artifact for a precompiled contract
@@ -52,6 +50,14 @@ interface VerifiableContractInfo {
 interface ErrorReport {
   errors: string[];
   severity: 'error' | 'warn';
+}
+
+/**
+ * Etherscan API response when getting event logs by address and topic.
+ */
+interface EtherscanEventResponse {
+  topics: string[];
+  transactionHash: string;
 }
 
 /**
@@ -167,6 +173,18 @@ function recordError(message: string, errorReport: ErrorReport) {
  */
 class EventOrFunctionNotFound extends UpgradesError {}
 
+class EventsNotFound extends EventOrFunctionNotFound {
+  constructor(address: string, events: string[]) {
+    super(
+      `Could not find an event with any of the following topics in the logs for address ${address}: ${events.join(
+        ', ',
+      )}`,
+      () =>
+        'If the proxy was recently deployed, the transaction may not be available on Etherscan yet. Try running the verify task again after waiting a few blocks.',
+    );
+  }
+}
+
 /**
  * Indicates that the contract's bytecode does not match with the plugin's artifact.
  */
@@ -214,33 +232,36 @@ async function fullVerifyTransparentOrUUPS(
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
-      await verifyAdminOrFallback(hre, hardhatVerify, etherscan, adminAddress, errorReport);
+      await verifyAdminOrFallback(hardhatVerify, etherscan, adminAddress, errorReport);
     }
   }
 
-  async function getOwner(hre: HardhatRuntimeEnvironment, adminAddress: string) {
-    const admin = await attachProxyAdminV5(hre, adminAddress);
-    return await admin.owner();
-  }
-
+  /**
+   * Verifies a proxy admin contract by looking up an OwnershipTransferred event that should have been logged during construction
+   * to get the owner used for its constructor.
+   *
+   * This is different from the verifyWithArtifactOrFallback function because the proxy admin in Contracts 5.0 is not deployed directly by the plugin,
+   * but is deployed by the transparent proxy itself, so we cannot infer the admin's constructor arguments from the originating transaction's input bytecode.
+   */
   async function verifyAdminOrFallback(
-    hre: HardhatRuntimeEnvironment,
     hardhatVerify: (address: string) => Promise<any>,
     etherscan: Etherscan,
     adminAddress: string,
     errorReport: ErrorReport,
   ) {
     const attemptVerify = async () => {
-      let owner;
-      try {
-        owner = await getOwner(hre, adminAddress);
-      } catch (e: any) {
-        if (e.message.toLowerCase().includes('not a function')) {
-          throw new EventOrFunctionNotFound(
-            `Could not find a function with signature 'owner()' in the proxy admin contract`,
-            () => `The contract at ${adminAddress} does not appear to be a known proxy admin contract.`,
-          );
-        }
+      let encodedOwner: string;
+      // Get the OwnershipTransferred event when the ProxyAdmin was created, which should have the encoded owner address as its second parameter (third topic).
+      const response = await getEventResponse(adminAddress, verifiableContracts.proxyAdmin.event, etherscan);
+      if (response === undefined) {
+        throw new EventsNotFound(adminAddress, [verifiableContracts.proxyAdmin.event]);
+      } else if (response.topics.length !== 3) {
+        throw new EventOrFunctionNotFound(
+          `Unexpected number of topics in event logs for ${verifiableContracts.proxyAdmin.event} from ${adminAddress}. Expected 3, got ${response.topics.length}: ${response.topics}`,
+          () => `The contract at ${adminAddress} does not appear to be a known proxy admin contract.`,
+        );
+      } else {
+        encodedOwner = response.topics[2].replace(/^0x/, '');
       }
 
       const artifact = verifiableContracts.proxyAdmin.artifact;
@@ -252,8 +273,7 @@ async function fullVerifyTransparentOrUUPS(
         );
       }
 
-      const constructorArgs = ethers.AbiCoder.defaultAbiCoder().encode(['address'], [owner]).replace(/^0x/, '');
-      await verifyContractWithConstructorArgs(etherscan, adminAddress, artifact, constructorArgs, errorReport);
+      await verifyContractWithConstructorArgs(etherscan, adminAddress, artifact, encodedOwner, errorReport);
     };
 
     await attemptVerifyOrFallback(
@@ -402,11 +422,7 @@ async function searchEvent(etherscan: Etherscan, address: string, possibleContra
   const events = possibleContractInfo.map(contractInfo => {
     return contractInfo.event;
   });
-  throw new EventOrFunctionNotFound(
-    `Could not find an event with any of the following topics in the logs for address ${address}: ${events.join(', ')}`,
-    () =>
-      'If the proxy was recently deployed, the transaction may not be available on Etherscan yet. Try running the verify task again after waiting a few blocks.',
-  );
+  throw new EventsNotFound(address, events);
 }
 
 /**
@@ -597,17 +613,21 @@ async function verifyContractWithConstructorArgs(
 }
 
 /**
- * Gets the txhash that created the contract at the given address, by calling the
- * Etherscan API to look for an event that should have been emitted during construction.
+ * Calls the Etherscan API to look for an event that should have been emitted during construction
+ * of the contract at the given address, and returns the result corresponding to the first event found.
  *
- * @param address The address to get the creation txhash for.
+ * @param address The address for which to get the event response.
  * @param topic The event topic string that should have been logged.
  * @param etherscan Etherscan instance
- * @returns The txhash corresponding to the logged event, or undefined if not found or if
+ * @returns The event response, or undefined if not found or if
  *   the address is not a contract.
  * @throws {UpgradesError} if the Etherscan API returned with not OK status
  */
-async function getContractCreationTxHash(address: string, topic: string, etherscan: Etherscan): Promise<any> {
+async function getEventResponse(
+  address: string,
+  topic: string,
+  etherscan: Etherscan,
+): Promise<EtherscanEventResponse | undefined> {
   const params = {
     module: 'logs',
     action: 'getLogs',
@@ -621,7 +641,7 @@ async function getContractCreationTxHash(address: string, topic: string, ethersc
 
   if (responseBody.status === RESPONSE_OK) {
     const result = responseBody.result;
-    return result[0].transactionHash; // get the txhash from the first instance of this event
+    return result[0];
   } else if (responseBody.message === 'No records found' || responseBody.message === 'No logs found') {
     debug(`no result found for event topic ${topic} at address ${address}`);
     return undefined;
@@ -630,6 +650,26 @@ async function getContractCreationTxHash(address: string, topic: string, ethersc
       `Failed to get logs for contract at address ${address}.`,
       () => `Etherscan returned with message: ${responseBody.message}, reason: ${responseBody.result}`,
     );
+  }
+}
+
+/**
+ * Gets the txhash that created the contract at the given address, by calling the
+ * Etherscan API to look for an event that should have been emitted during construction.
+ *
+ * @param address The address to get the creation txhash for.
+ * @param topic The event topic string that should have been logged.
+ * @param etherscan Etherscan instance
+ * @returns The txhash corresponding to the logged event, or undefined if not found or if
+ *   the address is not a contract.
+ * @throws {UpgradesError} if the Etherscan API returned with not OK status
+ */
+async function getContractCreationTxHash(address: string, topic: string, etherscan: Etherscan): Promise<any> {
+  const eventResponse = await getEventResponse(address, topic, etherscan);
+  if (eventResponse === undefined) {
+    return undefined;
+  } else {
+    return eventResponse.transactionHash;
   }
 }
 
