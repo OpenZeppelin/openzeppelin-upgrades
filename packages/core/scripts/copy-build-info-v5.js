@@ -106,5 +106,9 @@ for (const contractFile in modifiedBuildInfo.output.contracts) {
 
 writeJSON('artifacts/build-info-v5.json', modifiedBuildInfo);
 
+if (fs.existsSync('artifacts/@openzeppelin/contracts-v5')) {
+  console.log('Existing contents of artifacts/@openzeppelin/contracts-v5: ', fs.readdirSync('artifacts/@openzeppelin/contracts-v5'));
+}
+
 // Moves v5 contracts to a separate folder
 fs.renameSync('artifacts/@openzeppelin/contracts', 'artifacts/@openzeppelin/contracts-v5');
