@@ -35,7 +35,7 @@ async function testMakeNamespaced(
   const origInput = JSON.parse(JSON.stringify(origBuildInfo.input));
 
   const modifiedInput = makeNamespacedInput(origBuildInfo.input, origBuildInfo.output);
-  normalizeStateVariableNames(modifiedInput);
+  normalizeIdentifiers(modifiedInput);
   t.snapshot(modifiedInput);
 
   t.deepEqual(origBuildInfo.input, origInput);
@@ -46,12 +46,14 @@ async function testMakeNamespaced(
   t.is(modifiedOutput.errors, undefined);
 }
 
-function normalizeStateVariableNames(input: SolcInput): void {
+function normalizeIdentifiers(input: SolcInput): void {
   for (const source of Object.values(input.sources)) {
     if (source.content !== undefined) {
       source.content = source.content
-        .replace(/\$MainStorage_\d{1,6};/g, '$MainStorage_random;')
-        .replace(/\$SecondaryStorage_\d{1,6}/g, '$SecondaryStorage_random');
+        .replace(/\$MainStorage_\d{1,6}/g, '$MainStorage_random')
+        .replace(/\$SecondaryStorage_\d{1,6}/g, '$SecondaryStorage_random')
+        .replace(/\$UsingForDirective_\d+_\d{1,6}/, '$UsingForDirective_1_random')
+        .replace(/\$UsingForDirective_\d+_\d{1,6}/, '$UsingForDirective_2_random');
     }
   }
 }

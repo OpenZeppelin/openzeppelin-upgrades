@@ -72,8 +72,11 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
                 modifications.push(makeDelete(contractNode, orig));
                 break;
               }
+              // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
+              //   We convert it to a dummy enum to avoid orphaning any possible documentation.
               case 'UsingForDirective': {
-                modifications.push(makeDelete(contractNode, orig));
+                const insertText = getUsingForReplacement(contractNode.id);
+                modifications.push(makeReplace(contractNode, orig, insertText));
                 break;
               }
               case 'StructDefinition': {
@@ -99,9 +102,11 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           }
           break;
         }
-        // - UsingFor can be deleted since its result only takes effect in functions
+        // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
+        //   We convert it to a dummy enum to avoid orphaning any possible documentation.
         case 'UsingForDirective': {
-          modifications.push(makeDelete(node, orig));
+          const insertText = getUsingForReplacement(node.id);
+          modifications.push(makeReplace(node, orig, insertText));
           break;
         }
         // - ErrorDefinition, FunctionDefinition, and VariableDeclaration might be imported by other files, so they cannot be deleted.
@@ -155,6 +160,10 @@ interface Modification {
   start: number;
   end: number;
   text?: string;
+}
+
+function getUsingForReplacement(astId: number) {
+  return `enum $UsingForDirective_${astId}_${(Math.random() * 1e6).toFixed(0)} { dummy }`;
 }
 
 function getPositions(node: Node) {
