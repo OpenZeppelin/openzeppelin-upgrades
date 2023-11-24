@@ -110,6 +110,10 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         case 'ErrorDefinition':
         case 'FunctionDefinition':
         case 'VariableDeclaration': {
+          // First delete documentation, otherwise it may reference deleted parameters or be orphaned
+          if (node.documentation) {
+            modifications.push(makeDelete(node.documentation, orig));
+          }
           // If an identifier with the same name was not previously written, replace with a dummy variable.
           // Otherwise delete to avoid duplicate names, which can happen if there was overloading.
           // This does not need to check all identifiers from the original contract, since the original compilation

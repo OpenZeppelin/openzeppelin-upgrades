@@ -130,6 +130,9 @@ function plusThree(uint x, uint y) pure returns (uint) {
   return x + y + 3;
 }
 
+/**
+ * @dev using for directive
+ */
 using {plusTwo} for uint;
 
 contract UsingForDirectives {
