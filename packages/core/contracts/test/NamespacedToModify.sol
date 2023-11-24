@@ -113,10 +113,19 @@ function plusTwo(uint x) pure returns (uint) {
   return x + 2;
 }
 
+/**
+ * @dev plusThree
+ * @param x x
+ */
 function plusThree(uint x) pure returns (uint) {
   return x + 3;
 }
 
+/**
+ * @dev plusThree overloaded
+ * @param x x
+ * @param y y
+ */
 function plusThree(uint x, uint y) pure returns (uint) {
   return x + y + 3;
 }
@@ -133,5 +142,6 @@ contract UsingForDirectives {
 
 /**
  * @dev a custom error outside a contract
+ * @param example example parameter
  */
-error CustomErrorOutsideContract(Example a);
+error CustomErrorOutsideContract(Example example);
