@@ -131,7 +131,7 @@ function plusThree(uint x, uint y) pure returns (uint) {
 }
 
 /**
- * @dev using for directive
+ * @param foo foo
  */
 using {plusTwo} for uint;
 
