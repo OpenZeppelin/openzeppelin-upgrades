@@ -134,4 +134,4 @@ contract UsingForDirectives {
 /**
  * @dev a custom error outside a contract
  */
-error CustomErrorOutsideContract(address a);
+error CustomErrorOutsideContract(Example a);

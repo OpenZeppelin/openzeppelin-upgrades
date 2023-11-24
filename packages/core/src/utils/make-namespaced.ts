@@ -41,6 +41,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
 
     const orig = Buffer.from(source.content, 'utf8');
 
+    const replacedIdentifiers = new Set<string>();
     const modifications: Modification[] = [];
 
     for (const node of output.sources[sourcePath].ast.nodes) {
@@ -103,16 +104,24 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           modifications.push(makeDelete(node, orig));
           break;
         }
-        // - ErrorDefinition, FunctionDefinition, and VariableDeclaration might be imported by other files,
-        //   so they cannot be deleted. Instead, they are converted to dummy variables if one of the same name
-        //   does not already exist.
+        // - ErrorDefinition, FunctionDefinition, and VariableDeclaration might be imported by other files, so they cannot be deleted.
+        //   However, we need to remove their values to avoid referencing other deleted nodes.
+        //   We do this by converting them to dummy variables, but avoiding duplicate names.
         case 'ErrorDefinition':
         case 'FunctionDefinition':
         case 'VariableDeclaration': {
-          // Replace with a dummy variable of arbitrary type
+          // If an identifier with the same name was not previously written, replace with a dummy variable.
+          // Otherwise delete to avoid duplicate names, which can happen if there was overloading.
+          // This does not need to check all identifiers from the original contract, since the original compilation
+          // should have failed if there were conflicts in the first place.
           const name = node.name;
-          const insertText = `uint256 constant ${name} = 0;`;
-          modifications.push(makeReplace(node, orig, insertText));
+          if (!replacedIdentifiers.has(name)) {
+            const insertText = `uint256 constant ${name} = 0;`;
+            modifications.push(makeReplace(node, orig, insertText));
+            replacedIdentifiers.add(name);
+          } else {
+            modifications.push(makeDelete(node, orig));
+          }
           break;
         }
         case 'EnumDefinition':
