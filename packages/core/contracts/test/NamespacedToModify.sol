@@ -61,6 +61,11 @@ contract Example {
      * @notice some natspec
      */
     function foo4() public {}
+
+    /**
+     * @dev a custom error inside a contract
+     */
+    error CustomErrorInsideContract(address a);
 }
 
 contract HasFunction {
@@ -125,3 +130,8 @@ contract UsingForDirectives {
     return x.plusOne() + x.plusTwo();
   }
 }
+
+/**
+ * @dev a custom error outside a contract
+ */
+error CustomErrorOutsideContract(address a);

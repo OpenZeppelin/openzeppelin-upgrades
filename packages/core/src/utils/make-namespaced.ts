@@ -98,6 +98,23 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           }
           break;
         }
+        // - UsingFor can be deleted since its result only takes effect in functions
+        case 'UsingForDirective': {
+          modifications.push(makeDelete(node, orig));
+          break;
+        }
+        // - ErrorDefinition, FunctionDefinition, and VariableDeclaration might be imported by other files,
+        //   so they cannot be deleted. Instead, they are converted to dummy variables if one of the same name
+        //   does not already exist.
+        case 'ErrorDefinition':
+        case 'FunctionDefinition':
+        case 'VariableDeclaration': {
+          // Replace with a dummy variable of arbitrary type
+          const name = node.name;
+          const insertText = `uint256 constant ${name} = 0;`;
+          modifications.push(makeReplace(node, orig, insertText));
+          break;
+        }
         case 'EnumDefinition':
         case 'ImportDirective':
         case 'PragmaDirective':
