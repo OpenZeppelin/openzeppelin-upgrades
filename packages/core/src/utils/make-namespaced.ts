@@ -17,10 +17,9 @@ const OUTPUT_SELECTION = {
  *
  * This makes the following modifications to the input:
  * - Adds a state variable for each namespaced struct definition
- * - Deletes all contracts' functions since they are not needed for storage layout
- * - Deletes all contracts' modifiers, variables, and parent constructor invocations to avoid compilation errors due to deleted functions and constructors
- * - Deletes all using for directives (at file level and in contracts) since they may reference deleted functions
- * - Converts all free functions and constants (at file level) to dummy variables (do not delete them since they might be imported by other files)
+ * - For each contract, deletes the node types that are not needed for storage layout or may reference deleted functions and constructors
+ * - Converts all using for directives (at file level and in contracts) to dummy enums (do not delete them to avoid orphaning possible NatSpec documentation)
+ * - Converts all custom errors, free functions and constants (at file level) to dummy variables (do not delete them since they might be imported by other files)
  *
  * Also sets the outputSelection to only include storageLayout and ast, since the other outputs are not needed.
  *
