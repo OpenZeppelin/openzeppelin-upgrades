@@ -8,6 +8,12 @@ contract Example {
         uint256 y;
     }
 
+    /// @custom:storage-location erc7201:example.secondary
+    struct SecondaryStorage {
+        uint256 a;
+        uint256 b;
+    }
+
     /// @notice some natspec
     function foo() public {}
 

@@ -49,7 +49,9 @@ async function testMakeNamespaced(
 function normalizeStateVariableNames(input: SolcInput): void {
   for (const source of Object.values(input.sources)) {
     if (source.content !== undefined) {
-      source.content = source.content.replace(/\$MainStorage_\d{1,6};/g, '$MainStorage_random;');
+      source.content = source.content
+        .replace(/\$MainStorage_\d{1,6};/g, '$MainStorage_random;')
+        .replace(/\$SecondaryStorage_\d{1,6}/g, '$SecondaryStorage_random');
     }
   }
 }
