@@ -114,12 +114,26 @@ function plusTwo(uint x) pure returns (uint) {
 }
 
 /**
+ * @notice originally orphaned natspec
+ * @dev d
+ * @param p p
+ * @return r r
+ */
+
+/**
  * @dev plusThree
  * @param x x
  */
 function plusThree(uint x) pure returns (uint) {
   return x + 3;
 }
+
+/**
+ * @notice originally orphaned natspec 2
+ * @dev d
+ * @param p p
+ * @return r r
+ */
 
 /**
  * @dev plusThree overloaded
@@ -129,6 +143,8 @@ function plusThree(uint x) pure returns (uint) {
 function plusThree(uint x, uint y) pure returns (uint) {
   return x + y + 3;
 }
+
+function originallyNoDocumentation() pure {}
 
 /**
  * @param foo foo
