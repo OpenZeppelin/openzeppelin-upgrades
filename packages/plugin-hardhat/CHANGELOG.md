@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Bump dependency on `@openzeppelin/upgrades-core`.
+- Bump dependency on `@openzeppelin/upgrades-core`. ([#930](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/930))
 
 ## 2.4.2 (2023-11-28)
 
