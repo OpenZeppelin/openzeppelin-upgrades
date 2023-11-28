@@ -22,7 +22,11 @@ export type UpgradeFunction = (
   opts?: UpgradeProxyOptions,
 ) => Promise<Contract>;
 
-export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule: boolean, log = debug): UpgradeFunction {
+export function makeUpgradeProxy(
+  hre: HardhatRuntimeEnvironment,
+  defenderModule: boolean,
+  log = debug,
+): UpgradeFunction {
   return async function upgradeProxy(proxy, ImplFactory, opts: UpgradeProxyOptions = {}) {
     disableDefender(hre, defenderModule, opts, upgradeProxy.name);
 
