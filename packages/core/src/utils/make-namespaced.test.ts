@@ -12,7 +12,7 @@ import { SolcInput, SolcOutput } from '../solc-api';
 import { BuildInfo } from 'hardhat/types';
 
 test('make namespaced input', async t => {
-  const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedToModify.sol:Example');
+  const origBuildInfo = await artifacts.getBuildInfo('contracts/test/NamespacedToModifyImported.sol:Example');
   await testMakeNamespaced(origBuildInfo, t, '0.8.20');
 });
 
@@ -35,23 +35,25 @@ async function testMakeNamespaced(
   const origInput = JSON.parse(JSON.stringify(origBuildInfo.input));
 
   const modifiedInput = makeNamespacedInput(origBuildInfo.input, origBuildInfo.output);
-  normalizeStateVariableNames(modifiedInput);
-  t.snapshot(modifiedInput);
-
-  t.deepEqual(origBuildInfo.input, origInput);
-  t.notDeepEqual(modifiedInput, origInput);
 
   // Run hardhat compile on the modified input and make sure it has no errors
   const modifiedOutput = await hardhatCompile(modifiedInput, solcVersion);
   t.is(modifiedOutput.errors, undefined);
+
+  normalizeIdentifiers(modifiedInput);
+  t.snapshot(modifiedInput);
+
+  t.deepEqual(origBuildInfo.input, origInput);
+  t.notDeepEqual(modifiedInput, origInput);
 }
 
-function normalizeStateVariableNames(input: SolcInput): void {
+function normalizeIdentifiers(input: SolcInput): void {
   for (const source of Object.values(input.sources)) {
     if (source.content !== undefined) {
       source.content = source.content
-        .replace(/\$MainStorage_\d{1,6};/g, '$MainStorage_random;')
-        .replace(/\$SecondaryStorage_\d{1,6}/g, '$SecondaryStorage_random');
+        .replace(/\$MainStorage_\d{1,6}/g, '$MainStorage_random')
+        .replace(/\$SecondaryStorage_\d{1,6}/g, '$SecondaryStorage_random')
+        .replace(/\$astId_\d+_\d{1,6}/g, '$astId_id_random');
     }
   }
 }

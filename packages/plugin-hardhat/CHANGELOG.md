@@ -15,6 +15,14 @@
 - `admin.changeProxyAdmin`: Not supported with admins or proxies from OpenZeppelin Contracts 5.0. Only supported for previously deployed admins and proxies from OpenZeppelin Contracts 4.x or below.
 - `admin.transferProxyAdminOwnership`: This function no longer uses the proxy admin from the network file. It now requires a `proxyAddress` argument to be passed in.
 
+## 2.4.3 (2023-11-28)
+
+- Bump dependency on `@openzeppelin/upgrades-core`. ([#930](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/930))
+
+## 2.4.2 (2023-11-28)
+
+- Fix `upgradeProxy` from an implementation that has a fallback function and is not using OpenZeppelin Contracts 5.0. ([#926](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/926))
+
 ## 2.4.1 (2023-11-14)
 
 - Update Defender SDK. ([#924](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/924))
