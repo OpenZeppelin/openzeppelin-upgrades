@@ -35,15 +35,16 @@ async function testMakeNamespaced(
   const origInput = JSON.parse(JSON.stringify(origBuildInfo.input));
 
   const modifiedInput = makeNamespacedInput(origBuildInfo.input, origBuildInfo.output);
+
+  // Run hardhat compile on the modified input and make sure it has no errors
+  const modifiedOutput = await hardhatCompile(modifiedInput, solcVersion);
+  t.is(modifiedOutput.errors, undefined);
+
   normalizeIdentifiers(modifiedInput);
   t.snapshot(modifiedInput);
 
   t.deepEqual(origBuildInfo.input, origInput);
   t.notDeepEqual(modifiedInput, origInput);
-
-  // Run hardhat compile on the modified input and make sure it has no errors
-  const modifiedOutput = await hardhatCompile(modifiedInput, solcVersion);
-  t.is(modifiedOutput.errors, undefined);
 }
 
 function normalizeIdentifiers(input: SolcInput): void {
@@ -52,8 +53,7 @@ function normalizeIdentifiers(input: SolcInput): void {
       source.content = source.content
         .replace(/\$MainStorage_\d{1,6}/g, '$MainStorage_random')
         .replace(/\$SecondaryStorage_\d{1,6}/g, '$SecondaryStorage_random')
-        .replace(/\$UsingForDirective_\d+_\d{1,6}/, '$UsingForDirective_1_random')
-        .replace(/\$UsingForDirective_\d+_\d{1,6}/, '$UsingForDirective_2_random');
+        .replace(/\$dummy_astId_\d+_\d{1,6}/g, '$dummy_astId_id_random');
     }
   }
 }

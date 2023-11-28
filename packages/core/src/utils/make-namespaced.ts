@@ -17,9 +17,9 @@ const OUTPUT_SELECTION = {
  *
  * This makes the following modifications to the input:
  * - Adds a state variable for each namespaced struct definition
- * - For each contract, deletes the node types that are not needed for storage layout or may reference deleted functions and constructors
- * - Converts all using for directives (at file level and in contracts) to dummy enums (do not delete them to avoid orphaning possible NatSpec documentation)
- * - Converts all custom errors, free functions and constants (at file level) to dummy variables (do not delete them since they might be imported by other files)
+ * - For each contract, for all node types that are not needed for storage layout or may reference deleted functions and constructors, converts them to dummy enums with random id
+ * - Converts all using for directives (at file level and in contracts) to dummy enums with random id (do not delete them to avoid orphaning possible NatSpec documentation)
+ * - Converts all custom errors, free functions and constants (at file level) to dummy enums with the same name (do not delete them since they might be imported by other files)
  *
  * Also sets the outputSelection to only include storageLayout and ast, since the other outputs are not needed.
  *
@@ -64,18 +64,14 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
               case 'EventDefinition':
               case 'FunctionDefinition':
               case 'ModifierDefinition':
+              case 'UsingForDirective':
               case 'VariableDeclaration': {
-                if (contractNode.documentation) {
+                if ('documentation' in contractNode && contractNode.documentation) {
+                  // Delete documentation for efficiency reasons only
                   modifications.push(makeDelete(contractNode.documentation, orig));
                 }
-                modifications.push(makeDelete(contractNode, orig));
-                break;
-              }
-              // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
-              //   We convert it to a dummy enum to avoid orphaning any possible documentation.
-              case 'UsingForDirective': {
-                const insertText = getUsingForReplacement(contractNode.id);
-                modifications.push(makeReplace(contractNode, orig, insertText));
+                // Replace with an enum based on astId (the original name is not needed, since nothing should reference it)
+                modifications.push(makeReplace(contractNode, orig, toDummyWithAstId(contractNode.id)));
                 break;
               }
               case 'StructDefinition': {
@@ -104,31 +100,29 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
         //   We convert it to a dummy enum to avoid orphaning any possible documentation.
         case 'UsingForDirective': {
-          const insertText = getUsingForReplacement(node.id);
-          modifications.push(makeReplace(node, orig, insertText));
+          modifications.push(makeReplace(node, orig, toDummyWithAstId(node.id)));
           break;
         }
         // - ErrorDefinition, FunctionDefinition, and VariableDeclaration might be imported by other files, so they cannot be deleted.
         //   However, we need to remove their values to avoid referencing other deleted nodes.
-        //   We do this by converting them to dummy variables, but avoiding duplicate names.
+        //   We do this by converting them to dummy enums, but avoiding duplicate names.
         case 'ErrorDefinition':
         case 'FunctionDefinition':
         case 'VariableDeclaration': {
-          // First delete documentation, otherwise it may reference deleted parameters or be orphaned
           if (node.documentation) {
+            // Delete documentation for efficiency reasons only
             modifications.push(makeDelete(node.documentation, orig));
           }
-          // If an identifier with the same name was not previously written, replace with a dummy variable.
-          // Otherwise delete to avoid duplicate names, which can happen if there was overloading.
+          // If an identifier with the same name was not previously written, replace with a dummy enum using its name.
+          // Otherwise replace with an enum based on astId to avoid duplicate names, which can happen if there was overloading.
           // This does not need to check all identifiers from the original contract, since the original compilation
           // should have failed if there were conflicts in the first place.
           const name = node.name;
           if (!replacedIdentifiers.has(name)) {
-            const insertText = `uint256 constant ${name} = 0;`;
-            modifications.push(makeReplace(node, orig, insertText));
+            modifications.push(makeReplace(node, orig, toDummyWithName(name)));
             replacedIdentifiers.add(name);
           } else {
-            modifications.push(makeDelete(node, orig));
+            modifications.push(makeReplace(node, orig, toDummyWithAstId(node.id)));
           }
           break;
         }
@@ -161,8 +155,12 @@ interface Modification {
   text?: string;
 }
 
-function getUsingForReplacement(astId: number) {
-  return `enum $UsingForDirective_${astId}_${(Math.random() * 1e6).toFixed(0)} { dummy }`;
+function toDummyWithName(name: string) {
+  return `enum ${name} { dummy }`;
+}
+
+function toDummyWithAstId(astId: number) {
+  return `enum $dummy_astId_${astId}_${(Math.random() * 1e6).toFixed(0)} { dummy }`;
 }
 
 function getPositions(node: Node) {
