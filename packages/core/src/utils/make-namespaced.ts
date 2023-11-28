@@ -66,10 +66,6 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
               case 'ModifierDefinition':
               case 'UsingForDirective':
               case 'VariableDeclaration': {
-                if ('documentation' in contractNode && contractNode.documentation) {
-                  // Delete documentation for efficiency reasons only
-                  modifications.push(makeDelete(contractNode.documentation, orig));
-                }
                 // Replace with an enum based on astId (the original name is not needed, since nothing should reference it)
                 modifications.push(makeReplace(contractNode, orig, toDummyEnumWithAstId(contractNode.id)));
                 break;
@@ -97,30 +93,23 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           }
           break;
         }
+
         // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
         //   We convert it to a dummy enum to avoid orphaning any possible documentation.
-        case 'UsingForDirective': {
-          modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
-          break;
-        }
         // - ErrorDefinition, FunctionDefinition, and VariableDeclaration might be imported by other files, so they cannot be deleted.
         //   However, we need to remove their values to avoid referencing other deleted nodes.
         //   We do this by converting them to dummy enums, but avoiding duplicate names.
+        case 'UsingForDirective':
         case 'ErrorDefinition':
         case 'FunctionDefinition':
         case 'VariableDeclaration': {
-          if (node.documentation) {
-            // Delete documentation for efficiency reasons only
-            modifications.push(makeDelete(node.documentation, orig));
-          }
           // If an identifier with the same name was not previously written, replace with a dummy enum using its name.
           // Otherwise replace with an enum based on astId to avoid duplicate names, which can happen if there was overloading.
           // This does not need to check all identifiers from the original contract, since the original compilation
           // should have failed if there were conflicts in the first place.
-          const name = node.name;
-          if (!replacedIdentifiers.has(name)) {
-            modifications.push(makeReplace(node, orig, toDummyEnumWithName(name)));
-            replacedIdentifiers.add(name);
+          if ('name' in node && !replacedIdentifiers.has(node.name)) {
+            modifications.push(makeReplace(node, orig, toDummyEnumWithName(node.name)));
+            replacedIdentifiers.add(node.name);
           } else {
             modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
           }
