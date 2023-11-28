@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix `upgradeProxy` in Hardhat from an implementation that has a fallback function and is not using OpenZeppelin Contracts 5.0. ([#926](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/926))
+
 ## 1.31.1 (2023-11-01)
 
 - CLI: Throw error if `--requireReference` and `--unsafeSkipStorageCheck` are both enabled. ([#913](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/913))

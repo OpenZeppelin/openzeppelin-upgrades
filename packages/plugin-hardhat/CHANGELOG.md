@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix `upgradeProxy` from an implementation that has a fallback function and is not using OpenZeppelin Contracts 5.0. ([#926](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/926))
+
 ## 2.4.1 (2023-11-14)
 
 - Update Defender SDK. ([#924](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/924))
