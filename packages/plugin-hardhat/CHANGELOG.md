@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Bump dependency on `@openzeppelin/upgrades-core`. ([#930](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/930))
+
 ## 2.4.2 (2023-11-28)
 
 - Fix `upgradeProxy` from an implementation that has a fallback function and is not using OpenZeppelin Contracts 5.0. ([#926](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/926))
