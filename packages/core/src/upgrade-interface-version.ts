@@ -5,6 +5,7 @@ import { EthereumProvider } from './provider';
 export async function getUpgradeInterfaceVersion(
   provider: EthereumProvider,
   address: string,
+  log = debug,
 ): Promise<string | undefined> {
   const encodedVersion = await callOptionalSignature(provider, address, 'UPGRADE_INTERFACE_VERSION()');
   if (encodedVersion !== undefined) {
@@ -16,7 +17,7 @@ export async function getUpgradeInterfaceVersion(
     if (offset !== 32) {
       // Log as debug and return undefined if the interface version is not a string.
       // Do not throw an error because this could be caused by a fallback function.
-      debug(`Unexpected type for UPGRADE_INTERFACE_VERSION at address ${address}. Expected a string`);
+      log(`Unexpected type for UPGRADE_INTERFACE_VERSION at address ${address}. Expected a string`);
       return undefined;
     }
 

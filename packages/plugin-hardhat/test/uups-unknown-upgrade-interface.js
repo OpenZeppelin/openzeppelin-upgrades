@@ -18,10 +18,15 @@ test('unknown upgrades interface version due to fallback returning non-string', 
   const greeter = await upgrades.deployProxy(GreeterProxiable40Fallback, ['Hello, Hardhat!'], { kind: 'uups' });
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  const greeter2 = await upgrades.upgradeProxy(greeter, GreeterProxiable40FallbackV2);
+  debugStub = sinon.stub();
+  const upgradeProxy = require('../dist/upgrade-proxy').makeUpgradeProxy(hre, false, debugStub);
+
+  const greeter2 = await upgradeProxy(greeter, GreeterProxiable40FallbackV2);
 
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
+
+  t.true(debugStub.calledWith(`Unexpected type for UPGRADE_INTERFACE_VERSION at address ${await greeter.getAddress()}. Expected a string`));
 });
 
 test('unknown upgrades interface version due to fallback returning string', async t => {

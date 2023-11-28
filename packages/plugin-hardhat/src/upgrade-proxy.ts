@@ -55,7 +55,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
       const ITransparentUpgradeableProxyFactory = await getITransparentUpgradeableProxyFactory(hre, signer);
       const proxy = attach(ITransparentUpgradeableProxyFactory, proxyAddress);
 
-      const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, proxyAddress);
+      const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, proxyAddress, log);
 
       return (nextImpl, call) => {
         if (upgradeInterfaceVersion === '5.0.0') {
@@ -76,7 +76,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
       const AdminFactory = await getProxyAdminFactory(hre, signer);
       const admin = attach(AdminFactory, adminAddress);
 
-      const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress);
+      const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress, log);
 
       return (nextImpl, call) => {
         if (upgradeInterfaceVersion === '5.0.0') {

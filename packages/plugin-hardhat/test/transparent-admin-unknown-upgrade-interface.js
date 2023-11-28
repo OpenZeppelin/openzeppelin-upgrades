@@ -51,9 +51,14 @@ test('admin with unknown upgrades interface version due to fallback returning no
 
   await upgrades.forceImport(await proxy.getAddress(), GreeterTransparent40Fallback);
 
-  const greeter2 = await upgrades.upgradeProxy(proxy, GreeterTransparent40FallbackV2);
+  debugStub = sinon.stub();
+  const upgradeProxy = require('../dist/upgrade-proxy').makeUpgradeProxy(hre, false, debugStub);
+
+  const greeter2 = await upgradeProxy(proxy, GreeterTransparent40FallbackV2);
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
+
+  t.true(debugStub.calledWith(`Unexpected type for UPGRADE_INTERFACE_VERSION at address ${await admin.getAddress()}. Expected a string`));
 });
 
 test('admin with unknown upgrades interface version due to fallback returning string', async t => {
