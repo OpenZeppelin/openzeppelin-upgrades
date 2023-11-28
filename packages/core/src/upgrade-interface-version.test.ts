@@ -35,3 +35,9 @@ test('getUpgradeInterfaceVersion returns undefined for invalid selector', async 
   );
   t.is(await getUpgradeInterfaceVersion(provider, hash), undefined);
 });
+
+test('getUpgradeInterfaceVersion returns undefined for non-string type', async t => {
+  // abi encoding of boolean 'true'
+  const provider = makeProviderReturning('0x0000000000000000000000000000000000000000000000000000000000000001');
+  t.is(await getUpgradeInterfaceVersion(provider, hash), undefined);
+});

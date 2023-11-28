@@ -4,6 +4,10 @@
 
 - Fix Hardhat compile errors when contracts have overloaded functions or standalone NatSpec documentation. ([#918](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/918))
 
+## 1.31.2 (2023-11-28)
+
+- Fix `upgradeProxy` in Hardhat from an implementation that has a fallback function and is not using OpenZeppelin Contracts 5.0. ([#926](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/926))
+
 ## 1.31.1 (2023-11-01)
 
 - CLI: Throw error if `--requireReference` and `--unsafeSkipStorageCheck` are both enabled. ([#913](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/913))
