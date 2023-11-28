@@ -23,7 +23,7 @@ contract UnsafeAdminFallbackString {
     }
 
     fallback(bytes calldata) external returns (bytes memory) {
-        return bytes("foo");
+        return abi.encode("foo");
     }
 }
 

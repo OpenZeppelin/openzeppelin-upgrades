@@ -1,6 +1,8 @@
 const test = require('ava');
+const sinon = require('sinon');
 
 const { ethers, upgrades } = require('hardhat');
+const hre = require('hardhat');
 
 const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
 
@@ -78,7 +80,12 @@ test('admin with unknown upgrades interface version due to fallback returning st
 
   await upgrades.forceImport(await proxy.getAddress(), GreeterTransparent40FallbackString);
 
-  const greeter2 = await upgrades.upgradeProxy(proxy, GreeterTransparent40FallbackStringV2);
+  debugStub = sinon.stub();
+  const upgradeProxy = require('../dist/upgrade-proxy').makeUpgradeProxy(hre, false, debugStub);
+
+  const greeter2 = await upgradeProxy(proxy, GreeterTransparent40FallbackStringV2);
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
+
+  t.true(debugStub.calledWith(`Unknown UPGRADE_INTERFACE_VERSION foo for proxy admin at ${await admin.getAddress()}. Expected 5.0.0`));
 });

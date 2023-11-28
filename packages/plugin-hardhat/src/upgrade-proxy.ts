@@ -22,7 +22,7 @@ export type UpgradeFunction = (
   opts?: UpgradeProxyOptions,
 ) => Promise<Contract>;
 
-export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule: boolean): UpgradeFunction {
+export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule: boolean, log = debug): UpgradeFunction {
   return async function upgradeProxy(proxy, ImplFactory, opts: UpgradeProxyOptions = {}) {
     disableDefender(hre, defenderModule, opts, upgradeProxy.name);
 
@@ -64,7 +64,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
           if (upgradeInterfaceVersion !== undefined) {
             // Log as debug if the interface version is an unknown string.
             // Do not throw an error because this could be caused by a fallback function.
-            debug(
+            log(
               `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
             );
           }
@@ -85,7 +85,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, defenderModule:
           if (upgradeInterfaceVersion !== undefined) {
             // Log as debug if the interface version is an unknown string.
             // Do not throw an error because this could be caused by a fallback function.
-            debug(
+            log(
               `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
             );
           }

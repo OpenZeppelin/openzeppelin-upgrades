@@ -1,6 +1,8 @@
 const test = require('ava');
+const sinon = require('sinon');
 
 const { ethers, upgrades } = require('hardhat');
+const hre = require('hardhat');
 
 test.before(async t => {
   t.context.GreeterProxiable40Fallback = await ethers.getContractFactory('GreeterProxiable40Fallback');
@@ -17,6 +19,7 @@ test('unknown upgrades interface version due to fallback returning non-string', 
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
   const greeter2 = await upgrades.upgradeProxy(greeter, GreeterProxiable40FallbackV2);
+
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
 });
@@ -27,7 +30,12 @@ test('unknown upgrades interface version due to fallback returning string', asyn
   const greeter = await upgrades.deployProxy(GreeterProxiable40FallbackString, ['Hello, Hardhat!'], { kind: 'uups' });
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  const greeter2 = await upgrades.upgradeProxy(greeter, GreeterProxiable40FallbackStringV2);
+  debugStub = sinon.stub();
+  const upgradeProxy = require('../dist/upgrade-proxy').makeUpgradeProxy(hre, false, debugStub);
+
+  const greeter2 = await upgradeProxy(greeter, GreeterProxiable40FallbackStringV2);
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
+
+  t.true(debugStub.calledWith(`Unknown UPGRADE_INTERFACE_VERSION Hello, Hardhat! for proxy at ${await greeter.getAddress()}. Expected 5.0.0`));
 });

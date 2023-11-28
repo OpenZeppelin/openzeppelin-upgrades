@@ -14,7 +14,7 @@ contract GreeterProxiable40FallbackString is Proxiable {
     }
 
     fallback(bytes calldata) external returns (bytes memory) {
-        return bytes(greeting);
+        return abi.encode(greeting);
     }
 }
 
