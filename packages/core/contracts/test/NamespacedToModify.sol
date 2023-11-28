@@ -61,6 +61,11 @@ contract Example {
      * @notice some natspec
      */
     function foo4() public {}
+
+    /**
+     * @dev a custom error inside a contract
+     */
+    error CustomErrorInsideContract(address a);
 }
 
 contract HasFunction {
@@ -89,6 +94,8 @@ library Lib {
 }
 
 contract Consumer {
+  bytes4 public variableFromConstant = CONSTANT_USING_SELECTOR;
+
   function usingFreeFunction() pure public returns (bytes4) {
     return FreeFunctionUsingSelector();
   }
@@ -106,6 +113,34 @@ function plusTwo(uint x) pure returns (uint) {
   return x + 2;
 }
 
+/**
+ * @notice originally orphaned natspec
+ */
+
+/**
+ * @dev plusThree
+ * @param x x
+ */
+function plusThree(uint x) pure returns (uint) {
+  return x + 3;
+}
+
+/// @notice originally orphaned natspec 2
+
+/**
+ * @dev plusThree overloaded
+ * @param x x
+ * @param y y
+ */
+function plusThree(uint x, uint y) pure returns (uint) {
+  return x + y + 3;
+}
+
+function originallyNoDocumentation() pure {}
+
+/**
+ * @param foo foo
+ */
 using {plusTwo} for uint;
 
 contract UsingForDirectives {
@@ -115,3 +150,21 @@ contract UsingForDirectives {
     return x.plusOne() + x.plusTwo();
   }
 }
+
+/**
+ * @title a
+ * @author a
+ * @inheritdoc Example
+ * @dev a
+ * @custom:a a
+ * @notice a
+ * @param a a
+ * @return a a
+ */
+enum FreeEnum { MyEnum }
+
+/**
+ * @dev a custom error outside a contract
+ * @param example example parameter
+ */
+error CustomErrorOutsideContract(Example example);
