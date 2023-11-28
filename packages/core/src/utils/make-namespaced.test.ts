@@ -53,7 +53,7 @@ function normalizeIdentifiers(input: SolcInput): void {
       source.content = source.content
         .replace(/\$MainStorage_\d{1,6}/g, '$MainStorage_random')
         .replace(/\$SecondaryStorage_\d{1,6}/g, '$SecondaryStorage_random')
-        .replace(/\$dummy_astId_\d+_\d{1,6}/g, '$dummy_astId_id_random');
+        .replace(/\$astId_\d+_\d{1,6}/g, '$astId_id_random');
     }
   }
 }

@@ -71,7 +71,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
                   modifications.push(makeDelete(contractNode.documentation, orig));
                 }
                 // Replace with an enum based on astId (the original name is not needed, since nothing should reference it)
-                modifications.push(makeReplace(contractNode, orig, toDummyWithAstId(contractNode.id)));
+                modifications.push(makeReplace(contractNode, orig, toDummyEnumWithAstId(contractNode.id)));
                 break;
               }
               case 'StructDefinition': {
@@ -100,7 +100,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
         //   We convert it to a dummy enum to avoid orphaning any possible documentation.
         case 'UsingForDirective': {
-          modifications.push(makeReplace(node, orig, toDummyWithAstId(node.id)));
+          modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
           break;
         }
         // - ErrorDefinition, FunctionDefinition, and VariableDeclaration might be imported by other files, so they cannot be deleted.
@@ -119,10 +119,10 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           // should have failed if there were conflicts in the first place.
           const name = node.name;
           if (!replacedIdentifiers.has(name)) {
-            modifications.push(makeReplace(node, orig, toDummyWithName(name)));
+            modifications.push(makeReplace(node, orig, toDummyEnumWithName(name)));
             replacedIdentifiers.add(name);
           } else {
-            modifications.push(makeReplace(node, orig, toDummyWithAstId(node.id)));
+            modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
           }
           break;
         }
@@ -155,12 +155,12 @@ interface Modification {
   text?: string;
 }
 
-function toDummyWithName(name: string) {
+function toDummyEnumWithName(name: string) {
   return `enum ${name} { dummy }`;
 }
 
-function toDummyWithAstId(astId: number) {
-  return `enum $dummy_astId_${astId}_${(Math.random() * 1e6).toFixed(0)} { dummy }`;
+function toDummyEnumWithAstId(astId: number) {
+  return `enum $astId_${astId}_${(Math.random() * 1e6).toFixed(0)} { dummy }`;
 }
 
 function getPositions(node: Node) {
