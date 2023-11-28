@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.4.3 (2023-11-28)
 
 - Bump dependency on `@openzeppelin/upgrades-core`. ([#930](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/930))
 
