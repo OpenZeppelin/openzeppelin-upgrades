@@ -115,9 +115,6 @@ function plusTwo(uint x) pure returns (uint) {
 
 /**
  * @notice originally orphaned natspec
- * @dev d
- * @param p p
- * @return r r
  */
 
 /**
@@ -128,12 +125,7 @@ function plusThree(uint x) pure returns (uint) {
   return x + 3;
 }
 
-/**
- * @notice originally orphaned natspec 2
- * @dev d
- * @param p p
- * @return r r
- */
+/// @notice originally orphaned natspec 2
 
 /**
  * @dev plusThree overloaded
@@ -158,6 +150,18 @@ contract UsingForDirectives {
     return x.plusOne() + x.plusTwo();
   }
 }
+
+/**
+ * @title a
+ * @author a
+ * @inheritdoc Example
+ * @dev a
+ * @custom:a a
+ * @notice a
+ * @param a a
+ * @return a a
+ */
+enum FreeEnum { MyEnum }
 
 /**
  * @dev a custom error outside a contract
