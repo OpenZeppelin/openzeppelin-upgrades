@@ -19,6 +19,6 @@ test('transferProxyAdminOwnership - wrong signer', async t => {
 
   await t.throwsAsync(
     () => upgrades.admin.transferProxyAdminOwnership(proxyAddress, testAddress, signer),
-    { message: /0x118cdaa7/ }, // abi encoding of OwnableUnauthorizedAccount(address)
+    { message: /0x118cdaa7/ }, // bytes4(keccak256('OwnableUnauthorizedAccount(address)'))
   );
 });
