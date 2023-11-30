@@ -9,16 +9,17 @@ import {
   isBeacon,
   isBeaconProxy,
   isEmptySlot,
+  getCode,
 } from '@openzeppelin/upgrades-core';
-import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info.json';
+import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json';
 
 import { HardhatRuntimeEnvironment, RunSuperFunction } from 'hardhat/types';
 
-import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
-import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
-import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
-import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
-import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
+import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
+import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
+import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
+import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
+import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
 import { keccak256 } from 'ethereumjs-util';
 
@@ -35,6 +36,7 @@ interface ContractArtifact {
   sourceName: string;
   abi: any;
   bytecode: any;
+  deployedBytecode: any;
 }
 
 /**
@@ -48,6 +50,14 @@ interface VerifiableContractInfo {
 interface ErrorReport {
   errors: string[];
   severity: 'error' | 'warn';
+}
+
+/**
+ * Etherscan API response when getting event logs by address and topic.
+ */
+interface EtherscanEventResponse {
+  topics: string[];
+  transactionHash: string;
 }
 
 /**
@@ -159,9 +169,21 @@ function recordError(message: string, errorReport: ErrorReport) {
 }
 
 /**
- * Indicates that the expected event topic was not found in the contract's logs according to the Etherscan API.
+ * Indicates that the expected event topic was not found in the contract's logs according to the Etherscan API, or an expected function was not found.
  */
-class EventNotFound extends UpgradesError {}
+class EventOrFunctionNotFound extends UpgradesError {}
+
+class EventsNotFound extends EventOrFunctionNotFound {
+  constructor(address: string, events: string[]) {
+    super(
+      `Could not find an event with any of the following topics in the logs for address ${address}: ${events.join(
+        ', ',
+      )}`,
+      () =>
+        'If the proxy was recently deployed, the transaction may not be available on Etherscan yet. Try running the verify task again after waiting a few blocks.',
+    );
+  }
+}
 
 /**
  * Indicates that the contract's bytecode does not match with the plugin's artifact.
@@ -210,26 +232,59 @@ async function fullVerifyTransparentOrUUPS(
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     if (!isEmptySlot(adminAddress)) {
       console.log(`Verifying proxy admin: ${adminAddress}`);
-      try {
-        await verifyWithArtifactOrFallback(
-          hre,
-          hardhatVerify,
-          etherscan,
-          adminAddress,
-          [verifiableContracts.proxyAdmin],
-          errorReport,
-          // The user provided the proxy address to verify, whereas this function is only verifying the related proxy admin.
-          // So even if this falls back and succeeds, we want to keep any errors that might have occurred while verifying the proxy itself.
-          false,
-        );
-      } catch (e: any) {
-        if (e instanceof EventNotFound) {
-          console.log(
-            'Verification skipped for proxy admin - the admin address does not appear to contain a ProxyAdmin contract.',
-          );
-        }
-      }
+      await verifyAdminOrFallback(hardhatVerify, etherscan, adminAddress, errorReport);
     }
+  }
+
+  /**
+   * Verifies a proxy admin contract by looking up an OwnershipTransferred event that should have been logged during construction
+   * to get the owner used for its constructor.
+   *
+   * This is different from the verifyWithArtifactOrFallback function because the proxy admin in Contracts 5.0 is not deployed directly by the plugin,
+   * but is deployed by the transparent proxy itself, so we cannot infer the admin's constructor arguments from the originating transaction's input bytecode.
+   */
+  async function verifyAdminOrFallback(
+    hardhatVerify: (address: string) => Promise<any>,
+    etherscan: Etherscan,
+    adminAddress: string,
+    errorReport: ErrorReport,
+  ) {
+    const attemptVerify = async () => {
+      let encodedOwner: string;
+      // Get the OwnershipTransferred event when the ProxyAdmin was created, which should have the encoded owner address as its second parameter (third topic).
+      const response = await getEventResponse(adminAddress, verifiableContracts.proxyAdmin.event, etherscan);
+      if (response === undefined) {
+        throw new EventsNotFound(adminAddress, [verifiableContracts.proxyAdmin.event]);
+      } else if (response.topics.length !== 3) {
+        throw new EventOrFunctionNotFound(
+          `Unexpected number of topics in event logs for ${verifiableContracts.proxyAdmin.event} from ${adminAddress}. Expected 3, got ${response.topics.length}: ${response.topics}`,
+          () => `The contract at ${adminAddress} does not appear to be a known proxy admin contract.`,
+        );
+      } else {
+        encodedOwner = response.topics[2].replace(/^0x/, '');
+      }
+
+      const artifact = verifiableContracts.proxyAdmin.artifact;
+      const deployedBytecode = await getCode(provider, adminAddress);
+      if (deployedBytecode !== artifact.deployedBytecode) {
+        throw new BytecodeNotMatchArtifact(
+          `Bytecode does not match with the current version of ${artifact.contractName} in the Hardhat Upgrades plugin.`,
+          artifact.contractName,
+        );
+      }
+
+      await verifyContractWithConstructorArgs(etherscan, adminAddress, artifact, encodedOwner, errorReport);
+    };
+
+    await attemptVerifyOrFallback(
+      attemptVerify,
+      hardhatVerify,
+      adminAddress,
+      errorReport,
+      // The user provided the proxy address to verify, whereas this function is only verifying the related proxy admin.
+      // So even if this falls back and succeeds, we want to keep any errors that might have occurred while verifying the proxy itself.
+      false,
+    );
   }
 
   async function verifyTransparentOrUUPS() {
@@ -353,7 +408,7 @@ async function verifyImplementation(
  * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
  * @returns the VerifiableContractInfo and txHash for the first event found
- * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
+ * @throws {EventOrFunctionNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
 async function searchEvent(etherscan: Etherscan, address: string, possibleContractInfo: VerifiableContractInfo[]) {
   for (let i = 0; i < possibleContractInfo.length; i++) {
@@ -367,45 +422,36 @@ async function searchEvent(etherscan: Etherscan, address: string, possibleContra
   const events = possibleContractInfo.map(contractInfo => {
     return contractInfo.event;
   });
-  throw new EventNotFound(
-    `Could not find an event with any of the following topics in the logs for address ${address}: ${events.join(', ')}`,
-    () =>
-      'If the proxy was recently deployed, the transaction may not be available on Etherscan yet. Try running the verify task again after waiting a few blocks.',
-  );
+  throw new EventsNotFound(address, events);
 }
 
 /**
- * Verifies a contract by matching with known artifacts.
- *
- * If a match was not found, falls back to verify directly using the regular hardhat verify task.
+ * Verifies a contract using the attemptVerify function. If it fails, falls back to verify directly using the regular hardhat verify task.
  *
  * If the fallback passes, logs as success.
  * If the fallback also fails, records errors for both the original and fallback attempts.
  *
- * @param hre
- * @param etherscan Etherscan instance
+ * @param attemptVerify A function that attempts to verify the contract.
+ *  Should throw EventOrFunctionNotFound if the contract does not contain an expected event in its logs or function in its bytecode,
+ *  or BytecodeNotMatchArtifact if the contract's bytecode does not match with the plugin's known artifact.
+ * @param hardhatVerify A function that invokes the hardhat-verify plugin's verify command
  * @param address The contract address to verify
- * @param possibleContractInfo An array of possible contract artifacts to use for verification along
- *  with the corresponding creation event expected in the logs.
  * @param errorReport Accumulated verification errors
  * @param convertErrorsToWarningsOnFallbackSuccess If fallback verification occurred and succeeded, whether any
  *  previously accumulated errors should be converted into warnings in the final summary.
- * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
  */
-async function verifyWithArtifactOrFallback(
-  hre: HardhatRuntimeEnvironment,
+async function attemptVerifyOrFallback(
+  attemptVerify: () => Promise<any>,
   hardhatVerify: (address: string) => Promise<any>,
-  etherscan: Etherscan,
   address: string,
-  possibleContractInfo: VerifiableContractInfo[],
   errorReport: ErrorReport,
   convertErrorsToWarningsOnFallbackSuccess: boolean,
 ) {
   try {
-    await attemptVerifyWithCreationEvent(hre, etherscan, address, possibleContractInfo, errorReport);
+    await attemptVerify();
     return true;
   } catch (origError: any) {
-    if (origError instanceof BytecodeNotMatchArtifact || origError instanceof EventNotFound) {
+    if (origError instanceof BytecodeNotMatchArtifact || origError instanceof EventOrFunctionNotFound) {
       // Try falling back to regular hardhat verify in case the source code is available in the user's project.
       try {
         await hardhatVerify(address);
@@ -438,6 +484,43 @@ async function verifyWithArtifactOrFallback(
 }
 
 /**
+ * Verifies a contract by matching with known artifacts.
+ *
+ * If a match was not found, falls back to verify directly using the regular hardhat verify task.
+ *
+ * If the fallback passes, logs as success.
+ * If the fallback also fails, records errors for both the original and fallback attempts.
+ *
+ * @param hre
+ * @param etherscan Etherscan instance
+ * @param address The contract address to verify
+ * @param possibleContractInfo An array of possible contract artifacts to use for verification along
+ *  with the corresponding creation event expected in the logs.
+ * @param errorReport Accumulated verification errors
+ * @param convertErrorsToWarningsOnFallbackSuccess If fallback verification occurred and succeeded, whether any
+ *  previously accumulated errors should be converted into warnings in the final summary.
+ */
+async function verifyWithArtifactOrFallback(
+  hre: HardhatRuntimeEnvironment,
+  hardhatVerify: (address: string) => Promise<any>,
+  etherscan: Etherscan,
+  address: string,
+  possibleContractInfo: VerifiableContractInfo[],
+  errorReport: ErrorReport,
+  convertErrorsToWarningsOnFallbackSuccess: boolean,
+) {
+  const attemptVerify = () =>
+    attemptVerifyWithCreationEvent(hre, etherscan, address, possibleContractInfo, errorReport);
+  return await attemptVerifyOrFallback(
+    attemptVerify,
+    hardhatVerify,
+    address,
+    errorReport,
+    convertErrorsToWarningsOnFallbackSuccess,
+  );
+}
+
+/**
  * Attempts to verify a contract by looking up an event that should have been logged during contract construction,
  * finds the txHash for that, and infers the constructor args to use for verification.
  *
@@ -449,7 +532,7 @@ async function verifyWithArtifactOrFallback(
  * @param possibleContractInfo An array of possible contract artifacts to use for verification along
  *  with the corresponding creation event expected in the logs.
  * @param errorReport Accumulated verification errors
- * @throws {EventNotFound} if none of the events were found in the contract's logs according to Etherscan.
+ * @throws {EventOrFunctionNotFound} if none of the events were found in the contract's logs according to Etherscan.
  * @throws {BytecodeNotMatchArtifact} if the contract's bytecode does not match with the plugin's known artifact.
  */
 async function attemptVerifyWithCreationEvent(
@@ -530,17 +613,21 @@ async function verifyContractWithConstructorArgs(
 }
 
 /**
- * Gets the txhash that created the contract at the given address, by calling the
- * Etherscan API to look for an event that should have been emitted during construction.
+ * Calls the Etherscan API to look for an event that should have been emitted during construction
+ * of the contract at the given address, and returns the result corresponding to the first event found.
  *
- * @param address The address to get the creation txhash for.
+ * @param address The address for which to get the event response.
  * @param topic The event topic string that should have been logged.
  * @param etherscan Etherscan instance
- * @returns The txhash corresponding to the logged event, or undefined if not found or if
+ * @returns The event response, or undefined if not found or if
  *   the address is not a contract.
  * @throws {UpgradesError} if the Etherscan API returned with not OK status
  */
-async function getContractCreationTxHash(address: string, topic: string, etherscan: Etherscan): Promise<any> {
+async function getEventResponse(
+  address: string,
+  topic: string,
+  etherscan: Etherscan,
+): Promise<EtherscanEventResponse | undefined> {
   const params = {
     module: 'logs',
     action: 'getLogs',
@@ -554,7 +641,7 @@ async function getContractCreationTxHash(address: string, topic: string, ethersc
 
   if (responseBody.status === RESPONSE_OK) {
     const result = responseBody.result;
-    return result[0].transactionHash; // get the txhash from the first instance of this event
+    return result[0];
   } else if (responseBody.message === 'No records found' || responseBody.message === 'No logs found') {
     debug(`no result found for event topic ${topic} at address ${address}`);
     return undefined;
@@ -563,6 +650,26 @@ async function getContractCreationTxHash(address: string, topic: string, ethersc
       `Failed to get logs for contract at address ${address}.`,
       () => `Etherscan returned with message: ${responseBody.message}, reason: ${responseBody.result}`,
     );
+  }
+}
+
+/**
+ * Gets the txhash that created the contract at the given address, by calling the
+ * Etherscan API to look for an event that should have been emitted during construction.
+ *
+ * @param address The address to get the creation txhash for.
+ * @param topic The event topic string that should have been logged.
+ * @param etherscan Etherscan instance
+ * @returns The txhash corresponding to the logged event, or undefined if not found or if
+ *   the address is not a contract.
+ * @throws {UpgradesError} if the Etherscan API returned with not OK status
+ */
+async function getContractCreationTxHash(address: string, topic: string, etherscan: Etherscan): Promise<any> {
+  const eventResponse = await getEventResponse(address, topic, etherscan);
+  if (eventResponse === undefined) {
+    return undefined;
+  } else {
+    return eventResponse.transactionHash;
   }
 }
 

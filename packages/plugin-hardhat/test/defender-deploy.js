@@ -10,7 +10,7 @@ const {
   getBeaconProxyFactory,
   getTransparentUpgradeableProxyFactory,
 } = require('../dist/utils/factories');
-const artifactsBuildInfo = require('@openzeppelin/upgrades-core/artifacts/build-info.json');
+const artifactsBuildInfo = require('@openzeppelin/upgrades-core/artifacts/build-info-v5.json');
 
 const TX_HASH = '0x1';
 const DEPLOYMENT_ID = 'abc';
@@ -22,7 +22,7 @@ const SALT = 'customsalt';
 const CREATE_FACTORY = '0x0000000000000000000000000000000000000010';
 
 const LOGIC_ADDRESS = '0x0000000000000000000000000000000000000003';
-const ADMIN_ADDRESS = '0x0000000000000000000000000000000000000004';
+const INITIAL_OWNER_ADDRESS = '0x0000000000000000000000000000000000000004';
 const DATA = '0x05';
 
 test.beforeEach(async t => {
@@ -317,7 +317,7 @@ test('calls defender deploy with TransparentUpgradeableProxy', async t => {
   const contractName = 'TransparentUpgradeableProxy';
   const factory = await getTransparentUpgradeableProxyFactory(hre);
 
-  const result = await deploy.defenderDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, ADMIN_ADDRESS, DATA);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, INITIAL_OWNER_ADDRESS, DATA);
   assertResult(t, result);
 
   sinon.assert.calledWithExactly(spy, {
@@ -326,7 +326,7 @@ test('calls defender deploy with TransparentUpgradeableProxy', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(artifactsBuildInfo),
     licenseType: 'MIT',
-    constructorInputs: [LOGIC_ADDRESS, ADMIN_ADDRESS, DATA],
+    constructorInputs: [LOGIC_ADDRESS, INITIAL_OWNER_ADDRESS, DATA],
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,

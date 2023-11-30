@@ -1,6 +1,6 @@
 = Network Files
 
-OpenZeppelin Upgrades keep track of all the contract versions you have deployed in an `.openzeppelin` folder in the project root, as well as the proxy admin. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
+OpenZeppelin Upgrades keep track of all the contract versions you have deployed in an `.openzeppelin` folder in the project root. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
 
 NOTE: The format of the files within the `.openzeppelin` folder is not compatible with those of the xref:cli::index.adoc[OpenZeppelin CLI]. If you want to use these plugins for an existing OpenZeppelin CLI project, you have to migrate it first. See xref:migrate-from-cli.adoc[Migrate from CLI] for instructions.
 
@@ -32,10 +32,6 @@ OpenZeppelin Upgrades will generate a file for each of the networks you work on 
         "types": {...}
       }
     }
-  },
-  "admin": {
-    "address": "...",
-    "txHash": "..."
   }
 }
 ----

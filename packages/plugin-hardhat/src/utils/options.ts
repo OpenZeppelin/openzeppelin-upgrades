@@ -76,20 +76,23 @@ export type EthersDeployOptions = {
   txOverrides?: Overrides;
 };
 
+export type InitialOwner = {
+  initialOwner?: string;
+};
+
 export type DeployBeaconProxyOptions = EthersDeployOptions &
   DeployOpts &
   ProxyKindOption &
   Initializer &
   DefenderDeployOptions;
-export type DeployBeaconOptions = StandaloneOptions & DefenderDeploy;
+export type DeployBeaconOptions = StandaloneOptions & InitialOwner & DefenderDeploy;
 export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & DefenderDeployOptions;
 export type DeployContractOptions = Omit<StandaloneOptions, 'txOverrides'> & // ethers deployment not supported for deployContract
   GetTxResponse &
   DefenderDeployOptions & {
     unsafeAllowDeployContract?: boolean;
   };
-export type DeployProxyAdminOptions = EthersDeployOptions & DeployOpts & DefenderDeploy;
-export type DeployProxyOptions = StandaloneOptions & Initializer & DefenderDeployOptions;
+export type DeployProxyOptions = StandaloneOptions & Initializer & InitialOwner & DefenderDeployOptions;
 export type ForceImportOptions = ProxyKindOption;
 export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & DefenderDeployOptions;
 export type UpgradeBeaconOptions = UpgradeOptions & DefenderDeploy;

@@ -5,10 +5,10 @@
   "scripts": {
     "docs": "oz-docs",
     "docs:watch": "oz-docs watch",
-    "prepare": "wsrun -ms compile:contracts && tsc -b",
+    "prepare": "wsrun -ms prepare && tsc -b",
     "lint": "yarn lint:path .",
     "lint:path": "eslint --ignore-path .gitignore --max-warnings 0",
-    "test": "tsc -b && wsrun -ms test",
+    "test": "wsrun -ms test",
     "coverage": "nyc yarn test"
   },
   "devDependencies": {
@@ -19,7 +19,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-unicorn": "^49.0.0",
-    "ethers": "^6.6.0",
+    "ethers": "^6.8.1",
     "lerna": "^5.0.0",
     "nyc": "^15.1.0",
     "prettier": "^3.0.0",

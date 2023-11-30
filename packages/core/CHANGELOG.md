@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support deploying proxies from OpenZeppelin Contracts 5.0.
+
 ## 1.31.3 (2023-11-28)
 
 - Fix Hardhat compile errors when contracts have overloaded functions or standalone NatSpec documentation. ([#918](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/918))
