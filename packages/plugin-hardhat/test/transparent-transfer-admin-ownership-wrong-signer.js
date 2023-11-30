@@ -13,7 +13,7 @@ test('transferProxyAdminOwnership - wrong signer', async t => {
   const { Greeter } = t.context;
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
 
-  const signer = (await ethers.getSigners())[1];
+  const signer = await ethers.provider.getSigner(1);
 
   const proxyAddress = await greeter.getAddress();
 

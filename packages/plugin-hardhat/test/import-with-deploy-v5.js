@@ -118,7 +118,7 @@ test('import previous import', async t => {
 test('import then deploy transparent (with deployProxy) with different admin', async t => {
   const { Greeter, GreeterV2, TransparentUpgradableProxy } = t.context;
 
-  const owner = (await ethers.getSigners())[0];
+  const owner = await ethers.provider.getSigner(0);
 
   const impl = await Greeter.deploy();
   await impl.waitForDeployment();

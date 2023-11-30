@@ -12,13 +12,13 @@ test('initial owner using default signer', async t => {
   const beacon = await upgrades.deployBeacon(Greeter);
   const beaconOwner = await beacon.owner();
 
-  const defaultSigner = (await ethers.getSigners())[0];
+  const defaultSigner = await ethers.provider.getSigner(0);
 
   t.is(beaconOwner, defaultSigner.address);
 });
 
 test('initial owner using custom signer', async t => {
-  const customSigner = (await ethers.getSigners())[1];
+  const customSigner = await ethers.provider.getSigner(1);
 
   const Greeter = await ethers.getContractFactory('Greeter', customSigner);
 
@@ -31,7 +31,7 @@ test('initial owner using custom signer', async t => {
 test('initial owner using initialOwner option', async t => {
   const { Greeter } = t.context;
 
-  const initialOwner = (await ethers.getSigners())[2];
+  const initialOwner = await ethers.provider.getSigner(2);
 
   const beacon = await upgrades.deployBeacon(Greeter, { initialOwner: initialOwner.address });
   const beaconOwner = await beacon.owner();
@@ -48,7 +48,7 @@ test('initial owner - no signer in ContractFactory', async t => {
     message: /Initial owner must be specified/,
   });
 
-  const initialOwner = (await ethers.getSigners())[2];
+  const initialOwner = await ethers.provider.getSigner(2);
 
   const beacon = await upgrades.deployBeacon(Greeter, { initialOwner: initialOwner.address });
   const beaconOwner = await beacon.owner();

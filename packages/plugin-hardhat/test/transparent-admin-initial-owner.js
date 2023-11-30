@@ -14,13 +14,13 @@ test('initial owner using default signer', async t => {
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
   const admin = await hre.ethers.getContractAt(['function owner() view returns (address)'], adminAddress);
 
-  const defaultSigner = (await ethers.getSigners())[0];
+  const defaultSigner = await ethers.provider.getSigner(0);
 
   t.is(await admin.owner(), defaultSigner.address);
 });
 
 test('initial owner using custom signer', async t => {
-  const customSigner = (await ethers.getSigners())[1];
+  const customSigner = await ethers.provider.getSigner(1);
 
   const Greeter = await ethers.getContractFactory('Greeter', customSigner);
 
@@ -34,7 +34,7 @@ test('initial owner using custom signer', async t => {
 test('initial owner using initialOwner option', async t => {
   const { Greeter } = t.context;
 
-  const initialOwner = (await ethers.getSigners())[2];
+  const initialOwner = await ethers.provider.getSigner(2);
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello'], { initialOwner: initialOwner.address });
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
@@ -52,7 +52,7 @@ test('initial owner - no signer in ContractFactory', async t => {
     message: /Initial owner must be specified/,
   });
 
-  const initialOwner = (await ethers.getSigners())[2];
+  const initialOwner = await ethers.provider.getSigner(2);
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello'], { initialOwner: initialOwner.address });
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
