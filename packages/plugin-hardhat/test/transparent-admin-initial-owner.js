@@ -3,6 +3,8 @@ const test = require('ava');
 const { ethers, upgrades } = require('hardhat');
 const hre = require('hardhat');
 
+const OWNABLE_ABI = ['function owner() view returns (address)'];
+
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
 });
@@ -12,7 +14,7 @@ test('initial owner using default signer', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello']);
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(['function owner() view returns (address)'], adminAddress);
+  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
 
   const defaultSigner = await ethers.provider.getSigner(0);
 
@@ -26,7 +28,7 @@ test('initial owner using custom signer', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello']);
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(['function owner() view returns (address)'], adminAddress);
+  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
 
   t.is(await admin.owner(), customSigner.address);
 });
@@ -38,7 +40,7 @@ test('initial owner using initialOwner option', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello'], { initialOwner: initialOwner.address });
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(['function owner() view returns (address)'], adminAddress);
+  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
 
   t.is(await admin.owner(), initialOwner.address);
 });
@@ -56,7 +58,7 @@ test('initial owner - no signer in ContractFactory', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello'], { initialOwner: initialOwner.address });
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(['function owner() view returns (address)'], adminAddress);
+  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
 
   t.is(await admin.owner(), initialOwner.address);
 });
