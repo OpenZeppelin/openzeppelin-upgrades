@@ -6,6 +6,7 @@ import { ApprovalProcessResponse } from '@openzeppelin/defender-sdk-deploy-clien
 export interface ApprovalProcess {
   approvalProcessId: string;
   address?: string;
+  viaType?: ApprovalProcessResponse['viaType'];
 }
 
 export type GetDeployApprovalProcessFunction = () => Promise<ApprovalProcess>;
@@ -48,5 +49,6 @@ async function getApprovalProcess(hre: HardhatRuntimeEnvironment, kind: 'deploy'
   return {
     approvalProcessId: response.approvalProcessId,
     address: response.via,
+    viaType: response.viaType,
   };
 }

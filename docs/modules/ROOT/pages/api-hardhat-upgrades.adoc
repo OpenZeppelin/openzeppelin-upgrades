@@ -455,6 +455,7 @@ async function getDeployApprovalProcess(
 ): Promise<{
     approvalProcessId: string,
     address?: string,
+    viaType?: 'EOA' | 'Contract' | 'Multisig' | 'Safe' | 'Gnosis Multisig' | 'Relayer' | 'Unknown' | 'Timelock Controller' | 'ERC20' | 'Governor' | 'Fireblocks',
   }>
 ----
 
@@ -479,6 +480,7 @@ async function getUpgradeApprovalProcess(
 ): Promise<{
     approvalProcessId: string,
     address?: string,
+    viaType?: 'EOA' | 'Contract' | 'Multisig' | 'Safe' | 'Gnosis Multisig' | 'Relayer' | 'Unknown' | 'Timelock Controller' | 'ERC20' | 'Governor' | 'Fireblocks',
   }>
 ----
 
