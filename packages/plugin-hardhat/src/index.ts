@@ -21,7 +21,10 @@ import type { DeployImplementationFunction } from './deploy-implementation';
 import type { DeployAdminFunction } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
 import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade-with-approval';
-import type { GetDeployApprovalProcessFunction, GetUpgradeApprovalProcessFunction } from './defender/get-approval-process';
+import type {
+  GetDeployApprovalProcessFunction,
+  GetUpgradeApprovalProcessFunction,
+} from './defender/get-approval-process';
 import type { ProposeUpgradeFunction } from './defender-v1/propose-upgrade';
 import type {
   VerifyDeployFunction,

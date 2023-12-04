@@ -1,6 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 import { getNetwork, getDeployClient } from './utils';
+import { ApprovalProcessResponse } from '@openzeppelin/defender-sdk-deploy-client';
 
 export interface ApprovalProcess {
   approvalProcessId: string;
@@ -26,12 +27,21 @@ async function getApprovalProcess(hre: HardhatRuntimeEnvironment, kind: 'deploy'
   const client = getDeployClient(hre);
   const network = await getNetwork(hre);
 
-  const response = kind === 'deploy' ? await client.getDeployApprovalProcess(network) : await client.getUpgradeApprovalProcess(network);
+  let response: ApprovalProcessResponse;
+  switch (kind) {
+    case 'deploy':
+      response = await client.getDeployApprovalProcess(network);
+      break;
+    case 'upgrade':
+      response = await client.getUpgradeApprovalProcess(network);
+      break;
+    // default case should be unreachable
+  }
 
   if (response.network !== network) {
     // This should not happen
     throw new Error(
-      `Returned an approval process for network ${response.network} which does not match current network ${network}`
+      `Returned an approval process for network ${response.network} which does not match current network ${network}`,
     );
   }
 
