@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Add `defender.getDeployApprovalProcess` and `defender.getUpgradeApprovalProcess` functions. ([#934](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/934))
+- Deprecate `defender.getDefaultApprovalProcess` function. This function is equivalent to `defender.getUpgradeApprovalProcess`.
+
+**Note**: OpenZeppelin Defender deployments is in beta and its functionality is subject to change.
+
 ## 2.4.3 (2023-11-28)
 
 - Bump dependency on `@openzeppelin/upgrades-core`. ([#930](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/930))

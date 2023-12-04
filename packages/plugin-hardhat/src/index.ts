@@ -21,7 +21,10 @@ import type { DeployImplementationFunction } from './deploy-implementation';
 import type { DeployAdminFunction } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
 import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade-with-approval';
-import type { GetDefaultApprovalProcessFunction } from './defender/get-default-approval-process';
+import type {
+  GetDeployApprovalProcessFunction,
+  GetUpgradeApprovalProcessFunction,
+} from './defender/get-approval-process';
 import type { ProposeUpgradeFunction } from './defender-v1/propose-upgrade';
 import type {
   VerifyDeployFunction,
@@ -71,7 +74,12 @@ export interface DefenderV1HardhatUpgrades {
 export interface DefenderHardhatUpgrades extends HardhatUpgrades, DefenderV1HardhatUpgrades {
   deployContract: DeployContractFunction;
   proposeUpgradeWithApproval: ProposeUpgradeWithApprovalFunction;
-  getDefaultApprovalProcess: GetDefaultApprovalProcessFunction;
+  getDeployApprovalProcess: GetDeployApprovalProcessFunction;
+  getUpgradeApprovalProcess: GetUpgradeApprovalProcessFunction;
+  /**
+   * @deprecated Use `getUpgradeApprovalProcess` instead.
+   */
+  getDefaultApprovalProcess: GetUpgradeApprovalProcessFunction;
 }
 
 interface RunCompilerArgs {
@@ -277,14 +285,18 @@ function makeDefenderV1Functions(hre: HardhatRuntimeEnvironment): DefenderV1Hard
 function makeDefenderFunctions(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrades {
   const { makeDeployContract } = require('./deploy-contract');
   const { makeProposeUpgradeWithApproval } = require('./defender/propose-upgrade-with-approval');
-  const { makeGetDefaultApprovalProcess } = require('./defender/get-default-approval-process');
+  const { makeGetDeployApprovalProcess, makeGetUpgradeApprovalProcess } = require('./defender/get-approval-process');
+
+  const getUpgradeApprovalProcess = makeGetUpgradeApprovalProcess(hre);
 
   return {
     ...makeFunctions(hre, true),
     ...makeDefenderV1Functions(hre),
     deployContract: makeDeployContract(hre, true),
     proposeUpgradeWithApproval: makeProposeUpgradeWithApproval(hre, true),
-    getDefaultApprovalProcess: makeGetDefaultApprovalProcess(hre),
+    getDeployApprovalProcess: makeGetDeployApprovalProcess(hre),
+    getUpgradeApprovalProcess: getUpgradeApprovalProcess,
+    getDefaultApprovalProcess: getUpgradeApprovalProcess, // deprecated, is an alias for getUpgradeApprovalProcess
   };
 }
 

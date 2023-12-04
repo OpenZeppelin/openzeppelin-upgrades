@@ -446,15 +446,41 @@ CAUTION: Do not use this function to deploy implementations of upgradeable contr
 
 * `@openzeppelin/hardhat-upgrades@2.2.0`
 
-[[defender-get-default-approval-process]]
-== defender.getDefaultApprovalProcess
+[[defender-get-deploy-approval-process]]
+== defender.getDeployApprovalProcess
 
 [source,ts]
 ----
-async function getDefaultApprovalProcess(
+async function getDeployApprovalProcess(
 ): Promise<{
     approvalProcessId: string,
     address?: string,
+    viaType?: 'EOA' | 'Contract' | 'Multisig' | 'Safe' | 'Gnosis Multisig' | 'Relayer' | 'Unknown' | 'Timelock Controller' | 'ERC20' | 'Governor' | 'Fireblocks',
+  }>
+----
+
+**Note**: OpenZeppelin Defender deployments is in beta and this function is subject to change.
+
+Gets the default deploy approval process configured for your deployment environment on OpenZeppelin Defender.
+
+*Returns:*
+
+* an object with the default deploy approval process ID and the associated address, such as a Relayer, EOA, or multisig wallet address.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@2.5.0`
+
+[[defender-get-upgrade-approval-process]]
+== defender.getUpgradeApprovalProcess
+
+[source,ts]
+----
+async function getUpgradeApprovalProcess(
+): Promise<{
+    approvalProcessId: string,
+    address?: string,
+    viaType?: 'EOA' | 'Contract' | 'Multisig' | 'Safe' | 'Gnosis Multisig' | 'Relayer' | 'Unknown' | 'Timelock Controller' | 'ERC20' | 'Governor' | 'Fireblocks',
   }>
 ----
 
@@ -468,7 +494,7 @@ Gets the default upgrade approval process configured for your deployment environ
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@2.2.0`
+* `@openzeppelin/hardhat-upgrades@2.5.0`
 
 [[defender-propose-upgrade-with-approval]]
 == defender.proposeUpgradeWithApproval
