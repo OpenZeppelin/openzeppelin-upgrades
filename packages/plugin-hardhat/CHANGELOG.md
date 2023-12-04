@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.5.0 (2023-12-04)
 
 - Add `defender.getDeployApprovalProcess` and `defender.getUpgradeApprovalProcess` functions. ([#934](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/934))
 - Deprecate `defender.getDefaultApprovalProcess` function. This function is equivalent to `defender.getUpgradeApprovalProcess`.
