@@ -27,7 +27,7 @@ The following options are common to some functions.
 ** If set to `"always"`, the implementation contract is always redeployed even if it was previously deployed with the same bytecode. This can be used with the `salt` option when deploying a proxy through OpenZeppelin Defender to ensure that the implementation contract is deployed with the same salt as the proxy.
 ** If set to `"never"`, the implementation contract is never redeployed. If the implementation contract was not previously deployed or is not found in the network file, an error will be thrown.
 ** If set to `"onchange"`, the implementation contract is redeployed only if the bytecode has changed from previous deployments.
-* `txOverrides`: (`ethers.Overrides`) An ethers.js https://docs.ethers.org/v6/api/contract/#Overrides[Overrides] object to override transaction parameters, such as `gasLimit` and `gasPrice`. Applies to all transactions sent by a function with this option, even if the function sends multiple transactions.
+* `txOverrides`: (`ethers.Overrides`) An ethers.js https://docs.ethers.org/v6/api/contract/#Overrides[Overrides] object to override transaction parameters, such as `gasLimit` and `gasPrice`. Applies to all transactions sent by a function with this option, even if the function sends multiple transactions. Not currently supported with OpenZeppelin Defender deployments.
 * `useDefenderDeploy`: (`boolean`) Deploy contracts using OpenZeppelin Defender instead of ethers.js. See xref:defender-deploy.adoc[Using with OpenZeppelin Defender]. **Note**: OpenZeppelin Defender deployments is in beta and functionality related to it is subject to change.
 * `verifySourceCode`: (`boolean`) When using OpenZeppelin Defender deployments, whether to verify source code on block explorers. Defaults to `true`.
 * `relayerId`: (`string`) When using OpenZeppelin Defender deployments, the ID of the relayer to use for the deployment. Defaults to the relayer configured for your deployment environment on Defender.
@@ -450,15 +450,41 @@ CAUTION: Do not use this function to deploy implementations of upgradeable contr
 
 * `@openzeppelin/hardhat-upgrades@2.2.0`
 
-[[defender-get-default-approval-process]]
-== defender.getDefaultApprovalProcess
+[[defender-get-deploy-approval-process]]
+== defender.getDeployApprovalProcess
 
 [source,ts]
 ----
-async function getDefaultApprovalProcess(
+async function getDeployApprovalProcess(
 ): Promise<{
     approvalProcessId: string,
     address?: string,
+    viaType?: 'EOA' | 'Contract' | 'Multisig' | 'Safe' | 'Gnosis Multisig' | 'Relayer' | 'Unknown' | 'Timelock Controller' | 'ERC20' | 'Governor' | 'Fireblocks',
+  }>
+----
+
+**Note**: OpenZeppelin Defender deployments is in beta and this function is subject to change.
+
+Gets the default deploy approval process configured for your deployment environment on OpenZeppelin Defender.
+
+*Returns:*
+
+* an object with the default deploy approval process ID and the associated address, such as a Relayer, EOA, or multisig wallet address.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@2.5.0`
+
+[[defender-get-upgrade-approval-process]]
+== defender.getUpgradeApprovalProcess
+
+[source,ts]
+----
+async function getUpgradeApprovalProcess(
+): Promise<{
+    approvalProcessId: string,
+    address?: string,
+    viaType?: 'EOA' | 'Contract' | 'Multisig' | 'Safe' | 'Gnosis Multisig' | 'Relayer' | 'Unknown' | 'Timelock Controller' | 'ERC20' | 'Governor' | 'Fireblocks',
   }>
 ----
 
@@ -472,7 +498,7 @@ Gets the default upgrade approval process configured for your deployment environ
 
 *Since:*
 
-* `@openzeppelin/hardhat-upgrades@2.2.0`
+* `@openzeppelin/hardhat-upgrades@2.5.0`
 
 [[defender-propose-upgrade-with-approval]]
 == defender.proposeUpgradeWithApproval
