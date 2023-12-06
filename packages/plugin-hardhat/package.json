@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
-    "@nomicfoundation/hardhat-verify": "^1.1.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
     "@openzeppelin/contracts": "5.0.0",
     "@openzeppelin/contracts-upgradeable": "5.0.0",
     "@types/mocha": "^7.0.2",
@@ -48,7 +48,7 @@
   },
   "peerDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
-    "@nomicfoundation/hardhat-verify": "^1.1.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
     "ethers": "^6.6.0",
     "hardhat": "^2.0.2"
   },
