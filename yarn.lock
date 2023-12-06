@@ -2450,8 +2450,7 @@
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
 
-"@openzeppelin/upgrades-core-legacy@npm:@openzeppelin/upgrades-core@1.31.3", "@openzeppelin/upgrades-core@^1.30.0":
-  name "@openzeppelin/upgrades-core-legacy"
+"@openzeppelin/upgrades-core-legacy@npm:@openzeppelin/upgrades-core@1.31.3":
   version "1.31.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.31.3.tgz#ff268a498fcd23106c33149e01dd3e7dfcae79fe"
   integrity sha512-i7q0IuItKS4uO0clJwm4CARmt98aA9dLfKh38HFRbX+aFLGXwF0sOvB2iwr6f87ShH7d3DNuLrVgnnXUrYb7CA==
