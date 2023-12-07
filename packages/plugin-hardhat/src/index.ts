@@ -2,6 +2,7 @@
 
 import '@nomicfoundation/hardhat-ethers';
 import './type-extensions';
+import { TASK_VERIFY_ETHERSCAN } from '@nomicfoundation/hardhat-verify/internal/task-names';
 import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
@@ -201,7 +202,7 @@ extendConfig((config: HardhatConfig) => {
 });
 
 if (tryRequire('@nomicfoundation/hardhat-verify')) {
-  subtask('verify:etherscan').setAction(async (args, hre, runSuper) => {
+  subtask(TASK_VERIFY_ETHERSCAN).setAction(async (args, hre, runSuper) => {
     const { verify } = await import('./verify-proxy');
     return await verify(args, hre, runSuper);
   });

@@ -11,6 +11,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 import type { ContractFactory, ethers } from 'ethers';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
+import { runVerify } from '../verify-proxy';
 import { deploy } from './deploy';
 import { GetTxResponse, DefenderDeployOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
 import { getRemoteDeployment } from '../defender/utils';
@@ -132,13 +133,18 @@ async function deployImpl(
     remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId),
   );
 
-  let txResponse;
+  let txResponse: ethers.TransactionResponse | undefined;
   if (opts.getTxResponse) {
     if ('deployTransaction' in deployment) {
       txResponse = deployment.deployTransaction ?? undefined;
     } else if (deployment.txHash !== undefined) {
       txResponse = (await hre.ethers.provider.getTransaction(deployment.txHash)) ?? undefined;
     }
+  }
+
+  if (txResponse) {
+    await txResponse.wait(1);
+    await runVerify(hre, deployment.address, opts.constructorArgs);
   }
 
   return { impl: deployment.address, txResponse };
