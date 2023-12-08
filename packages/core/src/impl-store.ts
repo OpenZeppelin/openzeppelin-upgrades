@@ -229,17 +229,19 @@ async function checkForAddressClash(
   merge: boolean,
 ): Promise<void> {
   let clash;
+  let findClash = () => lookupDeployment(data, updated.address, !merge);
+
   if (await isDevelopmentNetwork(provider)) {
     // Look for clashes so that we can delete deployments from older runs.
     // `merge` only checks primary addresses for clashes, since the address could already exist in an allAddresses field
     // but the updated and stored objects are different instances representing the same entry.
-    clash = lookupDeployment(data, updated.address, !merge);
+    clash = findClash();
     if (clash !== undefined) {
       debug('deleting a previous deployment at address', updated.address);
       clash.set(undefined);
     }
   } else if (!merge) {
-    clash = lookupDeployment(data, updated.address, true);
+    clash = findClash();
     if (clash !== undefined) {
       const existing = clash.get();
       // it's a clash if there is no deployment id or if deployment ids don't match
