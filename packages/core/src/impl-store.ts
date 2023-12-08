@@ -72,9 +72,9 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
       );
       if (updated !== stored) {
         if (merge && deployment.merge) {
-          // only check primary addresses for clashes, since the address could already exist in an allAddresses field
-          // but the above updated and stored objects are different instances representing the same entry
-          await checkForAddressClash(provider, data, updated, false);
+          // `merge` indicates that the user is force-importing or redeploying an implementation,
+          // so we don't need to check for address clashes because this is an assertion from the user.
+          // The bytecode version hash is already known to be identical, due to `stored` coming from the deployment.
           deployment.merge(updated);
         } else {
           await checkForAddressClash(provider, data, updated, true);
@@ -172,12 +172,17 @@ export async function fetchOrDeployGetDeployment<T extends ImplDeployment>(
 const implLens = (versionWithoutMetadata: string) =>
   lens(`implementation ${versionWithoutMetadata}`, 'implementation', data => ({
     get: () => data.impls[versionWithoutMetadata],
-    set: (value?: ImplDeployment) => (data.impls[versionWithoutMetadata] = value),
-    merge: (value?: ImplDeployment) => {
+    set: (value?: ImplDeployment & RemoteDeploymentId) => (data.impls[versionWithoutMetadata] = value),
+    merge: (value?: ImplDeployment & RemoteDeploymentId) => {
       const existing = data.impls[versionWithoutMetadata];
       if (existing !== undefined && value !== undefined) {
         const { address, allAddresses } = mergeAddresses(existing, value);
-        data.impls[versionWithoutMetadata] = { ...existing, address, allAddresses };
+        data.impls[versionWithoutMetadata] = {
+          ...existing,
+          address,
+          allAddresses,
+          remoteDeploymentId: value.remoteDeploymentId,
+        };
       } else {
         data.impls[versionWithoutMetadata] = value;
       }
@@ -238,9 +243,9 @@ async function checkForAddressClash(
         (existing.remoteDeploymentId === undefined || existing.remoteDeploymentId !== updated.remoteDeploymentId)
       ) {
         throw new Error(
-          `The following deployment clashes with an existing one at ${updated.address}\n\n` +
-            JSON.stringify(updated, null, 2) +
-            `\n\n`,
+          `The deployment clashes with an existing one at ${updated.address}.\n\n` +
+            `Existing deployment: ${JSON.stringify(existing, null, 2)}\n\n` +
+            `New deployment: ${JSON.stringify(updated, null, 2)}\n\n`,
         );
       }
     }
