@@ -228,15 +228,19 @@ async function checkForAddressClash(
   updated: Deployment & RemoteDeploymentId,
   merge: boolean,
 ): Promise<void> {
-  // merge only checks primary addresses for clashes, since the address could already exist in an allAddresses field
-  // but the updated and stored objects are different instances representing the same entry. It still checks for clashes
-  // in case it's a development network, so that we can delete deployments from older runs.
-  const clash = lookupDeployment(data, updated.address, !merge);
-  if (clash !== undefined) {
-    if (await isDevelopmentNetwork(provider)) {
+  let clash;
+  if (await isDevelopmentNetwork(provider)) {
+    // Look for clashes so that we can delete deployments from older runs.
+    // `merge` only checks primary addresses for clashes, since the address could already exist in an allAddresses field
+    // but the updated and stored objects are different instances representing the same entry.
+    clash = lookupDeployment(data, updated.address, !merge);
+    if (clash !== undefined) {
       debug('deleting a previous deployment at address', updated.address);
       clash.set(undefined);
-    } else if (!merge) {
+    }
+  } else if (!merge) {
+    clash = lookupDeployment(data, updated.address, true);
+    if (clash !== undefined) {
       const existing = clash.get();
       // it's a clash if there is no deployment id or if deployment ids don't match
       if (
@@ -249,8 +253,8 @@ async function checkForAddressClash(
             `New deployment: ${JSON.stringify(updated, null, 2)}\n\n`,
         );
       }
-    } // else, merge indicates that the user is force-importing or redeploying an implementation, so we simply allow merging the entries
-  }
+    }
+  } // else, merge indicates that the user is force-importing or redeploying an implementation, so we simply allow merging the entries
 }
 
 function lookupDeployment(
