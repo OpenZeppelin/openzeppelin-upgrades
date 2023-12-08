@@ -72,12 +72,10 @@ async function fetchOrDeployGeneric<T extends Deployment, U extends T = T>(
       );
       if (updated !== stored) {
         if (merge && deployment.merge) {
-          // `merge` indicates that the user is force-importing or redeploying an implementation,
-          // so we don't need to check for address clashes because this is an assertion from the user.
-          // The bytecode version hash is already known to be identical, due to `stored` coming from the deployment.
+          await checkForAddressClash(provider, data, updated, true);
           deployment.merge(updated);
         } else {
-          await checkForAddressClash(provider, data, updated, true);
+          await checkForAddressClash(provider, data, updated, false);
           deployment.set(updated);
         }
         await manifest.write(data);
@@ -228,14 +226,17 @@ async function checkForAddressClash(
   provider: EthereumProvider,
   data: ManifestData,
   updated: Deployment & RemoteDeploymentId,
-  checkAllAddresses: boolean,
+  merge: boolean,
 ): Promise<void> {
-  const clash = lookupDeployment(data, updated.address, checkAllAddresses);
+  // merge only checks primary addresses for clashes, since the address could already exist in an allAddresses field
+  // but the updated and stored objects are different instances representing the same entry. It still checks for clashes
+  // in case it's a development network, so that we can delete deployments from older runs.
+  const clash = lookupDeployment(data, updated.address, !merge);
   if (clash !== undefined) {
     if (await isDevelopmentNetwork(provider)) {
       debug('deleting a previous deployment at address', updated.address);
       clash.set(undefined);
-    } else {
+    } else if (!merge) {
       const existing = clash.get();
       // it's a clash if there is no deployment id or if deployment ids don't match
       if (
@@ -248,7 +249,7 @@ async function checkForAddressClash(
             `New deployment: ${JSON.stringify(updated, null, 2)}\n\n`,
         );
       }
-    }
+    } // else, merge indicates that the user is force-importing or redeploying an implementation, so we simply allow merging the entries
   }
 }
 
