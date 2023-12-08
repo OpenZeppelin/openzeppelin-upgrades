@@ -229,7 +229,7 @@ async function checkForAddressClash(
   merge: boolean,
 ): Promise<void> {
   let clash;
-  let findClash = () => lookupDeployment(data, updated.address, !merge);
+  const findClash = () => lookupDeployment(data, updated.address, !merge);
 
   if (await isDevelopmentNetwork(provider)) {
     // Look for clashes so that we can delete deployments from older runs.
