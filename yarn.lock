@@ -2450,10 +2450,10 @@
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
 
-"@openzeppelin/upgrades-core-legacy@npm:@openzeppelin/upgrades-core@1.31.3":
-  version "1.31.3"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.31.3.tgz#ff268a498fcd23106c33149e01dd3e7dfcae79fe"
-  integrity sha512-i7q0IuItKS4uO0clJwm4CARmt98aA9dLfKh38HFRbX+aFLGXwF0sOvB2iwr6f87ShH7d3DNuLrVgnnXUrYb7CA==
+"@openzeppelin/upgrades-core-legacy@npm:@openzeppelin/upgrades-core@1.32.0":
+  version "1.32.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.32.0.tgz#2f5761b554e96f7b011eab3f0422b71bfb156a20"
+  integrity sha512-ZjYB5Ks5Haz8yzJDd9VzTtJyqm746+WYFOi8jeVljyGxC4Xm2wuizf/n1lw0CmCw9seNhD1J1tA4fA6ScXYPDg==
   dependencies:
     cbor "^9.0.0"
     chalk "^4.1.0"
