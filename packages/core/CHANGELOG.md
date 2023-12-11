@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Support deploying proxies from OpenZeppelin Contracts 5.0.
+- Fix address clash when redeploying implementation. ([#939](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/939))
 
 ## 1.31.3 (2023-11-28)
 
