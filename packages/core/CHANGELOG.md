@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix address clash when redeploying implementation. ([#939](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/939))
+
 ## 1.31.3 (2023-11-28)
 
 - Fix Hardhat compile errors when contracts have overloaded functions or standalone NatSpec documentation. ([#918](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/918))
