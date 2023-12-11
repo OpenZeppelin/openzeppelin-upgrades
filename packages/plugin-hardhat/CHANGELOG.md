@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.0.0 (2023-12-11)
 
 - Deploy proxies from OpenZeppelin Contracts 5.0. ([#919](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/919))
 - Support `initialOwner` option when deploying a transparent proxy or beacon. If not set, the externally owned account used during deployment will be the default owner for the transparent proxy's admin or the beacon, respectively.
