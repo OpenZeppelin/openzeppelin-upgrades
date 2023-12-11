@@ -1977,10 +1977,10 @@
     debug "^4.1.1"
     lodash.isequal "^4.5.0"
 
-"@nomicfoundation/hardhat-verify@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-verify/-/hardhat-verify-1.1.0.tgz#36c7f78adebd641d641ab5dd4660111520bb3055"
-  integrity sha512-mXHP17gz4wDsWiXIz8fBRE/8T2KJglWE/QGk5A6nwsubyeqWgjqimfbwTLyaPESphKvis3hX6G75QP5a9Cd8cQ==
+"@nomicfoundation/hardhat-verify@^2.0.0":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-verify/-/hardhat-verify-2.0.2.tgz#085f8509a335db44ea3bf39a8561f1ce0462fea2"
+  integrity sha512-SXmLPHrfh801m0Dj/8v4stAM6OI0tFktDlWe1pn3k43bCCjn5TGqcVy7hCtauG8/AlQWNZhR+01qTovSSVTvXQ==
   dependencies:
     "@ethersproject/abi" "^5.1.2"
     "@ethersproject/address" "^5.0.2"
@@ -2450,7 +2450,7 @@
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
 
-"@openzeppelin/upgrades-core-legacy@npm:@openzeppelin/upgrades-core@1.31.3", "@openzeppelin/upgrades-core@^1.30.0":
+"@openzeppelin/upgrades-core-legacy@npm:@openzeppelin/upgrades-core@1.31.3":
   version "1.31.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.31.3.tgz#ff268a498fcd23106c33149e01dd3e7dfcae79fe"
   integrity sha512-i7q0IuItKS4uO0clJwm4CARmt98aA9dLfKh38HFRbX+aFLGXwF0sOvB2iwr6f87ShH7d3DNuLrVgnnXUrYb7CA==

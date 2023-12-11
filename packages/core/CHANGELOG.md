@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.32.0-alpha.0 (2023-11-30)
+## Unreleased
 
 - Support deploying proxies from OpenZeppelin Contracts 5.0.
 
