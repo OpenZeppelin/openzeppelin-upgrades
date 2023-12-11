@@ -19,8 +19,10 @@ The following options are common to some functions.
 * `unsafeAllowRenames`: (`boolean`) Configure storage layout check to allow variable renaming.
 * `unsafeSkipStorageCheck`: (`boolean`) upgrades the proxy or beacon without first checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
 * `constructorArgs`: (`unknown[]`) Provide arguments for the constructor of the implementation contract. Note that these are different from initializer arguments, and will be used in the deployment of the implementation contract itself. Can be used to initialize immutable variables.
-* `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `60000`. Use `0` to wait indefinitely. 
-* `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract or proxy admin contract. Defaults to `5000`.
+* `initialOwner`: (`string`) the address to set as the initial owner of a transparent proxy's admin or initial owner of a beacon. Defaults to the externally owned account that is deploying the transparent proxy or beacon. Not supported for UUPS proxies.
+** *Since:* `@openzeppelin/hardhat-upgrades@3.0.0`
+* `timeout`: (`number`) Timeout in milliseconds to wait for the transaction confirmation when deploying an implementation contract. Defaults to `60000`. Use `0` to wait indefinitely.
+* `pollingInterval`: (`number`) Polling interval in milliseconds between checks for the transaction confirmation when deploying an implementation contract. Defaults to `5000`.
 * `redeployImplementation`: (`"always" | "never" | "onchange"`) Determines whether the implementation contract will be redeployed. Defaults to `"onchange"`.
 ** If set to `"always"`, the implementation contract is always redeployed even if it was previously deployed with the same bytecode. This can be used with the `salt` option when deploying a proxy through OpenZeppelin Defender to ensure that the implementation contract is deployed with the same salt as the proxy.
 ** If set to `"never"`, the implementation contract is never redeployed. If the implementation contract was not previously deployed or is not found in the network file, an error will be thrown.
@@ -51,6 +53,7 @@ async function deployProxy(
     initializer?: string | false,
     unsafeAllow?: ValidationError[],
     constructorArgs?: unknown[],
+    initialOwner?: string,
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
@@ -124,6 +127,7 @@ async function deployBeacon(
   opts?: {
     unsafeAllow?: ValidationError[],
     constructorArgs?: unknown[],
+    initialOwner?: string,
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
@@ -594,37 +598,6 @@ Similar to `prepareUpgrade`. This method validates and deploys the new implement
 
 * an object with the URL of the Defender proposal, and the ethers transaction response corresponding to the deployment of the new implementation contract. Note that if the new implementation contract was originally imported as a result of `forceImport`, the ethers transaction response will be undefined.
 
-[[deploy-proxy-admin]]
-== deployProxyAdmin
-
-[source,ts]
-----
-async function deployProxyAdmin(
-  signer?: ethers.Signer,
-  opts?: {
-    timeout?: number,
-    pollingInterval?: number,
-    txOverrides?: ethers.Overrides,
-  },
-): Promise<string>
-----
-
-Deploys a https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[proxy admin] contract and returns its address if one was not already deployed on the current network, or just returns the address of the proxy admin if one was already deployed. Note that this plugin currently only supports using one proxy admin per network.
-
-*Parameters:*
-
-* `signer` - the signer to use for deployment.
-* `opts` - an object with options:
-** additional options as described in <<common-options>>.
-
-*Returns:*
-
-* the address of the proxy admin.
-
-*Since:*
-
-* `@openzeppelin/hardhat-upgrades@1.20.0`
-
 [[admin-change-proxy-admin]]
 == admin.changeProxyAdmin
 
@@ -658,7 +631,8 @@ NOTE: This function is not supported with admins or proxies from OpenZeppelin Co
 [source,ts]
 ----
 async function transferProxyAdminOwnership(
-  newAdmin: string,
+  proxyAddress: string,
+  newOwner: string,
   signer?: ethers.Signer,
   opts?: {
     txOverrides?: ethers.Overrides,
@@ -666,14 +640,21 @@ async function transferProxyAdminOwnership(
 ): Promise<void>
 ----
 
-Changes the owner of the proxy admin contract, which is the default admin for upgrade rights over all proxies.
+Changes the owner of the proxy admin contract for a specific proxy.
+
+NOTE: The `proxyAddress` parameter is required since `@openzeppelin/hardhat-upgrades@3.0.0`
 
 *Parameters:*
 
-* `newAdmin` - the new admin address.
+* `proxyAddress` - the address of the proxy whose admin ownership is to be transferred.
+* `newOwner` - the new owner address for the proxy admin contract.
 * `signer` - the signer to use for the transaction.
 * `opts` - an object with options:
 ** additional options as described in <<common-options>>.
+
+*Since:*
+
+* `@openzeppelin/hardhat-upgrades@3.0.0`
 
 [[erc1967]]
 == erc1967
@@ -738,9 +719,9 @@ The arguments are the same as for hardhat-verify's `verify` task.  If the provid
 The following contracts will be verified when you run this task on your proxy address:
 
 * Your implementation contract
-* https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Proxy[ERC1967Proxy] or https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy[TransparentUpgradeableProxy] or https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy[BeaconProxy] (for UUPS, transparent, or beacon proxies, respectively)
-* https://docs.openzeppelin.com/contracts/4.x/api/proxy#ProxyAdmin[ProxyAdmin] (with transparent proxies)
-* https://docs.openzeppelin.com/contracts/4.x/api/proxy#UpgradeableBeacon[UpgradeableBeacon] (with beacon proxies)
+* https://docs.openzeppelin.com/contracts/api/proxy#ERC1967Proxy[ERC1967Proxy] or https://docs.openzeppelin.com/contracts/api/proxy#TransparentUpgradeableProxy[TransparentUpgradeableProxy] or https://docs.openzeppelin.com/contracts/api/proxy#BeaconProxy[BeaconProxy] (for UUPS, transparent, or beacon proxies, respectively)
+* https://docs.openzeppelin.com/contracts/api/proxy#ProxyAdmin[ProxyAdmin] (with transparent proxies)
+* https://docs.openzeppelin.com/contracts/api/proxy#UpgradeableBeacon[UpgradeableBeacon] (with beacon proxies)
 
 *Since:*
 

@@ -11,11 +11,14 @@ test.before(async t => {
 test('transferProxyAdminOwnership - wrong signer', async t => {
   // we need to deploy a proxy so we have a Proxy Admin
   const { Greeter } = t.context;
-  await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
+  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'transparent' });
 
-  const signer = (await ethers.getSigners())[1];
+  const signer = await ethers.provider.getSigner(1);
 
-  await t.throwsAsync(() => upgrades.admin.transferProxyAdminOwnership(testAddress, signer), {
-    message: /(caller is not the owner)/,
-  });
+  const proxyAddress = await greeter.getAddress();
+
+  await t.throwsAsync(
+    () => upgrades.admin.transferProxyAdminOwnership(proxyAddress, testAddress, signer),
+    { message: /0x118cdaa7/ }, // bytes4(keccak256('OwnableUnauthorizedAccount(address)'))
+  );
 });

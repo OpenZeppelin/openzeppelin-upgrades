@@ -147,7 +147,7 @@ You can read more about how to make storage-compatible changes to an implementat
 [[what-is-a-proxy-admin]]
 == What is a proxy admin?
 
-A `ProxyAdmin` is a contract that acts as the owner of all your proxies. Only one per network gets deployed. When you start your project, the `ProxyAdmin` is owned by the deployer address, but you can transfer ownership of it by calling xref:contracts:api:access.adoc#Ownable-transferOwnership-address-[`transferOwnership`].
+A `ProxyAdmin` is an intermediary contract that acts as the upgrader of a transparent proxy. Each `ProxyAdmin` is owned by the deployer address, or by the `initialOwner` address when deploying a transparent proxy from OpenZeppelin Contracts 5.0 or above. You can transfer the ownership of a proxy admin by calling xref:contracts:api:access.adoc#Ownable-transferOwnership-address-[`transferOwnership`].
 
 [[what-is-an-implementation-contract]]
 == What is an implementation contract?

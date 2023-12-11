@@ -14,11 +14,10 @@ import type { DeployBeaconFunction } from './deploy-beacon';
 import type { DeployBeaconProxyFunction } from './deploy-beacon-proxy';
 import type { UpgradeBeaconFunction } from './upgrade-beacon';
 import type { ForceImportFunction } from './force-import';
-import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction, GetInstanceFunction } from './admin';
+import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction } from './admin';
 import type { ValidateImplementationFunction } from './validate-implementation';
 import type { ValidateUpgradeFunction } from './validate-upgrade';
 import type { DeployImplementationFunction } from './deploy-implementation';
-import type { DeployAdminFunction } from './deploy-proxy-admin';
 import type { DeployContractFunction } from './deploy-contract';
 import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade-with-approval';
 import type {
@@ -44,11 +43,9 @@ export interface HardhatUpgrades {
   deployBeacon: DeployBeaconFunction;
   deployBeaconProxy: DeployBeaconProxyFunction;
   upgradeBeacon: UpgradeBeaconFunction;
-  deployProxyAdmin: DeployAdminFunction;
   forceImport: ForceImportFunction;
   silenceWarnings: typeof silenceWarnings;
   admin: {
-    getInstance: GetInstanceFunction;
     changeProxyAdmin: ChangeAdminFunction;
     transferProxyAdminOwnership: TransferProxyAdminOwnershipFunction;
   };
@@ -225,8 +222,7 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, defender: boolean) {
   const { makeDeployBeaconProxy } = require('./deploy-beacon-proxy');
   const { makeUpgradeBeacon } = require('./upgrade-beacon');
   const { makeForceImport } = require('./force-import');
-  const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership, makeGetInstanceFunction } = require('./admin');
-  const { makeDeployProxyAdmin } = require('./deploy-proxy-admin');
+  const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership } = require('./admin');
 
   return {
     silenceWarnings,
@@ -239,10 +235,8 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, defender: boolean) {
     deployBeacon: makeDeployBeacon(hre, defender), // block on defender
     deployBeaconProxy: makeDeployBeaconProxy(hre, defender),
     upgradeBeacon: makeUpgradeBeacon(hre, defender), // block on defender
-    deployProxyAdmin: makeDeployProxyAdmin(hre, defender), // block on defender
     forceImport: makeForceImport(hre),
     admin: {
-      getInstance: makeGetInstanceFunction(hre),
       changeProxyAdmin: makeChangeProxyAdmin(hre, defender), // block on defender
       transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre, defender), // block on defender
     },

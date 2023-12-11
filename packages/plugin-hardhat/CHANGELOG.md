@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+- Deploy proxies from OpenZeppelin Contracts 5.0. ([#919](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/919))
+- Support `initialOwner` option when deploying a transparent proxy or beacon. If not set, the externally owned account used during deployment will be the default owner for the transparent proxy's admin or the beacon, respectively.
+- Update optional peer dependency on `@nomicfoundation/hardhat-verify` to v2.0.0 or higher. ([#937](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/937))
+  - **Note**: [Fully verifying proxies](https://docs.openzeppelin.com/upgrades-plugins/1.x/api-hardhat-upgrades#verify) is only supported with Etherscan at the moment. The Hardhat Upgrades plugin does not currently assist with Sourcify verification for proxies.
+
+### Breaking changes
+- `deployProxy`, `deployBeacon`, `deployBeaconProxy`: Deploys proxy contracts from [OpenZeppelin Contracts 5.0](https://docs.openzeppelin.com/contracts/5.x/api/proxy).
+- `deployProxy`:
+  - Deploying a transparent proxy automatically causes a new proxy admin contract to be deployed along with the proxy.
+  - New transparent proxy deployments no longer use an existing proxy admin, even if one was previously recorded in the network file.
+  - New proxy admins are no longer recorded in the network file.
+- `deployProxyAdmin`: Removed, since proxy admins are deployed automatically by transparent proxies.
+- `admin.changeProxyAdmin`: Not supported with admins or proxies from OpenZeppelin Contracts 5.0. Only supported for previously deployed admins and proxies from OpenZeppelin Contracts 4.x or below.
+- `admin.transferProxyAdminOwnership`: This function no longer uses the proxy admin from the network file. It now requires a `proxyAddress` argument to be passed in.
+- `@nomicfoundation/hardhat-verify` v1.x and `@nomicfoundation/hardhat-toolbox` v3.x are no longer supported with this plugin. If you are using these packages, update them to `@nomicfoundation/hardhat-verify` v2.x and `@nomicfoundation/hardhat-toolbox` v4.x.
+
 ## 2.5.0 (2023-12-04)
 
 - Add `defender.getDeployApprovalProcess` and `defender.getUpgradeApprovalProcess` functions. ([#934](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/934))

@@ -20,3 +20,6 @@ contract Greeter {
 
 import "./utils/Proxiable.sol";
 contract GreeterProxiable is Greeter, Proxiable {}
+
+import "./utils/Proxiable40.sol";
+contract GreeterProxiable40 is Greeter, Proxiable40 {}

@@ -7,6 +7,7 @@ import {
   ProxyDeployment,
   BeaconProxyUnsupportedError,
   RemoteDeploymentId,
+  InitialOwnerUnsupportedKindError,
 } from '@openzeppelin/upgrades-core';
 
 import {
@@ -21,6 +22,7 @@ import {
 } from './utils';
 import { enableDefender } from './defender/utils';
 import { getContractInstance } from './utils/contract-instance';
+import { getInitialOwner } from './utils/initial-owner';
 
 export interface DeployFunction {
   (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployProxyOptions): Promise<Contract>;
@@ -48,11 +50,16 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
     const contractInterface = ImplFactory.interface;
     const data = getInitializerData(contractInterface, args, opts.initializer);
 
-    if (kind === 'uups') {
-      if (await manifest.getAdmin()) {
+    if (await manifest.getAdmin()) {
+      if (kind === 'uups') {
         logWarning(`A proxy admin was previously deployed on this network`, [
           `This is not natively used with the current kind of proxy ('uups').`,
           `Changes to the admin will have no effect on this new proxy.`,
+        ]);
+      } else if (kind === 'transparent') {
+        logWarning(`A proxy admin was previously deployed on this network`, [
+          `This is not used with new transparent proxy deployments, since new transparent proxies deploy their own admins.`,
+          `Changes to the previous admin will have no effect on this new proxy.`,
         ]);
       }
     }
@@ -66,17 +73,22 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
       }
 
       case 'uups': {
+        if (opts.initialOwner !== undefined) {
+          throw new InitialOwnerUnsupportedKindError(kind);
+        }
+
         const ProxyFactory = await getProxyFactory(hre, signer);
         proxyDeployment = Object.assign({ kind }, await deploy(hre, opts, ProxyFactory, impl, data));
         break;
       }
 
       case 'transparent': {
-        const adminAddress = await hre.upgrades.deployProxyAdmin(signer, opts);
+        const initialOwner = await getInitialOwner(opts, signer);
+
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
         proxyDeployment = Object.assign(
           { kind },
-          await deploy(hre, opts, TransparentUpgradeableProxyFactory, impl, adminAddress, data),
+          await deploy(hre, opts, TransparentUpgradeableProxyFactory, impl, initialOwner, data),
         );
         break;
       }

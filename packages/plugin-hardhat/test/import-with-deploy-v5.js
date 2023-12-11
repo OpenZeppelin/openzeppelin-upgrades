@@ -2,10 +2,10 @@ const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
 
-const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
-const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
+const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
+const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
 
-const ERC1967Proxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json');
+const ERC1967Proxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json');
 
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
@@ -22,12 +22,6 @@ test.before(async t => {
   t.context.ERC1967Proxy = await ethers.getContractFactory(ERC1967Proxy.abi, ERC1967Proxy.bytecode);
 });
 
-function getInitializerData(contractInterface, args) {
-  const initializer = 'initialize';
-  const fragment = contractInterface.getFunction(initializer);
-  return contractInterface.encodeFunctionData(fragment, args);
-}
-
 test('import then deploy with same impl', async t => {
   const { GreeterProxiable, ERC1967Proxy } = t.context;
 
@@ -35,7 +29,7 @@ test('import then deploy with same impl', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -62,7 +56,7 @@ test('deploy then import with same impl', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat 2!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat 2!']),
   );
   await proxy.waitForDeployment();
 
@@ -107,7 +101,7 @@ test('import previous import', async t => {
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    getInitializerData(GreeterProxiable.interface, ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -121,17 +115,17 @@ test('import previous import', async t => {
   );
 });
 
-test('import then deploy transparent with same admin', async t => {
-  const { Greeter, GreeterV2, ProxyAdmin, TransparentUpgradableProxy } = t.context;
+test('import then deploy transparent (with deployProxy) with different admin', async t => {
+  const { Greeter, GreeterV2, TransparentUpgradableProxy } = t.context;
+
+  const owner = await ethers.provider.getSigner(0);
 
   const impl = await Greeter.deploy();
   await impl.waitForDeployment();
-  const admin = await ProxyAdmin.deploy();
-  await admin.waitForDeployment();
   const proxy = await TransparentUpgradableProxy.deploy(
     await impl.getAddress(),
-    await admin.getAddress(),
-    getInitializerData(Greeter.interface, ['Hello, Hardhat!']),
+    owner,
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
@@ -139,7 +133,7 @@ test('import then deploy transparent with same admin', async t => {
   const greeter2 = await upgrades.deployProxy(Greeter, ['Hello, Hardhat 2!']);
   await greeter2.waitForDeployment();
 
-  t.is(
+  t.not(
     await upgrades.erc1967.getAdminAddress(await greeter2.getAddress()),
     await upgrades.erc1967.getAdminAddress(await greeter.getAddress()),
   );

@@ -20,7 +20,6 @@ test.beforeEach(async () => {
 });
 
 const TIMED_OUT_IMPL = 'Timed out waiting for implementation contract deployment';
-const TIMED_OUT_ADMIN = 'Timed out waiting for proxy admin contract deployment';
 const USE_OPTIONS =
   'If the problem persists, adjust the polling parameters with the timeout and pollingInterval options.';
 
@@ -31,7 +30,7 @@ test('timeout too low - beacon', async t => {
   t.true(error.message.includes(TIMED_OUT_IMPL) && error.message.includes(USE_OPTIONS), error.message);
 });
 
-test('timeout too low - proxy impl and admin', async t => {
+test('timeout too low - proxy impl', async t => {
   // manual mining
   await network.provider.send('evm_setIntervalMining', [0]);
 
@@ -47,15 +46,12 @@ test('timeout too low - proxy impl and admin', async t => {
   // mine the impl deployment
   await network.provider.send('evm_mine');
 
-  // run again to continue with proxy admin
-  const error2 = await t.throwsAsync(() =>
-    upgrades.deployProxy(t.context.Greeter, ['Hello, Hardhat!'], {
-      kind: 'transparent',
-      timeout: 1,
-      pollingInterval: 0,
-    }),
-  );
-  t.true(error2.message.includes(TIMED_OUT_ADMIN) && error.message.includes(USE_OPTIONS), error2.message);
+  // run again to continue with proxy deployment
+  await upgrades.deployProxy(t.context.Greeter, ['Hello, Hardhat!'], {
+    kind: 'transparent',
+    timeout: 1,
+    pollingInterval: 0,
+  });
 });
 
 test('good timeout - beacon', async t => {

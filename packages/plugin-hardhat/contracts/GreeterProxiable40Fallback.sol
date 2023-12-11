@@ -1,8 +1,8 @@
 pragma solidity >= 0.6.0 <0.8.0;
 
-import { Proxiable } from "./utils/Proxiable.sol";
+import { Proxiable40 } from "./utils/Proxiable40.sol";
 
-contract GreeterProxiable40Fallback is Proxiable {
+contract GreeterProxiable40Fallback is Proxiable40 {
     string greeting;
 
     function initialize(string memory _greeting) public {

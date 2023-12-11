@@ -2,9 +2,17 @@ const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
 
+const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
+const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
+
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
+  t.context.ProxyAdmin = await ethers.getContractFactory(ProxyAdmin.abi, ProxyAdmin.bytecode);
+  t.context.TransparentUpgradableProxy = await ethers.getContractFactory(
+    TransparentUpgradableProxy.abi,
+    TransparentUpgradableProxy.bytecode,
+  );
 });
 
 async function assertGasLimit(t, oldBlockNumber, expectedGasLimit, minExpectedBlocks) {
@@ -108,8 +116,20 @@ test('prepareUpgrade', async t => {
 });
 
 test('changeProxyAdmin', async t => {
-  const { Greeter } = t.context;
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello']);
+  const { Greeter, ProxyAdmin, TransparentUpgradableProxy } = t.context;
+
+  // Deploy a v4 proxy and admin
+  const impl = await Greeter.deploy();
+  await impl.waitForDeployment();
+  const admin = await ProxyAdmin.deploy();
+  await admin.waitForDeployment();
+  const greeter = await TransparentUpgradableProxy.deploy(
+    await impl.getAddress(),
+    await admin.getAddress(),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
+  );
+  await greeter.waitForDeployment();
+
   const oldBlockNumber = await ethers.provider.getBlockNumber();
 
   const [deployer, newAdmin] = await ethers.getSigners();
@@ -122,12 +142,25 @@ test('changeProxyAdmin', async t => {
 });
 
 test('transferProxyAdminOwnership', async t => {
-  await upgrades.deployProxyAdmin();
+  const { Greeter, ProxyAdmin, TransparentUpgradableProxy } = t.context;
+
+  // Deploy a v4 proxy and admin
+  const impl = await Greeter.deploy();
+  await impl.waitForDeployment();
+  const admin = await ProxyAdmin.deploy();
+  await admin.waitForDeployment();
+  const greeter = await TransparentUpgradableProxy.deploy(
+    await impl.getAddress(),
+    await admin.getAddress(),
+    Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
+  );
+  await greeter.waitForDeployment();
+
   const oldBlockNumber = await ethers.provider.getBlockNumber();
 
   const [deployer, newOwner] = await ethers.getSigners();
 
-  await upgrades.admin.transferProxyAdminOwnership(newOwner.address, deployer, {
+  await upgrades.admin.transferProxyAdminOwnership(await greeter.getAddress(), newOwner.address, deployer, {
     txOverrides: { gasLimit: 10000009n },
   });
 

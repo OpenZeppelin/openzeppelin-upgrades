@@ -95,6 +95,15 @@ export class PrepareUpgradeRequiresKindError extends UpgradesError {
   }
 }
 
+export class InitialOwnerUnsupportedKindError extends UpgradesError {
+  constructor(kind: string) {
+    super(
+      `The \`initialOwner\` option is not supported for this kind of proxy ('${kind}')`,
+      () => `Set the initial owner as part of your contract's initializer arguments instead.`,
+    );
+  }
+}
+
 export async function assertNotProxy(provider: EthereumProvider, address: string) {
   if (await isTransparentOrUUPSProxy(provider, address)) {
     throw new UpgradesError(
