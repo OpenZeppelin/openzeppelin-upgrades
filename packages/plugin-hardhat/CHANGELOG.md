@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-- Deploy proxies from OpenZeppelin Contracts 5.0.
+- Deploy proxies from OpenZeppelin Contracts 5.0. ([#919](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/919))
 - Support `initialOwner` option when deploying a transparent proxy or beacon. If not set, the externally owned account used during deployment will be the default owner for the transparent proxy's admin or the beacon, respectively.
-- Update optional peer dependency on `@nomicfoundation/hardhat-verify` to v2.0.0 or higher.
+- Update optional peer dependency on `@nomicfoundation/hardhat-verify` to v2.0.0 or higher. ([#937](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/937))
   - **Note**: [Fully verifying proxies](https://docs.openzeppelin.com/upgrades-plugins/1.x/api-hardhat-upgrades#verify) is only supported with Etherscan at the moment. The Hardhat Upgrades plugin does not currently assist with Sourcify verification for proxies.
 
 ### Breaking changes
