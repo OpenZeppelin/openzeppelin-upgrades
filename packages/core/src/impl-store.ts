@@ -251,8 +251,7 @@ async function checkForAddressClash(
       ) {
         throw new Error(
           `The deployment clashes with an existing one at ${updated.address}.\n\n` +
-            `Existing deployment: ${JSON.stringify(existing, null, 2)}\n\n` +
-            `New deployment: ${JSON.stringify(updated, null, 2)}\n\n`,
+            `Deployments: ${JSON.stringify({ existing, updated }, null, 2)}\n\n`,
         );
       }
     }
