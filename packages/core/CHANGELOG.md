@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- CLI: Fix ambiguous name error when passing in fully qualified contract names. ([#944](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/944))
+
 ## 1.32.0 (2023-12-11)
 
 - Support deploying proxies from OpenZeppelin Contracts 5.0. ([#919](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/919))
