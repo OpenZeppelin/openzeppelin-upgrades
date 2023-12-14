@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.32.1 (2023-12-14)
 
 - CLI: Fix ambiguous name error when passing in fully qualified contract names. ([#944](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/944))
 
