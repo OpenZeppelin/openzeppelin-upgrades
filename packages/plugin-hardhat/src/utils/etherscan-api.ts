@@ -32,7 +32,7 @@ export async function callEtherscanApi(etherscan: Etherscan, params: any): Promi
   const responseBodyJson = await response.body.json();
   debug('Etherscan response', JSON.stringify(responseBodyJson));
 
-  return responseBodyJson;
+  return responseBodyJson as EtherscanResponseBody;
 }
 
 /**
@@ -64,7 +64,7 @@ interface EtherscanConfig {
 interface EtherscanResponseBody {
   status: string;
   message: string;
-  result: any;
+  result: unknown;
 }
 
 export const RESPONSE_OK = '1';
