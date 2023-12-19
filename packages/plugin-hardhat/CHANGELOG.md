@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Update dependency on unidici. ([#948](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/948))
+- Update dependency on undici. ([#948](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/948))
 
 ## 3.0.0 (2023-12-11)
 
