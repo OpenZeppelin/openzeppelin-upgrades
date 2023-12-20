@@ -101,6 +101,7 @@ test('calls defender deploy', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -127,6 +128,7 @@ test('calls defender deploy with relayerId', async t => {
     relayerId: RELAYER_ID,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -153,6 +155,7 @@ test('calls defender deploy with salt', async t => {
     relayerId: undefined,
     salt: SALT,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -179,6 +182,7 @@ test('calls defender deploy with createFactoryAddress', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: CREATE_FACTORY,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -205,6 +209,7 @@ test('calls defender deploy with license', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -231,6 +236,7 @@ test('calls defender deploy with constructor args', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -257,6 +263,7 @@ test('calls defender deploy with verify false', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -283,6 +290,7 @@ test('calls defender deploy with ERC1967Proxy', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 });
 
@@ -307,6 +315,7 @@ test('calls defender deploy with BeaconProxy', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 });
 
@@ -331,5 +340,6 @@ test('calls defender deploy with TransparentUpgradeableProxy', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 });
