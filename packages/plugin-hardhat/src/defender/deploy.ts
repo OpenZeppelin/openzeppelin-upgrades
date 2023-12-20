@@ -3,12 +3,7 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import {
-  DeploymentResponse,
-  SourceCodeLicense,
-  DeployContractRequest,
-  TxOverrides,
-} from '@openzeppelin/defender-sdk-deploy-client';
+import { DeploymentResponse, SourceCodeLicense, DeployContractRequest } from '@openzeppelin/defender-sdk-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -23,7 +18,7 @@ import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/con
 import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 
-import { getNetwork, getDeployClient, bigNumberishToHex, bigNumberishToNumber } from './utils';
+import { getNetwork, getDeployClient, parseTxOverrides } from './utils';
 import { DeployTransaction, DefenderDeployOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
@@ -78,15 +73,6 @@ export async function defenderDeploy(
     debug(`Salt: ${opts.salt}`);
   }
 
-  const txOverrides: TxOverrides | undefined = opts.txOverrides
-    ? {
-        gasLimit: bigNumberishToNumber(opts.txOverrides.gasLimit),
-        gasPrice: bigNumberishToHex(opts.txOverrides.gasPrice),
-        maxFeePerGas: bigNumberishToHex(opts.txOverrides.maxFeePerGas),
-        maxPriorityFeePerGas: bigNumberishToHex(opts.txOverrides.maxPriorityFeePerGas),
-      }
-    : undefined;
-
   const deploymentRequest: DeployContractRequest = {
     contractName: contractInfo.contractName,
     contractPath: contractInfo.sourceName,
@@ -98,7 +84,7 @@ export async function defenderDeploy(
     relayerId: opts.relayerId,
     salt: opts.salt,
     createFactoryAddress: opts.createFactoryAddress,
-    txOverrides,
+    txOverrides: parseTxOverrides(opts.txOverrides),
   };
 
   let deploymentResponse: DeploymentResponse;
