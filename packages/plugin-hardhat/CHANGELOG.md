@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support `txOverrides` option with Defender. ([#951](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/951))
+
 ## 3.0.0 (2023-12-11)
 
 - Deploy proxies from OpenZeppelin Contracts 5.0. ([#919](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/919))
