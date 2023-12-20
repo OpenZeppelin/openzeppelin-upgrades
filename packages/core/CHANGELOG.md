@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fix manifest error when connecting to an Anvil dev network.
+- Fix manifest error when connecting to an Anvil dev network. ([#950](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/950))
 
 ## 1.32.1 (2023-12-14)
 
