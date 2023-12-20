@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.5.1 (2023-12-20)
 
 - Update Defender SDK, support `txOverrides` option with Defender. ([#951](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/951))
 
