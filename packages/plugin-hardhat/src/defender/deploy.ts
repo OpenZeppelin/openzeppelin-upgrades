@@ -18,8 +18,8 @@ import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/con
 import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 
-import { getNetwork, getDeployClient } from './utils';
-import { DeployTransaction, DefenderDeployOptions, UpgradeOptions } from '../utils';
+import { getNetwork, getDeployClient, parseTxOverrides } from './utils';
+import { DeployTransaction, DefenderDeployOptions, UpgradeOptions, EthersDeployOptions } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
@@ -50,7 +50,7 @@ type CompilerOutputWithMetadata = CompilerOutputContract & {
 export async function defenderDeploy(
   hre: HardhatRuntimeEnvironment,
   factory: ContractFactory,
-  opts: UpgradeOptions & DefenderDeployOptions,
+  opts: UpgradeOptions & EthersDeployOptions & DefenderDeployOptions,
   ...args: unknown[]
 ): Promise<Required<Deployment & RemoteDeploymentId> & DeployTransaction> {
   const client = getDeployClient(hre);
@@ -84,6 +84,7 @@ export async function defenderDeploy(
     relayerId: opts.relayerId,
     salt: opts.salt,
     createFactoryAddress: opts.createFactoryAddress,
+    txOverrides: parseTxOverrides(opts.txOverrides),
   };
 
   let deploymentResponse: DeploymentResponse;

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Update dependency on undici. ([#948](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/948))
+- Update Defender SDK, support `txOverrides` option with Defender. ([#951](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/951))
 
 ## 3.0.0 (2023-12-11)
 

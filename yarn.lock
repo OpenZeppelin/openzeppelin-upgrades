@@ -2422,21 +2422,21 @@
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-"@openzeppelin/defender-sdk-base-client@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-base-client/-/defender-sdk-base-client-1.5.0.tgz#82d2b45c84822dfadaba8b7cfe215df7ac3c4bec"
-  integrity sha512-8aN4sEE15/6LctA14ADr8c6QvEzEXfAtFlxo/Ys0N6UVfp8lRAYqDOpHd4mb8dMfkRzq5izMCuMYgAjC9GFflQ==
+"@openzeppelin/defender-sdk-base-client@^1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-base-client/-/defender-sdk-base-client-1.8.0.tgz#2209a060ce61b4dfc44c7ac0c2b1d86e18b69f7d"
+  integrity sha512-XIJat6BW2CTM74AwG5IL0Q/aE6RXj8x7smnVKmBql4wMvmirVW+njfwzZCLhUTiBXg9AlHxIInEF14SabfIisg==
   dependencies:
     amazon-cognito-identity-js "^6.3.6"
     async-retry "^1.3.3"
 
-"@openzeppelin/defender-sdk-deploy-client@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-deploy-client/-/defender-sdk-deploy-client-1.5.0.tgz#b0bdadc0f00a44c49a3f96e85673394f94f99d6c"
-  integrity sha512-DbE4Rpa90vSN7o5/sim5qzAVVsSWkZBJ+Z9yjkc8qPRheh2dRk6oe2GhVoQfXI/04XwMb2uNvtfU1VAH8AzgaQ==
+"@openzeppelin/defender-sdk-deploy-client@^1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-deploy-client/-/defender-sdk-deploy-client-1.8.0.tgz#1e186d2b3ff176c6a4c03e8207bad8022528975f"
+  integrity sha512-/tNS2EnHuA5l095wzMbIkGMDNHZLcZQ2eLUP8z+AeKaAUeR2z4qzZ1ul21kR3EJURAyoy8aULFZanLggoBWHrA==
   dependencies:
     "@ethersproject/abi" "^5.7.0"
-    "@openzeppelin/defender-sdk-base-client" "^1.5.0"
+    "@openzeppelin/defender-sdk-base-client" "^1.8.0"
     axios "^1.4.0"
     lodash "^4.17.21"
 
