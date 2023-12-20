@@ -408,7 +408,6 @@ test('calls defender deploy with txOverrides.gasPrice', async t => {
   assertResult(t, result);
 });
 
-
 test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPriorityFeePerGas', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
@@ -416,7 +415,9 @@ test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPri
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
-  const result = await deploy.defenderDeploy(fakeHre, factory, { txOverrides: { maxFeePerGas: 100, maxPriorityFeePerGas: '0xa' } });
+  const result = await deploy.defenderDeploy(fakeHre, factory, {
+    txOverrides: { maxFeePerGas: 100, maxPriorityFeePerGas: '0xa' },
+  });
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(spy, {
