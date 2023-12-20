@@ -1,9 +1,9 @@
-import type { ethers, ContractFactory, Overrides } from 'ethers';
+import type { ethers, ContractFactory } from 'ethers';
 import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from 'hardhat/types';
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { DeploymentResponse, SourceCodeLicense, DeployContractRequest } from '@openzeppelin/defender-sdk-deploy-client';
+import { DeploymentResponse, SourceCodeLicense, DeployContractRequest, TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -73,8 +73,7 @@ export async function defenderDeploy(
     debug(`Salt: ${opts.salt}`);
   }
 
-  // TODO add TxOverrides type from defender
-  const txOverrides = opts.txOverrides ? {
+  const txOverrides: TxOverrides | undefined = opts.txOverrides ? {
     gasLimit: bigNumberishToNumber(opts.txOverrides.gasLimit),
     gasPrice: bigNumberishToHex(opts.txOverrides.gasPrice),
     maxFeePerGas: bigNumberishToHex(opts.txOverrides.maxFeePerGas),
