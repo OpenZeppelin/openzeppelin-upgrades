@@ -12,7 +12,7 @@ export interface EthereumProvider {
   send(method: string, params: unknown[]): Promise<unknown>;
 }
 
-interface HardhatMetadata {
+export interface HardhatMetadata {
   clientVersion: string;
   chainId: number;
   instanceId: string;

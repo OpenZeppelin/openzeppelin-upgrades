@@ -1,7 +1,7 @@
 import os from 'os';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { EthereumProvider, getChainId, getHardhatMetadata, networkNames } from './provider';
+import { EthereumProvider, HardhatMetadata, getChainId, getHardhatMetadata, networkNames } from './provider';
 import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
 
@@ -48,23 +48,25 @@ async function getDevInstanceMetadata(
   provider: EthereumProvider,
   chainId: number,
 ): Promise<DevInstanceMetadata | undefined> {
+  let hardhatMetadata: HardhatMetadata;
+
   try {
-    const hardhatMetadata = await getHardhatMetadata(provider);
-
-    if (hardhatMetadata.chainId !== chainId) {
-      throw new Error(
-        `Broken invariant: Hardhat metadata's chainId ${hardhatMetadata.chainId} does not match eth_chainId ${chainId}`,
-      );
-    }
-
-    return {
-      networkName: hardhatMetadata.clientVersion.startsWith('anvil') ? 'anvil' : 'hardhat',
-      instanceId: hardhatMetadata.instanceId,
-      forkedNetwork: hardhatMetadata.forkedNetwork,
-    };
+    hardhatMetadata = await getHardhatMetadata(provider);
   } catch (e: unknown) {
     return undefined;
   }
+
+  if (hardhatMetadata.chainId !== chainId) {
+    throw new Error(
+      `Broken invariant: Hardhat metadata's chainId ${hardhatMetadata.chainId} does not match eth_chainId ${chainId}`,
+    );
+  }
+
+  return {
+    networkName: hardhatMetadata.clientVersion.startsWith('anvil') ? 'anvil' : 'hardhat',
+    instanceId: hardhatMetadata.instanceId,
+    forkedNetwork: hardhatMetadata.forkedNetwork,
+  };
 }
 
 function getSuffix(chainId: number, devInstanceMetadata?: DevInstanceMetadata) {
