@@ -48,25 +48,23 @@ async function getDevInstanceMetadata(
   provider: EthereumProvider,
   chainId: number,
 ): Promise<DevInstanceMetadata | undefined> {
-  let hardhatMetadata;
-
   try {
-    hardhatMetadata = await getHardhatMetadata(provider);
+    const hardhatMetadata = await getHardhatMetadata(provider);
+
+    if (hardhatMetadata.chainId !== chainId) {
+      throw new Error(
+        `Broken invariant: Hardhat metadata's chainId ${hardhatMetadata.chainId} does not match eth_chainId ${chainId}`,
+      );
+    }
+
+    return {
+      networkName: hardhatMetadata.clientVersion.startsWith('anvil') ? 'anvil' : 'hardhat',
+      instanceId: hardhatMetadata.instanceId,
+      forkedNetwork: hardhatMetadata.forkedNetwork,
+    };
   } catch (e: unknown) {
     return undefined;
   }
-
-  if (hardhatMetadata.chainId !== chainId) {
-    throw new Error(
-      `Broken invariant: Hardhat metadata's chainId ${hardhatMetadata.chainId} does not match eth_chainId ${chainId}`,
-    );
-  }
-
-  return {
-    networkName: 'hardhat',
-    instanceId: hardhatMetadata.instanceId,
-    forkedNetwork: hardhatMetadata.forkedNetwork,
-  };
 }
 
 function getSuffix(chainId: number, devInstanceMetadata?: DevInstanceMetadata) {
@@ -83,7 +81,7 @@ interface DevInstanceMetadata {
   forkedNetwork?: {
     // The chainId of the network that is being forked
     chainId: number;
-  };
+  } | null;
 }
 
 export class Manifest {
@@ -129,7 +127,7 @@ export class Manifest {
       }
       debug('development manifest file:', this.file, 'fallback file:', this.fallbackFile);
 
-      if (devInstanceMetadata.forkedNetwork !== undefined) {
+      if (devInstanceMetadata.forkedNetwork) {
         const forkedChainId = devInstanceMetadata.forkedNetwork.chainId;
         debug('forked network chain id:', forkedChainId);
 

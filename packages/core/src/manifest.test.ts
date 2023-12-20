@@ -399,11 +399,23 @@ test('manifest name for an unknown network, development instance, non hardhat', 
 test('manifest name for an unknown network, development instance, hardhat', t => {
   const chainId = 31337;
   const instanceId = '0x22223';
-  const devInstanceMetadata = { networkName: 'dev', instanceId: instanceId };
+  const devInstanceMetadata = { networkName: 'hardhat', instanceId: instanceId };
 
   const manifest = new Manifest(chainId, devInstanceMetadata, '/tmp');
 
-  const expectedPath = `/tmp/openzeppelin-upgrades/dev-${chainId}-${instanceId}.json`;
+  const expectedPath = `/tmp/openzeppelin-upgrades/hardhat-${chainId}-${instanceId}.json`;
+  t.is(manifest.file, expectedPath);
+  t.is(manifest.fallbackFile, `.openzeppelin/unknown-${chainId}.json`);
+});
+
+test('manifest name for an unknown network, development instance, anvil - forkedNetwork null', t => {
+  const chainId = 31337;
+  const instanceId = '0x22224';
+  const devInstanceMetadata = { networkName: 'anvil', instanceId: instanceId, forkedNetwork: null };
+
+  const manifest = new Manifest(chainId, devInstanceMetadata, '/tmp');
+
+  const expectedPath = `/tmp/openzeppelin-upgrades/anvil-${chainId}-${instanceId}.json`;
   t.is(manifest.file, expectedPath);
   t.is(manifest.fallbackFile, `.openzeppelin/unknown-${chainId}.json`);
 });
