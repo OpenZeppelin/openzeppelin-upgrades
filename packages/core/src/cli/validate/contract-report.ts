@@ -106,7 +106,7 @@ function getUpgradeableContractReport(
 ): UpgradeableContractReport | undefined {
   let version;
   try {
-    version = getContractVersion(contract.validationData, contract.name);
+    version = getContractVersion(contract.validationData, contract.fullyQualifiedName);
   } catch (e: any) {
     if (e.message.endsWith('is abstract')) {
       // Skip abstract upgradeable contracts - they will be validated as part of their caller contracts
@@ -126,7 +126,7 @@ function getUpgradeableContractReport(
   if (opts.unsafeSkipStorageCheck !== true && referenceContract !== undefined) {
     const layout = getStorageLayout(contract.validationData, version);
 
-    const referenceVersion = getContractVersion(referenceContract.validationData, referenceContract.name);
+    const referenceVersion = getContractVersion(referenceContract.validationData, referenceContract.fullyQualifiedName);
     const referenceLayout = getStorageLayout(referenceContract.validationData, referenceVersion);
 
     reference = referenceContract.fullyQualifiedName;

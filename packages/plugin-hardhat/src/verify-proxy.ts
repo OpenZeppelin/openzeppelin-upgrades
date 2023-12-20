@@ -640,7 +640,7 @@ async function getEventResponse(
   const responseBody = await callEtherscanApi(etherscan, params);
 
   if (responseBody.status === RESPONSE_OK) {
-    const result = responseBody.result;
+    const result = responseBody.result as EtherscanEventResponse[];
     return result[0];
   } else if (responseBody.message === 'No records found' || responseBody.message === 'No logs found') {
     debug(`no result found for event topic ${topic} at address ${address}`);
@@ -697,7 +697,7 @@ async function linkProxyWithImplementationAbi(
 
   if (responseBody.status === RESPONSE_OK) {
     // initial call was OK, but need to send a status request using the returned guid to get the actual verification status
-    const guid = responseBody.result;
+    const guid = responseBody.result as string;
     responseBody = await checkProxyVerificationStatus(etherscan, guid);
 
     while (responseBody.result === 'Pending in queue') {

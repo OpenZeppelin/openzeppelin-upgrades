@@ -274,3 +274,27 @@ test('validate - single contract - ok', async t => {
   const output = (await execAsync(`${CLI} validate ${temp} --contract Annotation`)).stdout;
   t.snapshot(output);
 });
+
+test('validate - fully qualified version of ambiguous contract name', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/ValidationsSameNameSafe.sol:SameName`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = (
+    await execAsync(`${CLI} validate ${temp} --contract contracts/test/ValidationsSameNameSafe.sol:SameName`)
+  ).stdout;
+  t.snapshot(output);
+});
+
+test('validate - references fully qualified version of ambiguous contract name', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/ValidationsSameNameSafe.sol:SameName`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = (
+    await execAsync(
+      `${CLI} validate ${temp} --contract contracts/test/ValidationsSameNameSafe.sol:SameName --reference contracts/test/ValidationsSameNameUnsafe.sol:SameName`,
+    )
+  ).stdout;
+  t.snapshot(output);
+});
