@@ -1,4 +1,4 @@
-import type { ethers, ContractFactory } from 'ethers';
+import type { ethers, ContractFactory, Overrides } from 'ethers';
 import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from 'hardhat/types';
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
@@ -18,7 +18,7 @@ import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/con
 import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 
-import { getNetwork, getDeployClient } from './utils';
+import { getNetwork, getDeployClient, bigNumberishToHex, bigNumberishToNumber } from './utils';
 import { DeployTransaction, DefenderDeployOptions, UpgradeOptions } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
@@ -73,6 +73,15 @@ export async function defenderDeploy(
     debug(`Salt: ${opts.salt}`);
   }
 
+  // TODO add TxOverrides type from defender
+  const txOverrides = opts.txOverrides ? {
+    gasLimit: bigNumberishToNumber(opts.txOverrides.gasLimit),
+    gasPrice: bigNumberishToHex(opts.txOverrides.gasPrice),
+    maxFeePerGas: bigNumberishToHex(opts.txOverrides.maxFeePerGas),
+    maxPriorityFeePerGas: bigNumberishToHex(opts.txOverrides.maxPriorityFeePerGas),
+  } : undefined;
+
+
   const deploymentRequest: DeployContractRequest = {
     contractName: contractInfo.contractName,
     contractPath: contractInfo.sourceName,
@@ -84,6 +93,7 @@ export async function defenderDeploy(
     relayerId: opts.relayerId,
     salt: opts.salt,
     createFactoryAddress: opts.createFactoryAddress,
+    txOverrides,
   };
 
   let deploymentResponse: DeploymentResponse;
