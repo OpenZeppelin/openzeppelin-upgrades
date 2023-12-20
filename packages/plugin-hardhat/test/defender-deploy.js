@@ -101,6 +101,7 @@ test('calls defender deploy', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -127,6 +128,7 @@ test('calls defender deploy with relayerId', async t => {
     relayerId: RELAYER_ID,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -153,6 +155,7 @@ test('calls defender deploy with salt', async t => {
     relayerId: undefined,
     salt: SALT,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -179,6 +182,7 @@ test('calls defender deploy with createFactoryAddress', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: CREATE_FACTORY,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -205,6 +209,7 @@ test('calls defender deploy with license', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -231,6 +236,7 @@ test('calls defender deploy with constructor args', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -257,6 +263,7 @@ test('calls defender deploy with verify false', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 
   assertResult(t, result);
@@ -283,6 +290,7 @@ test('calls defender deploy with ERC1967Proxy', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 });
 
@@ -307,6 +315,7 @@ test('calls defender deploy with BeaconProxy', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
 });
 
@@ -331,5 +340,104 @@ test('calls defender deploy with TransparentUpgradeableProxy', async t => {
     relayerId: undefined,
     salt: undefined,
     createFactoryAddress: undefined,
+    txOverrides: undefined,
   });
+});
+
+test('calls defender deploy with txOverrides.gasLimit', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Greeter.sol';
+  const contractName = 'Greeter';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, { txOverrides: { gasLimit: 1 } });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'None',
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: {
+      gasLimit: 1,
+      gasPrice: undefined,
+      maxFeePerGas: undefined,
+      maxPriorityFeePerGas: undefined,
+    },
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy with txOverrides.gasPrice', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Greeter.sol';
+  const contractName = 'Greeter';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, { txOverrides: { gasPrice: 1 } });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'None',
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: {
+      gasLimit: undefined,
+      gasPrice: '0x1',
+      maxFeePerGas: undefined,
+      maxPriorityFeePerGas: undefined,
+    },
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPriorityFeePerGas', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Greeter.sol';
+  const contractName = 'Greeter';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {
+    txOverrides: { maxFeePerGas: 100, maxPriorityFeePerGas: '0xa' },
+  });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'None',
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: {
+      gasLimit: undefined,
+      gasPrice: undefined,
+      maxFeePerGas: '0x64',
+      maxPriorityFeePerGas: '0xa',
+    },
+  });
+
+  assertResult(t, result);
 });

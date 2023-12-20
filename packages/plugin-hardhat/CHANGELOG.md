@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update Defender SDK, support `txOverrides` option with Defender. ([#951](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/951))
+
 ## 2.5.0 (2023-12-04)
 
 - Add `defender.getDeployApprovalProcess` and `defender.getUpgradeApprovalProcess` functions. ([#934](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/934))

@@ -9,11 +9,12 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from '@openzeppelin/defender-sdk-base-client';
-import { DeployClient } from '@openzeppelin/defender-sdk-deploy-client';
+import { DeployClient, TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
 
 import { HardhatDefenderConfig } from '../type-extensions';
 import { DefenderDeploy } from '../utils';
 import debug from '../utils/debug';
+import { Overrides } from 'ethers';
 
 import { promisify } from 'util';
 const sleep = promisify(setTimeout);
@@ -144,4 +145,44 @@ export async function waitForDeployment(
     }
   }
   return lastKnownTxHash;
+}
+
+export function parseTxOverrides(overrides?: Overrides): TxOverrides | undefined {
+  if (!overrides) {
+    return undefined;
+  }
+  if (
+    typeof overrides.gasLimit === 'bigint' ||
+    typeof overrides.gasPrice === 'bigint' ||
+    typeof overrides.maxFeePerGas === 'bigint' ||
+    typeof overrides.maxPriorityFeePerGas === 'bigint'
+  ) {
+    throw new Error('bigint not yet supported');
+  }
+  return {
+    gasLimit: parseNumberOrUndefined(overrides.gasLimit),
+    gasPrice: parseHexOrUndefined(overrides.gasPrice),
+    maxFeePerGas: parseHexOrUndefined(overrides.maxFeePerGas),
+    maxPriorityFeePerGas: parseHexOrUndefined(overrides.maxPriorityFeePerGas),
+  };
+}
+
+function parseHexOrUndefined(value?: string | number | null): string | undefined {
+  if (typeof value === 'string' && !!value) {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return `0x${value.toString(16)}`;
+  }
+  return undefined;
+}
+
+function parseNumberOrUndefined(value?: string | number | null): number | undefined {
+  if (typeof value === 'string' && !!value) {
+    return Number(value);
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  return undefined;
 }
