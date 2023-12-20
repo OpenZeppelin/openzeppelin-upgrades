@@ -3,7 +3,12 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { DeploymentResponse, SourceCodeLicense, DeployContractRequest, TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
+import {
+  DeploymentResponse,
+  SourceCodeLicense,
+  DeployContractRequest,
+  TxOverrides,
+} from '@openzeppelin/defender-sdk-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -73,13 +78,14 @@ export async function defenderDeploy(
     debug(`Salt: ${opts.salt}`);
   }
 
-  const txOverrides: TxOverrides | undefined = opts.txOverrides ? {
-    gasLimit: bigNumberishToNumber(opts.txOverrides.gasLimit),
-    gasPrice: bigNumberishToHex(opts.txOverrides.gasPrice),
-    maxFeePerGas: bigNumberishToHex(opts.txOverrides.maxFeePerGas),
-    maxPriorityFeePerGas: bigNumberishToHex(opts.txOverrides.maxPriorityFeePerGas),
-  } : undefined;
-
+  const txOverrides: TxOverrides | undefined = opts.txOverrides
+    ? {
+        gasLimit: bigNumberishToNumber(opts.txOverrides.gasLimit),
+        gasPrice: bigNumberishToHex(opts.txOverrides.gasPrice),
+        maxFeePerGas: bigNumberishToHex(opts.txOverrides.maxFeePerGas),
+        maxPriorityFeePerGas: bigNumberishToHex(opts.txOverrides.maxPriorityFeePerGas),
+      }
+    : undefined;
 
   const deploymentRequest: DeployContractRequest = {
     contractName: contractInfo.contractName,

@@ -148,15 +148,27 @@ export async function waitForDeployment(
 }
 
 export function bigNumberishToHex(value?: BigNumberish | null): string | undefined {
-  if (typeof value === 'string' && !!value) return value;
-  if (typeof value === 'number') return `0x${value.toString(16)}`;
-  if (typeof value === 'bigint') return `0x${Number(value).toString(16)}`;
+  if (typeof value === 'string' && !!value) {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return `0x${value.toString(16)}`;
+  }
+  if (typeof value === 'bigint') {
+    return `0x${Number(value).toString(16)}`;
+  }
   return undefined;
 }
 
 export function bigNumberishToNumber(value?: BigNumberish | null): number | undefined {
-  if (typeof value === 'string' && !!value) return Number(value);
-  if (typeof value === 'bigint') return Number(value);
-  if (typeof value === 'number') return value;
+  if (typeof value === 'string' && !!value) {
+    return Number(value);
+  }
+  if (typeof value === 'bigint') {
+    return Number(value);
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
   return undefined;
 }
