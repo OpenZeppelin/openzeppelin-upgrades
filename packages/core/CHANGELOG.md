@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.32.2 (2023-12-21)
 
 - Fix manifest error when connecting to an Anvil dev network. ([#950](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/950))
 
