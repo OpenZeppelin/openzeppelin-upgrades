@@ -58,7 +58,6 @@ async function getDevInstanceMetadata(
   chainId: number,
 ): Promise<DevInstanceMetadata | undefined> {
   let networkMetadata: HardhatMetadata;
-
   let networkType: DevNetworkType;
   try {
     networkMetadata = await getAnvilMetadata(provider);
