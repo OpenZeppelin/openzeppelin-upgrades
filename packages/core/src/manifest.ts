@@ -1,7 +1,14 @@
 import os from 'os';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { EthereumProvider, getChainId, getHardhatMetadata, networkNames } from './provider';
+import {
+  EthereumProvider,
+  HardhatMetadata,
+  getAnvilMetadata,
+  getChainId,
+  getHardhatMetadata,
+  networkNames,
+} from './provider';
 import lockfile from 'proper-lockfile';
 import { compare as compareVersions } from 'compare-versions';
 
@@ -44,28 +51,36 @@ function defaultManifest(): ManifestData {
 const MANIFEST_DEFAULT_DIR = '.openzeppelin';
 const MANIFEST_TEMP_DIR = 'openzeppelin-upgrades';
 
+type DevNetworkType = 'hardhat' | 'anvil';
+
 async function getDevInstanceMetadata(
   provider: EthereumProvider,
   chainId: number,
 ): Promise<DevInstanceMetadata | undefined> {
-  let hardhatMetadata;
-
+  let networkMetadata: HardhatMetadata;
+  let networkType: DevNetworkType;
   try {
-    hardhatMetadata = await getHardhatMetadata(provider);
+    networkMetadata = await getAnvilMetadata(provider);
+    networkType = 'anvil';
   } catch (e: unknown) {
-    return undefined;
+    try {
+      networkMetadata = await getHardhatMetadata(provider);
+      networkType = 'hardhat';
+    } catch (e: unknown) {
+      return undefined;
+    }
   }
 
-  if (hardhatMetadata.chainId !== chainId) {
+  if (networkMetadata.chainId !== chainId) {
     throw new Error(
-      `Broken invariant: Hardhat metadata's chainId ${hardhatMetadata.chainId} does not match eth_chainId ${chainId}`,
+      `Broken invariant: Hardhat or Anvil metadata's chainId ${networkMetadata.chainId} does not match eth_chainId ${chainId}`,
     );
   }
 
   return {
-    networkName: 'hardhat',
-    instanceId: hardhatMetadata.instanceId,
-    forkedNetwork: hardhatMetadata.forkedNetwork,
+    networkName: networkType,
+    instanceId: networkMetadata.instanceId,
+    forkedNetwork: networkMetadata.forkedNetwork,
   };
 }
 
@@ -83,7 +98,7 @@ interface DevInstanceMetadata {
   forkedNetwork?: {
     // The chainId of the network that is being forked
     chainId: number;
-  };
+  } | null;
 }
 
 export class Manifest {
@@ -129,7 +144,7 @@ export class Manifest {
       }
       debug('development manifest file:', this.file, 'fallback file:', this.fallbackFile);
 
-      if (devInstanceMetadata.forkedNetwork !== undefined) {
+      if (devInstanceMetadata.forkedNetwork) {
         const forkedChainId = devInstanceMetadata.forkedNetwork.chainId;
         debug('forked network chain id:', forkedChainId);
 

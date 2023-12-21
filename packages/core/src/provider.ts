@@ -1,4 +1,5 @@
 export interface EthereumProvider {
+  send(method: 'anvil_metadata', params: []): Promise<HardhatMetadata>;
   send(method: 'hardhat_metadata', params: []): Promise<HardhatMetadata>;
   send(method: 'web3_clientVersion', params: []): Promise<string>;
   send(method: 'net_version', params: []): Promise<string>;
@@ -12,13 +13,14 @@ export interface EthereumProvider {
   send(method: string, params: unknown[]): Promise<unknown>;
 }
 
-interface HardhatMetadata {
+export interface HardhatMetadata {
+  clientVersion: string;
   chainId: number;
   instanceId: string;
   forkedNetwork?: {
     // The chainId of the network that is being forked
     chainId: number;
-  };
+  } | null;
 }
 
 interface EthereumTransaction {
@@ -55,6 +57,13 @@ export async function getClientVersion(provider: EthereumProvider): Promise<stri
  */
 export async function getHardhatMetadata(provider: EthereumProvider): Promise<HardhatMetadata> {
   return provider.send('hardhat_metadata', []);
+}
+
+/**
+ * Anvil could have anvil_metadata, for which hardhat_metadata is an alias.
+ */
+export async function getAnvilMetadata(provider: EthereumProvider): Promise<HardhatMetadata> {
+  return provider.send('anvil_metadata', []);
 }
 
 export async function getStorageAt(
