@@ -1,9 +1,9 @@
 * xref:index.adoc[Overview]
 * xref:hardhat-upgrades.adoc[Using with Hardhat]
 ** xref:defender-deploy.adoc[OpenZeppelin Defender integration]
+** xref:network-files.adoc[Network Files]
 * xref:writing-upgradeable.adoc[Writing Upgradeable Contracts]
 * xref:proxies.adoc[Proxy Upgrade Pattern]
-* xref:network-files.adoc[Network Files]
 * xref:faq.adoc[Frequently Asked Questions]
 
 .API Reference
