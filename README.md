@@ -3,7 +3,7 @@
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins)
 [![Coverage Status](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades/graph/badge.svg)](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades)
 
-**Integrate upgrades into your existing workflow.** Plugins for [Hardhat](https://hardhat.org/) and [Foundry](https://github.com/foundry-rs/foundry) to deploy and manage upgradeable contracts on Ethereum.
+**Integrate upgrades into your existing workflow.** Plugins for [Hardhat](https://hardhat.org/) and [Foundry](https://book.getfoundry.sh/) to deploy and manage upgradeable contracts on Ethereum.
 
 - Deploy upgradeable contracts.
 - Upgrade deployed contracts.
