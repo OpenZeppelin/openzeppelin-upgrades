@@ -453,7 +453,7 @@ contract Base {
 }
 ----
 
-To help determine the proper storage gap size in the new version of your contract, you can simply attempt an upgrade using `upgradeProxy` or just run the validations with `validateUpgrade` (see docs for xref:api-hardhat-upgrades.adoc[Hardhat] or xref:api-truffle-upgrades.adoc[Truffle]). If a storage gap is not being reduced properly, you will see an error message indicating the expected size of the storage gap.
+To help determine the proper storage gap size in the new version of your contract, you can simply attempt an upgrade using `upgradeProxy` or just run the validations with `validateUpgrade` (see docs for xref:api-hardhat-upgrades.adoc[Hardhat Upgrades] or xref:api-foundry-upgrades.adoc[Foundry Upgrades]). If a storage gap is not being reduced properly, you will see an error message indicating the expected size of the storage gap.
 
 [[namespaced-storage-layout]]
 === Namespaced Storage Layout

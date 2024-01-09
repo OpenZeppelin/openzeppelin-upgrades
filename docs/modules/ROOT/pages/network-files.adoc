@@ -1,6 +1,6 @@
 = Network Files
 
-OpenZeppelin Upgrades keep track of all the contract versions you have deployed in an `.openzeppelin` folder in the project root. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
+OpenZeppelin Hardhat Upgrades keep track of all the contract versions you have deployed in an `.openzeppelin` folder in the project root. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
 
 NOTE: The format of the files within the `.openzeppelin` folder is not compatible with those of the xref:cli::index.adoc[OpenZeppelin CLI]. If you want to use these plugins for an existing OpenZeppelin CLI project, you have to migrate it first. See xref:migrate-from-cli.adoc[Migrate from CLI] for instructions.
 
@@ -8,7 +8,7 @@ NOTE: The format of the files within the `.openzeppelin` folder is not compatibl
 [[network.json]]
 == `<network_name>.json`
 
-OpenZeppelin Upgrades will generate a file for each of the networks you work on (`ropsten`, `mainnet`, etc). These files share the same structure:
+OpenZeppelin Hardhat Upgrades will generate a file for each of the networks you work on (`mainnet`, `sepolia`, etc.). These files share the same structure:
 
 [source,json]
 ----
@@ -41,30 +41,21 @@ For every logic contract, besides the deployment address, the following info is 
 * `types` keeps track of all the types used in the contract or its ancestors, from basic types like `uint256` to custom `struct` types
 * `storage` tracks the storage layout of the linearized contract, referencing the types defined in the `types` section, and is used for verifying that any xref:faq.adoc#what-does-it-mean-for-an-implementation-to-be-compatible[storage layout changes between subsequent versions are compatible] 
 
-The naming of the file will be `<network_name>.json`, but note that `<network_name>` is not taken from the name of the network's entry in the Truffle or Hardhat configuration file, but is instead inferred from the chain id associated to the entry. 
+The naming of the file will be `<network_name>.json`, but note that `<network_name>` is not taken from the name of the network's entry in the Hardhat configuration file, but is instead inferred from the chain id associated to the entry.
 
 There is a limited set of public chains; Chains not on the list such as Ethereum Classic will have network files named `unknown-<chain_id>.json`.
 
 [[configuration-files-in-version-control]]
 == Configuration Files in Version Control
 
-Public network files like `mainnet.json` or `ropsten.json` should be tracked in version control. These contain valuable information about your project's status in the corresponding network, like the addresses of the contract versions that have been deployed. Such files should be identical for all the contributors of a project.
+Public network files like `mainnet.json` or `sepolia.json` should be tracked in version control. These contain valuable information about your project's status in the corresponding network, like the addresses of the contract versions that have been deployed. Such files should be identical for all the contributors of a project.
 
-However, local network files like `unknown-<chain_id>.json` only represent a project's deployment in a temporary local network such as `ganache-cli` that are only relevant to a single contributor of the project and should not be tracked in version control.
-
-An example `.gitignore` file could contain the following entries:
-
-[source,json]
-----
-// .gitignore
-# OpenZeppelin
-.openzeppelin/unknown-*.json
-----
+Network files may also appear as `unknown-<chain_id>.json` if the network name is not known to the Hardhat plugin. If the chain ID corresponds to a public network, then it should also be tracked in version control. However, if the chain ID is for a temporary local network such as a development network, then it is only relevant to a single contributor of the project and should not be tracked in version control.
 
 [[temporary-files]]
 == Temporary Files
 
-Hardhat development networks using Hardhat version 2.12.3 or later will have network files written to an `openzeppelin-upgrades` folder under the operating system's temporary directory. These files are named `hardhat-<chain_id>-<instance_id>.json`, where `<instance_id>` is a 0x-prefixed hex id that uniquely identifies an instance/run of the Hardhat network. Files in this temporary folder can be safely deleted when their corresponding Hardhat network instance is no longer active, for example after Hardhat tests have finished.
+Hardhat development networks using Hardhat version 2.12.3 or later, and Anvil development networks connected from Hardhat, will have network files written to an `openzeppelin-upgrades` folder under the operating system's temporary directory. These files are named `hardhat-<chain_id>-<instance_id>.json` or `anvil-<chain_id>-<instance_id>.json`, where `<instance_id>` is a 0x-prefixed hex id that uniquely identifies an instance/run of the Hardhat or Anvil network. Files in this temporary folder can be safely deleted when their corresponding Hardhat or Anvil network instance is no longer active, for example after testing is finished.
 
 You can determine the location of a temporary network file by doing the following:
 

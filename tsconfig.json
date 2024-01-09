@@ -1,8 +1,7 @@
 {
   "references": [
     { "path": "packages/core" },
-    { "path": "packages/plugin-hardhat" },
-    { "path": "packages/plugin-truffle" }
+    { "path": "packages/plugin-hardhat" }
   ],
   "files": []
 }

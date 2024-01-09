@@ -3,7 +3,7 @@
 ## 1.21.0 (2023-09-27)
 
 > **Warning**
-> This package is deprecated. The recommended alternative is to use [Hardhat](https://hardhat.org/) along with the [Hardhat Upgrades](https://docs.openzeppelin.com/upgrades-plugins/hardhat-upgrades) plugin.
+> This package is deprecated. Use [Hardhat](https://hardhat.org/) and [Hardhat Upgrades](https://docs.openzeppelin.com/upgrades-plugins/hardhat-upgrades), or [Foundry](https://github.com/foundry-rs/foundry) and [Foundry Upgrades](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades).
 
 - Add validations for namespaced storage layout. ([#876](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/876))
 

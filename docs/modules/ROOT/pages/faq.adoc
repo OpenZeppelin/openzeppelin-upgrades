@@ -210,13 +210,6 @@ Past versions of the plugins did not support upgradeable contracts that used cus
 
 Some users who have already deployed proxies with structs and/or enums and who need to upgrade those proxies may need to use the override flag `unsafeAllowCustomTypes` for their next upgrade, after which it will no longer be necessary. If the project contains the source code for the implementation currently in use by the proxy, the plugin will attempt to recover the metadata that it needs before the upgrade, falling back to the override flag if this is not possible.
 
-[[why-do-i-have-to-recompile-all-contracts-for-truffle]]
-== Why do I have to recompile all contracts for Truffle?
-
-Truffle artifacts (the JSON files in `build/contracts`) contain the AST (abstract syntax tree) for each of your contracts. Our plugin uses this information to validate that your contracts are <<what-does-it-mean-for-a-contract-to-be-upgrade-safe, upgrade safe>>.
-
-Truffle sometimes partially recompiles only the contracts that have changed. We will ask you to trigger a full recompilation either using `truffle compile --all` or deleting the `build/contracts` directory when this happens. The technical reason is that since Solidity does not produce deterministic ASTs, the plugins are unable to resolve references correctly if they are not from the same compiler run.
-
 [[how-to-rename]]
 == How can I rename a variable, or change its type?
 
