@@ -17,7 +17,7 @@ export async function callEtherscanApi(etherscan: Etherscan, params: any): Promi
   const parameters = { ...params, apikey: etherscan.apiKey };
   const response = await request(etherscan.apiUrl, {
     method: 'POST',
-    query: parameters
+    query: parameters,
   });
 
   if (!(response.statusCode >= 200 && response.statusCode <= 299)) {
