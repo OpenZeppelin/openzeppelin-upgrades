@@ -1,0 +1,5 @@
+= OpenZeppelin Foundry Upgrades API
+
+See the https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades[OpenZeppelin Foundry Upgrades] repository on GitHub for general usage information.
+
+See the function documentation in https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/Upgrades.sol[Upgrades.sol] for API reference.

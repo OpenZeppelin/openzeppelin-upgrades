@@ -2,10 +2,12 @@
 * xref:hardhat-upgrades.adoc[Using with Hardhat]
 ** xref:defender-deploy.adoc[OpenZeppelin Defender integration]
 ** xref:network-files.adoc[Network Files]
+* xref:foundry-upgrades.adoc[Using with Foundry]
 * xref:writing-upgradeable.adoc[Writing Upgradeable Contracts]
 * xref:proxies.adoc[Proxy Upgrade Pattern]
 * xref:faq.adoc[Frequently Asked Questions]
 
 .API Reference
 * xref:api-hardhat-upgrades.adoc[Hardhat Upgrades]
+* xref:api-foundry-upgrades.adoc[Foundry Upgrades]
 * xref:api-core.adoc[Upgrades Core & CLI]
