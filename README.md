@@ -10,72 +10,12 @@
 - Manage proxy admin rights.
 - Easily use in tests.
 
-## Installation
-
-### Hardhat
-
-```
-npm install --save-dev @openzeppelin/hardhat-upgrades
-npm install --save-dev @nomicfoundation/hardhat-ethers ethers # peer dependencies
-```
-
-```js
-// hardhat.config.js
-require('@openzeppelin/hardhat-upgrades');
-```
-
-### Foundry
-
-```
-forge install OpenZeppelin/openzeppelin-foundry-upgrades
-forge install OpenZeppelin/openzeppelin-contracts-upgradeable
-```
-
-Set the following in `remappings.txt`, replacing any previous definitions of these remappings:
-```
-@openzeppelin/contracts/=lib/openzeppelin-contracts-upgradeable/lib/openzeppelin-contracts/contracts/
-@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
-```
-
-## Usage
+## Installation and Usage
 
 See the documentation for each plugin:
 
-| [Hardhat](./packages/plugin-hardhat/README.md)| [Foundry](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades) |
+| [Hardhat Upgrades](./packages/plugin-hardhat/README.md)| [Foundry Upgrades](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades) |
 |-|-|
-
-You can write [Hardhat scripts](https://hardhat.org/guides/scripts.html) or [Forge scripts](https://book.getfoundry.sh/tutorials/solidity-scripting) that use the plugin to deploy or upgrade a contract.
-
-For example, with Hardhat:
-
-```js
-const { ethers, upgrades } = require("hardhat");
-
-async function main() {
-  // Deploying
-  const Box = await ethers.getContractFactory("Box");
-  const instance = await upgrades.deployProxy(Box, [42]);
-  await instance.waitForDeployment();
-
-  // Upgrading
-  const BoxV2 = await ethers.getContractFactory("BoxV2");
-  const upgraded = await upgrades.upgradeProxy(await instance.getAddress(), BoxV2);
-}
-
-main();
-```
-
-You can use the plugin in your tests to ensure everything works as expected.
-
-```js
-it('works before and after upgrading', async function () {
-  const instance = await upgrades.deployProxy(Box, [42]);
-  assert.strictEqual(await instance.retrieve(), 42);
-  
-  await upgrades.upgradeProxy(instance, BoxV2);
-  assert.strictEqual(await instance.retrieve(), 42);
-});
-```
 
 ## How do the plugins work?
 
