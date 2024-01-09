@@ -14,7 +14,7 @@
 
 See the documentation for each plugin:
 
-| [Hardhat Upgrades](./packages/plugin-hardhat/README.md)| [Foundry Upgrades](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades) |
+| [<img src="assets/hardhat.svg" height="20px" width="30px" alt="">Hardhat](./packages/plugin-hardhat/README.md)| [<img src="https://avatars.githubusercontent.com/u/99892494?s=20&v=4" height="20px" width="20px" alt=""> Foundry](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades) |
 |-|-|
 
 ## How do the plugins work?
