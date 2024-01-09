@@ -712,7 +712,7 @@ Silences all subsequent warnings about the use of unsafe flags. Prints a last wa
 [[verify]]
 == verify
 
-Extends https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-verify[hardhat-verify]'s `verify` task to completely verify a proxy on Etherscan.  This supports verifying proxy contracts that were deployed by the Hardhat Upgrades or Truffle Upgrades plugin.
+Extends https://hardhat.org/hardhat-runner/plugins/nomicfoundation-hardhat-verify[hardhat-verify]'s `verify` task to completely verify a proxy on Etherscan.  This supports verifying proxy contracts that were deployed by the Hardhat Upgrades plugin.
 
 The arguments are the same as for hardhat-verify's `verify` task.  If the provided address is a proxy, this task will verify the proxy's implementation contract, the proxy itself and any proxy-related contracts, as well as link the proxy to the implementation contract's ABI on Etherscan.  If the provided address is not a proxy, the regular `verify` task from hardhat-verify will be run on the address instead.
 

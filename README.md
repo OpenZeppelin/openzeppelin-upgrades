@@ -45,7 +45,7 @@ The Foundry plugin does not keep track of implementation contracts, but requires
 
 The plugins support the UUPS, transparent, and beacon proxy patterns. UUPS and transparent proxies are upgraded individually, whereas any number of beacon proxies can be upgraded atomically at the same time by upgrading the beacon that they point to. For more details on the different proxy patterns available, see the documentation for [Proxies](https://docs.openzeppelin.com/contracts/api/proxy).
 
-For UUPS and transparent proxies, use `deployProxy` and `upgradeProxy` as shown above. For beacon proxies, use `deployBeacon`, `deployBeaconProxy`, and `upgradeBeacon`. See the documentation for [Hardhat Upgrades](./packages/plugin-hardhat/README.md) and [Foundry Upgrades](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades) for examples.
+For UUPS and transparent proxies, use `deployProxy` and `upgradeProxy`. For beacon proxies, use `deployBeacon`, `deployBeaconProxy`, and `upgradeBeacon`. See the documentation for [Hardhat Upgrades](./packages/plugin-hardhat/README.md) and [Foundry Upgrades](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades) for examples.
 
 ## Managing ownership
 
