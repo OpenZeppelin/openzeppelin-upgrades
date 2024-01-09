@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support proxy verification on Snowtrace. ([#954](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/954))
+
 ## 3.0.1 (2023-12-20)
 
 - Update dependency on undici. ([#948](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/948))

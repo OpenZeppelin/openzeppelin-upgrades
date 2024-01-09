@@ -14,12 +14,10 @@ import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
  * @returns The Etherscan API response
  */
 export async function callEtherscanApi(etherscan: Etherscan, params: any): Promise<EtherscanResponseBody> {
-  const parameters = new URLSearchParams({ ...params, apikey: etherscan.apiKey });
-
+  const parameters = { ...params, apikey: etherscan.apiKey };
   const response = await request(etherscan.apiUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: parameters.toString(),
+    query: parameters,
   });
 
   if (!(response.statusCode >= 200 && response.statusCode <= 299)) {
