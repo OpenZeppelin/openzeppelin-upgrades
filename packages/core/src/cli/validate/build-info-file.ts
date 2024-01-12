@@ -150,9 +150,20 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
   return buildInfoFiles;
 }
 
-function hasStorageLayoutSetting(buildInfoJson: any) {
+function hasStorageLayoutSetting(buildInfoJson: any): boolean {
   const o = buildInfoJson.input.settings?.outputSelection;
-  return o?.['*']?.['*'] && (o['*']['*'].includes('storageLayout') || o['*']['*'].includes('*'));
+
+  return Object.keys(o).every((item: any) => {
+    if (o[item][''].length === 0 && o[item]['*'].length === 0) {
+      // No outputs at all for this contract e.g. if there were no changes since the last compile in Foundry.
+      // This is fine, we can skip this contract since it should exist (and have storageLayout) in an earlier build info file.
+      return true;
+    } else if (o[item]['*'].length > 0 && o[item]['*'].includes('storageLayout')) {
+      return true;
+    } else {
+      return false;
+    }
+  });
 }
 
 async function readJSON(path: string) {
