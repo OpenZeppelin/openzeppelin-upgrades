@@ -150,8 +150,7 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
 }
 
 /**
- * Checks if the build info file's output selection contains storage layout for all contracts,
- * and that there are no empty output selections for any contracts.
+ * Gives an error if there is empty output selection for any contract, or a contract does not have storage layout.
  */
 function checkOutputSelection(buildInfoJson: any, buildInfoFilePath: string) {
   const o = buildInfoJson.input.settings?.outputSelection;
