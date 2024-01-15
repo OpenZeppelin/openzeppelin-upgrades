@@ -133,7 +133,7 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
         `Build info file ${buildInfoFilePath} must contain Solidity compiler input, output, and solcVersion.`,
       );
     } else {
-      if (!hasStorageLayoutSetting(buildInfoJson)) {
+      if (!hasStorageLayoutSettings(buildInfoJson)) {
         throw new ValidateCommandError(
           `Build info file ${buildInfoFilePath} does not contain storage layout.`,
           () => STORAGE_LAYOUT_HELP,
@@ -150,11 +150,18 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
   return buildInfoFiles;
 }
 
-function hasStorageLayoutSetting(buildInfoJson: any): boolean {
+/**
+ * Checks if the build info file contains storage layout settings for all contracts that have outputs.
+ *
+ * @param buildInfoJson Build info JSON object.
+ * @returns True if the build info file contains storage layout settings for all contracts that have outputs
+ *  (note this is vacuously true even if there are no outputs), false otherwise.
+ */
+function hasStorageLayoutSettings(buildInfoJson: any): boolean {
   const o = buildInfoJson.input.settings?.outputSelection;
 
   return Object.keys(o).every((item: any) => {
-    if (o[item][''].length === 0 && o[item]['*'].length === 0) {
+    if ((o[item][''] === undefined || o[item][''].length === 0) && o[item]['*'].length === 0) {
       // No outputs at all for this contract e.g. if there were no changes since the last compile in Foundry.
       // This is fine, we can skip this contract since it should exist (and have storageLayout) in an earlier build info file.
       return true;
