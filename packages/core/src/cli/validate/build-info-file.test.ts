@@ -426,7 +426,7 @@ test.serial('individual output selections - partial compile', async t => {
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIAL_COMPILE));
 
   const error = await t.throwsAsync(getBuildInfoFiles(dir));
-  t.true(error?.message.includes('does not contain a full compilation'));
+  t.true(error?.message.includes('is not from a full compilation'));
 });
 
 test.serial('no output selection', async t => {
@@ -436,7 +436,7 @@ test.serial('no output selection', async t => {
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_NO_OUTPUT_SELECTION));
 
   const error = await t.throwsAsync(getBuildInfoFiles(dir));
-  t.true(error?.message.includes('does not contain a full compilation'));
+  t.true(error?.message.includes('is not from a full compilation'));
 });
 
 function assertBuildInfoFiles(t: ExecutionContext, buildInfoFiles: BuildInfoFile[]) {

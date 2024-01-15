@@ -160,7 +160,7 @@ function checkOutputSelection(buildInfoJson: any, buildInfoFilePath: string) {
       // No outputs at all for this contract e.g. if there were no changes since the last compile in Foundry.
       // This is not supported for now, since it leads to AST nodes that reference node ids in other build-info files.
       throw new ValidateCommandError(
-        `Build info file ${buildInfoFilePath} does not contain a full compilation.`,
+        `Build info file ${buildInfoFilePath} is not from a full compilation.`,
         () => PARTIAL_COMPILE_HELP,
       );
     } else if (!o[item]['*'].includes('storageLayout')) {
