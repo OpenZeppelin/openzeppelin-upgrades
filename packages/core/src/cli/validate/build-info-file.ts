@@ -168,7 +168,7 @@ function checkOutputSelection(buildInfoJson: any, buildInfoFilePath: string) {
       return true;
     } else {
       throw new ValidateCommandError(
-        `Build info file ${buildInfoFilePath} does not contain storage layout.`,
+        `Build info file ${buildInfoFilePath} does not contain storage layout for all contracts.`,
         () => STORAGE_LAYOUT_HELP,
       );
     }
