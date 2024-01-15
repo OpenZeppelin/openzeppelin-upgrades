@@ -134,7 +134,46 @@ const BUILD_INFO_INDIVIDUAL_NO_LAYOUT = {
   },
 };
 
-const BUILD_INFO_PARTIAL_NO_LAYOUT = {
+const BUILD_INFO_INDIVIDUAL_HAS_LAYOUT = {
+  solcVersion: '0.8.9',
+  input: {
+    language: 'Solidity',
+    sources: {
+      'mypath/MyContract.sol': {
+        content: 'contract MyContract {}',
+      },
+      'mypath/MyContractV2.sol': {
+        content: 'contract MyContractV2 {}',
+      },
+    },
+    settings: {
+      outputSelection: {
+        'mypath/MyContract.sol': {
+          '': ['ast'],
+          '*': ['abi', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers', 'metadata', 'storageLayout'],
+        },
+        'mypath/MyContractV2.sol': {
+          '': ['ast'],
+          '*': ['abi', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers', 'metadata', 'storageLayout'],
+        },
+      },
+    },
+  },
+  output: {
+    sources: {
+      'mypath/MyContract.sol': {
+        ast: {},
+        id: 123,
+      },
+      'mypath/MyContractV2.sol': {
+        ast: {},
+        id: 456,
+      },
+    },
+  },
+};
+
+const BUILD_INFO_PARTIAL_LAYOUT = {
   solcVersion: '0.8.9',
   input: {
     language: 'Solidity',
@@ -361,18 +400,27 @@ test.serial('individual output selections - no layout', async t => {
   t.true(error?.message.includes('does not contain storage layout'));
 });
 
-test.serial('individual output selections - partially no layout', async t => {
-  const dir = 'partial-no-layout';
+test.serial('individual output selections - has layout', async t => {
+  const dir = 'individual-has-layout';
 
   await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIAL_NO_LAYOUT));
+  await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_INDIVIDUAL_HAS_LAYOUT));
+
+  t.assert((await getBuildInfoFiles(dir)).length === 1);
+});
+
+test.serial('individual output selections - partial layout', async t => {
+  const dir = 'partial-layout';
+
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIAL_LAYOUT));
 
   const error = await t.throwsAsync(getBuildInfoFiles(dir));
   t.true(error?.message.includes('does not contain storage layout'));
 });
 
-test.serial('individual output selections - partially compiled', async t => {
-  const dir = 'partial-compile-layout';
+test.serial('individual output selections - partial compile', async t => {
+  const dir = 'partial-compile';
 
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIAL_COMPILE));
