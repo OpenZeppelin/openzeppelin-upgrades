@@ -26,6 +26,10 @@ If using Foundry, include the "storageLayout" extra output in foundry.toml:
   build_info = true
   extra_output = ["storageLayout"]
 Then recompile your contracts with '${FOUNDRY_COMPILE_COMMAND}' and try again.`;
+const PARTIAL_COMPILE_HELP = `\
+Recompile all contracts with one of the following commands and try again:
+If using Hardhat: ${HARDHAT_COMPILE_COMMAND}
+If using Foundry: ${FOUNDRY_COMPILE_COMMAND}`;
 
 /**
  * A build info file containing Solidity compiler input and output JSON objects.
@@ -133,12 +137,7 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
         `Build info file ${buildInfoFilePath} must contain Solidity compiler input, output, and solcVersion.`,
       );
     } else {
-      if (!hasStorageLayoutSettings(buildInfoJson)) {
-        throw new ValidateCommandError(
-          `Build info file ${buildInfoFilePath} does not contain storage layout.`,
-          () => STORAGE_LAYOUT_HELP,
-        );
-      }
+      checkOutputSelection(buildInfoJson, buildInfoFilePath);
 
       buildInfoFiles.push({
         input: buildInfoJson.input,
@@ -151,24 +150,27 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
 }
 
 /**
- * Checks if the build info file contains storage layout settings for all contracts that have outputs.
- *
- * @param buildInfoJson Build info JSON object.
- * @returns True if the build info file contains storage layout settings for all contracts that have outputs
- *  (note this is vacuously true even if there are no outputs), false otherwise.
+ * Checks if the build info file's output selection contains storage layout for all contracts,
+ * and that there are no empty output selections for any contracts.
  */
-function hasStorageLayoutSettings(buildInfoJson: any): boolean {
+function checkOutputSelection(buildInfoJson: any, buildInfoFilePath: string) {
   const o = buildInfoJson.input.settings?.outputSelection;
 
-  return Object.keys(o).every((item: any) => {
+  return Object.keys(o).forEach((item: any) => {
     if ((o[item][''] === undefined || o[item][''].length === 0) && o[item]['*'].length === 0) {
       // No outputs at all for this contract e.g. if there were no changes since the last compile in Foundry.
-      // This is fine, we can skip this contract since it should exist (and have storageLayout) in an earlier build info file.
-      return true;
+      // This is not supported for now, since it leads to AST nodes that reference node ids in other build-info files.
+      throw new ValidateCommandError(
+        `Build info file ${buildInfoFilePath} does not contain a full compilation.`,
+        () => PARTIAL_COMPILE_HELP,
+      );
     } else if (o[item]['*'].length > 0 && o[item]['*'].includes('storageLayout')) {
       return true;
     } else {
-      return false;
+      throw new ValidateCommandError(
+        `Build info file ${buildInfoFilePath} does not contain storage layout.`,
+        () => STORAGE_LAYOUT_HELP,
+      );
     }
   });
 }

@@ -134,7 +134,7 @@ const BUILD_INFO_INDIVIDUAL_NO_LAYOUT = {
   },
 };
 
-const BUILD_INFO_PARTIALLY_NO_LAYOUT = {
+const BUILD_INFO_PARTIAL_NO_LAYOUT = {
   solcVersion: '0.8.9',
   input: {
     language: 'Solidity',
@@ -173,7 +173,7 @@ const BUILD_INFO_PARTIALLY_NO_LAYOUT = {
   },
 };
 
-const BUILD_INFO_PARTIAL_COMPILE_LAYOUT_OK = {
+const BUILD_INFO_PARTIAL_COMPILE = {
   solcVersion: '0.8.9',
   input: {
     language: 'Solidity',
@@ -212,7 +212,7 @@ const BUILD_INFO_PARTIAL_COMPILE_LAYOUT_OK = {
   },
 };
 
-const BUILD_INFO_NO_OUTPUT_SELECTION_OK = {
+const BUILD_INFO_NO_OUTPUT_SELECTION = {
   solcVersion: '0.8.9',
   input: {
     language: 'Solidity',
@@ -365,30 +365,30 @@ test.serial('individual output selections - partially no layout', async t => {
   const dir = 'partial-no-layout';
 
   await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIALLY_NO_LAYOUT));
+  await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIAL_NO_LAYOUT));
 
   const error = await t.throwsAsync(getBuildInfoFiles(dir));
   t.true(error?.message.includes('does not contain storage layout'));
 });
 
-test.serial('individual output selections - partially compiled with layout - ok', async t => {
+test.serial('individual output selections - partially compiled', async t => {
   const dir = 'partial-compile-layout';
 
   await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIAL_COMPILE_LAYOUT_OK));
+  await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIAL_COMPILE));
 
-  // only some contracts were compiled, but those do have storage layout
-  t.assert((await getBuildInfoFiles(dir)).length > 0);
+  const error = await t.throwsAsync(getBuildInfoFiles(dir));
+  t.true(error?.message.includes('does not contain a full compilation'));
 });
 
-test.serial('no output selection - ok', async t => {
+test.serial('no output selection', async t => {
   const dir = 'no-output';
 
   await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_NO_OUTPUT_SELECTION_OK));
+  await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_NO_OUTPUT_SELECTION));
 
-  // should not give a storage layout error since there are no outputs
-  t.assert((await getBuildInfoFiles(dir)).length > 0);
+  const error = await t.throwsAsync(getBuildInfoFiles(dir));
+  t.true(error?.message.includes('does not contain a full compilation'));
 });
 
 function assertBuildInfoFiles(t: ExecutionContext, buildInfoFiles: BuildInfoFile[]) {
