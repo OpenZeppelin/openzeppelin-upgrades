@@ -164,9 +164,7 @@ function checkOutputSelection(buildInfoJson: any, buildInfoFilePath: string) {
         `Build info file ${buildInfoFilePath} does not contain a full compilation.`,
         () => PARTIAL_COMPILE_HELP,
       );
-    } else if (o[item]['*'].length > 0 && o[item]['*'].includes('storageLayout')) {
-      return true;
-    } else {
+    } else if (!o[item]['*'].includes('storageLayout')) {
       throw new ValidateCommandError(
         `Build info file ${buildInfoFilePath} does not contain storage layout for all contracts.`,
         () => STORAGE_LAYOUT_HELP,
