@@ -66,7 +66,7 @@ export type DefenderDeployOptions = DefenderDeploy & {
   createFactoryAddress?: string;
   libraries?: {
     [key: string]: string;
-  }
+  };
 };
 
 /**

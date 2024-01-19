@@ -456,13 +456,6 @@ test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPri
   assertResult(t, result);
 });
 
-async function deployLibrary(libraryName) {
-  const Library = await ethers.getContractFactory(libraryName);
-  const library = await Library.deploy();
-  await library.waitForDeployment();
-  return library;
-}
-
 test('calls defender deploy with external library', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
@@ -491,7 +484,7 @@ test('calls defender deploy with external library', async t => {
     txOverrides: undefined,
     libraries: {
       SafeMath: EXTERNAL_LIBRARY_ADDRESS,
-    }
+    },
   });
 
   assertResult(t, result);
