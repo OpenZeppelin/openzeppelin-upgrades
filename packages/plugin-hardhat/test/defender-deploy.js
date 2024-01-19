@@ -24,6 +24,7 @@ const CREATE_FACTORY = '0x0000000000000000000000000000000000000010';
 const LOGIC_ADDRESS = '0x0000000000000000000000000000000000000003';
 const INITIAL_OWNER_ADDRESS = '0x0000000000000000000000000000000000000004';
 const DATA = '0x05';
+const EXTERNAL_LIBRARY_ADDRESS = '0x0000000000000000000000000000000000000006';
 
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
@@ -102,6 +103,7 @@ test('calls defender deploy', async t => {
     salt: undefined,
     createFactoryAddress: undefined,
     txOverrides: undefined,
+    libraries: undefined,
   });
 
   assertResult(t, result);
@@ -129,6 +131,7 @@ test('calls defender deploy with relayerId', async t => {
     salt: undefined,
     createFactoryAddress: undefined,
     txOverrides: undefined,
+    libraries: undefined,
   });
 
   assertResult(t, result);
@@ -156,6 +159,7 @@ test('calls defender deploy with salt', async t => {
     salt: SALT,
     createFactoryAddress: undefined,
     txOverrides: undefined,
+    libraries: undefined,
   });
 
   assertResult(t, result);
@@ -183,6 +187,7 @@ test('calls defender deploy with createFactoryAddress', async t => {
     salt: undefined,
     createFactoryAddress: CREATE_FACTORY,
     txOverrides: undefined,
+    libraries: undefined,
   });
 
   assertResult(t, result);
@@ -210,6 +215,7 @@ test('calls defender deploy with license', async t => {
     salt: undefined,
     createFactoryAddress: undefined,
     txOverrides: undefined,
+    libraries: undefined,
   });
 
   assertResult(t, result);
@@ -237,6 +243,7 @@ test('calls defender deploy with constructor args', async t => {
     salt: undefined,
     createFactoryAddress: undefined,
     txOverrides: undefined,
+    libraries: undefined,
   });
 
   assertResult(t, result);
@@ -264,6 +271,7 @@ test('calls defender deploy with verify false', async t => {
     salt: undefined,
     createFactoryAddress: undefined,
     txOverrides: undefined,
+    libraries: undefined,
   });
 
   assertResult(t, result);
@@ -291,6 +299,7 @@ test('calls defender deploy with ERC1967Proxy', async t => {
     salt: undefined,
     createFactoryAddress: undefined,
     txOverrides: undefined,
+    libraries: undefined,
   });
 });
 
@@ -316,6 +325,7 @@ test('calls defender deploy with BeaconProxy', async t => {
     salt: undefined,
     createFactoryAddress: undefined,
     txOverrides: undefined,
+    libraries: undefined,
   });
 });
 
@@ -341,6 +351,7 @@ test('calls defender deploy with TransparentUpgradeableProxy', async t => {
     salt: undefined,
     createFactoryAddress: undefined,
     txOverrides: undefined,
+    libraries: undefined,
   });
 });
 
@@ -371,6 +382,7 @@ test('calls defender deploy with txOverrides.gasLimit', async t => {
       maxFeePerGas: undefined,
       maxPriorityFeePerGas: undefined,
     },
+    libraries: undefined,
   });
 
   assertResult(t, result);
@@ -403,6 +415,7 @@ test('calls defender deploy with txOverrides.gasPrice', async t => {
       maxFeePerGas: undefined,
       maxPriorityFeePerGas: undefined,
     },
+    libraries: undefined,
   });
 
   assertResult(t, result);
@@ -437,7 +450,79 @@ test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPri
       maxFeePerGas: '0x64',
       maxPriorityFeePerGas: '0xa',
     },
+    libraries: undefined,
   });
 
   assertResult(t, result);
+});
+
+async function deployLibrary(libraryName) {
+  const Library = await ethers.getContractFactory(libraryName);
+  const library = await Library.deploy();
+  await library.waitForDeployment();
+  return library;
+}
+
+test('calls defender deploy with external library', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Token.sol';
+  const contractName = 'TokenProxiable';
+
+  const libraries = {
+    SafeMath: EXTERNAL_LIBRARY_ADDRESS,
+  };
+
+  const factory = await ethers.getContractFactory(contractName, { libraries });
+  const result = await deploy.defenderDeploy(fakeHre, factory, { libraries });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'None',
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: {
+      SafeMath: EXTERNAL_LIBRARY_ADDRESS,
+    }
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy with precompiled artifact, ignores libraries option', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
+  const contractName = 'ERC1967Proxy';
+  const factory = await getProxyFactory(hre);
+
+  const libraries = {
+    SafeMath: EXTERNAL_LIBRARY_ADDRESS,
+  };
+
+  const result = await deploy.defenderDeploy(fakeHre, factory, { libraries }, LOGIC_ADDRESS, DATA);
+  assertResult(t, result);
+
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorInputs: [LOGIC_ADDRESS, DATA],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
 });

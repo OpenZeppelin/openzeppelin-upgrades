@@ -41,6 +41,7 @@ interface ContractInfo {
   sourceName: string;
   contractName: string;
   buildInfo: ReducedBuildInfo;
+  precompiledArtifact: boolean;
 }
 
 type CompilerOutputWithMetadata = CompilerOutputContract & {
@@ -85,6 +86,7 @@ export async function defenderDeploy(
     salt: opts.salt,
     createFactoryAddress: opts.createFactoryAddress,
     txOverrides: parseTxOverrides(opts.txOverrides),
+    libraries: contractInfo.precompiledArtifact ? undefined : opts.libraries, // precompiled artifacts (e.g. proxy contracts) don't have external libraries
   };
 
   let deploymentResponse: DeploymentResponse;
@@ -147,7 +149,7 @@ async function getContractInfo(
           const contractName = artifact.contractName;
           const buildInfo = artifactsBuildInfo;
           debug(`Proxy contract ${sourceName}:${contractName}`);
-          return { sourceName, contractName, buildInfo };
+          return { sourceName, contractName, buildInfo, precompiledArtifact: true };
         }
       }
     }
@@ -164,7 +166,7 @@ async function getContractInfo(
       () => `Run \`npx hardhat compile\``,
     );
   }
-  return { sourceName, contractName, buildInfo };
+  return { sourceName, contractName, buildInfo, precompiledArtifact: false };
 }
 
 /**
