@@ -32,7 +32,6 @@ The following options are common to some functions.
 * `verifySourceCode`: (`boolean`) When using OpenZeppelin Defender deployments, whether to verify source code on block explorers. Defaults to `true`.
 * `relayerId`: (`string`) When using OpenZeppelin Defender deployments, the ID of the relayer to use for the deployment. Defaults to the relayer configured for your deployment environment on Defender.
 * `salt`: (`string`) When using OpenZeppelin Defender deployments, deployments are performed using the CREATE2 opcode. Use this option to provide the salt for the deployment. Defaults to a random salt.
-* `libraries`: (`{ [key: string]: string }`) When using OpenZeppelin Defender deployments, if your contract uses externally linked libraries, use this to provide a map of library names to their addresses.
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -61,9 +60,6 @@ async function deployProxy(
     txOverrides?: ethers.Overrides,
     kind?: 'uups' | 'transparent',
     useDefenderDeploy?: boolean,
-    libraries?: {
-      [key: string]: string;
-    },
   },
 ): Promise<ethers.Contract>
 ----
@@ -308,9 +304,6 @@ async function deployImplementation(
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
     useDefenderDeploy?: boolean,
-    libraries?: {
-      [key: string]: string;
-    },
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -403,9 +396,6 @@ async function prepareUpgrade(
     getTxResponse?: boolean,
     kind?: 'uups' | 'transparent' | 'beacon',
     useDefenderDeploy?: boolean,
-    libraries?: {
-      [key: string]: string;
-    },
   },
 ): Promise<string | ethers.providers.TransactionResponse>
 ----
@@ -529,9 +519,6 @@ async function proposeUpgradeWithApproval(
     kind?: 'uups' | 'transparent' | 'beacon',
     useDefenderDeploy?: boolean,
     approvalProcessId?: string,
-    libraries?: {
-      [key: string]: string;
-    },
   },
 ): Promise<{
     proposalId: string,
