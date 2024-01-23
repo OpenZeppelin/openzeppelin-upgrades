@@ -41,7 +41,7 @@ interface ContractInfo {
   sourceName: string;
   contractName: string;
   buildInfo: ReducedBuildInfo;
-  precompiledArtifact: boolean;
+  libraries?: { [libraryName: string]: string };
 }
 
 type CompilerOutputWithMetadata = CompilerOutputContract & {
@@ -86,7 +86,7 @@ export async function defenderDeploy(
     salt: opts.salt,
     createFactoryAddress: opts.createFactoryAddress,
     txOverrides: parseTxOverrides(opts.txOverrides),
-    libraries: contractInfo.precompiledArtifact ? undefined : opts.libraries, // precompiled artifacts (e.g. proxy contracts) don't have external libraries
+    libraries: contractInfo.libraries,
   };
 
   let deploymentResponse: DeploymentResponse;
@@ -135,11 +135,34 @@ async function getContractInfo(
   opts: UpgradeOptions,
 ): Promise<ContractInfo> {
   let fullContractName;
+  let libraries: { [libraryName: string]: string } | undefined = undefined;
   try {
-    // Get fully qualified contract name from validations
+    // Get fully qualified contract name and link references from validations
     const deployData = await getDeployData(hre, factory, opts);
-    [fullContractName] = getContractNameAndRunValidation(deployData.validations, deployData.version);
+
+    let runValidation;
+    [fullContractName, runValidation] = getContractNameAndRunValidation(deployData.validations, deployData.version);
+
     debug(`Contract ${fullContractName}`);
+
+    // Get externally linked libraries
+    const linkReferences = runValidation[fullContractName].linkReferences;
+
+    for (const ref in linkReferences) {
+      const linkedBytes = factory.bytecode.slice(2);
+
+      const start = linkReferences[ref].start * 2;
+      const length = linkReferences[ref].length * 2;
+
+      const name = linkReferences[ref].name;
+      const addressBytes = linkedBytes.substring(start, start + length);
+
+      if (libraries === undefined) {
+        libraries = {};
+      }
+      libraries[name] = `0x${addressBytes}`;
+    }
+    debug(`Libraries: ${JSON.stringify(libraries, null, 2)}`);
   } catch (e) {
     if (e instanceof ContractSourceNotFoundError) {
       // Proxy contracts would not be found in the validations, so try to get these from the plugin's precompiled artifacts.
@@ -149,7 +172,7 @@ async function getContractInfo(
           const contractName = artifact.contractName;
           const buildInfo = artifactsBuildInfo;
           debug(`Proxy contract ${sourceName}:${contractName}`);
-          return { sourceName, contractName, buildInfo, precompiledArtifact: true };
+          return { sourceName, contractName, buildInfo };
         }
       }
     }
@@ -166,7 +189,8 @@ async function getContractInfo(
       () => `Run \`npx hardhat compile\``,
     );
   }
-  return { sourceName, contractName, buildInfo, precompiledArtifact: false };
+
+  return { sourceName, contractName, buildInfo, libraries };
 }
 
 /**

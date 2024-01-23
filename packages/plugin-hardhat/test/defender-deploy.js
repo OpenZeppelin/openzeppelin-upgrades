@@ -462,12 +462,12 @@ test('calls defender deploy with external library', async t => {
   const contractPath = 'contracts/Token.sol';
   const contractName = 'TokenProxiable';
 
-  const libraries = {
-    SafeMath: EXTERNAL_LIBRARY_ADDRESS,
-  };
-
-  const factory = await ethers.getContractFactory(contractName, { libraries });
-  const result = await deploy.defenderDeploy(fakeHre, factory, { libraries });
+  const factory = await ethers.getContractFactory(contractName, {
+    libraries: {
+      SafeMath: EXTERNAL_LIBRARY_ADDRESS,
+    },
+  });
+  const result = await deploy.defenderDeploy(fakeHre, factory, {});
 
   const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
   sinon.assert.calledWithExactly(spy, {
@@ -488,34 +488,4 @@ test('calls defender deploy with external library', async t => {
   });
 
   assertResult(t, result);
-});
-
-test('calls defender deploy with precompiled artifact, ignores libraries option', async t => {
-  const { spy, deploy, fakeHre, fakeChainId } = t.context;
-
-  const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
-  const contractName = 'ERC1967Proxy';
-  const factory = await getProxyFactory(hre);
-
-  const libraries = {
-    SafeMath: EXTERNAL_LIBRARY_ADDRESS,
-  };
-
-  const result = await deploy.defenderDeploy(fakeHre, factory, { libraries }, LOGIC_ADDRESS, DATA);
-  assertResult(t, result);
-
-  sinon.assert.calledWithExactly(spy, {
-    contractName: contractName,
-    contractPath: contractPath,
-    network: fakeChainId,
-    artifactPayload: JSON.stringify(artifactsBuildInfo),
-    licenseType: 'MIT',
-    constructorInputs: [LOGIC_ADDRESS, DATA],
-    verifySourceCode: true,
-    relayerId: undefined,
-    salt: undefined,
-    createFactoryAddress: undefined,
-    txOverrides: undefined,
-    libraries: undefined,
-  });
 });
