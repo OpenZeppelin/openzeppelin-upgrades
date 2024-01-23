@@ -135,7 +135,7 @@ The unstructured storage proxy mechanism doesn't safeguard against this situatio
 [[the-constructor-caveat]]
 == The Constructor Caveat
 
-In Solidity, code that is inside a constructor or part of a global variable declaration is not part of a deployed contract's runtime bytecode. This code is executed only once, when the contract instance is deployed. As a consequence of this, the code within a logic contract's constructor will never be executed in the context of the proxy's state. To rephrase, proxies are completely oblivious to the existence of constructors. It's simply as if they weren't there for the proxy.
+In Solidity, code that is inside a constructor or part of a global variable declaration is not part of a deployed contract's runtime bytecode. This code is executed only once, when the contract instance is deployed. As a consequence of this, the code within a logic contract's constructor will never be executed in the context of the proxy's state. To rephrase, proxies are completely oblivious to the storage trie changes that are performed by the constructor. It's simply as if they weren't there for the proxy. (Note that `immutable` variables can be reflected in a proxy contract but xref:faq.adoc#why-cant-i-use-immutable-variables[should be used with caution].)
 
 The problem is easily solved though. Logic contracts should move the code within the constructor to a regular 'initializer' function, and have this function be called whenever the proxy links to this logic contract. Special care needs to be taken with this initializer function so that it can only be called once, which is one of the properties of constructors in general programming.
 
