@@ -3,7 +3,12 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { DeploymentResponse, SourceCodeLicense, DeployContractRequest } from '@openzeppelin/defender-sdk-deploy-client';
+import {
+  DeploymentResponse,
+  SourceCodeLicense,
+  DeployContractRequest,
+  DeployRequestLibraries,
+} from '@openzeppelin/defender-sdk-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -41,7 +46,7 @@ interface ContractInfo {
   sourceName: string;
   contractName: string;
   buildInfo: ReducedBuildInfo;
-  libraries?: { [libraryName: string]: string };
+  libraries?: DeployRequestLibraries;
 }
 
 type CompilerOutputWithMetadata = CompilerOutputContract & {
@@ -134,20 +139,16 @@ async function getContractInfo(
   factory: ethers.ContractFactory,
   opts: UpgradeOptions,
 ): Promise<ContractInfo> {
-  let fullContractName;
-  let libraries: { [libraryName: string]: string } | undefined = undefined;
+  let fullContractName, runValidation;
+  let libraries: DeployRequestLibraries | undefined;
   try {
     // Get fully qualified contract name and link references from validations
     const deployData = await getDeployData(hre, factory, opts);
-
-    let runValidation;
     [fullContractName, runValidation] = getContractNameAndRunValidation(deployData.validations, deployData.version);
-
     debug(`Contract ${fullContractName}`);
 
     // Get externally linked libraries
     const linkReferences = runValidation[fullContractName].linkReferences;
-
     for (const ref in linkReferences) {
       const linkedBytes = factory.bytecode.slice(2);
 

@@ -64,9 +64,6 @@ export type DefenderDeployOptions = DefenderDeploy & {
   relayerId?: string;
   salt?: string;
   createFactoryAddress?: string;
-  libraries?: {
-    [key: string]: string;
-  };
 };
 
 /**
