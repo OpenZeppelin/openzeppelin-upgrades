@@ -24,7 +24,8 @@ const CREATE_FACTORY = '0x0000000000000000000000000000000000000010';
 const LOGIC_ADDRESS = '0x0000000000000000000000000000000000000003';
 const INITIAL_OWNER_ADDRESS = '0x0000000000000000000000000000000000000004';
 const DATA = '0x05';
-const EXTERNAL_LIBRARY_ADDRESS = '0x0000000000000000000000000000000000000006';
+const EXTERNAL_LIBRARY_ADDRESS = '0x1230000000000000000000000000000000000456';
+const EXTERNAL_LIBRARY_2_ADDRESS = '0xabc0000000000000000000000000000000000def';
 
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
@@ -484,6 +485,42 @@ test('calls defender deploy with external library', async t => {
     txOverrides: undefined,
     libraries: {
       SafeMath: EXTERNAL_LIBRARY_ADDRESS,
+    },
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy with multiple external libraries', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/MultipleExternalLibraries.sol';
+  const contractName = 'MultipleExternalLibraries';
+
+  const factory = await ethers.getContractFactory(contractName, {
+    libraries: {
+      SafeMath: EXTERNAL_LIBRARY_ADDRESS,
+      SafeMathV2: EXTERNAL_LIBRARY_2_ADDRESS,
+    },
+  });
+  const result = await deploy.defenderDeploy(fakeHre, factory, {});
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'None',
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: {
+      SafeMath: EXTERNAL_LIBRARY_ADDRESS,
+      SafeMathV2: EXTERNAL_LIBRARY_2_ADDRESS,
     },
   });
 
