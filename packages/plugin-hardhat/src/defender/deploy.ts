@@ -155,13 +155,13 @@ async function getContractInfo(
       const start = linkReferences[ref].start * 2;
       const length = linkReferences[ref].length * 2;
 
-      const name = linkReferences[ref].name;
+      const fullyQualifiedName = `${linkReferences[ref].src}:${linkReferences[ref].name}`;
       const addressBytes = linkedBytes.substring(start, start + length);
 
       if (libraries === undefined) {
         libraries = {};
       }
-      libraries[name] = `0x${addressBytes}`;
+      libraries[fullyQualifiedName] = `0x${addressBytes}`;
     }
     debug(`Libraries: ${JSON.stringify(libraries, null, 2)}`);
   } catch (e) {

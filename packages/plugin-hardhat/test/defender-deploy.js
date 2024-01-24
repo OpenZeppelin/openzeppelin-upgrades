@@ -484,7 +484,7 @@ test('calls defender deploy with external library', async t => {
     createFactoryAddress: undefined,
     txOverrides: undefined,
     libraries: {
-      SafeMath: EXTERNAL_LIBRARY_ADDRESS,
+      'contracts/ExternalLibraries.sol:SafeMath': EXTERNAL_LIBRARY_ADDRESS,
     },
   });
 
@@ -519,8 +519,8 @@ test('calls defender deploy with multiple external libraries', async t => {
     createFactoryAddress: undefined,
     txOverrides: undefined,
     libraries: {
-      SafeMath: EXTERNAL_LIBRARY_ADDRESS,
-      SafeMathV2: EXTERNAL_LIBRARY_2_ADDRESS,
+      'contracts/ExternalLibraries.sol:SafeMath': EXTERNAL_LIBRARY_ADDRESS,
+      'contracts/ExternalLibraries.sol:SafeMathV2': EXTERNAL_LIBRARY_2_ADDRESS,
     },
   });
 
