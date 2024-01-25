@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support externally linked libraries for Defender deployments. ([#960](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/960))
+
 ## 3.0.2 (2024-01-09)
 
 - Support proxy verification on Snowtrace. ([#954](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/954))
