@@ -1,7 +1,7 @@
 import type { ethers, ContractFactory } from 'ethers';
 import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from 'hardhat/types';
 
-import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
+import { getFullyQualifiedName, parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
 import {
   DeploymentResponse,
@@ -155,13 +155,13 @@ async function getContractInfo(
       const start = linkReferences[ref].start * 2;
       const length = linkReferences[ref].length * 2;
 
-      const fullyQualifiedName = `${linkReferences[ref].src}:${linkReferences[ref].name}`;
-      const addressBytes = linkedBytes.substring(start, start + length);
+      const linkFullyQualifiedName = getFullyQualifiedName(linkReferences[ref].src, linkReferences[ref].name);
+      const linkAddress = `0x${linkedBytes.substring(start, start + length)}`;
 
       if (libraries === undefined) {
         libraries = {};
       }
-      libraries[fullyQualifiedName] = `0x${addressBytes}`;
+      libraries[linkFullyQualifiedName] = linkAddress;
     }
     debug(`Libraries: ${JSON.stringify(libraries, null, 2)}`);
   } catch (e) {
