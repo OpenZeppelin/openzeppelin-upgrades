@@ -158,9 +158,7 @@ async function getContractInfo(
       const linkFullyQualifiedName = getFullyQualifiedName(linkReferences[ref].src, linkReferences[ref].name);
       const linkAddress = `0x${linkedBytes.substring(start, start + length)}`;
 
-      if (libraries === undefined) {
-        libraries = {};
-      }
+      libraries ??= {};
       libraries[linkFullyQualifiedName] = linkAddress;
     }
     debug(`Libraries: ${JSON.stringify(libraries, null, 2)}`);
