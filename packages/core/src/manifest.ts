@@ -229,16 +229,18 @@ export class Manifest {
   }
 
   private async writeFile(content: string): Promise<void> {
-    await this.renameFileIfRequired();
+    await this.moveFileIfRequired();
     await fs.writeFile(this.file, content);
   }
 
-  private async renameFileIfRequired() {
+  private async moveFileIfRequired() {
     if (this.file !== this.fallbackFile && (await this.exists(this.fallbackFile))) {
       try {
-        await fs.rename(this.fallbackFile, this.file);
+        // copy and delete instead of rename to work across filesystems
+        await fs.copyFile(this.fallbackFile, this.file);
+        await fs.unlink(this.fallbackFile);
       } catch (e: any) {
-        throw new Error(`Failed to rename network file from ${this.fallbackFile} to ${this.file}: ${e.message}`);
+        throw new Error(`Failed to move network file from ${this.fallbackFile} to ${this.file}: ${e.message}`);
       }
     }
   }
