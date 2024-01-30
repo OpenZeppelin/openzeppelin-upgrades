@@ -4,6 +4,7 @@
 
 - Add support for OP Sepolia to manifest file names. ([#963](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/963))
 - Add support for Base networks to manifest file names. ([#965](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/965))
+- Fix error when renaming network file and using a separate filesystem. ([#964](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/964))
 
 ## 1.32.3 (2024-01-16)
 
