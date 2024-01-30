@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix error when renaming network file and using a separate filesystem. ([#964](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/964))
+
 ## 1.32.3 (2024-01-16)
 
 - CLI: Improve checks for build info file settings. ([#958](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/958))
