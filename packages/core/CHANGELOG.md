@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for OP Sepolia to manifest file names. ([#963](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/963))
+
 ## 1.32.3 (2024-01-16)
 
 - CLI: Improve checks for build info file settings. ([#958](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/958))
