@@ -101,20 +101,26 @@ export async function defenderDeploy(
     }
   }
 
-  if (deploymentResponse.address === undefined) {
-    throw new UpgradesError(
-      `Deployment response with id ${deploymentResponse.deploymentId} does not include a contract address`,
-      () =>
-        'The Hardhat Upgrades plugin is not currently compatible with this type of deployment. Use a relayer for your default deploy approval process in Defender.',
-    );
-  }
+  // For EOA or Safe deployments, address and txHash are not known until the deployment is completed.
+  // In this case, prompt the user to submit the deployment in Defender, and wait for it to be completed.
+  if (deploymentResponse.address === undefined || deploymentResponse.txHash === undefined) {
+    console.log(`ACTION REQUIRED: Go to https://defender.openzeppelin.com/v2/#/deploy to submit the pending deployment with id ${deploymentResponse.deploymentId}.`);
+    console.log(`The process will continue automatically when the pending deployment is completed.`);
+    console.log(`Waiting for pending deployment...`);
 
-  if (deploymentResponse.txHash === undefined) {
-    throw new UpgradesError(
-      `Deployment response with id ${deploymentResponse.deploymentId} does not include a transaction hash`,
-      () =>
-        'The Hardhat Upgrades plugin is not currently compatible with this type of deployment. Use a relayer for your default deploy approval process in Defender.',
-    );
+    const pollInterval = opts.pollingInterval ?? 5e3;
+    while (deploymentResponse.address === undefined) {
+      debug(`Waiting for deployment id ${deploymentResponse.deploymentId} to return address and txHash...`);
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      deploymentResponse = await client.getDeployedContract(deploymentResponse.deploymentId);
+    }
+
+    if (deploymentResponse.txHash === undefined) {
+      throw new UpgradesError(
+        `Transaction hash not found for deployment id ${deploymentResponse.deploymentId} with address ${deploymentResponse.address}.`,
+        () => 'Please report this at https://zpl.in/upgrades/report and include the deployment id and address.',
+      );
+    }
   }
 
   const txResponse = (await hre.ethers.provider.getTransaction(deploymentResponse.txHash)) ?? undefined;
