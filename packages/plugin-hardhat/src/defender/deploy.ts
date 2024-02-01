@@ -104,9 +104,13 @@ export async function defenderDeploy(
   // For EOA or Safe deployments, address and txHash are not known until the deployment is completed.
   // In this case, prompt the user to submit the deployment in Defender, and wait for it to be completed.
   if (deploymentResponse.address === undefined || deploymentResponse.txHash === undefined) {
-    console.log(`ACTION REQUIRED: Go to https://defender.openzeppelin.com/v2/#/deploy to submit the pending deployment.`);
+    console.log(
+      `ACTION REQUIRED: Go to https://defender.openzeppelin.com/v2/#/deploy to submit the pending deployment.`,
+    );
     console.log(`The process will continue automatically when the pending deployment is completed.`);
-    console.log(`Waiting for pending deployment of contract ${contractInfo.contractName} with deployment id ${deploymentResponse.deploymentId}...`);
+    console.log(
+      `Waiting for pending deployment of contract ${contractInfo.contractName} with deployment id ${deploymentResponse.deploymentId}...`,
+    );
 
     const pollInterval = opts.pollingInterval ?? 5e3;
     while (deploymentResponse.address === undefined) {

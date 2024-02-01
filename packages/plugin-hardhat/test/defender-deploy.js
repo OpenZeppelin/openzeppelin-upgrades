@@ -441,3 +441,55 @@ test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPri
 
   assertResult(t, result);
 });
+
+test('waits until address and txHash are available', async t => {
+  const { fakeHre, fakeChainId } = t.context;
+
+  const contractName = 'Greeter';
+
+  const getDeployedContractStub = sinon.stub();
+  getDeployedContractStub.onFirstCall().returns({
+    deploymentId: DEPLOYMENT_ID,
+  });
+  getDeployedContractStub.onSecondCall().returns({
+    deploymentId: DEPLOYMENT_ID,
+    txHash: TX_HASH,
+    address: ADDRESS,
+  });
+
+  const defenderClientWaits = {
+    deployContract: () => {
+      return {
+        deploymentId: DEPLOYMENT_ID,
+      };
+    },
+    getDeployedContract: getDeployedContractStub,
+  };
+  const deployContractSpy = sinon.spy(defenderClientWaits, 'deployContract');
+
+  const deployPending = proxyquire('../dist/defender/deploy', {
+    './utils': {
+      ...require('../dist/defender/utils'),
+      getNetwork: () => fakeChainId,
+      getDeployClient: () => defenderClientWaits,
+    },
+    '../utils/etherscan-api': {
+      getEtherscanAPIConfig: () => {
+        return { key: ETHERSCAN_API_KEY };
+      },
+    },
+  });
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deployPending.defenderDeploy(fakeHre, factory, { pollingInterval: 1 }); // poll in 1 ms
+
+  t.is(deployContractSpy.callCount, 1);
+  t.is(getDeployedContractStub.callCount, 2);
+
+  t.deepEqual(result, {
+    address: ADDRESS,
+    txHash: TX_HASH,
+    deployTransaction: TX_RESPONSE,
+    remoteDeploymentId: DEPLOYMENT_ID,
+  });
+});
