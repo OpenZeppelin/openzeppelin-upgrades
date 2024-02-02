@@ -25,8 +25,6 @@ const LOGIC_ADDRESS = '0x0000000000000000000000000000000000000003';
 const INITIAL_OWNER_ADDRESS = '0x0000000000000000000000000000000000000004';
 const DATA = '0x05';
 
-const TRANSACTION_HASH_NOT_FOUND = 'Transaction hash not found';
-
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
 
@@ -444,11 +442,7 @@ test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPri
   assertResult(t, result);
 });
 
-test('waits until address and txHash are available', async t => {
-  const { fakeHre, fakeChainId } = t.context;
-
-  const contractName = 'Greeter';
-
+test('waits until address is available', async t => {
   const getDeployedContractStub = sinon.stub();
   getDeployedContractStub.onFirstCall().returns({
     deploymentId: DEPLOYMENT_ID,
@@ -456,8 +450,38 @@ test('waits until address and txHash are available', async t => {
   getDeployedContractStub.onSecondCall().returns({
     deploymentId: DEPLOYMENT_ID,
     txHash: TX_HASH,
+  });
+  getDeployedContractStub.onThirdCall().returns({
+    deploymentId: DEPLOYMENT_ID,
+    txHash: TX_HASH,
     address: ADDRESS,
   });
+
+  await testGetDeployedContractPolling(t, getDeployedContractStub, 3);
+});
+
+test('waits until txHash is available', async t => {
+  const getDeployedContractStub = sinon.stub();
+  getDeployedContractStub.onFirstCall().returns({
+    deploymentId: DEPLOYMENT_ID,
+  });
+  getDeployedContractStub.onSecondCall().returns({
+    deploymentId: DEPLOYMENT_ID,
+    address: ADDRESS,
+  });
+  getDeployedContractStub.onThirdCall().returns({
+    deploymentId: DEPLOYMENT_ID,
+    txHash: TX_HASH,
+    address: ADDRESS,
+  });
+
+  await testGetDeployedContractPolling(t, getDeployedContractStub, 3);
+});
+
+async function testGetDeployedContractPolling(t, getDeployedContractStub, expectedCallCount) {
+  const { fakeHre, fakeChainId } = t.context;
+
+  const contractName = 'Greeter';
 
   const defenderClientWaits = {
     deployContract: () => {
@@ -486,7 +510,7 @@ test('waits until address and txHash are available', async t => {
   const result = await deployPending.defenderDeploy(fakeHre, factory, { pollingInterval: 1 }); // poll in 1 ms
 
   t.is(deployContractSpy.callCount, 1);
-  t.is(getDeployedContractStub.callCount, 2);
+  t.is(getDeployedContractStub.callCount, expectedCallCount);
 
   t.deepEqual(result, {
     address: ADDRESS,
@@ -494,43 +518,4 @@ test('waits until address and txHash are available', async t => {
     deployTransaction: TX_RESPONSE,
     remoteDeploymentId: DEPLOYMENT_ID,
   });
-});
-
-test('txHash not available', async t => {
-  const { fakeHre, fakeChainId } = t.context;
-
-  const contractName = 'Greeter';
-
-  const getDeployedContractStub = sinon.stub();
-  getDeployedContractStub.onFirstCall().returns({
-    deploymentId: DEPLOYMENT_ID,
-    address: ADDRESS,
-  });
-
-  const defenderClientWaits = {
-    deployContract: () => {
-      return {
-        deploymentId: DEPLOYMENT_ID,
-      };
-    },
-    getDeployedContract: getDeployedContractStub,
-  };
-
-  const deployPending = proxyquire('../dist/defender/deploy', {
-    './utils': {
-      ...require('../dist/defender/utils'),
-      getNetwork: () => fakeChainId,
-      getDeployClient: () => defenderClientWaits,
-    },
-    '../utils/etherscan-api': {
-      getEtherscanAPIConfig: () => {
-        return { key: ETHERSCAN_API_KEY };
-      },
-    },
-  });
-
-  const factory = await ethers.getContractFactory(contractName);
-  const error = await t.throwsAsync(deployPending.defenderDeploy(fakeHre, factory, { pollingInterval: 1 }));
-
-  t.true(error.message.includes(TRANSACTION_HASH_NOT_FOUND));
-});
+}

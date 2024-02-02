@@ -101,7 +101,7 @@ export async function defenderDeploy(
     }
   }
 
-  // For EOA or Safe deployments, address and txHash are not known until the deployment is completed.
+  // For EOA or Safe deployments, address and/or txHash are not known until the deployment is completed.
   // In this case, prompt the user to submit the deployment in Defender, and wait for it to be completed.
   if (deploymentResponse.address === undefined || deploymentResponse.txHash === undefined) {
     console.log(
@@ -113,17 +113,10 @@ export async function defenderDeploy(
     );
 
     const pollInterval = opts.pollingInterval ?? 5e3;
-    while (deploymentResponse.address === undefined) {
+    while (deploymentResponse.address === undefined || deploymentResponse.txHash === undefined) {
       debug(`Waiting for deployment id ${deploymentResponse.deploymentId} to return address and txHash...`);
       await new Promise(resolve => setTimeout(resolve, pollInterval));
       deploymentResponse = await client.getDeployedContract(deploymentResponse.deploymentId);
-    }
-
-    if (deploymentResponse.txHash === undefined) {
-      throw new UpgradesError(
-        `Transaction hash not found for deployment id ${deploymentResponse.deploymentId} with address ${deploymentResponse.address}.`,
-        () => 'Please report this at https://zpl.in/upgrades/report and include the deployment id and address.',
-      );
     }
   }
 
