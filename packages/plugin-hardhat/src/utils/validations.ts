@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import lockfile from 'proper-lockfile';
-
+import type { LockOptions } from 'proper-lockfile';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import {
   ValidationDataCurrent,
@@ -12,7 +12,17 @@ import {
 
 async function lock(file: string) {
   await fs.mkdir(path.dirname(file), { recursive: true });
-  return lockfile.lock(file, { retries: { minTimeout: 50, factor: 1.3 }, realpath: false });
+
+  const lockRetryOptions = getLockfileOptionsFromEnv();
+  const defaultLockRetryOptions = {
+    minTimeout: 50,
+    factor: 1.3,
+  };
+
+  return lockfile.lock(file, {
+    retries: lockRetryOptions ?? defaultLockRetryOptions,
+    realpath: false,
+  });
 }
 
 export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunData: ValidationRunData): Promise<void> {
@@ -34,6 +44,34 @@ export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunDat
   } finally {
     await releaseLock?.();
   }
+}
+
+/**
+ * Extracts lockfile options from environment variables.
+ * All env variables are prefixed with
+ * `OPENZEPPPELIN_HARDHAT_UPGRADES_LOCK_RETRY_OPTIONS_`
+ *
+ * @note We grab options from env rather than as optional subtask arguments because subtask argument overrides are supported only in hardhat 2.13.0 and above, breaking compatibility with our peer dependency of hardhat ^2.0.2
+ * @see https://github.com/NomicFoundation/hardhat/releases/tag/hardhat%402.13.0
+ */
+export function getLockfileOptionsFromEnv() {
+  const lockRetryOptions: LockOptions['retries'] = {};
+  const parentEnv = 'OPENZEPPPELIN_HARDHAT_UPGRADES_LOCK_RETRY_OPTIONS';
+  const childOptions = ['factor', 'maxRetryTime', 'maxTimeout', 'minTimeout', 'retries'] as const;
+
+  childOptions.forEach(option => {
+    const optionEnv = process.env[`${parentEnv}_${option.toUpperCase()}`];
+
+    if (optionEnv) {
+      lockRetryOptions[option] = Number(optionEnv);
+    }
+  });
+
+  if (Object.keys(lockRetryOptions).length === 0) {
+    return null;
+  }
+
+  return lockRetryOptions;
 }
 
 export async function readValidations(
