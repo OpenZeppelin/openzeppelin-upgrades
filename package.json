@@ -18,7 +18,7 @@
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "eslint-plugin-unicorn": "^50.0.0",
+    "eslint-plugin-unicorn": "^51.0.0",
     "ethers": "^6.8.1",
     "lerna": "^5.0.0",
     "nyc": "^15.1.0",
