@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.3 (2024-02-06)
+
+- Support Defender deployments using EOA or Safe. ([#967](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/967))
+
 ## 3.0.2 (2024-01-09)
 
 - Support proxy verification on Snowtrace. ([#954](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/954))
