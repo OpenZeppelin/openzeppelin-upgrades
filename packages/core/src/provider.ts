@@ -136,6 +136,7 @@ export const networkNames: { [chainId in number]?: string } = Object.freeze({
   137: 'polygon',
   420: 'optimism-goerli',
   8453: 'base',
+  17000: 'holesky',
   42161: 'arbitrum-one',
   42170: 'arbitrum-nova',
   421613: 'arbitrum-goerli',
