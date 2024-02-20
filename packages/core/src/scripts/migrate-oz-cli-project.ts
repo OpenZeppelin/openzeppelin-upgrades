@@ -126,7 +126,7 @@ function isUnknownNetwork(network: string): boolean {
 }
 
 function isPublicNetwork(network: string): boolean {
-  return ['mainnet', 'rinkeby', 'ropsten', 'kovan', 'goerli'].includes(network);
+  return ['mainnet', 'rinkeby', 'ropsten', 'kovan', 'goerli', 'holesky'].includes(network);
 }
 
 function getNewManifestLocation(oldName: string): string {
