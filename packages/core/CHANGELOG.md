@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for Holesky testnet to manifest file names. ([#974](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/974))
+
 ## 1.32.4 (2024-01-30)
 
 - Add support for OP Sepolia to manifest file names. ([#963](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/963))
