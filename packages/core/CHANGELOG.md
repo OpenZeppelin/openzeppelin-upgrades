@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.32.5 (2024-02-21)
 
 - Add support for Holesky testnet to manifest file names. ([#974](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/974))
 
