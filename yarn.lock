@@ -1057,22 +1057,22 @@
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-"@openzeppelin/defender-sdk-base-client@^1.8.0", "@openzeppelin/defender-sdk-base-client@^1.9.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-base-client/-/defender-sdk-base-client-1.9.0.tgz#2596ab12edc44236290720cd4a89cedbc480b3c0"
-  integrity sha512-ywxZslKaY7Z5z9APpBunIDp4nXkGnYZAStaIhzzh8vbbzu7lxiZO98tsX3B9vCefqWC4oyX0mm78CdyYUgW5KQ==
+"@openzeppelin/defender-sdk-base-client@^1.10.0", "@openzeppelin/defender-sdk-base-client@^1.9.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-base-client/-/defender-sdk-base-client-1.10.0.tgz#038a5b13f92e03de42382ec331b670f40a915816"
+  integrity sha512-V21oI4G54sdEJ9lVN8q5OqfFRUoVDzjeXfWgpQvUpfy69r56NnE57D6e5RLG1fRp1J0APfW3lFjaaLwl0kqZpg==
   dependencies:
     amazon-cognito-identity-js "^6.3.6"
     async-retry "^1.3.3"
 
-"@openzeppelin/defender-sdk-deploy-client@^1.8.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-deploy-client/-/defender-sdk-deploy-client-1.9.0.tgz#ad2f61912f066386a22221bdcbd73d52b91e4c74"
-  integrity sha512-xw3qRJzE3XQRBoBBqOC7VOEtaVnzeN9EgsBZSjWlDUcmfJ6jdUuUsoqEkwYBZVEi+Dr3ujURY2DsmEvs0gFoNw==
+"@openzeppelin/defender-sdk-deploy-client@^1.9.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-deploy-client/-/defender-sdk-deploy-client-1.10.0.tgz#64d7789eceede36ec12dcdae0dc4b67ffa7ae97d"
+  integrity sha512-PckmUQYwe26/u/s3sjLateSNtKQ0tdAaOyP6spsgaT+us+XUUqAt/EUfEJdGpt8JApsRWYzrQzH6Z0ywoUyqyw==
   dependencies:
     "@ethersproject/abi" "^5.7.0"
-    "@openzeppelin/defender-sdk-base-client" "^1.9.0"
-    axios "^1.4.0"
+    "@openzeppelin/defender-sdk-base-client" "^1.10.0"
+    axios "^1.6.7"
     lodash "^4.17.21"
 
 "@openzeppelin/docs-utils@^0.1.0":
@@ -1806,7 +1806,7 @@ available-typed-arrays@^1.0.5, available-typed-arrays@^1.0.6:
   resolved "https://registry.yarnpkg.com/available-typed-arrays/-/available-typed-arrays-1.0.6.tgz#ac812d8ce5a6b976d738e1c45f08d0b00bc7d725"
   integrity sha512-j1QzY8iPNPG4o4xmO3ptzpRxTciqD3MgEHtifP/YnJpIo58Xu+ne4BejlbkuaLfXn/nz6HFiw29bLpj2PNMdGg==
 
-axios@^1.4.0:
+axios@^1.4.0, axios@^1.6.7:
   version "1.6.7"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.7.tgz#7b48c2e27c96f9c68a2f8f31e2ab19f59b06b0a7"
   integrity sha512-/hDJGff6/c7u0hDkvkGxR/oy6CbCs8ziCsC7SqmhjfozqiJGc8Z11wrv9z9lYfY4K8l+H9TpjcMDX0xOZmx+RA==
