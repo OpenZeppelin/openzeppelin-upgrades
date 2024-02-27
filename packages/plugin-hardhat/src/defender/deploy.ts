@@ -1,7 +1,7 @@
 import type { ethers, ContractFactory } from 'ethers';
 import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from 'hardhat/types';
 
-import { getFullyQualifiedName, parseFullyQualifiedName } from 'hardhat/utils/contract-names';
+import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
 import {
   DeploymentResponse,
