@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.0.5 (2024-02-28)
 
 - Remove console logging when transferring proxy admin ownership.
 
