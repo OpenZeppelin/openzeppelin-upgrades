@@ -1,8 +1,15 @@
+import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getAdminAddress } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract, Signer } from 'ethers';
 import { EthersDeployOptions, attachProxyAdminV4 } from './utils';
 import { disableDefender } from './defender/utils';
+
+const SUCCESS_CHECK = chalk.green('✔') + ' ';
+
+type TransferProxyAdminOwnershipOptions = {
+  silent?: boolean;
+};
 
 export type ChangeAdminFunction = (
   proxyAddress: string,
@@ -14,7 +21,7 @@ export type TransferProxyAdminOwnershipFunction = (
   proxyAddress: string,
   newOwner: string,
   signer?: Signer,
-  opts?: EthersDeployOptions,
+  opts?: TransferProxyAdminOwnershipOptions & EthersDeployOptions,
 ) => Promise<void>;
 export type GetInstanceFunction = (signer?: Signer) => Promise<Contract>;
 
@@ -44,7 +51,7 @@ export function makeTransferProxyAdminOwnership(
     proxyAddress: string,
     newOwner: string,
     signer?: Signer,
-    opts: EthersDeployOptions = {},
+    opts: TransferProxyAdminOwnershipOptions & EthersDeployOptions = {},
   ) {
     disableDefender(hre, defenderModule, {}, transferProxyAdminOwnership.name);
 
@@ -54,5 +61,18 @@ export function makeTransferProxyAdminOwnership(
 
     const overrides = opts.txOverrides ? [opts.txOverrides] : [];
     await admin.transferOwnership(newOwner, ...overrides);
+
+    if (!opts.silent) {
+      const { provider } = hre.network;
+      const manifest = await Manifest.forNetwork(provider);
+      const { proxies } = await manifest.read();
+      const adminAddress = await admin.getAddress();
+
+      const affected = proxies.filter(async proxy => (await getAdminAddress(provider, proxy.address)) === adminAddress);
+      if (affected.length > 0) {
+        console.log(SUCCESS_CHECK + `${affected.length} proxies ownership transferred through proxy admin`);
+        affected.forEach(proxy => console.log(`    - ${proxy.address} (${proxy.kind})`));
+      }
+    }
   };
 }
