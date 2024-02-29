@@ -1,8 +1,8 @@
 # Changelog
 
-## 3.0.5 (2024-02-28)
+## 3.0.5 (2024-03-01)
 
-- Remove console logging when transferring proxy admin ownership.
+- Simplify console logging for `admin.transferProxyAdminOwnership`. ([#978](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/978))
 
 ## 3.0.4 (2024-02-27)
 
