@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- This plugin is now compiled with TypeScript v5. ([#760](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/760))
+
 ## 1.32.5 (2024-02-21)
 
 - Add support for Holesky testnet to manifest file names. ([#974](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/974))
