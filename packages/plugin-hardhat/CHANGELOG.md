@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.5 (2024-03-01)
+## 3.0.5 (2024-03-04)
 
 - Simplify console logging for `admin.transferProxyAdminOwnership`. ([#978](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/978))
 
