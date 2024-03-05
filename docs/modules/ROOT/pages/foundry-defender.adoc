@@ -1,1 +1,1 @@
-include::foundry/pages/defender.adoc[]
+include::foundry/pages/foundry-defender.adoc[]
