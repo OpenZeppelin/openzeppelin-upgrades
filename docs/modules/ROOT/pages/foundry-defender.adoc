@@ -1,1 +1,1 @@
-include::../../../../openzeppelin-foundry-upgrades/docs/modules/pages/defender.adoc[]
+include::foundry/pages/defender.adoc[]

@@ -1,1 +1,1 @@
-include::../../../../openzeppelin-foundry-upgrades/docs/modules/api/pages/Upgrades.adoc[]
+include::foundry/api/pages/Upgrades.adoc[]
