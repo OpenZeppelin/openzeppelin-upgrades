@@ -1,1 +1,1 @@
-include::foundry/api/pages/Upgrades.adoc[]
+include::foundry/api/pages/.adoc[]
