@@ -1,2 +1,5 @@
-# copy openzeppelin-foundry-upgrades/docs/modules to docs/modules/ROOT/pages/foundry
+cd openzeppelin-foundry-upgrades
+yarn install
+yarn docgen
+cd ..
 cp -r openzeppelin-foundry-upgrades/docs/modules docs/modules/ROOT/pages/foundry
