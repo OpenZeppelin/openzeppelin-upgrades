@@ -1,1 +1,0 @@
-/Users/eric/git/openzeppelin-upgrades/openzeppelin-foundry-upgrades/docs/modules/pages/defender.adoc
