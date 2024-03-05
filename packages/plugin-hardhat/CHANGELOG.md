@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.4 (2024-02-27)
+
+- Support externally linked libraries for Defender deployments. ([#960](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/960))
+
 ## 3.0.3 (2024-02-06)
 
 - Support Defender deployments using EOA or Safe. ([#967](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/967))

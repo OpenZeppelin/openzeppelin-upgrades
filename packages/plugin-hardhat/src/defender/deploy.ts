@@ -3,7 +3,12 @@ import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
-import { DeploymentResponse, SourceCodeLicense, DeployContractRequest } from '@openzeppelin/defender-sdk-deploy-client';
+import {
+  DeploymentResponse,
+  SourceCodeLicense,
+  DeployContractRequest,
+  DeployRequestLibraries,
+} from '@openzeppelin/defender-sdk-deploy-client';
 import {
   Deployment,
   RemoteDeploymentId,
@@ -41,6 +46,7 @@ interface ContractInfo {
   sourceName: string;
   contractName: string;
   buildInfo: ReducedBuildInfo;
+  libraries?: DeployRequestLibraries;
 }
 
 type CompilerOutputWithMetadata = CompilerOutputContract & {
@@ -85,6 +91,7 @@ export async function defenderDeploy(
     salt: opts.salt,
     createFactoryAddress: opts.createFactoryAddress,
     txOverrides: parseTxOverrides(opts.txOverrides),
+    libraries: contractInfo.libraries,
   };
 
   let deploymentResponse: DeploymentResponse;
@@ -135,12 +142,29 @@ async function getContractInfo(
   factory: ethers.ContractFactory,
   opts: UpgradeOptions,
 ): Promise<ContractInfo> {
-  let fullContractName;
+  let fullContractName, runValidation;
+  let libraries: DeployRequestLibraries | undefined;
   try {
-    // Get fully qualified contract name from validations
+    // Get fully qualified contract name and link references from validations
     const deployData = await getDeployData(hre, factory, opts);
-    [fullContractName] = getContractNameAndRunValidation(deployData.validations, deployData.version);
+    [fullContractName, runValidation] = getContractNameAndRunValidation(deployData.validations, deployData.version);
     debug(`Contract ${fullContractName}`);
+
+    // Get externally linked libraries
+    const linkReferences = runValidation[fullContractName].linkReferences;
+    for (const ref in linkReferences) {
+      const linkedBytes = factory.bytecode.slice(2);
+
+      const start = linkReferences[ref].start * 2;
+      const length = linkReferences[ref].length * 2;
+
+      const linkFullyQualifiedName: `${string}:${string}` = `${linkReferences[ref].src}:${linkReferences[ref].name}`;
+      const linkAddress = `0x${linkedBytes.substring(start, start + length)}`;
+
+      libraries ??= {};
+      libraries[linkFullyQualifiedName] = linkAddress;
+    }
+    debug(`Libraries: ${JSON.stringify(libraries, null, 2)}`);
   } catch (e) {
     if (e instanceof ContractSourceNotFoundError) {
       // Proxy contracts would not be found in the validations, so try to get these from the plugin's precompiled artifacts.
@@ -167,7 +191,8 @@ async function getContractInfo(
       () => `Run \`npx hardhat compile\``,
     );
   }
-  return { sourceName, contractName, buildInfo };
+
+  return { sourceName, contractName, buildInfo, libraries };
 }
 
 /**

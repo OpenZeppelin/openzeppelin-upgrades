@@ -9,14 +9,26 @@ test.before(async t => {
   t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
 });
 
-test.beforeEach(async () => {
+test.beforeEach(async t => {
   // reset network before each test to avoid finding a previously deployed impl
   await network.provider.request({
     method: 'hardhat_reset',
     params: [],
   });
+
+  // enable interval mining for timeout tests
+  t.context.automine = await network.provider.send('hardhat_getAutomine');
   await network.provider.send('evm_setAutomine', [false]);
   await network.provider.send('evm_setIntervalMining', [500]);
+});
+
+test.afterEach(async t => {
+  // reset network state after each test, otherwise ava tests may hang due to interval mining
+  await network.provider.send('evm_setAutomine', [t.context.automine]);
+  await network.provider.request({
+    method: 'hardhat_reset',
+    params: [],
+  });
 });
 
 const TIMED_OUT_IMPL = 'Timed out waiting for implementation contract deployment';
