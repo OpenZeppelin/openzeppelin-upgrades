@@ -1,3 +1,1 @@
-= Using with Foundry
-
-See the https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades[OpenZeppelin Foundry Upgrades] repository for usage information.
+/Users/eric/git/openzeppelin-upgrades/openzeppelin-foundry-upgrades/docs/modules/pages/index.adoc
