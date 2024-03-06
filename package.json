@@ -3,7 +3,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "docs": "bash scripts/build-foundry-docs.sh && oz-docs",
+    "docs": "bash scripts/copy-foundry-docs.sh && oz-docs",
     "docs:watch": "oz-docs watch",
     "prepare": "wsrun -ms prepare && tsc -b",
     "lint": "yarn lint:path .",
