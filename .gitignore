@@ -11,5 +11,4 @@ coverage
 .env
 /examples
 package-lock.json
-docs/modules/ROOT/pages/foundry
 openzeppelin-foundry-upgrades
