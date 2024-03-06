@@ -9,6 +9,6 @@
 * xref:faq.adoc[Frequently Asked Questions]
 
 .API Reference
-* xref:api-hardhat-upgrades.adoc[Hardhat Upgrades]
-* xref:api-foundry-upgrades.adoc[Foundry Upgrades]
+* xref:api-hardhat-upgrades.adoc[Hardhat Upgrades API]
+* xref:api-foundry-upgrades.adoc[Foundry Upgrades API]
 * xref:api-core.adoc[Upgrades Core & CLI]

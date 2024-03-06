@@ -14,7 +14,7 @@ TIP: Upgrades Plugins are only a part of a comprehensive set of OpenZeppelin too
 [[usage]]
 === Installation and Usage
 
-See the documentation for xref:hardhat-upgrades.adoc[Hardhat Upgrades] or https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades[Foundry Upgrades].
+See the documentation for xref:hardhat-upgrades.adoc[Hardhat Upgrades] or xref:foundry-upgrades.adoc[Foundry Upgrades].
 
 [[how-plugins-work]]
 == How the plugins work
@@ -46,7 +46,7 @@ The Foundry plugin does not keep track of implementation contracts, but requires
 
 The plugins support the UUPS, transparent, and beacon proxy patterns. UUPS and transparent proxies are upgraded individually, whereas any number of beacon proxies can be upgraded atomically at the same time by upgrading the beacon that they point to. For more details on the different proxy patterns available, see the documentation for https://docs.openzeppelin.com/contracts/api/proxy[Proxies].
 
-For UUPS and transparent proxies, use `deployProxy` and `upgradeProxy`. For beacon proxies, use `deployBeacon`, `deployBeaconProxy`, and `upgradeBeacon`. See the documentation for xref:hardhat-upgrades.adoc[Hardhat Upgrades] and https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades[Foundry Upgrades] for examples.
+For UUPS and transparent proxies, use `deployProxy` and `upgradeProxy`. For beacon proxies, use `deployBeacon`, `deployBeaconProxy`, and `upgradeBeacon`. See the documentation for xref:hardhat-upgrades.adoc[Hardhat Upgrades] and xref:foundry-upgrades.adoc[Foundry Upgrades] for examples.
 
 [[managing-ownership]]
 == Managing ownership
