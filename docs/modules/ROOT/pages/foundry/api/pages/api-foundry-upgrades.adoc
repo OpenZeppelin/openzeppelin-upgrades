@@ -42,7 +42,7 @@ The following options can be used with some of the below functions. See https://
 
 [.hljs-theme-light.nopadding]
 ```solidity
-import { Options } from "openzeppelin-foundry-upgrades/src/Options.sol";
+import { Options } from "openzeppelin-foundry-upgrades/Options.sol";
 ```
 
 ```solidity
@@ -62,7 +62,7 @@ struct Options {
 
 [.hljs-theme-light.nopadding]
 ```solidity
-import { DefenderOptions } from "openzeppelin-foundry-upgrades/src/Options.sol";
+import { DefenderOptions } from "openzeppelin-foundry-upgrades/Options.sol";
 ```
 
 ```solidity
@@ -109,7 +109,7 @@ struct DefenderOptions {
 
 [.hljs-theme-light.nopadding]
 ```solidity
-import { Upgrades } from "openzeppelin-foundry-upgrades/src/Upgrades.sol";
+import { Upgrades } from "openzeppelin-foundry-upgrades/Upgrades.sol";
 ```
 
 Library for deploying and managing upgradeable contracts from Forge scripts or tests.
@@ -253,6 +253,8 @@ Requires that either the `referenceContract` option is set, or the new implement
 [[Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-]]
 ==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data, struct Options opts, address tryCaller)++` [.item-kind]#internal#
 
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
 Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
 
 Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
@@ -271,6 +273,8 @@ Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
 [.contract-item]
 [[Upgrades-upgradeProxy-address-string-bytes-address-]]
 ==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
 
 Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
 
@@ -348,6 +352,8 @@ Requires that either the `referenceContract` option is set, or the new implement
 [[Upgrades-upgradeBeacon-address-string-struct-Options-address-]]
 ==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName, struct Options opts, address tryCaller)++` [.item-kind]#internal#
 
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
 Upgrades a beacon to a new implementation contract.
 
 Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
@@ -365,6 +371,8 @@ Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
 [.contract-item]
 [[Upgrades-upgradeBeacon-address-string-address-]]
 ==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
 
 Upgrades a beacon to a new implementation contract.
 
@@ -537,7 +545,7 @@ Runs a function as a prank, or just runs the function normally if the prank coul
 
 [.hljs-theme-light.nopadding]
 ```solidity
-import { Defender } from "openzeppelin-foundry-upgrades/src/Defender.sol";
+import { Defender } from "openzeppelin-foundry-upgrades/Defender.sol";
 ```
 
 Library for interacting with OpenZeppelin Defender from Forge scripts or tests.
