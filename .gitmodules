@@ -1,4 +1,0 @@
-[submodule "openzeppelin-foundry-upgrades"]
-	path = openzeppelin-foundry-upgrades
-	url = https://github.com/ericglau/openzeppelin-foundry-upgrades
-	branch = docgen
