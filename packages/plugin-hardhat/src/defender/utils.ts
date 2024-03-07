@@ -62,7 +62,7 @@ export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Networ
       );
     } else if (!networkNames.includes(userConfigNetwork)) {
       throw new UpgradesError(
-        `Specified network ${userConfigNetwork} does not match any of the detected networks for chainId ${chainId}: ${Array.from(networkNames).join(', ')}.`,
+        `Specified network ${userConfigNetwork} does not match any of the detected networks for chainId ${chainId}: ${Array.from(networkNames).join(', ')}`,
         () =>
           `Ensure you are connected to the correct network, or specify one of the detected networks in your hardhat config file.`,
       );
