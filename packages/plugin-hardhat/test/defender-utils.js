@@ -1,6 +1,8 @@
 const test = require('ava');
 const sinon = require('sinon');
-const { getNetwork, disableDefender, enableDefender, getDeployClient } = require('../dist/defender/utils');
+const proxyquire = require('proxyquire').noCallThru();
+const { getNetwork, disableDefender, enableDefender } = require('../dist/defender/utils');
+const { getDeployClient } = require('../dist/defender/client');
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x05';
@@ -24,7 +26,86 @@ test('returns defender network definition', async t => {
 
 test('fails if chain id is not accepted', async t => {
   t.context.fakeChainId = '0x123456';
-  await t.throwsAsync(() => getNetwork(t.context.fakeHre), { message: /Network \d+ is not supported/ });
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [
+        {
+          chainId: 0x222222,
+          name: 'other-forked-network',
+        },
+      ];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  await t.throwsAsync(() => utils.getNetwork(t.context.fakeHre), { message: /Network \d+ is not supported/ });
+});
+
+test('forked network', async t => {
+  t.context.fakeChainId = '0x123456';
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [
+        {
+          chainId: 0x222222,
+          name: 'other-forked-network',
+        },
+        {
+          chainId: 0x123456,
+          name: 'my-forked-network',
+        },
+      ];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  const network = await utils.getNetwork(t.context.fakeHre);
+  t.is(network, 'my-forked-network');
+});
+
+test('private network', async t => {
+  t.context.fakeChainId = '0x123456';
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [];
+    },
+    listPrivateNetworks: () => {
+      return [
+        {
+          chainId: 0x123456,
+          name: 'my-private-network',
+        },
+      ];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  const network = await utils.getNetwork(t.context.fakeHre);
+  t.is(network, 'my-private-network');
 });
 
 test('fails if defender config is missing', async t => {

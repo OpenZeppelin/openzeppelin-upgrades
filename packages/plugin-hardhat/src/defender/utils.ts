@@ -9,8 +9,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from '@openzeppelin/defender-sdk-base-client';
-import { DeployClient, TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
-import { NetworkClient } from '@openzeppelin/defender-sdk-network-client';
+import { TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
 
 import { HardhatDefenderConfig } from '../type-extensions';
 import { DefenderDeploy } from '../utils';
@@ -18,6 +17,7 @@ import debug from '../utils/debug';
 import { Overrides } from 'ethers';
 
 import { promisify } from 'util';
+import { getDeployClient, getNetworkClient } from './client';
 const sleep = promisify(setTimeout);
 
 export function getDefenderApiKey(hre: HardhatRuntimeEnvironment): HardhatDefenderConfig {
@@ -100,14 +100,6 @@ export function disableDefender(
       `The function ${unsupportedFunction} is not supported with the \`defender.useDefenderDeploy\` configuration option. Using the Hardhat signer instead.`,
     );
   }
-}
-
-function getNetworkClient(hre: HardhatRuntimeEnvironment): NetworkClient {
-  return new NetworkClient(getDefenderApiKey(hre));
-}
-
-export function getDeployClient(hre: HardhatRuntimeEnvironment): DeployClient {
-  return new DeployClient(getDefenderApiKey(hre));
 }
 
 /**
