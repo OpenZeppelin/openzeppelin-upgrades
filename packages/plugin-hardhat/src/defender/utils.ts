@@ -10,6 +10,7 @@ import {
 
 import { Network, fromChainId } from '@openzeppelin/defender-sdk-base-client';
 import { DeployClient, TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
+import { NetworkClient } from '@openzeppelin/defender-sdk-network-client';
 
 import { HardhatDefenderConfig } from '../type-extensions';
 import { DefenderDeploy } from '../utils';
@@ -35,6 +36,20 @@ export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Networ
   const chainId = hre.network.config.chainId ?? (await getChainId(provider));
   const network = fromChainId(chainId);
   if (network === undefined) {
+    const networkClient = getNetworkClient(hre);
+
+    const forkedNetworks = await networkClient.listForkedNetworks();
+    const forkedNetwork = forkedNetworks.find((n) => n.chainId === chainId);
+    if (forkedNetwork) {
+      return forkedNetwork.name;
+    }
+
+    const privateNetworks = await networkClient.listPrivateNetworks();
+    const privateNetwork = privateNetworks.find((n) => n.chainId === chainId);
+    if (privateNetwork) {
+      return privateNetwork.name;
+    }
+
     throw new Error(`Network ${chainId} is not supported by OpenZeppelin Defender`);
   }
   return network;
@@ -85,6 +100,10 @@ export function disableDefender(
       `The function ${unsupportedFunction} is not supported with the \`defender.useDefenderDeploy\` configuration option. Using the Hardhat signer instead.`,
     );
   }
+}
+
+function getNetworkClient(hre: HardhatRuntimeEnvironment): NetworkClient {
+  return new NetworkClient(getDefenderApiKey(hre));
 }
 
 export function getDeployClient(hre: HardhatRuntimeEnvironment): DeployClient {

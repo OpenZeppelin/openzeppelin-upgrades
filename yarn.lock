@@ -1038,7 +1038,7 @@
     lodash "^4.17.19"
     node-fetch "^2.6.0"
 
-"@openzeppelin/defender-sdk-base-client@^1.10.0", "@openzeppelin/defender-sdk-base-client@^1.9.0":
+"@openzeppelin/defender-sdk-base-client@^1.10.0":
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-base-client/-/defender-sdk-base-client-1.10.0.tgz#038a5b13f92e03de42382ec331b670f40a915816"
   integrity sha512-V21oI4G54sdEJ9lVN8q5OqfFRUoVDzjeXfWgpQvUpfy69r56NnE57D6e5RLG1fRp1J0APfW3lFjaaLwl0kqZpg==
@@ -1046,10 +1046,20 @@
     amazon-cognito-identity-js "^6.3.6"
     async-retry "^1.3.3"
 
-"@openzeppelin/defender-sdk-deploy-client@^1.9.0":
+"@openzeppelin/defender-sdk-deploy-client@^1.10.0":
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-deploy-client/-/defender-sdk-deploy-client-1.10.0.tgz#64d7789eceede36ec12dcdae0dc4b67ffa7ae97d"
   integrity sha512-PckmUQYwe26/u/s3sjLateSNtKQ0tdAaOyP6spsgaT+us+XUUqAt/EUfEJdGpt8JApsRWYzrQzH6Z0ywoUyqyw==
+  dependencies:
+    "@ethersproject/abi" "^5.7.0"
+    "@openzeppelin/defender-sdk-base-client" "^1.10.0"
+    axios "^1.6.7"
+    lodash "^4.17.21"
+
+"@openzeppelin/defender-sdk-network-client@^1.10.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/defender-sdk-network-client/-/defender-sdk-network-client-1.10.0.tgz#0da6113d994f1b48a4cee4313e1befc31acab800"
+  integrity sha512-nrSuJ4KKhTIO2f1WIKtCq0XbeHb4ExqvpIE2g4yf/k8DmZuM9SR6xNDLz7wuKt11u+U88AYBN9MoiKRo/ybp6w==
   dependencies:
     "@ethersproject/abi" "^5.7.0"
     "@openzeppelin/defender-sdk-base-client" "^1.10.0"
