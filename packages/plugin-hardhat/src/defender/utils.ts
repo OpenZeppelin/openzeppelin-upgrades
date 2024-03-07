@@ -39,13 +39,13 @@ export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Networ
     const networkClient = getNetworkClient(hre);
 
     const forkedNetworks = await networkClient.listForkedNetworks();
-    const forkedNetwork = forkedNetworks.find((n) => n.chainId === chainId);
+    const forkedNetwork = forkedNetworks.find(n => n.chainId === chainId);
     if (forkedNetwork !== undefined) {
       return forkedNetwork.name;
     }
 
     const privateNetworks = await networkClient.listPrivateNetworks();
-    const privateNetwork = privateNetworks.find((n) => n.chainId === chainId);
+    const privateNetwork = privateNetworks.find(n => n.chainId === chainId);
     if (privateNetwork !== undefined) {
       return privateNetwork.name;
     }
