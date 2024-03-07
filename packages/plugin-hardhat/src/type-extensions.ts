@@ -14,6 +14,7 @@ export interface HardhatDefenderConfig {
   apiKey: string;
   apiSecret: string;
   useDefenderDeploy?: boolean;
+  network?: string;
 }
 
 declare module 'hardhat/types/config' {
