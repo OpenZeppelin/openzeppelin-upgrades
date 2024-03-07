@@ -637,6 +637,7 @@ async function transferProxyAdminOwnership(
   newOwner: string,
   signer?: ethers.Signer,
   opts?: {
+    silent?: boolean,
     txOverrides?: ethers.Overrides,
   }
 ): Promise<void>
@@ -652,6 +653,7 @@ NOTE: The `proxyAddress` parameter is required since `@openzeppelin/hardhat-upgr
 * `newOwner` - the new owner address for the proxy admin contract.
 * `signer` - the signer to use for the transaction.
 * `opts` - an object with options:
+** `silent`: if set to `true`, silences console logging about each proxy affected by the admin ownership transfer.
 ** additional options as described in <<common-options>>.
 
 *Since:*

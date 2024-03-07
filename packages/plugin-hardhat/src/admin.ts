@@ -6,7 +6,10 @@ import { EthersDeployOptions, attachProxyAdminV4 } from './utils';
 import { disableDefender } from './defender/utils';
 
 const SUCCESS_CHECK = chalk.green('✔') + ' ';
-const FAILURE_CROSS = chalk.red('✘') + ' ';
+
+type TransferProxyAdminOwnershipOptions = {
+  silent?: boolean;
+};
 
 export type ChangeAdminFunction = (
   proxyAddress: string,
@@ -18,7 +21,7 @@ export type TransferProxyAdminOwnershipFunction = (
   proxyAddress: string,
   newOwner: string,
   signer?: Signer,
-  opts?: EthersDeployOptions,
+  opts?: TransferProxyAdminOwnershipOptions & EthersDeployOptions,
 ) => Promise<void>;
 export type GetInstanceFunction = (signer?: Signer) => Promise<Contract>;
 
@@ -48,7 +51,7 @@ export function makeTransferProxyAdminOwnership(
     proxyAddress: string,
     newOwner: string,
     signer?: Signer,
-    opts: EthersDeployOptions = {},
+    opts: TransferProxyAdminOwnershipOptions & EthersDeployOptions = {},
   ) {
     disableDefender(hre, defenderModule, {}, transferProxyAdminOwnership.name);
 
@@ -59,14 +62,23 @@ export function makeTransferProxyAdminOwnership(
     const overrides = opts.txOverrides ? [opts.txOverrides] : [];
     await admin.transferOwnership(newOwner, ...overrides);
 
-    const { provider } = hre.network;
-    const manifest = await Manifest.forNetwork(provider);
-    const { proxies } = await manifest.read();
-    for (const { address, kind } of proxies) {
-      if ((await admin.getAddress()) == (await getAdminAddress(provider, address))) {
-        console.log(SUCCESS_CHECK + `${address} (${kind}) proxy ownership transferred through proxy admin`);
-      } else {
-        console.log(FAILURE_CROSS + `${address} (${kind}) proxy ownership not affected by proxy admin`);
+    if (!opts.silent) {
+      const { provider } = hre.network;
+      const manifest = await Manifest.forNetwork(provider);
+      const { proxies } = await manifest.read();
+      const adminAddress = await admin.getAddress();
+
+      const affected = [];
+      for (const proxy of proxies) {
+        const controller = await getAdminAddress(provider, proxy.address);
+        if (controller === adminAddress) {
+          affected.push(proxy);
+        }
+      }
+
+      if (affected.length > 0) {
+        console.log(SUCCESS_CHECK + `${affected.length} proxies ownership transferred through proxy admin`);
+        affected.forEach(proxy => console.log(`    - ${proxy.address} (${proxy.kind})`));
       }
     }
   };
