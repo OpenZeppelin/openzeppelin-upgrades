@@ -29,12 +29,7 @@ test('fails if chain id is not accepted', async t => {
 
   const fakeNetworkClient = {
     listForkedNetworks: () => {
-      return [
-        {
-          chainId: 0x222222,
-          name: 'other-forked-network',
-        },
-      ];
+      return [];
     },
     listPrivateNetworks: () => {
       return [];
