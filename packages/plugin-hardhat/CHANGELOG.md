@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Simplify console logging for `admin.transferProxyAdminOwnership`. ([#978](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/978))
+
 ## 3.0.4 (2024-02-27)
 
 - Support externally linked libraries for Defender deployments. ([#960](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/960))
