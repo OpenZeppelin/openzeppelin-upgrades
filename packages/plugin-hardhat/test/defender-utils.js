@@ -20,7 +20,22 @@ test.afterEach.always(() => {
 });
 
 test('returns defender network definition', async t => {
-  const network = await getNetwork(t.context.fakeHre);
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  const network = await utils.getNetwork(t.context.fakeHre);
   t.is(network, 'goerli');
 });
 
