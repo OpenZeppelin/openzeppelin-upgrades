@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 3.0.5 (2024-03-08)
 
 - Simplify console logging for `admin.transferProxyAdminOwnership`. ([#978](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/978))
+- Support private networks and forked networks with Defender. ([#989](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/989))
 
 ## 3.0.4 (2024-02-27)
 

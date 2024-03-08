@@ -45,6 +45,8 @@ test.beforeEach(async t => {
     './utils': {
       ...require('../dist/defender/utils'),
       getNetwork: () => t.context.fakeChainId,
+    },
+    './client': {
       getDeployClient: () => t.context.fakeDefenderClient,
     },
     '../utils/etherscan-api': {
@@ -582,6 +584,8 @@ async function testGetDeployedContractPolling(t, getDeployedContractStub, expect
     './utils': {
       ...require('../dist/defender/utils'),
       getNetwork: () => fakeChainId,
+    },
+    './client': {
       getDeployClient: () => defenderClientWaits,
     },
     '../utils/etherscan-api': {

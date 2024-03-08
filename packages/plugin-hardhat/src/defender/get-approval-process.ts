@@ -1,6 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
-import { getNetwork, getDeployClient } from './utils';
+import { getNetwork } from './utils';
+import { getDeployClient } from './client';
 import { ApprovalProcessResponse } from '@openzeppelin/defender-sdk-deploy-client';
 
 export interface ApprovalProcess {

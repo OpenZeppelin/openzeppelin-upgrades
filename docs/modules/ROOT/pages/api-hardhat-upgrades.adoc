@@ -28,7 +28,7 @@ The following options are common to some functions.
 ** If set to `"never"`, the implementation contract is never redeployed. If the implementation contract was not previously deployed or is not found in the network file, an error will be thrown.
 ** If set to `"onchange"`, the implementation contract is redeployed only if the bytecode has changed from previous deployments.
 * `txOverrides`: (`ethers.Overrides`) An ethers.js https://docs.ethers.org/v6/api/contract/#Overrides[Overrides] object to override transaction parameters, such as `gasLimit` and `gasPrice`. Applies to all transactions sent by a function with this option, even if the function sends multiple transactions. For OpenZeppelin Defender deployments, only the `gasLimit`, `gasPrice`, `maxFeePerGas`, and `maxPriorityFeePerGas` parameters are supported.
-* `useDefenderDeploy`: (`boolean`) Deploy contracts using OpenZeppelin Defender instead of ethers.js. See xref:defender-deploy.adoc[Using with OpenZeppelin Defender]. **Note**: OpenZeppelin Defender deployments is in beta and functionality related to it is subject to change.
+* `useDefenderDeploy`: (`boolean`) Deploy contracts using OpenZeppelin Defender instead of ethers.js. See xref:defender-deploy.adoc[Using with OpenZeppelin Defender].
 * `verifySourceCode`: (`boolean`) When using OpenZeppelin Defender deployments, whether to verify source code on block explorers. Defaults to `true`.
 * `relayerId`: (`string`) When using OpenZeppelin Defender deployments, the ID of the relayer to use for the deployment. Defaults to the relayer configured for your deployment environment on Defender.
 * `salt`: (`string`) When using OpenZeppelin Defender deployments, if this is not set, deployments will be performed using the CREATE opcode. If this is set, deployments will be performed using the CREATE2 opcode with the provided salt. Note that deployments using a Safe are done using CREATE2 and require a salt. **Warning:** CREATE2 affects `msg.sender` behavior. See https://docs.openzeppelin.com/defender/v2/tutorial/deploy#deploy-caveat[Caveats] for more information.
@@ -431,8 +431,6 @@ async function deployContract(
 ): Promise<ethers.Contract>
 ----
 
-**Note**: OpenZeppelin Defender deployments is in beta and this function is subject to change.
-
 Deploys a non-upgradeable contract using OpenZeppelin Defender, and returns a contract instance. Throws an error if the contract looks like an implementation contract.
 
 CAUTION: Do not use this function to deploy implementations of upgradeable contracts, because upgrade safety validations are not performed with this function. For implementation contracts, use <<deploy-implementation>> instead.
@@ -465,8 +463,6 @@ async function getDeployApprovalProcess(
   }>
 ----
 
-**Note**: OpenZeppelin Defender deployments is in beta and this function is subject to change.
-
 Gets the default deploy approval process configured for your deployment environment on OpenZeppelin Defender.
 
 *Returns:*
@@ -489,8 +485,6 @@ async function getUpgradeApprovalProcess(
     viaType?: 'EOA' | 'Contract' | 'Multisig' | 'Safe' | 'Gnosis Multisig' | 'Relayer' | 'Unknown' | 'Timelock Controller' | 'ERC20' | 'Governor' | 'Fireblocks',
   }>
 ----
-
-**Note**: OpenZeppelin Defender deployments is in beta and this function is subject to change.
 
 Gets the default upgrade approval process configured for your deployment environment on OpenZeppelin Defender. For example, this is useful for determining the default multisig wallet that you can use in your scripts to assign as the owner of your proxy.
 
@@ -528,8 +522,6 @@ async function proposeUpgradeWithApproval(
     txResponse?: ethers.providers.TransactionResponse,
   }>
 ----
-
-**Note**: OpenZeppelin Defender deployments is in beta and this function is subject to change.
 
 Proposes an upgrade using an upgrade approval process on OpenZeppelin Defender.
 

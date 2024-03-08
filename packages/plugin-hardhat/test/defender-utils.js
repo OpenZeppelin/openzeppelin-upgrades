@@ -1,6 +1,8 @@
 const test = require('ava');
 const sinon = require('sinon');
-const { getNetwork, disableDefender, enableDefender, getDeployClient } = require('../dist/defender/utils');
+const proxyquire = require('proxyquire').noCallThru();
+const { disableDefender, enableDefender } = require('../dist/defender/utils');
+const { getDeployClient } = require('../dist/defender/client');
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x05';
@@ -17,14 +19,254 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
-test('returns defender network definition', async t => {
-  const network = await getNetwork(t.context.fakeHre);
+test('getNetwork finds network', async t => {
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  const network = await utils.getNetwork(t.context.fakeHre);
   t.is(network, 'goerli');
 });
 
-test('fails if chain id is not accepted', async t => {
+test('getNetwork cannot find network', async t => {
   t.context.fakeChainId = '0x123456';
-  await t.throwsAsync(() => getNetwork(t.context.fakeHre), { message: /Network \d+ is not supported/ });
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  await t.throwsAsync(() => utils.getNetwork(t.context.fakeHre), {
+    message: /The current network with chainId \d+ is not supported/,
+  });
+});
+
+test('getNetworks finds forked network', async t => {
+  t.context.fakeChainId = '0x123456';
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [
+        {
+          chainId: 0x222222,
+          name: 'other-forked-network',
+        },
+        {
+          chainId: 0x123456,
+          name: 'my-forked-network',
+        },
+      ];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  const network = await utils.getNetwork(t.context.fakeHre);
+  t.is(network, 'my-forked-network');
+});
+
+test('getNetwork finds private network', async t => {
+  t.context.fakeChainId = '0x123456';
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [];
+    },
+    listPrivateNetworks: () => {
+      return [
+        {
+          chainId: 0x123456,
+          name: 'my-private-network',
+        },
+      ];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  const network = await utils.getNetwork(t.context.fakeHre);
+  t.is(network, 'my-private-network');
+});
+
+test('getNetworks finds multiple networks', async t => {
+  t.context.fakeChainId = '0x123456';
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [
+        {
+          chainId: 0x123456,
+          name: 'first-forked-network',
+        },
+        {
+          chainId: 0x123456,
+          name: 'second-forked-network',
+        },
+      ];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  await t.throwsAsync(() => utils.getNetwork(t.context.fakeHre), {
+    message:
+      /Detected multiple networks with the same chainId \d+ on OpenZeppelin Defender: first-forked-network, second-forked-network/,
+  });
+});
+
+test('getNetworks finds one network, does not match specified network', async t => {
+  t.context.fakeChainId = '0x123456';
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [
+        {
+          chainId: 0x123456,
+          name: 'my-forked-network',
+        },
+      ];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  const hreWithDefenderNetwork = {
+    config: { defender: { apiKey: 'API_KEY', apiSecret: 'API_SECRET', network: 'specified-network' } },
+    network: {
+      provider: { send: async () => t.context.fakeChainId },
+      config: {},
+    },
+  };
+
+  await t.throwsAsync(() => utils.getNetwork(hreWithDefenderNetwork), {
+    message: /Detected network my-forked-network does not match specified network: specified-network/,
+  });
+});
+
+test('getNetworks finds multiple network, does not match specified network', async t => {
+  t.context.fakeChainId = '0x123456';
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [
+        {
+          chainId: 0x123456,
+          name: 'my-forked-network',
+        },
+        {
+          chainId: 0x123456,
+          name: 'my-forked-network-2',
+        },
+      ];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  const hreWithDefenderNetwork = {
+    config: { defender: { apiKey: 'API_KEY', apiSecret: 'API_SECRET', network: 'specified-network' } },
+    network: {
+      provider: { send: async () => t.context.fakeChainId },
+      config: {},
+    },
+  };
+
+  await t.throwsAsync(() => utils.getNetwork(hreWithDefenderNetwork), {
+    message:
+      /Specified network specified-network does not match any of the detected networks for chainId 1193046: my-forked-network, my-forked-network-2/,
+  });
+});
+
+test('getNetworks finds multiple networks, includes specified network', async t => {
+  t.context.fakeChainId = '0x123456';
+
+  const fakeNetworkClient = {
+    listForkedNetworks: () => {
+      return [
+        {
+          chainId: 0x123456,
+          name: 'my-forked-network',
+        },
+        {
+          chainId: 0x123456,
+          name: 'specified-network',
+        },
+      ];
+    },
+    listPrivateNetworks: () => {
+      return [];
+    },
+  };
+
+  const utils = proxyquire('../dist/defender/utils', {
+    './client': {
+      getNetworkClient: () => fakeNetworkClient,
+    },
+  });
+
+  const hreWithDefenderNetwork = {
+    config: { defender: { apiKey: 'API_KEY', apiSecret: 'API_SECRET', network: 'specified-network' } },
+    network: {
+      provider: { send: async () => t.context.fakeChainId },
+      config: {},
+    },
+  };
+
+  const network = await utils.getNetwork(hreWithDefenderNetwork);
+  t.is(network, 'specified-network');
 });
 
 test('fails if defender config is missing', async t => {
