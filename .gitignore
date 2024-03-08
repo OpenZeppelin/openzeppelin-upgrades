@@ -11,4 +11,3 @@ coverage
 .env
 /examples
 package-lock.json
-openzeppelin-foundry-upgrades
