@@ -57,7 +57,9 @@ test('getNetwork cannot find network', async t => {
     },
   });
 
-  await t.throwsAsync(() => utils.getNetwork(t.context.fakeHre), { message: /Network \d+ is not supported/ });
+  await t.throwsAsync(() => utils.getNetwork(t.context.fakeHre), {
+    message: /The current network with chainId \d+ is not supported/,
+  });
 });
 
 test('getNetworks finds forked network', async t => {

@@ -40,7 +40,7 @@ export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Networ
   const userConfigNetwork = hre.config.defender?.network;
   if (networkNames.length === 0) {
     throw new UpgradesError(
-      `Network ${chainId} is not supported by OpenZeppelin Defender`,
+      `The current network with chainId ${chainId} is not supported by OpenZeppelin Defender`,
       () => `If this is a private or forked network, add it in Defender from the Manage tab.`,
     );
   } else if (networkNames.length === 1) {
