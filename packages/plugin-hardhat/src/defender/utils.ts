@@ -9,7 +9,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import { Network, fromChainId } from '@openzeppelin/defender-sdk-base-client';
-import { DeployClient, TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
+import { TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
 
 import { HardhatDefenderConfig } from '../type-extensions';
 import { DefenderDeploy } from '../utils';
@@ -17,6 +17,7 @@ import debug from '../utils/debug';
 import { Overrides } from 'ethers';
 
 import { promisify } from 'util';
+import { getDeployClient, getNetworkClient } from './client';
 const sleep = promisify(setTimeout);
 
 export function getDefenderApiKey(hre: HardhatRuntimeEnvironment): HardhatDefenderConfig {
@@ -33,11 +34,68 @@ export function getDefenderApiKey(hre: HardhatRuntimeEnvironment): HardhatDefend
 export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Network> {
   const { provider } = hre.network;
   const chainId = hre.network.config.chainId ?? (await getChainId(provider));
-  const network = fromChainId(chainId);
-  if (network === undefined) {
-    throw new Error(`Network ${chainId} is not supported by OpenZeppelin Defender`);
+
+  const networkNames = await getNetworkNames(chainId, hre);
+
+  const userConfigNetwork = hre.config.defender?.network;
+  if (networkNames.length === 0) {
+    throw new UpgradesError(
+      `The current network with chainId ${chainId} is not supported by OpenZeppelin Defender`,
+      () => `If this is a private or forked network, add it in Defender from the Manage tab.`,
+    );
+  } else if (networkNames.length === 1) {
+    const network = networkNames[0];
+    if (userConfigNetwork !== undefined && network !== userConfigNetwork) {
+      throw new UpgradesError(
+        `Detected network ${network} does not match specified network: ${userConfigNetwork}`,
+        () =>
+          `The current chainId ${chainId} is detected as ${network} on OpenZeppelin Defender, but the hardhat config's 'defender' section specifies network: ${userConfigNetwork}.\nEnsure you are connected to the correct network.`,
+      );
+    }
+    return network;
+  } else {
+    if (userConfigNetwork === undefined) {
+      throw new UpgradesError(
+        `Detected multiple networks with the same chainId ${chainId} on OpenZeppelin Defender: ${Array.from(networkNames).join(', ')}`,
+        () =>
+          `Specify the network that you want to use in your hardhat config file as follows:\ndefender: { network: 'networkName' }`,
+      );
+    } else if (!networkNames.includes(userConfigNetwork)) {
+      throw new UpgradesError(
+        `Specified network ${userConfigNetwork} does not match any of the detected networks for chainId ${chainId}: ${Array.from(networkNames).join(', ')}`,
+        () =>
+          `Ensure you are connected to the correct network, or specify one of the detected networks in your hardhat config file.`,
+      );
+    }
+    return userConfigNetwork;
   }
-  return network;
+}
+
+async function getNetworkNames(chainId: number, hre: HardhatRuntimeEnvironment) {
+  const matchingNetworks = [];
+
+  const knownNetwork = fromChainId(chainId);
+  if (knownNetwork !== undefined) {
+    matchingNetworks.push(knownNetwork);
+  }
+
+  const networkClient = getNetworkClient(hre);
+
+  const forkedNetworks = await networkClient.listForkedNetworks();
+  for (const network of forkedNetworks) {
+    if (network.chainId === chainId) {
+      matchingNetworks.push(network.name);
+    }
+  }
+
+  const privateNetworks = await networkClient.listPrivateNetworks();
+  for (const network of privateNetworks) {
+    if (network.chainId === chainId) {
+      matchingNetworks.push(network.name);
+    }
+  }
+
+  return matchingNetworks;
 }
 
 export function enableDefender<T extends DefenderDeploy>(
@@ -85,10 +143,6 @@ export function disableDefender(
       `The function ${unsupportedFunction} is not supported with the \`defender.useDefenderDeploy\` configuration option. Using the Hardhat signer instead.`,
     );
   }
-}
-
-export function getDeployClient(hre: HardhatRuntimeEnvironment): DeployClient {
-  return new DeployClient(getDefenderApiKey(hre));
 }
 
 /**

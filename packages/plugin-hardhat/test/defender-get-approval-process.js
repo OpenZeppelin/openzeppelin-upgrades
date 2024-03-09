@@ -21,6 +21,8 @@ test.beforeEach(async t => {
     './utils': {
       ...require('../dist/defender/utils'),
       getNetwork: () => t.context.fakeChainId,
+    },
+    './client': {
       getDeployClient: () => t.context.fakeDefenderClient,
     },
   });

@@ -8,8 +8,9 @@ import {
 import { ContractFactory, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DefenderDeployOptions, UpgradeOptions } from '../utils';
-import { getNetwork, enableDefender, getDeployClient } from './utils';
+import { getNetwork, enableDefender } from './utils';
 import { deployImplForUpgrade } from '../prepare-upgrade';
+import { getDeployClient } from './client';
 
 export interface UpgradeProposalResponse {
   proposalId: string;

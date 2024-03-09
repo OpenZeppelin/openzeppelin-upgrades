@@ -2,8 +2,6 @@
 
 The Hardhat Upgrades package can use https://docs.openzeppelin.com/defender/[OpenZeppelin Defender] for deployments instead of ethers.js, which allows for features such as gas pricing estimation, resubmissions, and automated bytecode and source code verification.
 
-NOTE: OpenZeppelin Defender deployments is in beta and the functionality described here is subject to change.
-
 [[configuration]]
 == Configuration
 
@@ -18,6 +16,25 @@ module.exports = {
   }
 }
 ----
+
+[[network-selection]]
+== Network Selection
+
+The network that is used with OpenZeppelin Defender is determined by the network that Hardhat is connected to.
+If you want to ensure that a specific network is used with Defender, set the `network` field in the `defender` section of your `hardhat.config.js` or `hardhat.config.ts` file:
+[source,js]
+----
+module.exports = {
+  defender: {
+    apiKey: process.env.API_KEY,
+    apiSecret: process.env.API_SECRET,
+    network: "my-mainnet-fork",
+  }
+}
+----
+If set, this must be the name of a public, private or forked network in Defender. If Hardhat is connected to a different network while this is set, the deployment will not occur and will throw an error instead.
+
+NOTE: This is required if you have multiple forked networks in Defender with the same chainId, in which case the one with name matching the `network` field will be used.
 
 [[usage]]
 == Usage
