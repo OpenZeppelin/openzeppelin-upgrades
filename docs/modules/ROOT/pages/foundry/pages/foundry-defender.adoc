@@ -12,19 +12,20 @@ See xref:foundry-upgrades#installion[Using with Foundry - Installation].
 == Prerequisites
 1. Install https://nodejs.org/[Node.js].
 
-2. Configure your `foundry.toml` to include build info and storage layout:
+2. Configure your `foundry.toml` to enable ffi, ast, build info and storage layout:
 [source,toml]
 ----
 [profile.default]
+ffi = true
+ast = true
 build_info = true
 extra_output = ["storageLayout"]
 ----
 
 NOTE: Metadata must also be included in the compiler output, which it is by default.  
 
-3. Include `--ffi` in your `forge script` or `forge test` command.  
-
-4. Set the following environment variables in your `.env` file at your project root, using your Team API key and secret from OpenZeppelin Defender:
+[start=3]
+3. Set the following environment variables in your `.env` file at your project root, using your Team API key and secret from OpenZeppelin Defender:
 [source]
 ----
 DEFENDER_KEY=<Your API key>
