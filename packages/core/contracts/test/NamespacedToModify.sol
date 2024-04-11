@@ -168,3 +168,12 @@ enum FreeEnum { MyEnum }
  * @param example example parameter
  */
 error CustomErrorOutsideContract(Example example);
+
+contract StructArrayUsesConstant {
+  uint16 private constant MAX_SIZE = 10;
+
+  struct S {
+    uint16 a;
+    uint256[MAX_SIZE] values;
+  }
+}
