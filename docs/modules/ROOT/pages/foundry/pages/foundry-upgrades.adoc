@@ -5,6 +5,7 @@ Foundry library for deploying and managing upgradeable contracts, which includes
 == Installation
 
 Run these commands:
+
 [source,console]
 ----
 forge install foundry-rs/forge-std
@@ -13,6 +14,7 @@ forge install OpenZeppelin/openzeppelin-contracts-upgradeable
 ----
 
 Set the following in `remappings.txt`, replacing any previous definitions of these remappings:
+
 [source]
 ----
 @openzeppelin/contracts/=lib/openzeppelin-contracts-upgradeable/lib/openzeppelin-contracts/contracts/
@@ -25,6 +27,7 @@ NOTE: The above remappings mean that both `@openzeppelin/contracts/` (including 
 
 If you are using Windows, set the `OPENZEPPELIN_BASH_PATH` environment variable to the fully qualified path of the `bash` executable.
 For example, if you are using https://gitforwindows.org/[Git for Windows], add the following line in the `.env` file of your project (using forward slashes):
+
 [source]
 ----
 OPENZEPPELIN_BASH_PATH="C:/Program Files/Git/bin/bash"
@@ -45,7 +48,8 @@ If you want to be able to run upgrade safety checks, the following are needed:
 1. Install https://nodejs.org/[Node.js].
 
 2. Configure your `foundry.toml` to enable ffi, ast, build info and storage layout:
-[source,toml]
+
+[source,json]
 ----
 [profile.default]
 ffi = true
@@ -60,6 +64,23 @@ extra_output = ["storageLayout"]
 4. Run `forge clean` before running your Foundry script or tests, or include the `--force` option when running `forge script` or `forge test`.
 
 If you do not want to run upgrade safety checks, you can skip the above steps and use the `unsafeSkipAllChecks` option when calling the library's functions. Note that this is a dangerous option meant to be used as a last resort.
+
+=== Output directory configuration
+
+If your `foundry.toml` uses a non-default output directory, set the `FOUNDRY_OUT` environment variable to match your output directory. For example, if `foundry.toml` has:
+
+[source,json]
+----
+[profile.default]
+out = "my-output-dir"
+----
+
+Then set the following in the `.env` file of your project:
+
+[source]
+----
+FOUNDRY_OUT=my-output-dir
+----
 
 == Usage
 
