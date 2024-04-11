@@ -178,7 +178,7 @@ contract StructArrayUsesConstant {
   }
 
   /// @custom:storage-location erc7201:uses.constant
-  struct Namespaced {
+  struct MainStorage {
     uint256 x;
     uint256[MAX_SIZE] y;
   }
