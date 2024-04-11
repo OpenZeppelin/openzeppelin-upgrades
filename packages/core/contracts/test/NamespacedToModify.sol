@@ -172,8 +172,14 @@ error CustomErrorOutsideContract(Example example);
 contract StructArrayUsesConstant {
   uint16 private constant MAX_SIZE = 10;
 
-  struct S {
+  struct NotNamespaced {
     uint16 a;
-    uint256[MAX_SIZE] values;
+    uint256[MAX_SIZE] b;
+  }
+
+  /// @custom:storage-location erc7201:uses.constant
+  struct Namespaced {
+    uint256 x;
+    uint256[MAX_SIZE] y;
   }
 }
