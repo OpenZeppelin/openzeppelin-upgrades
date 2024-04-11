@@ -5,13 +5,16 @@ Foundry library for deploying and managing upgradeable contracts, which includes
 == Installation
 
 Run these commands:
+
 [source,console]
 ----
+forge install foundry-rs/forge-std
 forge install OpenZeppelin/openzeppelin-foundry-upgrades
 forge install OpenZeppelin/openzeppelin-contracts-upgradeable
 ----
 
 Set the following in `remappings.txt`, replacing any previous definitions of these remappings:
+
 [source]
 ----
 @openzeppelin/contracts/=lib/openzeppelin-contracts-upgradeable/lib/openzeppelin-contracts/contracts/
@@ -24,12 +27,15 @@ NOTE: The above remappings mean that both `@openzeppelin/contracts/` (including 
 
 If you are using Windows, set the `OPENZEPPELIN_BASH_PATH` environment variable to the fully qualified path of the `bash` executable.
 For example, if you are using https://gitforwindows.org/[Git for Windows], add the following line in the `.env` file of your project (using forward slashes):
+
 [source]
 ----
 OPENZEPPELIN_BASH_PATH="C:/Program Files/Git/bin/bash"
 ----
 
 == Version Limitations
+
+This library requires https://github.com/foundry-rs/forge-std[forge-std] version 1.8.0 or higher.
 
 This library currently only supports proxy contracts and upgrade interfaces from OpenZeppelin Contracts versions 5.0 or higher.
 
@@ -42,7 +48,8 @@ If you want to be able to run upgrade safety checks, the following are needed:
 1. Install https://nodejs.org/[Node.js].
 
 2. Configure your `foundry.toml` to enable ffi, ast, build info and storage layout:
-[source,toml]
+
+[source,json]
 ----
 [profile.default]
 ffi = true
@@ -58,12 +65,35 @@ extra_output = ["storageLayout"]
 
 If you do not want to run upgrade safety checks, you can skip the above steps and use the `unsafeSkipAllChecks` option when calling the library's functions. Note that this is a dangerous option meant to be used as a last resort.
 
+=== Output directory configuration
+
+If your `foundry.toml` uses a non-default output directory, set the `FOUNDRY_OUT` environment variable to match your output directory. For example, if `foundry.toml` has:
+
+[source,json]
+----
+[profile.default]
+out = "my-output-dir"
+----
+
+Then set the following in the `.env` file of your project:
+
+[source]
+----
+FOUNDRY_OUT=my-output-dir
+----
+
 == Usage
 
 Import the library in your Foundry scripts or tests:
 [source,solidity]
 ----
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
+----
+
+Also import the implementation contract that you want to validate, deploy, or upgrade to, for example:
+[source,solidity]
+----
+import {MyToken} from "src/MyToken.sol";
 ----
 
 Then call functions from `Upgrades.sol` to run validations, deployments, or upgrades.
