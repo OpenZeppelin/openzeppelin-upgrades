@@ -9,7 +9,7 @@ import { attach } from './ethers';
 
 /**
  * Gets a contract instance from a deployment, where the deployment may be remote.
- * If the deployment is remote, the instance has an overriden `waitForDeployment` method to wait for the remote deployment
+ * If the deployment is remote, the instance has an overridden `waitForDeployment` method to wait for the remote deployment
  * and update its `deploymentTransaction` with the new transaction hash if it was detected to have changed.
  *
  * @param hre The Hardhat Runtime Environment

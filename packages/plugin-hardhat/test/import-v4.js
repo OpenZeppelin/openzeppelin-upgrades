@@ -175,7 +175,7 @@ test('wrong kind', async t => {
   await proxy.waitForDeployment();
 
   // specify wrong kind.
-  // an error is expected since the admin adress is zero
+  // an error is expected since the admin address is zero
   const e = await t.throwsAsync(async () =>
     upgrades.forceImport(await proxy.getAddress(), GreeterProxiable, { kind: 'transparent' }),
   );

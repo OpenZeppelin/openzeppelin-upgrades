@@ -1,4 +1,4 @@
-# Snapshot report for `src/utils/parse-type-id.test.ts`
+# Snapshot report for `packages/core/src/utils/parse-type-id.test.ts`
 
 The actual snapshot is saved in `parse-type-id.test.ts.snap`.
 

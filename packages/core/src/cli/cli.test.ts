@@ -120,7 +120,7 @@ test('validate - reference without contract option', async t => {
   );
 });
 
-test('validate - emtpy contract string', async t => {
+test('validate - empty contract string', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:StorageV1`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));

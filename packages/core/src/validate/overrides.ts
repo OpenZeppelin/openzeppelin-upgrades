@@ -36,7 +36,7 @@ export interface StandaloneValidationOptions extends ProxyKindOption {
 }
 
 /**
- * Validation options in the context of an upgrade (with storage layout comparisions with a previous implementation).
+ * Validation options in the context of an upgrade (with storage layout comparisons with a previous implementation).
  */
 export interface ValidationOptions extends StandaloneValidationOptions {
   /**
