@@ -59,7 +59,7 @@ function getReport(original: StorageLayout, updated: StorageLayout) {
   return comparator.compareLayouts(originalDetailed, updatedDetailed);
 }
 
-test('succesful rename', t => {
+test('successful rename', t => {
   const v1 = t.context.extractStorageLayout('RenameV1');
   const v2 = t.context.extractStorageLayout('RenameV2');
   const report = getReport(v1, v2);
@@ -67,7 +67,7 @@ test('succesful rename', t => {
   t.snapshot(report.explain());
 });
 
-test('succesful retype', t => {
+test('successful retype', t => {
   const v1 = t.context.extractStorageLayout('RetypeV1');
   const v2 = t.context.extractStorageLayout('RetypeV2');
   const report = getReport(v1, v2);
