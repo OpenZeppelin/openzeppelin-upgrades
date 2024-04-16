@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.32.6 (2024-04-16)
 
 - This plugin is now compiled with TypeScript v5. ([#760](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/760))
+- Fix Hardhat compile error when referencing a constant within a struct definition. ([#1009](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1009))
 
 ## 1.32.5 (2024-02-21)
 

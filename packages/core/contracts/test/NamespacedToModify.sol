@@ -168,3 +168,18 @@ enum FreeEnum { MyEnum }
  * @param example example parameter
  */
 error CustomErrorOutsideContract(Example example);
+
+contract StructArrayUsesConstant {
+  uint16 private constant MAX_SIZE = 10;
+
+  struct NotNamespaced {
+    uint16 a;
+    uint256[MAX_SIZE] b;
+  }
+
+  /// @custom:storage-location erc7201:uses.constant
+  struct MainStorage {
+    uint256 x;
+    uint256[MAX_SIZE] y;
+  }
+}

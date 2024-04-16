@@ -60,12 +60,18 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           const contractNodes = contractDef.nodes;
           for (const contractNode of contractNodes) {
             switch (contractNode.nodeType) {
+              case 'VariableDeclaration': {
+                // If variable is a constant, keep it since it may be referenced in a struct
+                if (contractNode.constant) {
+                  break;
+                }
+                // Otherwise, fall through to convert to dummy enum
+              }
               case 'ErrorDefinition':
               case 'EventDefinition':
               case 'FunctionDefinition':
               case 'ModifierDefinition':
-              case 'UsingForDirective':
-              case 'VariableDeclaration': {
+              case 'UsingForDirective': {
                 // Replace with an enum based on astId (the original name is not needed, since nothing should reference it)
                 modifications.push(makeReplace(contractNode, orig, toDummyEnumWithAstId(contractNode.id)));
                 break;
