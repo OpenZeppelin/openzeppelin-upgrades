@@ -224,6 +224,36 @@ test('calls defender deploy with license', async t => {
   assertResult(t, result);
 });
 
+test('calls defender deploy - licenseType', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/WithLicense.sol';
+  const contractName = 'WithLicense';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {
+    licenseType: 'My License Type', // not a valid type, but this just sets the option
+  });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'My License Type',
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+
+  assertResult(t, result);
+});
+
 test('calls defender deploy - verifySourceCode false', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
