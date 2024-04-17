@@ -277,7 +277,8 @@ function toLicenseType(spdxIdentifier: string, contractInfo: ContractInfo): Sour
       return "BSL 1.1";
     default:
       throw new UpgradesError(
-        `SPDX license identifier ${spdxIdentifier} in ${contractInfo.sourceName} does not look like a supported license for block explorer verification. Use the \`licenseType\` option to specify a license type, or set the \`skipLicenseType\` option to \`true\` to skip.`,
+        `SPDX license identifier ${spdxIdentifier} in ${contractInfo.sourceName} does not look like a supported license for block explorer verification.`,
+        () => `Use the \`licenseType\` option to specify a license type, or set the \`skipLicenseType\` option to \`true\` to skip.`,
       );
   }
 }
