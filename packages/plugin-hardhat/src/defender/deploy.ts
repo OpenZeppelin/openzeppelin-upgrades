@@ -76,13 +76,9 @@ export async function defenderDeploy(
 
   if (opts.licenseType !== undefined) {
     if (opts.verifySourceCode === false) {
-      throw new UpgradesError(
-        'The `licenseType` option cannot be used when the `verifySourceCode` option is `false`',
-      );
+      throw new UpgradesError('The `licenseType` option cannot be used when the `verifySourceCode` option is `false`');
     } else if (opts.skipLicenseType) {
-      throw new UpgradesError(
-        'The `licenseType` option cannot be used when the `skipLicenseType` option is `true`'
-      );
+      throw new UpgradesError('The `licenseType` option cannot be used when the `skipLicenseType` option is `true`');
     }
   }
 
@@ -123,7 +119,8 @@ export async function defenderDeploy(
     if (e.response?.data?.message?.includes('licenseType should be equal to one of the allowed values')) {
       throw new UpgradesError(
         `The licenseType option "${licenseType}" is not valid for block explorer verification.`,
-        () => 'See https://etherscan.io/contract-license-types for supported values and use the string found in brackets, e.g. "MIT"',
+        () =>
+          'See https://etherscan.io/contract-license-types for supported values and use the string found in brackets, e.g. "MIT"',
       );
     } else {
       throw e;
@@ -241,44 +238,45 @@ function getSpdxLicenseIdentifier(contractInfo: ContractInfo): string | undefine
  * Infers a SourceCodeLicense from an SPDX license identifier.
  */
 function toLicenseType(spdxIdentifier: string, contractInfo: ContractInfo): SourceCodeLicense {
-  switch(spdxIdentifier) {
-    case "UNLICENSED":
-      return "None";
-    case "Unlicense":
-      return "Unlicense";
-    case "MIT":
-      return "MIT";
-    case "GPL-2.0-only":
-    case "GPL-2.0-or-later":
-      return "GNU GPLv2";
-    case "GPL-3.0-only":
-    case "GPL-3.0-or-later":
-      return "GNU GPLv3";
-    case "LGPL-2.1-only":
-    case "LGPL-2.1-or-later":
-      return "GNU LGPLv2.1";
-    case "LGPL-3.0-only":
-    case "LGPL-3.0-or-later":
-      return "GNU LGPLv3";
-    case "BSD-2-Clause":
-      return "BSD-2-Clause";
-    case "BSD-3-Clause":
-      return "BSD-3-Clause";
-    case "MPL-2.0":
-      return "MPL-2.0";
-    case "OSL-3.0":
-      return "OSL-3.0";
-    case "Apache-2.0":
-      return "Apache-2.0";
-    case "AGPL-3.0-only":
-    case "AGPL-3.0-or-later":
-      return "GNU AGPLv3";
-    case "BUSL-1.1":
-      return "BSL 1.1";
+  switch (spdxIdentifier) {
+    case 'UNLICENSED':
+      return 'None';
+    case 'Unlicense':
+      return 'Unlicense';
+    case 'MIT':
+      return 'MIT';
+    case 'GPL-2.0-only':
+    case 'GPL-2.0-or-later':
+      return 'GNU GPLv2';
+    case 'GPL-3.0-only':
+    case 'GPL-3.0-or-later':
+      return 'GNU GPLv3';
+    case 'LGPL-2.1-only':
+    case 'LGPL-2.1-or-later':
+      return 'GNU LGPLv2.1';
+    case 'LGPL-3.0-only':
+    case 'LGPL-3.0-or-later':
+      return 'GNU LGPLv3';
+    case 'BSD-2-Clause':
+      return 'BSD-2-Clause';
+    case 'BSD-3-Clause':
+      return 'BSD-3-Clause';
+    case 'MPL-2.0':
+      return 'MPL-2.0';
+    case 'OSL-3.0':
+      return 'OSL-3.0';
+    case 'Apache-2.0':
+      return 'Apache-2.0';
+    case 'AGPL-3.0-only':
+    case 'AGPL-3.0-or-later':
+      return 'GNU AGPLv3';
+    case 'BUSL-1.1':
+      return 'BSL 1.1';
     default:
       throw new UpgradesError(
         `SPDX license identifier ${spdxIdentifier} in ${contractInfo.sourceName} does not look like a supported license for block explorer verification.`,
-        () => `Use the \`licenseType\` option to specify a license type, or set the \`skipLicenseType\` option to \`true\` to skip.`,
+        () =>
+          `Use the \`licenseType\` option to specify a license type, or set the \`skipLicenseType\` option to \`true\` to skip.`,
       );
   }
 }

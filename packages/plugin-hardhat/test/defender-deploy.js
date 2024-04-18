@@ -320,11 +320,15 @@ test('calls defender deploy - error - licenseType with skipLicenseType true', as
   const contractName = 'WithLicense';
 
   const factory = await ethers.getContractFactory(contractName);
-  const error = await t.throwsAsync(() => deploy.defenderDeploy(fakeHre, factory, {
-    licenseType: 'MIT',
-    skipLicenseType: true,
-  }));
-  t.true(error?.message.includes('The `licenseType` option cannot be used when the `skipLicenseType` option is `true`'));
+  const error = await t.throwsAsync(() =>
+    deploy.defenderDeploy(fakeHre, factory, {
+      licenseType: 'MIT',
+      skipLicenseType: true,
+    }),
+  );
+  t.true(
+    error?.message.includes('The `licenseType` option cannot be used when the `skipLicenseType` option is `true`'),
+  );
 });
 
 test('calls defender deploy - error - licenseType with verifySourceCode false', async t => {
@@ -333,11 +337,15 @@ test('calls defender deploy - error - licenseType with verifySourceCode false', 
   const contractName = 'WithLicense';
 
   const factory = await ethers.getContractFactory(contractName);
-  const error = await t.throwsAsync(() => deploy.defenderDeploy(fakeHre, factory, {
-    licenseType: 'MIT',
-    verifySourceCode: false,
-  }));
-  t.true(error?.message.includes('The `licenseType` option cannot be used when the `verifySourceCode` option is `false`'));
+  const error = await t.throwsAsync(() =>
+    deploy.defenderDeploy(fakeHre, factory, {
+      licenseType: 'MIT',
+      verifySourceCode: false,
+    }),
+  );
+  t.true(
+    error?.message.includes('The `licenseType` option cannot be used when the `verifySourceCode` option is `false`'),
+  );
 });
 
 test('calls defender deploy - error - unrecognized license', async t => {
@@ -347,8 +355,16 @@ test('calls defender deploy - error - unrecognized license', async t => {
 
   const factory = await ethers.getContractFactory(contractName);
   const error = await t.throwsAsync(() => deploy.defenderDeploy(fakeHre, factory, {}));
-  t.true(error?.message.includes('SPDX license identifier UnrecognizedId in contracts/UnrecognizedLicense.sol does not look like a supported license for block explorer verification.'));
-  t.true(error?.message.includes('Use the `licenseType` option to specify a license type, or set the `skipLicenseType` option to `true` to skip.'));
+  t.true(
+    error?.message.includes(
+      'SPDX license identifier UnrecognizedId in contracts/UnrecognizedLicense.sol does not look like a supported license for block explorer verification.',
+    ),
+  );
+  t.true(
+    error?.message.includes(
+      'Use the `licenseType` option to specify a license type, or set the `skipLicenseType` option to `true` to skip.',
+    ),
+  );
 });
 
 test('calls defender deploy - no contract license', async t => {
