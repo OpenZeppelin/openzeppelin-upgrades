@@ -15,6 +15,7 @@ module.exports = {
     'unicorn/no-array-reduce': 'warn',
     'no-plusplus': ['warn', { allowForLoopAfterthoughts: true }],
   },
+  ignorePatterns: ['submodules'],
   overrides: [
     {
       files: ['*.ts'],

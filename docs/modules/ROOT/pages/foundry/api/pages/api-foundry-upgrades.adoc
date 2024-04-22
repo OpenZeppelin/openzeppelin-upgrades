@@ -72,6 +72,8 @@ struct DefenderOptions {
   string relayerId;
   bytes32 salt;
   string upgradeApprovalProcessId;
+  string licenseType;
+  bool skipLicenseType;
 }
 ```
 

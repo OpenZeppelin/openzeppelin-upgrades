@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.1.0 (2024-04-22)
+
+- Defender: Fix handling of license types for block explorer verification, support `licenseType` and `skipLicenseType` options. ([#1013](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1013))
+
+### Breaking changes
+- When deploying through Defender, if your contract does not have an SPDX license identifier, the verified source code on Etherscan will no longer show any license type.
+  - If you want the license type to appear as "None", either set your contract to have `// SPDX-License-Identifier: UNLICENSED` according to [Solidity docs](https://docs.soliditylang.org/en/latest/layout-of-source-files.html#spdx-license-identifier), or set the `licenseType` option to `"None"`.
+
 ## 3.0.5 (2024-03-08)
 
 - Simplify console logging for `admin.transferProxyAdminOwnership`. ([#978](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/978))

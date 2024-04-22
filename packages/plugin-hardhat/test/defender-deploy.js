@@ -99,7 +99,7 @@ test('calls defender deploy', async t => {
     contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: 'None',
+    licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: undefined,
@@ -127,7 +127,7 @@ test('calls defender deploy with relayerId', async t => {
     contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: 'None',
+    licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: RELAYER_ID,
@@ -155,7 +155,7 @@ test('calls defender deploy with salt', async t => {
     contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: 'None',
+    licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: undefined,
@@ -183,7 +183,7 @@ test('calls defender deploy with createFactoryAddress', async t => {
     contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: 'None',
+    licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: undefined,
@@ -212,6 +212,205 @@ test('calls defender deploy with license', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: 'MIT',
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy - licenseType', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/WithLicense.sol';
+  const contractName = 'WithLicense';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {
+    licenseType: 'My License Type', // not a valid type, but this just sets the option
+  });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'My License Type',
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy - verifySourceCode false', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/WithLicense.sol';
+  const contractName = 'WithLicense';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {
+    verifySourceCode: false,
+  });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorInputs: [],
+    verifySourceCode: false,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy - skipLicenseType', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/WithLicense.sol';
+  const contractName = 'WithLicense';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {
+    skipLicenseType: true,
+  });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy - error - licenseType with skipLicenseType true', async t => {
+  const { deploy, fakeHre } = t.context;
+
+  const contractName = 'WithLicense';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const error = await t.throwsAsync(() =>
+    deploy.defenderDeploy(fakeHre, factory, {
+      licenseType: 'MIT',
+      skipLicenseType: true,
+    }),
+  );
+  t.true(
+    error?.message.includes('The `licenseType` option cannot be used when the `skipLicenseType` option is `true`'),
+  );
+});
+
+test('calls defender deploy - error - licenseType with verifySourceCode false', async t => {
+  const { deploy, fakeHre } = t.context;
+
+  const contractName = 'WithLicense';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const error = await t.throwsAsync(() =>
+    deploy.defenderDeploy(fakeHre, factory, {
+      licenseType: 'MIT',
+      verifySourceCode: false,
+    }),
+  );
+  t.true(
+    error?.message.includes('The `licenseType` option cannot be used when the `verifySourceCode` option is `false`'),
+  );
+});
+
+test('calls defender deploy - error - unrecognized license', async t => {
+  const { deploy, fakeHre } = t.context;
+
+  const contractName = 'UnrecognizedLicense';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const error = await t.throwsAsync(() => deploy.defenderDeploy(fakeHre, factory, {}));
+  t.true(
+    error?.message.includes(
+      'SPDX license identifier UnrecognizedId in contracts/UnrecognizedLicense.sol does not look like a supported license for block explorer verification.',
+    ),
+  );
+  t.true(
+    error?.message.includes(
+      'Use the `licenseType` option to specify a license type, or set the `skipLicenseType` option to `true` to skip.',
+    ),
+  );
+});
+
+test('calls defender deploy - no contract license', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/NoLicense.sol';
+  const contractName = 'NoLicense';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {});
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorInputs: [],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy - unlicensed', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Unlicensed.sol';
+  const contractName = 'Unlicensed';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {});
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'None',
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: undefined,
@@ -373,7 +572,7 @@ test('calls defender deploy with txOverrides.gasLimit', async t => {
     contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: 'None',
+    licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: undefined,
@@ -406,7 +605,7 @@ test('calls defender deploy with txOverrides.gasPrice', async t => {
     contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: 'None',
+    licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: undefined,
@@ -441,7 +640,7 @@ test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPri
     contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: 'None',
+    licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: undefined,
@@ -478,7 +677,7 @@ test('calls defender deploy with external library', async t => {
     contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: 'None',
+    licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: undefined,
@@ -513,7 +712,7 @@ test('calls defender deploy with multiple external libraries', async t => {
     contractPath: contractPath,
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
-    licenseType: 'None',
+    licenseType: undefined,
     constructorInputs: [],
     verifySourceCode: true,
     relayerId: undefined,

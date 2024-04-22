@@ -70,14 +70,31 @@ export async function defenderDeploy(
   const verifySourceCode = opts.verifySourceCode ?? true;
   debug(`Verify source code: ${verifySourceCode}`);
 
-  let license: string | undefined = undefined;
-  if (verifySourceCode) {
-    license = getLicenseFromMetadata(contractInfo);
-    debug(`License type: ${license}`);
-  }
-
   if (opts.salt !== undefined) {
     debug(`Salt: ${opts.salt}`);
+  }
+
+  if (opts.licenseType !== undefined) {
+    if (opts.verifySourceCode === false) {
+      throw new UpgradesError('The `licenseType` option cannot be used when the `verifySourceCode` option is `false`');
+    } else if (opts.skipLicenseType) {
+      throw new UpgradesError('The `licenseType` option cannot be used when the `skipLicenseType` option is `true`');
+    }
+  }
+
+  let licenseType: SourceCodeLicense | undefined = undefined;
+  if (verifySourceCode) {
+    if (opts.licenseType !== undefined) {
+      licenseType = opts.licenseType;
+      debug(`licenseType option: ${licenseType}`);
+    } else if (!opts.skipLicenseType) {
+      const spdxIdentifier = getSpdxLicenseIdentifier(contractInfo);
+      debug(`SPDX license identifier from metadata: ${spdxIdentifier}`);
+      if (spdxIdentifier !== undefined) {
+        licenseType = toLicenseType(spdxIdentifier, contractInfo);
+        debug(`licenseType inferred: ${licenseType}`);
+      }
+    }
   }
 
   const deploymentRequest: DeployContractRequest = {
@@ -85,7 +102,7 @@ export async function defenderDeploy(
     contractPath: contractInfo.sourceName,
     network: network,
     artifactPayload: JSON.stringify(contractInfo.buildInfo),
-    licenseType: license as SourceCodeLicense | undefined, // cast without validation but catch error from API below
+    licenseType: licenseType,
     constructorInputs: constructorArgs,
     verifySourceCode: verifySourceCode,
     relayerId: opts.relayerId,
@@ -101,8 +118,9 @@ export async function defenderDeploy(
   } catch (e: any) {
     if (e.response?.data?.message?.includes('licenseType should be equal to one of the allowed values')) {
       throw new UpgradesError(
-        `License type ${license} is not a valid SPDX license identifier for block explorer verification.`,
-        () => 'Specify a valid SPDX-License-Identifier in your contract.',
+        `The licenseType option "${licenseType}" is not valid for block explorer verification.`,
+        () =>
+          'See https://etherscan.io/contract-license-types for supported values and use the string found in brackets, e.g. "MIT"',
       );
     } else {
       throw e;
@@ -197,9 +215,9 @@ async function getContractInfo(
 }
 
 /**
- * Get the license type from the contract metadata without validating its validity, except converts undefined or UNLICENSED to None.
+ * Get the SPDX license identifier from the contract metadata without validating it.
  */
-function getLicenseFromMetadata(contractInfo: ContractInfo): string {
+function getSpdxLicenseIdentifier(contractInfo: ContractInfo): string | undefined {
   const compilerOutput: CompilerOutputWithMetadata =
     contractInfo.buildInfo.output.contracts[contractInfo.sourceName][contractInfo.contractName];
 
@@ -213,11 +231,52 @@ function getLicenseFromMetadata(contractInfo: ContractInfo): string {
 
   const metadata = JSON.parse(metadataString);
 
-  const license: string = metadata.sources[contractInfo.sourceName].license;
-  if (license === undefined || license === 'UNLICENSED') {
-    // UNLICENSED means no license according to solidity docs
-    return 'None';
-  } else {
-    return license;
+  return metadata.sources[contractInfo.sourceName].license;
+}
+
+/**
+ * Infers a SourceCodeLicense from an SPDX license identifier.
+ */
+function toLicenseType(spdxIdentifier: string, contractInfo: ContractInfo): SourceCodeLicense {
+  switch (spdxIdentifier) {
+    case 'UNLICENSED':
+      return 'None';
+    case 'Unlicense':
+      return 'Unlicense';
+    case 'MIT':
+      return 'MIT';
+    case 'GPL-2.0-only':
+    case 'GPL-2.0-or-later':
+      return 'GNU GPLv2';
+    case 'GPL-3.0-only':
+    case 'GPL-3.0-or-later':
+      return 'GNU GPLv3';
+    case 'LGPL-2.1-only':
+    case 'LGPL-2.1-or-later':
+      return 'GNU LGPLv2.1';
+    case 'LGPL-3.0-only':
+    case 'LGPL-3.0-or-later':
+      return 'GNU LGPLv3';
+    case 'BSD-2-Clause':
+      return 'BSD-2-Clause';
+    case 'BSD-3-Clause':
+      return 'BSD-3-Clause';
+    case 'MPL-2.0':
+      return 'MPL-2.0';
+    case 'OSL-3.0':
+      return 'OSL-3.0';
+    case 'Apache-2.0':
+      return 'Apache-2.0';
+    case 'AGPL-3.0-only':
+    case 'AGPL-3.0-or-later':
+      return 'GNU AGPLv3';
+    case 'BUSL-1.1':
+      return 'BSL 1.1';
+    default:
+      throw new UpgradesError(
+        `SPDX license identifier ${spdxIdentifier} in ${contractInfo.sourceName} does not look like a supported license for block explorer verification.`,
+        () =>
+          `Use the \`licenseType\` option to specify a license type, or set the \`skipLicenseType\` option to \`true\` to skip.`,
+      );
   }
 }
