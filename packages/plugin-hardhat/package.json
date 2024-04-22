@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-upgrades",
-  "version": "3.0.5",
+  "version": "3.1.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
