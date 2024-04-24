@@ -62,12 +62,12 @@ You can determine the location of a temporary network file by doing the followin
 . Run your Hardhat test or script.
 . Find the log message containing the text `development manifest file:`.
 
-[[custom-files-location]]
-== Custom Files Location
+[[custom-network-files-location]]
+== Custom Network Files Location
 
-To customize the location of the `.openzeppelin` folder, you can set the `MANIFEST_DEFAULT_DIR` environment variable. This variable allows you to specify different directories for storing configuration files, enabling you to deploy same contracts, to the same networks for different environments without conflicts.
+To customize the location of the `.openzeppelin` folder, set the `MANIFEST_DEFAULT_DIR` environment variable to an absolute path or a path relative to the root of your project. This variable allows you to specify different directories for storing network files, enabling you to deploy the same contracts to the same networks for different environments without conflicts. This can be used with private networks to avoid chain ID conflicts.
 
 For example:
 
-* Setting `export MANIFEST_DEFAULT_DIR=.openzeppelin/testnet` will configure OpenZeppelin Hardhat Upgrades to use `.openzeppelin/testnet/<network_name>.json` for testnet contracts.
-* Setting `export MANIFEST_DEFAULT_DIR=.openzeppelin/mainnet` will configure OpenZeppelin mainnet Upgrades to use `.openzeppelin/mainnet/<network_name>.json` for mainnet contracts.
+* Run `export MANIFEST_DEFAULT_DIR=.openzeppelin/tests` to configure OpenZeppelin Hardhat Upgrades to use `.openzeppelin/tests/<network_name>.json` for test deployments.
+* Run `export MANIFEST_DEFAULT_DIR=.openzeppelin/production` to configure OpenZeppelin Hardhat Upgrades to use `.openzeppelin/production/<network_name>.json` for production deployments.
