@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.33.0 (2024-04-24)
+
+- Enable changing default network files directory with environment variable. ([#1011](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1011))
+
 ## 1.32.6 (2024-04-16)
 
 - This plugin is now compiled with TypeScript v5. ([#760](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/760))
