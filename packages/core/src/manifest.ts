@@ -48,7 +48,7 @@ function defaultManifest(): ManifestData {
   };
 }
 
-const MANIFEST_DEFAULT_DIR = '.openzeppelin';
+const MANIFEST_DEFAULT_DIR = process.env.MANIFEST_DEFAULT_DIR || '.openzeppelin';
 const MANIFEST_TEMP_DIR = 'openzeppelin-upgrades';
 
 type DevNetworkType = 'hardhat' | 'anvil';

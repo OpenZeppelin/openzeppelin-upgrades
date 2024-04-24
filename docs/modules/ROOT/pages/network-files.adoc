@@ -1,9 +1,8 @@
 = Network Files
 
-OpenZeppelin Hardhat Upgrades keep track of all the contract versions you have deployed in an `.openzeppelin` folder in the project root. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
+OpenZeppelin Hardhat Upgrades, by default, keeps track of all the contract versions you have deployed in an `.openzeppelin` folder in the project root. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
 
 NOTE: The format of the files within the `.openzeppelin` folder is not compatible with those of the xref:cli::index.adoc[OpenZeppelin CLI]. If you want to use these plugins for an existing OpenZeppelin CLI project, you have to migrate it first. See xref:migrate-from-cli.adoc[Migrate from CLI] for instructions.
-
 
 [[network.json]]
 == `<network_name>.json`
@@ -62,3 +61,13 @@ You can determine the location of a temporary network file by doing the followin
 . Run `export DEBUG=@openzeppelin:*` to enable debug logging.
 . Run your Hardhat test or script.
 . Find the log message containing the text `development manifest file:`.
+
+[[custom-network-files-location]]
+== Custom Network Files Location
+
+To customize the location of the `.openzeppelin` folder, set the `MANIFEST_DEFAULT_DIR` environment variable to an absolute path or a path relative to the root of your project. This variable allows you to specify different directories for storing network files, enabling you to deploy the same contracts to the same networks for different environments without conflicts. This can be used with private networks to avoid chain ID conflicts.
+
+For example:
+
+* Run `export MANIFEST_DEFAULT_DIR=.openzeppelin/tests` to configure OpenZeppelin Hardhat Upgrades to use `.openzeppelin/tests/<network_name>.json` for test deployments.
+* Run `export MANIFEST_DEFAULT_DIR=.openzeppelin/production` to configure OpenZeppelin Hardhat Upgrades to use `.openzeppelin/production/<network_name>.json` for production deployments.
