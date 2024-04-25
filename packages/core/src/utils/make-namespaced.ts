@@ -178,7 +178,7 @@ function makeInsertAfter(node: Node, text: string): Modification {
 function makeDelete(node: Node, orig: Buffer): Modification {
   const positions = getPositions(node);
   let end = positions.end;
-  // If the next character (after whitespaces) is a semicolon for variables, skip over it
+  // For variables, skip past whitespaces and the first semicolon
   if (isNodeType('VariableDeclaration', node)) {
     while (end + 1 < orig.length && orig.toString('utf8', end, end + 1).trim() === '') {
       end += 1;
