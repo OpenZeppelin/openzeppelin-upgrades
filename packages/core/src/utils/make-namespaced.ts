@@ -180,10 +180,10 @@ function makeDelete(node: Node, orig: Buffer): Modification {
   let end = positions.end;
   // If the next character (after whitespaces) is a semicolon for variables, skip over it
   if (isNodeType('VariableDeclaration', node)) {
-    while (end < orig.length && orig.toString('utf8', end, end + 1).trim() === '') {
+    while (end + 1 < orig.length && orig.toString('utf8', end, end + 1).trim() === '') {
       end += 1;
     }
-    if (end < orig.length && orig.toString('utf8', end, end + 1) === ';') {
+    if (end + 1 < orig.length && orig.toString('utf8', end, end + 1) === ';') {
       end += 1;
     }
   }
