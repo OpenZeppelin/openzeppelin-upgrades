@@ -186,7 +186,6 @@ function makeDelete(node: Node, orig: Buffer): Modification {
     if (end < orig.length && orig.toString('utf8', end, end + 1) === ';') {
       end += 1;
     }
-    console.log('end', end, 'orig.length', orig.length);
   }
 
   return { start: positions.start, end };
