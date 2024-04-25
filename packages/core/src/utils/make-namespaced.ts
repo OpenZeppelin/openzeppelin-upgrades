@@ -178,9 +178,14 @@ function makeInsertAfter(node: Node, text: string): Modification {
 function makeDelete(node: Node, orig: Buffer): Modification {
   const positions = getPositions(node);
   let end = positions.end;
-  // If the next character is a semicolon for variables, skip over it
-  if (isNodeType('VariableDeclaration', node) && end + 1 < orig.length && orig.toString('utf8', end, end + 1) === ';') {
-    end += 1;
+  // For variables, skip past whitespaces and the first semicolon
+  if (isNodeType('VariableDeclaration', node)) {
+    while (end + 1 < orig.length && orig.toString('utf8', end, end + 1).trim() === '') {
+      end += 1;
+    }
+    if (end + 1 < orig.length && orig.toString('utf8', end, end + 1) === ';') {
+      end += 1;
+    }
   }
   return { start: positions.start, end };
 }

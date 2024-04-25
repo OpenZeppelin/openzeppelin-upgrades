@@ -66,6 +66,13 @@ contract Example {
      * @dev a custom error inside a contract
      */
     error CustomErrorInsideContract(address a);
+
+    uint256 public spaceSemicolon ;
+    uint256 public twoSpacesSemicolon  ;
+    uint256 public tabSemicolon	;
+    uint256 public lineBreakSemicolon
+    ;
+    error SpaceSemicolon(uint256 a) ;
 }
 
 contract HasFunction {
