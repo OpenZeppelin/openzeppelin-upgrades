@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 1.33.1 (2024-04-25)
 
-- Fix Hardhat compile error when variable has whitespace before semicolon.
+- Fix Hardhat compile error when variable has whitespace before semicolon. ([#1020](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1020))
 
 ## 1.33.0 (2024-04-24)
 
