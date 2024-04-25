@@ -187,7 +187,6 @@ function makeDelete(node: Node, orig: Buffer): Modification {
       end += 1;
     }
   }
-
   return { start: positions.start, end };
 }
 
