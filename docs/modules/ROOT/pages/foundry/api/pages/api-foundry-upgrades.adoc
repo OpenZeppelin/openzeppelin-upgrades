@@ -74,6 +74,24 @@ struct DefenderOptions {
   string upgradeApprovalProcessId;
   string licenseType;
   bool skipLicenseType;
+  struct TxOverrides txOverrides;
+}
+```
+
+[[TxOverrides]]
+=== `++TxOverrides++` link:https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/Options.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import { TxOverrides } from "openzeppelin-foundry-upgrades/Options.sol";
+```
+
+```solidity
+struct TxOverrides {
+  uint256 gasLimit;
+  uint256 gasPrice;
+  uint256 maxFeePerGas;
+  uint256 maxPriorityFeePerGas;
 }
 ```
 
