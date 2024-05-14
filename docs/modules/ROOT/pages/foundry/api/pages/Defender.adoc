@@ -1,11 +1,11 @@
 :github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
-:xref-Defender-Defender-deployContract-string-: xref:Defender.adoc#Defender-Defender-deployContract-string-
-:xref-Defender-Defender-deployContract-string-struct-DefenderOptions-: xref:Defender.adoc#Defender-Defender-deployContract-string-struct-DefenderOptions-
-:xref-Defender-Defender-deployContract-string-bytes-: xref:Defender.adoc#Defender-Defender-deployContract-string-bytes-
-:xref-Defender-Defender-deployContract-string-bytes-struct-DefenderOptions-: xref:Defender.adoc#Defender-Defender-deployContract-string-bytes-struct-DefenderOptions-
-:xref-Defender-Defender-proposeUpgrade-address-string-struct-Options-: xref:Defender.adoc#Defender-Defender-proposeUpgrade-address-string-struct-Options-
-:xref-Defender-Defender-getDeployApprovalProcess--: xref:Defender.adoc#Defender-Defender-getDeployApprovalProcess--
-:xref-Defender-Defender-getUpgradeApprovalProcess--: xref:Defender.adoc#Defender-Defender-getUpgradeApprovalProcess--
+:xref-Defender-Defender-deployContract-string-: xref:#Defender-Defender-deployContract-string-
+:xref-Defender-Defender-deployContract-string-struct-DefenderOptions-: xref:#Defender-Defender-deployContract-string-struct-DefenderOptions-
+:xref-Defender-Defender-deployContract-string-bytes-: xref:#Defender-Defender-deployContract-string-bytes-
+:xref-Defender-Defender-deployContract-string-bytes-struct-DefenderOptions-: xref:#Defender-Defender-deployContract-string-bytes-struct-DefenderOptions-
+:xref-Defender-Defender-proposeUpgrade-address-string-struct-Options-: xref:#Defender-Defender-proposeUpgrade-address-string-struct-Options-
+:xref-Defender-Defender-getDeployApprovalProcess--: xref:#Defender-Defender-getDeployApprovalProcess--
+:xref-Defender-Defender-getUpgradeApprovalProcess--: xref:#Defender-Defender-getUpgradeApprovalProcess--
 :deployContract: pass:normal[xref:#Defender-Defender-deployContract-string-[`++deployContract++`]]
 :deployContract: pass:normal[xref:#Defender-Defender-deployContract-string-struct-DefenderOptions-[`++deployContract++`]]
 :deployContract: pass:normal[xref:#Defender-Defender-deployContract-string-bytes-[`++deployContract++`]]
