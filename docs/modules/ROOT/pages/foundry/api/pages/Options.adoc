@@ -1,0 +1,59 @@
+:github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
+
+[[Options-Options]]
+=== `++Options++` link:https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/Options.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import { Options } from "openzeppelin-foundry-upgrades/Options.sol";
+```
+
+```solidity
+struct Options {
+  string referenceContract;
+  bytes constructorData;
+  string unsafeAllow;
+  bool unsafeAllowRenames;
+  bool unsafeSkipStorageCheck;
+  bool unsafeSkipAllChecks;
+  struct DefenderOptions defender;
+}
+```
+
+[[Options-DefenderOptions]]
+=== `++DefenderOptions++` link:https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/Options.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import { DefenderOptions } from "openzeppelin-foundry-upgrades/Options.sol";
+```
+
+```solidity
+struct DefenderOptions {
+  bool useDefenderDeploy;
+  bool skipVerifySourceCode;
+  string relayerId;
+  bytes32 salt;
+  string upgradeApprovalProcessId;
+  string licenseType;
+  bool skipLicenseType;
+  struct TxOverrides txOverrides;
+}
+```
+
+[[Options-TxOverrides]]
+=== `++TxOverrides++` link:https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/Options.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import { TxOverrides } from "openzeppelin-foundry-upgrades/Options.sol";
+```
+
+```solidity
+struct TxOverrides {
+  uint256 gasLimit;
+  uint256 gasPrice;
+  uint256 maxFeePerGas;
+  uint256 maxPriorityFeePerGas;
+}
+```

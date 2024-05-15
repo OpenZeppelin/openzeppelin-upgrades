@@ -1,0 +1,676 @@
+:github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
+:xref-Upgrades-Upgrades-deployUUPSProxy-string-bytes-struct-Options-: xref:#Upgrades-Upgrades-deployUUPSProxy-string-bytes-struct-Options-
+:xref-Upgrades-Upgrades-deployUUPSProxy-string-bytes-: xref:#Upgrades-Upgrades-deployUUPSProxy-string-bytes-
+:xref-Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-struct-Options-: xref:#Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-struct-Options-
+:xref-Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-: xref:#Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-
+:xref-Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-: xref:#Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-
+:xref-Upgrades-Upgrades-upgradeProxy-address-string-bytes-: xref:#Upgrades-Upgrades-upgradeProxy-address-string-bytes-
+:xref-Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-: xref:#Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-
+:xref-Upgrades-Upgrades-upgradeProxy-address-string-bytes-address-: xref:#Upgrades-Upgrades-upgradeProxy-address-string-bytes-address-
+:xref-Upgrades-Upgrades-deployBeacon-string-address-struct-Options-: xref:#Upgrades-Upgrades-deployBeacon-string-address-struct-Options-
+:xref-Upgrades-Upgrades-deployBeacon-string-address-: xref:#Upgrades-Upgrades-deployBeacon-string-address-
+:xref-Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-: xref:#Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-
+:xref-Upgrades-Upgrades-upgradeBeacon-address-string-: xref:#Upgrades-Upgrades-upgradeBeacon-address-string-
+:xref-Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-: xref:#Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-
+:xref-Upgrades-Upgrades-upgradeBeacon-address-string-address-: xref:#Upgrades-Upgrades-upgradeBeacon-address-string-address-
+:xref-Upgrades-Upgrades-deployBeaconProxy-address-bytes-: xref:#Upgrades-Upgrades-deployBeaconProxy-address-bytes-
+:xref-Upgrades-Upgrades-deployBeaconProxy-address-bytes-struct-Options-: xref:#Upgrades-Upgrades-deployBeaconProxy-address-bytes-struct-Options-
+:xref-Upgrades-Upgrades-validateImplementation-string-struct-Options-: xref:#Upgrades-Upgrades-validateImplementation-string-struct-Options-
+:xref-Upgrades-Upgrades-deployImplementation-string-struct-Options-: xref:#Upgrades-Upgrades-deployImplementation-string-struct-Options-
+:xref-Upgrades-Upgrades-validateUpgrade-string-struct-Options-: xref:#Upgrades-Upgrades-validateUpgrade-string-struct-Options-
+:xref-Upgrades-Upgrades-prepareUpgrade-string-struct-Options-: xref:#Upgrades-Upgrades-prepareUpgrade-string-struct-Options-
+:xref-Upgrades-Upgrades-getAdminAddress-address-: xref:#Upgrades-Upgrades-getAdminAddress-address-
+:xref-Upgrades-Upgrades-getImplementationAddress-address-: xref:#Upgrades-Upgrades-getImplementationAddress-address-
+:xref-Upgrades-Upgrades-getBeaconAddress-address-: xref:#Upgrades-Upgrades-getBeaconAddress-address-
+:xref-Upgrades-UnsafeUpgrades-deployUUPSProxy-address-bytes-: xref:#Upgrades-UnsafeUpgrades-deployUUPSProxy-address-bytes-
+:xref-Upgrades-UnsafeUpgrades-deployTransparentProxy-address-address-bytes-: xref:#Upgrades-UnsafeUpgrades-deployTransparentProxy-address-address-bytes-
+:xref-Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-: xref:#Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-
+:xref-Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-: xref:#Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-
+:xref-Upgrades-UnsafeUpgrades-deployBeacon-address-address-: xref:#Upgrades-UnsafeUpgrades-deployBeacon-address-address-
+:xref-Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-: xref:#Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-
+:xref-Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-: xref:#Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-
+:xref-Upgrades-UnsafeUpgrades-deployBeaconProxy-address-bytes-: xref:#Upgrades-UnsafeUpgrades-deployBeaconProxy-address-bytes-
+:xref-Upgrades-UnsafeUpgrades-getAdminAddress-address-: xref:#Upgrades-UnsafeUpgrades-getAdminAddress-address-
+:xref-Upgrades-UnsafeUpgrades-getImplementationAddress-address-: xref:#Upgrades-UnsafeUpgrades-getImplementationAddress-address-
+:xref-Upgrades-UnsafeUpgrades-getBeaconAddress-address-: xref:#Upgrades-UnsafeUpgrades-getBeaconAddress-address-
+:deployUUPSProxy: pass:normal[xref:#Upgrades-Upgrades-deployUUPSProxy-string-bytes-struct-Options-[`++deployUUPSProxy++`]]
+:deployUUPSProxy: pass:normal[xref:#Upgrades-Upgrades-deployUUPSProxy-string-bytes-[`++deployUUPSProxy++`]]
+:deployTransparentProxy: pass:normal[xref:#Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-struct-Options-[`++deployTransparentProxy++`]]
+:deployTransparentProxy: pass:normal[xref:#Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-[`++deployTransparentProxy++`]]
+:upgradeProxy: pass:normal[xref:#Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-[`++upgradeProxy++`]]
+:upgradeProxy: pass:normal[xref:#Upgrades-Upgrades-upgradeProxy-address-string-bytes-[`++upgradeProxy++`]]
+:upgradeProxy: pass:normal[xref:#Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-[`++upgradeProxy++`]]
+:upgradeProxy: pass:normal[xref:#Upgrades-Upgrades-upgradeProxy-address-string-bytes-address-[`++upgradeProxy++`]]
+:deployBeacon: pass:normal[xref:#Upgrades-Upgrades-deployBeacon-string-address-struct-Options-[`++deployBeacon++`]]
+:deployBeacon: pass:normal[xref:#Upgrades-Upgrades-deployBeacon-string-address-[`++deployBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-[`++upgradeBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#Upgrades-Upgrades-upgradeBeacon-address-string-[`++upgradeBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-[`++upgradeBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#Upgrades-Upgrades-upgradeBeacon-address-string-address-[`++upgradeBeacon++`]]
+:deployBeaconProxy: pass:normal[xref:#Upgrades-Upgrades-deployBeaconProxy-address-bytes-[`++deployBeaconProxy++`]]
+:deployBeaconProxy: pass:normal[xref:#Upgrades-Upgrades-deployBeaconProxy-address-bytes-struct-Options-[`++deployBeaconProxy++`]]
+:validateImplementation: pass:normal[xref:#Upgrades-Upgrades-validateImplementation-string-struct-Options-[`++validateImplementation++`]]
+:deployImplementation: pass:normal[xref:#Upgrades-Upgrades-deployImplementation-string-struct-Options-[`++deployImplementation++`]]
+:validateUpgrade: pass:normal[xref:#Upgrades-Upgrades-validateUpgrade-string-struct-Options-[`++validateUpgrade++`]]
+:prepareUpgrade: pass:normal[xref:#Upgrades-Upgrades-prepareUpgrade-string-struct-Options-[`++prepareUpgrade++`]]
+:getAdminAddress: pass:normal[xref:#Upgrades-Upgrades-getAdminAddress-address-[`++getAdminAddress++`]]
+:getImplementationAddress: pass:normal[xref:#Upgrades-Upgrades-getImplementationAddress-address-[`++getImplementationAddress++`]]
+:getBeaconAddress: pass:normal[xref:#Upgrades-Upgrades-getBeaconAddress-address-[`++getBeaconAddress++`]]
+
+[.contract]
+[[Upgrades-Upgrades]]
+=== `++Upgrades++` link:https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/Upgrades.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import { Upgrades } from "openzeppelin-foundry-upgrades/Upgrades.sol";
+```
+
+Library for deploying and managing upgradeable contracts from Forge scripts or tests.
+
+NOTE: Requires OpenZeppelin Contracts v5 or higher.
+
+[.contract-index]
+.Functions
+--
+* {xref-Upgrades-Upgrades-deployUUPSProxy-string-bytes-struct-Options-}[`++deployUUPSProxy(contractName, initializerData, opts)++`]
+* {xref-Upgrades-Upgrades-deployUUPSProxy-string-bytes-}[`++deployUUPSProxy(contractName, initializerData)++`]
+* {xref-Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-struct-Options-}[`++deployTransparentProxy(contractName, initialOwner, initializerData, opts)++`]
+* {xref-Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-}[`++deployTransparentProxy(contractName, initialOwner, initializerData)++`]
+* {xref-Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-}[`++upgradeProxy(proxy, contractName, data, opts)++`]
+* {xref-Upgrades-Upgrades-upgradeProxy-address-string-bytes-}[`++upgradeProxy(proxy, contractName, data)++`]
+* {xref-Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-}[`++upgradeProxy(proxy, contractName, data, opts, tryCaller)++`]
+* {xref-Upgrades-Upgrades-upgradeProxy-address-string-bytes-address-}[`++upgradeProxy(proxy, contractName, data, tryCaller)++`]
+* {xref-Upgrades-Upgrades-deployBeacon-string-address-struct-Options-}[`++deployBeacon(contractName, initialOwner, opts)++`]
+* {xref-Upgrades-Upgrades-deployBeacon-string-address-}[`++deployBeacon(contractName, initialOwner)++`]
+* {xref-Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-}[`++upgradeBeacon(beacon, contractName, opts)++`]
+* {xref-Upgrades-Upgrades-upgradeBeacon-address-string-}[`++upgradeBeacon(beacon, contractName)++`]
+* {xref-Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-}[`++upgradeBeacon(beacon, contractName, opts, tryCaller)++`]
+* {xref-Upgrades-Upgrades-upgradeBeacon-address-string-address-}[`++upgradeBeacon(beacon, contractName, tryCaller)++`]
+* {xref-Upgrades-Upgrades-deployBeaconProxy-address-bytes-}[`++deployBeaconProxy(beacon, data)++`]
+* {xref-Upgrades-Upgrades-deployBeaconProxy-address-bytes-struct-Options-}[`++deployBeaconProxy(beacon, data, opts)++`]
+* {xref-Upgrades-Upgrades-validateImplementation-string-struct-Options-}[`++validateImplementation(contractName, opts)++`]
+* {xref-Upgrades-Upgrades-deployImplementation-string-struct-Options-}[`++deployImplementation(contractName, opts)++`]
+* {xref-Upgrades-Upgrades-validateUpgrade-string-struct-Options-}[`++validateUpgrade(contractName, opts)++`]
+* {xref-Upgrades-Upgrades-prepareUpgrade-string-struct-Options-}[`++prepareUpgrade(contractName, opts)++`]
+* {xref-Upgrades-Upgrades-getAdminAddress-address-}[`++getAdminAddress(proxy)++`]
+* {xref-Upgrades-Upgrades-getImplementationAddress-address-}[`++getImplementationAddress(proxy)++`]
+* {xref-Upgrades-Upgrades-getBeaconAddress-address-}[`++getBeaconAddress(proxy)++`]
+
+--
+
+[.contract-item]
+[[Upgrades-Upgrades-deployUUPSProxy-string-bytes-struct-Options-]]
+==== `[.contract-item-name]#++deployUUPSProxy++#++(string contractName, bytes initializerData, struct Options opts) → address++` [.item-kind]#internal#
+
+Deploys a UUPS proxy using the given contract as the implementation.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to use as the implementation, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `initializerData` (`bytes`) - Encoded call data of the initializer function to call during creation of the proxy, or empty if no initialization is required
+* `opts` (`struct Options`) - Common options
+
+*Returns*
+
+* (`address`) - Proxy address
+
+[.contract-item]
+[[Upgrades-Upgrades-deployUUPSProxy-string-bytes-]]
+==== `[.contract-item-name]#++deployUUPSProxy++#++(string contractName, bytes initializerData) → address++` [.item-kind]#internal#
+
+Deploys a UUPS proxy using the given contract as the implementation.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to use as the implementation, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `initializerData` (`bytes`) - Encoded call data of the initializer function to call during creation of the proxy, or empty if no initialization is required
+
+*Returns*
+
+* (`address`) - Proxy address
+
+[.contract-item]
+[[Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-struct-Options-]]
+==== `[.contract-item-name]#++deployTransparentProxy++#++(string contractName, address initialOwner, bytes initializerData, struct Options opts) → address++` [.item-kind]#internal#
+
+Deploys a transparent proxy using the given contract as the implementation.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to use as the implementation, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `initialOwner` (`address`) - Address to set as the owner of the ProxyAdmin contract which gets deployed by the proxy
+* `initializerData` (`bytes`) - Encoded call data of the initializer function to call during creation of the proxy, or empty if no initialization is required
+* `opts` (`struct Options`) - Common options
+
+*Returns*
+
+* (`address`) - Proxy address
+
+[.contract-item]
+[[Upgrades-Upgrades-deployTransparentProxy-string-address-bytes-]]
+==== `[.contract-item-name]#++deployTransparentProxy++#++(string contractName, address initialOwner, bytes initializerData) → address++` [.item-kind]#internal#
+
+Deploys a transparent proxy using the given contract as the implementation.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to use as the implementation, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `initialOwner` (`address`) - Address to set as the owner of the ProxyAdmin contract which gets deployed by the proxy
+* `initializerData` (`bytes`) - Encoded call data of the initializer function to call during creation of the proxy, or empty if no initialization is required
+
+*Returns*
+
+* (`address`) - Proxy address
+
+[.contract-item]
+[[Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data, struct Options opts)++` [.item-kind]#internal#
+
+Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+* `opts` (`struct Options`) - Common options
+
+[.contract-item]
+[[Upgrades-Upgrades-upgradeProxy-address-string-bytes-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data)++` [.item-kind]#internal#
+
+Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+
+[.contract-item]
+[[Upgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data, struct Options opts, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+* `opts` (`struct Options`) - Common options
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the proxy or its ProxyAdmin.
+
+[.contract-item]
+[[Upgrades-Upgrades-upgradeProxy-address-string-bytes-address-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the proxy or its ProxyAdmin.
+
+[.contract-item]
+[[Upgrades-Upgrades-deployBeacon-string-address-struct-Options-]]
+==== `[.contract-item-name]#++deployBeacon++#++(string contractName, address initialOwner, struct Options opts) → address++` [.item-kind]#internal#
+
+Deploys an upgradeable beacon using the given contract as the implementation.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to use as the implementation, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `initialOwner` (`address`) - Address to set as the owner of the UpgradeableBeacon contract which gets deployed
+* `opts` (`struct Options`) - Common options
+
+*Returns*
+
+* (`address`) - Beacon address
+
+[.contract-item]
+[[Upgrades-Upgrades-deployBeacon-string-address-]]
+==== `[.contract-item-name]#++deployBeacon++#++(string contractName, address initialOwner) → address++` [.item-kind]#internal#
+
+Deploys an upgradeable beacon using the given contract as the implementation.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to use as the implementation, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `initialOwner` (`address`) - Address to set as the owner of the UpgradeableBeacon contract which gets deployed
+
+*Returns*
+
+* (`address`) - Beacon address
+
+[.contract-item]
+[[Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName, struct Options opts)++` [.item-kind]#internal#
+
+Upgrades a beacon to a new implementation contract.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+
+[.contract-item]
+[[Upgrades-Upgrades-upgradeBeacon-address-string-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName)++` [.item-kind]#internal#
+
+Upgrades a beacon to a new implementation contract.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+
+[.contract-item]
+[[Upgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName, struct Options opts, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a beacon to a new implementation contract.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the beacon.
+
+[.contract-item]
+[[Upgrades-Upgrades-upgradeBeacon-address-string-address-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a beacon to a new implementation contract.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the beacon.
+
+[.contract-item]
+[[Upgrades-Upgrades-deployBeaconProxy-address-bytes-]]
+==== `[.contract-item-name]#++deployBeaconProxy++#++(address beacon, bytes data) → address++` [.item-kind]#internal#
+
+Deploys a beacon proxy using the given beacon and call data.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to use
+* `data` (`bytes`) - Encoded call data of the initializer function to call during creation of the proxy, or empty if no initialization is required
+
+*Returns*
+
+* (`address`) - Proxy address
+
+[.contract-item]
+[[Upgrades-Upgrades-deployBeaconProxy-address-bytes-struct-Options-]]
+==== `[.contract-item-name]#++deployBeaconProxy++#++(address beacon, bytes data, struct Options opts) → address++` [.item-kind]#internal#
+
+Deploys a beacon proxy using the given beacon and call data.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to use
+* `data` (`bytes`) - Encoded call data of the initializer function to call during creation of the proxy, or empty if no initialization is required
+* `opts` (`struct Options`) - Common options
+
+*Returns*
+
+* (`address`) - Proxy address
+
+[.contract-item]
+[[Upgrades-Upgrades-validateImplementation-string-struct-Options-]]
+==== `[.contract-item-name]#++validateImplementation++#++(string contractName, struct Options opts)++` [.item-kind]#internal#
+
+Validates an implementation contract, but does not deploy it.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to validate, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+
+[.contract-item]
+[[Upgrades-Upgrades-deployImplementation-string-struct-Options-]]
+==== `[.contract-item-name]#++deployImplementation++#++(string contractName, struct Options opts) → address++` [.item-kind]#internal#
+
+Validates and deploys an implementation contract, and returns its address.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to deploy, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+
+*Returns*
+
+* (`address`) - Address of the implementation contract
+
+[.contract-item]
+[[Upgrades-Upgrades-validateUpgrade-string-struct-Options-]]
+==== `[.contract-item-name]#++validateUpgrade++#++(string contractName, struct Options opts)++` [.item-kind]#internal#
+
+Validates a new implementation contract in comparison with a reference contract, but does not deploy it.
+
+Requires that either the `referenceContract` option is set, or the contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to validate, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+
+[.contract-item]
+[[Upgrades-Upgrades-prepareUpgrade-string-struct-Options-]]
+==== `[.contract-item-name]#++prepareUpgrade++#++(string contractName, struct Options opts) → address++` [.item-kind]#internal#
+
+Validates a new implementation contract in comparison with a reference contract, deploys the new implementation contract,
+and returns its address.
+
+Requires that either the `referenceContract` option is set, or the contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from your deployment environment.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to deploy, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+
+*Returns*
+
+* (`address`) - Address of the new implementation contract
+
+[.contract-item]
+[[Upgrades-Upgrades-getAdminAddress-address-]]
+==== `[.contract-item-name]#++getAdminAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the admin address of a transparent proxy from its ERC1967 admin storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a transparent proxy
+
+*Returns*
+
+* (`address`) - Admin address
+
+[.contract-item]
+[[Upgrades-Upgrades-getImplementationAddress-address-]]
+==== `[.contract-item-name]#++getImplementationAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the implementation address of a transparent or UUPS proxy from its ERC1967 implementation storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a transparent or UUPS proxy
+
+*Returns*
+
+* (`address`) - Implementation address
+
+[.contract-item]
+[[Upgrades-Upgrades-getBeaconAddress-address-]]
+==== `[.contract-item-name]#++getBeaconAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the beacon address of a beacon proxy from its ERC1967 beacon storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a beacon proxy
+
+*Returns*
+
+* (`address`) - Beacon address
+
+:deployUUPSProxy: pass:normal[xref:#Upgrades-UnsafeUpgrades-deployUUPSProxy-address-bytes-[`++deployUUPSProxy++`]]
+:deployTransparentProxy: pass:normal[xref:#Upgrades-UnsafeUpgrades-deployTransparentProxy-address-address-bytes-[`++deployTransparentProxy++`]]
+:upgradeProxy: pass:normal[xref:#Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-[`++upgradeProxy++`]]
+:upgradeProxy: pass:normal[xref:#Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-[`++upgradeProxy++`]]
+:deployBeacon: pass:normal[xref:#Upgrades-UnsafeUpgrades-deployBeacon-address-address-[`++deployBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-[`++upgradeBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-[`++upgradeBeacon++`]]
+:deployBeaconProxy: pass:normal[xref:#Upgrades-UnsafeUpgrades-deployBeaconProxy-address-bytes-[`++deployBeaconProxy++`]]
+:getAdminAddress: pass:normal[xref:#Upgrades-UnsafeUpgrades-getAdminAddress-address-[`++getAdminAddress++`]]
+:getImplementationAddress: pass:normal[xref:#Upgrades-UnsafeUpgrades-getImplementationAddress-address-[`++getImplementationAddress++`]]
+:getBeaconAddress: pass:normal[xref:#Upgrades-UnsafeUpgrades-getBeaconAddress-address-[`++getBeaconAddress++`]]
+
+[.contract]
+[[Upgrades-UnsafeUpgrades]]
+=== `++UnsafeUpgrades++` link:https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/Upgrades.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import { UnsafeUpgrades } from "openzeppelin-foundry-upgrades/Upgrades.sol";
+```
+
+Library for deploying and managing upgradeable contracts from Forge tests, without validations.
+
+Can be used with `forge coverage`. Requires implementation contracts to be instantiated first.
+Does not require `--ffi` and does not require a clean compilation before each run.
+
+Not supported for OpenZeppelin Defender deployments.
+
+WARNING: Not recommended for use in Forge scripts.
+`UnsafeUpgrades` does not validate whether your contracts are upgrade safe or whether new implementations are compatible with previous ones.
+Use `Upgrades` if you want validations to be run.
+
+NOTE: Requires OpenZeppelin Contracts v5 or higher.
+
+[.contract-index]
+.Functions
+--
+* {xref-Upgrades-UnsafeUpgrades-deployUUPSProxy-address-bytes-}[`++deployUUPSProxy(impl, initializerData)++`]
+* {xref-Upgrades-UnsafeUpgrades-deployTransparentProxy-address-address-bytes-}[`++deployTransparentProxy(impl, initialOwner, initializerData)++`]
+* {xref-Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-}[`++upgradeProxy(proxy, newImpl, data)++`]
+* {xref-Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-}[`++upgradeProxy(proxy, newImpl, data, tryCaller)++`]
+* {xref-Upgrades-UnsafeUpgrades-deployBeacon-address-address-}[`++deployBeacon(impl, initialOwner)++`]
+* {xref-Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-}[`++upgradeBeacon(beacon, newImpl)++`]
+* {xref-Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-}[`++upgradeBeacon(beacon, newImpl, tryCaller)++`]
+* {xref-Upgrades-UnsafeUpgrades-deployBeaconProxy-address-bytes-}[`++deployBeaconProxy(beacon, data)++`]
+* {xref-Upgrades-UnsafeUpgrades-getAdminAddress-address-}[`++getAdminAddress(proxy)++`]
+* {xref-Upgrades-UnsafeUpgrades-getImplementationAddress-address-}[`++getImplementationAddress(proxy)++`]
+* {xref-Upgrades-UnsafeUpgrades-getBeaconAddress-address-}[`++getBeaconAddress(proxy)++`]
+
+--
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-deployUUPSProxy-address-bytes-]]
+==== `[.contract-item-name]#++deployUUPSProxy++#++(address impl, bytes initializerData) → address++` [.item-kind]#internal#
+
+Deploys a UUPS proxy using the given contract address as the implementation.
+
+*Parameters:*
+
+* `impl` (`address`) - Address of the contract to use as the implementation
+* `initializerData` (`bytes`) - Encoded call data of the initializer function to call during creation of the proxy, or empty if no initialization is required
+
+*Returns*
+
+* (`address`) - Proxy address
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-deployTransparentProxy-address-address-bytes-]]
+==== `[.contract-item-name]#++deployTransparentProxy++#++(address impl, address initialOwner, bytes initializerData) → address++` [.item-kind]#internal#
+
+Deploys a transparent proxy using the given contract address as the implementation.
+
+*Parameters:*
+
+* `impl` (`address`) - Address of the contract to use as the implementation
+* `initialOwner` (`address`) - Address to set as the owner of the ProxyAdmin contract which gets deployed by the proxy
+* `initializerData` (`bytes`) - Encoded call data of the initializer function to call during creation of the proxy, or empty if no initialization is required
+
+*Returns*
+
+* (`address`) - Proxy address
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, address newImpl, bytes data)++` [.item-kind]#internal#
+
+Upgrades a proxy to a new implementation contract address. Only supported for UUPS or transparent proxies.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `newImpl` (`address`) - Address of the new implementation contract to upgrade to
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, address newImpl, bytes data, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a proxy to a new implementation contract address. Only supported for UUPS or transparent proxies.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `newImpl` (`address`) - Address of the new implementation contract to upgrade to
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the proxy or its ProxyAdmin.
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-deployBeacon-address-address-]]
+==== `[.contract-item-name]#++deployBeacon++#++(address impl, address initialOwner) → address++` [.item-kind]#internal#
+
+Deploys an upgradeable beacon using the given contract address as the implementation.
+
+*Parameters:*
+
+* `impl` (`address`) - Address of the contract to use as the implementation
+* `initialOwner` (`address`) - Address to set as the owner of the UpgradeableBeacon contract which gets deployed
+
+*Returns*
+
+* (`address`) - Beacon address
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, address newImpl)++` [.item-kind]#internal#
+
+Upgrades a beacon to a new implementation contract address.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `newImpl` (`address`) - Address of the new implementation contract to upgrade to
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, address newImpl, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a beacon to a new implementation contract address.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `newImpl` (`address`) - Address of the new implementation contract to upgrade to
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the beacon.
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-deployBeaconProxy-address-bytes-]]
+==== `[.contract-item-name]#++deployBeaconProxy++#++(address beacon, bytes data) → address++` [.item-kind]#internal#
+
+Deploys a beacon proxy using the given beacon and call data.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to use
+* `data` (`bytes`) - Encoded call data of the initializer function to call during creation of the proxy, or empty if no initialization is required
+
+*Returns*
+
+* (`address`) - Proxy address
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-getAdminAddress-address-]]
+==== `[.contract-item-name]#++getAdminAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the admin address of a transparent proxy from its ERC1967 admin storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a transparent proxy
+
+*Returns*
+
+* (`address`) - Admin address
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-getImplementationAddress-address-]]
+==== `[.contract-item-name]#++getImplementationAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the implementation address of a transparent or UUPS proxy from its ERC1967 implementation storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a transparent or UUPS proxy
+
+*Returns*
+
+* (`address`) - Implementation address
+
+[.contract-item]
+[[Upgrades-UnsafeUpgrades-getBeaconAddress-address-]]
+==== `[.contract-item-name]#++getBeaconAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the beacon address of a beacon proxy from its ERC1967 beacon storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a beacon proxy
+
+*Returns*
+
+* (`address`) - Beacon address
+

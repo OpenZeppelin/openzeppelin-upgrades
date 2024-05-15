@@ -1,0 +1,423 @@
+:github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
+:xref-LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-: xref:#LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-
+:xref-LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-: xref:#LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-
+:xref-LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-: xref:#LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-
+:xref-LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-address-: xref:#LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-address-
+:xref-LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-: xref:#LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-
+:xref-LegacyUpgrades-Upgrades-upgradeBeacon-address-string-: xref:#LegacyUpgrades-Upgrades-upgradeBeacon-address-string-
+:xref-LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-: xref:#LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-
+:xref-LegacyUpgrades-Upgrades-upgradeBeacon-address-string-address-: xref:#LegacyUpgrades-Upgrades-upgradeBeacon-address-string-address-
+:xref-LegacyUpgrades-Upgrades-validateUpgrade-string-struct-Options-: xref:#LegacyUpgrades-Upgrades-validateUpgrade-string-struct-Options-
+:xref-LegacyUpgrades-Upgrades-prepareUpgrade-string-struct-Options-: xref:#LegacyUpgrades-Upgrades-prepareUpgrade-string-struct-Options-
+:xref-LegacyUpgrades-Upgrades-getAdminAddress-address-: xref:#LegacyUpgrades-Upgrades-getAdminAddress-address-
+:xref-LegacyUpgrades-Upgrades-getImplementationAddress-address-: xref:#LegacyUpgrades-Upgrades-getImplementationAddress-address-
+:xref-LegacyUpgrades-Upgrades-getBeaconAddress-address-: xref:#LegacyUpgrades-Upgrades-getBeaconAddress-address-
+:xref-LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-: xref:#LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-
+:xref-LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-: xref:#LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-
+:xref-LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-: xref:#LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-
+:xref-LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-: xref:#LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-
+:xref-LegacyUpgrades-UnsafeUpgrades-getAdminAddress-address-: xref:#LegacyUpgrades-UnsafeUpgrades-getAdminAddress-address-
+:xref-LegacyUpgrades-UnsafeUpgrades-getImplementationAddress-address-: xref:#LegacyUpgrades-UnsafeUpgrades-getImplementationAddress-address-
+:xref-LegacyUpgrades-UnsafeUpgrades-getBeaconAddress-address-: xref:#LegacyUpgrades-UnsafeUpgrades-getBeaconAddress-address-
+:upgradeProxy: pass:normal[xref:#LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-[`++upgradeProxy++`]]
+:upgradeProxy: pass:normal[xref:#LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-[`++upgradeProxy++`]]
+:upgradeProxy: pass:normal[xref:#LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-[`++upgradeProxy++`]]
+:upgradeProxy: pass:normal[xref:#LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-address-[`++upgradeProxy++`]]
+:upgradeBeacon: pass:normal[xref:#LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-[`++upgradeBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#LegacyUpgrades-Upgrades-upgradeBeacon-address-string-[`++upgradeBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-[`++upgradeBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#LegacyUpgrades-Upgrades-upgradeBeacon-address-string-address-[`++upgradeBeacon++`]]
+:validateUpgrade: pass:normal[xref:#LegacyUpgrades-Upgrades-validateUpgrade-string-struct-Options-[`++validateUpgrade++`]]
+:prepareUpgrade: pass:normal[xref:#LegacyUpgrades-Upgrades-prepareUpgrade-string-struct-Options-[`++prepareUpgrade++`]]
+:getAdminAddress: pass:normal[xref:#LegacyUpgrades-Upgrades-getAdminAddress-address-[`++getAdminAddress++`]]
+:getImplementationAddress: pass:normal[xref:#LegacyUpgrades-Upgrades-getImplementationAddress-address-[`++getImplementationAddress++`]]
+:getBeaconAddress: pass:normal[xref:#LegacyUpgrades-Upgrades-getBeaconAddress-address-[`++getBeaconAddress++`]]
+
+[.contract]
+[[LegacyUpgrades-Upgrades]]
+=== `++Upgrades++` link:https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/LegacyUpgrades.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import { Upgrades } from "openzeppelin-foundry-upgrades/LegacyUpgrades.sol";
+```
+
+Library for managing upgradeable contracts from Forge scripts or tests.
+
+NOTE: Only for upgrading existing deployments using OpenZeppelin Contracts v4.
+For new deployments, use OpenZeppelin Contracts v5 and Upgrades.sol.
+
+[.contract-index]
+.Functions
+--
+* {xref-LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-}[`++upgradeProxy(proxy, contractName, data, opts)++`]
+* {xref-LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-}[`++upgradeProxy(proxy, contractName, data)++`]
+* {xref-LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-}[`++upgradeProxy(proxy, contractName, data, opts, tryCaller)++`]
+* {xref-LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-address-}[`++upgradeProxy(proxy, contractName, data, tryCaller)++`]
+* {xref-LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-}[`++upgradeBeacon(beacon, contractName, opts)++`]
+* {xref-LegacyUpgrades-Upgrades-upgradeBeacon-address-string-}[`++upgradeBeacon(beacon, contractName)++`]
+* {xref-LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-}[`++upgradeBeacon(beacon, contractName, opts, tryCaller)++`]
+* {xref-LegacyUpgrades-Upgrades-upgradeBeacon-address-string-address-}[`++upgradeBeacon(beacon, contractName, tryCaller)++`]
+* {xref-LegacyUpgrades-Upgrades-validateUpgrade-string-struct-Options-}[`++validateUpgrade(contractName, opts)++`]
+* {xref-LegacyUpgrades-Upgrades-prepareUpgrade-string-struct-Options-}[`++prepareUpgrade(contractName, opts)++`]
+* {xref-LegacyUpgrades-Upgrades-getAdminAddress-address-}[`++getAdminAddress(proxy)++`]
+* {xref-LegacyUpgrades-Upgrades-getImplementationAddress-address-}[`++getImplementationAddress(proxy)++`]
+* {xref-LegacyUpgrades-Upgrades-getBeaconAddress-address-}[`++getBeaconAddress(proxy)++`]
+
+--
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data, struct Options opts)++` [.item-kind]#internal#
+
+Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+* `opts` (`struct Options`) - Common options
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data)++` [.item-kind]#internal#
+
+Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-struct-Options-address-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data, struct Options opts, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+* `opts` (`struct Options`) - Common options
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the proxy or its ProxyAdmin.
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-upgradeProxy-address-string-bytes-address-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, string contractName, bytes data, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a proxy to a new implementation contract. Only supported for UUPS or transparent proxies.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the proxy or its ProxyAdmin.
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName, struct Options opts)++` [.item-kind]#internal#
+
+Upgrades a beacon to a new implementation contract.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-upgradeBeacon-address-string-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName)++` [.item-kind]#internal#
+
+Upgrades a beacon to a new implementation contract.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-upgradeBeacon-address-string-struct-Options-address-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName, struct Options opts, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a beacon to a new implementation contract.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the beacon.
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-upgradeBeacon-address-string-address-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, string contractName, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a beacon to a new implementation contract.
+
+Requires that either the `referenceContract` option is set, or the new implementation contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `contractName` (`string`) - Name of the new implementation contract to upgrade to, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the beacon.
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-validateUpgrade-string-struct-Options-]]
+==== `[.contract-item-name]#++validateUpgrade++#++(string contractName, struct Options opts)++` [.item-kind]#internal#
+
+Validates a new implementation contract in comparison with a reference contract, but does not deploy it.
+
+Requires that either the `referenceContract` option is set, or the contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to validate, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-prepareUpgrade-string-struct-Options-]]
+==== `[.contract-item-name]#++prepareUpgrade++#++(string contractName, struct Options opts) → address++` [.item-kind]#internal#
+
+Validates a new implementation contract in comparison with a reference contract, deploys the new implementation contract,
+and returns its address.
+
+Requires that either the `referenceContract` option is set, or the contract has a `@custom:oz-upgrades-from <reference>` annotation.
+
+Use this method to prepare an upgrade to be run from an admin address you do not control directly or cannot use from your deployment environment.
+
+*Parameters:*
+
+* `contractName` (`string`) - Name of the contract to deploy, e.g. "MyContract.sol" or "MyContract.sol:MyContract" or artifact path relative to the project root directory
+* `opts` (`struct Options`) - Common options
+
+*Returns*
+
+* (`address`) - Address of the new implementation contract
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-getAdminAddress-address-]]
+==== `[.contract-item-name]#++getAdminAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the admin address of a transparent proxy from its ERC1967 admin storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a transparent proxy
+
+*Returns*
+
+* (`address`) - Admin address
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-getImplementationAddress-address-]]
+==== `[.contract-item-name]#++getImplementationAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the implementation address of a transparent or UUPS proxy from its ERC1967 implementation storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a transparent or UUPS proxy
+
+*Returns*
+
+* (`address`) - Implementation address
+
+[.contract-item]
+[[LegacyUpgrades-Upgrades-getBeaconAddress-address-]]
+==== `[.contract-item-name]#++getBeaconAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the beacon address of a beacon proxy from its ERC1967 beacon storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a beacon proxy
+
+*Returns*
+
+* (`address`) - Beacon address
+
+:upgradeProxy: pass:normal[xref:#LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-[`++upgradeProxy++`]]
+:upgradeProxy: pass:normal[xref:#LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-[`++upgradeProxy++`]]
+:upgradeBeacon: pass:normal[xref:#LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-[`++upgradeBeacon++`]]
+:upgradeBeacon: pass:normal[xref:#LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-[`++upgradeBeacon++`]]
+:getAdminAddress: pass:normal[xref:#LegacyUpgrades-UnsafeUpgrades-getAdminAddress-address-[`++getAdminAddress++`]]
+:getImplementationAddress: pass:normal[xref:#LegacyUpgrades-UnsafeUpgrades-getImplementationAddress-address-[`++getImplementationAddress++`]]
+:getBeaconAddress: pass:normal[xref:#LegacyUpgrades-UnsafeUpgrades-getBeaconAddress-address-[`++getBeaconAddress++`]]
+
+[.contract]
+[[LegacyUpgrades-UnsafeUpgrades]]
+=== `++UnsafeUpgrades++` link:https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/LegacyUpgrades.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import { UnsafeUpgrades } from "openzeppelin-foundry-upgrades/LegacyUpgrades.sol";
+```
+
+Library for managing upgradeable contracts from Forge tests, without validations.
+
+Can be used with `forge coverage`. Requires implementation contracts to be instantiated first.
+Does not require `--ffi` and does not require a clean compilation before each run.
+
+Not supported for OpenZeppelin Defender deployments.
+
+WARNING: Not recommended for use in Forge scripts.
+`UnsafeUpgrades` does not validate whether your contracts are upgrade safe or whether new implementations are compatible with previous ones.
+Use `Upgrades` if you want validations to be run.
+
+NOTE: Only for upgrading existing deployments using OpenZeppelin Contracts v4.
+For new deployments, use OpenZeppelin Contracts v5 and Upgrades.sol.
+
+[.contract-index]
+.Functions
+--
+* {xref-LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-}[`++upgradeProxy(proxy, newImpl, data)++`]
+* {xref-LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-}[`++upgradeProxy(proxy, newImpl, data, tryCaller)++`]
+* {xref-LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-}[`++upgradeBeacon(beacon, newImpl)++`]
+* {xref-LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-}[`++upgradeBeacon(beacon, newImpl, tryCaller)++`]
+* {xref-LegacyUpgrades-UnsafeUpgrades-getAdminAddress-address-}[`++getAdminAddress(proxy)++`]
+* {xref-LegacyUpgrades-UnsafeUpgrades-getImplementationAddress-address-}[`++getImplementationAddress(proxy)++`]
+* {xref-LegacyUpgrades-UnsafeUpgrades-getBeaconAddress-address-}[`++getBeaconAddress(proxy)++`]
+
+--
+
+[.contract-item]
+[[LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, address newImpl, bytes data)++` [.item-kind]#internal#
+
+Upgrades a proxy to a new implementation contract address. Only supported for UUPS or transparent proxies.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `newImpl` (`address`) - Address of the new implementation contract to upgrade to
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+
+[.contract-item]
+[[LegacyUpgrades-UnsafeUpgrades-upgradeProxy-address-address-bytes-address-]]
+==== `[.contract-item-name]#++upgradeProxy++#++(address proxy, address newImpl, bytes data, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a proxy to a new implementation contract address. Only supported for UUPS or transparent proxies.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of the proxy to upgrade
+* `newImpl` (`address`) - Address of the new implementation contract to upgrade to
+* `data` (`bytes`) - Encoded call data of an arbitrary function to call during the upgrade process, or empty if no function needs to be called during the upgrade
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the proxy or its ProxyAdmin.
+
+[.contract-item]
+[[LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, address newImpl)++` [.item-kind]#internal#
+
+Upgrades a beacon to a new implementation contract address.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `newImpl` (`address`) - Address of the new implementation contract to upgrade to
+
+[.contract-item]
+[[LegacyUpgrades-UnsafeUpgrades-upgradeBeacon-address-address-address-]]
+==== `[.contract-item-name]#++upgradeBeacon++#++(address beacon, address newImpl, address tryCaller)++` [.item-kind]#internal#
+
+NOTE: For tests only. If broadcasting in scripts, use the `--sender <ADDRESS>` option with `forge script` instead.
+
+Upgrades a beacon to a new implementation contract address.
+
+This function provides an additional `tryCaller` parameter to test an upgrade using a specific caller address.
+Use this if you encounter `OwnableUnauthorizedAccount` errors in your tests.
+
+*Parameters:*
+
+* `beacon` (`address`) - Address of the beacon to upgrade
+* `newImpl` (`address`) - Address of the new implementation contract to upgrade to
+* `tryCaller` (`address`) - Address to use as the caller of the upgrade function. This should be the address that owns the beacon.
+
+[.contract-item]
+[[LegacyUpgrades-UnsafeUpgrades-getAdminAddress-address-]]
+==== `[.contract-item-name]#++getAdminAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the admin address of a transparent proxy from its ERC1967 admin storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a transparent proxy
+
+*Returns*
+
+* (`address`) - Admin address
+
+[.contract-item]
+[[LegacyUpgrades-UnsafeUpgrades-getImplementationAddress-address-]]
+==== `[.contract-item-name]#++getImplementationAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the implementation address of a transparent or UUPS proxy from its ERC1967 implementation storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a transparent or UUPS proxy
+
+*Returns*
+
+* (`address`) - Implementation address
+
+[.contract-item]
+[[LegacyUpgrades-UnsafeUpgrades-getBeaconAddress-address-]]
+==== `[.contract-item-name]#++getBeaconAddress++#++(address proxy) → address++` [.item-kind]#internal#
+
+Gets the beacon address of a beacon proxy from its ERC1967 beacon storage slot.
+
+*Parameters:*
+
+* `proxy` (`address`) - Address of a beacon proxy
+
+*Returns*
+
+* (`address`) - Beacon address
+
