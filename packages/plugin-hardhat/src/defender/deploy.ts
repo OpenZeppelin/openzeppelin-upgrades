@@ -65,8 +65,7 @@ export async function defenderDeploy(
   // Override constructor arguments in options with the ones passed as arguments to this function.
   // The ones in the options are for implementation contracts only, while this function
   // can be used to deploy proxies as well.
-  const overrideConstructorArgs = [...args] as (string | number | boolean)[];
-  const contractInfo = await getContractInfo(hre, factory, { ...opts, constructorArgs: overrideConstructorArgs });
+  const contractInfo = await getContractInfo(hre, factory, { ...opts, constructorArgs: args });
   const network = await getNetwork(hre);
   debug(`Network ${network}`);
 
@@ -106,7 +105,7 @@ export async function defenderDeploy(
     network: network,
     artifactPayload: JSON.stringify(contractInfo.buildInfo),
     licenseType: licenseType,
-    constructorInputs: overrideConstructorArgs,
+    constructorInputs: args as (string | number | boolean)[],
     verifySourceCode: verifySourceCode,
     relayerId: opts.relayerId,
     salt: opts.salt,
