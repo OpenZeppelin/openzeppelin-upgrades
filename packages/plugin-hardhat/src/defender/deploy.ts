@@ -62,8 +62,11 @@ export async function defenderDeploy(
 ): Promise<Required<Deployment & RemoteDeploymentId> & DeployTransaction> {
   const client = getDeployClient(hre);
 
-  const constructorArgs = [...args] as (string | number | boolean)[];
-  const contractInfo = await getContractInfo(hre, factory, { constructorArgs, ...opts });
+  // Override constructor arguments in options with the ones passed as arguments to this function.
+  // The ones in the options are for implementation contracts only, while this function
+  // can be used to deploy proxies as well.
+  const overrideConstructorArgs = [...args] as (string | number | boolean)[];
+  const contractInfo = await getContractInfo(hre, factory, { ...opts, constructorArgs: overrideConstructorArgs });
   const network = await getNetwork(hre);
   debug(`Network ${network}`);
 
@@ -103,7 +106,7 @@ export async function defenderDeploy(
     network: network,
     artifactPayload: JSON.stringify(contractInfo.buildInfo),
     licenseType: licenseType,
-    constructorInputs: constructorArgs,
+    constructorInputs: overrideConstructorArgs,
     verifySourceCode: verifySourceCode,
     relayerId: opts.relayerId,
     salt: opts.salt,

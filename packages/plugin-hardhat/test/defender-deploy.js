@@ -505,6 +505,58 @@ test('calls defender deploy with ERC1967Proxy', async t => {
   });
 });
 
+test('calls defender deploy with ERC1967Proxy - ignores constructorArgs', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
+  const contractName = 'ERC1967Proxy';
+  const factory = await getProxyFactory(hre);
+
+  const result = await deploy.defenderDeploy(fakeHre, factory, { constructorArgs: ['foo'] }, LOGIC_ADDRESS, DATA);
+  assertResult(t, result);
+
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorInputs: [LOGIC_ADDRESS, DATA],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+});
+
+test('calls defender deploy with ERC1967Proxy - ignores empty constructorArgs', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
+  const contractName = 'ERC1967Proxy';
+  const factory = await getProxyFactory(hre);
+
+  const result = await deploy.defenderDeploy(fakeHre, factory, { constructorArgs: [] }, LOGIC_ADDRESS, DATA);
+  assertResult(t, result);
+
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorInputs: [LOGIC_ADDRESS, DATA],
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+});
+
 test('calls defender deploy with BeaconProxy', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
