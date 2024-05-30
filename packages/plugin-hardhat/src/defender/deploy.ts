@@ -105,7 +105,7 @@ export async function defenderDeploy(
     network: network,
     artifactPayload: JSON.stringify(contractInfo.buildInfo),
     licenseType: licenseType,
-    constructorInputs: args as (string | number | boolean)[],
+    constructorInputs: args as any[],
     verifySourceCode: verifySourceCode,
     relayerId: opts.relayerId,
     salt: opts.salt,
