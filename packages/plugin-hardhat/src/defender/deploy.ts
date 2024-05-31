@@ -66,6 +66,7 @@ export async function defenderDeploy(
   // The ones in the options are for implementation contracts only, while this function
   // can be used to deploy proxies as well.
   const contractInfo = await getContractInfo(hre, factory, { ...opts, constructorArgs: args });
+  const constructorBytecode = factory.interface.encodeDeploy(args);
   const network = await getNetwork(hre);
   debug(`Network ${network}`);
 
@@ -105,7 +106,7 @@ export async function defenderDeploy(
     network: network,
     artifactPayload: JSON.stringify(contractInfo.buildInfo),
     licenseType: licenseType,
-    constructorInputs: args as any[],
+    constructorBytecode,
     verifySourceCode: verifySourceCode,
     relayerId: opts.relayerId,
     salt: opts.salt,

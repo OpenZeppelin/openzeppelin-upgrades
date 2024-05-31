@@ -1,8 +1,8 @@
 # Changelog
 
-## 3.1.1 (2024-05-30)
+## 3.1.1 (2024-05-31)
 
-- Defender: Fix proxy deployments when using `constructorArgs` option. ([#1029](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1029))
+- Defender: Fix proxy deployments when using `constructorArgs` option, support arbitrary constructor arguments. ([#1029](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1029))
 
 ## 3.1.0 (2024-04-22)
 

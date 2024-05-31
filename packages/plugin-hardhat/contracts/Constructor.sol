@@ -10,3 +10,12 @@ contract WithConstructor {
         value = args;
     }
 }
+
+contract WithConstructorArray {
+    uint256[] public x;
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor(uint256[] memory args) {
+        x = args;
+    }
+}
