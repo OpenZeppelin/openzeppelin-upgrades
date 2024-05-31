@@ -48,6 +48,7 @@ interface ContractInfo {
   contractName: string;
   buildInfo: ReducedBuildInfo;
   libraries?: DeployRequestLibraries;
+  constructorBytecode: string;
 }
 
 type CompilerOutputWithMetadata = CompilerOutputContract & {
@@ -66,7 +67,7 @@ export async function defenderDeploy(
   // The ones in the options are for implementation contracts only, while this function
   // can be used to deploy proxies as well.
   const contractInfo = await getContractInfo(hre, factory, { ...opts, constructorArgs: args });
-  const constructorBytecode = factory.interface.encodeDeploy(args);
+  const constructorBytecode = contractInfo.constructorBytecode;
   const network = await getNetwork(hre);
   debug(`Network ${network}`);
 
@@ -162,13 +163,15 @@ export async function defenderDeploy(
 async function getContractInfo(
   hre: HardhatRuntimeEnvironment,
   factory: ethers.ContractFactory,
-  opts: UpgradeOptions,
+  opts: UpgradeOptions & Required<Pick<UpgradeOptions, 'constructorArgs'>>,
 ): Promise<ContractInfo> {
   let fullContractName, runValidation;
   let libraries: DeployRequestLibraries | undefined;
+  let constructorBytecode: string;
   try {
     // Get fully qualified contract name and link references from validations
     const deployData = await getDeployData(hre, factory, opts);
+    constructorBytecode = deployData.encodedArgs;
     [fullContractName, runValidation] = getContractNameAndRunValidation(deployData.validations, deployData.version);
     debug(`Contract ${fullContractName}`);
 
@@ -196,7 +199,12 @@ async function getContractInfo(
           const contractName = artifact.contractName;
           const buildInfo = artifactsBuildInfo;
           debug(`Proxy contract ${sourceName}:${contractName}`);
-          return { sourceName, contractName, buildInfo };
+          return {
+            sourceName,
+            contractName,
+            buildInfo,
+            constructorBytecode: factory.interface.encodeDeploy(opts.constructorArgs),
+          };
         }
       }
     }
@@ -214,7 +222,7 @@ async function getContractInfo(
     );
   }
 
-  return { sourceName, contractName, buildInfo, libraries };
+  return { sourceName, contractName, buildInfo, libraries, constructorBytecode };
 }
 
 /**
