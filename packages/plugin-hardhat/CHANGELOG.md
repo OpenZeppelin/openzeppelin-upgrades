@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.1 (2024-06-03)
+
+- Defender: Fix proxy deployments when using `constructorArgs` option, support arbitrary constructor arguments. ([#1029](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1029))
+
 ## 3.1.0 (2024-04-22)
 
 - Defender: Fix handling of license types for block explorer verification, support `licenseType` and `skipLicenseType` options. ([#1013](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1013))

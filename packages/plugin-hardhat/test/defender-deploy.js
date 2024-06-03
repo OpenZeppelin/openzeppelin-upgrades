@@ -12,6 +12,8 @@ const {
 } = require('../dist/utils/factories');
 const artifactsBuildInfo = require('@openzeppelin/upgrades-core/artifacts/build-info-v5.json');
 
+const { AbiCoder } = require('ethers');
+
 const TX_HASH = '0x1';
 const DEPLOYMENT_ID = 'abc';
 const ADDRESS = '0x2';
@@ -100,7 +102,7 @@ test('calls defender deploy', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -128,7 +130,7 @@ test('calls defender deploy with relayerId', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: RELAYER_ID,
     salt: undefined,
@@ -156,7 +158,7 @@ test('calls defender deploy with salt', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: SALT,
@@ -184,7 +186,7 @@ test('calls defender deploy with createFactoryAddress', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -212,7 +214,7 @@ test('calls defender deploy with license', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: 'MIT',
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -242,7 +244,7 @@ test('calls defender deploy - licenseType', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: 'My License Type',
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -272,7 +274,7 @@ test('calls defender deploy - verifySourceCode false', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: false,
     relayerId: undefined,
     salt: undefined,
@@ -302,7 +304,7 @@ test('calls defender deploy - skipLicenseType', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -383,7 +385,7 @@ test('calls defender deploy - no contract license', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -411,7 +413,7 @@ test('calls defender deploy - unlicensed', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: 'None',
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -439,7 +441,35 @@ test('calls defender deploy with constructor args', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: 'MIT',
-    constructorInputs: [10],
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['uint256'], [10]),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+
+  assertResult(t, result);
+});
+
+test('calls defender deploy with constructor args with array', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Constructor.sol';
+  const contractName = 'WithConstructorArray';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {}, [1, 2, 3]);
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['uint256[]'], [[1, 2, 3]]),
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -467,7 +497,7 @@ test('calls defender deploy with verify false', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: false,
     relayerId: undefined,
     salt: undefined,
@@ -495,7 +525,59 @@ test('calls defender deploy with ERC1967Proxy', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(artifactsBuildInfo),
     licenseType: 'MIT',
-    constructorInputs: [LOGIC_ADDRESS, DATA],
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+});
+
+test('calls defender deploy with ERC1967Proxy - ignores constructorArgs', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
+  const contractName = 'ERC1967Proxy';
+  const factory = await getProxyFactory(hre);
+
+  const result = await deploy.defenderDeploy(fakeHre, factory, { constructorArgs: ['foo'] }, LOGIC_ADDRESS, DATA);
+  assertResult(t, result);
+
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+  });
+});
+
+test('calls defender deploy with ERC1967Proxy - ignores empty constructorArgs', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
+  const contractName = 'ERC1967Proxy';
+  const factory = await getProxyFactory(hre);
+
+  const result = await deploy.defenderDeploy(fakeHre, factory, { constructorArgs: [] }, LOGIC_ADDRESS, DATA);
+  assertResult(t, result);
+
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]),
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -521,7 +603,7 @@ test('calls defender deploy with BeaconProxy', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(artifactsBuildInfo),
     licenseType: 'MIT',
-    constructorInputs: [LOGIC_ADDRESS, DATA],
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]),
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -547,7 +629,10 @@ test('calls defender deploy with TransparentUpgradeableProxy', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(artifactsBuildInfo),
     licenseType: 'MIT',
-    constructorInputs: [LOGIC_ADDRESS, INITIAL_OWNER_ADDRESS, DATA],
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(
+      ['address', 'address', 'bytes'],
+      [LOGIC_ADDRESS, INITIAL_OWNER_ADDRESS, DATA],
+    ),
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -573,7 +658,7 @@ test('calls defender deploy with txOverrides.gasLimit', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -606,7 +691,7 @@ test('calls defender deploy with txOverrides.gasPrice', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -641,7 +726,7 @@ test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPri
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -678,7 +763,7 @@ test('calls defender deploy with external library', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
@@ -713,7 +798,7 @@ test('calls defender deploy with multiple external libraries', async t => {
     network: fakeChainId,
     artifactPayload: JSON.stringify(buildInfo),
     licenseType: undefined,
-    constructorInputs: [],
+    constructorBytecode: '0x',
     verifySourceCode: true,
     relayerId: undefined,
     salt: undefined,
