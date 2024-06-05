@@ -191,8 +191,7 @@ export class StorageLayoutComparator {
     const re = /^t_function_(internal|external)/;
     const originalVisibility = original.head.match(re);
     const updatedVisibility = updated.head.match(re);
-    assert(originalVisibility && updatedVisibility);
-    if (originalVisibility[0] !== updatedVisibility[0]) {
+    if (originalVisibility && updatedVisibility && originalVisibility[0] !== updatedVisibility[0]) {
       return { kind: 'visibility change', original, updated };
     }
   }

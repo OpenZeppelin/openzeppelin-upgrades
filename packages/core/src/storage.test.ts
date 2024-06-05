@@ -4,11 +4,12 @@ import { findAll, astDereferencer } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
 
 import { SolcOutput } from './solc-api';
-import { getStorageUpgradeErrors } from './storage';
+import { assertStorageUpgradeSafe, getStorageUpgradeErrors } from './storage';
 import { StorageLayout } from './storage/layout';
 import { extractStorageLayout } from './storage/extract';
 import { stabilizeTypeIdentifier } from './utils/type-id';
 import { stabilizeStorageLayout } from './utils/stabilize-layout';
+import { withValidationDefaults } from './validate';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
@@ -936,4 +937,11 @@ test('storage upgrade with struct gap', t => {
       updated: { label: 'store_dynamic_array' },
     },
   });
+});
+
+test('storage upgrade with function pointers', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_FunctionPointer_V1');
+  const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_FunctionPointer_V2_Ok');
+
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
 });

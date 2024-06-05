@@ -900,3 +900,21 @@ contract V2Storage {
 
 contract StorageUpgrade_ConsumeAndAddGap_Storage_V2 is V2Storage, Parent1, Parent2 {
 }
+
+contract StorageUpgrade_FunctionPointer_V1 {
+    struct S {
+        uint256 a;
+        function(bool) external b;
+    }
+
+    S private s;
+}
+
+contract StorageUpgrade_FunctionPointer_V2_Ok {
+    struct S {
+        uint256 a;
+        function(bool) external b;
+    }
+
+    S private s;
+}
