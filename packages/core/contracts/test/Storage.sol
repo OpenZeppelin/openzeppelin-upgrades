@@ -918,3 +918,12 @@ contract StorageUpgrade_FunctionPointer_V2_Ok {
 
     S private s;
 }
+
+contract StorageUpgrade_FunctionPointer_V2_Bad {
+    struct S {
+        uint256 a;
+        function(bool) internal b;
+    }
+
+    S private s;
+}

@@ -4,12 +4,11 @@ import { findAll, astDereferencer } from 'solidity-ast/utils';
 import { artifacts } from 'hardhat';
 
 import { SolcOutput } from './solc-api';
-import { assertStorageUpgradeSafe, getStorageUpgradeErrors } from './storage';
+import { getStorageUpgradeErrors } from './storage';
 import { StorageLayout } from './storage/layout';
 import { extractStorageLayout } from './storage/extract';
 import { stabilizeTypeIdentifier } from './utils/type-id';
 import { stabilizeStorageLayout } from './utils/stabilize-layout';
-import { withValidationDefaults } from './validate';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
@@ -942,6 +941,28 @@ test('storage upgrade with struct gap', t => {
 test('storage upgrade with function pointers', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_FunctionPointer_V1');
   const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_FunctionPointer_V2_Ok');
+  const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_FunctionPointer_V2_Bad');
 
   t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
+
+  t.like(getStorageUpgradeErrors(v1, v2_Bad), {
+    length: 1,
+    0: {
+      kind: 'typechange',
+      change: {
+        kind: 'struct members',
+        ops: {
+          length: 1,
+          0: {
+            kind: 'typechange',
+            change: {
+              kind: 'visibility change',
+            },
+          },
+        },
+      },
+      original: { label: 's' },
+      updated: { label: 's' },
+    },
+  });
 });
