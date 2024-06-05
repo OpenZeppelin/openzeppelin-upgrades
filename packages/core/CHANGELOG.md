@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix storage layout comparison for function pointers in structs. ([#1032](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1032))
+
 ## 1.33.1 (2024-04-25)
 
 - Fix Hardhat compile error when variable has whitespace before semicolon. ([#1020](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1020))
