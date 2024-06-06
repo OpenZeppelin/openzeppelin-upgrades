@@ -191,7 +191,8 @@ export class StorageLayoutComparator {
     const re = /^t_function_(internal|external)/;
     const originalVisibility = original.head.match(re);
     const updatedVisibility = updated.head.match(re);
-    if (originalVisibility && updatedVisibility && originalVisibility[0] !== updatedVisibility[0]) {
+    assert(originalVisibility && updatedVisibility);
+    if (originalVisibility[0] !== updatedVisibility[0]) {
       return { kind: 'visibility change', original, updated };
     }
   }
@@ -282,7 +283,7 @@ export class StorageLayoutComparator {
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
   ): TypeChange | undefined {
-    if (updated.head.startsWith('t_function')) {
+    if (original.head.startsWith('t_function') && updated.head.startsWith('t_function')) {
       return this.getVisibilityChange(original, updated);
     }
 

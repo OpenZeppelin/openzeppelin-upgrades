@@ -922,7 +922,7 @@ contract StorageUpgrade_FunctionPointer_V2_Ok {
 contract StorageUpgrade_FunctionPointer_V2_Bad {
     struct S {
         uint256 a;
-        function(bool) internal b;
+        function(bool) b;
     }
 
     S private s;
