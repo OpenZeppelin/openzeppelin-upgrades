@@ -140,6 +140,11 @@ testValid('TransitiveLibraryIsUnsafe', 'transparent', false);
 testValid('contracts/test/ValidationsSameNameSafe.sol:SameName', 'transparent', true);
 testValid('contracts/test/ValidationsSameNameUnsafe.sol:SameName', 'transparent', false);
 
+testValid('ExternalFunctionPointer', 'transparent', true);
+testValid('InternalFunctionPointer', 'transparent', false);
+testValid('ImpliedInternalFunctionPointer', 'transparent', false);
+testOverride('ImpliedInternalFunctionPointer', 'transparent', { unsafeAllow: ['struct-internal-function'] }, true);
+
 test('ambiguous name', t => {
   const error = t.throws(() => getContractVersion(t.context.validation, 'SameName'));
   t.is(

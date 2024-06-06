@@ -206,3 +206,21 @@ contract TransitiveLibraryIsUnsafe {
         DirectLibrary.f2();
     }
 }
+
+contract ExternalFunctionPointer {
+    struct S {
+        function(bool) external foo;
+    }
+}
+
+contract InternalFunctionPointer {
+    struct S {
+        function(bool) internal foo;
+    }
+}
+
+contract ImpliedInternalFunctionPointer {
+    struct S {
+        function(bool) foo;
+    }
+}

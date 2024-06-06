@@ -64,6 +64,13 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
       `    @openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol`,
     link: 'https://zpl.in/upgrades/error-008',
   },
+  'struct-internal-function': {
+    msg: e => `Struct has internal function \`${e.name}\``,
+    hint: () =>
+      `Use external functions to avoid code pointers that will no longer be valid after an upgrade\n` +
+      `    or skip this check with the \`unsafeAllow.struct-internal-function\` flag and\n` +
+      `    ensure you always reassign the internal functions in structs during upgrades`,
+  },
 };
 
 function describeError(e: ValidationError, color = true): string {

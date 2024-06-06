@@ -40,6 +40,7 @@ export const errorKinds = [
   'delegatecall',
   'selfdestruct',
   'missing-public-upgradeto',
+  'struct-internal-function',
 ] as const;
 
 export type ValidationError =
@@ -60,7 +61,8 @@ interface ValidationErrorWithName extends ValidationErrorBase {
     | 'state-variable-immutable'
     | 'external-library-linking'
     | 'struct-definition'
-    | 'enum-definition';
+    | 'enum-definition'
+    | 'struct-internal-function';
 }
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
@@ -197,6 +199,7 @@ export function validate(
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
+          ...getStructFunctionErrors(contractDef, decodeSrc),
         ];
 
         validation[key].layout = extractStorageLayout(
@@ -552,6 +555,21 @@ function* getLinkingErrors(
           kind: 'external-library-linking',
           name: libName,
           src: source,
+        };
+      }
+    }
+  }
+}
+
+function* getStructFunctionErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
+  // Note: Solidity currently does not include struct annotations in the AST, so this check cannot be skipped with annotations
+  for (const structDef of findAll('StructDefinition', contractDef)) {
+    for (const member of structDef.members) {
+      if (member.typeName?.nodeType === 'FunctionTypeName' && member.typeName.visibility === 'internal') {
+        yield {
+          kind: 'struct-internal-function',
+          name: member.name,
+          src: decodeSrc(member),
         };
       }
     }
