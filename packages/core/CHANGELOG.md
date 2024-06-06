@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fix storage layout comparison for function pointers in structs. ([#1032](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1032))
+- Fix storage layout comparison for function types in structs, disallow internal functions in structs. ([#1032](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1032))
 
 ## 1.33.1 (2024-04-25)
 
