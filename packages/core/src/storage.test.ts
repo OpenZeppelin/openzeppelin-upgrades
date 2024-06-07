@@ -946,7 +946,7 @@ test('storage upgrade with function pointers', t => {
   t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
 
   t.like(getStorageUpgradeErrors(v1, v2_Bad), {
-    length: 1,
+    length: 2,
     0: {
       kind: 'typechange',
       change: {
@@ -964,5 +964,13 @@ test('storage upgrade with function pointers', t => {
       original: { label: 's' },
       updated: { label: 's' },
     },
+    1: {
+      kind: 'typechange',
+      change: {
+        kind: 'visibility change',
+      },
+      original: { label: 'c' },
+      updated: { label: 'c' },
+    }
   });
 });

@@ -207,20 +207,32 @@ contract TransitiveLibraryIsUnsafe {
     }
 }
 
-contract ExternalFunctionPointer {
+contract StructExternalFunctionPointer {
     struct S {
         function(bool) external foo;
     }
 }
 
-contract InternalFunctionPointer {
+contract StructInternalFunctionPointer {
     struct S {
         function(bool) internal foo;
     }
 }
 
-contract ImpliedInternalFunctionPointer {
+contract StructImpliedInternalFunctionPointer {
     struct S {
         function(bool) foo;
     }
+}
+
+contract ExternalFunctionPointer {
+    function(bool) external foo;
+}
+
+contract InternalFunctionPointer {
+    function(bool) internal foo;
+}
+
+contract ImpliedInternalFunctionPointer {
+    function(bool) foo;
 }

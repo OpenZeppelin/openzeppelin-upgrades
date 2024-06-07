@@ -906,8 +906,8 @@ contract StorageUpgrade_FunctionPointer_V1 {
         uint256 a;
         function(bool) external b;
     }
-
     S private s;
+    function(bool) external c;
 }
 
 contract StorageUpgrade_FunctionPointer_V2_Ok {
@@ -915,8 +915,8 @@ contract StorageUpgrade_FunctionPointer_V2_Ok {
         uint256 a;
         function(bool) external b;
     }
-
     S private s;
+    function(bool) external c;
 }
 
 contract StorageUpgrade_FunctionPointer_V2_Bad {
@@ -924,6 +924,6 @@ contract StorageUpgrade_FunctionPointer_V2_Bad {
         uint256 a;
         function(bool) b;
     }
-
     S private s;
+    function(bool) c;
 }

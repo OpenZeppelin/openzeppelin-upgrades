@@ -40,7 +40,7 @@ export const errorKinds = [
   'delegatecall',
   'selfdestruct',
   'missing-public-upgradeto',
-  'struct-internal-function',
+  'internal-function-storage',
 ] as const;
 
 export type ValidationError =
@@ -62,7 +62,7 @@ interface ValidationErrorWithName extends ValidationErrorBase {
     | 'external-library-linking'
     | 'struct-definition'
     | 'enum-definition'
-    | 'struct-internal-function';
+    | 'internal-function-storage';
 }
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
@@ -199,7 +199,7 @@ export function validate(
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
-          ...getStructFunctionErrors(contractDef, decodeSrc),
+          ...getInternalFunctionStorageErrors(contractDef, decodeSrc),
         ];
 
         validation[key].layout = extractStorageLayout(
@@ -561,13 +561,24 @@ function* getLinkingErrors(
   }
 }
 
-function* getStructFunctionErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
-  // Note: Solidity currently does not include struct annotations in the AST, so this check cannot be skipped with annotations
+function* getInternalFunctionStorageErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
+  // Note: Solidity does not allow annotations for non-public state variables, so this cannot be skipped with annotations
+  for (const variableDef of findAll('VariableDeclaration', contractDef)) {
+    if (variableDef.typeName?.nodeType === 'FunctionTypeName' && variableDef.typeName.visibility === 'internal') {
+      yield {
+        kind: 'internal-function-storage',
+        name: variableDef.name,
+        src: decodeSrc(variableDef),
+      };
+    }
+  }
+
+  // Note: Solidity currently does not include struct annotations in the AST, so this cannot be skipped with annotations
   for (const structDef of findAll('StructDefinition', contractDef)) {
     for (const member of structDef.members) {
       if (member.typeName?.nodeType === 'FunctionTypeName' && member.typeName.visibility === 'internal') {
         yield {
-          kind: 'struct-internal-function',
+          kind: 'internal-function-storage',
           name: member.name,
           src: decodeSrc(member),
         };

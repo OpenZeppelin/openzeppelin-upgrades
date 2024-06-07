@@ -50,7 +50,7 @@ Deployment and upgrade related functions come with an optional `opts` object, wh
   * `delegatecall`
   * `selfdestruct`
   * `missing-public-upgradeto`
-  * `struct-internal-function`
+  * `internal-function-storage`
 
 This function is a generalized version of the original `unsafeAllowCustomTypes` and `unsafeAllowLinkedLibraries` allowing any check to be manually disabled.
 
