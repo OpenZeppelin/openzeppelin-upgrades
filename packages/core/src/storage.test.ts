@@ -971,6 +971,6 @@ test('storage upgrade with function pointers', t => {
       },
       original: { label: 'c' },
       updated: { label: 'c' },
-    }
+    },
   });
 });

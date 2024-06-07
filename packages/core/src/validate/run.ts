@@ -561,7 +561,10 @@ function* getLinkingErrors(
   }
 }
 
-function* getInternalFunctionStorageErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
+function* getInternalFunctionStorageErrors(
+  contractDef: ContractDefinition,
+  decodeSrc: SrcDecoder,
+): Generator<ValidationError> {
   // Note: Solidity does not allow annotations for non-public state variables, so this cannot be skipped with annotations
   for (const variableDef of findAll('VariableDeclaration', contractDef)) {
     if (variableDef.typeName?.nodeType === 'FunctionTypeName' && variableDef.typeName.visibility === 'internal') {

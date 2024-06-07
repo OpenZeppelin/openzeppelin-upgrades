@@ -143,7 +143,12 @@ testValid('contracts/test/ValidationsSameNameUnsafe.sol:SameName', 'transparent'
 testValid('StructExternalFunctionPointer', 'transparent', true);
 testValid('StructInternalFunctionPointer', 'transparent', false);
 testValid('StructImpliedInternalFunctionPointer', 'transparent', false);
-testOverride('StructImpliedInternalFunctionPointer', 'transparent', { unsafeAllow: ['internal-function-storage'] }, true);
+testOverride(
+  'StructImpliedInternalFunctionPointer',
+  'transparent',
+  { unsafeAllow: ['internal-function-storage'] },
+  true,
+);
 
 testValid('ExternalFunctionPointer', 'transparent', true);
 testValid('InternalFunctionPointer', 'transparent', false);
