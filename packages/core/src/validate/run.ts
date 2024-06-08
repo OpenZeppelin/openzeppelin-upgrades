@@ -566,26 +566,13 @@ function* getInternalFunctionStorageErrors(
   decodeSrc: SrcDecoder,
 ): Generator<ValidationError> {
   // Note: Solidity does not allow annotations for non-public state variables, so this cannot be skipped with annotations
-  for (const variableDef of findAll('VariableDeclaration', contractDef)) {
-    if (variableDef.typeName?.nodeType === 'FunctionTypeName' && variableDef.typeName.visibility === 'internal') {
+  for (const variableDec of findAll('VariableDeclaration', contractDef)) {
+    if (variableDec.typeName?.nodeType === 'FunctionTypeName' && variableDec.typeName.visibility === 'internal') {
       yield {
         kind: 'internal-function-storage',
-        name: variableDef.name,
-        src: decodeSrc(variableDef),
+        name: variableDec.name,
+        src: decodeSrc(variableDec),
       };
-    }
-  }
-
-  // Note: Solidity currently does not include struct annotations in the AST, so this cannot be skipped with annotations
-  for (const structDef of findAll('StructDefinition', contractDef)) {
-    for (const member of structDef.members) {
-      if (member.typeName?.nodeType === 'FunctionTypeName' && member.typeName.visibility === 'internal') {
-        yield {
-          kind: 'internal-function-storage',
-          name: member.name,
-          src: decodeSrc(member),
-        };
-      }
     }
   }
 }
