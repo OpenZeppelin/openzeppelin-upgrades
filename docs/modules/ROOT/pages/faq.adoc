@@ -273,7 +273,7 @@ contract V1 is Initializable {
 
 To allow the above contract to be deployed by the Upgrades Plugins, you can disable the `internal-function-storage` check according to <<how-can-i-disable-checks>>, but ensure you follow the steps below to reassign the internal function during upgrades.
 
-In new versions of this contract, assign the internal function in the storage variable again, for example by using a reinitializer function:
+In new versions of this contract, assign the internal function in the storage variable again, for example by using a https://docs.openzeppelin.com/contracts/api/proxy#Initializable-reinitializer-uint64-[reinitializer]:
 [source,solidity]
 ----
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
