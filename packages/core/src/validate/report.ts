@@ -65,11 +65,12 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     link: 'https://zpl.in/upgrades/error-008',
   },
   'internal-function-storage': {
-    msg: e => `Struct has internal function \`${e.name}\``,
+    msg: e => `Variable \`${e.name}\` is an internal function`,
     hint: () =>
-      `Use external functions to avoid code pointers that will no longer be valid after an upgrade\n` +
-      `    or skip this check with the \`unsafeAllow.internal-function-storage\` flag and\n` +
-      `    ensure you always reassign the internal functions in storage variables during upgrades`,
+      `Use external functions in storage variables, or skip this check with the\n` +
+      `     \`unsafeAllow.internal-function-storage\` flag and ensure you always\n` +
+      `    reassign internal functions in storage during upgrades`,
+    link: 'https://zpl.in/upgrades/error-009',
   },
 };
 

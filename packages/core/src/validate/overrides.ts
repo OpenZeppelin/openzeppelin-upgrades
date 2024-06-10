@@ -79,7 +79,7 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
   'internal-function-storage': [
     `You are using the \`unsafeAllow.internal-function-storage\` flag.`,
     `Internal functions are code pointers which will no longer be valid after an upgrade.`,
-    `Make sure you reassign internal functions in storage variables during upgrades, for example by using a reinitializer.`,
+    `Make sure you reassign internal functions in storage variables during upgrades.`,
   ],
 };
 
