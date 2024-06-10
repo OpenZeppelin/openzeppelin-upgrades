@@ -150,6 +150,10 @@ testOverride(
   true,
 );
 
+testValid('UsesStandaloneStructInternalFn', 'transparent', false);
+testValid('StructUsesStandaloneStructInternalFn', 'transparent', false);
+testValid('RecursiveStructUsesStandaloneStructInternalFn', 'transparent', false);
+
 testValid('ExternalFunctionPointer', 'transparent', true);
 testValid('InternalFunctionPointer', 'transparent', false);
 testValid('ImpliedInternalFunctionPointer', 'transparent', false);

@@ -1,6 +1,6 @@
 import { Node } from 'solidity-ast/node';
 import { isNodeType, findAll, ASTDereferencer, astDereferencer } from 'solidity-ast/utils';
-import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
+import type { ContractDefinition, FunctionDefinition, StructDefinition } from 'solidity-ast';
 import debug from '../utils/debug';
 
 import { SolcOutput, SolcBytecode, SolcInput } from '../solc-api';
@@ -199,7 +199,7 @@ export function validate(
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
-          ...getInternalFunctionStorageErrors(contractDef, decodeSrc),
+          ...getInternalFunctionStorageErrors(contractDef, deref, decodeSrc),
         ];
 
         validation[key].layout = extractStorageLayout(
@@ -458,6 +458,16 @@ function tryDerefFunction(deref: ASTDereferencer, referencedDeclaration: number)
   }
 }
 
+function tryDerefStruct(deref: ASTDereferencer, referencedDeclaration: number): StructDefinition | undefined {
+  try {
+    return deref(['StructDefinition'], referencedDeclaration);
+  } catch (e: any) {
+    if (!e.message.includes('No node with id')) {
+      throw e;
+    }
+  }
+}
+
 function* getInheritedContractOpcodeErrors(
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
@@ -562,17 +572,25 @@ function* getLinkingErrors(
 }
 
 function* getInternalFunctionStorageErrors(
-  contractDef: ContractDefinition,
+  contractOrStructDef: ContractDefinition | StructDefinition,
+  deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationError> {
   // Note: Solidity does not allow annotations for non-public state variables, so this cannot be skipped with annotations
-  for (const variableDec of findAll('VariableDeclaration', contractDef)) {
+  for (const variableDec of findAll('VariableDeclaration', contractOrStructDef)) {
     if (variableDec.typeName?.nodeType === 'FunctionTypeName' && variableDec.typeName.visibility === 'internal') {
+      // Find internal function types directly in this node's scope
       yield {
         kind: 'internal-function-storage',
         name: variableDec.name,
         src: decodeSrc(variableDec),
       };
+    } else if (variableDec.typeName?.nodeType === 'UserDefinedTypeName') {
+      // Recursively dereference structs, since structs may be declared elsewhere
+      const structDef = tryDerefStruct(deref, variableDec.typeName.referencedDeclaration);
+      if (structDef !== undefined) {
+        yield* getInternalFunctionStorageErrors(structDef, deref, decodeSrc);
+      }
     }
   }
 }

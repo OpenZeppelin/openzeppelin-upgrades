@@ -225,6 +225,24 @@ contract StructImpliedInternalFunctionPointer {
     }
 }
 
+struct StandaloneStructInternalFn {
+    function(bool) internal foo;
+}
+
+contract UsesStandaloneStructInternalFn {
+    StandaloneStructInternalFn s;
+}
+
+contract StructUsesStandaloneStructInternalFn {
+    struct S2 {
+        StandaloneStructInternalFn s;
+    }
+}
+
+contract RecursiveStructUsesStandaloneStructInternalFn {
+    StructUsesStandaloneStructInternalFn.S2 s2;
+}
+
 contract ExternalFunctionPointer {
     function(bool) external foo;
 }
