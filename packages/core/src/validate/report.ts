@@ -67,9 +67,9 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   'internal-function-storage': {
     msg: e => `Variable \`${e.name}\` is an internal function`,
     hint: () =>
-      `Use external functions in storage variables, or skip this check with the\n` +
-      `     \`unsafeAllow.internal-function-storage\` flag and ensure you always\n` +
-      `    reassign internal functions in storage during upgrades`,
+      `Use external functions or avoid functions in storage.\n` +
+      `     If you must use internal functions, skip this check with the \`unsafeAllow.internal-function-storage\`\n` +
+      `     flag and ensure you always reassign internal functions in storage during upgrades`,
     link: 'https://zpl.in/upgrades/error-009',
   },
 };

@@ -246,7 +246,7 @@ Docstring comments don't yet work for struct members, due to a current Solidity 
 [[internal-function-storage]]
 == How can I use internal functions in storage variables?
 
-Internal functions in storage variables are code pointers which will no longer be valid after an upgrade, because the code will move around and the pointer would change. To avoid this issue, you can either declare those functions as external, or reassign internal functions during upgrades. Alternatively, avoid code pointers in storage altogether, and define an `enum` that you will use with a dispatcher function to select from the list of available functions.
+Internal functions in storage variables are code pointers which will no longer be valid after an upgrade, because the code will move around and the pointer would change. To avoid this issue, you can declare those functions as external, or avoid code pointers in storage altogether and define an `enum` that you will use with a dispatcher function to select from the list of available functions. If you must use internal functions, those internal functions need to be reassigned during each upgrade.
 
 For example, the `messageFunction` variable in the following contract is not upgrade safe. Attempting to call `showMessage()` after an upgrade would likely result in a revert.
 [source,solidity]
