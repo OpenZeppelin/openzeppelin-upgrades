@@ -619,7 +619,8 @@ function findUserDefinedType(typeName: TypeName): UserDefinedTypeName | undefine
       return findUserDefinedType(typeName.valueType);
     case 'UserDefinedTypeName':
       return typeName;
-    default:
+    case 'ElementaryTypeName':
+    case 'FunctionTypeName':
       return undefined;
   }
 }
