@@ -937,3 +937,40 @@ test('storage upgrade with struct gap', t => {
     },
   });
 });
+
+test('storage upgrade with function pointers', t => {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_FunctionPointer_V1');
+  const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_FunctionPointer_V2_Ok');
+  const v2_Bad = t.context.extractStorageLayout('StorageUpgrade_FunctionPointer_V2_Bad');
+
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
+
+  t.like(getStorageUpgradeErrors(v1, v2_Bad), {
+    length: 2,
+    0: {
+      kind: 'typechange',
+      change: {
+        kind: 'struct members',
+        ops: {
+          length: 1,
+          0: {
+            kind: 'typechange',
+            change: {
+              kind: 'visibility change',
+            },
+          },
+        },
+      },
+      original: { label: 's' },
+      updated: { label: 's' },
+    },
+    1: {
+      kind: 'typechange',
+      change: {
+        kind: 'visibility change',
+      },
+      original: { label: 'c' },
+      updated: { label: 'c' },
+    },
+  });
+});

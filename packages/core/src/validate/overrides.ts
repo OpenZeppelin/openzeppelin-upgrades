@@ -76,6 +76,11 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
     `Not having a public upgradeTo or upgradeToAndCall function in your implementation can break upgradeability.`,
     `Some implementation might check that onchain, and cause the upgrade to revert.`,
   ],
+  'internal-function-storage': [
+    `You are using the \`unsafeAllow.internal-function-storage\` flag.`,
+    `Internal functions are code pointers which will no longer be valid after an upgrade.`,
+    `Make sure you reassign internal functions in storage variables during upgrades.`,
+  ],
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {

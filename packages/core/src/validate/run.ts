@@ -1,6 +1,12 @@
 import { Node } from 'solidity-ast/node';
 import { isNodeType, findAll, ASTDereferencer, astDereferencer } from 'solidity-ast/utils';
-import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
+import type {
+  ContractDefinition,
+  FunctionDefinition,
+  StructDefinition,
+  TypeName,
+  UserDefinedTypeName,
+} from 'solidity-ast';
 import debug from '../utils/debug';
 
 import { SolcOutput, SolcBytecode, SolcInput } from '../solc-api';
@@ -15,6 +21,7 @@ import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
 import { getStorageLocationAnnotation, isNamespaceSupported } from '../storage/namespace';
 import { UpgradesError } from '../error';
+import { assertUnreachable } from '../utils/assert';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -40,6 +47,7 @@ export const errorKinds = [
   'delegatecall',
   'selfdestruct',
   'missing-public-upgradeto',
+  'internal-function-storage',
 ] as const;
 
 export type ValidationError =
@@ -60,7 +68,8 @@ interface ValidationErrorWithName extends ValidationErrorBase {
     | 'state-variable-immutable'
     | 'external-library-linking'
     | 'struct-definition'
-    | 'enum-definition';
+    | 'enum-definition'
+    | 'internal-function-storage';
 }
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
@@ -197,6 +206,7 @@ export function validate(
           // TODO: add linked libraries support
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
+          ...getInternalFunctionStorageErrors(contractDef, deref, decodeSrc),
         ];
 
         validation[key].layout = extractStorageLayout(
@@ -455,6 +465,16 @@ function tryDerefFunction(deref: ASTDereferencer, referencedDeclaration: number)
   }
 }
 
+function tryDerefStruct(deref: ASTDereferencer, referencedDeclaration: number): StructDefinition | undefined {
+  try {
+    return deref(['StructDefinition'], referencedDeclaration);
+  } catch (e: any) {
+    if (!e.message.includes('No node with id')) {
+      throw e;
+    }
+  }
+}
+
 function* getInheritedContractOpcodeErrors(
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
@@ -555,5 +575,55 @@ function* getLinkingErrors(
         };
       }
     }
+  }
+}
+
+function* getInternalFunctionStorageErrors(
+  contractOrStructDef: ContractDefinition | StructDefinition,
+  deref: ASTDereferencer,
+  decodeSrc: SrcDecoder,
+  visitedNodeIds = new Set<number>(),
+): Generator<ValidationError> {
+  // Note: Solidity does not allow annotations for non-public state variables, nor recursive types for public variables,
+  // so annotations cannot be used to skip these checks.
+  for (const variableDec of findAll('VariableDeclaration', contractOrStructDef)) {
+    if (variableDec.typeName?.nodeType === 'FunctionTypeName' && variableDec.typeName.visibility === 'internal') {
+      // Find internal function types directly in this node's scope
+      yield {
+        kind: 'internal-function-storage',
+        name: variableDec.name,
+        src: decodeSrc(variableDec),
+      };
+    } else if (variableDec.typeName) {
+      const userDefinedType = findUserDefinedType(variableDec.typeName);
+      // Recursively try to dereference struct since it may be declared elsewhere
+      if (userDefinedType !== undefined && !visitedNodeIds.has(userDefinedType.referencedDeclaration)) {
+        const structDef = tryDerefStruct(deref, userDefinedType.referencedDeclaration);
+        if (structDef !== undefined) {
+          visitedNodeIds.add(userDefinedType.referencedDeclaration);
+          yield* getInternalFunctionStorageErrors(structDef, deref, decodeSrc, visitedNodeIds);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Recursively traverse array and mapping types to find user-defined types (which may be struct references).
+ */
+function findUserDefinedType(typeName: TypeName): UserDefinedTypeName | undefined {
+  switch (typeName.nodeType) {
+    case 'ArrayTypeName':
+      return findUserDefinedType(typeName.baseType);
+    case 'Mapping':
+      // only mapping values can possibly refer to other array, mapping, or user-defined types
+      return findUserDefinedType(typeName.valueType);
+    case 'UserDefinedTypeName':
+      return typeName;
+    case 'ElementaryTypeName':
+    case 'FunctionTypeName':
+      return undefined;
+    default:
+      return assertUnreachable(typeName);
   }
 }

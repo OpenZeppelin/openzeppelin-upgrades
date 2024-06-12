@@ -283,7 +283,7 @@ export class StorageLayoutComparator {
     updated: ParsedTypeDetailed,
     { allowAppend }: { allowAppend: boolean },
   ): TypeChange | undefined {
-    if (updated.head.startsWith('t_function')) {
+    if (original.head.startsWith('t_function') && updated.head.startsWith('t_function')) {
       return this.getVisibilityChange(original, updated);
     }
 

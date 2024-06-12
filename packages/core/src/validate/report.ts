@@ -64,6 +64,14 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
       `    @openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol`,
     link: 'https://zpl.in/upgrades/error-008',
   },
+  'internal-function-storage': {
+    msg: e => `Variable \`${e.name}\` is an internal function`,
+    hint: () =>
+      `Use external functions or avoid functions in storage.\n` +
+      `     If you must use internal functions, skip this check with the \`unsafeAllow.internal-function-storage\`\n` +
+      `     flag and ensure you always reassign internal functions in storage during upgrades`,
+    link: 'https://zpl.in/upgrades/error-009',
+  },
 };
 
 function describeError(e: ValidationError, color = true): string {

@@ -22,9 +22,7 @@ As a replacement for the constructor, it is common to set up an `initialize` fun
 
 [source,solidity]
 ----
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-// Alternatively, if you are using @openzeppelin/contracts-upgradeable:
-// import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract MyContract is Initializable {
   uint256 value;
@@ -50,6 +48,7 @@ Deployment and upgrade related functions come with an optional `opts` object, wh
   * `delegatecall`
   * `selfdestruct`
   * `missing-public-upgradeto`
+  * `internal-function-storage`
 
 This function is a generalized version of the original `unsafeAllowCustomTypes` and `unsafeAllowLinkedLibraries` allowing any check to be manually disabled.
 
@@ -193,13 +192,14 @@ When using UUPS proxies (through the `kind: 'uups'` option), the implementation 
 
 The recommended way to include one or both of these functions is by inheriting the `UUPSUpgradeable` contract provided in OpenZeppelin Contracts, as shown below. This contract adds the required function(s), but also contains a built-in mechanism that will check on-chain, at the time of an upgrade, that the new implementation proposed also inherits `UUPSUpgradeable` or implements the same interface. In this way, when using the Upgrades Plugins there are two layers of mitigations to prevent accidentally disabling upgradeability: an off-chain check by the plugins, and an on-chain fallback in the contract itself.
 
-```solidity
+[source,solidity]
+----
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 contract MyContract is Initializable, ..., UUPSUpgradeable {
     ...
 }
-```
+----
 
 Read more about the differences with the Transparent Proxy Pattern in xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
 
@@ -217,7 +217,8 @@ Renaming a variable is disallowed by default because there is a chance that a re
 
 It is possible to disable this check by passing the option `unsafeAllowRenames: true`. A more granular approach is to use a docstring comment `/// @custom:oz-renamed-from <previous name>` right above the variable that is being renamed, for example:
 
-```
+[source,solidity]
+----
 contract V1 {
     uint x;
 }
@@ -225,11 +226,12 @@ contract V2 {
     /// @custom:oz-renamed-from x
     uint y;
 }
-```
+----
 
 Changing the type of a variable is not allowed either, even in cases where the types have the same size and alignment, for the similar reason explained above. As long as we can guarantee that the rest of the layout is not affected by this type change, it is also possible to override this check by placing a docstring comment `/// @custom:oz-retyped-from <previous type>`.
 
-```
+[source,solidity]
+----
 contract V1 {
     bool x;
 }
@@ -237,6 +239,68 @@ contract V2 {
     /// @custom:oz-retyped-from bool
     uint8 x;
 }
-```
+----
 
 Docstring comments don't yet work for struct members, due to a current Solidity limitation.
+
+[[internal-function-storage]]
+== How can I use internal functions in storage variables?
+
+Internal functions in storage variables are code pointers which will no longer be valid after an upgrade, because the code will move around and the pointer would change. To avoid this issue, you can declare those functions as external, or avoid code pointers in storage altogether and define an `enum` that you will use with a dispatcher function to select from the list of available functions. If you must use internal functions, those internal functions need to be reassigned during each upgrade.
+
+For example, the `messageFunction` variable in the following contract is not upgrade safe. Attempting to call `showMessage()` after an upgrade would likely result in a revert.
+[source,solidity]
+----
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+contract V1 is Initializable {
+  function() internal pure returns (string memory) messageFunction;
+
+  function initialize() initializer public {
+    messageFunction = hello;
+  }
+
+  function hello() internal pure returns (string memory) {
+    return "Hello, World!";
+  }
+
+  function showMessage() public view returns (string memory) {
+    return messageFunction();
+  }
+  ...
+}
+----
+
+To allow the above contract to be deployed by the Upgrades Plugins, you can disable the `internal-function-storage` check according to <<how-can-i-disable-checks>>, but ensure you follow the steps below to reassign the internal function during upgrades.
+
+In new versions of this contract, assign the internal function in the storage variable again, for example by using a https://docs.openzeppelin.com/contracts/api/proxy#Initializable-reinitializer-uint64-[reinitializer]:
+[source,solidity]
+----
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "./V1.sol";
+
+contract V2 is V1 {
+  function initializeV2() reinitializer(2) public {
+    messageFunction = hello;
+  }
+  ...
+}
+----
+
+Then when upgrading, call the reinitializer function as part of the upgrade process, for example in Hardhat:
+[source,ts]
+----
+await upgrades.upgradeProxy(PROXY_ADDRESS, ContractFactoryV2, {
+  call: 'initializeV2',
+  unsafeAllow: ['internal-function-storage']
+});
+----
+or in Foundry:
+[source,solidity]
+----
+Upgrades.upgradeProxy(
+    PROXY_ADDRESS,
+    "V2.sol",
+    abi.encodeCall(V2.initializeV2, ())
+);
+----

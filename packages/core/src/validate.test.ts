@@ -140,6 +140,29 @@ testValid('TransitiveLibraryIsUnsafe', 'transparent', false);
 testValid('contracts/test/ValidationsSameNameSafe.sol:SameName', 'transparent', true);
 testValid('contracts/test/ValidationsSameNameUnsafe.sol:SameName', 'transparent', false);
 
+testValid('StructExternalFunctionPointer', 'transparent', true);
+testValid('StructInternalFunctionPointer', 'transparent', false);
+testValid('StructImpliedInternalFunctionPointer', 'transparent', false);
+testOverride(
+  'StructImpliedInternalFunctionPointer',
+  'transparent',
+  { unsafeAllow: ['internal-function-storage'] },
+  true,
+);
+
+testValid('UsesStandaloneStructInternalFn', 'transparent', false);
+testValid('StructUsesStandaloneStructInternalFn', 'transparent', false);
+testValid('RecursiveStructInternalFn', 'transparent', false);
+testValid('MappingRecursiveStructInternalFn', 'transparent', false);
+testValid('ArrayRecursiveStructInternalFn', 'transparent', false);
+testValid('SelfRecursiveMappingStructInternalFn', 'transparent', false);
+testValid('SelfRecursiveArrayStructInternalFn', 'transparent', false);
+
+testValid('ExternalFunctionPointer', 'transparent', true);
+testValid('InternalFunctionPointer', 'transparent', false);
+testValid('ImpliedInternalFunctionPointer', 'transparent', false);
+testOverride('ImpliedInternalFunctionPointer', 'transparent', { unsafeAllow: ['internal-function-storage'] }, true);
+
 test('ambiguous name', t => {
   const error = t.throws(() => getContractVersion(t.context.validation, 'SameName'));
   t.is(
