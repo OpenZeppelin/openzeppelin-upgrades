@@ -21,6 +21,7 @@ import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
 import { getStorageLocationAnnotation, isNamespaceSupported } from '../storage/namespace';
 import { UpgradesError } from '../error';
+import { assertUnreachable } from '../utils/assert';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -622,5 +623,7 @@ function findUserDefinedType(typeName: TypeName): UserDefinedTypeName | undefine
     case 'ElementaryTypeName':
     case 'FunctionTypeName':
       return undefined;
+    default:
+      return assertUnreachable(typeName);
   }
 }
