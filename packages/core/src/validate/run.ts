@@ -1,6 +1,12 @@
 import { Node } from 'solidity-ast/node';
 import { isNodeType, findAll, ASTDereferencer, astDereferencer } from 'solidity-ast/utils';
-import type { ContractDefinition, FunctionDefinition, StructDefinition } from 'solidity-ast';
+import type {
+  ContractDefinition,
+  FunctionDefinition,
+  StructDefinition,
+  TypeName,
+  UserDefinedTypeName,
+} from 'solidity-ast';
 import debug from '../utils/debug';
 
 import { SolcOutput, SolcBytecode, SolcInput } from '../solc-api';
@@ -575,6 +581,7 @@ function* getInternalFunctionStorageErrors(
   contractOrStructDef: ContractDefinition | StructDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
+  visitedNodeIds = new Set<number>(),
 ): Generator<ValidationError> {
   // Note: Solidity does not allow annotations for non-public state variables, nor recursive types for public variables,
   // so annotations cannot be used to skip these checks.
@@ -586,12 +593,33 @@ function* getInternalFunctionStorageErrors(
         name: variableDec.name,
         src: decodeSrc(variableDec),
       };
-    } else if (variableDec.typeName?.nodeType === 'UserDefinedTypeName') {
-      // Recursively dereference structs, since structs may be declared elsewhere
-      const structDef = tryDerefStruct(deref, variableDec.typeName.referencedDeclaration);
-      if (structDef !== undefined) {
-        yield* getInternalFunctionStorageErrors(structDef, deref, decodeSrc);
+    } else if (variableDec.typeName) {
+      const userDefinedType = findUserDefinedType(variableDec.typeName);
+      // Recursively try to dereference struct since it may be declared elsewhere
+      if (userDefinedType !== undefined && !visitedNodeIds.has(userDefinedType.referencedDeclaration)) {
+        const structDef = tryDerefStruct(deref, userDefinedType.referencedDeclaration);
+        if (structDef !== undefined) {
+          visitedNodeIds.add(userDefinedType.referencedDeclaration);
+          yield* getInternalFunctionStorageErrors(structDef, deref, decodeSrc, visitedNodeIds);
+        }
       }
     }
+  }
+}
+
+/**
+ * Recursively traverse array and mapping types to find user-defined types (which may be struct references).
+ */
+function findUserDefinedType(typeName: TypeName): UserDefinedTypeName | undefined {
+  switch (typeName.nodeType) {
+    case 'ArrayTypeName':
+      return findUserDefinedType(typeName.baseType);
+    case 'Mapping':
+      // only mapping values can possibly refer to other array, mapping, or user-defined types
+      return findUserDefinedType(typeName.valueType);
+    case 'UserDefinedTypeName':
+      return typeName;
+    default:
+      return undefined;
   }
 }

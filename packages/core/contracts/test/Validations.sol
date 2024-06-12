@@ -230,17 +230,39 @@ struct StandaloneStructInternalFn {
 }
 
 contract UsesStandaloneStructInternalFn {
-    StandaloneStructInternalFn s;
+    StandaloneStructInternalFn bad;
 }
 
 contract StructUsesStandaloneStructInternalFn {
-    struct S2 {
-        StandaloneStructInternalFn s;
+    struct Bad {
+        StandaloneStructInternalFn bad;
     }
 }
 
-contract RecursiveStructUsesStandaloneStructInternalFn {
-    StructUsesStandaloneStructInternalFn.S2 s2;
+contract RecursiveStructInternalFn {
+    StructUsesStandaloneStructInternalFn.Bad bad;
+}
+
+contract MappingRecursiveStructInternalFn {
+    mapping(address => mapping(address => StructUsesStandaloneStructInternalFn.Bad)) bad;
+}
+
+contract ArrayRecursiveStructInternalFn {
+    StructUsesStandaloneStructInternalFn.Bad[][] bad;
+}
+
+contract SelfRecursiveMappingStructInternalFn {
+    struct SelfRecursive {
+        mapping(address => SelfRecursive) selfReference;
+        mapping(address => StructUsesStandaloneStructInternalFn.Bad) bad;
+    }
+}
+
+contract SelfRecursiveArrayStructInternalFn {
+    struct SelfRecursiveArray {
+        SelfRecursiveArray[] selfReference;
+        StructUsesStandaloneStructInternalFn.Bad[] bad;
+    }
 }
 
 contract ExternalFunctionPointer {

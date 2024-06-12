@@ -152,7 +152,11 @@ testOverride(
 
 testValid('UsesStandaloneStructInternalFn', 'transparent', false);
 testValid('StructUsesStandaloneStructInternalFn', 'transparent', false);
-testValid('RecursiveStructUsesStandaloneStructInternalFn', 'transparent', false);
+testValid('RecursiveStructInternalFn', 'transparent', false);
+testValid('MappingRecursiveStructInternalFn', 'transparent', false);
+testValid('ArrayRecursiveStructInternalFn', 'transparent', false);
+testValid('SelfRecursiveMappingStructInternalFn', 'transparent', false);
+testValid('SelfRecursiveArrayStructInternalFn', 'transparent', false);
 
 testValid('ExternalFunctionPointer', 'transparent', true);
 testValid('InternalFunctionPointer', 'transparent', false);
