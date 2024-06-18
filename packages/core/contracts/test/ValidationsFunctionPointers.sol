@@ -53,6 +53,10 @@ contract UsesStandaloneStructInternalFn {
     StandaloneStructInternalFn bad;
 }
 
+struct StructUsesStandaloneStructInternalFn {
+    StandaloneStructInternalFn bad;
+}
+
 contract NamespacedUsesStandaloneStructInternalFn {
     /// @custom:storage-location erc7201:example.main
     struct Bad {
@@ -61,22 +65,22 @@ contract NamespacedUsesStandaloneStructInternalFn {
 }
 
 contract RecursiveStructInternalFn {
-    NamespacedUsesStandaloneStructInternalFn.Bad bad;
+    StructUsesStandaloneStructInternalFn bad;
 }
 
 contract MappingRecursiveStructInternalFn {
-    mapping(address => mapping(address => NamespacedUsesStandaloneStructInternalFn.Bad)) bad;
+    mapping(address => mapping(address => StructUsesStandaloneStructInternalFn)) bad;
 }
 
 contract ArrayRecursiveStructInternalFn {
-    NamespacedUsesStandaloneStructInternalFn.Bad[][] bad;
+    StructUsesStandaloneStructInternalFn[][] bad;
 }
 
 contract SelfRecursiveMappingStructInternalFn {
     /// @custom:storage-location erc7201:example.main
     struct SelfRecursive {
         mapping(address => SelfRecursive) selfReference;
-        mapping(address => NamespacedUsesStandaloneStructInternalFn.Bad) bad;
+        mapping(address => StructUsesStandaloneStructInternalFn) bad;
     }
 }
 
@@ -84,7 +88,7 @@ contract SelfRecursiveArrayStructInternalFn {
     /// @custom:storage-location erc7201:example.main
     struct SelfRecursiveArray {
         SelfRecursiveArray[] selfReference;
-        NamespacedUsesStandaloneStructInternalFn.Bad[] bad;
+        StructUsesStandaloneStructInternalFn[] bad;
     }
 }
 
