@@ -8,6 +8,7 @@ import {
   assertUpgradeSafe,
   ValidationOptions,
   RunValidation,
+  ValidationErrors,
 } from './validate';
 import { solcInputOutputDecoder } from './src-decoder';
 
@@ -38,11 +39,21 @@ test.before(async t => {
   }
 });
 
-function testValid(name: string, kind: ValidationOptions['kind'], valid: boolean) {
-  testOverride(name, kind, {}, valid);
+function testValid(name: string, kind: ValidationOptions['kind'], valid: boolean, numExpectedErrors?: number) {
+  testOverride(name, kind, {}, valid, numExpectedErrors);
 }
 
-function testOverride(name: string, kind: ValidationOptions['kind'], opts: ValidationOptions, valid: boolean) {
+function testOverride(
+  name: string,
+  kind: ValidationOptions['kind'],
+  opts: ValidationOptions,
+  valid: boolean,
+  numExpectedErrors?: number,
+) {
+  if (numExpectedErrors !== undefined && numExpectedErrors > 0 && valid) {
+    throw new Error('Cannot expect errors for a valid contract');
+  }
+
   const optKeys = Object.keys(opts);
   const describeOpts = optKeys.length > 0 ? '(' + optKeys.join(', ') + ')' : '';
   const testName = [valid ? 'accepts' : 'rejects', kind, name, describeOpts].join(' ');
@@ -52,7 +63,10 @@ function testOverride(name: string, kind: ValidationOptions['kind'], opts: Valid
     if (valid) {
       t.notThrows(assertUpgSafe);
     } else {
-      t.throws(assertUpgSafe);
+      const error = t.throws(assertUpgSafe) as ValidationErrors;
+      if (numExpectedErrors !== undefined) {
+        t.is(error.errors.length, numExpectedErrors);
+      }
     }
   });
 }
@@ -142,6 +156,7 @@ testValid('contracts/test/ValidationsSameNameUnsafe.sol:SameName', 'transparent'
 
 testValid('StructExternalFunctionPointer', 'transparent', true);
 testValid('StructInternalFunctionPointer', 'transparent', false);
+testValid('StructInternalFunctionPointerUsed', 'transparent', false, 1);
 testValid('StructImpliedInternalFunctionPointer', 'transparent', false);
 testOverride(
   'StructImpliedInternalFunctionPointer',

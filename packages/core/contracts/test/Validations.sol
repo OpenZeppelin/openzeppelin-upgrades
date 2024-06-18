@@ -219,6 +219,13 @@ contract StructInternalFunctionPointer {
     }
 }
 
+contract StructInternalFunctionPointerUsed {
+    struct S {
+        function(bool) internal foo;
+    }
+    S s;
+}
+
 contract StructImpliedInternalFunctionPointer {
     struct S {
         function(bool) foo;

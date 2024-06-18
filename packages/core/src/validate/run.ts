@@ -6,6 +6,7 @@ import type {
   StructDefinition,
   TypeName,
   UserDefinedTypeName,
+  VariableDeclaration,
 } from 'solidity-ast';
 import debug from '../utils/debug';
 
@@ -586,7 +587,8 @@ function* getInternalFunctionStorageErrors(
 ): Generator<ValidationError> {
   // Note: Solidity does not allow annotations for non-public state variables, nor recursive types for public variables,
   // so annotations cannot be used to skip these checks.
-  for (const variableDec of findAll('VariableDeclaration', contractOrStructDef)) {
+  const variableDecs = getVariableDeclarations(contractOrStructDef, deref, decodeSrc, visitedNodeIds);
+  for (const variableDec of variableDecs) {
     if (variableDec.typeName?.nodeType === 'FunctionTypeName' && variableDec.typeName.visibility === 'internal') {
       // Find internal function types directly in this node's scope
       yield {
@@ -606,6 +608,35 @@ function* getInternalFunctionStorageErrors(
       }
     }
   }
+}
+
+/**
+ * Gets all variable declarations in a contract or struct definition, including those in a contract's struct definitions.
+ */
+function getVariableDeclarations(
+  contractOrStructDef: ContractDefinition | StructDefinition,
+  deref: ASTDereferencer,
+  decodeSrc: SrcDecoder,
+  visitedNodeIds: Set<number>,
+): VariableDeclaration[] {
+  const results: VariableDeclaration[] = [];
+  if (contractOrStructDef.nodeType === 'ContractDefinition') {
+    for (const node of contractOrStructDef.nodes) {
+      if (node.nodeType === 'VariableDeclaration') {
+        results.push(node);
+      } else if (node.nodeType === 'StructDefinition' && !visitedNodeIds.has(node.id)) {
+        visitedNodeIds.add(node.id);
+        results.push(...getVariableDeclarations(node, deref, decodeSrc, visitedNodeIds));
+      }
+    }
+  } else if (contractOrStructDef.nodeType === 'StructDefinition') {
+    for (const member of contractOrStructDef.members) {
+      if (member.nodeType === 'VariableDeclaration') {
+        results.push(member);
+      }
+    }
+  }
+  return results;
 }
 
 /**
