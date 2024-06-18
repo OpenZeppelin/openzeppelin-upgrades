@@ -24,6 +24,7 @@ test.before(async t => {
     'contracts/test/ValidationsNatspec.sol:HasNonEmptyConstructorNatspec1',
     'contracts/test/Proxiable.sol:ChildOfProxiable',
     'contracts/test/ValidationsUDVT.sol:ValidationsUDVT',
+    'contracts/test/ValidationsFunctionPointers.sol:InternalFunctionPointer',
   ];
 
   t.context.validation = {} as RunValidation;
@@ -154,19 +155,31 @@ testValid('TransitiveLibraryIsUnsafe', 'transparent', false);
 testValid('contracts/test/ValidationsSameNameSafe.sol:SameName', 'transparent', true);
 testValid('contracts/test/ValidationsSameNameUnsafe.sol:SameName', 'transparent', false);
 
-testValid('StructExternalFunctionPointer', 'transparent', true);
-testValid('StructInternalFunctionPointer', 'transparent', false);
+test('ambiguous name', t => {
+  const error = t.throws(() => getContractVersion(t.context.validation, 'SameName'));
+  t.is(
+    error?.message,
+    'Contract SameName is ambiguous. Use one of the following:\n' +
+      'contracts/test/ValidationsSameNameSafe.sol:SameName\n' +
+      'contracts/test/ValidationsSameNameUnsafe.sol:SameName',
+  );
+});
+
+testValid('NamespacedExternalFunctionPointer', 'transparent', true);
+testValid('NamespacedInternalFunctionPointer', 'transparent', false);
+testValid('NamespacedInternalFunctionPointerUsed', 'transparent', false, 1);
 testValid('StructInternalFunctionPointerUsed', 'transparent', false, 1);
-testValid('StructImpliedInternalFunctionPointer', 'transparent', false);
+testValid('NonNamespacedInternalFunctionPointer', 'transparent', true);
+testValid('NamespacedImpliedInternalFunctionPointer', 'transparent', false);
 testOverride(
-  'StructImpliedInternalFunctionPointer',
+  'NamespacedImpliedInternalFunctionPointer',
   'transparent',
   { unsafeAllow: ['internal-function-storage'] },
   true,
 );
 
 testValid('UsesStandaloneStructInternalFn', 'transparent', false);
-testValid('StructUsesStandaloneStructInternalFn', 'transparent', false);
+testValid('NamespacedUsesStandaloneStructInternalFn', 'transparent', false);
 testValid('RecursiveStructInternalFn', 'transparent', false);
 testValid('MappingRecursiveStructInternalFn', 'transparent', false);
 testValid('ArrayRecursiveStructInternalFn', 'transparent', false);
@@ -179,13 +192,3 @@ testValid('ImpliedInternalFunctionPointer', 'transparent', false);
 testOverride('ImpliedInternalFunctionPointer', 'transparent', { unsafeAllow: ['internal-function-storage'] }, true);
 
 testValid('FunctionWithInternalFunctionPointer', 'transparent', true);
-
-test('ambiguous name', t => {
-  const error = t.throws(() => getContractVersion(t.context.validation, 'SameName'));
-  t.is(
-    error?.message,
-    'Contract SameName is ambiguous. Use one of the following:\n' +
-      'contracts/test/ValidationsSameNameSafe.sol:SameName\n' +
-      'contracts/test/ValidationsSameNameUnsafe.sol:SameName',
-  );
-});
