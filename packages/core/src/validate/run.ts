@@ -611,7 +611,7 @@ function* getInternalFunctionStorageErrors(
 }
 
 /**
- * Gets all variable declarations in a contract or struct definition, including those in a contract's struct definitions.
+ * Gets variables declared directly in a contract and its struct definitions, or in a struct definition.
  */
 function getVariableDeclarations(
   contractOrStructDef: ContractDefinition | StructDefinition,
