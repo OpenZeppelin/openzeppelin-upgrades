@@ -587,7 +587,7 @@ function* getInternalFunctionStorageErrors(
 ): Generator<ValidationError> {
   // Note: Solidity does not allow annotations for non-public state variables, nor recursive types for public variables,
   // so annotations cannot be used to skip these checks.
-  for (const variableDec of getVariableDeclarations(contractOrStructDef, deref, decodeSrc, visitedNodeIds)) {
+  for (const variableDec of getVariableDeclarations(contractOrStructDef, visitedNodeIds)) {
     if (variableDec.typeName?.nodeType === 'FunctionTypeName' && variableDec.typeName.visibility === 'internal') {
       // Find internal function types directly in this node's scope
       yield {
@@ -614,8 +614,6 @@ function* getInternalFunctionStorageErrors(
  */
 function getVariableDeclarations(
   contractOrStructDef: ContractDefinition | StructDefinition,
-  deref: ASTDereferencer,
-  decodeSrc: SrcDecoder,
   visitedNodeIds: Set<number>,
 ): VariableDeclaration[] {
   const results: VariableDeclaration[] = [];
@@ -625,7 +623,7 @@ function getVariableDeclarations(
         results.push(node);
       } else if (node.nodeType === 'StructDefinition' && !visitedNodeIds.has(node.id)) {
         visitedNodeIds.add(node.id);
-        results.push(...getVariableDeclarations(node, deref, decodeSrc, visitedNodeIds));
+        results.push(...getVariableDeclarations(node, visitedNodeIds));
       }
     }
   } else if (contractOrStructDef.nodeType === 'StructDefinition') {
