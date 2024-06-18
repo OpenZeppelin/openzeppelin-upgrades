@@ -587,8 +587,7 @@ function* getInternalFunctionStorageErrors(
 ): Generator<ValidationError> {
   // Note: Solidity does not allow annotations for non-public state variables, nor recursive types for public variables,
   // so annotations cannot be used to skip these checks.
-  const variableDecs = getVariableDeclarations(contractOrStructDef, deref, decodeSrc, visitedNodeIds);
-  for (const variableDec of variableDecs) {
+  for (const variableDec of getVariableDeclarations(contractOrStructDef, deref, decodeSrc, visitedNodeIds)) {
     if (variableDec.typeName?.nodeType === 'FunctionTypeName' && variableDec.typeName.visibility === 'internal') {
       // Find internal function types directly in this node's scope
       yield {
