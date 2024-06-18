@@ -6,6 +6,7 @@ import type {
   StructDefinition,
   TypeName,
   UserDefinedTypeName,
+  VariableDeclaration,
 } from 'solidity-ast';
 import debug from '../utils/debug';
 
@@ -586,7 +587,7 @@ function* getInternalFunctionStorageErrors(
 ): Generator<ValidationError> {
   // Note: Solidity does not allow annotations for non-public state variables, nor recursive types for public variables,
   // so annotations cannot be used to skip these checks.
-  for (const variableDec of findAll('VariableDeclaration', contractOrStructDef)) {
+  for (const variableDec of getVariableDeclarations(contractOrStructDef, visitedNodeIds)) {
     if (variableDec.typeName?.nodeType === 'FunctionTypeName' && variableDec.typeName.visibility === 'internal') {
       // Find internal function types directly in this node's scope
       yield {
@@ -605,6 +606,34 @@ function* getInternalFunctionStorageErrors(
         }
       }
     }
+  }
+}
+
+/**
+ * Gets variables declared directly in a contract or in a struct definition.
+ *
+ * If this is a contract with struct definitions annotated with a storage location according to ERC-7201,
+ * then the struct members are also included.
+ */
+function* getVariableDeclarations(
+  contractOrStructDef: ContractDefinition | StructDefinition,
+  visitedNodeIds: Set<number>,
+): Generator<VariableDeclaration, void, undefined> {
+  if (contractOrStructDef.nodeType === 'ContractDefinition') {
+    for (const node of contractOrStructDef.nodes) {
+      if (node.nodeType === 'VariableDeclaration') {
+        yield node;
+      } else if (
+        node.nodeType === 'StructDefinition' &&
+        getStorageLocationAnnotation(node) !== undefined &&
+        !visitedNodeIds.has(node.id)
+      ) {
+        visitedNodeIds.add(node.id);
+        yield* getVariableDeclarations(node, visitedNodeIds);
+      }
+    }
+  } else if (contractOrStructDef.nodeType === 'StructDefinition') {
+    yield* contractOrStructDef.members;
   }
 }
 

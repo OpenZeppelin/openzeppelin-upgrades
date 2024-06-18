@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.1 (2024-06-18)
+
+- Fix unexpected validation error when function parameter has internal function pointer. ([#1038](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1038))
+
 ## 1.34.0 (2024-06-12)
 
 - Fix storage layout comparison for function types, disallow internal functions in storage. ([#1032](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1032))
