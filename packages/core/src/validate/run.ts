@@ -610,7 +610,10 @@ function* getInternalFunctionStorageErrors(
 }
 
 /**
- * Gets variables declared directly in a contract and its struct definitions, or in a struct definition.
+ * Gets variables declared directly in a contract or in a struct definition.
+ *
+ * If this is a contract with struct definitions annotated with a storage location according to ERC-7201,
+ * then the struct members are also included.
  */
 function* getVariableDeclarations(
   contractOrStructDef: ContractDefinition | StructDefinition,
@@ -620,7 +623,11 @@ function* getVariableDeclarations(
     for (const node of contractOrStructDef.nodes) {
       if (node.nodeType === 'VariableDeclaration') {
         yield node;
-      } else if (node.nodeType === 'StructDefinition' && !visitedNodeIds.has(node.id)) {
+      } else if (
+        node.nodeType === 'StructDefinition' &&
+        getStorageLocationAnnotation(node) !== undefined &&
+        !visitedNodeIds.has(node.id)
+      ) {
         visitedNodeIds.add(node.id);
         yield* getVariableDeclarations(node, visitedNodeIds);
       }
