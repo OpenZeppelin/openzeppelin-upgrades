@@ -276,3 +276,14 @@ contract InternalFunctionPointer {
 contract ImpliedInternalFunctionPointer {
     function(bool) foo;
 }
+
+contract FunctionWithInternalFunctionPointer {
+    uint208 x;
+
+    function doOp(
+        function(uint208, uint208) view returns (uint208) op,
+        uint208 y
+    ) internal view returns (uint208) {
+        return op(x, y);
+    }
+}

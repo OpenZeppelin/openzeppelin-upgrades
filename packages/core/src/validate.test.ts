@@ -163,6 +163,8 @@ testValid('InternalFunctionPointer', 'transparent', false);
 testValid('ImpliedInternalFunctionPointer', 'transparent', false);
 testOverride('ImpliedInternalFunctionPointer', 'transparent', { unsafeAllow: ['internal-function-storage'] }, true);
 
+testValid('FunctionWithInternalFunctionPointer', 'transparent', true);
+
 test('ambiguous name', t => {
   const error = t.throws(() => getContractVersion(t.context.validation, 'SameName'));
   t.is(
