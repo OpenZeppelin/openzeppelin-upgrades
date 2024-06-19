@@ -5,7 +5,7 @@ const { disableDefender, enableDefender } = require('../dist/defender/utils');
 const { getDeployClient } = require('../dist/defender/client');
 
 test.beforeEach(async t => {
-  t.context.fakeChainId = '0x05';
+  t.context.fakeChainId = '0x01';
   t.context.fakeHre = {
     config: { defender: { apiKey: 'API_KEY', apiSecret: 'API_SECRET' } },
     network: {
@@ -36,7 +36,7 @@ test('getNetwork finds network', async t => {
   });
 
   const network = await utils.getNetwork(t.context.fakeHre);
-  t.is(network, 'goerli');
+  t.is(network, 'mainnet');
 });
 
 test('getNetwork cannot find network', async t => {
