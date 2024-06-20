@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Breaking change**: Remove `defender.proposeUpgrade` from Defender legacy. Defender users should use `defender.proposeUpgradeWithApproval` instead.
+
 ## 3.1.1 (2024-06-03)
 
 - Defender: Fix proxy deployments when using `constructorArgs` option, support arbitrary constructor arguments. ([#1029](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1029))
