@@ -2,7 +2,7 @@
 
 ## 3.2.0 (2024-06-24)
 
-- **Breaking change**: Remove `defender.proposeUpgrade` from Defender legacy. Defender users should use `defender.proposeUpgradeWithApproval` instead.
+- **Breaking change**: Remove `defender.proposeUpgrade` from Defender legacy. Defender users should use `defender.proposeUpgradeWithApproval` instead. ([#1041](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1041))
 
 ## 3.1.1 (2024-06-03)
 
