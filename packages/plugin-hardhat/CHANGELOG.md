@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.2.0 (2024-06-24)
 
 - **Breaking change**: Remove `defender.proposeUpgrade` from Defender legacy. Defender users should use `defender.proposeUpgradeWithApproval` instead.
 
