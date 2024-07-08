@@ -57,7 +57,7 @@
     "dotenv": "^16.0.0",
     "fgbg": "^0.1.4",
     "hardhat": "^2.19.1",
-    "rimraf": "^5.0.0",
+    "rimraf": "^6.0.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
