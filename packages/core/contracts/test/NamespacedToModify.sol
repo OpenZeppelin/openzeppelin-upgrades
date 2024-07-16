@@ -176,17 +176,30 @@ enum FreeEnum { MyEnum }
  */
 error CustomErrorOutsideContract(Example example);
 
+int8 constant MAX_SIZE_C = 2;
+
 contract StructArrayUsesConstant {
   uint16 private constant MAX_SIZE = 10;
 
   struct NotNamespaced {
     uint16 a;
     uint256[MAX_SIZE] b;
+    uint256[MAX_SIZE_C] c;
   }
 
   /// @custom:storage-location erc7201:uses.constant
   struct MainStorage {
     uint256 x;
     uint256[MAX_SIZE] y;
+    uint256[MAX_SIZE_C] c;
   }
+}
+
+address constant MY_ADDRESS = 0x0000000000000000000000000000000000000000;
+
+interface IDummy {
+}
+
+contract UsesAddress {
+  IDummy public constant MY_CONTRACT = IDummy(MY_ADDRESS);
 }

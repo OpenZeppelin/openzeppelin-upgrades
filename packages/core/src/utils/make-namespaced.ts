@@ -61,8 +61,8 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           for (const contractNode of contractNodes) {
             switch (contractNode.nodeType) {
               case 'VariableDeclaration': {
-                // If variable is a constant, keep it since it may be referenced in a struct
-                if (contractNode.constant) {
+                // If variable is a constant int or uint, keep it since it may be referenced in a struct
+                if (contractNode.constant && contractNode.typeName?.nodeType === 'ElementaryTypeName' && (contractNode.typeName.name.startsWith('int') || contractNode.typeName.name.startsWith('uint'))) {
                   break;
                 }
                 // Otherwise, fall through to convert to dummy enum
@@ -105,10 +105,16 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         // - ErrorDefinition, FunctionDefinition, and VariableDeclaration might be imported by other files, so they cannot be deleted.
         //   However, we need to remove their values to avoid referencing other deleted nodes.
         //   We do this by converting them to dummy enums, but avoiding duplicate names.
+        case 'VariableDeclaration': {
+          // If variable is a constant int or uint, keep it since it may be referenced in a struct
+          if (node.constant && node.typeName?.nodeType === 'ElementaryTypeName' && (node.typeName.name.startsWith('int') || node.typeName.name.startsWith('uint'))) {
+            break;
+          }
+          // Otherwise, fall through to convert to dummy enum
+        }
         case 'UsingForDirective':
         case 'ErrorDefinition':
-        case 'FunctionDefinition':
-        case 'VariableDeclaration': {
+        case 'FunctionDefinition': {
           // If an identifier with the same name was not previously written, replace with a dummy enum using its name.
           // Otherwise replace with an enum based on astId to avoid duplicate names, which can happen if there was overloading.
           // This does not need to check all identifiers from the original contract, since the original compilation
