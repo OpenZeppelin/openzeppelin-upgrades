@@ -176,13 +176,22 @@ function toDummyEnumWithAstId(astId: number) {
 }
 
 function replaceFunction(node: FunctionDefinition, orig: Buffer, modifications: Modification[]) {
-  // If this is a regular or free function (e.g. not constructor) and an identifier with the same name was not previously written in its scope, replace with an empty function using its name and parameters (the parameter type does not matter).
-  // Otherwise replace with an enum based on astId to avoid duplicate names, which can happen if there was overloading.
-  if ('name' in node && (node.kind === 'function' || node.kind === 'freeFunction')) {
-    const replacement = `function ${node.name}(${node.parameters.parameters.map((value: VariableDeclaration) => `uint ${value.name}`).join(', ')}) ${node.kind === 'freeFunction' ? '' : node.visibility} pure {}`;
-    modifications.push(makeReplace(node, orig, replacement));
+  if (node.kind === 'constructor') {
+    modifications.push(makeDelete(node, orig));
   } else {
-    modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
+    if (node.modifiers.length > 0) {
+      for (const modifier of node.modifiers) {
+        modifications.push(makeDelete(modifier, orig));
+      }
+    }
+
+    if (node.returnParameters.parameters.length > 0) {
+      modifications.push(makeReplace(node.returnParameters, orig, '(bool)'));
+    }
+
+    if (node.body) {
+      modifications.push(makeReplace(node.body, orig, '{}'));
+    }
   }
 }
 
