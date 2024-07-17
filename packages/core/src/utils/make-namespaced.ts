@@ -58,13 +58,11 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
             }
           }
 
-          const contractReplacedIdentifiers = new Set<string>();
-
           const contractNodes = contractDef.nodes;
           for (const contractNode of contractNodes) {
             switch (contractNode.nodeType) {
               case 'FunctionDefinition': {
-                replaceFunction(contractNode, orig, contractReplacedIdentifiers, modifications);
+                replaceFunction(contractNode, orig, modifications);
                 break;
               }
               case 'VariableDeclaration': {
@@ -107,7 +105,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         }
 
         case 'FunctionDefinition': {
-          replaceFunction(node, orig, replacedIdentifiers, modifications);
+          replaceFunction(node, orig, modifications);
           break;
         }
         // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
@@ -177,22 +175,12 @@ function toDummyEnumWithAstId(astId: number) {
   return `enum $astId_${astId}_${(Math.random() * 1e6).toFixed(0)} { dummy }`;
 }
 
-function replaceFunction(
-  node: FunctionDefinition,
-  orig: Buffer,
-  replacedIdentifiers: Set<string>,
-  modifications: Modification[],
-) {
+function replaceFunction(node: FunctionDefinition, orig: Buffer, modifications: Modification[]) {
   // If this is a regular or free function (e.g. not constructor) and an identifier with the same name was not previously written in its scope, replace with an empty function using its name and parameters (the parameter type does not matter).
   // Otherwise replace with an enum based on astId to avoid duplicate names, which can happen if there was overloading.
-  if (
-    'name' in node &&
-    !replacedIdentifiers.has(node.name) &&
-    (node.kind === 'function' || node.kind === 'freeFunction')
-  ) {
+  if ('name' in node && (node.kind === 'function' || node.kind === 'freeFunction')) {
     const replacement = `function ${node.name}(${node.parameters.parameters.map((value: VariableDeclaration) => `uint ${value.name}`).join(', ')}) ${node.kind === 'freeFunction' ? '' : node.visibility} pure {}`;
     modifications.push(makeReplace(node, orig, replacement));
-    replacedIdentifiers.add(node.name);
   } else {
     modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
   }
