@@ -67,7 +67,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
               }
               case 'VariableDeclaration': {
                 // If variable is a constant, keep it since it may be referenced in a struct
-                if (isConstant(contractNode)) {
+                if (contractNode.constant) {
                   break;
                 }
                 // Otherwise, fall through to convert to dummy enum
@@ -115,7 +115,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         //   We do this by converting them to dummy enums, but avoiding duplicate names.
         case 'VariableDeclaration': {
           // If variable is a constant, keep it since it may be referenced in a struct
-          if (isConstant(node)) {
+          if (node.constant) {
             break;
           }
           // Otherwise, fall through to convert to dummy enum
@@ -161,10 +161,6 @@ interface Modification {
   start: number;
   end: number;
   text?: string;
-}
-
-function isConstant(contractNode: VariableDeclaration) {
-  return contractNode.constant && contractNode.typeName?.nodeType === 'ElementaryTypeName';
 }
 
 function toDummyEnumWithName(name: string) {
