@@ -3,7 +3,7 @@ import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationAnnotation } from '../storage/namespace';
 import { assert } from './assert';
-import { FunctionDefinition, VariableDeclaration } from 'solidity-ast';
+import { FunctionDefinition } from 'solidity-ast';
 
 const OUTPUT_SELECTION = {
   '*': {
@@ -41,7 +41,6 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
 
     const orig = Buffer.from(source.content, 'utf8');
 
-    const replacedIdentifiers = new Set<string>();
     const modifications: Modification[] = [];
 
     for (const node of output.sources[sourcePath].ast.nodes) {
@@ -108,11 +107,10 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           replaceFunction(node, orig, modifications);
           break;
         }
-        // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
-        //   We convert it to a dummy enum to avoid orphaning any possible documentation.
-        // - ErrorDefinition and VariableDeclaration might be imported by other files, so they cannot be deleted.
+
+        // - VariableDeclaration and ErrorDefinition might be imported by other files, so they cannot be deleted.
         //   However, we need to remove their values to avoid referencing other deleted nodes.
-        //   We do this by converting them to dummy enums, but avoiding duplicate names.
+        //   We do this by converting them to dummy enums with the same name.
         case 'VariableDeclaration': {
           // If variable is a constant, keep it since it may be referenced in a struct
           if (node.constant) {
@@ -120,20 +118,15 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           }
           // Otherwise, fall through to convert to dummy enum
         }
-        case 'UsingForDirective':
         case 'ErrorDefinition': {
-          // If an identifier with the same name was not previously written, replace with a dummy enum using its name.
-          // Otherwise replace with an enum based on astId to avoid duplicate names, which can happen if there was overloading.
-          // This does not need to check all identifiers from the original contract, since the original compilation
-          // should have failed if there were conflicts in the first place.
-          if ('name' in node && !replacedIdentifiers.has(node.name)) {
-            modifications.push(makeReplace(node, orig, toDummyEnumWithName(node.name)));
-            replacedIdentifiers.add(node.name);
-          } else {
-            modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
-          }
+          modifications.push(makeReplace(node, orig, toDummyEnumWithName(node.name)));
           break;
         }
+        // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
+        //   We convert it to a dummy enum to avoid orphaning any possible documentation.
+        case 'UsingForDirective':
+          modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
+          break;
         case 'EnumDefinition':
         case 'ImportDirective':
         case 'PragmaDirective':
