@@ -208,3 +208,10 @@ interface IDummy {
 contract UsesAddress {
   IDummy public constant MY_CONTRACT = IDummy(MY_ADDRESS);
 }
+
+contract HasFunctionWithRequiredReturn {
+    struct S { uint x; }
+    function foo(S calldata s) internal pure returns (S calldata) {
+        return s;
+    }
+}
