@@ -116,6 +116,10 @@ contract Consumer {
   }
 }
 
+contract HasConstantWithSelector {
+  bytes4 constant CONTRACT_CONSTANT_USING_SELECTOR = HasFunction.foo.selector;
+}
+
 function plusTwo(uint x) pure returns (uint) {
   return x + 2;
 }
@@ -195,7 +199,8 @@ contract StructArrayUsesConstant {
   }
 }
 
-address constant MY_ADDRESS = 0x0000000000000000000000000000000000000000;
+address constant MY_ADDRESS = address(0);
+uint constant CONVERTED_ADDRESS = uint160(MY_ADDRESS);
 
 interface IDummy {
 }

@@ -3,6 +3,7 @@ import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationAnnotation } from '../storage/namespace';
 import { assert } from './assert';
+import { FunctionDefinition, VariableDeclaration } from 'solidity-ast';
 
 const OUTPUT_SELECTION = {
   '*': {
@@ -57,19 +58,24 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
             }
           }
 
+          const contractReplacedIdentifiers = new Set<string>();
+
           const contractNodes = contractDef.nodes;
           for (const contractNode of contractNodes) {
             switch (contractNode.nodeType) {
+              case 'FunctionDefinition': {
+                replaceFunction(contractNode, orig, contractReplacedIdentifiers, modifications);
+                break;
+              }
               case 'VariableDeclaration': {
-                // If variable is a constant int or uint, keep it since it may be referenced in a struct
-                if (contractNode.constant && contractNode.typeName?.nodeType === 'ElementaryTypeName' && (contractNode.typeName.name.startsWith('int') || contractNode.typeName.name.startsWith('uint'))) {
+                // If variable is a constant, keep it since it may be referenced in a struct
+                if (isConstant(contractNode)) {
                   break;
                 }
                 // Otherwise, fall through to convert to dummy enum
               }
               case 'ErrorDefinition':
               case 'EventDefinition':
-              case 'FunctionDefinition':
               case 'ModifierDefinition':
               case 'UsingForDirective': {
                 // Replace with an enum based on astId (the original name is not needed, since nothing should reference it)
@@ -100,21 +106,24 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
           break;
         }
 
+        case 'FunctionDefinition': {
+          replaceFunction(node, orig, replacedIdentifiers, modifications);
+          break;
+        }
         // - UsingForDirective isn't needed, but it might have NatSpec documentation which is not included in the AST.
         //   We convert it to a dummy enum to avoid orphaning any possible documentation.
-        // - ErrorDefinition, FunctionDefinition, and VariableDeclaration might be imported by other files, so they cannot be deleted.
+        // - ErrorDefinition and VariableDeclaration might be imported by other files, so they cannot be deleted.
         //   However, we need to remove their values to avoid referencing other deleted nodes.
         //   We do this by converting them to dummy enums, but avoiding duplicate names.
         case 'VariableDeclaration': {
-          // If variable is a constant int or uint, keep it since it may be referenced in a struct
-          if (node.constant && node.typeName?.nodeType === 'ElementaryTypeName' && (node.typeName.name.startsWith('int') || node.typeName.name.startsWith('uint'))) {
+          // If variable is a constant, keep it since it may be referenced in a struct
+          if (isConstant(node)) {
             break;
           }
           // Otherwise, fall through to convert to dummy enum
         }
         case 'UsingForDirective':
-        case 'ErrorDefinition':
-        case 'FunctionDefinition': {
+        case 'ErrorDefinition': {
           // If an identifier with the same name was not previously written, replace with a dummy enum using its name.
           // Otherwise replace with an enum based on astId to avoid duplicate names, which can happen if there was overloading.
           // This does not need to check all identifiers from the original contract, since the original compilation
@@ -156,12 +165,28 @@ interface Modification {
   text?: string;
 }
 
+function isConstant(contractNode: VariableDeclaration) {
+  return contractNode.constant && contractNode.typeName?.nodeType === 'ElementaryTypeName';
+}
+
 function toDummyEnumWithName(name: string) {
   return `enum ${name} { dummy }`;
 }
 
 function toDummyEnumWithAstId(astId: number) {
   return `enum $astId_${astId}_${(Math.random() * 1e6).toFixed(0)} { dummy }`;
+}
+
+function replaceFunction(node: FunctionDefinition, orig: Buffer, replacedIdentifiers: Set<string>, modifications: Modification[]) {
+  // If this is a regular or free function (e.g. not constructor) and an identifier with the same name was not previously written in its scope, replace with an empty function using its name and parameters (the parameter type does not matter).
+  // Otherwise replace with an enum based on astId to avoid duplicate names, which can happen if there was overloading.
+  if ('name' in node && !replacedIdentifiers.has(node.name) && (node.kind === 'function' || node.kind === 'freeFunction')) {
+    const replacement = `function ${node.name}(${node.parameters.parameters.map((value: VariableDeclaration) => `uint ${value.name}`).join(', ')}) ${node.kind === 'freeFunction' ? '' : node.visibility} pure {}`;
+    modifications.push(makeReplace(node, orig, replacement));
+    replacedIdentifiers.add(node.name);
+  } else {
+    modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
+  }
 }
 
 function getPositions(node: Node) {
