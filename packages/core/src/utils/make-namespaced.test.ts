@@ -38,7 +38,7 @@ async function testMakeNamespaced(
 
   // Run hardhat compile on the modified input and make sure it has no errors
   const modifiedOutput = await hardhatCompile(modifiedInput, solcVersion);
-  t.is(modifiedOutput.errors, undefined);
+  t.is(modifiedOutput.errors, undefined, JSON.stringify(modifiedInput.sources, null, 2));
 
   normalizeIdentifiers(modifiedInput);
   t.snapshot(modifiedInput);

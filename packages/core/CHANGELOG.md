@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.2 (2024-07-18)
+
+- Fix Hardhat compile error when constants have references to other constants. ([#1046](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1046))
+
 ## 1.34.1 (2024-06-18)
 
 - Fix unexpected validation error when function parameter has internal function pointer. ([#1038](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1038))

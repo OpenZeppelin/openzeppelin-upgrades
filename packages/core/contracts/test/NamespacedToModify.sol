@@ -116,6 +116,10 @@ contract Consumer {
   }
 }
 
+contract HasConstantWithSelector {
+  bytes4 constant CONTRACT_CONSTANT_USING_SELECTOR = HasFunction.foo.selector;
+}
+
 function plusTwo(uint x) pure returns (uint) {
   return x + 2;
 }
@@ -176,17 +180,38 @@ enum FreeEnum { MyEnum }
  */
 error CustomErrorOutsideContract(Example example);
 
+int8 constant MAX_SIZE_C = 2;
+
 contract StructArrayUsesConstant {
   uint16 private constant MAX_SIZE = 10;
 
   struct NotNamespaced {
     uint16 a;
     uint256[MAX_SIZE] b;
+    uint256[MAX_SIZE_C] c;
   }
 
   /// @custom:storage-location erc7201:uses.constant
   struct MainStorage {
     uint256 x;
     uint256[MAX_SIZE] y;
+    uint256[MAX_SIZE_C] c;
   }
+}
+
+address constant MY_ADDRESS = address(0);
+uint constant CONVERTED_ADDRESS = uint160(MY_ADDRESS);
+
+interface IDummy {
+}
+
+contract UsesAddress {
+  IDummy public constant MY_CONTRACT = IDummy(MY_ADDRESS);
+}
+
+contract HasFunctionWithRequiredReturn {
+    struct S { uint x; }
+    function foo(S calldata s) internal pure returns (S calldata) {
+        return s;
+    }
 }
