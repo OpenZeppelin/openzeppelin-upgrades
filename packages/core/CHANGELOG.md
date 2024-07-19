@@ -2,7 +2,7 @@
 
 ## 1.34.3 (2024-07-19)
 
-- Fix Hardhat compile error when multiple return parameters are documented.
+- Fix Hardhat compile error when multiple return parameters are documented. ([#1048](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1048))
 
 ## 1.34.2 (2024-07-18)
 
