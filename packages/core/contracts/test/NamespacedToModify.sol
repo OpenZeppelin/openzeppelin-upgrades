@@ -224,12 +224,25 @@ function hasMultipleReturns() pure returns (uint, uint) {
     return (1, 2);
 }
 
+/**
+ * @return a first
+ * @return b second
+ */
+function hasMultipleNamedReturns() pure returns (uint a, uint b) {
+}
+
 contract HasNatSpecWithMultipleReturns {
     /**
      * @return uint 1
      * @return uint 2
      */
-    function hasMultipleReturnsConsumer() public pure returns (uint, uint) {
-        return hasMultipleReturns();
+    function hasMultipleReturnsInContract() public pure returns (uint, uint) {
+    }
+
+    /**
+     * @return a first
+     * @return b second
+     */
+    function hasMultipleNamedReturnsInContract() public pure returns (uint a, uint b) {
     }
 }
