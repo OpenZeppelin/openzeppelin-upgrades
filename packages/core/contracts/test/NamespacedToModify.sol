@@ -215,3 +215,21 @@ contract HasFunctionWithRequiredReturn {
         return s;
     }
 }
+
+/**
+ * @return uint 1
+ * @return uint 2
+ */
+function hasMultipleReturns() pure returns (uint, uint) {
+    return (1, 2);
+}
+
+contract HasNatSpecWithMultipleReturns {
+    /**
+     * @return uint 1
+     * @return uint 2
+     */
+    function hasMultipleReturnsConsumer() public pure returns (uint, uint) {
+        return hasMultipleReturns();
+    }
+}
