@@ -175,7 +175,9 @@ function replaceFunction(node: FunctionDefinition, orig: Buffer, modifications: 
     }
 
     if (node.returnParameters.parameters.length > 0) {
-      modifications.push(makeReplace(node.returnParameters, orig, '(bool)'));
+      modifications.push(
+        makeReplace(node.returnParameters, orig, `(${node.returnParameters.parameters.map(() => 'bool').join(',')})`),
+      );
     }
 
     if (node.body) {

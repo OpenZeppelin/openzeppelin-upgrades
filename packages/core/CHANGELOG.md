@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.3 (2024-07-19)
+
+- Fix Hardhat compile error when multiple return parameters are documented. ([#1048](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1048))
+
 ## 1.34.2 (2024-07-18)
 
 - Fix Hardhat compile error when constants have references to other constants. ([#1046](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1046))
