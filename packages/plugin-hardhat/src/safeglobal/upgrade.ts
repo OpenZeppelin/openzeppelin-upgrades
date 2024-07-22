@@ -93,6 +93,21 @@ export async function safeGlobalAdminUpgradeAndCallV4(
   return safeGlobalAdminUpgradeAndCallV5(hre, opts, adminAddress, proxyAddress, nextImpl, call);
 }
 
+export async function safeGlobalBeaconUpgradeTo(
+  hre: HardhatRuntimeEnvironment,
+  opts: UpgradeProxyOptions,
+  beaconAddress: string,
+  nextImpl: string,
+): Promise<TransactionResponse> {
+  console.log(`Sending upgradeTo tx to beacon:${beaconAddress} with nextImpl:${nextImpl}`);
+  const iface = new Interface(['function upgradeTo(address newImplementation)']);
+  const callData = iface.encodeFunctionData('upgradeTo', [nextImpl]);
+  const deployTxHash = await proposeAndWaitForSafeTx(hre, opts, beaconAddress, callData);
+
+  const tx = await hre.ethers.provider.getTransaction(deployTxHash);
+  return tx ?? getNullTransactionResponse(hre);
+}
+
 async function proposeAndWaitForSafeTx(
   hre: HardhatRuntimeEnvironment,
   opts: UpgradeProxyOptions,

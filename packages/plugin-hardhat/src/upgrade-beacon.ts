@@ -11,6 +11,7 @@ import {
   getSigner,
 } from './utils';
 import { disableDefender } from './defender/utils';
+import { safeGlobalBeaconUpgradeTo } from './safeglobal/upgrade';
 
 export type UpgradeBeaconFunction = (
   beacon: ContractAddressOrInstance,
@@ -29,7 +30,9 @@ export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, defenderModule
     const beaconContract = attach(UpgradeableBeaconFactory, beaconAddress);
 
     const overrides = opts.txOverrides ? [opts.txOverrides] : [];
-    const upgradeTx = await beaconContract.upgradeTo(nextImpl, ...overrides);
+    const upgradeTx = opts.useSafeGlobalDeploy
+      ? await safeGlobalBeaconUpgradeTo(hre, opts, beaconAddress, nextImpl)
+      : await beaconContract.upgradeTo(nextImpl, ...overrides);
 
     // @ts-ignore Won't be readonly because beaconContract was created through attach.
     beaconContract.deployTransaction = upgradeTx;
