@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Remove non-struct NatSpec from Hardhat compilation step for namespaced storage layout validations. ([#1051](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1051))
+
 ## 1.34.4 (2024-07-22)
 
 - Fix Hardhat compile error when return parameter names are documented as param. ([#1050](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1050))

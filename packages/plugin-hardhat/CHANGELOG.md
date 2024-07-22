@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Remove non-struct NatSpec from Hardhat compilation step for namespaced storage layout validations. ([#1051](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1051))
+
 ## 3.2.0 (2024-06-24)
 
 - **Breaking change**: Remove `defender.proposeUpgrade` from Defender legacy. Defender users should use `defender.proposeUpgradeWithApproval` instead. ([#1041](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1041))
