@@ -61,6 +61,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@nomicfoundation/slang": "^0.15.1",
     "cbor": "^9.0.0",
     "chalk": "^4.1.0",
     "compare-versions": "^6.0.0",
