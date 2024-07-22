@@ -18,7 +18,14 @@ import {
   attachProxyAdminV4,
   attachProxyAdminV5,
 } from './utils/attach-abi';
-import { safeGlobalAdminUpgradeAndCallV4, safeGlobalAdminUpgradeAndCallV5, safeGlobalAdminUpgradeV4 } from './safeglobal/upgrade';
+import {
+  safeGlobalAdminUpgradeAndCallV4,
+  safeGlobalAdminUpgradeAndCallV5,
+  safeGlobalAdminUpgradeV4,
+  safeGlobalUpgradeToAndCallV4,
+  safeGlobalUpgradeToAndCallV5,
+  safeGlobalUpgradeToV4,
+} from './safeglobal/upgrade';
 
 export type UpgradeFunction = (
   proxy: ContractAddressOrInstance,
@@ -63,6 +70,9 @@ export function makeUpgradeProxy(
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, proxyAddress, log);
       switch (upgradeInterfaceVersion) {
         case '5.0.0': {
+          if (opts.useSafeGlobalDeploy) {
+            return (nextImpl, call) => safeGlobalUpgradeToAndCallV5(hre, opts, proxyAddress, nextImpl, call ?? '0x');
+          }
           const proxy = await attachITransparentUpgradeableProxyV5(hre, proxyAddress, signer);
           return (nextImpl, call) => proxy.upgradeToAndCall(nextImpl, call ?? '0x', ...overrides);
         }
@@ -73,6 +83,12 @@ export function makeUpgradeProxy(
             log(
               `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
             );
+          }
+          if (opts.useSafeGlobalDeploy) {
+            return (nextImpl, call) =>
+              call
+                ? safeGlobalUpgradeToAndCallV4(hre, opts, proxyAddress, nextImpl, call)
+                : safeGlobalUpgradeToV4(hre, opts, proxyAddress, nextImpl);
           }
           const proxy = await attachITransparentUpgradeableProxyV4(hre, proxyAddress, signer);
           return (nextImpl, call) =>
@@ -92,18 +108,18 @@ export function makeUpgradeProxy(
           return (nextImpl, call) => admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
         }
         default: {
-          if (opts.useSafeGlobalDeploy) {
-            return (nextImpl, call) =>
-              call
-                ? safeGlobalAdminUpgradeAndCallV4(hre, opts, adminAddress, proxyAddress, nextImpl, call)
-                : safeGlobalAdminUpgradeV4(hre, opts, adminAddress, proxyAddress, nextImpl);
-          }
           if (upgradeInterfaceVersion !== undefined) {
             // Log as debug if the interface version is an unknown string.
             // Do not throw an error because this could be caused by a fallback function.
             log(
               `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
             );
+          }
+          if (opts.useSafeGlobalDeploy) {
+            return (nextImpl, call) =>
+              call
+                ? safeGlobalAdminUpgradeAndCallV4(hre, opts, adminAddress, proxyAddress, nextImpl, call)
+                : safeGlobalAdminUpgradeV4(hre, opts, adminAddress, proxyAddress, nextImpl);
           }
           const admin = await attachProxyAdminV4(hre, adminAddress, signer);
           return (nextImpl, call) =>

@@ -6,6 +6,47 @@ import { MetaTransactionData, OperationType } from '@safe-global/safe-core-sdk-t
 import { proposeSafeTx, waitUntilSignedAndExecuted } from './deploy';
 import { UpgradeProxyOptions } from '../utils';
 
+export async function safeGlobalUpgradeToAndCallV5(
+  hre: HardhatRuntimeEnvironment,
+  opts: UpgradeProxyOptions,
+  proxyAddress: string,
+  nextImpl: string,
+  call: string,
+): Promise<TransactionResponse> {
+  console.log(`Sending upgradeToAndCall tx to proxy:${proxyAddress} with nextImpl:${nextImpl} and call:${call}`);
+  const iface = new Interface(['function upgradeToAndCall(address newImplementation, bytes memory data)']);
+  const callData = iface.encodeFunctionData('upgradeToAndCall', [nextImpl, call]);
+  const deployTxHash = await proposeAndWaitForSafeTx(hre, opts, proxyAddress, callData);
+
+  const tx = await hre.ethers.provider.getTransaction(deployTxHash);
+  return tx ?? getNullTransactionResponse(hre);
+}
+
+export async function safeGlobalUpgradeToV4(
+  hre: HardhatRuntimeEnvironment,
+  opts: UpgradeProxyOptions,
+  proxyAddress: string,
+  nextImpl: string,
+): Promise<TransactionResponse> {
+  console.log(`Sending upgradeTo tx to proxy:${proxyAddress} with nextImpl:${nextImpl}`);
+  const iface = new Interface(['function upgradeTo(address newImplementation)']);
+  const callData = iface.encodeFunctionData('upgradeTo', [nextImpl]);
+  const deployTxHash = await proposeAndWaitForSafeTx(hre, opts, proxyAddress, callData);
+
+  const tx = await hre.ethers.provider.getTransaction(deployTxHash);
+  return tx ?? getNullTransactionResponse(hre);
+}
+
+export async function safeGlobalUpgradeToAndCallV4(
+  hre: HardhatRuntimeEnvironment,
+  opts: UpgradeProxyOptions,
+  proxyAddress: string,
+  nextImpl: string,
+  call: string,
+): Promise<TransactionResponse> {
+  return safeGlobalUpgradeToAndCallV5(hre, opts, proxyAddress, nextImpl, call);
+}
+
 export async function safeGlobalAdminUpgradeAndCallV5(
   hre: HardhatRuntimeEnvironment,
   opts: UpgradeProxyOptions,
@@ -55,11 +96,11 @@ export async function safeGlobalAdminUpgradeAndCallV4(
 async function proposeAndWaitForSafeTx(
   hre: HardhatRuntimeEnvironment,
   opts: UpgradeProxyOptions,
-  adminAddress: string,
+  to: string,
   callData: string,
 ) {
   const metaTxData: MetaTransactionData = {
-    to: adminAddress,
+    to,
     data: callData,
     value: '0',
     operation: OperationType.Call,
