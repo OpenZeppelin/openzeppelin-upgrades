@@ -176,7 +176,11 @@ function replaceFunction(node: FunctionDefinition, orig: Buffer, modifications: 
 
     if (node.returnParameters.parameters.length > 0) {
       modifications.push(
-        makeReplace(node.returnParameters, orig, `(${node.returnParameters.parameters.map((param) => toReturnParameterReplacement(param)).join(', ')})`),
+        makeReplace(
+          node.returnParameters,
+          orig,
+          `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
+        ),
       );
     }
 
