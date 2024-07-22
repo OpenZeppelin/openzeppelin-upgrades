@@ -18,6 +18,7 @@ import {
   attachProxyAdminV4,
   attachProxyAdminV5,
 } from './utils/attach-abi';
+import { safeGlobalAdminUpgradeAndCall } from './safeglobal/upgrade';
 
 export type UpgradeFunction = (
   proxy: ContractAddressOrInstance,
@@ -83,6 +84,10 @@ export function makeUpgradeProxy(
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress, log);
       switch (upgradeInterfaceVersion) {
         case '5.0.0': {
+          if (opts.useSafeGlobalDeploy) {
+            return (nextImpl, call) =>
+              safeGlobalAdminUpgradeAndCall(hre, opts, adminAddress, proxyAddress, nextImpl, call ?? '0x');
+          }
           const admin = await attachProxyAdminV5(hre, adminAddress, signer);
           return (nextImpl, call) => admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
         }

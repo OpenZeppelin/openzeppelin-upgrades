@@ -67,17 +67,17 @@ async function proposeAndWaitForSafeTx(
     operation: OperationType.Call,
   };
 
-  const safeTxHash = await proposeSafeTx(hre, performCreate2MetaTxData, chainId, opts);
+  const safeTxHash = await proposeSafeTx(hre, performCreate2MetaTxData, opts);
   console.log(`Safe tx hash: ${safeTxHash}`);
   return await waitUntilSignedAndExecuted(safeTxHash, chainId, opts);
 }
 
-async function proposeSafeTx(
+export async function proposeSafeTx(
   hre: HardhatRuntimeEnvironment,
   txData: MetaTransactionData,
-  chainId: number,
   opts: UpgradeOptions & EthersDeployOptions & SafeGlobalDeployOptions,
 ) {
+  const chainId = hre.network.config.chainId ?? (await getChainId(hre.network.provider));
   const apiKit = new SafeApiKit({
     chainId: toBigInt(chainId),
     txServiceUrl: opts.txServiceUrl,
@@ -122,7 +122,7 @@ async function proposeSafeTx(
   return safeTxHash;
 }
 
-async function waitUntilSignedAndExecuted(
+export async function waitUntilSignedAndExecuted(
   safeTxHash: string,
   chainId: number,
   opts: UpgradeOptions & EthersDeployOptions & SafeGlobalDeployOptions,
