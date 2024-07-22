@@ -2,8 +2,9 @@ import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract, Signer } from 'ethers';
-import { EthersDeployOptions, attachProxyAdminV4 } from './utils';
+import { EthersDeployOptions, SafeGlobalDeployOptions, attachProxyAdminV4 } from './utils';
 import { disableDefender } from './defender/utils';
+import { safeGlobalAdminChangeProxyAdminV4, safeGlobalAdminTransferOwnership } from './safeglobal/admin';
 
 const SUCCESS_CHECK = chalk.green('✔') + ' ';
 
@@ -15,13 +16,13 @@ export type ChangeAdminFunction = (
   proxyAddress: string,
   newAdmin: string,
   signer?: Signer,
-  opts?: EthersDeployOptions,
+  opts?: EthersDeployOptions & SafeGlobalDeployOptions,
 ) => Promise<void>;
 export type TransferProxyAdminOwnershipFunction = (
   proxyAddress: string,
   newOwner: string,
   signer?: Signer,
-  opts?: TransferProxyAdminOwnershipOptions & EthersDeployOptions,
+  opts?: TransferProxyAdminOwnershipOptions & EthersDeployOptions & SafeGlobalDeployOptions,
 ) => Promise<void>;
 export type GetInstanceFunction = (signer?: Signer) => Promise<Contract>;
 
@@ -30,16 +31,20 @@ export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, defenderMod
     proxyAddress: string,
     newAdmin: string,
     signer?: Signer,
-    opts: EthersDeployOptions = {},
+    opts: EthersDeployOptions & SafeGlobalDeployOptions = {},
   ) {
     disableDefender(hre, defenderModule, {}, changeProxyAdmin.name);
 
     const proxyAdminAddress = await getAdminAddress(hre.network.provider, proxyAddress);
     // Only compatible with v4 admins
-    const admin = await attachProxyAdminV4(hre, proxyAdminAddress, signer);
+    if (opts.useSafeGlobalDeploy) {
+      await safeGlobalAdminChangeProxyAdminV4(hre, opts, proxyAdminAddress, proxyAddress, newAdmin);
+    } else {
+      const admin = await attachProxyAdminV4(hre, proxyAdminAddress, signer);
 
-    const overrides = opts.txOverrides ? [opts.txOverrides] : [];
-    await admin.changeProxyAdmin(proxyAddress, newAdmin, ...overrides);
+      const overrides = opts.txOverrides ? [opts.txOverrides] : [];
+      await admin.changeProxyAdmin(proxyAddress, newAdmin, ...overrides);
+    }
   };
 }
 
@@ -51,16 +56,19 @@ export function makeTransferProxyAdminOwnership(
     proxyAddress: string,
     newOwner: string,
     signer?: Signer,
-    opts: TransferProxyAdminOwnershipOptions & EthersDeployOptions = {},
+    opts: TransferProxyAdminOwnershipOptions & EthersDeployOptions & SafeGlobalDeployOptions = {},
   ) {
     disableDefender(hre, defenderModule, {}, transferProxyAdminOwnership.name);
 
     const proxyAdminAddress = await getAdminAddress(hre.network.provider, proxyAddress);
     // Compatible with both v4 and v5 admins since they both have transferOwnership
     const admin = await attachProxyAdminV4(hre, proxyAdminAddress, signer);
-
-    const overrides = opts.txOverrides ? [opts.txOverrides] : [];
-    await admin.transferOwnership(newOwner, ...overrides);
+    if (opts.useSafeGlobalDeploy) {
+      await safeGlobalAdminTransferOwnership(hre, opts, proxyAdminAddress, newOwner);
+    } else {
+      const overrides = opts.txOverrides ? [opts.txOverrides] : [];
+      await admin.transferOwnership(newOwner, ...overrides);
+    }
 
     if (!opts.silent) {
       const { provider } = hre.network;

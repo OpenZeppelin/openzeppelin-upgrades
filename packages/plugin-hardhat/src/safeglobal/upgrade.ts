@@ -108,7 +108,7 @@ export async function safeGlobalBeaconUpgradeTo(
   return tx ?? getNullTransactionResponse(hre);
 }
 
-async function proposeAndWaitForSafeTx(
+export async function proposeAndWaitForSafeTx(
   hre: HardhatRuntimeEnvironment,
   opts: UpgradeProxyOptions,
   to: string,
@@ -130,7 +130,7 @@ async function proposeAndWaitForSafeTx(
   );
 }
 
-async function getNullTransactionResponse(hre: HardhatRuntimeEnvironment): Promise<TransactionResponse> {
+export async function getNullTransactionResponse(hre: HardhatRuntimeEnvironment): Promise<TransactionResponse> {
   return new TransactionResponse(
     {
       blockNumber: 0,
