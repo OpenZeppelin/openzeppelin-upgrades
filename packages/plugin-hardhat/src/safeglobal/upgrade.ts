@@ -6,7 +6,7 @@ import { MetaTransactionData, OperationType } from '@safe-global/safe-core-sdk-t
 import { proposeSafeTx, waitUntilSignedAndExecuted } from './deploy';
 import { UpgradeProxyOptions } from '../utils';
 
-export async function safeGlobalAdminUpgradeAndCall(
+export async function safeGlobalAdminUpgradeAndCallV5(
   hre: HardhatRuntimeEnvironment,
   opts: UpgradeProxyOptions,
   adminAddress: string,
@@ -23,6 +23,33 @@ export async function safeGlobalAdminUpgradeAndCall(
 
   const tx = await hre.ethers.provider.getTransaction(deployTxHash);
   return tx ?? getNullTransactionResponse(hre);
+}
+
+export async function safeGlobalAdminUpgradeV4(
+  hre: HardhatRuntimeEnvironment,
+  opts: UpgradeProxyOptions,
+  adminAddress: string,
+  proxyAddress: string,
+  nextImpl: string,
+): Promise<TransactionResponse> {
+  console.log(`Sending upgrade tx to ${adminAddress} with proxy:${proxyAddress} nextImpl:${nextImpl}`);
+  const iface = new Interface(['function upgrade(address proxy, address implementation)']);
+  const upgradeData = iface.encodeFunctionData('upgrade', [proxyAddress, nextImpl]);
+  const deployTxHash = await proposeAndWaitForSafeTx(hre, opts, adminAddress, upgradeData);
+
+  const tx = await hre.ethers.provider.getTransaction(deployTxHash);
+  return tx ?? getNullTransactionResponse(hre);
+}
+
+export async function safeGlobalAdminUpgradeAndCallV4(
+  hre: HardhatRuntimeEnvironment,
+  opts: UpgradeProxyOptions,
+  adminAddress: string,
+  proxyAddress: string,
+  nextImpl: string,
+  call: string,
+): Promise<TransactionResponse> {
+  return safeGlobalAdminUpgradeAndCallV5(hre, opts, adminAddress, proxyAddress, nextImpl, call);
 }
 
 async function proposeAndWaitForSafeTx(

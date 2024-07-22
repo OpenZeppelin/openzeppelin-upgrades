@@ -18,7 +18,7 @@ import {
   attachProxyAdminV4,
   attachProxyAdminV5,
 } from './utils/attach-abi';
-import { safeGlobalAdminUpgradeAndCall } from './safeglobal/upgrade';
+import { safeGlobalAdminUpgradeAndCallV4, safeGlobalAdminUpgradeAndCallV5, safeGlobalAdminUpgradeV4 } from './safeglobal/upgrade';
 
 export type UpgradeFunction = (
   proxy: ContractAddressOrInstance,
@@ -86,12 +86,18 @@ export function makeUpgradeProxy(
         case '5.0.0': {
           if (opts.useSafeGlobalDeploy) {
             return (nextImpl, call) =>
-              safeGlobalAdminUpgradeAndCall(hre, opts, adminAddress, proxyAddress, nextImpl, call ?? '0x');
+              safeGlobalAdminUpgradeAndCallV5(hre, opts, adminAddress, proxyAddress, nextImpl, call ?? '0x');
           }
           const admin = await attachProxyAdminV5(hre, adminAddress, signer);
           return (nextImpl, call) => admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
         }
         default: {
+          if (opts.useSafeGlobalDeploy) {
+            return (nextImpl, call) =>
+              call
+                ? safeGlobalAdminUpgradeAndCallV4(hre, opts, adminAddress, proxyAddress, nextImpl, call)
+                : safeGlobalAdminUpgradeV4(hre, opts, adminAddress, proxyAddress, nextImpl);
+          }
           if (upgradeInterfaceVersion !== undefined) {
             // Log as debug if the interface version is an unknown string.
             // Do not throw an error because this could be caused by a fallback function.
