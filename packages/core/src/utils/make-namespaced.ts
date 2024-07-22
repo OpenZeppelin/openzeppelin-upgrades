@@ -3,7 +3,7 @@ import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationAnnotation } from '../storage/namespace';
 import { assert } from './assert';
-import { FunctionDefinition } from 'solidity-ast';
+import { FunctionDefinition, VariableDeclaration } from 'solidity-ast';
 
 const OUTPUT_SELECTION = {
   '*': {
@@ -176,13 +176,25 @@ function replaceFunction(node: FunctionDefinition, orig: Buffer, modifications: 
 
     if (node.returnParameters.parameters.length > 0) {
       modifications.push(
-        makeReplace(node.returnParameters, orig, `(${node.returnParameters.parameters.map(() => 'bool').join(',')})`),
+        makeReplace(
+          node.returnParameters,
+          orig,
+          `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
+        ),
       );
     }
 
     if (node.body) {
       modifications.push(makeReplace(node.body, orig, '{}'));
     }
+  }
+}
+
+function toReturnParameterReplacement(param: VariableDeclaration) {
+  if (param.name.length > 0) {
+    return `bool ${param.name}`;
+  } else {
+    return 'bool';
   }
 }
 
