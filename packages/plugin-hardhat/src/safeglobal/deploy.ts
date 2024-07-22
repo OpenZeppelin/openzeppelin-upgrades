@@ -85,7 +85,6 @@ export async function proposeSafeTx(
 
   const protocolKitOwner1 = await Safe.init({
     provider: hre.network.provider,
-    signer: process.env.SIGNER,
     safeAddress: opts.safeAddress ?? '',
     contractNetworks: {
       [chainId]: {
