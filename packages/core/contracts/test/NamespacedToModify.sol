@@ -14,6 +14,13 @@ contract Example {
         uint256 b;
     }
 
+    /// @custom:storage-location erc7201:example.with.following.comment
+    // some comment
+    struct StorageWithComment {
+        uint256 a;
+        uint256 b;
+    }
+
     /// @notice some natspec
     function foo() public {}
 
