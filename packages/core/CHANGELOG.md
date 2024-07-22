@@ -2,7 +2,7 @@
 
 ## 1.34.4 (2024-07-22)
 
-- Fix Hardhat compile error when return parameter names are documented as param.
+- Fix Hardhat compile error when return parameter names are documented as param. ([#1050](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1050))
 
 ## 1.34.3 (2024-07-19)
 
