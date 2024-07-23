@@ -6,8 +6,6 @@ import { MetaTransactionData, OperationType } from '@safe-global/safe-core-sdk-t
 import SafeApiKit from '@safe-global/api-kit';
 import Safe from '@safe-global/protocol-kit';
 
-import CreateCall from '@openzeppelin/upgrades-core/artifacts/contracts/CreateCall.sol/CreateCall.json';
-
 import { DeployTransaction, UpgradeOptions, EthersDeployOptions, SafeGlobalDeployOptions } from '../utils';
 
 export async function safeGlobalDeploy(
@@ -23,6 +21,7 @@ export async function safeGlobalDeploy(
   const create2Data = await getPerformCreate2Data(tx.data, opts);
   console.log('Proposing multisig deployment tx and waiting for contract to be deployed...');
   const deployTxHash = await proposeAndWaitForSafeTx(hre, create2Data, chainId, opts);
+  console.log('Getting deployed contract address...');
   const [address, txResponse] = await getCreate2DeployedContractAddress(hre, deployTxHash);
 
   const deployTransaction = txResponse;
@@ -46,7 +45,7 @@ async function getPerformCreate2Data(
   if (opts.salt === undefined || opts.salt === '' || opts.salt.trim() === '') {
     throw new Error('Salt must be provided for create2 deployment');
   }
-  const iface = new Interface(CreateCall.abi);
+  const iface = new Interface(['function performCreate2(uint256 value, bytes deploymentData, bytes32 salt)']);
   const performCreate2Data = iface.encodeFunctionData('performCreate2', [0, deployData, id(opts.salt)]);
   return performCreate2Data;
 }
@@ -151,7 +150,7 @@ async function getCreate2DeployedContractAddress(
   hre: HardhatRuntimeEnvironment,
   txHash: string,
 ): Promise<[string, TransactionResponse | null, TransactionReceipt | null]> {
-  const iface = new Interface(CreateCall.abi);
+  const iface = new Interface(['event ContractCreation(address newContract)']);
   const provider = hre.ethers.provider;
   const tx = await provider.getTransaction(txHash);
   const receipt = await provider.getTransactionReceipt(txHash);
