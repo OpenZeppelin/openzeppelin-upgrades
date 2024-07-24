@@ -2,7 +2,8 @@ import { Interface, TransactionResponse } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 import { UpgradeProxyOptions } from '../utils';
-import { getNullTransactionResponse, proposeAndWaitForSafeTx } from './upgrade';
+import { getNullTransactionResponse } from './upgrade';
+import { proposeAndWaitForSafeTx } from './deploy';
 
 export async function safeGlobalAdminChangeProxyAdminV4(
   hre: HardhatRuntimeEnvironment,

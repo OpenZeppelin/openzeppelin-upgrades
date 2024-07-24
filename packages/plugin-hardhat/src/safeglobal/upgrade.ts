@@ -2,8 +2,7 @@ import { Interface, TransactionResponse } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 import { getChainId } from '@openzeppelin/upgrades-core';
-import { MetaTransactionData, OperationType } from '@safe-global/safe-core-sdk-types';
-import { proposeSafeTx, waitUntilSignedAndExecuted } from './deploy';
+import { proposeAndWaitForSafeTx } from './deploy';
 import { UpgradeProxyOptions } from '../utils';
 
 export async function safeGlobalUpgradeToAndCallV5(
@@ -106,28 +105,6 @@ export async function safeGlobalBeaconUpgradeTo(
 
   const tx = await hre.ethers.provider.getTransaction(deployTxHash);
   return tx ?? getNullTransactionResponse(hre);
-}
-
-export async function proposeAndWaitForSafeTx(
-  hre: HardhatRuntimeEnvironment,
-  opts: UpgradeProxyOptions,
-  to: string,
-  callData: string,
-) {
-  const metaTxData: MetaTransactionData = {
-    to,
-    data: callData,
-    value: '0',
-    operation: OperationType.Call,
-  };
-
-  const safeTxHash = await proposeSafeTx(hre, metaTxData, opts);
-  console.log(`Safe tx hash: ${safeTxHash}`);
-  return await waitUntilSignedAndExecuted(
-    safeTxHash,
-    hre.network.config.chainId ?? (await getChainId(hre.ethers.provider)),
-    opts,
-  );
 }
 
 export async function getNullTransactionResponse(hre: HardhatRuntimeEnvironment): Promise<TransactionResponse> {

@@ -15,14 +15,13 @@ export async function safeGlobalDeploy(
   ...args: unknown[]
 ): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
   const tx = await factory.getDeployTransaction(...args);
-  const chainId = hre.network.config.chainId ?? (await getChainId(hre.network.provider));
 
-  // create performCreate2Tx
-  const create2Data = await getPerformCreate2Data(tx.data, opts);
+  const create2Data = await getCreate2CallData(tx.data, opts);
   console.log('Proposing multisig deployment tx and waiting for contract to be deployed...');
-  const deployTxHash = await proposeAndWaitForSafeTx(hre, create2Data, chainId, opts);
+  const deployTxHash = await proposeAndWaitForSafeTx(hre, opts, opts.createCallAddress ?? '', create2Data);
   console.log('Getting deployed contract address...');
   const [address, txResponse] = await getCreate2DeployedContractAddress(hre, deployTxHash);
+  console.log(`Contract deployed at: ${address}`);
 
   const deployTransaction = txResponse;
   if (deployTransaction === null) {
@@ -38,7 +37,7 @@ export async function safeGlobalDeploy(
   };
 }
 
-async function getPerformCreate2Data(deployData: string, opts: DeployProxyOptions): Promise<string> {
+async function getCreate2CallData(deployData: string, opts: DeployProxyOptions): Promise<string> {
   if (opts.salt === undefined || opts.salt === '' || opts.salt.trim() === '') {
     throw new Error('Salt must be provided for create2 deployment');
   }
@@ -47,32 +46,19 @@ async function getPerformCreate2Data(deployData: string, opts: DeployProxyOption
   return performCreate2Data;
 }
 
-async function proposeAndWaitForSafeTx(
+export async function proposeAndWaitForSafeTx(
   hre: HardhatRuntimeEnvironment,
-  performCreate2Data: string,
-  chainId: number,
   opts: DeployProxyOptions,
+  to: string,
+  callData: string,
 ) {
-  if (opts.createCallAddress === undefined || opts.createCallAddress === '') {
-    throw new Error('CreateCall address must be provided for create2 deployment');
-  }
-  const performCreate2MetaTxData: MetaTransactionData = {
-    to: opts.createCallAddress,
-    data: performCreate2Data,
+  const metaTxData: MetaTransactionData = {
+    to,
+    data: callData,
     value: '0',
     operation: OperationType.Call,
   };
 
-  const safeTxHash = await proposeSafeTx(hre, performCreate2MetaTxData, opts);
-  console.log(`Safe tx hash: ${safeTxHash}`);
-  return await waitUntilSignedAndExecuted(safeTxHash, chainId, opts);
-}
-
-export async function proposeSafeTx(
-  hre: HardhatRuntimeEnvironment,
-  txData: MetaTransactionData,
-  opts: DeployProxyOptions,
-) {
   const chainId = hre.network.config.chainId ?? (await getChainId(hre.network.provider));
   const apiKit = new SafeApiKit({
     chainId: toBigInt(chainId),
@@ -84,50 +70,35 @@ export async function proposeSafeTx(
     safeAddress: opts.safeAddress ?? '',
     contractNetworks: {
       [chainId]: {
-        safeSingletonAddress: opts.safeSingletonAddress ?? '',
-        safeProxyFactoryAddress: opts.safeProxyFactoryAddress ?? '',
-        multiSendAddress: opts.multiSendAddress ?? '',
-        multiSendCallOnlyAddress: opts.multiSendCallOnlyAddress ?? '',
-        fallbackHandlerAddress: opts.fallbackHandlerAddress ?? '',
-        signMessageLibAddress: opts.signMessageLibAddress ?? '',
-        createCallAddress: opts.createCallAddress ?? '',
-        simulateTxAccessorAddress: opts.simulateTxAccessorAddress ?? '',
+        // default values set from: https://github.com/safe-global/safe-deployments/tree/main/src/assets/v1.4.1
+        safeSingletonAddress: opts.safeSingletonAddress ?? '0x41675C099F32341bf84BFc5382aF534df5C7461a',
+        safeProxyFactoryAddress: opts.safeProxyFactoryAddress ?? '0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67',
+        multiSendAddress: opts.multiSendAddress ?? '0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526',
+        multiSendCallOnlyAddress: opts.multiSendCallOnlyAddress ?? '0x9641d764fc13c8B624c04430C7356C1C7C8102e2',
+        fallbackHandlerAddress: opts.fallbackHandlerAddress ?? '0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99',
+        signMessageLibAddress: opts.signMessageLibAddress ?? '0xd53cd0aB83D845Ac265BE939c57F53AD838012c9',
+        createCallAddress: opts.createCallAddress ?? '0x9b35Af71d77eaf8d7e40252370304687390A1A52',
+        simulateTxAccessorAddress: opts.simulateTxAccessorAddress ?? '0x3d4BA2E0884aa488718476ca2FB8Efc291A46199',
       },
     },
   });
 
-  const safeAddress = await protocolKitOwner1.getAddress();
-
   // Sign and send the transaction
   // Create a Safe transaction with the provided parameters
-  const safeTransaction = await protocolKitOwner1.createTransaction({ transactions: [txData] });
-
+  const safeTransaction = await protocolKitOwner1.createTransaction({ transactions: [metaTxData] });
   const safeTxHash = await protocolKitOwner1.getTransactionHash(safeTransaction);
-
+  console.log(`Safe tx hash: ${safeTxHash}`);
   const senderSignature = await protocolKitOwner1.signHash(safeTxHash);
 
   await apiKit.proposeTransaction({
-    safeAddress,
+    safeAddress: opts.safeAddress ?? '',
     safeTransactionData: safeTransaction.data,
     safeTxHash,
-    senderAddress: '0x25843121E84f6E52a140885986FD890d302c34EE',
+    senderAddress: senderSignature.signer,
     senderSignature: senderSignature.data,
   });
 
-  return safeTxHash;
-}
-
-export async function waitUntilSignedAndExecuted(safeTxHash: string, chainId: number, opts: DeployProxyOptions) {
-  const apiKit = new SafeApiKit({
-    chainId: toBigInt(chainId),
-    txServiceUrl: opts.txServiceUrl,
-  });
-
-  const safeTx = await apiKit.getTransaction(safeTxHash);
-  if (safeTx.isExecuted) {
-    return safeTx.transactionHash;
-  }
-
+  // wait until tx is signed & executed
   return new Promise<string>(resolve => {
     const interval = setInterval(async () => {
       const safeTx = await apiKit.getTransaction(safeTxHash);
@@ -158,8 +129,6 @@ async function getCreate2DeployedContractAddress(
     try {
       const parsedLog = iface.parseLog(log);
       if (parsedLog?.name === 'ContractCreation') {
-        console.log(`Event: ${parsedLog?.name}`);
-        console.log(`New Contract: ${parsedLog?.args.newContract}`);
         return [parsedLog?.args.newContract, tx, receipt];
       }
     } catch (error) {
