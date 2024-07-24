@@ -6,12 +6,12 @@ import { MetaTransactionData, OperationType } from '@safe-global/safe-core-sdk-t
 import SafeApiKit from '@safe-global/api-kit';
 import Safe from '@safe-global/protocol-kit';
 
-import { DeployTransaction, UpgradeOptions, EthersDeployOptions, SafeGlobalDeployOptions } from '../utils';
+import { DeployTransaction, DeployProxyOptions } from '../utils';
 
 export async function safeGlobalDeploy(
   hre: HardhatRuntimeEnvironment,
   factory: ContractFactory,
-  opts: UpgradeOptions & EthersDeployOptions & SafeGlobalDeployOptions,
+  opts: DeployProxyOptions,
   ...args: unknown[]
 ): Promise<Required<Deployment & DeployTransaction> & RemoteDeploymentId> {
   const tx = await factory.getDeployTransaction(...args);
@@ -38,10 +38,7 @@ export async function safeGlobalDeploy(
   };
 }
 
-async function getPerformCreate2Data(
-  deployData: string,
-  opts: UpgradeOptions & EthersDeployOptions & SafeGlobalDeployOptions,
-): Promise<string> {
+async function getPerformCreate2Data(deployData: string, opts: DeployProxyOptions): Promise<string> {
   if (opts.salt === undefined || opts.salt === '' || opts.salt.trim() === '') {
     throw new Error('Salt must be provided for create2 deployment');
   }
@@ -54,7 +51,7 @@ async function proposeAndWaitForSafeTx(
   hre: HardhatRuntimeEnvironment,
   performCreate2Data: string,
   chainId: number,
-  opts: UpgradeOptions & EthersDeployOptions & SafeGlobalDeployOptions,
+  opts: DeployProxyOptions,
 ) {
   if (opts.createCallAddress === undefined || opts.createCallAddress === '') {
     throw new Error('CreateCall address must be provided for create2 deployment');
@@ -74,7 +71,7 @@ async function proposeAndWaitForSafeTx(
 export async function proposeSafeTx(
   hre: HardhatRuntimeEnvironment,
   txData: MetaTransactionData,
-  opts: UpgradeOptions & EthersDeployOptions & SafeGlobalDeployOptions,
+  opts: DeployProxyOptions,
 ) {
   const chainId = hre.network.config.chainId ?? (await getChainId(hre.network.provider));
   const apiKit = new SafeApiKit({
@@ -120,11 +117,7 @@ export async function proposeSafeTx(
   return safeTxHash;
 }
 
-export async function waitUntilSignedAndExecuted(
-  safeTxHash: string,
-  chainId: number,
-  opts: UpgradeOptions & EthersDeployOptions & SafeGlobalDeployOptions,
-) {
+export async function waitUntilSignedAndExecuted(safeTxHash: string, chainId: number, opts: DeployProxyOptions) {
   const apiKit = new SafeApiKit({
     chainId: toBigInt(chainId),
     txServiceUrl: opts.txServiceUrl,
