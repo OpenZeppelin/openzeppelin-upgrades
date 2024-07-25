@@ -62,7 +62,7 @@ export async function proposeAndWaitForSafeTx(
   const chainId = hre.network.config.chainId ?? (await getChainId(hre.network.provider));
   const apiKit = new SafeApiKit({
     chainId: toBigInt(chainId),
-    txServiceUrl: opts.txServiceUrl,
+    txServiceUrl: opts.txServiceUrl ?? 'https://safe-transaction-mainnet.safe.global/api',
   });
 
   const protocolKitOwner1 = await Safe.init({
