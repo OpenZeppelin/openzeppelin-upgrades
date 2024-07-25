@@ -70,6 +70,30 @@ export type DefenderDeployOptions = DefenderDeploy & {
 };
 
 /**
+ * Option to enable or disable SafeGlobal deployments.
+ */
+export type SafeGlobalDeploy = {
+  useSafeGlobalDeploy?: boolean;
+};
+
+/**
+ * Options for functions that support SafeGlobal deployments.
+ */
+export type SafeGlobalDeployOptions = SafeGlobalDeploy & {
+  txServiceUrl?: string;
+  salt?: string;
+  safeAddress?: string;
+  safeSingletonAddress?: string;
+  safeProxyFactoryAddress?: string;
+  multiSendAddress?: string;
+  multiSendCallOnlyAddress?: string;
+  fallbackHandlerAddress?: string;
+  signMessageLibAddress?: string;
+  createCallAddress?: string;
+  simulateTxAccessorAddress?: string;
+};
+
+/**
  * Options for functions that support deployments through ethers.js.
  */
 export type EthersDeployOptions = {
@@ -87,20 +111,29 @@ export type DeployBeaconProxyOptions = EthersDeployOptions &
   DeployOpts &
   ProxyKindOption &
   Initializer &
-  DefenderDeployOptions;
-export type DeployBeaconOptions = StandaloneOptions & InitialOwner & DefenderDeploy;
-export type DeployImplementationOptions = StandaloneOptions & GetTxResponse & DefenderDeployOptions;
+  DefenderDeployOptions &
+  SafeGlobalDeployOptions;
+export type DeployBeaconOptions = StandaloneOptions & InitialOwner & DefenderDeploy & SafeGlobalDeployOptions;
+export type DeployImplementationOptions = StandaloneOptions &
+  GetTxResponse &
+  DefenderDeployOptions &
+  SafeGlobalDeployOptions;
 export type DeployContractOptions = Omit<StandaloneOptions, 'txOverrides'> & // ethers deployment not supported for deployContract
   GetTxResponse &
   DefenderDeployOptions & {
     unsafeAllowDeployContract?: boolean;
-  };
-export type DeployProxyOptions = StandaloneOptions & Initializer & InitialOwner & DefenderDeployOptions;
+  } & SafeGlobalDeployOptions;
+export type DeployProxyOptions = StandaloneOptions &
+  Initializer &
+  InitialOwner &
+  DefenderDeployOptions &
+  SafeGlobalDeployOptions;
 export type ForceImportOptions = ProxyKindOption;
-export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & DefenderDeployOptions;
-export type UpgradeBeaconOptions = UpgradeOptions & DefenderDeploy;
+export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & DefenderDeployOptions & SafeGlobalDeployOptions;
+export type UpgradeBeaconOptions = UpgradeOptions & DefenderDeploy & SafeGlobalDeployOptions;
 export type UpgradeProxyOptions = UpgradeOptions & {
   call?: { fn: string; args?: unknown[] } | string;
-} & DefenderDeploy;
+} & DefenderDeploy &
+  SafeGlobalDeployOptions;
 export type ValidateImplementationOptions = StandaloneValidationOptions;
 export type ValidateUpgradeOptions = ValidationOptions;

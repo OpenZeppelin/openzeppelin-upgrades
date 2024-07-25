@@ -2,7 +2,8 @@ import type { Deployment, RemoteDeploymentId } from '@openzeppelin/upgrades-core
 import type { ethers, ContractFactory, ContractMethodArgs } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { defenderDeploy } from '../defender/deploy';
-import { EthersDeployOptions, DefenderDeployOptions, UpgradeOptions } from './options';
+import { EthersDeployOptions, DefenderDeployOptions, UpgradeOptions, SafeGlobalDeployOptions } from './options';
+import { safeGlobalDeploy } from '../safeglobal/deploy';
 
 export interface DeployTransaction {
   deployTransaction?: ethers.TransactionResponse;
@@ -10,13 +11,15 @@ export interface DeployTransaction {
 
 export async function deploy(
   hre: HardhatRuntimeEnvironment,
-  opts: UpgradeOptions & EthersDeployOptions & DefenderDeployOptions,
+  opts: UpgradeOptions & EthersDeployOptions & DefenderDeployOptions & SafeGlobalDeployOptions,
   factory: ContractFactory,
   ...args: unknown[]
 ): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> {
   // defender always includes RemoteDeploymentId, while ethers always includes DeployTransaction
   if (opts?.useDefenderDeploy) {
     return await defenderDeploy(hre, factory, opts, ...args);
+  } else if (opts?.useSafeGlobalDeploy) {
+    return await safeGlobalDeploy(hre, factory, opts, ...args);
   } else {
     if (opts.txOverrides !== undefined) {
       args.push(opts.txOverrides);
