@@ -77,7 +77,7 @@ export type SafeGlobalDeploy = {
 };
 
 /**
- * Options for functions that support Defender deployments.
+ * Options for functions that support SafeGlobal deployments.
  */
 export type SafeGlobalDeployOptions = SafeGlobalDeploy & {
   txServiceUrl?: string;
