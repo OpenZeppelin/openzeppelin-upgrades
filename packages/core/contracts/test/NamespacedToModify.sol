@@ -260,3 +260,12 @@ contract HasNatSpecWithMultipleReturns {
     function hasReturnsDocumentedAsParamsInContract() public pure returns (uint a, uint b) {
     }
 }
+
+interface IHasExternalViewFunction {
+    function foo() external view returns (uint);
+}
+
+contract HasExternalViewFunction is IHasExternalViewFunction {
+    uint public foo;
+    bytes4 constant SELECTOR = IHasExternalViewFunction.foo.selector;
+}
