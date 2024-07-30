@@ -262,10 +262,13 @@ contract HasNatSpecWithMultipleReturns {
 }
 
 interface IHasExternalViewFunction {
-    function foo() external view returns (uint);
+    function foo() external view returns (uint256);
 }
 
 contract HasExternalViewFunction is IHasExternalViewFunction {
-    uint public foo;
-    bytes4 constant SELECTOR = IHasExternalViewFunction.foo.selector;
+    // This generates a getter function that conforms to the interface
+    uint256 public foo;
+
+    // References a selector in an interface
+    bytes4 constant USING_INTERFACE_FUNCTION_SELECTOR = IHasExternalViewFunction.foo.selector;
 }
