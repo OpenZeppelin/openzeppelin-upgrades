@@ -272,3 +272,7 @@ contract HasExternalViewFunction is IHasExternalViewFunction {
     // References a selector in an interface
     bytes4 constant USING_INTERFACE_FUNCTION_SELECTOR = IHasExternalViewFunction.foo.selector;
 }
+
+contract DeploysContractToImmutable {
+    HasFunction public immutable example = new HasFunction(1);
+}
