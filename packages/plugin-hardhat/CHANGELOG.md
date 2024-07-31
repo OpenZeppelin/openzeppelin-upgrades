@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.2.1 (2024-07-31)
+
+- Fix Hardhat compile error when public variables are used to implement interface functions. ([#1055](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1055))
+- Remove non-struct NatSpec from Hardhat compilation step for namespaced storage layout validations. ([#1051](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1051))
+
 ## 3.2.0 (2024-06-24)
 
 - **Breaking change**: Remove `defender.proposeUpgrade` from Defender legacy. Defender users should use `defender.proposeUpgradeWithApproval` instead. ([#1041](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1041))

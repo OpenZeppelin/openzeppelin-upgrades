@@ -99,7 +99,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 
     let namespacedOutput = undefined;
     if (isNamespaceSupported(args.solcVersion)) {
-      const namespacedInput = makeNamespacedInput(args.input, output);
+      const namespacedInput = makeNamespacedInput(args.input, output, args.solcVersion);
       namespacedOutput = (await runSuper({ ...args, quiet: true, input: namespacedInput })).output;
       await checkNamespacedCompileErrors(namespacedOutput);
     }

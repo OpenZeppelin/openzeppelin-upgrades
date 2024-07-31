@@ -716,6 +716,66 @@
     table "^6.8.0"
     undici "^5.14.0"
 
+"@nomicfoundation/slang-darwin-arm64@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang-darwin-arm64/-/slang-darwin-arm64-0.15.1.tgz#f3fb59052d11f6ec14844616f4c16e9a4ebd5d7c"
+  integrity sha512-taPHlCUNNztQZJze9OlZFK9cZH8Ut4Ih4QJQo5CKebXx9vWOUtmSBfKv/M2P8hiV/iL7Q5sPwR7HY9uZYnb49Q==
+
+"@nomicfoundation/slang-darwin-x64@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang-darwin-x64/-/slang-darwin-x64-0.15.1.tgz#c37205a86fcd199ceda2c31a2ea155723494cf5f"
+  integrity sha512-kgZh5KQe/UcbFqn1EpyrvBuT8E6I1kWSgGPtO25t90zAqFv23sMUPdn7wLpMjngkD+quIIgrzQGUtupS5YYEig==
+
+"@nomicfoundation/slang-linux-arm64-gnu@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang-linux-arm64-gnu/-/slang-linux-arm64-gnu-0.15.1.tgz#479c536a26e6ee86c75d0b36f9d4ffcc61d4db4f"
+  integrity sha512-Iw8mepaccKRWllPU9l+hoe88LN9fScC0Px3nFeNQy26qk1ueO0tjovP1dhTvmGwHUxacOYPqhQTUn7Iu0oxNoQ==
+
+"@nomicfoundation/slang-linux-arm64-musl@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang-linux-arm64-musl/-/slang-linux-arm64-musl-0.15.1.tgz#f5b3303ea4f25c0039ba4c7c5dbcdc786c6db561"
+  integrity sha512-zcesdQZwRgrT7ND+3TZUjRK/uGF20EfhEfCg8ZMhrb4Q7XaK1JvtHazIs03TV8Jcs30TPkEXks8Qi0Zdfy4RuA==
+
+"@nomicfoundation/slang-linux-x64-gnu@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang-linux-x64-gnu/-/slang-linux-x64-gnu-0.15.1.tgz#aa2defcbad51462cd2cb5a20bc16d4fbe2a43c43"
+  integrity sha512-FSmAnzKm58TFIwx4r/wOZtqfDx0nI6AfvnOh8kLDF5OxpWW3r0q9fq8lyaUReg9C/ZgCZRBn+m5WGrNKCZcvPQ==
+
+"@nomicfoundation/slang-linux-x64-musl@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang-linux-x64-musl/-/slang-linux-x64-musl-0.15.1.tgz#a2e9df430a72abed3389a7d6bb9f5bbdf9decfb5"
+  integrity sha512-hnoA/dgeHQ8aS0SReABYkxf0d/Q6DdaKsaYv6ev21wyQA7TROxT1X3nekECLGu1GYLML8pzvD9vyAMBRKOkkyg==
+
+"@nomicfoundation/slang-win32-arm64-msvc@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang-win32-arm64-msvc/-/slang-win32-arm64-msvc-0.15.1.tgz#f3e735fc1e1885123232161172cd2f5172fc7f35"
+  integrity sha512-2H0chHQ4uTh4l4UxN5fIVHR5mKaL5mfYTID6kxxxv2+KAh68EpYWwxLlkS5So90R2WcuPvFvTVKLm/uRo4h4dg==
+
+"@nomicfoundation/slang-win32-ia32-msvc@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang-win32-ia32-msvc/-/slang-win32-ia32-msvc-0.15.1.tgz#d786dcf797a2c88e7385f5f77cc529c161cca4fc"
+  integrity sha512-CVZWBnbpFlVBg/m7bsiw70jY3p9TGH9vxq0vLEEJ56yK+QPosxPrKMcADojtGjIOjWjPSZ+lCoo5ilnW0a249g==
+
+"@nomicfoundation/slang-win32-x64-msvc@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang-win32-x64-msvc/-/slang-win32-x64-msvc-0.15.1.tgz#9889b0d71e353bbbd2b6d744503f9fb0eb2f431b"
+  integrity sha512-cyER8M1fdBTzIfihy55d4LGGlN/eQxDqfRUTXgJf1VvNR98tRB0Q3nBfyh5PK2yP98B4lMt3RJYDqTQu+dOVDA==
+
+"@nomicfoundation/slang@^0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang/-/slang-0.15.1.tgz#7f5610d8d1636d0c0d77e6f3de11927cc77d1a0e"
+  integrity sha512-th7nxRWRXf583uHpWUCd8U7BYxIqJX2f3oZLff/mlPkqIr45pD2hLT/o00eCjrBIR8N7vybUULZg1CeThGNk7g==
+  dependencies:
+    "@nomicfoundation/slang-darwin-arm64" "0.15.1"
+    "@nomicfoundation/slang-darwin-x64" "0.15.1"
+    "@nomicfoundation/slang-linux-arm64-gnu" "0.15.1"
+    "@nomicfoundation/slang-linux-arm64-musl" "0.15.1"
+    "@nomicfoundation/slang-linux-x64-gnu" "0.15.1"
+    "@nomicfoundation/slang-linux-x64-musl" "0.15.1"
+    "@nomicfoundation/slang-win32-arm64-msvc" "0.15.1"
+    "@nomicfoundation/slang-win32-ia32-msvc" "0.15.1"
+    "@nomicfoundation/slang-win32-x64-msvc" "0.15.1"
+
 "@nomicfoundation/solidity-analyzer-darwin-arm64@0.1.2":
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@nomicfoundation/solidity-analyzer-darwin-arm64/-/solidity-analyzer-darwin-arm64-0.1.2.tgz#3a9c3b20d51360b20affb8f753e756d553d49557"
@@ -5167,16 +5227,7 @@ statuses@2.0.1:
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-2.0.1.tgz#55cb000ccf1d48728bd23c685a063998cf1a1b63"
   integrity sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==
 
-"string-width-cjs@npm:string-width@^4.2.0":
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
-  integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
-  dependencies:
-    emoji-regex "^8.0.0"
-    is-fullwidth-code-point "^3.0.0"
-    strip-ansi "^6.0.1"
-
-"string-width@^1.0.2 || 2 || 3 || 4", string-width@^4.0.0, string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.2, string-width@^4.2.3:
+"string-width-cjs@npm:string-width@^4.2.0", "string-width@^1.0.2 || 2 || 3 || 4", string-width@^4.0.0, string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.2, string-width@^4.2.3:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -5247,7 +5298,7 @@ string_decoder@^1.1.1:
   dependencies:
     safe-buffer "~5.2.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@^6.0.0, strip-ansi@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -5260,13 +5311,6 @@ strip-ansi@^5.0.0, strip-ansi@^5.1.0, strip-ansi@^5.2.0:
   integrity sha512-DuRs1gKbBqsMKIZlrffwlug8MHkcnpjs5VPmL1PAh+mA30U0DTotfDZ0d2UUsXpPmPmMMJ6W773MaA3J+lbiWA==
   dependencies:
     ansi-regex "^4.1.0"
-
-strip-ansi@^6.0.0, strip-ansi@^6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
-  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
-  dependencies:
-    ansi-regex "^5.0.1"
 
 strip-ansi@^7.0.1, strip-ansi@^7.1.0:
   version "7.1.0"
@@ -5735,7 +5779,7 @@ workerpool@6.2.1:
   resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.2.1.tgz#46fc150c17d826b86a008e5a4508656777e9c343"
   integrity sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
@@ -5757,15 +5801,6 @@ wrap-ansi@^6.2.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-6.2.0.tgz#e9393ba07102e6c91a3b221478f0257cd2856e53"
   integrity sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==
-  dependencies:
-    ansi-styles "^4.0.0"
-    string-width "^4.1.0"
-    strip-ansi "^6.0.0"
-
-wrap-ansi@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
-  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
   dependencies:
     ansi-styles "^4.0.0"
     string-width "^4.1.0"
