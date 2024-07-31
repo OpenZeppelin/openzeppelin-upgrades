@@ -4,11 +4,6 @@ import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationAnnotation } from '../storage/namespace';
 import { assert } from './assert';
 import { FunctionDefinition, VariableDeclaration } from 'solidity-ast';
-import { isSlangSupported } from './slang/vendored/slangHelpers';
-import { Language } from '@nomicfoundation/slang/language';
-import { NonterminalKind, TerminalKind } from '@nomicfoundation/slang/kinds';
-import { TerminalNode } from '@nomicfoundation/slang/cst';
-import { isTrivia } from './slang/trivia';
 
 const OUTPUT_SELECTION = {
   '*': {
@@ -173,7 +168,14 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput, solcVe
 function tryRemoveNonStructNatSpec(origContent: string, solcVersion: string | undefined): string {
   const natSpecRemovals: Modification[] = [];
 
-  if (solcVersion !== undefined && isSlangSupported()) {
+  if (solcVersion !== undefined && tryRequire('@nomicfoundation/slang')) {
+    /* eslint-disable @typescript-eslint/no-var-requires */
+    const { Language } = require('@nomicfoundation/slang/language');
+    const { NonterminalKind, TerminalKind } = require('@nomicfoundation/slang/kinds');
+    const { TerminalNode } = require('@nomicfoundation/slang/cst');
+    const { isTrivia } = require('./slang/trivia');
+    /* eslint-enable @typescript-eslint/no-var-requires */
+
     const language = new Language(solcVersion);
     const parseOutput = language.parse(NonterminalKind.SourceUnit, origContent);
     const cursor = parseOutput.createTreeCursor();
@@ -199,6 +201,16 @@ function tryRemoveNonStructNatSpec(origContent: string, solcVersion: string | un
   } else {
     return origContent;
   }
+}
+
+function tryRequire(id: string) {
+  try {
+    require(id);
+    return true;
+  } catch (e: any) {
+    // do nothing
+  }
+  return false;
 }
 
 interface Modification {
