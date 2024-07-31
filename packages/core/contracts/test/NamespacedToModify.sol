@@ -260,3 +260,22 @@ contract HasNatSpecWithMultipleReturns {
     function hasReturnsDocumentedAsParamsInContract() public pure returns (uint a, uint b) {
     }
 }
+
+interface IHasExternalViewFunction {
+    function foo() external view returns (uint256);
+}
+
+contract HasExternalViewFunction is IHasExternalViewFunction {
+    // This generates a getter function that conforms to the interface
+    uint256 public foo;
+
+    // References a selector in an interface
+    bytes4 constant USING_INTERFACE_FUNCTION_SELECTOR = IHasExternalViewFunction.foo.selector;
+
+    // References a getter generated for a public variable
+    bytes4 immutable IMMUTABLE_USING_GETTER = this.foo.selector;
+}
+
+contract DeploysContractToImmutable {
+    HasFunction public immutable example = new HasFunction(1);
+}

@@ -48,6 +48,12 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput): SolcI
         case 'ContractDefinition': {
           const contractDef = node;
 
+          // Mark contracts as abstract, since state variables are converted to dummy enums
+          // which would not generate public getters for inherited interface functions
+          if (contractDef.contractKind === 'contract' && !contractDef.abstract) {
+            modifications.push(makeInsertBefore(contractDef, 'abstract '));
+          }
+
           // Remove any calls to parent constructors from the inheritance list
           const inherits = contractDef.baseContracts;
           for (const inherit of inherits) {
@@ -208,6 +214,11 @@ function makeReplace(node: Node, orig: Buffer, text: string): Modification {
   // Replace is a delete and insert
   const { start, end } = makeDelete(node, orig);
   return { start, end, text };
+}
+
+function makeInsertBefore(node: Node, text: string): Modification {
+  const { start } = getPositions(node);
+  return { start: start, end: start, text };
 }
 
 function makeInsertAfter(node: Node, text: string): Modification {
