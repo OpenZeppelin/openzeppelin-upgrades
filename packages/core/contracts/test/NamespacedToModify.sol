@@ -271,6 +271,9 @@ contract HasExternalViewFunction is IHasExternalViewFunction {
 
     // References a selector in an interface
     bytes4 constant USING_INTERFACE_FUNCTION_SELECTOR = IHasExternalViewFunction.foo.selector;
+
+    // References a getter generated for a public variable
+    bytes4 immutable IMMUTABLE_USING_GETTER = this.foo.selector;
 }
 
 contract DeploysContractToImmutable {
