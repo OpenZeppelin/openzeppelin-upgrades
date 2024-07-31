@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.35.0 (2024-07-31)
 
 - Fix Hardhat compile error when public variables are used to implement interface functions. ([#1055](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1055))
 - Remove non-struct NatSpec from Hardhat compilation step for namespaced storage layout validations. ([#1051](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1051))
