@@ -1,8 +1,8 @@
 {
-  "name": "@openzeppelin/hardhat-upgrades",
-  "version": "3.2.0",
+  "name": "@redbellynetwork/hardhat-upgrades",
+  "version": "1.0.0",
   "description": "",
-  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
+  "repository": "https://github.com/redbellynetwork/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [

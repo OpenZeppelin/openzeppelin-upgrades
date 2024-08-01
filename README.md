@@ -67,3 +67,9 @@ Join the [OpenZeppelin forum](https://forum.openzeppelin.com/) to ask questions 
 ## License
 
 OpenZeppelin Upgrade plugins are released under the [MIT License](LICENSE).
+
+## Redbelly Versions
+
+| Redbelly | OpenZeppelin Version |
+| :------: | :------------------: |
+|  1.0.0   |         3.2.0        |
