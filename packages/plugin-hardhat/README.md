@@ -149,6 +149,93 @@ describe("Box", function() {
 });
 ```
 
+## Using safe.global
+
+Integrate safe.global sdk to allow upgradeable smart contracts deployment & upgrades using multi-sig wallet.
+
+### Example usage:
+
+#### Set configuration parameters in .env
+
+```
+SIGNER="<< OWNER or DELEGATE >>"
+CREATE2_SALT="<< CREATE2_SALT >>"
+SAFE_ADDRESS="<< SAFE_ADDRESS >>"
+SAFE_TX_SERVICE_URL="<< SAFE_TX_SERVICE_URL >>"
+SAFE_SINGLETON_ADDRESS="<< SAFE_SINGLETON_ADDRESS >>"
+SAFE_PROXY_FACTORY_ADDRESS="<< SAFE_PROXY_FACTORY_ADDRESS >>"
+MULTI_SEND_ADDRESS="<< MULTI_SEND_ADDRESS >>"
+MULTI_SEND_CALL_ONLY_ADDRESS="<< MULTI_SEND_CALL_ONLY_ADDRESS >>"
+COMPATIBILITY_FALLBACK_HANDLER_ADDRESS="<< COMPATIBILITY_FALLBACK_HANDLER_ADDRESS >>"
+SIGN_MESSAGE_LIB_ADDRESS="<< SIGN_MESSAGE_LIB_ADDRESS >>"
+CREATE_CALL_ADDRESS="<< CREATE_CALL_ADDRESS >>"
+SIMULATE_TX_ACCESSOR_ADDRESS="<< SIMULATE_TX_ACCESSOR_ADDRESS >>"
+```
+
+#### Deploy upgradeable contract
+
+```ts
+import { ethers, upgrades } from 'hardhat';
+
+async function main () {
+  const safeAddress = '0x';
+  const Socks = await ethers.getContractFactory('Socks');
+  console.log('Deploying Socks...');
+  const socks = await upgrades.deployProxy(Socks, [42], { 
+    initializer: 'initialize', 
+    initialOwner: safeAddress,
+
+    useSafeGlobalDeploy: true,
+    txServiceUrl: process.env.SAFE_TX_SERVICE_URL,
+    salt: process.env.CREATE2_SALT,
+    safeAddress,
+    safeSingletonAddress: process.env.SAFE_SINGLETON_ADDRESS,
+    safeProxyFactoryAddress: process.env.SAFE_PROXY_FACTORY_ADDRESS,
+    multiSendAddress: process.env.MULTI_SEND_ADDRESS,
+    multiSendCallOnlyAddress: process.env.MULTI_SEND_CALL_ONLY_ADDRESS,
+    fallbackHandlerAddress: process.env.COMPATIBILITY_FALLBACK_HANDLER_ADDRESS,
+    signMessageLibAddress: process.env.SIGN_MESSAGE_LIB_ADDRESS,
+    createCallAddress: process.env.CREATE_CALL_ADDRESS,
+    simulateTxAccessorAddress: process.env.SIMULATE_TX_ACCESSOR_ADDRESS,
+  });
+  await socks.waitForDeployment();
+  console.log('Socks deployed to:', socks.target);
+}
+
+main();
+```
+
+#### Upgrade:
+
+```ts
+// scripts/deploy_upgradeable_box.js
+import { ethers, upgrades } from 'hardhat';
+
+async function main () {
+  const safeAddress = '0x';
+  const proxyAddress = '0x';
+  const SocksV2 = await ethers.getContractFactory('SocksV2');
+  console.log('Upgrading Socks...');
+  await upgrades.upgradeProxy(proxyAddress, SocksV2, {
+    useSafeGlobalDeploy: true,
+    txServiceUrl: process.env.SAFE_TX_SERVICE_URL,
+    salt: process.env.CREATE2_SALT,
+    safeAddress,
+    safeSingletonAddress: process.env.SAFE_SINGLETON_ADDRESS,
+    safeProxyFactoryAddress: process.env.SAFE_PROXY_FACTORY_ADDRESS,
+    multiSendAddress: process.env.MULTI_SEND_ADDRESS,
+    multiSendCallOnlyAddress: process.env.MULTI_SEND_CALL_ONLY_ADDRESS,
+    fallbackHandlerAddress: process.env.COMPATIBILITY_FALLBACK_HANDLER_ADDRESS,
+    signMessageLibAddress: process.env.SIGN_MESSAGE_LIB_ADDRESS,
+    createCallAddress: process.env.CREATE_CALL_ADDRESS,
+    simulateTxAccessorAddress: process.env.SIMULATE_TX_ACCESSOR_ADDRESS,
+  });
+  console.log('Socks upgraded');
+}
+
+main();
+```
+
 ## Learn more
 * Refer to the [API documentation](https://docs.openzeppelin.com/upgrades-plugins/api-hardhat-upgrades).
 * Also see the [main documentation](https://docs.openzeppelin.com/upgrades-plugins) for more info.

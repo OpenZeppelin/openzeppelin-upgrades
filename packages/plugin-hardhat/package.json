@@ -1,6 +1,6 @@
 {
   "name": "@redbellynetwork/hardhat-upgrades",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "repository": "https://github.com/redbellynetwork/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
@@ -50,7 +50,7 @@
   },
   "peerDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
-    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@nomicfoundation/hardhat-verify": "2.0.8",
     "ethers": "^6.6.0",
     "hardhat": "^2.0.2"
   },
