@@ -256,7 +256,7 @@ function replaceFunction(node: FunctionDefinition, orig: Buffer, modifications: 
     case 'constructor':
     case 'fallback':
     case 'receive': {
-      modifications.push(makeDelete(node, orig));
+      modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
       break;
     }
     default:
