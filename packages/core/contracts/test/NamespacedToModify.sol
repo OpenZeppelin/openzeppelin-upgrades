@@ -83,7 +83,9 @@ contract Example {
 }
 
 contract HasFunction {
-  constructor(uint) {}
+  /// @param myInt an integer
+  constructor(uint myInt) {}
+
   function foo() pure public returns (uint) {}
 }
 
@@ -288,7 +290,9 @@ contract DeploysContractToImmutable {
 }
 
 contract HasSpecialFunctions {
-    fallback(bytes calldata data) external returns (bytes memory) {
+    /// @param data call data
+    /// @return dataReturn returned data
+    fallback(bytes calldata data) external returns (bytes memory dataReturn) {
         return data;
     }
 
