@@ -286,3 +286,18 @@ contract HasExternalViewFunction is IHasExternalViewFunction {
 contract DeploysContractToImmutable {
     HasFunction public immutable example = new HasFunction(1);
 }
+
+contract HasSpecialFunctions {
+    fallback(bytes calldata data) external returns (bytes memory) {
+        return data;
+    }
+
+    receive() external payable {
+    }
+
+    // Regular function but payable
+    function hasPayable() public payable {
+    }
+
+    bytes4 constant PAYABLE_SELECTOR = this.hasPayable.selector;
+}

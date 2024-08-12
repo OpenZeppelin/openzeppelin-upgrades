@@ -2,7 +2,7 @@ import { isNodeType } from 'solidity-ast/utils';
 import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationAnnotation } from '../storage/namespace';
-import { assert } from './assert';
+import { assert, assertUnreachable } from './assert';
 import { FunctionDefinition, VariableDeclaration } from 'solidity-ast';
 
 const OUTPUT_SELECTION = {
@@ -228,28 +228,39 @@ function toDummyEnumWithAstId(astId: number) {
 }
 
 function replaceFunction(node: FunctionDefinition, orig: Buffer, modifications: Modification[]) {
-  if (node.kind === 'constructor') {
-    modifications.push(makeDelete(node, orig));
-  } else {
-    if (node.modifiers.length > 0) {
-      for (const modifier of node.modifiers) {
-        modifications.push(makeDelete(modifier, orig));
+  switch (node.kind) {
+    case 'freeFunction':
+    case 'function': {
+      if (node.modifiers.length > 0) {
+        for (const modifier of node.modifiers) {
+          modifications.push(makeDelete(modifier, orig));
+        }
       }
-    }
 
-    if (node.returnParameters.parameters.length > 0) {
-      modifications.push(
-        makeReplace(
-          node.returnParameters,
-          orig,
-          `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
-        ),
-      );
-    }
+      if (node.returnParameters.parameters.length > 0) {
+        modifications.push(
+          makeReplace(
+            node.returnParameters,
+            orig,
+            `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
+          ),
+        );
+      }
 
-    if (node.body) {
-      modifications.push(makeReplace(node.body, orig, '{}'));
+      if (node.body) {
+        modifications.push(makeReplace(node.body, orig, '{}'));
+      }
+
+      break;
     }
+    case 'constructor':
+    case 'fallback':
+    case 'receive': {
+      modifications.push(makeDelete(node, orig));
+      break;
+    }
+    default:
+      return assertUnreachable(node.kind);
   }
 }
 

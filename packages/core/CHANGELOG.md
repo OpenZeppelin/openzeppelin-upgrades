@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix Hardhat compile error when `fallback` or `receive` functions are present.
+
 ## 1.35.0 (2024-07-31)
 
 - Fix Hardhat compile error when public variables are used to implement interface functions. ([#1055](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1055))
