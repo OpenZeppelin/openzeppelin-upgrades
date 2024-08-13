@@ -83,7 +83,9 @@ contract Example {
 }
 
 contract HasFunction {
-  constructor(uint) {}
+  /// @param myInt an integer
+  constructor(uint myInt) {}
+
   function foo() pure public returns (uint) {}
 }
 
@@ -285,4 +287,21 @@ contract HasExternalViewFunction is IHasExternalViewFunction {
 
 contract DeploysContractToImmutable {
     HasFunction public immutable example = new HasFunction(1);
+}
+
+contract HasSpecialFunctions {
+    /// @param data call data
+    /// @return dataReturn returned data
+    fallback(bytes calldata data) external returns (bytes memory dataReturn) {
+        return data;
+    }
+
+    receive() external payable {
+    }
+
+    // Regular function but payable
+    function hasPayable() public payable {
+    }
+
+    bytes4 constant PAYABLE_SELECTOR = this.hasPayable.selector;
 }
