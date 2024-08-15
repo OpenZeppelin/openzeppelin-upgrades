@@ -1,4 +1,5 @@
 import { ValidateCommandError } from './error';
+import { ReferenceBuildInfoDictionary } from './validate-upgrade-safety';
 import { SourceContract } from './validations';
 
 export class ReferenceContractNotFound extends Error {
@@ -23,7 +24,9 @@ export class ReferenceContractNotFound extends Error {
   }
 }
 
-export function findContract(contractName: string, origin: SourceContract | undefined, allContracts: SourceContract[]) {
+export function findContract(contractName: string, origin: SourceContract | undefined, allContracts: SourceContract[], dictionary: ReferenceBuildInfoDictionary) {
+  // TODO if contract has a dictionary reference, look up the contract in the dictionary
+
   const foundContracts = allContracts.filter(c => c.fullyQualifiedName === contractName || c.name === contractName);
 
   if (foundContracts.length > 1) {
