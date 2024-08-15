@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update dependency on Slang. ([#1059](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1059))
+
 ## 1.35.0 (2024-07-31)
 
 - Fix Hardhat compile error when public variables are used to implement interface functions. ([#1055](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1055))
