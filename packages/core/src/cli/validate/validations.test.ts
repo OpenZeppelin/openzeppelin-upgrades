@@ -14,12 +14,16 @@ const test = _test as TestFn<Context>;
 const SOURCE_FILE = 'contracts/test/cli/Validate.sol';
 
 test.before(async t => {
-  const buildInfo = await artifacts.getBuildInfo(`${SOURCE_FILE}:Safe`);
+  const hardhatBuildInfo = await artifacts.getBuildInfo(`${SOURCE_FILE}:Safe`);
 
-  if (buildInfo === undefined) {
+  if (hardhatBuildInfo === undefined) {
     t.fail();
   } else {
-    const sourceContracts = validateBuildInfoContracts([buildInfo]);
+    const buildInfoFile = {
+      ...hardhatBuildInfo,
+      dirName: 'build-info',
+    };
+    const sourceContracts = validateBuildInfoContracts([buildInfoFile]);
     t.context.reports = getContractReports(sourceContracts, withCliDefaults({}));
   }
 });
