@@ -13,6 +13,7 @@ export interface SourceContract {
   name: string;
   fullyQualifiedName: string;
   validationData: ValidationRunData;
+  buildInfoFile?: string;
 }
 
 export function validateBuildInfoContracts(buildInfoFiles: BuildInfoFile[]): SourceContract[] {

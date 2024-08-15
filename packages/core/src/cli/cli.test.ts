@@ -298,3 +298,19 @@ test('validate - references fully qualified version of ambiguous contract name',
   ).stdout;
   t.snapshot(output);
 });
+
+test('validate - references other build info dir', async t => {
+  const referenceDir = await getTempDir(t);
+  const referenceBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`);
+  await fs.writeFile(path.join(referenceDir, 'validate.json'), JSON.stringify(referenceBuildInfo));
+
+  const referenceDirBaseName = path.basename(referenceDir);
+
+  const updatedDir = await getTempDir(t);
+  t.assert(updatedDir !== referenceDir);
+  const updatedBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV2Ok.sol:MyContract`);
+  await fs.writeFile(path.join(updatedDir, 'validate.json'), JSON.stringify(updatedBuildInfo));
+
+  const output = await(execAsync(`${CLI} validate ${updatedDir} --referenceBuildInfoDirs ${referenceDir} --contract MyContract --reference ${referenceDirBaseName}:MyContract`));
+  t.snapshot(output);
+});
