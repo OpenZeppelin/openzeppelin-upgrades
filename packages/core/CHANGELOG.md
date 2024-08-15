@@ -4,6 +4,10 @@
 
 - Update dependency on Slang. ([#1059](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1059))
 
+## 1.35.1 (2024-08-13)
+
+- Fix Hardhat compile error when `fallback` or `receive` functions are present. ([#1060](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1060))
+
 ## 1.35.0 (2024-07-31)
 
 - Fix Hardhat compile error when public variables are used to implement interface functions. ([#1055](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1055))

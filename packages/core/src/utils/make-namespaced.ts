@@ -2,7 +2,7 @@ import { isNodeType } from 'solidity-ast/utils';
 import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationAnnotation } from '../storage/namespace';
-import { assert } from './assert';
+import { assert, assertUnreachable } from './assert';
 import { FunctionDefinition, VariableDeclaration } from 'solidity-ast';
 
 const OUTPUT_SELECTION = {
@@ -18,9 +18,13 @@ const OUTPUT_SELECTION = {
  *
  * This makes the following modifications to the input:
  * - Adds a state variable for each namespaced struct definition
- * - For each contract, for all node types that are not needed for storage layout or may reference deleted functions and constructors, converts them to dummy enums with random id
+ * - For each contract, for all node types that are not needed for storage layout or may call functions and constructors, converts them to dummy enums with random id
  * - Converts all using for directives (at file level and in contracts) to dummy enums with random id (do not delete them to avoid orphaning possible NatSpec documentation)
- * - Converts all custom errors, free functions and constants (at file level) to dummy enums with the same name (do not delete them since they might be imported by other files)
+ * - Converts all custom errors and constants (at file level) to dummy enums with the same name (do not delete them since they might be imported by other files)
+ * - Replaces functions as follows:
+ *   - For regular function and free function, keep declarations since they may be referenced by constants (free functions may also be imported by other files). But simplify compilation by removing modifiers and body, and replace return parameters with bools which can be default initialized.
+ *   - Constructors are not needed, since we removed anything that may call constructors. Convert to dummy enums to avoid orphaning possible NatSpec.
+ *   - Fallback and receive functions are not needed, since they don't have signatures. Convert to dummy enums to avoid orphaning possible NatSpec.
  *
  * Also sets the outputSelection to only include storageLayout and ast, since the other outputs are not needed.
  *
@@ -228,28 +232,39 @@ function toDummyEnumWithAstId(astId: number) {
 }
 
 function replaceFunction(node: FunctionDefinition, orig: Buffer, modifications: Modification[]) {
-  if (node.kind === 'constructor') {
-    modifications.push(makeDelete(node, orig));
-  } else {
-    if (node.modifiers.length > 0) {
-      for (const modifier of node.modifiers) {
-        modifications.push(makeDelete(modifier, orig));
+  switch (node.kind) {
+    case 'freeFunction':
+    case 'function': {
+      if (node.modifiers.length > 0) {
+        for (const modifier of node.modifiers) {
+          modifications.push(makeDelete(modifier, orig));
+        }
       }
-    }
 
-    if (node.returnParameters.parameters.length > 0) {
-      modifications.push(
-        makeReplace(
-          node.returnParameters,
-          orig,
-          `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
-        ),
-      );
-    }
+      if (node.returnParameters.parameters.length > 0) {
+        modifications.push(
+          makeReplace(
+            node.returnParameters,
+            orig,
+            `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
+          ),
+        );
+      }
 
-    if (node.body) {
-      modifications.push(makeReplace(node.body, orig, '{}'));
+      if (node.body) {
+        modifications.push(makeReplace(node.body, orig, '{}'));
+      }
+
+      break;
     }
+    case 'constructor':
+    case 'fallback':
+    case 'receive': {
+      modifications.push(makeReplace(node, orig, toDummyEnumWithAstId(node.id)));
+      break;
+    }
+    default:
+      return assertUnreachable(node.kind);
   }
 }
 
