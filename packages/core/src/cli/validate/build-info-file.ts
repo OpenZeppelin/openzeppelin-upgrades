@@ -56,25 +56,23 @@ export interface BuildInfoFile {
   dirShortName: string;
 }
 
-export interface BuildInfoDirWithFiles {
-  dirShortName: string;
-  files: BuildInfoFile[];
-}
-
 /**
  * Gets the build info files from the build info directory.
  *
  * @param buildInfoDir Build info directory, or undefined to use the default Hardhat or Foundry build-info dir.
  * @returns The build info files with Solidity compiler input and output.
  */
-export async function getBuildInfoDirWithFiles(buildInfoDir?: string): Promise<BuildInfoDirWithFiles> {
+export async function getBuildInfoFiles(buildInfoDir?: string): Promise<BuildInfoFile[]> {
   const dir = await findDir(buildInfoDir);
   const shortName = path.basename(dir);
   const jsonFiles = await getJsonFiles(dir);
 
-  return { dirShortName: shortName, files: await readBuildInfo(jsonFiles, shortName) }; // TODO remove redundant dirShortName
+  return await readBuildInfo(jsonFiles, shortName);
 }
 
+/**
+ * Finds the build info dir if provided, otherwise finds the default Hardhat or Foundry build info dir. Throws an error if no build info files were found in the expected dir.
+ */
 async function findDir(buildInfoDir?: string): Promise<string> {
   if (buildInfoDir !== undefined && !(await hasJsonFiles(buildInfoDir))) {
     throw new ValidateCommandError(

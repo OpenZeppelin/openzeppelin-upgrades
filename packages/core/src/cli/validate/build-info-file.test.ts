@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 import { rimraf } from 'rimraf';
 import path from 'path';
 import os from 'os';
-import { BuildInfoFile, getBuildInfoDirWithFiles } from './build-info-file';
+import { BuildInfoFile, getBuildInfoFiles } from './build-info-file';
 
 test.beforeEach(async t => {
   process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), `upgrades-core-test-${t.title.replace(/\s/g, '-')}-`)));
@@ -296,9 +296,9 @@ test.serial('get build info files - default hardhat', async t => {
   await fs.writeFile('artifacts/build-info/build-info.json', JSON.stringify(BUILD_INFO));
   await fs.writeFile('artifacts/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
 
-  const buildInfoFiles = await getBuildInfoDirWithFiles();
+  const buildInfoFiles = await getBuildInfoFiles();
 
-  assertBuildInfoFiles(t, buildInfoFiles.files);
+  assertBuildInfoFiles(t, buildInfoFiles);
 });
 
 test.serial('get build info files - default foundry', async t => {
@@ -308,9 +308,9 @@ test.serial('get build info files - default foundry', async t => {
   await fs.writeFile('out/build-info/build-info.json', JSON.stringify(BUILD_INFO));
   await fs.writeFile('out/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
 
-  const buildInfoFiles = await getBuildInfoDirWithFiles();
+  const buildInfoFiles = await getBuildInfoFiles();
 
-  assertBuildInfoFiles(t, buildInfoFiles.files);
+  assertBuildInfoFiles(t, buildInfoFiles);
 });
 
 test.serial('get build info files - both hardhat and foundry dirs exist', async t => {
@@ -320,12 +320,12 @@ test.serial('get build info files - both hardhat and foundry dirs exist', async 
   await fs.mkdir('out/build-info', { recursive: true });
   await fs.writeFile('out/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
 
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles());
+  const error = await t.throwsAsync(getBuildInfoFiles());
   t.true(error?.message.includes('Found both Hardhat and Foundry build info directories'));
 });
 
 test.serial('get build info files - no default dirs exist', async t => {
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles());
+  const error = await t.throwsAsync(getBuildInfoFiles());
   t.true(error?.message.includes('Could not find the default Hardhat or Foundry build info directory'));
 });
 
@@ -338,9 +338,9 @@ test.serial('get build info files - override with custom relative path', async t
   await fs.writeFile('custom/build-info/build-info.json', JSON.stringify(BUILD_INFO));
   await fs.writeFile('custom/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
 
-  const buildInfoFiles = await getBuildInfoDirWithFiles('custom/build-info');
+  const buildInfoFiles = await getBuildInfoFiles('custom/build-info');
 
-  assertBuildInfoFiles(t, buildInfoFiles.files);
+  assertBuildInfoFiles(t, buildInfoFiles);
 });
 
 test.serial('get build info files - override with custom absolute path', async t => {
@@ -352,21 +352,21 @@ test.serial('get build info files - override with custom absolute path', async t
   await fs.writeFile('custom/build-info/build-info.json', JSON.stringify(BUILD_INFO));
   await fs.writeFile('custom/build-info/build-info-2.json', JSON.stringify(BUILD_INFO_2));
 
-  const buildInfoFiles = await getBuildInfoDirWithFiles(path.join(process.cwd(), 'custom/build-info'));
+  const buildInfoFiles = await getBuildInfoFiles(path.join(process.cwd(), 'custom/build-info'));
 
-  assertBuildInfoFiles(t, buildInfoFiles.files);
+  assertBuildInfoFiles(t, buildInfoFiles);
 });
 
 test.serial('invalid build info file', async t => {
   await fs.mkdir('invalid-build-info', { recursive: true });
 
   await fs.writeFile('invalid-build-info/invalid.json', JSON.stringify({ output: {} }));
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles('invalid-build-info'));
+  const error = await t.throwsAsync(getBuildInfoFiles('invalid-build-info'));
   t.true(error?.message.includes('must contain Solidity compiler input, output, and solcVersion'));
 });
 
 test.serial('dir does not exist', async t => {
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles('invalid-dir'));
+  const error = await t.throwsAsync(getBuildInfoFiles('invalid-dir'));
   t.true(error?.message.includes('does not exist'));
 });
 
@@ -376,7 +376,7 @@ test.serial('no build info files', async t => {
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/notjson.txt`, 'abc');
 
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles(dir));
+  const error = await t.throwsAsync(getBuildInfoFiles(dir));
   t.true(error?.message.includes('does not contain any build info files'));
 });
 
@@ -386,7 +386,7 @@ test.serial('no storage layout', async t => {
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_NO_LAYOUT));
 
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles(dir));
+  const error = await t.throwsAsync(getBuildInfoFiles(dir));
   t.true(error?.message.includes('does not contain storage layout'));
 });
 
@@ -396,7 +396,7 @@ test.serial('individual output selections - no layout', async t => {
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_INDIVIDUAL_NO_LAYOUT));
 
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles(dir));
+  const error = await t.throwsAsync(getBuildInfoFiles(dir));
   t.true(error?.message.includes('does not contain storage layout'));
 });
 
@@ -406,7 +406,7 @@ test.serial('individual output selections - has layout', async t => {
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_INDIVIDUAL_HAS_LAYOUT));
 
-  t.assert((await getBuildInfoDirWithFiles(dir)).files.length === 1);
+  t.assert((await getBuildInfoFiles(dir)).length === 1);
 });
 
 test.serial('individual output selections - partial layout', async t => {
@@ -415,7 +415,7 @@ test.serial('individual output selections - partial layout', async t => {
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIAL_LAYOUT));
 
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles(dir));
+  const error = await t.throwsAsync(getBuildInfoFiles(dir));
   t.true(error?.message.includes('does not contain storage layout'));
 });
 
@@ -425,7 +425,7 @@ test.serial('individual output selections - partial compile', async t => {
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_PARTIAL_COMPILE));
 
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles(dir));
+  const error = await t.throwsAsync(getBuildInfoFiles(dir));
   t.true(error?.message.includes('is not from a full compilation'));
 });
 
@@ -435,7 +435,7 @@ test.serial('no output selection', async t => {
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_NO_OUTPUT_SELECTION));
 
-  const error = await t.throwsAsync(getBuildInfoDirWithFiles(dir));
+  const error = await t.throwsAsync(getBuildInfoFiles(dir));
   t.true(error?.message.includes('is not from a full compilation'));
 });
 

@@ -1,7 +1,7 @@
 import path from 'path';
 import { ValidationOptions, withValidationDefaults } from '../..';
 
-import { getBuildInfoDirWithFiles } from './build-info-file';
+import { getBuildInfoFiles } from './build-info-file';
 import { getContractReports } from './contract-report';
 import { findContract } from './find-contract';
 import { ProjectReport, getProjectReport } from './project-report';
@@ -39,12 +39,14 @@ export async function validateUpgradeSafety(
 ): Promise<ProjectReport> {
   const allOpts = withCliDefaults(opts);
 
-  const buildInfoDirWithFiles = await getBuildInfoDirWithFiles(buildInfoDir);
-  const sourceContracts = validateBuildInfoContracts(buildInfoDirWithFiles.files);
+  const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
+  const sourceContracts = validateBuildInfoContracts(buildInfoFiles);
 
   const buildInfoDictionary: BuildInfoDictionary = {};
   buildInfoDictionary[''] = sourceContracts;
-  buildInfoDictionary[buildInfoDirWithFiles.dirShortName] = sourceContracts;
+  if (buildInfoFiles.length > 0) {
+    buildInfoDictionary[buildInfoFiles[0].dirShortName] = sourceContracts;
+  }
 
   if (referenceBuildInfoDirs !== undefined) {
     for (const referenceBuildInfoDir of referenceBuildInfoDirs) {
@@ -54,8 +56,8 @@ export async function validateUpgradeSafety(
         throw new Error(`Reference build info directory short name '${key}' is not unique.`);
       }
 
-      const referenceBuildInfoFiles = await getBuildInfoDirWithFiles(referenceBuildInfoDir);
-      buildInfoDictionary[key] = validateBuildInfoContracts(referenceBuildInfoFiles.files);
+      const referenceBuildInfoFiles = await getBuildInfoFiles(referenceBuildInfoDir);
+      buildInfoDictionary[key] = validateBuildInfoContracts(referenceBuildInfoFiles);
     }
   }
 
