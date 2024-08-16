@@ -13,7 +13,12 @@ export class ReferenceContractNotFound extends Error {
    */
   readonly origin?: string;
 
-  constructor(reference: string, origin?: string) {
+  /**
+   * Reference build info directories that were also searched, if any.
+   */
+  readonly referenceBuildInfoDirs?: string[];
+
+  constructor(reference: string, origin?: string, referenceBuildInfoDirs?: string[]) {
     const msg =
       origin !== undefined
         ? `Could not find contract ${reference} referenced in ${origin}.`
@@ -21,14 +26,22 @@ export class ReferenceContractNotFound extends Error {
     super(msg);
     this.reference = reference;
     this.origin = origin;
+    this.referenceBuildInfoDirs = referenceBuildInfoDirs;
   }
 }
 
-export function findContract(contractName: string, origin: SourceContract | undefined, allContracts: SourceContract[], dictionary?: ReferenceBuildInfoDictionary) {
+export function findContract(
+  contractName: string,
+  origin: SourceContract | undefined,
+  allContracts: SourceContract[],
+  dictionary: ReferenceBuildInfoDictionary,
+) {
   const foundContracts = allContracts.filter(c => c.fullyQualifiedName === contractName || c.name === contractName);
   if (dictionary !== undefined) {
     for (const [dirName, referenceContracts] of Object.entries(dictionary)) {
-      const foundReferenceContracts = referenceContracts.filter(c => `${dirName}:${c.fullyQualifiedName}` === contractName || `${dirName}:${c.name}` === contractName);
+      const foundReferenceContracts = referenceContracts.filter(
+        c => `${dirName}:${c.fullyQualifiedName}` === contractName || `${dirName}:${c.name}` === contractName,
+      );
       foundContracts.push(...foundReferenceContracts);
     }
   }
@@ -46,6 +59,6 @@ export function findContract(contractName: string, origin: SourceContract | unde
   } else if (foundContracts.length === 1) {
     return foundContracts[0];
   } else {
-    throw new ReferenceContractNotFound(contractName, origin?.fullyQualifiedName);
+    throw new ReferenceContractNotFound(contractName, origin?.fullyQualifiedName, Object.keys(dictionary));
   }
 }

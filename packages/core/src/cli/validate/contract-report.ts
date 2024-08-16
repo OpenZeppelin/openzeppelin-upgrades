@@ -17,7 +17,7 @@ import { getUpgradeabilityAssessment } from './upgradeability-assessment';
 import { SourceContract } from './validations';
 import { LayoutCompatibilityReport } from '../../storage/report';
 import { indent } from '../../utils/indent';
-import { SpecifiedContracts } from './validate-upgrade-safety';
+import { ReferenceBuildInfoDictionary, SpecifiedContracts } from './validate-upgrade-safety';
 
 /**
  * Report for an upgradeable contract.
@@ -70,6 +70,7 @@ export class UpgradeableContractReport implements Report {
 export function getContractReports(
   sourceContracts: SourceContract[],
   opts: Required<ValidateUpgradeSafetyOptions>,
+  dictionary: ReferenceBuildInfoDictionary,
   specifiedContracts?: SpecifiedContracts,
 ) {
   const upgradeableContractReports: UpgradeableContractReport[] = [];
@@ -81,6 +82,7 @@ export function getContractReports(
     const upgradeabilityAssessment = getUpgradeabilityAssessment(
       sourceContract,
       sourceContracts,
+      dictionary,
       specifiedContracts?.reference,
     );
     if (opts.requireReference && upgradeabilityAssessment.referenceContract === undefined) {

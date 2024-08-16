@@ -30,7 +30,7 @@ export type SpecifiedContracts = {
  * @param referenceBuildInfoDirs Paths of reference build info directories, which can be referred to in the `reference` option
  *   or in the `@custom:oz-upgrades-from` annotation using prefix `<directoryName>:` before the contract name or fully qualified name.
  *   Each directory (including the main build info directory) must have a unique name.
-* @returns The project report.
+ * @returns The project report.
  */
 export async function validateUpgradeSafety(
   buildInfoDir?: string,
@@ -58,9 +58,9 @@ export async function validateUpgradeSafety(
     }
   }
 
-  const specifiedContracts = findSpecifiedContracts(sourceContracts, allOpts, contract, reference, dictionary);
+  const specifiedContracts = findSpecifiedContracts(sourceContracts, allOpts, dictionary, contract, reference);
 
-  const contractReports = getContractReports(sourceContracts, allOpts, specifiedContracts);
+  const contractReports = getContractReports(sourceContracts, allOpts, dictionary, specifiedContracts);
   return getProjectReport(contractReports, specifiedContracts !== undefined);
 }
 
@@ -71,14 +71,15 @@ export interface ReferenceBuildInfoDictionary {
 export function findSpecifiedContracts(
   sourceContracts: SourceContract[],
   opts: Required<ValidateUpgradeSafetyOptions>,
+  dictionary: ReferenceBuildInfoDictionary,
   contractName?: string,
   referenceName?: string,
-  dictionary?: ReferenceBuildInfoDictionary,
 ): SpecifiedContracts | undefined {
   if (contractName !== undefined) {
     return {
-      contract: findContract(contractName, undefined, sourceContracts),
-      reference: referenceName !== undefined ? findContract(referenceName, undefined, sourceContracts, dictionary) : undefined,
+      contract: findContract(contractName, undefined, sourceContracts, {}), // do not search reference build infos for the main specified contract, only for the reference contract
+      reference:
+        referenceName !== undefined ? findContract(referenceName, undefined, sourceContracts, dictionary) : undefined,
     };
   } else if (referenceName !== undefined) {
     throw new Error(`The reference option can only be specified when the contract option is also specified.`);
