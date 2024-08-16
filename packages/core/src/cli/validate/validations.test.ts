@@ -24,7 +24,7 @@ test.before(async t => {
       dirShortName: 'build-info',
     };
     const sourceContracts = validateBuildInfoContracts([buildInfoFile]);
-    t.context.reports = getContractReports(sourceContracts, withCliDefaults({}), {});
+    t.context.reports = getContractReports(sourceContracts, {}, withCliDefaults({}));
   }
 });
 

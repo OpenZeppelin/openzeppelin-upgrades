@@ -63,14 +63,15 @@ export class UpgradeableContractReport implements Report {
  * Reports include upgradeable contracts regardless of whether they pass or fail upgrade safety checks.
  *
  * @param sourceContracts The source contracts to check, which must include all contracts that are referenced by the given contracts. Can also include non-upgradeable contracts, which will be ignored.
+ * @param referenceDictionary Dictionary of reference build info directories and the contracts they contain.
  * @param opts The validation options.
  * @param specifiedContracts If provided, only the specified contract (upgrading from its reference contract) will be reported.
  * @returns The upgradeable contract reports.
  */
 export function getContractReports(
   sourceContracts: SourceContract[],
+  referenceDictionary: ReferenceBuildInfoDictionary,
   opts: Required<ValidateUpgradeSafetyOptions>,
-  dictionary: ReferenceBuildInfoDictionary,
   specifiedContracts?: SpecifiedContracts,
 ) {
   const upgradeableContractReports: UpgradeableContractReport[] = [];
@@ -82,7 +83,7 @@ export function getContractReports(
     const upgradeabilityAssessment = getUpgradeabilityAssessment(
       sourceContract,
       sourceContracts,
-      dictionary,
+      referenceDictionary,
       specifiedContracts?.reference,
     );
     if (opts.requireReference && upgradeabilityAssessment.referenceContract === undefined) {

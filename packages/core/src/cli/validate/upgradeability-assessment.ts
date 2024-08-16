@@ -19,7 +19,7 @@ export interface UpgradeabilityAssessment {
 export function getUpgradeabilityAssessment(
   contract: SourceContract,
   allContracts: SourceContract[],
-  dictionary: ReferenceBuildInfoDictionary,
+  referenceDictionary: ReferenceBuildInfoDictionary,
   overrideReferenceContract?: SourceContract,
 ): UpgradeabilityAssessment {
   const fullContractName = contract.fullyQualifiedName;
@@ -31,7 +31,7 @@ export function getUpgradeabilityAssessment(
 
   let referenceContract = overrideReferenceContract;
   if (referenceContract === undefined && annotationAssessment.referenceName !== undefined) {
-    referenceContract = findContract(annotationAssessment.referenceName, contract, allContracts, dictionary);
+    referenceContract = findContract(annotationAssessment.referenceName, contract, allContracts, referenceDictionary);
   }
 
   let isReferenceUUPS = false;

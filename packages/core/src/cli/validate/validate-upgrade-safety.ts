@@ -42,34 +42,37 @@ export async function validateUpgradeSafety(
   const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
   const sourceContracts = validateBuildInfoContracts(buildInfoFiles);
 
-  const dictionary: ReferenceBuildInfoDictionary = {};
+  const referenceDictionary: ReferenceBuildInfoDictionary = {};
   if (referenceBuildInfoDirs !== undefined) {
     for (const referenceBuildInfoDir of referenceBuildInfoDirs) {
       const key = path.basename(referenceBuildInfoDir);
 
-      if (dictionary[key] !== undefined) {
+      if (referenceDictionary[key] !== undefined) {
         throw new Error(`Build info directory names must be unique. Found duplicate name: ${key}`);
       }
 
       const referenceBuildInfoFiles = await getBuildInfoFiles(referenceBuildInfoDir);
-      dictionary[key] = validateBuildInfoContracts(referenceBuildInfoFiles);
+      referenceDictionary[key] = validateBuildInfoContracts(referenceBuildInfoFiles);
     }
   }
 
-  const specifiedContracts = findSpecifiedContracts(sourceContracts, allOpts, dictionary, contract, reference);
+  const specifiedContracts = findSpecifiedContracts(sourceContracts, referenceDictionary, allOpts, contract, reference);
 
-  const contractReports = getContractReports(sourceContracts, allOpts, dictionary, specifiedContracts);
+  const contractReports = getContractReports(sourceContracts, referenceDictionary, allOpts, specifiedContracts);
   return getProjectReport(contractReports, specifiedContracts !== undefined);
 }
 
+/**
+ * Dictionary of reference build info directories and the contracts they contain.
+ */
 export interface ReferenceBuildInfoDictionary {
   [buildInfoDirName: string]: SourceContract[];
 }
 
 export function findSpecifiedContracts(
   sourceContracts: SourceContract[],
+  referenceDictionary: ReferenceBuildInfoDictionary,
   opts: Required<ValidateUpgradeSafetyOptions>,
-  dictionary: ReferenceBuildInfoDictionary,
   contractName?: string,
   referenceName?: string,
 ): SpecifiedContracts | undefined {
@@ -77,7 +80,7 @@ export function findSpecifiedContracts(
     return {
       contract: findContract(contractName, undefined, sourceContracts, {}), // do not search reference build infos for the main specified contract, only for the reference contract
       reference:
-        referenceName !== undefined ? findContract(referenceName, undefined, sourceContracts, dictionary) : undefined,
+        referenceName !== undefined ? findContract(referenceName, undefined, sourceContracts, referenceDictionary) : undefined,
     };
   } else if (referenceName !== undefined) {
     throw new Error(`The reference option can only be specified when the contract option is also specified.`);

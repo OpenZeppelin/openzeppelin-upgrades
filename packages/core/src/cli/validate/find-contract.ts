@@ -34,13 +34,13 @@ export function findContract(
   contractName: string,
   origin: SourceContract | undefined,
   allContracts: SourceContract[],
-  dictionary: ReferenceBuildInfoDictionary,
+  referenceDictionary: ReferenceBuildInfoDictionary,
 ) {
-  const foundContracts = allContracts.filter(c => c.fullyQualifiedName === contractName || c.name === contractName);
-  if (dictionary !== undefined) {
-    for (const [dirName, referenceContracts] of Object.entries(dictionary)) {
+  const foundContracts = allContracts.filter(c => isMatchFound(contractName, c));
+  if (referenceDictionary !== undefined) {
+    for (const [dirShortName, referenceContracts] of Object.entries(referenceDictionary)) {
       const foundReferenceContracts = referenceContracts.filter(
-        c => `${dirName}:${c.fullyQualifiedName}` === contractName || `${dirName}:${c.name}` === contractName,
+        c => isMatchFound(contractName, c, dirShortName),
       );
       foundContracts.push(...foundReferenceContracts);
     }
@@ -59,6 +59,11 @@ export function findContract(
   } else if (foundContracts.length === 1) {
     return foundContracts[0];
   } else {
-    throw new ReferenceContractNotFound(contractName, origin?.fullyQualifiedName, Object.keys(dictionary));
+    throw new ReferenceContractNotFound(contractName, origin?.fullyQualifiedName, Object.keys(referenceDictionary));
   }
+}
+
+function isMatchFound(contractName: string, foundContract: SourceContract, buildInfoDirShortName?: string): boolean {
+  const searchPrefix = buildInfoDirShortName !== undefined ? `${buildInfoDirShortName}:` : '';
+  return `${searchPrefix}${foundContract.fullyQualifiedName}` === contractName || `${searchPrefix}${foundContract.name}` === contractName;
 }
