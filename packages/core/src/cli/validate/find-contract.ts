@@ -1,3 +1,4 @@
+import { assert } from '../../utils/assert';
 import { ValidateCommandError } from './error';
 import { BuildInfoDictionary } from './validate-upgrade-safety';
 import { SourceContract } from './validations';
@@ -14,11 +15,11 @@ export class ReferenceContractNotFound extends Error {
   readonly origin?: string;
 
   /**
-   * Reference build info directories that were also searched, if any.
+   * Build info directories that were also searched.
    */
-  readonly referenceBuildInfoDirs?: string[];
+  readonly buildInfoDirs?: string[];
 
-  constructor(reference: string, origin?: string, referenceBuildInfoDirs?: string[]) {
+  constructor(reference: string, origin?: string, buildInfoDirs?: string[]) {
     const msg =
       origin !== undefined
         ? `Could not find contract ${reference} referenced in ${origin}.`
@@ -26,7 +27,7 @@ export class ReferenceContractNotFound extends Error {
     super(msg);
     this.reference = reference;
     this.origin = origin;
-    this.referenceBuildInfoDirs = referenceBuildInfoDirs;
+    this.buildInfoDirs = buildInfoDirs;
   }
 }
 
@@ -34,10 +35,11 @@ export function findContract(
   contractName: string,
   origin: SourceContract | undefined,
   buildInfoDictionary: BuildInfoDictionary,
-  searchMainBuildInfoDirOnly = false,
+  onlyMainBuildInfoDir = false,
 ) {
   const foundContracts: SourceContract[] = [];
-  if (searchMainBuildInfoDirOnly) {
+  if (onlyMainBuildInfoDir) {
+    // TODO give error if specified contract has a build info dir name
     foundContracts.push(...buildInfoDictionary[''].filter(c => isMatchFound(contractName, c, '')));
   } else {
     for (const [dir, contracts] of Object.entries(buildInfoDictionary)) {
@@ -63,9 +65,12 @@ export function findContract(
 }
 
 function isMatchFound(contractName: string, foundContract: SourceContract, buildInfoDirShortName: string): boolean {
-  const searchPrefix = buildInfoDirShortName === '' ? '' : `${buildInfoDirShortName}:`;
+  let prefix = '';
+  if (buildInfoDirShortName.length > 0) {
+    assert(foundContract.buildInfoDirShortName === buildInfoDirShortName);
+    prefix = `${buildInfoDirShortName}:`;
+  }
   return (
-    `${searchPrefix}${foundContract.fullyQualifiedName}` === contractName ||
-    `${searchPrefix}${foundContract.name}` === contractName
+    `${prefix}${foundContract.fullyQualifiedName}` === contractName || `${prefix}${foundContract.name}` === contractName
   );
 }
