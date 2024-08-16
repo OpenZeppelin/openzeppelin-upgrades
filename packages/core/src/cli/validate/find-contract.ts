@@ -39,7 +39,12 @@ export function findContract(
 ) {
   const foundContracts: SourceContract[] = [];
   if (onlyMainBuildInfoDir) {
-    // TODO give error if specified contract has a build info dir name
+    if (hasBuildInfoDirWithContractName(contractName) || hasBuildInfoDirWithFullyQualifiedName(contractName)) {
+      throw new ValidateCommandError(
+        `Contract ${contractName} must be specified without a build info directory name`,
+        () => `Build info directory names can only be specified for reference contracts.`,
+      );
+    }
     foundContracts.push(...buildInfoDictionary[''].filter(c => isMatchFound(contractName, c, '')));
   } else {
     for (const [dir, contracts] of Object.entries(buildInfoDictionary)) {
@@ -73,4 +78,13 @@ function isMatchFound(contractName: string, foundContract: SourceContract, build
   return (
     `${prefix}${foundContract.fullyQualifiedName}` === contractName || `${prefix}${foundContract.name}` === contractName
   );
+}
+
+function hasBuildInfoDirWithContractName(contractName: string): boolean {
+  return contractName.split(':').length === 2 && !contractName.includes('.sol:');
+}
+
+function hasBuildInfoDirWithFullyQualifiedName(contractName: string): boolean {
+  const tokens = contractName.split(':');
+  return tokens.length === 3 && tokens[1].endsWith('.sol');
 }

@@ -422,6 +422,27 @@ test('validate - contract must not have build info dir name', async t => {
       `${CLI} validate ${updatedDir} --referenceBuildInfoDirs ${referenceDir} --contract build-info:MyContract --reference build-info-v1:MyContract`,
     ),
   );
-  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
-  t.snapshot(expectation.join('\n'));
+  t.true(error?.message.includes('Contract build-info:MyContract must be specified without a build info directory name'), error?.message);
+});
+
+test('validate - contract must not have build info dir name - fully qualified', async t => {
+  const temp = await getTempDir(t);
+  const referenceDir = path.join(temp, 'build-info-v1');
+  await fs.mkdir(referenceDir);
+
+  const referenceBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`);
+  await fs.writeFile(path.join(referenceDir, 'validate.json'), JSON.stringify(referenceBuildInfo));
+
+  const updatedDir = path.join(temp, 'build-info');
+  await fs.mkdir(updatedDir);
+
+  const updatedBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract`);
+  await fs.writeFile(path.join(updatedDir, 'validate.json'), JSON.stringify(updatedBuildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(
+      `${CLI} validate ${updatedDir} --referenceBuildInfoDirs ${referenceDir} --contract build-info:contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract --reference build-info-v1:MyContract`,
+    ),
+  );
+  t.true(error?.message.includes('Contract build-info:contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract must be specified without a build info directory name'), error?.message);
 });
