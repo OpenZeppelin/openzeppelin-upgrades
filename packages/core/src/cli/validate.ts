@@ -27,11 +27,13 @@ export async function main(args: string[]): Promise<void> {
 
   if (!help(parsedArgs, extraArgs)) {
     const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
+    const referenceBuildInfoDirs = getReferenceBuildInfoDirsArray(parsedArgs['referenceBuildInfoDirs']);
     const result = await validateUpgradeSafety(
       functionArgs.buildInfoDir,
       functionArgs.contract,
       functionArgs.reference,
       functionArgs.opts,
+      referenceBuildInfoDirs,
     );
     console.log(result.explain());
     process.exitCode = result.ok ? 0 : 1;
@@ -48,7 +50,7 @@ function parseArgs(args: string[]) {
       'unsafeAllowLinkedLibraries',
       'requireReference',
     ],
-    string: ['unsafeAllow', 'contract', 'reference'],
+    string: ['unsafeAllow', 'contract', 'reference', 'referenceBuildInfoDirs'],
     alias: { h: 'help' },
   });
   const extraArgs = parsedArgs._;
@@ -125,6 +127,7 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
         'contract',
         'reference',
         'requireReference',
+        'referenceBuildInfoDirs',
       ].includes(key),
   );
   if (invalidArgs.length > 0) {
@@ -149,6 +152,10 @@ function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['
     );
   }
   return unsafeAllowTokens as errorKindsType[];
+}
+
+function getReferenceBuildInfoDirsArray(referenceBuildInfoDirs: string | undefined): string[] | undefined {
+  return referenceBuildInfoDirs !== undefined ? referenceBuildInfoDirs.split(/,+/) : undefined;
 }
 
 export function withDefaults(parsedArgs: minimist.ParsedArgs): Required<ValidateUpgradeSafetyOptions> {
