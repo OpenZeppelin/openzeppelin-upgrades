@@ -24,10 +24,14 @@ export class ReferenceContractNotFound extends Error {
   }
 }
 
-export function findContract(contractName: string, origin: SourceContract | undefined, allContracts: SourceContract[], dictionary: ReferenceBuildInfoDictionary) {
-  // TODO if contract has a dictionary reference, look up the contract in the dictionary
-
+export function findContract(contractName: string, origin: SourceContract | undefined, allContracts: SourceContract[], dictionary?: ReferenceBuildInfoDictionary) {
   const foundContracts = allContracts.filter(c => c.fullyQualifiedName === contractName || c.name === contractName);
+  if (dictionary !== undefined) {
+    for (const [dirName, referenceContracts] of Object.entries(dictionary)) {
+      const foundReferenceContracts = referenceContracts.filter(c => `${dirName}:${c.fullyQualifiedName}` === contractName || `${dirName}:${c.name}` === contractName);
+      foundContracts.push(...foundReferenceContracts);
+    }
+  }
 
   if (foundContracts.length > 1) {
     const msg =

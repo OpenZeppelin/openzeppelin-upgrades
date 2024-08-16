@@ -53,7 +53,7 @@ export async function validateUpgradeSafety(
     dictionary[referenceBuildInfoDir] = validateBuildInfoContracts(referenceBuildInfoFiles);
   }
 
-  const specifiedContracts = findSpecifiedContracts(sourceContracts, allOpts, dictionary, contract, reference);
+  const specifiedContracts = findSpecifiedContracts(sourceContracts, allOpts, contract, reference, dictionary);
 
   const contractReports = getContractReports(sourceContracts, allOpts, specifiedContracts);
   return getProjectReport(contractReports, specifiedContracts !== undefined);
@@ -66,13 +66,13 @@ export interface ReferenceBuildInfoDictionary {
 export function findSpecifiedContracts(
   sourceContracts: SourceContract[],
   opts: Required<ValidateUpgradeSafetyOptions>,
-  dictionary: ReferenceBuildInfoDictionary,
   contractName?: string,
   referenceName?: string,
+  dictionary?: ReferenceBuildInfoDictionary,
 ): SpecifiedContracts | undefined {
   if (contractName !== undefined) {
     return {
-      contract: findContract(contractName, undefined, sourceContracts, dictionary),
+      contract: findContract(contractName, undefined, sourceContracts),
       reference: referenceName !== undefined ? findContract(referenceName, undefined, sourceContracts, dictionary) : undefined,
     };
   } else if (referenceName !== undefined) {
