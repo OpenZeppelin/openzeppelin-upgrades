@@ -49,11 +49,11 @@ export interface BuildInfoFile {
    * The Solidity compiler output JSON object.
    */
   output: SolcOutput;
+}
 
-  /**
-   * The short name of the directory containing the build info file.
-   */
+export interface BuildInfoDirWithFiles {
   dirShortName: string;
+  files: BuildInfoFile[];
 }
 
 /**
@@ -62,16 +62,15 @@ export interface BuildInfoFile {
  * @param buildInfoDir Build info directory, or undefined to use the default Hardhat or Foundry build-info dir.
  * @returns The build info files with Solidity compiler input and output.
  */
-export async function getBuildInfoFiles(buildInfoDir?: string) {
+export async function getBuildInfoDirWithFiles(buildInfoDir?: string): Promise<BuildInfoDirWithFiles> {
   const dir = await findDir(buildInfoDir);
-
+  const shortName = path.basename(dir);
   const jsonFiles = await getJsonFiles(dir);
-  const dirName = path.basename(dir);
 
-  return await readBuildInfo(jsonFiles, dirName);
+  return { dirShortName: shortName, files: await readBuildInfo(jsonFiles) };
 }
 
-async function findDir(buildInfoDir: string | undefined) {
+async function findDir(buildInfoDir?: string): Promise<string> {
   if (buildInfoDir !== undefined && !(await hasJsonFiles(buildInfoDir))) {
     throw new ValidateCommandError(
       `The directory '${buildInfoDir}' does not exist or does not contain any build info files.`,
@@ -131,7 +130,7 @@ async function getJsonFiles(dir: string): Promise<string[]> {
   return jsonFiles.map(file => path.join(dir, file));
 }
 
-async function readBuildInfo(buildInfoFilePaths: string[], dirName: string) {
+async function readBuildInfo(buildInfoFilePaths: string[]) {
   const buildInfoFiles: BuildInfoFile[] = [];
 
   for (const buildInfoFilePath of buildInfoFilePaths) {
@@ -151,7 +150,6 @@ async function readBuildInfo(buildInfoFilePaths: string[], dirName: string) {
         input: buildInfoJson.input,
         output: buildInfoJson.output,
         solcVersion: buildInfoJson.solcVersion,
-        dirShortName: dirName,
       });
     }
   }

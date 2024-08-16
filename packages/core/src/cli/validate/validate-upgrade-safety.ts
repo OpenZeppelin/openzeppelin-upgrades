@@ -1,7 +1,7 @@
 import path from 'path';
 import { ValidationOptions, withValidationDefaults } from '../..';
 
-import { getBuildInfoFiles } from './build-info-file';
+import { getBuildInfoDirWithFiles } from './build-info-file';
 import { getContractReports } from './contract-report';
 import { findContract } from './find-contract';
 import { ProjectReport, getProjectReport } from './project-report';
@@ -27,7 +27,7 @@ export type SpecifiedContracts = {
  * @param contract The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
  * @param reference The name or fully qualified name of the reference contract to use for storage layout comparisons. Can only be used along with `contract`. If not specified, uses the `@custom:oz-upgrades-from` annotation in the contract that is being validated.
  * @param opts Validation options, or undefined to use the default validation options.
- * @param referenceBuildInfoDirs Optional paths of additional build info directories from previous versions of the project to use for storage layout comparisons. When using this option, refer to one of these directories using prefix `<dirName>:` before the contract name or fully qualified name in the `reference` param or `@custom:oz-upgrades-from` annotation, where `<dirName>` is the directory short name. Each directory short name must be unique.
+ * @param referenceBuildInfoDirs Optional paths of additional build info directories from previous versions of the project to use for storage layout comparisons. When using this option, refer to one of these directories using prefix `<dirName>:` before the contract name or fully qualified name in the `reference` param or `@custom:oz-upgrades-from` annotation, where `<dirName>` is the directory short name. Each directory short name must be unique, including compared to the main build info directory.
  * @returns The project report.
  */
 export async function validateUpgradeSafety(
@@ -39,48 +39,51 @@ export async function validateUpgradeSafety(
 ): Promise<ProjectReport> {
   const allOpts = withCliDefaults(opts);
 
-  const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
-  const sourceContracts = validateBuildInfoContracts(buildInfoFiles);
+  const buildInfoDirWithFiles = await getBuildInfoDirWithFiles(buildInfoDir);
+  const sourceContracts = validateBuildInfoContracts(buildInfoDirWithFiles.files);
 
-  const referenceDictionary: ReferenceBuildInfoDictionary = {};
+  const buildInfoDictionary: BuildInfoDictionary = {};
+  buildInfoDictionary[''] = sourceContracts;
+  buildInfoDictionary[buildInfoDirWithFiles.dirShortName] = sourceContracts;
+
   if (referenceBuildInfoDirs !== undefined) {
     for (const referenceBuildInfoDir of referenceBuildInfoDirs) {
       const key = path.basename(referenceBuildInfoDir);
 
-      if (referenceDictionary[key] !== undefined) {
-        throw new Error(`Build info directory names must be unique. Found duplicate name: ${key}`);
+      if (buildInfoDictionary[key] !== undefined) {
+        throw new Error(`Reference build info directory short name '${key}' is not unique.`);
       }
 
-      const referenceBuildInfoFiles = await getBuildInfoFiles(referenceBuildInfoDir);
-      referenceDictionary[key] = validateBuildInfoContracts(referenceBuildInfoFiles);
+      const referenceBuildInfoFiles = await getBuildInfoDirWithFiles(referenceBuildInfoDir);
+      buildInfoDictionary[key] = validateBuildInfoContracts(referenceBuildInfoFiles.files);
     }
   }
 
-  const specifiedContracts = findSpecifiedContracts(sourceContracts, referenceDictionary, allOpts, contract, reference);
+  const specifiedContracts = findSpecifiedContracts(buildInfoDictionary, allOpts, contract, reference);
 
-  const contractReports = getContractReports(sourceContracts, referenceDictionary, allOpts, specifiedContracts);
+  const contractReports = getContractReports(buildInfoDictionary, allOpts, specifiedContracts);
   return getProjectReport(contractReports, specifiedContracts !== undefined);
 }
 
 /**
- * Dictionary of reference build info directories and the contracts they contain.
+ * Dictionary of build info directories and the contracts they contain.
+ * Main build info directory can be found with the key '' and also with its short name.
  */
-export interface ReferenceBuildInfoDictionary {
+export interface BuildInfoDictionary {
   [buildInfoDirName: string]: SourceContract[];
 }
 
 export function findSpecifiedContracts(
-  sourceContracts: SourceContract[],
-  referenceDictionary: ReferenceBuildInfoDictionary,
+  buildInfoDictionary: BuildInfoDictionary,
   opts: Required<ValidateUpgradeSafetyOptions>,
   contractName?: string,
   referenceName?: string,
 ): SpecifiedContracts | undefined {
   if (contractName !== undefined) {
     return {
-      contract: findContract(contractName, undefined, sourceContracts, {}), // do not search reference build infos for the main specified contract, only for the reference contract
+      contract: findContract(contractName, undefined, buildInfoDictionary, true), // only search main build info dir for the specified contract
       reference:
-        referenceName !== undefined ? findContract(referenceName, undefined, sourceContracts, referenceDictionary) : undefined,
+        referenceName !== undefined ? findContract(referenceName, undefined, buildInfoDictionary) : undefined,
     };
   } else if (referenceName !== undefined) {
     throw new Error(`The reference option can only be specified when the contract option is also specified.`);

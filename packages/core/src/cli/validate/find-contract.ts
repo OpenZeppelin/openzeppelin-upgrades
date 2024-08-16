@@ -1,5 +1,5 @@
 import { ValidateCommandError } from './error';
-import { ReferenceBuildInfoDictionary } from './validate-upgrade-safety';
+import { BuildInfoDictionary } from './validate-upgrade-safety';
 import { SourceContract } from './validations';
 
 export class ReferenceContractNotFound extends Error {
@@ -33,16 +33,15 @@ export class ReferenceContractNotFound extends Error {
 export function findContract(
   contractName: string,
   origin: SourceContract | undefined,
-  allContracts: SourceContract[],
-  referenceDictionary: ReferenceBuildInfoDictionary,
+  buildInfoDictionary: BuildInfoDictionary,
+  searchMainBuildInfoDirOnly = false,
 ) {
-  const foundContracts = allContracts.filter(c => isMatchFound(contractName, c));
-  if (referenceDictionary !== undefined) {
-    for (const [dirShortName, referenceContracts] of Object.entries(referenceDictionary)) {
-      const foundReferenceContracts = referenceContracts.filter(
-        c => isMatchFound(contractName, c, dirShortName),
-      );
-      foundContracts.push(...foundReferenceContracts);
+  const foundContracts: SourceContract[] = [];
+  if (searchMainBuildInfoDirOnly) {
+    foundContracts.push(...buildInfoDictionary[''].filter(c => isMatchFound(contractName, c, '')));
+  } else {
+    for (const [dir, contracts] of Object.entries(buildInfoDictionary)) {
+      foundContracts.push(...contracts.filter(c => isMatchFound(contractName, c, dir)));
     }
   }
 
@@ -59,11 +58,11 @@ export function findContract(
   } else if (foundContracts.length === 1) {
     return foundContracts[0];
   } else {
-    throw new ReferenceContractNotFound(contractName, origin?.fullyQualifiedName, Object.keys(referenceDictionary));
+    throw new ReferenceContractNotFound(contractName, origin?.fullyQualifiedName, Object.keys(buildInfoDictionary));
   }
 }
 
-function isMatchFound(contractName: string, foundContract: SourceContract, buildInfoDirShortName?: string): boolean {
-  const searchPrefix = buildInfoDirShortName !== undefined ? `${buildInfoDirShortName}:` : '';
+function isMatchFound(contractName: string, foundContract: SourceContract, buildInfoDirShortName: string): boolean {
+  const searchPrefix = buildInfoDirShortName === '' ? '' : `${buildInfoDirShortName}:`;
   return `${searchPrefix}${foundContract.fullyQualifiedName}` === contractName || `${searchPrefix}${foundContract.name}` === contractName;
 }

@@ -2,7 +2,7 @@ import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../../uti
 import { inferInitializable, inferUUPS } from '../../validate/query';
 import { ValidateCommandError } from './error';
 import { findContract } from './find-contract';
-import { ReferenceBuildInfoDictionary } from './validate-upgrade-safety';
+import { BuildInfoDictionary } from './validate-upgrade-safety';
 import { SourceContract } from './validations';
 
 interface AnnotationAssessment {
@@ -18,8 +18,7 @@ export interface UpgradeabilityAssessment {
 
 export function getUpgradeabilityAssessment(
   contract: SourceContract,
-  allContracts: SourceContract[],
-  referenceDictionary: ReferenceBuildInfoDictionary,
+  buildInfoDictionary: BuildInfoDictionary,
   overrideReferenceContract?: SourceContract,
 ): UpgradeabilityAssessment {
   const fullContractName = contract.fullyQualifiedName;
@@ -31,7 +30,7 @@ export function getUpgradeabilityAssessment(
 
   let referenceContract = overrideReferenceContract;
   if (referenceContract === undefined && annotationAssessment.referenceName !== undefined) {
-    referenceContract = findContract(annotationAssessment.referenceName, contract, allContracts, referenceDictionary);
+    referenceContract = findContract(annotationAssessment.referenceName, contract, buildInfoDictionary);
   }
 
   let isReferenceUUPS = false;
