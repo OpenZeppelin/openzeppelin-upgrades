@@ -51,9 +51,9 @@ export interface BuildInfoFile {
   output: SolcOutput;
 
   /**
-   * The base name of the directory containing the build info file.
+   * The short name of the directory containing the build info file.
    */
-  dirName: string;
+  dirShortName: string;
 }
 
 /**
@@ -151,7 +151,7 @@ async function readBuildInfo(buildInfoFilePaths: string[], dirName: string) {
         input: buildInfoJson.input,
         output: buildInfoJson.output,
         solcVersion: buildInfoJson.solcVersion,
-        dirName,
+        dirShortName: dirName,
       });
     }
   }

@@ -21,7 +21,7 @@ test.before(async t => {
   } else {
     const buildInfoFile = {
       ...hardhatBuildInfo,
-      dirName: 'build-info',
+      dirShortName: 'build-info',
     };
     const sourceContracts = validateBuildInfoContracts([buildInfoFile]);
     t.context.reports = getContractReports(sourceContracts, withCliDefaults({}), {});

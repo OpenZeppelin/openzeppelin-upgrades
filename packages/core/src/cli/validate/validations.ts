@@ -13,7 +13,6 @@ export interface SourceContract {
   name: string;
   fullyQualifiedName: string;
   validationData: ValidationRunData;
-  buildInfoDirName: string;
 }
 
 export function validateBuildInfoContracts(buildInfoFiles: BuildInfoFile[]): SourceContract[] {
@@ -49,7 +48,6 @@ function addContractsFromBuildInfo(
         name: contractDef.name,
         fullyQualifiedName,
         validationData: validationData,
-        buildInfoDirName: buildInfoFile.dirName,
       });
     }
   }
