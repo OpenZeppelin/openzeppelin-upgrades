@@ -422,7 +422,10 @@ test('validate - contract must not have build info dir name', async t => {
       `${CLI} validate ${updatedDir} --referenceBuildInfoDirs ${referenceDir} --contract build-info:MyContract --reference build-info-v1:MyContract`,
     ),
   );
-  t.true(error?.message.includes('Contract build-info:MyContract must be specified without a build info directory name'), error?.message);
+  t.true(
+    error?.message.includes('Contract build-info:MyContract must be specified without a build info directory name'),
+    error?.message,
+  );
 });
 
 test('validate - contract must not have build info dir name - fully qualified', async t => {
@@ -444,5 +447,10 @@ test('validate - contract must not have build info dir name - fully qualified', 
       `${CLI} validate ${updatedDir} --referenceBuildInfoDirs ${referenceDir} --contract build-info:contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract --reference build-info-v1:MyContract`,
     ),
   );
-  t.true(error?.message.includes('Contract build-info:contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract must be specified without a build info directory name'), error?.message);
+  t.true(
+    error?.message.includes(
+      'Contract build-info:contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract must be specified without a build info directory name',
+    ),
+    error?.message,
+  );
 });
