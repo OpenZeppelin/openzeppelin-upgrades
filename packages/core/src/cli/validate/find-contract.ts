@@ -64,5 +64,8 @@ export function findContract(
 
 function isMatchFound(contractName: string, foundContract: SourceContract, buildInfoDirShortName: string): boolean {
   const searchPrefix = buildInfoDirShortName === '' ? '' : `${buildInfoDirShortName}:`;
-  return `${searchPrefix}${foundContract.fullyQualifiedName}` === contractName || `${searchPrefix}${foundContract.name}` === contractName;
+  return (
+    `${searchPrefix}${foundContract.fullyQualifiedName}` === contractName ||
+    `${searchPrefix}${foundContract.name}` === contractName
+  );
 }

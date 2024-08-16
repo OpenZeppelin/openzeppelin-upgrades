@@ -94,6 +94,21 @@ test('validate - single contract, reference', async t => {
   t.snapshot(expectation.join('\n'));
 });
 
+test('validate - single contract, reference with same build info dir', async t => {
+  const temp = await getTempDir(t);
+  const buildInfoDir = path.join(temp, 'build-info');
+  await fs.mkdir(buildInfoDir);
+
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);
+  await fs.writeFile(path.join(buildInfoDir, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(`${CLI} validate ${buildInfoDir} --contract BecomesBadLayout --reference build-info:StorageV1`),
+  );
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
 test('validate - single contract, reference, fully qualified names', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);
@@ -307,8 +322,9 @@ test('validate - references other build info dir by command - ok', async t => {
   const referenceBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`);
   await fs.writeFile(path.join(referenceDir, 'validate.json'), JSON.stringify(referenceBuildInfo));
 
-  const updatedDir = await getTempDir(t);
-  t.assert(updatedDir !== referenceDir);
+  const updatedDir = path.join(temp, 'build-info');
+  await fs.mkdir(updatedDir);
+
   const updatedBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract`);
   await fs.writeFile(path.join(updatedDir, 'validate.json'), JSON.stringify(updatedBuildInfo));
 
@@ -326,8 +342,9 @@ test('validate - references other build info dir by command - bad', async t => {
   const referenceBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`);
   await fs.writeFile(path.join(referenceDir, 'validate.json'), JSON.stringify(referenceBuildInfo));
 
-  const updatedDir = await getTempDir(t);
-  t.assert(updatedDir !== referenceDir);
+  const updatedDir = path.join(temp, 'build-info');
+  await fs.mkdir(updatedDir);
+
   const updatedBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV2_Bad.sol:MyContract`);
   await fs.writeFile(path.join(updatedDir, 'validate.json'), JSON.stringify(updatedBuildInfo));
 
@@ -348,8 +365,9 @@ test('validate - references other build info dir by annotation - ok', async t =>
   const referenceBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`);
   await fs.writeFile(path.join(referenceDir, 'validate.json'), JSON.stringify(referenceBuildInfo));
 
-  const updatedDir = await getTempDir(t);
-  t.assert(updatedDir !== referenceDir);
+  const updatedDir = path.join(temp, 'build-info');
+  await fs.mkdir(updatedDir);
+
   const updatedBuildInfo = await artifacts.getBuildInfo(
     `contracts/test/cli/ValidateBuildInfoV2_Annotation_Ok.sol:MyContract`,
   );
@@ -369,7 +387,9 @@ test('validate - references other build info dir by annotation - bad', async t =
   const referenceBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`);
   await fs.writeFile(path.join(referenceDir, 'validate.json'), JSON.stringify(referenceBuildInfo));
 
-  const updatedDir = await getTempDir(t);
+  const updatedDir = path.join(temp, 'build-info');
+  await fs.mkdir(updatedDir);
+
   t.assert(updatedDir !== referenceDir);
   const updatedBuildInfo = await artifacts.getBuildInfo(
     `contracts/test/cli/ValidateBuildInfoV2_Annotation_Bad.sol:MyContract`,
@@ -382,3 +402,5 @@ test('validate - references other build info dir by annotation - bad', async t =
   const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
   t.snapshot(expectation.join('\n'));
 });
+
+// TODO test that --contract does not have build info dir name

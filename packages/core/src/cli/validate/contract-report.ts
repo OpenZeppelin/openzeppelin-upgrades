@@ -130,7 +130,11 @@ function getUpgradeableContractReport(
     const referenceVersion = getContractVersion(referenceContract.validationData, referenceContract.fullyQualifiedName);
     const referenceLayout = getStorageLayout(referenceContract.validationData, referenceVersion);
 
-    reference = referenceContract.fullyQualifiedName;
+    if (referenceContract.buildInfoDirShortName !== contract.buildInfoDirShortName) {
+      reference = `${referenceContract.buildInfoDirShortName}:${referenceContract.fullyQualifiedName}`;
+    } else {
+      reference = referenceContract.fullyQualifiedName;
+    }
     storageLayoutReport = getStorageUpgradeReport(referenceLayout, layout, withValidationDefaults(opts));
   }
 

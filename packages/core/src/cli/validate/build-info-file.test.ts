@@ -406,7 +406,7 @@ test.serial('individual output selections - has layout', async t => {
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/build-info.json`, JSON.stringify(BUILD_INFO_INDIVIDUAL_HAS_LAYOUT));
 
-  t.assert(((await getBuildInfoDirWithFiles(dir)).files).length === 1);
+  t.assert((await getBuildInfoDirWithFiles(dir)).files.length === 1);
 });
 
 test.serial('individual output selections - partial layout', async t => {

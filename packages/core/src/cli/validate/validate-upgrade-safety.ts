@@ -82,8 +82,7 @@ export function findSpecifiedContracts(
   if (contractName !== undefined) {
     return {
       contract: findContract(contractName, undefined, buildInfoDictionary, true), // only search main build info dir for the specified contract
-      reference:
-        referenceName !== undefined ? findContract(referenceName, undefined, buildInfoDictionary) : undefined,
+      reference: referenceName !== undefined ? findContract(referenceName, undefined, buildInfoDictionary) : undefined,
     };
   } else if (referenceName !== undefined) {
     throw new Error(`The reference option can only be specified when the contract option is also specified.`);

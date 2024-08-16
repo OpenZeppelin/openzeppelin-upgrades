@@ -49,6 +49,11 @@ export interface BuildInfoFile {
    * The Solidity compiler output JSON object.
    */
   output: SolcOutput;
+
+  /**
+   * Short name of the build info dir containing this file.
+   */
+  dirShortName: string;
 }
 
 export interface BuildInfoDirWithFiles {
@@ -67,7 +72,7 @@ export async function getBuildInfoDirWithFiles(buildInfoDir?: string): Promise<B
   const shortName = path.basename(dir);
   const jsonFiles = await getJsonFiles(dir);
 
-  return { dirShortName: shortName, files: await readBuildInfo(jsonFiles) };
+  return { dirShortName: shortName, files: await readBuildInfo(jsonFiles, shortName) }; // TODO remove redundant dirShortName
 }
 
 async function findDir(buildInfoDir?: string): Promise<string> {
@@ -130,7 +135,7 @@ async function getJsonFiles(dir: string): Promise<string[]> {
   return jsonFiles.map(file => path.join(dir, file));
 }
 
-async function readBuildInfo(buildInfoFilePaths: string[]) {
+async function readBuildInfo(buildInfoFilePaths: string[], dirShortName: string) {
   const buildInfoFiles: BuildInfoFile[] = [];
 
   for (const buildInfoFilePath of buildInfoFilePaths) {
@@ -150,6 +155,7 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
         input: buildInfoJson.input,
         output: buildInfoJson.output,
         solcVersion: buildInfoJson.solcVersion,
+        dirShortName: dirShortName,
       });
     }
   }
