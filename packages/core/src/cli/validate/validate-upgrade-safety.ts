@@ -1,3 +1,4 @@
+import path from 'path';
 import { ValidationOptions, withValidationDefaults } from '../..';
 
 import { getBuildInfoFiles } from './build-info-file';
@@ -46,12 +47,14 @@ export async function validateUpgradeSafety(
   const dictionary: ReferenceBuildInfoDictionary = {};
   if (referenceBuildInfoDirs !== undefined) {
     for (const referenceBuildInfoDir of referenceBuildInfoDirs) {
-      if (dictionary[referenceBuildInfoDir] !== undefined) {
-        throw new Error(`Build info directory names must be unique. Found duplicate name: ${referenceBuildInfoDir}`);
+      const key = path.basename(referenceBuildInfoDir);
+
+      if (dictionary[key] !== undefined) {
+        throw new Error(`Build info directory names must be unique. Found duplicate name: ${key}`);
       }
 
       const referenceBuildInfoFiles = await getBuildInfoFiles(referenceBuildInfoDir);
-      dictionary[referenceBuildInfoDir] = validateBuildInfoContracts(referenceBuildInfoFiles);
+      dictionary[key] = validateBuildInfoContracts(referenceBuildInfoFiles);
     }
   }
 
