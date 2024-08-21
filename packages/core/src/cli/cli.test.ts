@@ -334,6 +334,26 @@ test('validate - references other build info dir by command - ok', async t => {
   t.snapshot(output);
 });
 
+test('validate - references other build info dir by command with fully qualified names - ok', async t => {
+  const temp = await getTempDir(t);
+  const referenceDir = path.join(temp, 'build-info-v1');
+  await fs.mkdir(referenceDir);
+
+  const referenceBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`);
+  await fs.writeFile(path.join(referenceDir, 'validate.json'), JSON.stringify(referenceBuildInfo));
+
+  const updatedDir = path.join(temp, 'build-info');
+  await fs.mkdir(updatedDir);
+
+  const updatedBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract`);
+  await fs.writeFile(path.join(updatedDir, 'validate.json'), JSON.stringify(updatedBuildInfo));
+
+  const output = await execAsync(
+    `${CLI} validate ${updatedDir} --referenceBuildInfoDirs ${referenceDir} --contract contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract --reference build-info-v1:contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`,
+  );
+  t.snapshot(output);
+});
+
 test('validate - references other build info dir by command - bad', async t => {
   const temp = await getTempDir(t);
   const referenceDir = path.join(temp, 'build-info-v1');
@@ -351,6 +371,29 @@ test('validate - references other build info dir by command - bad', async t => {
   const error = await t.throwsAsync(
     execAsync(
       `${CLI} validate ${updatedDir} --referenceBuildInfoDirs ${referenceDir} --contract MyContract --reference build-info-v1:MyContract`,
+    ),
+  );
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - references other build info dir by command with fully qualified names - bad', async t => {
+  const temp = await getTempDir(t);
+  const referenceDir = path.join(temp, 'build-info-v1');
+  await fs.mkdir(referenceDir);
+
+  const referenceBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`);
+  await fs.writeFile(path.join(referenceDir, 'validate.json'), JSON.stringify(referenceBuildInfo));
+
+  const updatedDir = path.join(temp, 'build-info');
+  await fs.mkdir(updatedDir);
+
+  const updatedBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV2_Bad.sol:MyContract`);
+  await fs.writeFile(path.join(updatedDir, 'validate.json'), JSON.stringify(updatedBuildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(
+      `${CLI} validate ${updatedDir} --referenceBuildInfoDirs ${referenceDir} --contract contracts/test/cli/ValidateBuildInfoV2_Bad.sol:MyContract --reference build-info-v1:contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`,
     ),
   );
   const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
