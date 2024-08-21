@@ -372,15 +372,17 @@ test('validate - references multiple build info dirs by annotation', async t => 
 
   const v2BranchDir = path.join(temp, 'build-info-v2-branch');
   await fs.mkdir(v2BranchDir);
-  const v2BranchBuildInfoOk = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV2_Branch_Ok.sol:MyContract`);
-  const v2BranchBuildInfoBad = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV2_Branch_Bad.sol:MyContract`);
+  const v2BranchBuildInfoOk = await artifacts.getBuildInfo(
+    `contracts/test/cli/ValidateBuildInfoV2_Branch_Ok.sol:MyContract`,
+  );
+  const v2BranchBuildInfoBad = await artifacts.getBuildInfo(
+    `contracts/test/cli/ValidateBuildInfoV2_Branch_Bad.sol:MyContract`,
+  );
   await fs.writeFile(path.join(v2BranchDir, 'ok.json'), JSON.stringify(v2BranchBuildInfoOk));
   await fs.writeFile(path.join(v2BranchDir, 'bad.json'), JSON.stringify(v2BranchBuildInfoBad));
 
   const error = await t.throwsAsync(
-    execAsync(
-    `${CLI} validate ${v2BranchDir} --referenceBuildInfoDirs ${v1Dir},${v2Dir}`,
-    ),
+    execAsync(`${CLI} validate ${v2BranchDir} --referenceBuildInfoDirs ${v1Dir},${v2Dir}`),
   );
   const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
   t.snapshot(expectation.join('\n'));
