@@ -17,7 +17,7 @@ import { getUpgradeabilityAssessment } from './upgradeability-assessment';
 import { SourceContract } from './validations';
 import { LayoutCompatibilityReport } from '../../storage/report';
 import { indent } from '../../utils/indent';
-import { SpecifiedContracts } from './validate-upgrade-safety';
+import { BuildInfoDictionary, SpecifiedContracts } from './validate-upgrade-safety';
 
 /**
  * Report for an upgradeable contract.
@@ -58,29 +58,30 @@ export class UpgradeableContractReport implements Report {
 }
 
 /**
- * Gets upgradeble contract reports for the upgradeable contracts in the given set of source contracts.
+ * Gets upgradeble contract reports for the upgradeable contracts in the set of source contracts at dictionary key ''.
+ * Reference contracts can come from source contracts at the corresponding dictionary key.
  * Only contracts that are detected as upgradeable will be included in the reports.
  * Reports include upgradeable contracts regardless of whether they pass or fail upgrade safety checks.
  *
- * @param sourceContracts The source contracts to check, which must include all contracts that are referenced by the given contracts. Can also include non-upgradeable contracts, which will be ignored.
+ * @param buildInfoDictionary Dictionary of build info directories and the source contracts they contain.
  * @param opts The validation options.
  * @param specifiedContracts If provided, only the specified contract (upgrading from its reference contract) will be reported.
  * @returns The upgradeable contract reports.
  */
 export function getContractReports(
-  sourceContracts: SourceContract[],
+  buildInfoDictionary: BuildInfoDictionary,
   opts: Required<ValidateUpgradeSafetyOptions>,
   specifiedContracts?: SpecifiedContracts,
 ) {
   const upgradeableContractReports: UpgradeableContractReport[] = [];
 
   const contractsToReport: SourceContract[] =
-    specifiedContracts !== undefined ? [specifiedContracts.contract] : sourceContracts;
+    specifiedContracts !== undefined ? [specifiedContracts.contract] : buildInfoDictionary[''];
 
   for (const sourceContract of contractsToReport) {
     const upgradeabilityAssessment = getUpgradeabilityAssessment(
       sourceContract,
-      sourceContracts,
+      buildInfoDictionary,
       specifiedContracts?.reference,
     );
     if (opts.requireReference && upgradeabilityAssessment.referenceContract === undefined) {
@@ -129,7 +130,11 @@ function getUpgradeableContractReport(
     const referenceVersion = getContractVersion(referenceContract.validationData, referenceContract.fullyQualifiedName);
     const referenceLayout = getStorageLayout(referenceContract.validationData, referenceVersion);
 
-    reference = referenceContract.fullyQualifiedName;
+    if (referenceContract.buildInfoDirShortName !== contract.buildInfoDirShortName) {
+      reference = `${referenceContract.buildInfoDirShortName}:${referenceContract.fullyQualifiedName}`;
+    } else {
+      reference = referenceContract.fullyQualifiedName;
+    }
     storageLayoutReport = getStorageUpgradeReport(referenceLayout, layout, withValidationDefaults(opts));
   }
 

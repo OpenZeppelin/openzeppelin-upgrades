@@ -16,6 +16,7 @@ Options:
   --contract <CONTRACT>  The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
   --reference <REFERENCE_CONTRACT>  Can only be used when the --contract option is also provided. The name or fully qualified name of the reference contract to use for storage layout comparisons. If not specified, uses the @custom:oz-upgrades-from annotation if it is defined in the contract that is being validated.
   --requireReference  Can only be used when the --contract option is also provided. Not compatible with --unsafeSkipStorageCheck. If specified, requires either the --reference option to be provided or the contract to have a @custom:oz-upgrades-from annotation.
+  --referenceBuildInfoDirs  Optional paths of additional build info directories from previous versions of the project to use for storage layout comparisons. When using this option, refer to one of these directories using prefix '<dirName>:' before the contract name or fully qualified name in the --reference option or @custom:oz-upgrades-from annotation, where <dirName> is the directory short name. Each directory short name must be unique, including compared to the main build info directory.
   --unsafeAllow "<VALIDATION_ERRORS>"  Selectively disable one or more validation errors. Comma-separated list with one or more of the following: ${errorKinds.join(
     ', ',
   )}
@@ -32,6 +33,7 @@ export async function main(args: string[]): Promise<void> {
       functionArgs.contract,
       functionArgs.reference,
       functionArgs.opts,
+      functionArgs.referenceBuildInfoDirs,
     );
     console.log(result.explain());
     process.exitCode = result.ok ? 0 : 1;
@@ -48,7 +50,7 @@ function parseArgs(args: string[]) {
       'unsafeAllowLinkedLibraries',
       'requireReference',
     ],
-    string: ['unsafeAllow', 'contract', 'reference'],
+    string: ['unsafeAllow', 'contract', 'reference', 'referenceBuildInfoDirs'],
     alias: { h: 'help' },
   });
   const extraArgs = parsedArgs._;
@@ -71,6 +73,7 @@ interface FunctionArgs {
   contract?: string;
   reference?: string;
   opts: Required<ValidateUpgradeSafetyOptions>;
+  referenceBuildInfoDirs?: string[];
 }
 
 /**
@@ -90,6 +93,7 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     const contract = getAndValidateString(parsedArgs, 'contract');
     const reference = getAndValidateString(parsedArgs, 'reference');
     const opts = withDefaults(parsedArgs);
+    const referenceBuildInfoDirs = getAndValidateString(parsedArgs, 'referenceBuildInfoDirs')?.split(/,+/);
 
     if (contract === undefined) {
       if (reference !== undefined) {
@@ -98,7 +102,7 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
         throw new Error('The --requireReference option can only be used along with the --contract option.');
       }
     }
-    return { buildInfoDir, contract, reference, opts };
+    return { buildInfoDir, contract, reference, opts, referenceBuildInfoDirs };
   }
 }
 
@@ -125,6 +129,7 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
         'contract',
         'reference',
         'requireReference',
+        'referenceBuildInfoDirs',
       ].includes(key),
   );
   if (invalidArgs.length > 0) {

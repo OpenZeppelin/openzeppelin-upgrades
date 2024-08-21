@@ -100,7 +100,7 @@ test('invalid annotation args - upgrades', async t => {
 
 test('findSpecifiedContracts - requireReference option without contract', async t => {
   try {
-    findSpecifiedContracts([], withCliDefaults({ requireReference: true }));
+    findSpecifiedContracts({}, withCliDefaults({ requireReference: true }));
   } catch (e: any) {
     t.true(
       e.message.includes(

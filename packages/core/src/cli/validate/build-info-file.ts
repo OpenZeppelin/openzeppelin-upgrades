@@ -49,6 +49,11 @@ export interface BuildInfoFile {
    * The Solidity compiler output JSON object.
    */
   output: SolcOutput;
+
+  /**
+   * Short name of the build info dir containing this file.
+   */
+  dirShortName: string;
 }
 
 /**
@@ -57,13 +62,18 @@ export interface BuildInfoFile {
  * @param buildInfoDir Build info directory, or undefined to use the default Hardhat or Foundry build-info dir.
  * @returns The build info files with Solidity compiler input and output.
  */
-export async function getBuildInfoFiles(buildInfoDir?: string) {
+export async function getBuildInfoFiles(buildInfoDir?: string): Promise<BuildInfoFile[]> {
   const dir = await findDir(buildInfoDir);
+  const shortName = path.basename(dir);
   const jsonFiles = await getJsonFiles(dir);
-  return await readBuildInfo(jsonFiles);
+
+  return await readBuildInfo(jsonFiles, shortName);
 }
 
-async function findDir(buildInfoDir: string | undefined) {
+/**
+ * Finds the build info dir if provided, otherwise finds the default Hardhat or Foundry build info dir. Throws an error if no build info files were found in the expected dir.
+ */
+async function findDir(buildInfoDir?: string): Promise<string> {
   if (buildInfoDir !== undefined && !(await hasJsonFiles(buildInfoDir))) {
     throw new ValidateCommandError(
       `The directory '${buildInfoDir}' does not exist or does not contain any build info files.`,
@@ -123,7 +133,7 @@ async function getJsonFiles(dir: string): Promise<string[]> {
   return jsonFiles.map(file => path.join(dir, file));
 }
 
-async function readBuildInfo(buildInfoFilePaths: string[]) {
+async function readBuildInfo(buildInfoFilePaths: string[], dirShortName: string) {
   const buildInfoFiles: BuildInfoFile[] = [];
 
   for (const buildInfoFilePath of buildInfoFilePaths) {
@@ -143,6 +153,7 @@ async function readBuildInfo(buildInfoFilePaths: string[]) {
         input: buildInfoJson.input,
         output: buildInfoJson.output,
         solcVersion: buildInfoJson.solcVersion,
+        dirShortName: dirShortName,
       });
     }
   }

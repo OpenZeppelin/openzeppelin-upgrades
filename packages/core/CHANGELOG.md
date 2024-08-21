@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.36.0 (2024-08-21)
 
 - Update dependency on Slang. ([#1059](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1059))
+- CLI: Support `--referenceBuildInfoDirs` option. ([#1062](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1062))
 
 ## 1.35.1 (2024-08-13)
 

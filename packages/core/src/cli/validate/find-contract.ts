@@ -1,4 +1,6 @@
+import { assert } from '../../utils/assert';
 import { ValidateCommandError } from './error';
+import { BuildInfoDictionary } from './validate-upgrade-safety';
 import { SourceContract } from './validations';
 
 export class ReferenceContractNotFound extends Error {
@@ -12,7 +14,12 @@ export class ReferenceContractNotFound extends Error {
    */
   readonly origin?: string;
 
-  constructor(reference: string, origin?: string) {
+  /**
+   * Build info directories that were also searched.
+   */
+  readonly buildInfoDirs?: string[];
+
+  constructor(reference: string, origin?: string, buildInfoDirs?: string[]) {
     const msg =
       origin !== undefined
         ? `Could not find contract ${reference} referenced in ${origin}.`
@@ -20,11 +27,30 @@ export class ReferenceContractNotFound extends Error {
     super(msg);
     this.reference = reference;
     this.origin = origin;
+    this.buildInfoDirs = buildInfoDirs;
   }
 }
 
-export function findContract(contractName: string, origin: SourceContract | undefined, allContracts: SourceContract[]) {
-  const foundContracts = allContracts.filter(c => c.fullyQualifiedName === contractName || c.name === contractName);
+export function findContract(
+  contractName: string,
+  origin: SourceContract | undefined,
+  buildInfoDictionary: BuildInfoDictionary,
+  onlyMainBuildInfoDir = false,
+) {
+  const foundContracts: SourceContract[] = [];
+  if (onlyMainBuildInfoDir) {
+    if (hasBuildInfoDirWithContractName(contractName) || hasBuildInfoDirWithFullyQualifiedName(contractName)) {
+      throw new ValidateCommandError(
+        `Contract ${contractName} must be specified without a build info directory name`,
+        () => `Build info directory names can only be specified for reference contracts.`,
+      );
+    }
+    foundContracts.push(...buildInfoDictionary[''].filter(c => isMatchFound(contractName, c, '')));
+  } else {
+    for (const [dir, contracts] of Object.entries(buildInfoDictionary)) {
+      foundContracts.push(...contracts.filter(c => isMatchFound(contractName, c, dir)));
+    }
+  }
 
   if (foundContracts.length > 1) {
     const msg =
@@ -39,6 +65,26 @@ export function findContract(contractName: string, origin: SourceContract | unde
   } else if (foundContracts.length === 1) {
     return foundContracts[0];
   } else {
-    throw new ReferenceContractNotFound(contractName, origin?.fullyQualifiedName);
+    throw new ReferenceContractNotFound(contractName, origin?.fullyQualifiedName, Object.keys(buildInfoDictionary));
   }
+}
+
+function isMatchFound(contractName: string, foundContract: SourceContract, buildInfoDirShortName: string): boolean {
+  let prefix = '';
+  if (buildInfoDirShortName.length > 0) {
+    assert(foundContract.buildInfoDirShortName === buildInfoDirShortName);
+    prefix = `${buildInfoDirShortName}:`;
+  }
+  return (
+    `${prefix}${foundContract.fullyQualifiedName}` === contractName || `${prefix}${foundContract.name}` === contractName
+  );
+}
+
+function hasBuildInfoDirWithContractName(contractName: string): boolean {
+  return contractName.split(':').length === 2 && !contractName.includes('.sol:');
+}
+
+function hasBuildInfoDirWithFullyQualifiedName(contractName: string): boolean {
+  const tokens = contractName.split(':');
+  return tokens.length === 3 && tokens[1].endsWith('.sol');
 }
