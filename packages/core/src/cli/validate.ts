@@ -34,6 +34,7 @@ export async function main(args: string[]): Promise<void> {
       functionArgs.reference,
       functionArgs.opts,
       functionArgs.referenceBuildInfoDirs,
+      functionArgs.exclude,
     );
     console.log(result.explain());
     process.exitCode = result.ok ? 0 : 1;
@@ -50,7 +51,7 @@ function parseArgs(args: string[]) {
       'unsafeAllowLinkedLibraries',
       'requireReference',
     ],
-    string: ['unsafeAllow', 'contract', 'reference', 'referenceBuildInfoDirs'],
+    string: ['unsafeAllow', 'contract', 'reference', 'referenceBuildInfoDirs', 'exclude'],
     alias: { h: 'help' },
   });
   const extraArgs = parsedArgs._;
@@ -74,6 +75,7 @@ interface FunctionArgs {
   reference?: string;
   opts: Required<ValidateUpgradeSafetyOptions>;
   referenceBuildInfoDirs?: string[];
+  exclude?: string[];
 }
 
 /**
@@ -94,6 +96,7 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     const reference = getAndValidateString(parsedArgs, 'reference');
     const opts = withDefaults(parsedArgs);
     const referenceBuildInfoDirs = getAndValidateString(parsedArgs, 'referenceBuildInfoDirs')?.split(/,+/);
+    const exclude = getAndValidateString(parsedArgs, 'exclude')?.split(/,+/);
 
     if (contract === undefined) {
       if (reference !== undefined) {
@@ -102,7 +105,7 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
         throw new Error('The --requireReference option can only be used along with the --contract option.');
       }
     }
-    return { buildInfoDir, contract, reference, opts, referenceBuildInfoDirs };
+    return { buildInfoDir, contract, reference, opts, referenceBuildInfoDirs, exclude };
   }
 }
 
@@ -130,6 +133,8 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
         'reference',
         'requireReference',
         'referenceBuildInfoDirs',
+        'skipPatterns',
+        'exclude',
       ].includes(key),
   );
   if (invalidArgs.length > 0) {

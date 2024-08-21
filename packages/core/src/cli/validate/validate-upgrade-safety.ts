@@ -36,6 +36,7 @@ export async function validateUpgradeSafety(
   reference?: string,
   opts: ValidateUpgradeSafetyOptions = {},
   referenceBuildInfoDirs?: string[],
+  exclude?: string[],
 ): Promise<ProjectReport> {
   const allOpts = withCliDefaults(opts);
 
@@ -63,7 +64,7 @@ export async function validateUpgradeSafety(
 
   const specifiedContracts = findSpecifiedContracts(buildInfoDictionary, allOpts, contract, reference);
 
-  const contractReports = getContractReports(buildInfoDictionary, allOpts, specifiedContracts);
+  const contractReports = getContractReports(buildInfoDictionary, allOpts, specifiedContracts, exclude);
   return getProjectReport(contractReports, specifiedContracts !== undefined);
 }
 

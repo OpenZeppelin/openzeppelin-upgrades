@@ -18,6 +18,7 @@ import { SourceContract } from './validations';
 import { LayoutCompatibilityReport } from '../../storage/report';
 import { indent } from '../../utils/indent';
 import { BuildInfoDictionary, SpecifiedContracts } from './validate-upgrade-safety';
+import { minimatch } from 'minimatch';
 
 /**
  * Report for an upgradeable contract.
@@ -72,6 +73,7 @@ export function getContractReports(
   buildInfoDictionary: BuildInfoDictionary,
   opts: Required<ValidateUpgradeSafetyOptions>,
   specifiedContracts?: SpecifiedContracts,
+  exclude?: string[],
 ) {
   const upgradeableContractReports: UpgradeableContractReport[] = [];
 
@@ -91,7 +93,7 @@ export function getContractReports(
     } else if (specifiedContracts !== undefined || upgradeabilityAssessment.upgradeable) {
       const reference = upgradeabilityAssessment.referenceContract;
       const kind = upgradeabilityAssessment.uups ? 'uups' : 'transparent';
-      const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind });
+      const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind }, exclude);
       if (report !== undefined) {
         upgradeableContractReports.push(report);
       }
@@ -104,7 +106,14 @@ function getUpgradeableContractReport(
   contract: SourceContract,
   referenceContract: SourceContract | undefined,
   opts: ValidationOptions,
+  exclude?: string[],
 ): UpgradeableContractReport | undefined {
+  // TODO if this contract matches an exclude pattern, log something as debug and return undefined
+  if (exclude !== undefined && exclude.some(glob => minimatch(contract.fullyQualifiedName, glob))) {
+    debug('Excluding: ' + contract.fullyQualifiedName);
+    return undefined;
+  }
+
   let version;
   try {
     version = getContractVersion(contract.validationData, contract.fullyQualifiedName);
@@ -119,7 +128,7 @@ function getUpgradeableContractReport(
   }
 
   debug('Checking: ' + contract.fullyQualifiedName);
-  const standaloneReport = getStandaloneReport(contract.validationData, version, opts);
+  const standaloneReport = getStandaloneReport(contract.validationData, version, opts, exclude);
 
   let reference: string | undefined;
   let storageLayoutReport: LayoutCompatibilityReport | undefined;
@@ -145,7 +154,17 @@ function getStandaloneReport(
   data: ValidationData,
   version: Version,
   opts: ValidationOptions,
+  exclude?: string[],
 ): UpgradeableContractErrorReport {
-  const errors = getErrors(data, version, withValidationDefaults(opts));
-  return new UpgradeableContractErrorReport(errors);
+  const allErrors = getErrors(data, version, withValidationDefaults(opts));
+
+  const includeErrors = allErrors.filter(e => {
+    return exclude === undefined || !exclude.some(glob => minimatch(getPath(e.src), glob));
+  });
+
+  return new UpgradeableContractErrorReport(includeErrors);
+}
+
+function getPath(src: string): string {
+  return src.split(':')[0];
 }

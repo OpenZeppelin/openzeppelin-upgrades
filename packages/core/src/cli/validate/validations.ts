@@ -42,7 +42,6 @@ function addContractsFromBuildInfo(
 
     for (const contractDef of findAll('ContractDefinition', ast)) {
       const fullyQualifiedName = getFullyQualifiedName(sourcePath, contractDef.name);
-      debug('Found: ' + fullyQualifiedName);
 
       sourceContracts.push({
         node: contractDef,
