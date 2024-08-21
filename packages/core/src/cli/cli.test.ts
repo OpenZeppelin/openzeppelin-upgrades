@@ -334,6 +334,28 @@ test('validate - references other build info dir by command - ok', async t => {
   t.snapshot(output);
 });
 
+test('validate - references other build info dir by command - contract not found due to wrong dir in reference', async t => {
+  const temp = await getTempDir(t);
+  const referenceDir = path.join(temp, 'build-info-v1');
+  await fs.mkdir(referenceDir);
+
+  const referenceBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV1.sol:MyContract`);
+  await fs.writeFile(path.join(referenceDir, 'validate.json'), JSON.stringify(referenceBuildInfo));
+
+  const updatedDir = path.join(temp, 'build-info');
+  await fs.mkdir(updatedDir);
+
+  const updatedBuildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateBuildInfoV2_Ok.sol:MyContract`);
+  await fs.writeFile(path.join(updatedDir, 'validate.json'), JSON.stringify(updatedBuildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(
+      `${CLI} validate ${updatedDir} --referenceBuildInfoDirs ${referenceDir} --contract MyContract --reference build-info-NOT-FOUND:MyContract`,
+    ),
+  );
+  t.true(error?.message.includes('Could not find contract build-info-NOT-FOUND:MyContract.'), error?.message);
+});
+
 test('validate - references other build info dir by command with fully qualified names - ok', async t => {
   const temp = await getTempDir(t);
   const referenceDir = path.join(temp, 'build-info-v1');
