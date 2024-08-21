@@ -156,7 +156,7 @@ function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['
 }
 
 function getReferenceBuildInfoDirsArray(referenceBuildInfoDirs: string | undefined): string[] | undefined {
-  return referenceBuildInfoDirs !== undefined ? referenceBuildInfoDirs.split(/,+/) : undefined;
+  return referenceBuildInfoDirs?.split(/,+/);
 }
 
 export function withDefaults(parsedArgs: minimist.ParsedArgs): Required<ValidateUpgradeSafetyOptions> {
