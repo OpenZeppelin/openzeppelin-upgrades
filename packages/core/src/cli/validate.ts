@@ -28,13 +28,12 @@ export async function main(args: string[]): Promise<void> {
 
   if (!help(parsedArgs, extraArgs)) {
     const functionArgs = getFunctionArgs(parsedArgs, extraArgs);
-    const referenceBuildInfoDirs = getReferenceBuildInfoDirsArray(parsedArgs['referenceBuildInfoDirs']);
     const result = await validateUpgradeSafety(
       functionArgs.buildInfoDir,
       functionArgs.contract,
       functionArgs.reference,
       functionArgs.opts,
-      referenceBuildInfoDirs,
+      functionArgs.referenceBuildInfoDirs,
     );
     console.log(result.explain());
     process.exitCode = result.ok ? 0 : 1;
@@ -74,6 +73,7 @@ interface FunctionArgs {
   contract?: string;
   reference?: string;
   opts: Required<ValidateUpgradeSafetyOptions>;
+  referenceBuildInfoDirs?: string[];
 }
 
 /**
@@ -93,6 +93,7 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     const contract = getAndValidateString(parsedArgs, 'contract');
     const reference = getAndValidateString(parsedArgs, 'reference');
     const opts = withDefaults(parsedArgs);
+    const referenceBuildInfoDirs = getAndValidateString(parsedArgs, 'referenceBuildInfoDirs')?.split(/,+/);
 
     if (contract === undefined) {
       if (reference !== undefined) {
@@ -101,7 +102,7 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
         throw new Error('The --requireReference option can only be used along with the --contract option.');
       }
     }
-    return { buildInfoDir, contract, reference, opts };
+    return { buildInfoDir, contract, reference, opts, referenceBuildInfoDirs };
   }
 }
 
@@ -153,10 +154,6 @@ function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['
     );
   }
   return unsafeAllowTokens as errorKindsType[];
-}
-
-function getReferenceBuildInfoDirsArray(referenceBuildInfoDirs: string | undefined): string[] | undefined {
-  return referenceBuildInfoDirs?.split(/,+/);
 }
 
 export function withDefaults(parsedArgs: minimist.ParsedArgs): Required<ValidateUpgradeSafetyOptions> {
