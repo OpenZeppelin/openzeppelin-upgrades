@@ -68,13 +68,14 @@ export class UpgradeableContractReport implements Report {
  * @param buildInfoDictionary Dictionary of build info directories and the source contracts they contain.
  * @param opts The validation options.
  * @param specifiedContracts If provided, only the specified contract (upgrading from its reference contract) will be reported.
+ * @param exclude Exclude validations for contracts in source file paths that match the given glob patterns.
  * @returns The upgradeable contract reports.
  */
 export function getContractReports(
   buildInfoDictionary: BuildInfoDictionary,
   opts: Required<ValidateUpgradeSafetyOptions>,
   specifiedContracts?: SpecifiedContracts,
-  exclude?: string,
+  exclude?: string[],
 ) {
   const upgradeableContractReports: UpgradeableContractReport[] = [];
 
@@ -122,9 +123,9 @@ function getUpgradeableContractReport(
   contract: SourceContract,
   referenceContract: SourceContract | undefined,
   opts: ValidationOptions,
-  exclude?: string,
+  exclude?: string[],
 ): UpgradeableContractReport | undefined {
-  if (exclude !== undefined && minimatch(getPath(contract.fullyQualifiedName), exclude)) {
+  if (exclude !== undefined && exclude.some(glob => minimatch(getPath(contract.fullyQualifiedName), glob))) {
     debug('Excluding contract: ' + contract.fullyQualifiedName);
     return undefined;
   }
@@ -169,13 +170,13 @@ function getStandaloneReport(
   data: ValidationData,
   version: Version,
   opts: ValidationOptions,
-  exclude?: string,
+  exclude?: string[],
 ): UpgradeableContractErrorReport {
   const allErrors = getErrors(data, version, withValidationDefaults(opts));
   const reportErrors =
     exclude !== undefined
       ? allErrors.filter(e => {
-          const excluded = minimatch(getPath(e.src), exclude);
+          const excluded = exclude.some(glob => minimatch(getPath(e.src), glob));
           if (excluded) {
             debug('Excluding error: ' + e.src);
           }

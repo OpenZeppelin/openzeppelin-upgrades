@@ -76,7 +76,7 @@ interface FunctionArgs {
   reference?: string;
   opts: Required<ValidateUpgradeSafetyOptions>;
   referenceBuildInfoDirs?: string[];
-  exclude?: string;
+  exclude?: string[];
 }
 
 /**
@@ -96,8 +96,8 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     const contract = getAndValidateString(parsedArgs, 'contract');
     const reference = getAndValidateString(parsedArgs, 'reference');
     const opts = withDefaults(parsedArgs);
-    const referenceBuildInfoDirs = getAndValidateString(parsedArgs, 'referenceBuildInfoDirs')?.split(/,+/);
-    const exclude = getAndValidateString(parsedArgs, 'exclude');
+    const referenceBuildInfoDirs = getAndValidateStringArray(parsedArgs, 'referenceBuildInfoDirs');
+    const exclude = getAndValidateStringArray(parsedArgs, 'exclude');
 
     if (contract === undefined) {
       if (reference !== undefined) {
@@ -112,10 +112,29 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
 
 function getAndValidateString(parsedArgs: minimist.ParsedArgs, option: string): string | undefined {
   const value = parsedArgs[option];
-  if (value !== undefined && value.trim().length === 0) {
-    throw new Error(`Invalid option: --${option} cannot be empty`);
+  if (value !== undefined) {
+    assertNonEmptyOption(value, option);
   }
   return value;
+}
+
+function getAndValidateStringArray(parsedArgs: minimist.ParsedArgs, option: string): string[] | undefined {
+  const value = parsedArgs[option];
+  if (value !== undefined) {
+    if (Array.isArray(value)) {
+      return value;
+    } else {
+      assertNonEmptyOption(value, option);
+      return value.split(/,+/);
+    }
+  }
+  return value;
+}
+
+function assertNonEmptyOption(value: string, option: string) {
+  if (value.trim().length === 0) {
+    throw new Error(`Invalid option: --${option} cannot be empty`);
+  }
 }
 
 function validateOptions(parsedArgs: minimist.ParsedArgs) {
