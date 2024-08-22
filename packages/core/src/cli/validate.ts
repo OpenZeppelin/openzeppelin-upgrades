@@ -134,7 +134,6 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
         'reference',
         'requireReference',
         'referenceBuildInfoDirs',
-        'skipPatterns',
         'exclude',
       ].includes(key),
   );
