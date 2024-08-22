@@ -36,7 +36,7 @@ export async function validateUpgradeSafety(
   reference?: string,
   opts: ValidateUpgradeSafetyOptions = {},
   referenceBuildInfoDirs?: string[],
-  exclude?: string[],
+  exclude?: string,
 ): Promise<ProjectReport> {
   const allOpts = withCliDefaults(opts);
 

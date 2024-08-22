@@ -1,7 +1,5 @@
 import { solcInputOutputDecoder, validate, ValidationRunData } from '../..';
 
-import debug from '../../utils/debug';
-
 import { findAll } from 'solidity-ast/utils';
 import { ContractDefinition } from 'solidity-ast';
 

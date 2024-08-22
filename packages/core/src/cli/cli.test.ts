@@ -601,3 +601,14 @@ test('validate - excludes by pattern - all match', async t => {
   const output = await execAsync(`${CLI} validate ${temp} --exclude '**/*Upgradeable*.sol'`);
   t.snapshot(output);
 });
+
+test('validate - excludes single contract which has a reference', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = await execAsync(
+    `${CLI} validate ${temp} --contract BecomesBadLayout --reference StorageV1 --exclude '**/Validate.sol'`,
+  );
+  t.snapshot(output);
+});

@@ -75,7 +75,7 @@ interface FunctionArgs {
   reference?: string;
   opts: Required<ValidateUpgradeSafetyOptions>;
   referenceBuildInfoDirs?: string[];
-  exclude?: string[];
+  exclude?: string;
 }
 
 /**
@@ -96,7 +96,7 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     const reference = getAndValidateString(parsedArgs, 'reference');
     const opts = withDefaults(parsedArgs);
     const referenceBuildInfoDirs = getAndValidateString(parsedArgs, 'referenceBuildInfoDirs')?.split(/,+/);
-    const exclude = getAndValidateString(parsedArgs, 'exclude')?.split(/,+/);
+    const exclude = getAndValidateString(parsedArgs, 'exclude');
 
     if (contract === undefined) {
       if (reference !== undefined) {
