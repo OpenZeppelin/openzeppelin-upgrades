@@ -575,7 +575,7 @@ test('validate - contract must not have build info dir name - fully qualified', 
 
 test('validate - excludes by pattern - no match', async t => {
   const temp = await getTempDir(t);
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/UsesUpgradeable.sol:UsesUpgradeable`);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --exclude '**/NoMatch.sol'`));
@@ -585,7 +585,7 @@ test('validate - excludes by pattern - no match', async t => {
 
 test('validate - excludes by pattern - some match', async t => {
   const temp = await getTempDir(t);
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/UsesUpgradeable.sol:UsesUpgradeable`);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --exclude '**/Abstract*.sol'`));
@@ -595,10 +595,10 @@ test('validate - excludes by pattern - some match', async t => {
 
 test('validate - excludes by pattern - all match', async t => {
   const temp = await getTempDir(t);
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/UsesUpgradeable.sol:UsesUpgradeable`);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
-  const output = await execAsync(`${CLI} validate ${temp} --exclude '**/*Upgradeable*.sol'`);
+  const output = await execAsync(`${CLI} validate ${temp} --exclude '**/excludes/*.sol'`);
   t.snapshot(output);
 });
 
