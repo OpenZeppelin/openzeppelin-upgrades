@@ -19,6 +19,7 @@ import { LayoutCompatibilityReport } from '../../storage/report';
 import { indent } from '../../utils/indent';
 import { BuildInfoDictionary, SpecifiedContracts } from './validate-upgrade-safety';
 import { minimatch } from 'minimatch';
+import { ValidateCommandError } from './error';
 
 /**
  * Report for an upgradeable contract.
@@ -96,12 +97,21 @@ export function getContractReports(
       const report = getUpgradeableContractReport(sourceContract, reference, { ...opts, kind: kind }, exclude);
       if (report !== undefined) {
         upgradeableContractReports.push(report);
+      } else if (specifiedContracts !== undefined) {
+        // If there was no report for the specified contract, it was excluded or is abstract.
+        const userAction = exclude !== undefined ? `Ensure the contract is not abstract and is not excluded by the exclude option.` : `Ensure the contract is not abstract.`;
+        throw new ValidateCommandError(`No validation report found for contract ${specifiedContracts.contract.fullyQualifiedName}`, () => userAction);
       }
     }
   }
+
   return upgradeableContractReports;
 }
 
+/**
+ * Gets a report for an upgradeable contract.
+ * Returns undefined if the contract is excluded or is abstract.
+ */
 function getUpgradeableContractReport(
   contract: SourceContract,
   referenceContract: SourceContract | undefined,

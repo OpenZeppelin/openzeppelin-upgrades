@@ -602,13 +602,13 @@ test('validate - excludes by pattern - all match', async t => {
   t.snapshot(output);
 });
 
-test('validate - excludes single contract which has a reference', async t => {
+test('validate - excludes specified contract', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
-  const output = await execAsync(
+  const error = await t.throwsAsync(execAsync(
     `${CLI} validate ${temp} --contract BecomesBadLayout --reference StorageV1 --exclude '**/Validate.sol'`,
-  );
-  t.snapshot(output);
+  ));
+  t.true(error?.message.includes('No validation report found for contract contracts/test/cli/Validate.sol:BecomesBadLayout'), error?.message);
 });
