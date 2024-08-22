@@ -179,6 +179,6 @@ function getStandaloneReport(
   return new UpgradeableContractErrorReport(reportErrors);
 }
 
-function getPath(src: string): string {
-  return src.split(':')[0];
+function getPath(srcOrFullyQualifiedName: string): string {
+  return srcOrFullyQualifiedName.split(':')[0];
 }
