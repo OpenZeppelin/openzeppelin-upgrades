@@ -612,3 +612,15 @@ test('validate - excludes specified contract', async t => {
   ));
   t.true(error?.message.includes('No validation report found for contract contracts/test/cli/Validate.sol:BecomesBadLayout'), error?.message);
 });
+
+test('validate - excludes one contract from layout comparisions', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/ImportVersions.sol:Dummy`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(
+    `${CLI} validate ${temp} --exclude '**/V2Bad1.sol'`,
+  ));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
