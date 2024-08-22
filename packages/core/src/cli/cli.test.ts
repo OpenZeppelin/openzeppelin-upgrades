@@ -622,7 +622,9 @@ test('validate - exclude passed multiple times', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
-  const output = await execAsync(`${CLI} validate ${temp} --exclude "**/excludes/Abstract*.sol" --exclude "**/UsesAbstractUUPS.sol"`);
+  const output = await execAsync(
+    `${CLI} validate ${temp} --exclude "**/excludes/Abstract*.sol" --exclude "**/UsesAbstractUUPS.sol"`,
+  );
   t.snapshot(output);
 });
 
@@ -640,9 +642,20 @@ test('validate - excludes specified contract', async t => {
   );
 });
 
-test('validate - excludes one contract from layout comparisions', async t => {
+test('validate - excludes UpgradeableBeacon and its parents by default', async t => {
   const temp = await getTempDir(t);
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/ImportVersions.sol:Dummy`);
+  const buildInfo = await artifacts.getBuildInfo(
+    `contracts/test/cli/excludes/contracts/proxy/beacon/UpgradeableBeacon.sol:UpgradeableBeacon`,
+  );
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = await execAsync(`${CLI} validate ${temp}`);
+  t.snapshot(output);
+});
+
+test('validate - excludes one contract from layout comparisions, and excludes UpgradeableBeacon by default', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/ImportVersionsAndBeacon.sol:Dummy`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --exclude "**/V2Bad1.sol"`));

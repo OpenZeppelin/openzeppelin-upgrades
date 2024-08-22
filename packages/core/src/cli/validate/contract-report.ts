@@ -20,6 +20,7 @@ import { indent } from '../../utils/indent';
 import { BuildInfoDictionary, SpecifiedContracts } from './validate-upgrade-safety';
 import { minimatch } from 'minimatch';
 import { ValidateCommandError } from './error';
+import { defaultExclude } from './default-exclude';
 
 /**
  * Report for an upgradeable contract.
@@ -125,7 +126,9 @@ function getUpgradeableContractReport(
   opts: ValidationOptions,
   exclude?: string[],
 ): UpgradeableContractReport | undefined {
-  if (exclude !== undefined && exclude.some(glob => minimatch(getPath(contract.fullyQualifiedName), glob))) {
+  const excludeWithDefaults = exclude !== undefined ? exclude.concat(defaultExclude) : defaultExclude;
+
+  if (excludeWithDefaults.some(glob => minimatch(getPath(contract.fullyQualifiedName), glob))) {
     debug('Excluding contract: ' + contract.fullyQualifiedName);
     return undefined;
   }
@@ -144,7 +147,7 @@ function getUpgradeableContractReport(
   }
 
   debug('Checking: ' + contract.fullyQualifiedName);
-  const standaloneReport = getStandaloneReport(contract.validationData, version, opts, exclude);
+  const standaloneReport = getStandaloneReport(contract.validationData, version, opts, excludeWithDefaults);
 
   let reference: string | undefined;
   let storageLayoutReport: LayoutCompatibilityReport | undefined;
@@ -170,19 +173,16 @@ function getStandaloneReport(
   data: ValidationData,
   version: Version,
   opts: ValidationOptions,
-  exclude?: string[],
+  excludeWithDefaults: string[],
 ): UpgradeableContractErrorReport {
   const allErrors = getErrors(data, version, withValidationDefaults(opts));
-  const reportErrors =
-    exclude !== undefined
-      ? allErrors.filter(e => {
-          const excluded = exclude.some(glob => minimatch(getPath(e.src), glob));
-          if (excluded) {
-            debug('Excluding error: ' + e.src);
-          }
-          return !excluded;
-        })
-      : allErrors;
+  const reportErrors = allErrors.filter(e => {
+    const excluded = excludeWithDefaults.some(glob => minimatch(getPath(e.src), glob));
+    if (excluded) {
+      debug('Excluding error: ' + e.src);
+    }
+    return !excluded;
+  });
   return new UpgradeableContractErrorReport(reportErrors);
 }
 
