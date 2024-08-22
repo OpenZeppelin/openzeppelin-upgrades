@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- CLI: Support `--exclude` option.
+- CLI: Support `--exclude` option. ([#1065](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1065))
 
 ## 1.36.0 (2024-08-21)
 

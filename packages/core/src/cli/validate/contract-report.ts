@@ -99,8 +99,14 @@ export function getContractReports(
         upgradeableContractReports.push(report);
       } else if (specifiedContracts !== undefined) {
         // If there was no report for the specified contract, it was excluded or is abstract.
-        const userAction = exclude !== undefined ? `Ensure the contract is not abstract and is not excluded by the exclude option.` : `Ensure the contract is not abstract.`;
-        throw new ValidateCommandError(`No validation report found for contract ${specifiedContracts.contract.fullyQualifiedName}`, () => userAction);
+        const userAction =
+          exclude !== undefined
+            ? `Ensure the contract is not abstract and is not excluded by the exclude option.`
+            : `Ensure the contract is not abstract.`;
+        throw new ValidateCommandError(
+          `No validation report found for contract ${specifiedContracts.contract.fullyQualifiedName}`,
+          () => userAction,
+        );
       }
     }
   }
