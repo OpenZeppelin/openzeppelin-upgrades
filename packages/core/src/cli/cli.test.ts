@@ -644,13 +644,12 @@ test('validate - excludes specified contract', async t => {
 
 test('validate - excludes UpgradeableBeacon and its parents by default', async t => {
   const temp = await getTempDir(t);
-  const buildInfo = await artifacts.getBuildInfo(
-    `contracts/test/cli/excludes/contracts/proxy/beacon/UpgradeableBeacon.sol:UpgradeableBeacon`,
-  );
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/ImportVersionsAndBeacon.sol:Dummy`);
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
-  const output = await execAsync(`${CLI} validate ${temp}`);
-  t.snapshot(output);
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp}`));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
 });
 
 test('validate - excludes one contract from layout comparisions, and excludes UpgradeableBeacon by default', async t => {
