@@ -1,5 +1,7 @@
 import { solcInputOutputDecoder, validate, ValidationRunData } from '../..';
 
+import debug from '../../utils/debug';
+
 import { findAll } from 'solidity-ast/utils';
 import { ContractDefinition } from 'solidity-ast';
 
@@ -40,6 +42,7 @@ function addContractsFromBuildInfo(
 
     for (const contractDef of findAll('ContractDefinition', ast)) {
       const fullyQualifiedName = getFullyQualifiedName(sourcePath, contractDef.name);
+      debug('Found: ' + fullyQualifiedName);
 
       sourceContracts.push({
         node: contractDef,
