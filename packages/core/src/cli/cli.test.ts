@@ -572,3 +572,43 @@ test('validate - contract must not have build info dir name - fully qualified', 
     error?.message,
   );
 });
+
+test('validate - self reference by annotation', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/SelfReferences.sol:SelfReference`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract SelfReference`));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - self reference by fully qualified annotation', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/SelfReferences.sol:SelfReference`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract SelfReferenceFullyQualified`));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - self reference by option', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/SelfReferences.sol:SelfReference`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract NoAnnotation --reference NoAnnotation`));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - self reference by fully qualified option', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/SelfReferences.sol:SelfReference`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract NoAnnotation --reference contracts/test/cli/SelfReferences.sol:NoAnnotation`));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
