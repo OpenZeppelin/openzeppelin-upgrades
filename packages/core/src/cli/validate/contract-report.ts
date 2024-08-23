@@ -34,8 +34,8 @@ export class UpgradeableContractReport implements Report {
       throw new ValidateCommandError(
         `The contract ${contract} must not use itself as a reference for storage layout comparisons.`,
         () => `\
-Keep the previous version of the contract in another file and specify that as the reference, or specify a reference from another build info directory containing the previous version.
-If you do not have the previous version available, you can skip the storage layout check using the \`unsafeSkipStorageCheck\` option, which is a dangerous option meant to be used as a last resort.`,
+If this is the first version of your contract, do not specify a reference.
+If this is a subsequent version, keep the previous version of the contract in another file and specify that as the reference, or specify a reference from another build info directory containing the previous version. If you do not have the previous version available, you can skip the storage layout check using the \`unsafeSkipStorageCheck\` option, which is a dangerous option meant to be used as a last resort.`,
       );
     }
   }
