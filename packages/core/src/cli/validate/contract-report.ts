@@ -29,7 +29,14 @@ export class UpgradeableContractReport implements Report {
     readonly reference: string | undefined,
     readonly standaloneReport: UpgradeableContractErrorReport,
     readonly storageLayoutReport: LayoutCompatibilityReport | undefined,
-  ) {}
+    noSelfReference = false,
+  ) {
+    if (noSelfReference && reference === contract) {
+      throw new Error(
+        `The contract ${contract} must not use itself as a reference. Specify a different reference contract or specify a reference contract from another build info directory corresponding to the previous version.`,
+      );
+    }
+  }
 
   get ok(): boolean {
     return this.standaloneReport.ok && (this.storageLayoutReport === undefined || this.storageLayoutReport.ok);
