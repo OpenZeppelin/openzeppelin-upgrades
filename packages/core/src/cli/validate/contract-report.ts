@@ -176,14 +176,16 @@ function getStandaloneReport(
   excludeWithDefaults: string[],
 ): UpgradeableContractErrorReport {
   const allErrors = getErrors(data, version, withValidationDefaults(opts));
-  const reportErrors = allErrors.filter(e => {
-    const excluded = excludeWithDefaults.some(glob => minimatch(getPath(e.src), glob));
-    if (excluded) {
+
+  const includeErrors = allErrors.filter(e => {
+    const shouldExclude = excludeWithDefaults.some(glob => minimatch(getPath(e.src), glob));
+    if (shouldExclude) {
       debug('Excluding error: ' + e.src);
     }
-    return !excluded;
+    return !shouldExclude;
   });
-  return new UpgradeableContractErrorReport(reportErrors);
+
+  return new UpgradeableContractErrorReport(includeErrors);
 }
 
 function getPath(srcOrFullyQualifiedName: string): string {
