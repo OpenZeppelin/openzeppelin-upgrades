@@ -153,6 +153,8 @@ validateUpgradeSafety(
   contract?: string,
   reference?: string,
   opts: ValidateUpgradeSafetyOptions = {},
+  referenceBuildInfoDirs?: string[],
+  exclude?: string[],
 ): Promise<ProjectReport>
 ----
 
@@ -170,6 +172,8 @@ Note that this function does not throw validation errors directly. Instead, you 
 ** `unsafeAllowRenames`
 ** `unsafeSkipStorageCheck`
 ** `requireReference` - Can only be used when the `contract` argument is also provided. Not compatible with the `unsafeSkipStorageCheck` option. If specified, requires either the `reference` argument to be provided or the contract to have a `@custom:oz-upgrades-from` annotation.
+* `referenceBuildInfoDirs` - Optional paths of additional build info directories from previous versions of the project to use for storage layout comparisons. When using this option, refer to one of these directories using prefix `<dirName>:` before the contract name or fully qualified name in the `reference` param or `@custom:oz-upgrades-from` annotation, where `<dirName>` is the directory short name. Each directory short name must be unique, including compared to the main build info directory.
+* `exclude` - Exclude validations for contracts in source file paths that match any of the given glob patterns.
 
 *Returns:*
 
