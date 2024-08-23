@@ -69,7 +69,7 @@ export class UpgradeableContractReport implements Report {
  * @param buildInfoDictionary Dictionary of build info directories and the source contracts they contain.
  * @param opts The validation options.
  * @param specifiedContracts If provided, only the specified contract (upgrading from its reference contract) will be reported.
- * @param exclude Exclude validations for contracts in source file paths that match the given glob patterns.
+ * @param exclude Exclude validations for contracts in source file paths that match any of the given glob patterns.
  * @returns The upgradeable contract reports.
  */
 export function getContractReports(
