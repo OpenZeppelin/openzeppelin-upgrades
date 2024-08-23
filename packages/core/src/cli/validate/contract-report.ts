@@ -110,7 +110,7 @@ export function getContractReports(
 function getUpgradeableContractReport(
   contract: SourceContract,
   referenceContract: SourceContract | undefined,
-  opts: ValidationOptions,
+  opts: Required<ValidateUpgradeSafetyOptions> & Required<ValidationOptions>,
 ): UpgradeableContractReport | undefined {
   let version;
   try {
@@ -142,17 +142,17 @@ function getUpgradeableContractReport(
     } else {
       reference = referenceContract.fullyQualifiedName;
     }
-    storageLayoutReport = getStorageUpgradeReport(referenceLayout, layout, withValidationDefaults(opts));
+    storageLayoutReport = getStorageUpgradeReport(referenceLayout, layout, opts);
   }
 
-  return new UpgradeableContractReport(contract.fullyQualifiedName, reference, standaloneReport, storageLayoutReport);
+  return new UpgradeableContractReport(contract.fullyQualifiedName, reference, standaloneReport, storageLayoutReport, opts.noSelfReference);
 }
 
 function getStandaloneReport(
   data: ValidationData,
   version: Version,
-  opts: ValidationOptions,
+  opts: Required<ValidationOptions>,
 ): UpgradeableContractErrorReport {
-  const errors = getErrors(data, version, withValidationDefaults(opts));
+  const errors = getErrors(data, version, opts);
   return new UpgradeableContractErrorReport(errors);
 }

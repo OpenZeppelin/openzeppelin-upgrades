@@ -12,6 +12,7 @@ import { SourceContract, validateBuildInfoContracts } from './validations';
  */
 export type ValidateUpgradeSafetyOptions = Omit<ValidationOptions, 'kind'> & {
   requireReference?: boolean;
+  noSelfReference?: boolean;
 };
 
 export type SpecifiedContracts = {
@@ -96,11 +97,17 @@ export function findSpecifiedContracts(
 }
 
 export function withCliDefaults(opts: ValidateUpgradeSafetyOptions): Required<ValidateUpgradeSafetyOptions> {
-  if (opts.requireReference && opts.unsafeSkipStorageCheck) {
-    throw new Error(`The requireReference and unsafeSkipStorageCheck options cannot be used at the same time.`);
+  if (opts.unsafeSkipStorageCheck) {
+    if (opts.requireReference) {
+      throw new Error(`The requireReference and unsafeSkipStorageCheck options cannot be used at the same time.`);
+    }
+    if (opts.noSelfReference) {
+      throw new Error(`The noSelfReference and unsafeSkipStorageCheck options cannot be used at the same time.`);
+    }
   }
   return {
     ...withValidationDefaults(opts),
     requireReference: opts.requireReference ?? false,
+    noSelfReference: opts.noSelfReference ?? false,
   };
 }

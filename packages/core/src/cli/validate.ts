@@ -17,6 +17,7 @@ Options:
   --reference <REFERENCE_CONTRACT>  Can only be used when the --contract option is also provided. The name or fully qualified name of the reference contract to use for storage layout comparisons. If not specified, uses the @custom:oz-upgrades-from annotation if it is defined in the contract that is being validated.
   --requireReference  Can only be used when the --contract option is also provided. Not compatible with --unsafeSkipStorageCheck. If specified, requires either the --reference option to be provided or the contract to have a @custom:oz-upgrades-from annotation.
   --referenceBuildInfoDirs  Optional paths of additional build info directories from previous versions of the project to use for storage layout comparisons. When using this option, refer to one of these directories using prefix '<dirName>:' before the contract name or fully qualified name in the --reference option or @custom:oz-upgrades-from annotation, where <dirName> is the directory short name. Each directory short name must be unique, including compared to the main build info directory.
+  --noSelfReference  If specified, throws an error if the --reference option or @custom:oz-upgrades-from annotation references the same contract that is being validated. Not compatible with --unsafeSkipStorageCheck.
   --unsafeAllow "<VALIDATION_ERRORS>"  Selectively disable one or more validation errors. Comma-separated list with one or more of the following: ${errorKinds.join(
     ', ',
   )}
@@ -49,6 +50,7 @@ function parseArgs(args: string[]) {
       'unsafeAllowCustomTypes',
       'unsafeAllowLinkedLibraries',
       'requireReference',
+      'noSelfReference',
     ],
     string: ['unsafeAllow', 'contract', 'reference', 'referenceBuildInfoDirs'],
     alias: { h: 'help' },
@@ -130,6 +132,7 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
         'reference',
         'requireReference',
         'referenceBuildInfoDirs',
+        'noSelfReference',
       ].includes(key),
   );
   if (invalidArgs.length > 0) {
@@ -166,6 +169,7 @@ export function withDefaults(parsedArgs: minimist.ParsedArgs): Required<Validate
     unsafeAllowLinkedLibraries: parsedArgs['unsafeAllowLinkedLibraries'],
     unsafeAllow: getUnsafeAllowKinds(parsedArgs['unsafeAllow']),
     requireReference: parsedArgs['requireReference'],
+    noSelfReference: parsedArgs['noSelfReference'],
   };
 
   return withCliDefaults(allOpts);
