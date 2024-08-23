@@ -617,6 +617,15 @@ test('validate - excludes by pattern - all match', async t => {
   t.snapshot(output);
 });
 
+test('validate - excludes by pattern - all match using commas within glob', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = await execAsync(`${CLI} validate ${temp} --exclude "**/excludes/{Abstract*,UsesAbstractUUPS}.sol"`);
+  t.snapshot(output);
+});
+
 test('validate - exclude passed multiple times', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);

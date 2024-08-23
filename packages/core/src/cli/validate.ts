@@ -17,7 +17,7 @@ Options:
   --reference <REFERENCE_CONTRACT>  Can only be used when the --contract option is also provided. The name or fully qualified name of the reference contract to use for storage layout comparisons. If not specified, uses the @custom:oz-upgrades-from annotation if it is defined in the contract that is being validated.
   --requireReference  Can only be used when the --contract option is also provided. Not compatible with --unsafeSkipStorageCheck. If specified, requires either the --reference option to be provided or the contract to have a @custom:oz-upgrades-from annotation.
   --referenceBuildInfoDirs "<BUILD_INFO_DIR>[,<BUILD_INFO_DIR>...]"  Optional paths of additional build info directories from previous versions of the project to use for storage layout comparisons. When using this option, refer to one of these directories using prefix '<dirName>:' before the contract name or fully qualified name in the --reference option or @custom:oz-upgrades-from annotation, where <dirName> is the directory short name. Each directory short name must be unique, including compared to the main build info directory. If passing in multiple directories, separate them with commas or call the option multiple times, once for each directory.
-  --exclude "<GLOB_PATTERN>[,<GLOB_PATTERN>...]"  Exclude validations for contracts in source file paths that match the given glob patterns. For example, --exclude "contracts/mocks/**/*.sol". Does not apply to reference contracts. If passing in multiple patterns, separate them with commas or call the option multiple times, once for each pattern.
+  --exclude "<GLOB_PATTERN>" [--exclude <GLOB_PATTERN>...]  Exclude validations for contracts in source file paths that match the given glob patterns. For example, --exclude "contracts/mocks/**/*.sol". Does not apply to reference contracts. If passing in multiple patterns, call the option multiple times, once for each pattern.
   --unsafeAllow "<VALIDATION_ERROR>[,<VALIDATION_ERROR>...]"  Selectively disable one or more validation errors. Comma-separated list with one or more of the following: ${errorKinds.join(
     ', ',
   )}
@@ -96,8 +96,8 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     const contract = getAndValidateString(parsedArgs, 'contract');
     const reference = getAndValidateString(parsedArgs, 'reference');
     const opts = withDefaults(parsedArgs);
-    const referenceBuildInfoDirs = getAndValidateStringArray(parsedArgs, 'referenceBuildInfoDirs');
-    const exclude = getAndValidateStringArray(parsedArgs, 'exclude');
+    const referenceBuildInfoDirs = getAndValidateStringArray(parsedArgs, 'referenceBuildInfoDirs', true);
+    const exclude = getAndValidateStringArray(parsedArgs, 'exclude', false);
 
     if (contract === undefined) {
       if (reference !== undefined) {
@@ -118,20 +118,28 @@ function getAndValidateString(parsedArgs: minimist.ParsedArgs, option: string): 
   return value;
 }
 
-function getAndValidateStringArray(parsedArgs: minimist.ParsedArgs, option: string): string[] | undefined {
+function getAndValidateStringArray(
+  parsedArgs: minimist.ParsedArgs,
+  option: string,
+  useCommaDelimiter: boolean,
+): string[] | undefined {
   const value = parsedArgs[option];
   if (value !== undefined) {
     if (Array.isArray(value)) {
       return value;
     } else {
       assertNonEmptyString(value, option);
-      return value.split(/[\s,]+/);
+      if (useCommaDelimiter) {
+        return value.split(/[\s,]+/);
+      } else {
+        return [value];
+      }
     }
   }
   return value;
 }
 
-function assertNonEmptyString(value: string, option: string) {
+function assertNonEmptyString(value: unknown, option: string) {
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new Error(`Invalid option: --${option} cannot be empty`);
   }
@@ -164,7 +172,7 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
 function getUnsafeAllowKinds(parseArgs: minimist.ParsedArgs): ValidationError['kind'][] {
   type errorKindsType = (typeof errorKinds)[number];
 
-  const unsafeAllowTokens: string[] = getAndValidateStringArray(parseArgs, 'unsafeAllow') ?? [];
+  const unsafeAllowTokens: string[] = getAndValidateStringArray(parseArgs, 'unsafeAllow', true) ?? [];
   if (unsafeAllowTokens.some(token => !errorKinds.includes(token as errorKindsType))) {
     throw new Error(
       `Invalid option: --unsafeAllow "${parseArgs['unsafeAllow']}". Supported values for the --unsafeAllow option are: ${errorKinds.join(
