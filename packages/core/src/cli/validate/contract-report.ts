@@ -4,7 +4,6 @@ import {
   getContractVersion,
   getStorageLayout,
   ValidationOptions,
-  withValidationDefaults,
   Version,
   ValidationData,
   ValidateUpgradeSafetyOptions,
@@ -18,6 +17,7 @@ import { SourceContract } from './validations';
 import { LayoutCompatibilityReport } from '../../storage/report';
 import { indent } from '../../utils/indent';
 import { BuildInfoDictionary, SpecifiedContracts } from './validate-upgrade-safety';
+import { ValidateCommandError } from './error';
 
 /**
  * Report for an upgradeable contract.
@@ -29,11 +29,13 @@ export class UpgradeableContractReport implements Report {
     readonly reference: string | undefined,
     readonly standaloneReport: UpgradeableContractErrorReport,
     readonly storageLayoutReport: LayoutCompatibilityReport | undefined,
-    noSelfReference = false,
   ) {
-    if (noSelfReference && reference === contract) {
-      throw new Error(
-        `The contract ${contract} must not use itself as a reference. Specify a different reference contract or specify a reference contract from another build info directory corresponding to the previous version.`,
+    if (reference === contract) {
+      throw new ValidateCommandError(
+        `The contract ${contract} must not use itself as a reference for storage layout comparisons.`,
+        () => `\
+Keep the previous version of the contract in another file and specify that as the reference, or specify a reference from another build info directory containing the previous version.
+If you do not have the previous version available, you can skip the storage layout check using the \`unsafeSkipStorageCheck\` option, which is a dangerous option meant to be used as a last resort.`,
       );
     }
   }
@@ -110,7 +112,7 @@ export function getContractReports(
 function getUpgradeableContractReport(
   contract: SourceContract,
   referenceContract: SourceContract | undefined,
-  opts: Required<ValidateUpgradeSafetyOptions> & Required<ValidationOptions>,
+  opts: Required<ValidationOptions>,
 ): UpgradeableContractReport | undefined {
   let version;
   try {
@@ -145,7 +147,7 @@ function getUpgradeableContractReport(
     storageLayoutReport = getStorageUpgradeReport(referenceLayout, layout, opts);
   }
 
-  return new UpgradeableContractReport(contract.fullyQualifiedName, reference, standaloneReport, storageLayoutReport, opts.noSelfReference);
+  return new UpgradeableContractReport(contract.fullyQualifiedName, reference, standaloneReport, storageLayoutReport);
 }
 
 function getStandaloneReport(
