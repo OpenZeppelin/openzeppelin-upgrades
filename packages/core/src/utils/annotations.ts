@@ -48,7 +48,7 @@ export function getAnnotationArgs(doc: string, tag: string, supportedArgs?: read
  */
 export function getDocumentation(node: Node) {
   if ('documentation' in node) {
-    return typeof node.documentation === 'string' ? node.documentation : node.documentation?.text ?? '';
+    return typeof node.documentation === 'string' ? node.documentation : (node.documentation?.text ?? '');
   } else {
     return '';
   }

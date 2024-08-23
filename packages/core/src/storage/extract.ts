@@ -203,7 +203,8 @@ export function loadLayoutType(typeName: TypeName | null | undefined, layout: St
 function getRetypedRenamed(varDecl: VariableDeclaration) {
   let retypedFrom, renamedFrom;
   if ('documentation' in varDecl) {
-    const docs = typeof varDecl.documentation === 'string' ? varDecl.documentation : varDecl.documentation?.text ?? '';
+    const docs =
+      typeof varDecl.documentation === 'string' ? varDecl.documentation : (varDecl.documentation?.text ?? '');
     for (const { groups } of execall(
       /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
       docs,
