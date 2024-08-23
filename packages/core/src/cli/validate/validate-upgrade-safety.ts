@@ -96,7 +96,7 @@ export function findSpecifiedContracts(
 }
 
 export function withCliDefaults(opts: ValidateUpgradeSafetyOptions): Required<ValidateUpgradeSafetyOptions> {
-  if (opts.unsafeSkipStorageCheck && opts.requireReference) {
+  if (opts.requireReference && opts.unsafeSkipStorageCheck) {
     throw new Error(`The requireReference and unsafeSkipStorageCheck options cannot be used at the same time.`);
   }
   return {
