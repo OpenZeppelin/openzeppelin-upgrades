@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Breaking change**: CLI: Disallow self-references for storage layout validations.
+
 ## 1.36.0 (2024-08-21)
 
 - Update dependency on Slang. ([#1059](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1059))
