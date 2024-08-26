@@ -31,7 +31,7 @@ NOTE: Metadata must also be included in the compiler output, which it is by defa
 [source]
 ----
 DEFENDER_KEY=<Your API key>
-DEFENDER_SECRET<Your API secret>
+DEFENDER_SECRET=<Your API secret>
 ----
 
 == Network Selection
