@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.37.0 (2024-08-28)
 
 - **Breaking change**: CLI: Disallow self-references for storage layout validations. ([#1067](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1067))
 - CLI: Support `--exclude` option. ([#1065](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1065))
