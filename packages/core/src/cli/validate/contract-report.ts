@@ -126,7 +126,7 @@ function getUpgradeableContractReport(
   opts: ValidationOptions,
   exclude?: string[],
 ): UpgradeableContractReport | undefined {
-  const excludeWithDefaults = exclude !== undefined ? exclude.concat(defaultExclude) : defaultExclude;
+  const excludeWithDefaults = defaultExclude.concat(exclude ?? []);
 
   if (excludeWithDefaults.some(glob => minimatch(getPath(contract.fullyQualifiedName), glob))) {
     debug('Excluding contract: ' + contract.fullyQualifiedName);
