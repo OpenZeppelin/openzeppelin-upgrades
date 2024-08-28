@@ -20,7 +20,6 @@ import { BuildInfoDictionary, SpecifiedContracts } from './validate-upgrade-safe
 import { minimatch } from 'minimatch';
 import { ValidateCommandError } from './error';
 import { defaultExclude } from './default-exclude';
-import { ValidateCommandError } from './error';
 
 /**
  * Report for an upgradeable contract.
