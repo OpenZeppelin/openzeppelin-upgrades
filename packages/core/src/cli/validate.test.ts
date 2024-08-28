@@ -110,3 +110,25 @@ test('withDefaults - invalid unsafeAllow', t => {
     )}`,
   });
 });
+
+test('withDefaults - empty unsafeAllow', t => {
+  const parsedArgs = minimist(['validate', 'build-info.json', '--unsafeAllow']);
+  t.throws(() => withDefaults(parsedArgs), {
+    message: `Invalid option: --unsafeAllow cannot be empty`,
+  });
+});
+
+test('withDefaults - unsafeAllow multiple times', t => {
+  const parsedArgs = minimist([
+    'validate',
+    'build-info.json',
+    '--unsafeAllow',
+    'selfdestruct',
+    '--unsafeAllow',
+    'delegatecall',
+    '--unsafeAllow',
+    'constructor',
+  ]);
+  const opts = withDefaults(parsedArgs);
+  t.deepEqual(opts.unsafeAllow, ['selfdestruct', 'delegatecall', 'constructor']);
+});

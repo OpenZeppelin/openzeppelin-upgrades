@@ -16,8 +16,9 @@ Options:
   --contract <CONTRACT>  The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
   --reference <REFERENCE_CONTRACT>  Can only be used when the --contract option is also provided. The name or fully qualified name of the reference contract to use for storage layout comparisons. If not specified, uses the @custom:oz-upgrades-from annotation if it is defined in the contract that is being validated.
   --requireReference  Can only be used when the --contract option is also provided. Not compatible with --unsafeSkipStorageCheck. If specified, requires either the --reference option to be provided or the contract to have a @custom:oz-upgrades-from annotation.
-  --referenceBuildInfoDirs  Optional paths of additional build info directories from previous versions of the project to use for storage layout comparisons. When using this option, refer to one of these directories using prefix '<dirName>:' before the contract name or fully qualified name in the --reference option or @custom:oz-upgrades-from annotation, where <dirName> is the directory short name. Each directory short name must be unique, including compared to the main build info directory.
-  --unsafeAllow "<VALIDATION_ERRORS>"  Selectively disable one or more validation errors. Comma-separated list with one or more of the following: ${errorKinds.join(
+  --referenceBuildInfoDirs "<BUILD_INFO_DIR>[,<BUILD_INFO_DIR>...]"  Optional paths of additional build info directories from previous versions of the project to use for storage layout comparisons. When using this option, refer to one of these directories using prefix '<dirName>:' before the contract name or fully qualified name in the --reference option or @custom:oz-upgrades-from annotation, where <dirName> is the directory short name. Each directory short name must be unique, including compared to the main build info directory. If passing in multiple directories, separate them with commas or call the option multiple times, once for each directory.
+  --exclude "<GLOB_PATTERN>" [--exclude "<GLOB_PATTERN>"...]  Exclude validations for contracts in source file paths that match any of the given glob patterns. For example, --exclude "contracts/mocks/**/*.sol". Does not apply to reference contracts. If passing in multiple patterns, call the option multiple times, once for each pattern.
+  --unsafeAllow "<VALIDATION_ERROR>[,<VALIDATION_ERROR>...]"  Selectively disable one or more validation errors. Comma-separated list with one or more of the following: ${errorKinds.join(
     ', ',
   )}
   --unsafeAllowRenames  Configure storage layout check to allow variable renaming.
@@ -34,6 +35,7 @@ export async function main(args: string[]): Promise<void> {
       functionArgs.reference,
       functionArgs.opts,
       functionArgs.referenceBuildInfoDirs,
+      functionArgs.exclude,
     );
     console.log(result.explain());
     process.exitCode = result.ok ? 0 : 1;
@@ -50,7 +52,7 @@ function parseArgs(args: string[]) {
       'unsafeAllowLinkedLibraries',
       'requireReference',
     ],
-    string: ['unsafeAllow', 'contract', 'reference', 'referenceBuildInfoDirs'],
+    string: ['unsafeAllow', 'contract', 'reference', 'referenceBuildInfoDirs', 'exclude'],
     alias: { h: 'help' },
   });
   const extraArgs = parsedArgs._;
@@ -74,6 +76,7 @@ interface FunctionArgs {
   reference?: string;
   opts: Required<ValidateUpgradeSafetyOptions>;
   referenceBuildInfoDirs?: string[];
+  exclude?: string[];
 }
 
 /**
@@ -93,7 +96,8 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
     const contract = getAndValidateString(parsedArgs, 'contract');
     const reference = getAndValidateString(parsedArgs, 'reference');
     const opts = withDefaults(parsedArgs);
-    const referenceBuildInfoDirs = getAndValidateString(parsedArgs, 'referenceBuildInfoDirs')?.split(/,+/);
+    const referenceBuildInfoDirs = getAndValidateStringArray(parsedArgs, 'referenceBuildInfoDirs', true);
+    const exclude = getAndValidateStringArray(parsedArgs, 'exclude', false);
 
     if (contract === undefined) {
       if (reference !== undefined) {
@@ -102,16 +106,43 @@ export function getFunctionArgs(parsedArgs: minimist.ParsedArgs, extraArgs: stri
         throw new Error('The --requireReference option can only be used along with the --contract option.');
       }
     }
-    return { buildInfoDir, contract, reference, opts, referenceBuildInfoDirs };
+    return { buildInfoDir, contract, reference, opts, referenceBuildInfoDirs, exclude };
   }
 }
 
 function getAndValidateString(parsedArgs: minimist.ParsedArgs, option: string): string | undefined {
   const value = parsedArgs[option];
-  if (value !== undefined && value.trim().length === 0) {
-    throw new Error(`Invalid option: --${option} cannot be empty`);
+  if (value !== undefined) {
+    assertNonEmptyString(value, option);
   }
   return value;
+}
+
+function getAndValidateStringArray(
+  parsedArgs: minimist.ParsedArgs,
+  option: string,
+  useCommaDelimiter: boolean,
+): string[] | undefined {
+  const value = parsedArgs[option];
+  if (value !== undefined) {
+    if (Array.isArray(value)) {
+      return value;
+    } else {
+      assertNonEmptyString(value, option);
+      if (useCommaDelimiter) {
+        return value.split(/[\s,]+/);
+      } else {
+        return [value];
+      }
+    }
+  }
+  return value;
+}
+
+function assertNonEmptyString(value: unknown, option: string) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`Invalid option: --${option} cannot be empty`);
+  }
 }
 
 function validateOptions(parsedArgs: minimist.ParsedArgs) {
@@ -130,6 +161,7 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
         'reference',
         'requireReference',
         'referenceBuildInfoDirs',
+        'exclude',
       ].includes(key),
   );
   if (invalidArgs.length > 0) {
@@ -137,18 +169,13 @@ function validateOptions(parsedArgs: minimist.ParsedArgs) {
   }
 }
 
-function getUnsafeAllowKinds(unsafeAllow: string | undefined): ValidationError['kind'][] {
+function getUnsafeAllowKinds(parseArgs: minimist.ParsedArgs): ValidationError['kind'][] {
   type errorKindsType = (typeof errorKinds)[number];
 
-  if (unsafeAllow === undefined) {
-    return [];
-  }
-
-  const unsafeAllowTokens: string[] = unsafeAllow.split(/[\s,]+/);
+  const unsafeAllowTokens: string[] = getAndValidateStringArray(parseArgs, 'unsafeAllow', true) ?? [];
   if (unsafeAllowTokens.some(token => !errorKinds.includes(token as errorKindsType))) {
-    // This includes empty strings
     throw new Error(
-      `Invalid option: --unsafeAllow "${unsafeAllow}". Supported values for the --unsafeAllow option are: ${errorKinds.join(
+      `Invalid option: --unsafeAllow "${parseArgs['unsafeAllow']}". Supported values for the --unsafeAllow option are: ${errorKinds.join(
         ', ',
       )}`,
     );
@@ -164,7 +191,7 @@ export function withDefaults(parsedArgs: minimist.ParsedArgs): Required<Validate
     unsafeSkipStorageCheck: parsedArgs['unsafeSkipStorageCheck'],
     unsafeAllowCustomTypes: parsedArgs['unsafeAllowCustomTypes'],
     unsafeAllowLinkedLibraries: parsedArgs['unsafeAllowLinkedLibraries'],
-    unsafeAllow: getUnsafeAllowKinds(parsedArgs['unsafeAllow']),
+    unsafeAllow: getUnsafeAllowKinds(parsedArgs),
     requireReference: parsedArgs['requireReference'],
   };
 

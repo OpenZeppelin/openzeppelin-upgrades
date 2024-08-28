@@ -444,7 +444,7 @@ test('validate - references other build info dir by command with fully qualified
   t.snapshot(expectation.join('\n'));
 });
 
-test('validate - references multiple build info dirs by annotation', async t => {
+async function setupMultipleBuildInfoDirsTest(t: ExecutionContext<unknown>) {
   const temp = await getTempDir(t);
 
   const v1Dir = path.join(temp, 'build-info-v1');
@@ -467,9 +467,24 @@ test('validate - references multiple build info dirs by annotation', async t => 
   );
   await fs.writeFile(path.join(v2BranchDir, 'ok.json'), JSON.stringify(v2BranchBuildInfoOk));
   await fs.writeFile(path.join(v2BranchDir, 'bad.json'), JSON.stringify(v2BranchBuildInfoBad));
+  return { v2BranchDir, v1Dir, v2Dir };
+}
+
+test('validate - references multiple build info dirs by annotation', async t => {
+  const { v2BranchDir, v1Dir, v2Dir } = await setupMultipleBuildInfoDirsTest(t);
 
   const error = await t.throwsAsync(
     execAsync(`${CLI} validate ${v2BranchDir} --referenceBuildInfoDirs ${v1Dir},${v2Dir}`),
+  );
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - references multiple build info dirs by annotation - same arg multiple times', async t => {
+  const { v2BranchDir, v1Dir, v2Dir } = await setupMultipleBuildInfoDirsTest(t);
+
+  const error = await t.throwsAsync(
+    execAsync(`${CLI} validate ${v2BranchDir} --referenceBuildInfoDirs ${v1Dir} --referenceBuildInfoDirs ${v2Dir}`),
   );
   const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
   t.snapshot(expectation.join('\n'));
@@ -571,6 +586,89 @@ test('validate - contract must not have build info dir name - fully qualified', 
     ),
     error?.message,
   );
+});
+
+test('validate - excludes by pattern - no match', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --exclude "**/NoMatch.sol"`));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - excludes by pattern - some match', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --exclude "**/Abstract*.sol"`));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - excludes by pattern - all match', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = await execAsync(`${CLI} validate ${temp} --exclude "**/excludes/*.sol"`);
+  t.snapshot(output);
+});
+
+test('validate - excludes by pattern - all match using commas within glob', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = await execAsync(`${CLI} validate ${temp} --exclude "**/excludes/{Abstract*,UsesAbstractUUPS}.sol"`);
+  t.snapshot(output);
+});
+
+test('validate - exclude passed multiple times', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/UsesAbstractUUPS.sol:UsesAbstractUUPS`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = await execAsync(
+    `${CLI} validate ${temp} --exclude "**/excludes/Abstract*.sol" --exclude "**/UsesAbstractUUPS.sol"`,
+  );
+  t.snapshot(output);
+});
+
+test('validate - excludes specified contract', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:BecomesBadLayout`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(
+    execAsync(`${CLI} validate ${temp} --contract BecomesBadLayout --reference StorageV1 --exclude "**/Validate.sol"`),
+  );
+  t.true(
+    error?.message.includes('No validation report found for contract contracts/test/cli/Validate.sol:BecomesBadLayout'),
+    error?.message,
+  );
+});
+
+test('validate - excludes UpgradeableBeacon and its parents by default', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/ImportVersionsAndBeacon.sol:Dummy`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp}`));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
+});
+
+test('validate - excludes UpgradeableBeacon and its parents by default, and excludes one contract from layout comparisions', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/excludes/ImportVersionsAndBeacon.sol:Dummy`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --exclude "**/V2Bad1.sol"`));
+  const expectation: string[] = [`Stdout: ${(error as any).stdout}`, `Stderr: ${(error as any).stderr}`];
+  t.snapshot(expectation.join('\n'));
 });
 
 test('validate - self reference by annotation', async t => {
