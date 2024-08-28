@@ -4,7 +4,6 @@ import {
   getContractVersion,
   getStorageLayout,
   ValidationOptions,
-  withValidationDefaults,
   Version,
   ValidationData,
   ValidateUpgradeSafetyOptions,
@@ -32,7 +31,16 @@ export class UpgradeableContractReport implements Report {
     readonly reference: string | undefined,
     readonly standaloneReport: UpgradeableContractErrorReport,
     readonly storageLayoutReport: LayoutCompatibilityReport | undefined,
-  ) {}
+  ) {
+    if (reference === contract) {
+      throw new ValidateCommandError(
+        `The contract ${contract} must not use itself as a reference for storage layout comparisons.`,
+        () => `\
+If this is the first version of your contract, do not specify a reference.
+If this is a subsequent version, keep the previous version of the contract in another file and specify that as the reference, or specify a reference from another build info directory containing the previous version. If you do not have the previous version available, you can skip the storage layout check using the \`unsafeSkipStorageCheck\` option, which is a dangerous option meant to be used as a last resort.`,
+      );
+    }
+  }
 
   get ok(): boolean {
     return this.standaloneReport.ok && (this.storageLayoutReport === undefined || this.storageLayoutReport.ok);
@@ -123,7 +131,7 @@ export function getContractReports(
 function getUpgradeableContractReport(
   contract: SourceContract,
   referenceContract: SourceContract | undefined,
-  opts: ValidationOptions,
+  opts: Required<ValidationOptions>,
   exclude?: string[],
 ): UpgradeableContractReport | undefined {
   const excludeWithDefaults = defaultExclude.concat(exclude ?? []);
@@ -163,7 +171,7 @@ function getUpgradeableContractReport(
     } else {
       reference = referenceContract.fullyQualifiedName;
     }
-    storageLayoutReport = getStorageUpgradeReport(referenceLayout, layout, withValidationDefaults(opts));
+    storageLayoutReport = getStorageUpgradeReport(referenceLayout, layout, opts);
   }
 
   return new UpgradeableContractReport(contract.fullyQualifiedName, reference, standaloneReport, storageLayoutReport);
@@ -172,10 +180,10 @@ function getUpgradeableContractReport(
 function getStandaloneReport(
   data: ValidationData,
   version: Version,
-  opts: ValidationOptions,
+  opts: Required<ValidationOptions>,
   excludeWithDefaults: string[],
 ): UpgradeableContractErrorReport {
-  const allErrors = getErrors(data, version, withValidationDefaults(opts));
+  const allErrors = getErrors(data, version, opts);
 
   const includeErrors = allErrors.filter(e => {
     const shouldExclude = excludeWithDefaults.some(glob => minimatch(getPath(e.src), glob));
