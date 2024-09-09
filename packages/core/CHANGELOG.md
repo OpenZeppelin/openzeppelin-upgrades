@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix Hardhat compile error when using solc version `0.8.27`. ([#1075](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1075))
+
 ## 1.37.0 (2024-08-28)
 
 - **Breaking change**: CLI: Disallow self-references for storage layout validations. ([#1067](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1067))
