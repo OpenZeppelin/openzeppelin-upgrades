@@ -164,7 +164,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput, solcVe
 }
 
 /**
- * If Slang is supported for the current platform and we have the compiler version available,
+ * If we have the compiler version available and Slang is supported for the current platform and compiler version,
  * use Slang to parse and remove all NatSpec comments that do not precede a struct definition and return the modified content.
  *
  * Otherwise, return the original content.
@@ -172,7 +172,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput, solcVe
 function tryRemoveNonStructNatSpec(origContent: string, solcVersion: string | undefined): string {
   const natSpecRemovals: Modification[] = [];
 
-  if (solcVersion !== undefined && tryRequire('@nomicfoundation/slang')) {
+  if (solcVersion !== undefined && slangSupportsPlatformAndVersion(solcVersion)) {
     /* eslint-disable @typescript-eslint/no-var-requires */
     const { Language } = require('@nomicfoundation/slang/language');
     const { NonterminalKind, TerminalKind } = require('@nomicfoundation/slang/kinds');
@@ -215,6 +215,21 @@ function tryRequire(id: string) {
     // do nothing
   }
   return false;
+}
+
+/**
+ * Whether Slang is supported for the current platform and the given compiler version.
+ */
+function slangSupportsPlatformAndVersion(solcVersion: string): boolean {
+  if (tryRequire('@nomicfoundation/slang')) {
+    /* eslint-disable @typescript-eslint/no-var-requires */
+    const { Language } = require('@nomicfoundation/slang/language');
+    /* eslint-enable @typescript-eslint/no-var-requires */
+
+    return Language.supportedVersions().includes(solcVersion);
+  } else {
+    return false;
+  }
 }
 
 interface Modification {
