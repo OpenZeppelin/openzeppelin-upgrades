@@ -172,7 +172,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput, solcVe
 function tryRemoveNonStructNatSpec(origContent: string, solcVersion: string | undefined): string {
   const natSpecRemovals: Modification[] = [];
 
-  if (solcVersion !== undefined && slangSupportsPlatformAndVersion(solcVersion)) {
+  if (solcVersion !== undefined && tryRequire('@nomicfoundation/slang') && slangSupportsVersion(solcVersion)) {
     /* eslint-disable @typescript-eslint/no-var-requires */
     const { Language } = require('@nomicfoundation/slang/language');
     const { NonterminalKind, TerminalKind } = require('@nomicfoundation/slang/kinds');
@@ -217,19 +217,12 @@ function tryRequire(id: string) {
   return false;
 }
 
-/**
- * Whether Slang is supported for the current platform and the given compiler version.
- */
-function slangSupportsPlatformAndVersion(solcVersion: string): boolean {
-  if (tryRequire('@nomicfoundation/slang')) {
-    /* eslint-disable @typescript-eslint/no-var-requires */
-    const { Language } = require('@nomicfoundation/slang/language');
-    /* eslint-enable @typescript-eslint/no-var-requires */
+function slangSupportsVersion(solcVersion: string): boolean {
+  /* eslint-disable @typescript-eslint/no-var-requires */
+  const { Language } = require('@nomicfoundation/slang/language');
+  /* eslint-enable @typescript-eslint/no-var-requires */
 
-    return Language.supportedVersions().includes(solcVersion);
-  } else {
-    return false;
-  }
+  return Language.supportedVersions().includes(solcVersion);
 }
 
 interface Modification {
