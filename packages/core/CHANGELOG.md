@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.37.1 (2024-09-09)
 
 - Fix Hardhat compile error when using solc version `0.8.27`. ([#1075](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1075))
 
