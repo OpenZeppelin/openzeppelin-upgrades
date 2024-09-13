@@ -836,6 +836,45 @@ test('calls defender deploy with multiple external libraries', async t => {
   assertResult(t, result);
 });
 
+test('calls defender deploy with metadata', async t => {
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
+
+  const contractPath = 'contracts/Greeter.sol';
+  const contractName = 'Greeter';
+
+  const factory = await ethers.getContractFactory(contractName);
+  const result = await deploy.defenderDeploy(fakeHre, factory, {
+    metadata: {
+      commitHash: '4ae3e0d',
+      tag: 'v1.0.0',
+      anyOtherField: 'anyValue',
+    },
+  });
+
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: {
+      commitHash: '4ae3e0d',
+      tag: 'v1.0.0',
+      anyOtherField: 'anyValue',
+    },
+  });
+
+  assertResult(t, result);
+});
+
 test('waits until address is available', async t => {
   const getDeployedContractStub = sinon.stub();
   getDeployedContractStub.onFirstCall().returns({
