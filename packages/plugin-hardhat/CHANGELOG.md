@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Defender: Add `metadata` option. ([#1079](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1079))
+
 ## 3.2.1 (2024-07-31)
 
 - Fix Hardhat compile error when public variables are used to implement interface functions. ([#1055](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1055))
