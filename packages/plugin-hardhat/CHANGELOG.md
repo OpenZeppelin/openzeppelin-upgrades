@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.3.0 (2024-09-16)
 
 - Defender: Add `metadata` option. ([#1079](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1079))
 
