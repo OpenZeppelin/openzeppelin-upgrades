@@ -113,6 +113,7 @@ export async function defenderDeploy(
     createFactoryAddress: opts.createFactoryAddress,
     txOverrides: parseTxOverrides(opts.txOverrides),
     libraries: contractInfo.libraries,
+    metadata: opts.metadata,
   };
 
   let deploymentResponse: DeploymentResponse;

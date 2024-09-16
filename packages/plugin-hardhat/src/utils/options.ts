@@ -1,4 +1,4 @@
-import { SourceCodeLicense } from '@openzeppelin/defender-sdk-deploy-client';
+import { DeployMetadata, SourceCodeLicense } from '@openzeppelin/defender-sdk-deploy-client';
 import {
   DeployOpts,
   ProxyKindOption,
@@ -67,6 +67,7 @@ export type DefenderDeployOptions = DefenderDeploy & {
   createFactoryAddress?: string;
   licenseType?: SourceCodeLicense;
   skipLicenseType?: boolean;
+  metadata?: DeployMetadata;
 };
 
 /**
