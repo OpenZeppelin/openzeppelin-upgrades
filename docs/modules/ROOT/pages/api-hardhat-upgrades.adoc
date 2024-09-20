@@ -57,6 +57,7 @@ async function deployProxy(
     unsafeAllow?: ValidationError[],
     constructorArgs?: unknown[],
     initialOwner?: string,
+    unsafeSkipProxyAdminCheck?: boolean,
     timeout?: number,
     pollingInterval?: number,
     redeployImplementation?: 'always' | 'never' | 'onchange',
