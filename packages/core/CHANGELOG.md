@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Supports checking to ensure `initialOwner` is not a ProxyAdmin contract when deploying a transparent proxy from Hardhat.
+- Supports checking to ensure `initialOwner` is not a ProxyAdmin contract when deploying a transparent proxy from Hardhat. ([#1083](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1083))
 
 ## 1.37.1 (2024-09-09)
 
