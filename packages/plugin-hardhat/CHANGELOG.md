@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Potentially breaking changes
+- Adds a check to ensure `initialOwner` is not a ProxyAdmin contract when deploying a transparent proxy.
+
 ## 3.3.0 (2024-09-16)
 
 - Defender: Add `metadata` option. ([#1079](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1079))

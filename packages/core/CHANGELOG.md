@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Adds a check to ensure `initialOwner` is not a ProxyAdmin contract when deploying a transparent proxy from Hardhat.
+
 ## 1.37.1 (2024-09-09)
 
 - Fix Hardhat compile error when using solc version `0.8.27`. ([#1075](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1075))
