@@ -75,7 +75,7 @@ test('initial owner - must not be ProxyAdmin ', async t => {
   const predeployedProxyAdminAddress = await proxyAdmin.getAddress();
 
   const e = await t.throwsAsync(() =>
-    upgrades.deployProxy(Greeter, ['hello'], { initialOwner: predeployedProxyAdminAddress })
+    upgrades.deployProxy(Greeter, ['hello'], { initialOwner: predeployedProxyAdminAddress }),
   );
   t.true(e.message.includes('`initialOwner` must not be a ProxyAdmin contract.'), e.message);
   t.true(e.message.includes(predeployedProxyAdminAddress), e.message);
@@ -89,7 +89,7 @@ test('initial owner - must not be ownable', async t => {
   const predeployedOwnableAddress = await hasOwner.getAddress();
 
   const e = await t.throwsAsync(() =>
-    upgrades.deployProxy(Greeter, ['hello'], { initialOwner: predeployedOwnableAddress })
+    upgrades.deployProxy(Greeter, ['hello'], { initialOwner: predeployedOwnableAddress }),
   );
   t.true(e.message.includes('`initialOwner` must not be a ProxyAdmin contract.'), e.message);
   t.true(e.message.includes(predeployedOwnableAddress), e.message);
@@ -102,5 +102,8 @@ test('initial owner - skip ProxyAdmin check', async t => {
   const hasOwner = await HasOwner.deploy(defaultSigner.address);
   const predeployedOwnableAddress = await hasOwner.getAddress();
 
-  await upgrades.deployProxy(Greeter, ['hello'], { initialOwner: predeployedOwnableAddress, unsafeSkipProxyAdminCheck: true });
+  await upgrades.deployProxy(Greeter, ['hello'], {
+    initialOwner: predeployedOwnableAddress,
+    unsafeSkipProxyAdminCheck: true,
+  });
 });

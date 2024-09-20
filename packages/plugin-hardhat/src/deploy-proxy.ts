@@ -87,11 +87,12 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
       case 'transparent': {
         const initialOwner = await getInitialOwner(opts, signer);
 
-        if (!opts.unsafeSkipProxyAdminCheck && await inferProxyAdmin(provider, initialOwner)) {
+        if (!opts.unsafeSkipProxyAdminCheck && (await inferProxyAdmin(provider, initialOwner))) {
           throw new UpgradesError(
-            "`initialOwner` must not be a ProxyAdmin contract.",
-            () => `If the contract at address ${initialOwner} is not a ProxyAdmin contract and you are sure that this contract is able to call functions on an actual ProxyAdmin, skip this check with the \`unsafeSkipProxyAdminCheck\` option.`,
-          )
+            '`initialOwner` must not be a ProxyAdmin contract.',
+            () =>
+              `If the contract at address ${initialOwner} is not a ProxyAdmin contract and you are sure that this contract is able to call functions on an actual ProxyAdmin, skip this check with the \`unsafeSkipProxyAdminCheck\` option.`,
+          );
         }
 
         const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);

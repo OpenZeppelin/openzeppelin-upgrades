@@ -18,22 +18,20 @@ function makeProviderError(msg: string): EthereumProvider {
 
 test('inferProxyAdmin returns true when owner looks like an address', async t => {
   // abi encoding of address 0x1000000000000000000000000000000000000123
-  const provider = makeProviderReturning(
-    '0x0000000000000000000000001000000000000000000000000000000000000123',
-  );
+  const provider = makeProviderReturning('0x0000000000000000000000001000000000000000000000000000000000000123');
   t.true(await inferProxyAdmin(provider, addr));
 });
 
 test('inferProxyAdmin returns false when owner is more than 20 bytes', async t => {
-  const provider = makeProviderReturning(
-    '0x0000000000000000000000011000000000000000000000000000000000000123',
-  );
+  const provider = makeProviderReturning('0x0000000000000000000000011000000000000000000000000000000000000123');
   t.false(await inferProxyAdmin(provider, addr));
 });
 
 test('inferProxyAdmin returns false when owner is a string', async t => {
   // abi encoding of string 'foo'
-  const provider = makeProviderReturning('0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000');
+  const provider = makeProviderReturning(
+    '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000',
+  );
   t.false(await inferProxyAdmin(provider, addr));
 });
 
