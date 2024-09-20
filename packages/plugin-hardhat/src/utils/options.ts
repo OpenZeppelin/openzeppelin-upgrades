@@ -82,6 +82,11 @@ export type EthersDeployOptions = {
 
 export type InitialOwner = {
   initialOwner?: string;
+
+  /**
+   * Skips checking the `initialOwner` option when deploying a transparent proxy.
+   */
+  unsafeSkipProxyAdminCheck?: boolean;
 };
 
 export type DeployBeaconProxyOptions = EthersDeployOptions &
