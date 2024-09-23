@@ -22,13 +22,13 @@ test('inferProxyAdmin returns true when owner looks like an address', async t =>
   t.true(await inferProxyAdmin(provider, addr));
 });
 
-test('inferProxyAdmin returns false when returned value has is more than 20 bytes', async t => {
+test('inferProxyAdmin returns false when returned value is 32 bytes but clearly not an address', async t => {
   // some higher order byte beyond 20 bytes is non-zero
   const provider = makeProviderReturning('0x0000000000000000000000011000000000000000000000000000000000000123');
   t.false(await inferProxyAdmin(provider, addr));
 });
 
-test('inferProxyAdmin returns false when owner is a string', async t => {
+test('inferProxyAdmin returns false when returned value is a string', async t => {
   // abi encoding of string 'foo'
   const provider = makeProviderReturning(
     '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000',
