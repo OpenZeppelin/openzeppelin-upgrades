@@ -8,7 +8,7 @@ import { toChecksumAddress } from 'ethereumjs-util';
  */
 export function parseAddress(addressString: string): string | undefined {
   const buf = Buffer.from(addressString.replace(/^0x/, ''), 'hex');
-  if (!buf.slice(0, 12).equals(Buffer.alloc(12, 0))) {
+  if (!buf.slice(0, 12).equals(Buffer.alloc(12, 0)) || buf.length !== 32) {
     return undefined;
   }
   const address = '0x' + buf.toString('hex', 12, 32); // grab the last 20 bytes
