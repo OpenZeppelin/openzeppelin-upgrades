@@ -23,7 +23,7 @@ test('inferProxyAdmin returns true when owner looks like an address', async t =>
 });
 
 test('inferProxyAdmin returns false when returned value is 32 bytes but clearly not an address', async t => {
-  // some higher order bytes beyond 20 bytes are non-zero (the 'abc' in the below)
+  // dirty upper bits beyond 20 bytes (the 'abc' in the below)
   const provider = makeProviderReturning('0x000000000000000000000abc1000000000000000000000000000000000000123');
   t.false(await inferProxyAdmin(provider, addr));
 });
