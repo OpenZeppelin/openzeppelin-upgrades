@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.4.0 (2024-09-23)
 
 ### Potentially breaking changes
 - Adds a check to ensure `initialOwner` is not a ProxyAdmin contract when deploying a transparent proxy. ([#1083](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1083))
