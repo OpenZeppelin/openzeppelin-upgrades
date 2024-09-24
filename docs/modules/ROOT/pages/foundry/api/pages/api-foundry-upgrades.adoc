@@ -1,5 +1,39 @@
 = OpenZeppelin Foundry Upgrades API
 
+== Contract name formats
+
+Contract names must be provided in specific formats depending on context. The following are the required formats for each context:
+
+=== Foundry artifact format
+
+Contexts:
+
+* `contractName` parameter
+* `referenceContract` option if `referenceBuildInfoDir` option is not set
+
+Can be in any of the following forms according to Foundry's https://book.getfoundry.sh/cheatcodes/get-code[getCode] cheatcode:
+
+* the Solidity file name, e.g. `ContractV1.sol`
+* the Solidity file name and the contract name, e.g. `ContractV1.sol:ContractV1`
+* the artifact path relative to the project root directory, e.g. `out/ContractV1.sol/ContractV1.json`
+
+=== Annotation format
+
+Contexts:
+
+* `@custom:oz-upgrades-from <reference>` annotation
+* `referenceContract` option if `referenceBuildInfoDir` option is set
+
+Can be in any of the following forms according to the https://docs.openzeppelin.com/upgrades-plugins/api-core#define-reference-contracts[OpenZeppelin Upgrades CLI]:
+
+* the contract name, e.g. `ContractV1`
+* fully qualified contract name, e.g. `contracts/tokens/ContractV1.sol:ContractV1`
+
+If the `referenceBuildInfoDir` option is set, include the build info directory short name as a prefix, resulting in one of the following forms:
+
+* the build info directory short name and the contract name, e.g. `build-info-v1:ContractV1`
+* the build info directory short name and the fully qualified contract name, e.g. `build-info-v1:contracts/tokens/ContractV1.sol:ContractV1`
+
 == Common Options
 
 The following options can be used with some of the below functions. See https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades/blob/main/src/Options.sol[Options.sol] for detailed descriptions of each option.

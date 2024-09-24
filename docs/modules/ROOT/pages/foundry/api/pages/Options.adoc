@@ -11,9 +11,12 @@ import { Options } from "openzeppelin-foundry-upgrades/Options.sol";
 ```solidity
 struct Options {
   string referenceContract;
+  string referenceBuildInfoDir;
   bytes constructorData;
+  string[] exclude;
   string unsafeAllow;
   bool unsafeAllowRenames;
+  bool unsafeSkipProxyAdminCheck;
   bool unsafeSkipStorageCheck;
   bool unsafeSkipAllChecks;
   struct DefenderOptions defender;
