@@ -91,6 +91,10 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput, solcVe
                 break;
               }
               case 'StructDefinition': {
+                // Do not add state variable in a library or interface, since that is not allowed by Solidity
+                if (contractDef.contractKind !== 'contract') {
+                  continue;
+                }
                 const storageLocation = getStorageLocationAnnotation(contractNode);
                 if (storageLocation !== undefined) {
                   const structName = contractNode.name;
