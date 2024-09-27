@@ -19,7 +19,7 @@ test('namespace outside contract - error', async t => {
 });
 
 test('namespace in library - warning', async t => {
-  const contract = 'contracts/test/NamespacedInLibrary.sol:Example';
+  const contract = 'contracts/test/NamespacedInLibrary.sol:UsesLibraryWithNamespace';
 
   const { solcOutput, decodeSrc } = await getOutputAndDecoder(contract);
   validate(solcOutput, decodeSrc);
