@@ -23,6 +23,7 @@ import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } fro
 import { getStorageLocationAnnotation, isNamespaceSupported } from '../storage/namespace';
 import { UpgradesError } from '../error';
 import { assertUnreachable } from '../utils/assert';
+import { logWarning } from '../utils/log';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -266,15 +267,36 @@ function checkNamespaceSolidityVersion(source: string, solcVersion?: string, sol
 
 function checkNamespacesOutsideContract(source: string, solcOutput: SolcOutput, decodeSrc: SrcDecoder) {
   for (const node of solcOutput.sources[source].ast.nodes) {
+    // Namespace struct outside contract - error
     if (isNodeType('StructDefinition', node)) {
-      const storageLocation = getStorageLocationAnnotation(node);
-      if (storageLocation !== undefined) {
-        throw new UpgradesError(
-          `${decodeSrc(node)}: Namespace struct ${node.name} is defined outside of a contract`,
-          () =>
-            `Structs with the @custom:storage-location annotation must be defined within a contract. Move the struct definition into a contract, or remove the annotation if the struct is not used for namespaced storage.`,
-        );
+      assertNotNamespace(node, decodeSrc, true);
+    }
+
+    // Namespace struct in library - warning (don't give an error to avoid breaking changes, since this is quite common)
+    if (isNodeType('ContractDefinition', node) && node.contractKind === 'library') {
+      for (const child of node.nodes) {
+        if (isNodeType('StructDefinition', child)) {
+          assertNotNamespace(child, decodeSrc, false);
+        }
       }
+    }
+  }
+}
+
+function assertNotNamespace(node: StructDefinition, decodeSrc: SrcDecoder, strict: boolean) {
+  const storageLocation = getStorageLocationAnnotation(node);
+  if (storageLocation !== undefined) {
+    const msg = `${decodeSrc(node)}: Namespace struct ${node.name} is defined outside of a contract`;
+    if (strict) {
+      throw new UpgradesError(
+        msg,
+        () =>
+          `Structs with the @custom:storage-location annotation must be defined within a contract. Move the struct definition into a contract, or remove the annotation if the struct is not used for namespaced storage.`,
+      );
+    } else {
+      logWarning(msg, [
+        'Structs with the @custom:storage-location annotation must be defined within a contract, otherwise they are not included in storage layout validations. Move the struct definition into a contract, or remove the annotation if the struct is not used for namespaced storage.',
+      ]);
     }
   }
 }

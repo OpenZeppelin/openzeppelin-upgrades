@@ -144,3 +144,29 @@ test('multiple namespaces and regular variables bad', t => {
     },
   });
 });
+
+test('interface with namespace - upgrade ok', t => {
+  const v1 = t.context.extractStorageLayout('InterfaceWithNamespace');
+  const v2 = t.context.extractStorageLayout('InterfaceWithNamespaceV2_Ok');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, []);
+});
+
+test('interface with namespace - upgrade bad', t => {
+  const v1 = t.context.extractStorageLayout('InterfaceWithNamespace');
+  const v2 = t.context.extractStorageLayout('InterfaceWithNamespaceV2_Bad');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.like(comparison, {
+    length: 1,
+    0: {
+      kind: 'delete',
+      original: {
+        contract: 'InterfaceWithNamespace',
+        label: 'x',
+        type: {
+          id: 't_uint256',
+        },
+      },
+    },
+  });
+});

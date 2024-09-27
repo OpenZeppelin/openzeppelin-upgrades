@@ -179,3 +179,63 @@ contract MultipleNamespacesAndRegularVariablesV2_Bad {
     uint128 public a;
     uint256 public b;
 }
+
+interface InterfaceWithNamespace {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        uint256 x;
+        uint256 y;
+    }
+}
+
+contract UsesInterface is InterfaceWithNamespace {
+    // keccak256(abi.encode(uint256(keccak256("example.main")) - 1)) & ~bytes32(uint256(0xff));
+    bytes32 internal constant MAIN_STORAGE_LOCATION =
+        0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab500;
+
+    function _getMainStorage() internal pure returns (MainStorage storage $) {
+        assembly {
+            $.slot := MAIN_STORAGE_LOCATION
+        }
+    }
+}
+
+interface InterfaceWithNamespaceV2_Ok {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        uint256 x;
+        uint256 y;
+        uint256 z;
+    }
+}
+
+contract UsesInterfaceV2_Ok is InterfaceWithNamespaceV2_Ok {
+    // keccak256(abi.encode(uint256(keccak256("example.main")) - 1)) & ~bytes32(uint256(0xff));
+    bytes32 internal constant MAIN_STORAGE_LOCATION =
+        0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab500;
+
+    function _getMainStorage() internal pure returns (MainStorage storage $) {
+        assembly {
+            $.slot := MAIN_STORAGE_LOCATION
+        }
+    }
+}
+
+interface InterfaceWithNamespaceV2_Bad {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        uint256 y;
+    }
+}
+
+contract UsesInterfaceV2_Bad is InterfaceWithNamespaceV2_Bad {
+    // keccak256(abi.encode(uint256(keccak256("example.main")) - 1)) & ~bytes32(uint256(0xff));
+    bytes32 internal constant MAIN_STORAGE_LOCATION =
+        0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab500;
+
+    function _getMainStorage() internal pure returns (MainStorage storage $) {
+        assembly {
+            $.slot := MAIN_STORAGE_LOCATION
+        }
+    }
+}

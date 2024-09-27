@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Fix Hardhat compile error when library or interface has struct with namespace annotation.
+- Fix Hardhat compile error when library or interface has struct with namespace annotation. ([#1086](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1086))
+- Log warning if library contains namespace annotation. ([#1086](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1086))
 
 > **Note**
 > Namespaces should be defined in contracts according to [ERC-7201: Namespaced Storage Layouts](https://eips.ethereum.org/EIPS/eip-7201). Structs with namespace annotations defined in libraries or interfaces outside of a contract's inheritance are not included in storage layout validations.
