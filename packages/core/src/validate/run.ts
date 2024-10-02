@@ -267,13 +267,11 @@ function checkNamespaceSolidityVersion(source: string, solcVersion?: string, sol
 
 function checkNamespacesOutsideContract(source: string, solcOutput: SolcOutput, decodeSrc: SrcDecoder) {
   for (const node of solcOutput.sources[source].ast.nodes) {
-    // Namespace struct outside contract - error
     if (isNodeType('StructDefinition', node)) {
+      // Namespace struct outside contract - error
       assertNotNamespace(node, decodeSrc, true);
-    }
-
-    // Namespace struct in library - warning (don't give an error to avoid breaking changes, since this is quite common)
-    if (isNodeType('ContractDefinition', node) && node.contractKind === 'library') {
+    } else if (isNodeType('ContractDefinition', node) && node.contractKind === 'library') {
+      // Namespace struct in library - warning (don't give an error to avoid breaking changes, since this is quite common)
       for (const child of node.nodes) {
         if (isNodeType('StructDefinition', child)) {
           assertNotNamespace(child, decodeSrc, false);
