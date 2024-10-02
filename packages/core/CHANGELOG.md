@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.39.0 (2024-10-02)
+
+- Fix Hardhat compile error when library or interface has struct with namespace annotation. ([#1086](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1086))
+- Log warning if library contains namespace annotation. ([#1086](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1086))
+
+> **Note**
+> Namespaces should be defined in contracts according to [ERC-7201: Namespaced Storage Layouts](https://eips.ethereum.org/EIPS/eip-7201). Structs with namespace annotations defined in libraries or interfaces outside of a contract's inheritance are not included in storage layout validations.
+
 ## 1.38.0 (2024-09-23)
 
 - Supports checking to ensure `initialOwner` is not a ProxyAdmin contract when deploying a transparent proxy from Hardhat. ([#1083](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1083))

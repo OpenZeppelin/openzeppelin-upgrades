@@ -305,3 +305,20 @@ contract HasSpecialFunctions {
 
     bytes4 constant PAYABLE_SELECTOR = this.hasPayable.selector;
 }
+
+/// This is not considered a namespace according to ERC-7201 because the namespaced struct is outside of a contract.
+library LibraryWithNamespace {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        uint256 x;
+        uint256 y;
+    }
+}
+
+interface InterfaceWithNamespace {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        uint256 x;
+        uint256 y;
+    }
+}
