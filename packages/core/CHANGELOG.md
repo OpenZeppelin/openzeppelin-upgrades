@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support ignoring Hardhat compile errors when extracting detailed namespaced storage layouts for validations.
+
 ## 1.39.0 (2024-10-02)
 
 - Fix Hardhat compile error when library or interface has struct with namespace annotation. ([#1086](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1086))

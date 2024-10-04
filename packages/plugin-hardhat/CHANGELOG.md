@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support ignoring Hardhat compile errors when extracting detailed namespaced storage layouts for validations.
+
 ## 3.4.0 (2024-09-23)
 
 ### Potentially breaking changes
