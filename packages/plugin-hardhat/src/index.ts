@@ -101,7 +101,10 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
     if (isNamespaceSupported(args.solcVersion)) {
       const namespacedInput = makeNamespacedInput(args.input, output, args.solcVersion);
       namespacedOutput = (await runSuper({ ...args, quiet: true, input: namespacedInput })).output;
-      await checkNamespacedCompileErrors(namespacedOutput);
+      if (await checkNamespacedCompileErrors(namespacedOutput)) {
+        // If there are compile errors in the namespaced output, omit it
+        namespacedOutput = undefined;
+      }
     }
 
     const validations = validate(output, decodeSrc, args.solcVersion, args.input, namespacedOutput);
@@ -113,9 +116,10 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 
 /**
  * Checks for compile errors in the modified contracts for namespaced storage.
- * If errors are found, throws an error with the compile error messages.
+ * If errors are found, prints a warning with the compile error messages and returns true.
+ * Otherwise, returns false.
  */
-async function checkNamespacedCompileErrors(namespacedOutput: SolcOutput) {
+async function checkNamespacedCompileErrors(namespacedOutput: SolcOutput): Promise<boolean> {
   const errors = [];
   if (namespacedOutput.errors !== undefined) {
     for (const error of namespacedOutput.errors) {
@@ -125,13 +129,18 @@ async function checkNamespacedCompileErrors(namespacedOutput: SolcOutput) {
     }
   }
   if (errors.length > 0) {
-    const { UpgradesError } = await import('@openzeppelin/upgrades-core');
-    throw new UpgradesError(
-      `Failed to compile modified contracts for namespaced storage:\n\n${errors.join('\n')}`,
-      () =>
+    const { logWarning } = await import('@openzeppelin/upgrades-core');
+    logWarning(
+      `Failed to compile modified contracts for namespaced storage layout validations:\n\n${errors.join('\n')}`,
+      [
         'Please report this at https://zpl.in/upgrades/report. If possible, include the source code for the contracts mentioned in the errors above.',
+        'This step allows for advanced storage modifications such as tight varible packing when performing upgrades with namespaced storage layouts.',
+        'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades, you can ignore this warning.',
+      ]
     );
+    return true;
   }
+  return false;
 }
 
 extendEnvironment(hre => {
