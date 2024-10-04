@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Support ignoring Hardhat compile errors when extracting detailed namespaced storage layouts for validations.
+- Support ignoring Hardhat compile errors when extracting detailed namespaced storage layouts for validations. ([#1090](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1090))
 
 ## 1.39.0 (2024-10-02)
 
