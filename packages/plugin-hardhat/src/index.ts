@@ -112,14 +112,14 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
           'This step allows for advanced storage modifications such as tight varible packing when performing upgrades with namespaced storage layouts.',
         ];
 
-        switch (hre.config.namespacedCompileFailure) {
+        switch (hre.config.namespacedCompileErrors) {
           case undefined:
           case 'error': {
             const { UpgradesError } = await import('@openzeppelin/upgrades-core');
             const details = [
               ...preamble,
               'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades,',
-              "set namespacedCompileFailure: 'warn' or namespacedCompileFailure: 'ignore' in your hardhat config to convert this to a warning or to ignore this.",
+              "set namespacedCompileErrors: 'warn' or namespacedCompileErrors: 'ignore' in your hardhat config to convert this to a warning or to ignore this.",
             ];
             throw new UpgradesError(msg, () => details.join('\n'));
           }
@@ -128,7 +128,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
             const details = [
               ...preamble,
               'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades,',
-              "set namespacedCompileFailure: 'ignore' in your hardhat config to ignore this.",
+              "set namespacedCompileErrors: 'ignore' in your hardhat config to ignore this.",
             ];
             logWarning(msg, details);
             break;
@@ -136,7 +136,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
           case 'ignore':
             break;
           default:
-            assertUnreachable(hre.config.namespacedCompileFailure);
+            assertUnreachable(hre.config.namespacedCompileErrors);
         }
 
         namespacedOutput = undefined;

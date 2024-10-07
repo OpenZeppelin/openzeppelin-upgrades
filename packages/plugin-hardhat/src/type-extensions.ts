@@ -17,16 +17,16 @@ export interface HardhatDefenderConfig {
   network?: string;
 }
 
-export type NamespacedCompileFailureRule = 'error' | 'warn' | 'ignore';
+export type NamespacedCompileErrorsRule = 'error' | 'warn' | 'ignore';
 
 declare module 'hardhat/types/config' {
   export interface HardhatUserConfig {
     defender?: HardhatDefenderConfig;
-    namespacedCompileFailure?: NamespacedCompileFailureRule;
+    namespacedCompileErrors?: NamespacedCompileErrorsRule;
   }
 
   export interface HardhatConfig {
     defender?: HardhatDefenderConfig;
-    namespacedCompileFailure?: NamespacedCompileFailureRule;
+    namespacedCompileErrors?: NamespacedCompileErrorsRule;
   }
 }
