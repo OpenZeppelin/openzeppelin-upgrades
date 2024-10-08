@@ -220,14 +220,20 @@ contract UsesAddress {
 
 contract HasFunctionWithRequiredReturn {
     struct S { uint x; }
-    function foo(S calldata s) internal pure returns (S calldata) {
+    modifier myModifier() {
+        _;
+    }
+    function foo(S calldata s) internal pure myModifier returns (S calldata) {
         return s;
     }
 }
 
 library LibWithRequiredReturn {
     struct S { uint x; }
-    function foo(S calldata s) internal pure returns (S calldata) {
+    modifier myModifier() {
+        _;
+    }
+    function foo(S calldata s) myModifier internal pure returns (S calldata) {
         return s;
     }
 }

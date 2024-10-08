@@ -24,9 +24,9 @@ const OUTPUT_SELECTION = {
  * - Converts all custom errors and constants (at file level) to dummy enums with the same name (do not delete them since they might be imported by other files)
  * - Replaces functions as follows:
  *   - For regular function and free function, keep declarations since they may be referenced by constants (free functions may also be imported by other files). But simplify compilation as follows:
- *     - Remove modifiers
  *     - Avoid having to initialize return parameters: convert function to virtual if possible, or convert return parameters to bools which can be default initialized.
- *     - Remove function bodies
+ *     - Delete modifiers
+ *     - Delete function bodies
  *   - Constructors are not needed, since we removed anything that may call constructors. Convert to dummy enums to avoid orphaning possible NatSpec.
  *   - Fallback and receive functions are not needed, since they don't have signatures. Convert to dummy enums to avoid orphaning possible NatSpec.
  *
@@ -264,6 +264,8 @@ function replaceFunction(
         node.visibility !== 'private' &&
         !virtual
       ) {
+        assert(node.kind !== 'freeFunction');
+
         // If this is a contract function and not private, it could possibly override an interface function.
         // We don't want to change its return parameters because that might cause a mismatch with the interface.
         // Simply convert the function to virtual (if not already)
