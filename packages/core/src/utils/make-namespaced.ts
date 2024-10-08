@@ -256,39 +256,51 @@ function replaceFunction(
   switch (node.kind) {
     case 'freeFunction':
     case 'function': {
+      let virtual = node.virtual;
+
+      if (
+        contractDef !== undefined &&
+        contractDef.contractKind === 'contract' &&
+        node.visibility !== 'private' &&
+        !virtual
+      ) {
+        // If this is a contract function and not private, it could possibly override an interface function.
+        // We don't want to change its return parameters because that might cause a mismatch with the interface.
+        // Simply convert the function to virtual (if not already)
+        modifications.push(makeInsertAfter(node.parameters, ' virtual '));
+        virtual = true;
+      }
+
       if (node.modifiers.length > 0) {
+        // Delete modifiers
         for (const modifier of node.modifiers) {
           modifications.push(makeDelete(modifier, orig));
         }
       }
 
-      if (contractDef !== undefined && contractDef.contractKind === 'contract' && node.visibility !== 'private') {
-        // If this is a contract function and not private, it could possibly override an interface function.
-        // We don't want to change its return parameters because that might cause a mismatch with the interface.
-        // Simply convert the function to virtual (if not already virtual) and remove the body.
-        if (!node.virtual) {
-          modifications.push(makeInsertAfter(node.parameters, ' virtual '));
-        }
-        if (node.body) {
+      if (node.body) {
+        // Delete body
+        if (virtual) {
           modifications.push(makeReplace(node.body, orig, ';'));
-        }
-      } else if (node.body) {
-        // Otherwise, as long as the function has a body, we know that it is not overriding any other function and it is not an interface function.
-        assert(!node.overrides);
-        assert(contractDef?.contractKind !== 'interface');
+        } else {
+          // This is a non-virtual function with a body, so that means it is not an interface function.
+          assert(contractDef?.contractKind !== 'interface');
+          // Since all contract functions that are non-private were converted to virtual above, this cannot possibly override another function.
+          assert(!node.overrides);
 
-        // This may be a library function, free function, or private function.
-        // In any of these cases, we can convert the return parameters to bools so that they can be default initialized.
-        if (node.returnParameters.parameters.length > 0) {
-          modifications.push(
-            makeReplace(
-              node.returnParameters,
-              orig,
-              `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
-            ),
-          );
+          // The remaining scenarios may mean this is a library function, free function, or private function.
+          // In any of these cases, we can convert the return parameters to bools so that they can be default initialized.
+          if (node.returnParameters.parameters.length > 0) {
+            modifications.push(
+              makeReplace(
+                node.returnParameters,
+                orig,
+                `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
+              ),
+            );
+          }
+          modifications.push(makeReplace(node.body, orig, '{}'));
         }
-        modifications.push(makeReplace(node.body, orig, '{}'));
       }
 
       break;
