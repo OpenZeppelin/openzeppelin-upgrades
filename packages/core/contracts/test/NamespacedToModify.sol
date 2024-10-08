@@ -225,6 +225,13 @@ contract HasFunctionWithRequiredReturn {
     }
 }
 
+library LibWithRequiredReturn {
+    struct S { uint x; }
+    function foo(S calldata s) internal pure returns (S calldata) {
+        return s;
+    }
+}
+
 /**
  * @return uint 1
  * @return uint 2
@@ -321,4 +328,37 @@ interface InterfaceWithNamespace {
         uint256 x;
         uint256 y;
     }
+}
+
+interface IHasConstantGetter {
+  function a() external view returns (bytes32);
+  function b() external view returns (uint256);
+  function c() external view returns (address);
+}
+
+contract HasConstantGetter is IHasConstantGetter {
+  bytes32 public override constant a = bytes32("foo");
+  uint256 public override constant b = 10;
+  address public override constant c = address(0);
+}
+
+abstract contract AbstractHasConstantGetter {
+  function a() virtual external pure returns (bytes32) {
+    // Virtual with default implementation
+    return bytes32("foo");
+  }
+  function b() virtual external view returns (uint256);
+  function c() virtual external view returns (address);
+}
+
+contract HasConstantGetterOverride is AbstractHasConstantGetter {
+  bytes32 public override constant a = bytes32("foo");
+  uint256 public override constant b = 10;
+  address public override constant c = address(0);
+}
+
+abstract contract HasFunctionOverride is AbstractHasConstantGetter {
+  function a() override virtual external pure returns (bytes32) {
+    return bytes32("foo2");
+  }
 }
