@@ -338,14 +338,10 @@ interface InterfaceWithNamespace {
 
 interface IHasConstantGetter {
   function a() external view returns (bytes32);
-  function b() external view returns (uint256);
-  function c() external view returns (address);
 }
 
 contract HasConstantGetter is IHasConstantGetter {
   bytes32 public override constant a = bytes32("foo");
-  uint256 public override constant b = 10;
-  address public override constant c = address(0);
 }
 
 abstract contract AbstractHasConstantGetter {
@@ -353,17 +349,13 @@ abstract contract AbstractHasConstantGetter {
     // Virtual with default implementation
     return bytes32("foo");
   }
-  function b() virtual external view returns (uint256);
-  function c() virtual external view returns (address);
 }
 
 contract HasConstantGetterOverride is AbstractHasConstantGetter {
   bytes32 public override constant a = bytes32("foo");
-  uint256 public override constant b = 10;
-  address public override constant c = address(0);
 }
 
-abstract contract HasFunctionOverride is AbstractHasConstantGetter {
+contract HasFunctionOverride is AbstractHasConstantGetter {
   function a() override virtual external pure returns (bytes32) {
     return bytes32("foo2");
   }
