@@ -273,7 +273,11 @@ function replaceFunction(
           modifications.push(makeReplace(node.body, orig, ';'));
         }
       } else if (node.body) {
-        // Otherwise, if there is a body, this may be a library function, free function, or private function.
+        // Otherwise, as long as the function has a body, we know that it is not overriding any other function and it is not an interface function.
+        assert(!node.overrides);
+        assert(contractDef?.contractKind !== 'interface');
+
+        // This may be a library function, free function, or private function.
         // In any of these cases, we can convert the return parameters to bools so that they can be default initialized.
         if (node.returnParameters.parameters.length > 0) {
           modifications.push(
