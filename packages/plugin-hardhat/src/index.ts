@@ -119,7 +119,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
             const details = [
               ...preamble,
               'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades,',
-              "set namespacedCompileErrors: 'warn' or namespacedCompileErrors: 'ignore' in your hardhat config to convert this to a warning or to ignore this.",
+              "you can set namespacedCompileErrors: 'warn' or namespacedCompileErrors: 'ignore' in your hardhat config to convert this to a warning or to ignore this.",
             ];
             throw new UpgradesError(msg, () => details.join('\n'));
           }
@@ -128,7 +128,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
             const details = [
               ...preamble,
               'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades,',
-              "set namespacedCompileErrors: 'ignore' in your hardhat config to ignore this.",
+              "you can set namespacedCompileErrors: 'ignore' in your hardhat config to ignore this.",
             ];
             logWarning(msg, details);
             break;
