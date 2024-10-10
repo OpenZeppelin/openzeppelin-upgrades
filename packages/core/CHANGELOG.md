@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.40.0 (2024-10-10)
 
 - Fix Hardhat compile error when overriding interface functions with public constant variables. ([#1091](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1091))
+- Support ignoring Hardhat compile errors when extracting detailed namespaced storage layouts for validations. ([#1090](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1090))
 
 ## 1.39.0 (2024-10-02)
 
