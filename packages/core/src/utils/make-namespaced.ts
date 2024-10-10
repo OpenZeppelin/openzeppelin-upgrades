@@ -3,7 +3,7 @@ import { Node } from 'solidity-ast/node';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { getStorageLocationAnnotation } from '../storage/namespace';
 import { assert, assertUnreachable } from './assert';
-import { FunctionDefinition, VariableDeclaration } from 'solidity-ast';
+import { ContractDefinition, FunctionDefinition, VariableDeclaration } from 'solidity-ast';
 
 const OUTPUT_SELECTION = {
   '*': {
@@ -19,10 +19,14 @@ const OUTPUT_SELECTION = {
  * This makes the following modifications to the input:
  * - Adds a state variable for each namespaced struct definition
  * - For each contract, for all node types that are not needed for storage layout or may call functions and constructors, converts them to dummy enums with random id
+ * - Mark contracts as abstract, since state variables are converted to dummy enums which would not generate public getters for inherited interface functions
  * - Converts all using for directives (at file level and in contracts) to dummy enums with random id (do not delete them to avoid orphaning possible NatSpec documentation)
  * - Converts all custom errors and constants (at file level) to dummy enums with the same name (do not delete them since they might be imported by other files)
  * - Replaces functions as follows:
- *   - For regular function and free function, keep declarations since they may be referenced by constants (free functions may also be imported by other files). But simplify compilation by removing modifiers and body, and replace return parameters with bools which can be default initialized.
+ *   - For regular function and free function, keep declarations since they may be referenced by constants (free functions may also be imported by other files). But simplify compilation as follows:
+ *     - Avoid having to initialize return parameters: convert function to virtual if possible, or convert return parameters to bools which can be default initialized.
+ *     - Delete modifiers
+ *     - Delete function bodies
  *   - Constructors are not needed, since we removed anything that may call constructors. Convert to dummy enums to avoid orphaning possible NatSpec.
  *   - Fallback and receive functions are not needed, since they don't have signatures. Convert to dummy enums to avoid orphaning possible NatSpec.
  *
@@ -72,7 +76,7 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput, solcVe
           for (const contractNode of contractNodes) {
             switch (contractNode.nodeType) {
               case 'FunctionDefinition': {
-                replaceFunction(contractNode, orig, modifications);
+                replaceFunction(contractNode, orig, modifications, contractDef);
                 break;
               }
               case 'VariableDeclaration': {
@@ -243,28 +247,62 @@ function toDummyEnumWithAstId(astId: number) {
   return `enum $astId_${astId}_${(Math.random() * 1e6).toFixed(0)} { dummy }`;
 }
 
-function replaceFunction(node: FunctionDefinition, orig: Buffer, modifications: Modification[]) {
+function replaceFunction(
+  node: FunctionDefinition,
+  orig: Buffer,
+  modifications: Modification[],
+  contractDef?: ContractDefinition,
+) {
   switch (node.kind) {
     case 'freeFunction':
     case 'function': {
+      let virtual = node.virtual;
+
+      if (
+        contractDef !== undefined &&
+        contractDef.contractKind === 'contract' &&
+        node.visibility !== 'private' &&
+        !virtual
+      ) {
+        assert(node.kind !== 'freeFunction');
+
+        // If this is a contract function and not private, it could possibly override an interface function.
+        // We don't want to change its return parameters because that might cause a mismatch with the interface.
+        // Simply convert the function to virtual (if not already)
+        modifications.push(makeInsertAfter(node.parameters, ' virtual '));
+        virtual = true;
+      }
+
       if (node.modifiers.length > 0) {
+        // Delete modifiers
         for (const modifier of node.modifiers) {
           modifications.push(makeDelete(modifier, orig));
         }
       }
 
-      if (node.returnParameters.parameters.length > 0) {
-        modifications.push(
-          makeReplace(
-            node.returnParameters,
-            orig,
-            `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
-          ),
-        );
-      }
-
       if (node.body) {
-        modifications.push(makeReplace(node.body, orig, '{}'));
+        // Delete body
+        if (virtual) {
+          modifications.push(makeReplace(node.body, orig, ';'));
+        } else {
+          // This is a non-virtual function with a body, so that means it is not an interface function.
+          assert(contractDef?.contractKind !== 'interface');
+          // Since all contract functions that are non-private were converted to virtual above, this cannot possibly override another function.
+          assert(!node.overrides);
+
+          // The remaining scenarios may mean this is a library function, free function, or private function.
+          // In any of these cases, we can convert the return parameters to bools so that they can be default initialized.
+          if (node.returnParameters.parameters.length > 0) {
+            modifications.push(
+              makeReplace(
+                node.returnParameters,
+                orig,
+                `(${node.returnParameters.parameters.map(param => toReturnParameterReplacement(param)).join(', ')})`,
+              ),
+            );
+          }
+          modifications.push(makeReplace(node.body, orig, '{}'));
+        }
       }
 
       break;
