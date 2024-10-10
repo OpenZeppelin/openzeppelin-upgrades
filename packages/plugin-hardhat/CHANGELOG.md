@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.5.0 (2024-10-10)
 
 - Support ignoring Hardhat compile errors when extracting detailed namespaced storage layouts for validations. ([#1090](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1090))
 
