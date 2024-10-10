@@ -220,7 +220,20 @@ contract UsesAddress {
 
 contract HasFunctionWithRequiredReturn {
     struct S { uint x; }
-    function foo(S calldata s) internal pure returns (S calldata) {
+    modifier myModifier() {
+        _;
+    }
+    function foo(S calldata s) internal pure myModifier returns (S calldata) {
+        return s;
+    }
+}
+
+library LibWithRequiredReturn {
+    struct S { uint x; }
+    modifier myModifier() {
+        _;
+    }
+    function foo(S calldata s) myModifier internal pure returns (S calldata) {
         return s;
     }
 }
@@ -321,4 +334,29 @@ interface InterfaceWithNamespace {
         uint256 x;
         uint256 y;
     }
+}
+
+interface IHasConstantGetter {
+  function a() external view returns (bytes32);
+}
+
+contract HasConstantGetter is IHasConstantGetter {
+  bytes32 public override constant a = bytes32("foo");
+}
+
+abstract contract AbstractHasConstantGetter {
+  function a() virtual external pure returns (bytes32) {
+    // Virtual with default implementation
+    return bytes32("foo");
+  }
+}
+
+contract HasConstantGetterOverride is AbstractHasConstantGetter {
+  bytes32 public override constant a = bytes32("foo");
+}
+
+contract HasFunctionOverride is AbstractHasConstantGetter {
+  function a() override virtual external pure returns (bytes32) {
+    return bytes32("foo2");
+  }
 }
