@@ -42,8 +42,18 @@ export function makeUpgradeProxy(
     const upgradeTx = await upgradeTo(nextImpl, call);
 
     const inst = attach(ImplFactory, proxyAddress);
-    // @ts-ignore Won't be readonly because inst was created through attach.
-    inst.deployTransaction = upgradeTx;
+
+    // as is -> inst.deployTransaction = upgradeTx;
+    // inst(instance of ethers.Contract) dose not have property named deployTransaction but deploymentTransaction
+    // and it is a function which returns ethers.ContractTransactionResponse | null , not ethers.TransactionResponse itself
+    // it shoud be correted like below
+    // @ts-ignore
+    inst.deploymentTransaction = () => upgradeTx || null;
+
+    // Additionally, upgradeTx is not tx about deployment (also each type is different)
+    // I think it's better way to not override deploymentTrnasaction with upgradeTx and just block until upgradeTx to be resolved like below code
+    await upgradeTx.wait();
+
     return inst;
   };
 
