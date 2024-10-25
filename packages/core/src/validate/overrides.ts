@@ -81,6 +81,22 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
     `Internal functions are code pointers which will no longer be valid after an upgrade.`,
     `Make sure you reassign internal functions in storage variables during upgrades.`,
   ],
+  'missing-initializer': [
+    `You are using the \`unsafeAllow.missing-initializer\` flag.`,
+    `Make sure you have manually checked that the contract has an initializer and that it correct calls any parent initializers.`,
+  ],
+  'missing-initializer-call': [
+    `You are using the \`unsafeAllow.missing-initializer-call\` flag.`,
+    `Make sure you have manually checked that the contract has an initializer and that it correct calls any parent initializers.`,
+  ],
+  'duplicate-initializer-call': [
+    `You are using the \`unsafeAllow.duplicate-initializer-call\` flag.`,
+    `Make sure you have manually checked that the contract has an initializer and that it correct calls any parent initializers.`,
+  ],
+  'incorrect-initializer-order': [
+    `You are using the \`unsafeAllow.incorrect-initializer-order\` flag.`,
+    `Make sure you have manually checked that the contract has an initializer and that it correct calls any parent initializers.`,
+  ],
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
