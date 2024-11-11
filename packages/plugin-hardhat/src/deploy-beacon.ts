@@ -1,5 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract } from 'ethers';
+import type { ContractFactory } from 'ethers';
 
 import { Deployment } from '@openzeppelin/upgrades-core';
 
@@ -7,13 +7,17 @@ import { DeployBeaconOptions, deploy, DeployTransaction, getUpgradeableBeaconFac
 import { disableDefender } from './defender/utils';
 import { attach, getSigner } from './utils/ethers';
 import { getInitialOwner } from './utils/initial-owner';
+import { ContractTypeOfFactory } from './type-extensions';
 
 export interface DeployBeaconFunction {
-  (ImplFactory: ContractFactory, opts?: DeployBeaconOptions): Promise<Contract>;
+  <F extends ContractFactory>(ImplFactory: F, opts?: DeployBeaconOptions): Promise<ContractTypeOfFactory<F>>;
 }
 
 export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, defenderModule: boolean): DeployBeaconFunction {
-  return async function deployBeacon(ImplFactory: ContractFactory, opts: DeployBeaconOptions = {}) {
+  return async function deployBeacon<F extends ContractFactory>(
+    ImplFactory: F,
+    opts: DeployBeaconOptions = {},
+  ): Promise<ContractTypeOfFactory<F>> {
     disableDefender(hre, defenderModule, opts, deployBeacon.name);
 
     const { impl } = await deployBeaconImpl(hre, ImplFactory, opts);
@@ -34,6 +38,6 @@ export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, defenderModule:
 
     // @ts-ignore Won't be readonly because beaconContract was created through attach.
     beaconContract.deployTransaction = beaconDeployment.deployTransaction;
-    return beaconContract;
+    return beaconContract as ContractTypeOfFactory<F>;
   };
 }
