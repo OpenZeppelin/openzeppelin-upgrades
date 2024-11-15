@@ -69,7 +69,9 @@ interface RunCompilerArgs {
 }
 
 subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) => {
-  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import('./utils/validations');
+  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
+    './utils/validations.js'
+  );
 
   try {
     await readValidations(hre);
@@ -88,18 +90,18 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
   const { isNamespaceSupported, validate, solcInputOutputDecoder, makeNamespacedInput } = await import(
     '@openzeppelin/upgrades-core'
   );
-  const { writeValidations } = await import('./utils/validations');
+  const { writeValidations } = await import('./utils/validations.js');
 
   // TODO: patch input
   const { output, solcBuild } = await runSuper();
 
-  const { isFullSolcOutput } = await import('./utils/is-full-solc-output');
+  const { isFullSolcOutput } = await import('./utils/is-full-solc-output.js');
   if (isFullSolcOutput(output)) {
     const decodeSrc = solcInputOutputDecoder(args.input, output);
 
     let namespacedOutput = undefined;
     if (isNamespaceSupported(args.solcVersion)) {
-      const namespacedInput = makeNamespacedInput(args.input, output, args.solcVersion);
+      const namespacedInput = await makeNamespacedInput(args.input, output, args.solcVersion);
       namespacedOutput = (await runSuper({ ...args, quiet: true, input: namespacedInput })).output;
 
       const namespacedCompileErrors = getNamespacedCompileErrors(namespacedOutput);
@@ -210,7 +212,7 @@ extendConfig((config: HardhatConfig) => {
 
 if (tryRequire('@nomicfoundation/hardhat-verify')) {
   subtask('verify:etherscan').setAction(async (args, hre, runSuper) => {
-    const { verify } = await import('./verify-proxy');
+    const { verify } = await import('./verify-proxy.js');
     return await verify(args, hre, runSuper);
   });
 }

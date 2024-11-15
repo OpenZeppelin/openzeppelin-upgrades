@@ -40,7 +40,7 @@ async function testMakeNamespaced(
   // Inefficient, but we want to test that we don't actually modify the original input object
   const origInput = JSON.parse(JSON.stringify(origBuildInfo.input));
 
-  const modifiedInput = makeNamespacedInput(
+  const modifiedInput = await makeNamespacedInput(
     origBuildInfo.input,
     origBuildInfo.output,
     keepAllNatSpec ? undefined : origBuildInfo.solcVersion,
