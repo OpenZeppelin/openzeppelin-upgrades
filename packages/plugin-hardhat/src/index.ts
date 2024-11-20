@@ -87,7 +87,7 @@ subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) =
 });
 
 subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
-  const { isNamespaceSupported, validate, solcInputOutputDecoder, makeNamespacedInput } = await import(
+  const { isNamespaceSupported, validate, solcInputOutputDecoder, makeNamespacedInput, trySanitizeNatSpec } = await import(
     '@openzeppelin/upgrades-core'
   );
   const { writeValidations } = await import('./utils/validations.js');
@@ -101,7 +101,8 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
 
     let namespacedOutput = undefined;
     if (isNamespaceSupported(args.solcVersion)) {
-      const namespacedInput = await makeNamespacedInput(args.input, output, args.solcVersion);
+      const namespacedInput = makeNamespacedInput(args.input, output, args.solcVersion);
+      await trySanitizeNatSpec(namespacedInput, args.solcVersion);
       namespacedOutput = (await runSuper({ ...args, quiet: true, input: namespacedInput })).output;
 
       const namespacedCompileErrors = getNamespacedCompileErrors(namespacedOutput);

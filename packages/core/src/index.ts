@@ -60,7 +60,7 @@ export {
 export { ValidateUpgradeSafetyOptions, validateUpgradeSafety, ProjectReport, ReferenceContractNotFound } from './cli';
 
 export { getUpgradeInterfaceVersion } from './upgrade-interface-version';
-export { makeNamespacedInput } from './utils/make-namespaced';
+export { makeNamespacedInput, trySanitizeNatSpec } from './utils/make-namespaced';
 export { isNamespaceSupported } from './storage/namespace';
 export { inferProxyAdmin } from './infer-proxy-admin';
 export { assertUnreachable } from './utils/assert';
