@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update Slang dependency to 0.18.3. ([#1102](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1102))
+
 ## 1.40.0 (2024-10-10)
 
 - Fix Hardhat compile error when overriding interface functions with public constant variables. ([#1091](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1091))
