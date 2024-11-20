@@ -37,11 +37,7 @@ const OUTPUT_SELECTION = {
  * @param _solcVersion The version of the solc compiler that was originally used to compile the input. This argument is no longer used and is kept for backwards compatibility.
  * @returns The modified solc input with storage layout that includes namespaced type information.
  */
-export function makeNamespacedInput(
-  input: SolcInput,
-  output: SolcOutput,
-  _solcVersion?: string,
-): SolcInput {
+export function makeNamespacedInput(input: SolcInput, output: SolcOutput, _solcVersion?: string): SolcInput {
   const modifiedSources: Record<string, { content?: string }> = {};
 
   for (const [sourcePath] of Object.entries(input.sources)) {
