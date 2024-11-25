@@ -34,10 +34,10 @@ const OUTPUT_SELECTION = {
  *
  * @param input The original solc input.
  * @param output The original solc output.
- * @param solcVersion The version of the solc compiler that was originally used to compile the input.
+ * @param _solcVersion The version of the solc compiler that was originally used to compile the input. This argument is no longer used and is kept for backwards compatibility.
  * @returns The modified solc input with storage layout that includes namespaced type information.
  */
-export function makeNamespacedInput(input: SolcInput, output: SolcOutput, solcVersion?: string): SolcInput {
+export function makeNamespacedInput(input: SolcInput, output: SolcOutput, _solcVersion?: string): SolcInput {
   const modifiedSources: Record<string, { content?: string }> = {};
 
   for (const [sourcePath] of Object.entries(input.sources)) {
@@ -163,74 +163,77 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput, solcVe
       }
     }
 
-    const modifiedSource = tryRemoveNonStructNatSpec(getModifiedSource(orig, modifications), solcVersion);
-
-    modifiedSources[sourcePath] = { ...source, content: modifiedSource };
+    modifiedSources[sourcePath] = { ...source, content: getModifiedSource(orig, modifications) };
   }
 
   return { ...input, sources: modifiedSources, settings: { ...input.settings, outputSelection: OUTPUT_SELECTION } };
 }
 
 /**
- * If we have the compiler version available and Slang is supported for the current platform and compiler version,
- * use Slang to parse and remove all NatSpec comments that do not precede a struct definition and return the modified content.
+ * Attempts to remove all NatSpec comments that do not precede a struct definition from the input source contents.
+ * Directly modifies the input source contents, and also returns the modified input.
+ *
+ * If the solc version is not supported by the parser, the original content is kept.
+ *
+ * @param solcInput Solc input.
+ * @param solcVersion The version of the solc compiler that was originally used to compile the input.
+ * @returns The modified solc input with NatSpec comments removed where they do not precede a struct definition.
+ */
+export async function trySanitizeNatSpec(solcInput: SolcInput, solcVersion: string): Promise<SolcInput> {
+  for (const [sourcePath, source] of Object.entries(solcInput.sources)) {
+    if (source.content !== undefined) {
+      solcInput.sources[sourcePath].content = await tryRemoveNonStructNatSpec(source.content, solcVersion);
+    }
+  }
+  return solcInput;
+}
+
+/**
+ * If Slang is supported for the current compiler version, use Slang to parse and remove all NatSpec comments
+ * that do not precede a struct definition and return the modified content.
  *
  * Otherwise, return the original content.
  */
-function tryRemoveNonStructNatSpec(origContent: string, solcVersion: string | undefined): string {
-  const natSpecRemovals: Modification[] = [];
-
-  if (solcVersion !== undefined && tryRequire('@nomicfoundation/slang') && slangSupportsVersion(solcVersion)) {
-    /* eslint-disable @typescript-eslint/no-var-requires */
-    const { Language } = require('@nomicfoundation/slang/language');
-    const { NonterminalKind, TerminalKind } = require('@nomicfoundation/slang/kinds');
-    const { TerminalNode } = require('@nomicfoundation/slang/cst');
-    const { isTrivia } = require('./slang/trivia');
-    /* eslint-enable @typescript-eslint/no-var-requires */
-
-    const language = new Language(solcVersion);
-    const parseOutput = language.parse(NonterminalKind.SourceUnit, origContent);
-    const cursor = parseOutput.createTreeCursor();
-
-    while (
-      cursor.goToNextTerminalWithKinds([TerminalKind.MultiLineNatSpecComment, TerminalKind.SingleLineNatSpecComment])
-    ) {
-      // Lookahead to determine if the next non-trivia node is the struct keyword.
-      // If so, this NatSpec is part of the struct definition and should not be removed.
-      const lookaheadCursor = cursor.clone();
-      while (lookaheadCursor.goToNextTerminal() && isTrivia(lookaheadCursor.node())) {
-        // skip over trivia nodes
-      }
-      if (lookaheadCursor.node().kind === TerminalKind.StructKeyword) {
-        continue;
-      }
-
-      const triviaNode = cursor.node();
-      assert(triviaNode instanceof TerminalNode);
-      natSpecRemovals.push(makeDeleteRange(cursor.textRange.start.utf8, cursor.textRange.end.utf8));
-    }
-    return getModifiedSource(Buffer.from(origContent, 'utf8'), natSpecRemovals);
-  } else {
+async function tryRemoveNonStructNatSpec(origContent: string, solcVersion: string): Promise<string> {
+  if (solcVersion === undefined) {
     return origContent;
   }
-}
 
-function tryRequire(id: string) {
-  try {
-    require(id);
-    return true;
-  } catch (e: any) {
-    // do nothing
+  const { Parser } = await import('@nomicfoundation/slang/parser');
+  if (!Parser.supportedVersions().includes(solcVersion)) {
+    return origContent;
   }
-  return false;
-}
 
-function slangSupportsVersion(solcVersion: string): boolean {
-  /* eslint-disable @typescript-eslint/no-var-requires */
-  const { Language } = require('@nomicfoundation/slang/language');
-  /* eslint-enable @typescript-eslint/no-var-requires */
+  const { TerminalKind, TerminalKindExtensions } = await import('@nomicfoundation/slang/cst');
 
-  return Language.supportedVersions().includes(solcVersion);
+  const parser = Parser.create(solcVersion);
+  const parseOutput = parser.parse(Parser.rootKind(), origContent);
+  const cursor = parseOutput.createTreeCursor();
+
+  const natSpecRemovals: Modification[] = [];
+
+  while (
+    cursor.goToNextTerminalWithKinds([TerminalKind.MultiLineNatSpecComment, TerminalKind.SingleLineNatSpecComment])
+  ) {
+    // Lookahead to determine if the next non-trivia node is the struct keyword.
+    // If so, this NatSpec is part of the struct definition and should not be removed.
+    const lookaheadCursor = cursor.clone();
+    while (
+      lookaheadCursor.goToNextTerminal() &&
+      lookaheadCursor.node.isTerminalNode() &&
+      TerminalKindExtensions.isTrivia(lookaheadCursor.node.kind)
+    ) {
+      // skip over trivia nodes
+    }
+
+    if (lookaheadCursor.node.kind === TerminalKind.StructKeyword) {
+      continue;
+    }
+
+    natSpecRemovals.push(makeDeleteRange(cursor.textRange.start.utf8, cursor.textRange.end.utf8));
+  }
+
+  return getModifiedSource(Buffer.from(origContent, 'utf8'), natSpecRemovals);
 }
 
 interface Modification {
