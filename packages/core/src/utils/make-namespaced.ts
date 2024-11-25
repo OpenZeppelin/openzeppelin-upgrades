@@ -171,19 +171,21 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput, _solcV
 
 /**
  * Attempts to remove all NatSpec comments that do not precede a struct definition from the input source contents.
- * Directly modifies the input source contents.
+ * Directly modifies the input source contents, and also returns the modified input.
  *
  * If the solc version is not supported by the parser, the original content is kept.
  *
  * @param solcInput Solc input.
  * @param solcVersion The version of the solc compiler that was originally used to compile the input.
+ * @returns The modified solc input with NatSpec comments removed where they do not precede a struct definition.
  */
-export async function trySanitizeNatSpec(solcInput: SolcInput, solcVersion: string) {
+export async function trySanitizeNatSpec(solcInput: SolcInput, solcVersion: string): Promise<SolcInput> {
   for (const [sourcePath, source] of Object.entries(solcInput.sources)) {
     if (source.content !== undefined) {
       solcInput.sources[sourcePath].content = await tryRemoveNonStructNatSpec(source.content, solcVersion);
     }
   }
+  return solcInput;
 }
 
 /**

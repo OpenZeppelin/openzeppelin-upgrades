@@ -40,9 +40,9 @@ async function testMakeNamespaced(
   // Inefficient, but we want to test that we don't actually modify the original input object
   const origInput = JSON.parse(JSON.stringify(origBuildInfo.input));
 
-  const modifiedInput = makeNamespacedInput(origBuildInfo.input, origBuildInfo.output, origBuildInfo.solcVersion);
+  let modifiedInput = makeNamespacedInput(origBuildInfo.input, origBuildInfo.output, origBuildInfo.solcVersion);
   if (!keepAllNatSpec) {
-    await trySanitizeNatSpec(modifiedInput, origBuildInfo.solcVersion);
+    modifiedInput = await trySanitizeNatSpec(modifiedInput, origBuildInfo.solcVersion);
   }
 
   // Run hardhat compile on the modified input and make sure it has no errors
