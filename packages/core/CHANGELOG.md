@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Update Slang dependency to 0.18.3. ([#1102](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1102))
+  - Improves reliability of Hardhat compilation step for namespaced storage layout validations when using Solidity versions 0.8.27 and 0.8.28.
 
 ## 1.40.0 (2024-10-10)
 
