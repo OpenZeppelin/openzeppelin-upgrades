@@ -43,7 +43,7 @@
     "debug": "^4.1.1",
     "ethereumjs-util": "^7.1.5",
     "proper-lockfile": "^4.1.1",
-    "undici": "^6.11.1"
+    "undici": "^7.0.0"
   },
   "peerDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
