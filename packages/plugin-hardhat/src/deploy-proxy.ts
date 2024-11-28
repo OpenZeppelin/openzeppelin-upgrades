@@ -51,6 +51,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
 
     const contractInterface = ImplFactory.interface;
     const data = getInitializerData(contractInterface, args, opts.initializer);
+    const deployFn = opts.deployFunction || deploy;
 
     if (await manifest.getAdmin()) {
       if (kind === 'uups') {
@@ -79,8 +80,8 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
           throw new InitialOwnerUnsupportedKindError(kind);
         }
 
-        const ProxyFactory = await getProxyFactory(hre, signer);
-        proxyDeployment = Object.assign({ kind }, await deploy(hre, opts, ProxyFactory, impl, data));
+        const ProxyFactory = await (opts.proxyFactory || getProxyFactory)(hre, signer);
+        proxyDeployment = Object.assign({ kind }, await deployFn(hre, opts, ProxyFactory, impl, data));
         break;
       }
 
@@ -95,10 +96,13 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
           );
         }
 
-        const TransparentUpgradeableProxyFactory = await getTransparentUpgradeableProxyFactory(hre, signer);
+        const TransparentUpgradeableProxyFactory = await (opts.proxyFactory || getTransparentUpgradeableProxyFactory)(
+          hre,
+          signer,
+        );
         proxyDeployment = Object.assign(
           { kind },
-          await deploy(hre, opts, TransparentUpgradeableProxyFactory, impl, initialOwner, data),
+          await deployFn(hre, opts, TransparentUpgradeableProxyFactory, impl, initialOwner, data),
         );
         break;
       }

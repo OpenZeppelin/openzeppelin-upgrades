@@ -9,10 +9,26 @@ import {
 import { Overrides } from 'ethers';
 
 /**
+ * Options for customizing the factory or deploy functions
+ */
+export type DeployFactoryOpts = {
+  /**
+   * Allows to customize the proxyFactory used instead of the ones defined in utils/factories.ts
+   */
+  proxyFactory?: null | Function;
+
+  /**
+   * Allows to customize the deploy function used instead of utils/deploy.ts:deploy
+   */
+  deployFunction?: null | Function;
+};
+
+/**
  * Options for functions that can deploy an implementation contract.
  */
 export type StandaloneOptions = StandaloneValidationOptions &
   DeployOpts &
+  DeployFactoryOpts &
   EthersDeployOptions & {
     constructorArgs?: unknown[];
     /**
@@ -32,6 +48,8 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     constructorArgs: opts.constructorArgs ?? [],
     timeout: opts.timeout ?? 60e3,
     pollingInterval: opts.pollingInterval ?? 5e3,
+    proxyFactory: null,
+    deployFunction: null,
     useDeployedImplementation: opts.useDeployedImplementation ?? false,
     redeployImplementation: opts.redeployImplementation ?? 'onchange',
     txOverrides: opts.txOverrides ?? {},
@@ -91,6 +109,7 @@ export type InitialOwner = {
 
 export type DeployBeaconProxyOptions = EthersDeployOptions &
   DeployOpts &
+  DeployFactoryOpts &
   ProxyKindOption &
   Initializer &
   DefenderDeployOptions;
