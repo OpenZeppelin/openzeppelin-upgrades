@@ -15,12 +15,12 @@ export type DeployFactoryOpts = {
   /**
    * Allows to customize the proxyFactory used instead of the ones defined in utils/factories.ts
    */
-  proxyFactory?: null | Function;
+  proxyFactory?: null | (() => Promise<any>);
 
   /**
    * Allows to customize the deploy function used instead of utils/deploy.ts:deploy
    */
-  deployFunction?: null | Function;
+  deployFunction?: null | (() => Promise<any>);
 };
 
 /**
