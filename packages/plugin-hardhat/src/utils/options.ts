@@ -6,7 +6,8 @@ import {
   ValidationOptions,
   withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
-import { Overrides } from 'ethers';
+import { ContractFactory, Overrides } from 'ethers';
+import { EthersOrDefenderDeployment } from './deploy';
 
 /**
  * Options for customizing the factory or deploy functions
@@ -15,12 +16,12 @@ export type DeployFactoryOpts = {
   /**
    * Allows to customize the proxyFactory used instead of the ones defined in utils/factories.ts
    */
-  proxyFactory?: null | (() => Promise<any>);
+  proxyFactory?: () => Promise<ContractFactory>;
 
   /**
    * Allows to customize the deploy function used instead of utils/deploy.ts:deploy
    */
-  deployFunction?: null | (() => Promise<any>);
+  deployFunction?: () => Promise<EthersOrDefenderDeployment>;
 };
 
 /**
@@ -28,7 +29,6 @@ export type DeployFactoryOpts = {
  */
 export type StandaloneOptions = StandaloneValidationOptions &
   DeployOpts &
-  DeployFactoryOpts &
   EthersDeployOptions & {
     constructorArgs?: unknown[];
     /**
@@ -48,8 +48,6 @@ export function withDefaults(opts: UpgradeOptions = {}): Required<UpgradeOptions
     constructorArgs: opts.constructorArgs ?? [],
     timeout: opts.timeout ?? 60e3,
     pollingInterval: opts.pollingInterval ?? 5e3,
-    proxyFactory: null,
-    deployFunction: null,
     useDeployedImplementation: opts.useDeployedImplementation ?? false,
     redeployImplementation: opts.redeployImplementation ?? 'onchange',
     txOverrides: opts.txOverrides ?? {},
@@ -120,7 +118,11 @@ export type DeployContractOptions = Omit<StandaloneOptions, 'txOverrides'> & // 
   DefenderDeployOptions & {
     unsafeAllowDeployContract?: boolean;
   };
-export type DeployProxyOptions = StandaloneOptions & Initializer & InitialOwner & DefenderDeployOptions;
+export type DeployProxyOptions = StandaloneOptions &
+  DeployFactoryOpts &
+  Initializer &
+  InitialOwner &
+  DefenderDeployOptions;
 export type ForceImportOptions = ProxyKindOption;
 export type PrepareUpgradeOptions = UpgradeOptions & GetTxResponse & DefenderDeployOptions;
 export type UpgradeBeaconOptions = UpgradeOptions & DefenderDeploy;
