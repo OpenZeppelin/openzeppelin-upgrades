@@ -17,7 +17,7 @@ contract AccessManagedProxy is ERC1967Proxy {
 
     /**
      * @dev Checks with the ACCESS_MANAGER if msg.sender is authorized to call the current call's function,
-     * and if so, delegates the current call to the address returned by `_implementation()`.
+     * and if so, delegates the current call to `implementation`.
      *
      * This function does not return to its internal call site, it will return directly to the external caller.
      */
