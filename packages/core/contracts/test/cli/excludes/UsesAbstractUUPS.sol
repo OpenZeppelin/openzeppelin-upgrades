@@ -12,4 +12,8 @@ contract UsesAbstractUUPS is AbstractUUPS {
     function _authorizeUpgrade(address newImplementation) internal pure override {
         revert("Upgrade disabled");
     }
+
+    function initializeChild() initializer public {
+        super.initialize();
+    }
 }

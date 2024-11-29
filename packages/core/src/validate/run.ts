@@ -734,8 +734,6 @@ function* getInitializerErrors(
           !skipCheck('missing-initializer-call', contractDef) &&
           !skipCheck('missing-initializer-call', contractInitializer)
         ) {
-          console.log('contractDef', contractDef.name);
-          console.log('uninitializedBaseContracts', uninitializedBaseContracts);
           yield {
             kind: 'missing-initializer-call',
             name: contractDef.name,
@@ -756,9 +754,11 @@ function getPossibleInitializers(contractDef: ContractDefinition) {
   const fns = [...findAll('FunctionDefinition', contractDef)];
   return fns.filter(
     fnDef =>
-      fnDef.modifiers.some(modifier =>
+      (fnDef.modifiers.some(modifier =>
         ['initializer', 'reinitializer', 'onlyInitializing'].includes(modifier.modifierName.name),
-      ) || ['initialize', 'initializer', 'reinitialize', 'reinitializer'].includes(fnDef.name),
+      ) || ['initialize', 'initializer', 'reinitialize', 'reinitializer'].includes(fnDef.name))
+        &&
+      !(fnDef.virtual && !fnDef.body) // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
   );
 }
 
