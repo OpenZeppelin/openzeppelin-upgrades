@@ -60,7 +60,8 @@ export type ValidationError =
   | ValidationErrorConstructor
   | ValidationErrorOpcode
   | ValidationErrorWithName
-  | ValidationErrorUpgradeability;
+  | ValidationErrorUpgradeability
+  | ValidationErrorInitializers;
 
 interface ValidationErrorBase {
   src: string;
@@ -75,12 +76,21 @@ interface ValidationErrorWithName extends ValidationErrorBase {
     | 'external-library-linking'
     | 'struct-definition'
     | 'enum-definition'
-    | 'internal-function-storage'
-    | 'missing-initializer'
-    | 'missing-initializer-call'
-    | 'duplicate-initializer-call'
-    | 'incorrect-initializer-order';
+    | 'internal-function-storage';
 }
+
+interface ValidationErrorInitializerGeneric extends ValidationErrorBase {
+  name: string;
+  kind: 'missing-initializer' | 'missing-initializer-call' | 'duplicate-initializer-call';
+}
+
+interface ValidationErrorInitializerOrder extends ValidationErrorBase {
+  name: string;
+  kind: 'incorrect-initializer-order';
+  expectedLinearization: string[];
+}
+
+type ValidationErrorInitializers = ValidationErrorInitializerGeneric | ValidationErrorInitializerOrder;
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
   kind: 'constructor';
@@ -649,7 +659,7 @@ function* getInitializerErrors(
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
-): Generator<ValidationErrorWithName> {
+): Generator<ValidationErrorInitializers> {
   if (contractDef.baseContracts.length > 0) {
     const baseContractDefs = contractDef.baseContracts.map(base =>
       deref('ContractDefinition', base.baseName.referencedDeclaration),
@@ -718,6 +728,7 @@ function* getInitializerErrors(
                     kind: 'incorrect-initializer-order',
                     name: contractDef.name,
                     src: decodeSrc(fnCall),
+                    expectedLinearization: baseContractsWithInitializers,
                   };
                 }
                 if (index !== -1) {
