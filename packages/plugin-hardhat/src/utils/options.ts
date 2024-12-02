@@ -14,9 +14,9 @@ import { EthersOrDefenderDeployment } from './deploy';
  */
 export type DeployFactoryOpts = {
   /**
-   * Allows to customize the proxyFactory used instead of the ones defined in utils/factories.ts
+   * Allows to customize the ethers ContractFactory of the proxy to deploy, instead of using the ones defined in utils/factories.ts
    */
-  proxyFactory?: () => Promise<ContractFactory>;
+  proxyFactory?: ContractFactory;
 
   /**
    * Allows to customize the deploy function used instead of utils/deploy.ts:deploy

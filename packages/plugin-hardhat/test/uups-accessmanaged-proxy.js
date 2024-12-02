@@ -15,23 +15,19 @@ test.before(async t => {
   t.context.acMgr = await AccessManager.deploy(admin);
 });
 
-async function getAccessManagedProxy(hre, signer) {
-  return hre.ethers.getContractFactory('AccessManagedProxy', signer);
-}
-
 async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
   const allArgs = [...args, ...(opts.proxyExtraConstructorArgs || [])];
   return deploy(hre, opts, factory, ...allArgs);
 }
 
 test('accessmanaged proxy / customization of deploy and factory functions', async t => {
-  const { Greeter, GreeterV2, GreeterV3, acMgr, anon, admin } = t.context;
+  const { Greeter, GreeterV2, GreeterV3, AccessManagedProxy, acMgr, anon, admin } = t.context;
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], {
     kind: 'uups',
     proxyExtraConstructorArgs: [await acMgr.getAddress()],
     deployFunction: deployWithExtraProxyArgs,
-    proxyFactory: getAccessManagedProxy,
+    proxyFactory: AccessManagedProxy,
   });
 
   // By default it calls from admin address, so, it works fine

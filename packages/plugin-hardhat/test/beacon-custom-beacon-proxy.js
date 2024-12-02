@@ -7,14 +7,11 @@ test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
   t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3');
+  t.context.CustomBeaconProxy = await ethers.getContractFactory('CustomBeaconProxy');
   const [deployer, anon] = await ethers.getSigners();
   t.context.anon = anon;
   t.context.deployer = deployer;
 });
-
-async function getCustomBeaconProxy(hre, signer) {
-  return hre.ethers.getContractFactory('CustomBeaconProxy', signer);
-}
 
 async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
   const allArgs = [...args, ...(opts.proxyExtraConstructorArgs || [])];
@@ -22,12 +19,12 @@ async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
 }
 
 test('customization of deploy and factory functions', async t => {
-  const { Greeter, GreeterV2, GreeterV3, anon, deployer } = t.context;
+  const { Greeter, GreeterV2, GreeterV3, CustomBeaconProxy, anon, deployer } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
   const greeterBeaconDeployer = await upgrades.deployBeacon(GreeterV2);
   const greeter = await upgrades.deployBeaconProxy(greeterBeacon, Greeter, ['Hello, Hardhat!'], {
-    proxyFactory: getCustomBeaconProxy,
+    proxyFactory: CustomBeaconProxy,
     deployFunction: deployWithExtraProxyArgs,
     proxyExtraConstructorArgs: [await greeterBeaconDeployer.getAddress()],
   });

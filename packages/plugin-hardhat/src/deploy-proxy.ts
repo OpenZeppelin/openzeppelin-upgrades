@@ -80,7 +80,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
           throw new InitialOwnerUnsupportedKindError(kind);
         }
 
-        const ProxyFactory = await (opts.proxyFactory || getProxyFactory)(hre, signer);
+        const ProxyFactory = opts.proxyFactory || await getProxyFactory(hre, signer);
         proxyDeployment = Object.assign({ kind }, await deployFn(hre, opts, ProxyFactory, impl, data));
         break;
       }
@@ -96,7 +96,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
           );
         }
 
-        const TransparentUpgradeableProxyFactory = await (opts.proxyFactory || getTransparentUpgradeableProxyFactory)(
+        const TransparentUpgradeableProxyFactory = opts.proxyFactory || await getTransparentUpgradeableProxyFactory(
           hre,
           signer,
         );

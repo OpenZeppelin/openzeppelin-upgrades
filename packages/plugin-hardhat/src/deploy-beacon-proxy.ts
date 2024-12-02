@@ -80,7 +80,7 @@ export function makeDeployBeaconProxy(
       ]);
     }
 
-    const BeaconProxyFactory = await (opts.proxyFactory || getBeaconProxyFactory)(hre, getSigner(attachTo.runner));
+    const BeaconProxyFactory = opts.proxyFactory || await getBeaconProxyFactory(hre, getSigner(attachTo.runner));
     const proxyDeployment: Required<ProxyDeployment> & DeployTransaction & RemoteDeploymentId = Object.assign(
       { kind: opts.kind },
       await (opts.deployFunction || deploy)(hre, opts, BeaconProxyFactory, beaconAddress, data),
