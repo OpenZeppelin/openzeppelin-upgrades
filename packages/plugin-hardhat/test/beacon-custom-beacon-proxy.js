@@ -18,7 +18,7 @@ async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
   return deploy(hre, opts, factory, ...allArgs);
 }
 
-test('customization of deploy and factory functions', async t => {
+test('custom beacon proxy factory and deploy function', async t => {
   const { Greeter, GreeterV2, GreeterV3, CustomBeaconProxy, anon, deployer } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);

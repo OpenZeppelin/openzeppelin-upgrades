@@ -20,7 +20,7 @@ async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
   return deploy(hre, opts, factory, ...allArgs);
 }
 
-test('accessmanaged proxy / customization of deploy and factory functions', async t => {
+test('custom uups proxy factory and deploy function', async t => {
   const { Greeter, GreeterV2, GreeterV3, AccessManagedProxy, acMgr, anon, admin } = t.context;
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], {
