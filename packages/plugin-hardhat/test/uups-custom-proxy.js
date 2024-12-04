@@ -10,8 +10,8 @@ test.before(async t => {
   t.context.AccessManagedProxy = await ethers.getContractFactory('AccessManagedProxy');
   const AccessManager = await ethers.getContractFactory('AccessManager');
   const [admin, anon] = await ethers.getSigners();
-  t.context.anon = anon;
   t.context.admin = admin;
+  t.context.anon = anon;
   t.context.acMgr = await AccessManager.deploy(admin);
 });
 
@@ -21,7 +21,7 @@ async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
 }
 
 test('custom uups proxy factory and deploy function', async t => {
-  const { Greeter, GreeterV2, GreeterV3, AccessManagedProxy, acMgr, anon, admin } = t.context;
+  const { Greeter, GreeterV2, GreeterV3, AccessManagedProxy, acMgr, admin, anon } = t.context;
 
   const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], {
     kind: 'uups',

@@ -9,8 +9,8 @@ test.before(async t => {
   t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3');
   t.context.CustomBeaconProxy = await ethers.getContractFactory('CustomBeaconProxy');
   const [deployer, anon] = await ethers.getSigners();
-  t.context.anon = anon;
   t.context.deployer = deployer;
+  t.context.anon = anon;
 });
 
 async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
@@ -19,7 +19,7 @@ async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
 }
 
 test('custom beacon proxy factory and deploy function', async t => {
-  const { Greeter, GreeterV2, GreeterV3, CustomBeaconProxy, anon, deployer } = t.context;
+  const { Greeter, GreeterV2, GreeterV3, CustomBeaconProxy, deployer, anon } = t.context;
 
   const greeterBeacon = await upgrades.deployBeacon(Greeter);
   const greeterBeaconDeployer = await upgrades.deployBeacon(GreeterV2);
