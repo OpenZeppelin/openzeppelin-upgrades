@@ -4,7 +4,8 @@ pragma solidity ^0.8.0;
 
 import {BeaconProxy} from "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 
-// Example of a custom beacon proxy, for testing only.
+// Example of a custom beacon proxy.
+// This contract is for testing only, it is not safe for use in production.
 
 contract CustomBeaconProxy is BeaconProxy {
     address private immutable _deployer;
