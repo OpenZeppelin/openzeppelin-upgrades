@@ -36,7 +36,7 @@ The following options are common to some functions.
 * `relayerId`: (`string`) When using OpenZeppelin Defender deployments, the ID of the relayer to use for the deployment. Defaults to the relayer configured for your deployment environment on Defender.
 * `salt`: (`string`) When using OpenZeppelin Defender deployments, if this is not set, deployments will be performed using the CREATE opcode. If this is set, deployments will be performed using the CREATE2 opcode with the provided salt. Note that deployments using a Safe are done using CREATE2 and require a salt. **Warning:** CREATE2 affects `msg.sender` behavior. See https://docs.openzeppelin.com/defender/tutorial/deploy#deploy-caveat[Caveats] for more information.
 * `metadata`: (`{ commitHash?: string; tag?: string; [k: string]: any; }`) When using OpenZeppelin Defender deployments, you can use this to identify, tag, or classify deployments. See https://docs.openzeppelin.com/defender/module/deploy#metadata[Metadata].
-* `proxyFactory`: (`ContractFactory`) Customizes the ethers contract factory to use for deploying the proxy, allowing a custom proxy contract to be deployed. See https://github.com/OpenZeppelin/openzeppelin-upgrades/blob/master/packages/plugin-hardhat/src/utils/factories.ts[factories.ts] for the default contract factory for each kind of proxy.
+* `proxyFactory`: (`ethers.ContractFactory`) Customizes the ethers contract factory to use for deploying the proxy, allowing a custom proxy contract to be deployed. See https://github.com/OpenZeppelin/openzeppelin-upgrades/blob/master/packages/plugin-hardhat/src/utils/factories.ts[factories.ts] for the default contract factory for each kind of proxy.
 ** *Since:* `@openzeppelin/hardhat-upgrades@3.7.0`
 * `deployFunction`: (`(hre, opts, factory, ...args) => Promise<EthersOrDefenderDeployment>`) Customizes the function used to deploy the proxy. Can be used along with the `proxyFactory` option to override constructor parameters for custom proxy deployments. See https://github.com/OpenZeppelin/openzeppelin-upgrades/blob/master/packages/plugin-hardhat/src/utils/deploy.ts[deploy.ts] for the default deploy function.
 ** *Since:* `@openzeppelin/hardhat-upgrades@3.7.0`
@@ -68,9 +68,9 @@ async function deployProxy(
     redeployImplementation?: 'always' | 'never' | 'onchange',
     txOverrides?: ethers.Overrides,
     kind?: 'uups' | 'transparent',
-    proxyFactory?: () => Promise<ContractFactory>,
-    deployFunction?: () => Promise<EthersOrDefenderDeployment>,
     useDefenderDeploy?: boolean,
+    proxyFactory?: ethers.ContractFactory,
+    deployFunction?: () => Promise<EthersOrDefenderDeployment>,
   },
 ): Promise<ethers.Contract>
 ----
@@ -214,7 +214,7 @@ async function deployBeaconProxy(
     initializer?: string | false,
     txOverrides?: ethers.Overrides,
     useDefenderDeploy?: boolean,
-    proxyFactory?: () => Promise<ContractFactory>,
+    proxyFactory?: ethers.ContractFactory,
     deployFunction?: () => Promise<EthersOrDefenderDeployment>,
   },
 ): Promise<ethers.Contract>
