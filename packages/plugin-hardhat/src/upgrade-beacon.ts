@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract } from 'ethers';
+import type { ContractFactory } from 'ethers';
 
 import {
   getContractAddress,
@@ -11,15 +11,20 @@ import {
   getSigner,
 } from './utils';
 import { disableDefender } from './defender/utils';
+import { ContractTypeOfFactory } from './type-extensions';
 
-export type UpgradeBeaconFunction = (
+export type UpgradeBeaconFunction = <F extends ContractFactory>(
   beacon: ContractAddressOrInstance,
-  ImplFactory: ContractFactory,
+  ImplFactory: F,
   opts?: UpgradeBeaconOptions,
-) => Promise<Contract>;
+) => Promise<ContractTypeOfFactory<F>>;
 
 export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, defenderModule: boolean): UpgradeBeaconFunction {
-  return async function upgradeBeacon(beacon, ImplFactory, opts: UpgradeBeaconOptions = {}) {
+  return async function upgradeBeacon<F extends ContractFactory>(
+    beacon: ContractAddressOrInstance,
+    ImplFactory: F,
+    opts: UpgradeBeaconOptions = {},
+  ): Promise<ContractTypeOfFactory<F>> {
     disableDefender(hre, defenderModule, opts, upgradeBeacon.name);
 
     const beaconAddress = await getContractAddress(beacon);
@@ -33,6 +38,6 @@ export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, defenderModule
 
     // @ts-ignore Won't be readonly because beaconContract was created through attach.
     beaconContract.deployTransaction = upgradeTx;
-    return beaconContract;
+    return beaconContract as ContractTypeOfFactory<F>;
   };
 }

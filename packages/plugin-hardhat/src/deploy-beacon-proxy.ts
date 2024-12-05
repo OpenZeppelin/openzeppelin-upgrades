@@ -24,14 +24,15 @@ import {
 } from './utils';
 import { enableDefender } from './defender/utils';
 import { getContractInstance } from './utils/contract-instance';
+import { ContractTypeOfFactory } from './type-extensions';
 
 export interface DeployBeaconProxyFunction {
-  (
+  <F extends ContractFactory>(
     beacon: ContractAddressOrInstance,
     attachTo: ContractFactory,
     args?: unknown[],
     opts?: DeployBeaconProxyOptions,
-  ): Promise<Contract>;
+  ): Promise<ContractTypeOfFactory<F>>;
   (beacon: ContractAddressOrInstance, attachTo: ContractFactory, opts?: DeployBeaconProxyOptions): Promise<Contract>;
 }
 
@@ -39,12 +40,12 @@ export function makeDeployBeaconProxy(
   hre: HardhatRuntimeEnvironment,
   defenderModule: boolean,
 ): DeployBeaconProxyFunction {
-  return async function deployBeaconProxy(
+  return async function deployBeaconProxy<F extends ContractFactory>(
     beacon: ContractAddressOrInstance,
-    attachTo: ContractFactory,
+    attachTo: F,
     args: unknown[] | DeployBeaconProxyOptions = [],
     opts: DeployBeaconProxyOptions = {},
-  ) {
+  ): Promise<ContractTypeOfFactory<F>> {
     if (!(attachTo instanceof ContractFactory)) {
       throw new UpgradesError(
         `attachTo must specify a contract factory`,

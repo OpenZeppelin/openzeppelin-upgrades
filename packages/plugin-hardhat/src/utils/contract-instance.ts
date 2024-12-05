@@ -6,6 +6,7 @@ import { DeployTransaction, DefenderDeploy } from '.';
 import { waitForDeployment } from '../defender/utils';
 import { Deployment, RemoteDeploymentId, DeployOpts } from '@openzeppelin/upgrades-core';
 import { attach } from './ethers';
+import { ContractTypeOfFactory } from '../type-extensions';
 
 /**
  * Gets a contract instance from a deployment, where the deployment may be remote.
@@ -19,13 +20,13 @@ import { attach } from './ethers';
  * @param deployTransaction The transaction that deployed the contract, if available
  * @returns The contract instance
  */
-export function getContractInstance(
+export function getContractInstance<F extends ContractFactory>(
   hre: HardhatRuntimeEnvironment,
-  contract: ContractFactory,
+  contract: F,
   opts: DeployOpts & DefenderDeploy,
   deployment: Deployment & DeployTransaction & RemoteDeploymentId,
-) {
-  const instance = attach(contract, deployment.address);
+): ContractTypeOfFactory<F> {
+  const instance = attach(contract, deployment.address) as ContractTypeOfFactory<F>;
 
   // @ts-ignore Won't be readonly because instance was created through attach.
   instance.deploymentTransaction = () => deployment.deployTransaction ?? null; // Convert undefined to null to conform to ethers.js types.
