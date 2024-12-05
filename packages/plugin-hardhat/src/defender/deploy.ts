@@ -9,10 +9,7 @@ import {
   DeployContractRequest,
   DeployRequestLibraries,
 } from '@openzeppelin/defender-sdk-deploy-client';
-import {
-  getContractNameAndRunValidation,
-  UpgradesError,
-} from '@openzeppelin/upgrades-core';
+import { getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
 
 import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json';
 
@@ -22,12 +19,7 @@ import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppel
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 
 import { getNetwork, parseTxOverrides } from './utils';
-import {
-  DefenderDeployOptions,
-  UpgradeOptions,
-  EthersDeployOptions,
-  DefenderDeployment,
-} from '../utils';
+import { DefenderDeployOptions, UpgradeOptions, EthersDeployOptions, DefenderDeployment } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
