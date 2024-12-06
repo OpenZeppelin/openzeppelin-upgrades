@@ -61,7 +61,7 @@ export type ValidationError =
   | ValidationErrorOpcode
   | ValidationErrorWithName
   | ValidationErrorUpgradeability
-  | ValidationErrorInitializers;
+  | ValidationErrorInitializer;
 
 interface ValidationErrorBase {
   src: string;
@@ -79,18 +79,16 @@ interface ValidationErrorWithName extends ValidationErrorBase {
     | 'internal-function-storage';
 }
 
-interface ValidationErrorInitializerGeneric extends ValidationErrorBase {
-  name: string;
+interface ValidationErrorInitializerCall extends ValidationErrorBase {
   kind: 'missing-initializer' | 'missing-initializer-call' | 'duplicate-initializer-call';
 }
 
 interface ValidationErrorInitializerOrder extends ValidationErrorBase {
-  name: string;
   kind: 'incorrect-initializer-order';
   expectedLinearization: string[];
 }
 
-type ValidationErrorInitializers = ValidationErrorInitializerGeneric | ValidationErrorInitializerOrder;
+type ValidationErrorInitializer = ValidationErrorInitializerCall | ValidationErrorInitializerOrder;
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
   kind: 'constructor';
@@ -659,7 +657,7 @@ function* getInitializerErrors(
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
-): Generator<ValidationErrorInitializers> {
+): Generator<ValidationErrorInitializer> {
   if (contractDef.baseContracts.length > 0) {
     const baseContractDefs = contractDef.baseContracts.map(base =>
       deref('ContractDefinition', base.baseName.referencedDeclaration),
@@ -677,7 +675,6 @@ function* getInitializerErrors(
       if (contractInitializers.length === 0 && !skipCheck('missing-initializer', contractDef)) {
         yield {
           kind: 'missing-initializer',
-          name: contractDef.name,
           src: decodeSrc(contractDef),
         };
       }
@@ -711,7 +708,6 @@ function* getInitializerErrors(
                 ) {
                   yield {
                     kind: 'duplicate-initializer-call',
-                    name: contractDef.name,
                     src: decodeSrc(fnCall),
                   };
                 }
@@ -726,7 +722,6 @@ function* getInitializerErrors(
                 ) {
                   yield {
                     kind: 'incorrect-initializer-order',
-                    name: contractDef.name,
                     src: decodeSrc(fnCall),
                     expectedLinearization: baseContractsWithInitializers,
                   };
@@ -747,7 +742,6 @@ function* getInitializerErrors(
         ) {
           yield {
             kind: 'missing-initializer-call',
-            name: contractDef.name,
             src: decodeSrc(contractInitializer),
           };
         }
