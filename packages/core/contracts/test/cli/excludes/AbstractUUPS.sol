@@ -12,7 +12,7 @@ abstract contract AbstractUUPS is UUPSUpgradeable, Abstract1, Abstract2 {
         z = _z;
     }
 
-    function initialize() initializer public {
+    function initialize() onlyInitializing public {
         __UUPSUpgradeable_init();
     }
 }
