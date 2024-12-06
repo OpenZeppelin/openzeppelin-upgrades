@@ -74,29 +74,29 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   },
   'missing-initializer': {
     msg: () => `Contract is missing an initializer`,
-    hint: () => `Define an initializer function`, // TODO include instruction to call parent initializers, or use a separate error message
-    link: 'https://zpl.in/upgrades/error-010', // TODO define link
+    hint: () => `Define an initializer function and use it to call the initializers of parent contracts`,
+    link: 'https://zpl.in/upgrades/error-001',
   },
   'missing-initializer-call': {
     msg: () => `Contract is missing a call to a parent initializer`,
     hint: () => `Call the parent initializer in your initializer function`,
-    link: 'https://zpl.in/upgrades/error-011', // TODO define link
+    link: 'https://zpl.in/upgrades/error-001',
   },
   'duplicate-initializer-call': {
     msg: () => `Contract has multiple calls to a parent initializer`,
     hint: () => `Only call each parent initializer once`,
-    link: 'https://zpl.in/upgrades/error-012', // TODO define link
+    link: 'https://zpl.in/upgrades/error-001',
   },
   'incorrect-initializer-order': {
-    msg: () => `Contract has an incorrect order of parent initializer calls`,
+    msg: e => `Contract has an incorrect order of parent initializer calls. Expected initializers to be called for parent contracts in the following order: ${e.expectedLinearization.join(', ')}`,
     hint: () => `Call parent initializers in the order they are inherited`,
-    link: 'https://zpl.in/upgrades/error-013', // TODO define link
+    link: 'https://zpl.in/upgrades/error-001',
   },
 };
 
 function describeError(e: ValidationError, color = true): string {
   const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
-  const info = errorInfo[e.kind];
+  const info: any = errorInfo[e.kind]; // union type is too complex for TypeScript to represent, so we use `any`
   const log = [chalk.bold(e.src) + ': ' + info.msg(e as any)];
   const hint = info.hint?.(e as any);
   if (hint) {
