@@ -72,6 +72,26 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
       `     flag and ensure you always reassign internal functions in storage during upgrades`,
     link: 'https://zpl.in/upgrades/error-009',
   },
+  'missing-initializer': {
+    msg: () => `Contract is missing an initializer`,
+    hint: () => `Define an initializer function`, // TODO include instruction to call parent initializers, or use a separate error message
+    link: 'https://zpl.in/upgrades/error-010', // TODO define link
+  },
+  'missing-initializer-call': {
+    msg: () => `Contract is missing a call to a parent initializer`,
+    hint: () => `Call the parent initializer in your initializer function`,
+    link: 'https://zpl.in/upgrades/error-011', // TODO define link
+  },
+  'duplicate-initializer-call': {
+    msg: () => `Contract has multiple calls to a parent initializer`,
+    hint: () => `Only call each parent initializer once`,
+    link: 'https://zpl.in/upgrades/error-012', // TODO define link
+  },
+  'incorrect-initializer-order': {
+    msg: () => `Contract has an incorrect order of parent initializer calls`,
+    hint: () => `Call parent initializers in the order they are inherited`,
+    link: 'https://zpl.in/upgrades/error-013', // TODO define link
+  },
 };
 
 function describeError(e: ValidationError, color = true): string {
