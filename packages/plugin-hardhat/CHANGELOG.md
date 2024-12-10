@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.7.0 (2024-12-04)
+
+- Add `proxyFactory` and `deployFunction` options which can be used to deploy a custom proxy contract. ([#1104](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1104))
+
+## 3.6.0 (2024-11-25)
+
+- Update Slang dependency to 0.18.3. ([#1102](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1102))
+  - Improves reliability of Hardhat compilation step for namespaced storage layout validations when using Solidity versions 0.8.27 and 0.8.28.
+
 ## 3.5.0 (2024-10-10)
 
 - Support ignoring Hardhat compile errors when extracting detailed namespaced storage layouts for validations. ([#1090](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1090))

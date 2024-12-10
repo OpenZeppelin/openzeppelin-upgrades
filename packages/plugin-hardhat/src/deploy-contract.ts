@@ -1,12 +1,10 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import { deploy, DeployContractOptions, DeployTransaction } from './utils';
+import { deploy, DeployContractOptions, EthersOrDefenderDeployment } from './utils';
 import { DeployData, getDeployData } from './utils/deploy-impl';
 import { enableDefender } from './defender/utils';
 import {
-  Deployment,
-  RemoteDeploymentId,
   getContractNameAndRunValidation,
   inferProxyKind,
   UpgradesError,
@@ -30,7 +28,7 @@ async function deployNonUpgradeableContract(
     assertNonUpgradeable(deployData);
   }
 
-  const deployment: Required<Deployment> & DeployTransaction & RemoteDeploymentId = await deploy(
+  const deployment: EthersOrDefenderDeployment = await deploy(
     hre,
     opts,
     Contract,
