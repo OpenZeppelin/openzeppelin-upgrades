@@ -79,8 +79,14 @@ interface ValidationErrorWithName extends ValidationErrorBase {
     | 'internal-function-storage';
 }
 
-interface ValidationErrorInitializerCall extends ValidationErrorBase {
-  kind: 'missing-initializer' | 'missing-initializer-call' | 'duplicate-initializer-call';
+interface ValidationErrorInitializerMissing extends ValidationErrorBase {
+  kind: 'missing-initializer' | 'missing-initializer-call';
+}
+
+interface ValidationErrorInitializerDuplicate extends ValidationErrorBase {
+  kind: 'duplicate-initializer-call';
+  parentInitializer: string;
+  parentContract: string;
 }
 
 interface ValidationErrorInitializerOrder extends ValidationErrorBase {
@@ -88,7 +94,7 @@ interface ValidationErrorInitializerOrder extends ValidationErrorBase {
   expectedLinearization: string[];
 }
 
-type ValidationErrorInitializer = ValidationErrorInitializerCall | ValidationErrorInitializerOrder;
+type ValidationErrorInitializer = ValidationErrorInitializerMissing | ValidationErrorInitializerDuplicate | ValidationErrorInitializerOrder;
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
   kind: 'constructor';
@@ -709,6 +715,8 @@ function* getInitializerErrors(
                   yield {
                     kind: 'duplicate-initializer-call',
                     src: decodeSrc(fnCall),
+                    parentInitializer: foundParentInitializer.name,
+                    parentContract: baseName,
                   };
                 }
                 calledInitializerIds.push(referencedFn);

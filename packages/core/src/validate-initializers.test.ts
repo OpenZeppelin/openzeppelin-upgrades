@@ -128,7 +128,7 @@ testValid(
   'InitializationOrder_Duplicate_Bad',
   'transparent',
   false,
-  'Contract has multiple calls to a parent initializer',
+  'Contract has duplicate calls to initializer `__B_init` from parent contract `B`',
 );
 testValid('InitializationOrder_Duplicate_UnsafeAllow_Contract', 'transparent', true);
 testValid('InitializationOrder_Duplicate_UnsafeAllow_Function', 'transparent', true);

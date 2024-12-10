@@ -83,7 +83,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     link: 'https://zpl.in/upgrades/error-001',
   },
   'duplicate-initializer-call': {
-    msg: () => `Contract has multiple calls to a parent initializer`,
+    msg: e => `Contract has duplicate calls to initializer \`${e.parentInitializer}\` from parent contract \`${e.parentContract}\``,
     hint: () => `Only call each parent initializer once`,
     link: 'https://zpl.in/upgrades/error-001',
   },
