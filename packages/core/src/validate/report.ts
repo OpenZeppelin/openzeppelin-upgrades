@@ -88,7 +88,8 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     link: 'https://zpl.in/upgrades/error-001',
   },
   'incorrect-initializer-order': {
-    msg: e => `Contract has an incorrect order of parent initializer calls. Expected initializers to be called for parent contracts in the following order: ${e.expectedLinearization.join(', ')}`,
+    msg: e =>
+      `Contract has an incorrect order of parent initializer calls. Expected initializers to be called for parent contracts in the following order: ${e.expectedLinearization.join(', ')}`,
     hint: () => `Call parent initializers in the order they are inherited`,
     link: 'https://zpl.in/upgrades/error-001',
   },

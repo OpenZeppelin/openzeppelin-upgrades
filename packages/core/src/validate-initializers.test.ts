@@ -33,8 +33,8 @@ test.before(async t => {
   }
 });
 
-function testValid(name: string, kind: ValidationOptions['kind'], valid: boolean, numExpectedErrors?: number) {
-  testOverride(name, kind, {}, valid, numExpectedErrors);
+function testValid(name: string, kind: ValidationOptions['kind'], valid: boolean, expectedErrorContains?: string) {
+  testOverride(name, kind, {}, valid, expectedErrorContains);
 }
 
 function testOverride(
@@ -42,9 +42,9 @@ function testOverride(
   kind: ValidationOptions['kind'],
   opts: ValidationOptions,
   valid: boolean,
-  numExpectedErrors?: number,
+  expectedErrorContains?: string,
 ) {
-  if (numExpectedErrors !== undefined && numExpectedErrors > 0 && valid) {
+  if (expectedErrorContains !== undefined && valid) {
     throw new Error('Cannot expect errors for a valid contract');
   }
 
@@ -58,8 +58,8 @@ function testOverride(
       t.notThrows(assertUpgSafe);
     } else {
       const error = t.throws(assertUpgSafe) as ValidationErrors;
-      if (numExpectedErrors !== undefined) {
-        t.is(error.errors.length, numExpectedErrors);
+      if (expectedErrorContains !== undefined) {
+        t.true(error.message.includes(expectedErrorContains), error.message);
       }
     }
   });
@@ -68,23 +68,43 @@ function testOverride(
 testValid('Child_Of_NoInitializer_Ok', 'transparent', true);
 
 testValid('Child_Of_InitializerModifier_Ok', 'transparent', true);
-testValid('Child_Of_InitializerModifier_Bad', 'transparent', false, 1);
+testValid(
+  'Child_Of_InitializerModifier_Bad',
+  'transparent',
+  false,
+  'Contract is missing a call to a parent initializer',
+);
 testValid('Child_Of_InitializerModifier_UsesSuper_Ok', 'transparent', true);
 
 testValid('Child_Of_ReinitializerModifier_Ok', 'transparent', true);
-testValid('Child_Of_ReinitializerModifier_Bad', 'transparent', false, 1);
+testValid(
+  'Child_Of_ReinitializerModifier_Bad',
+  'transparent',
+  false,
+  'Contract is missing a call to a parent initializer',
+);
 
 testValid('Child_Of_OnlyInitializingModifier_Ok', 'transparent', true);
-testValid('Child_Of_OnlyInitializingModifier_Bad', 'transparent', false, 1);
+testValid(
+  'Child_Of_OnlyInitializingModifier_Bad',
+  'transparent',
+  false,
+  'Contract is missing a call to a parent initializer',
+);
 
-testValid('MissingInitializer_Bad', 'transparent', false, 1);
+testValid('MissingInitializer_Bad', 'transparent', false, 'Contract is missing an initializer');
 testValid('MissingInitializer_UnsafeAllow_Contract', 'transparent', true);
 testOverride('MissingInitializer_Bad', 'transparent', { unsafeAllow: ['missing-initializer'] }, true);
 
 testValid('InitializationOrder_Ok', 'transparent', true);
 testValid('InitializationOrder_Ok_2', 'transparent', true);
 
-testValid('InitializationOrder_WrongOrder_Bad', 'transparent', false, 1);
+testValid(
+  'InitializationOrder_WrongOrder_Bad',
+  'transparent',
+  false,
+  'Contract has an incorrect order of parent initializer calls. Expected initializers to be called for parent contracts in the following order: A, B, C',
+);
 testValid('InitializationOrder_WrongOrder_UnsafeAllow_Contract', 'transparent', true);
 testValid('InitializationOrder_WrongOrder_UnsafeAllow_Function', 'transparent', true);
 testOverride(
@@ -94,12 +114,22 @@ testOverride(
   true,
 );
 
-testValid('InitializationOrder_MissingCall_Bad', 'transparent', false, 1);
+testValid(
+  'InitializationOrder_MissingCall_Bad',
+  'transparent',
+  false,
+  'Contract is missing a call to a parent initializer',
+);
 testValid('InitializationOrder_MissingCall_UnsafeAllow_Contract', 'transparent', true);
 testValid('InitializationOrder_MissingCall_UnsafeAllow_Function', 'transparent', true);
 testOverride('InitializationOrder_MissingCall_Bad', 'transparent', { unsafeAllow: ['missing-initializer-call'] }, true);
 
-testValid('InitializationOrder_Duplicate_Bad', 'transparent', false, 1);
+testValid(
+  'InitializationOrder_Duplicate_Bad',
+  'transparent',
+  false,
+  'Contract has multiple calls to a parent initializer',
+);
 testValid('InitializationOrder_Duplicate_UnsafeAllow_Contract', 'transparent', true);
 testValid('InitializationOrder_Duplicate_UnsafeAllow_Function', 'transparent', true);
 testValid('InitializationOrder_Duplicate_UnsafeAllow_Call', 'transparent', true);

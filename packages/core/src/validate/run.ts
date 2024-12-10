@@ -761,9 +761,9 @@ function getPossibleInitializers(contractDef: ContractDefinition) {
     fnDef =>
       (fnDef.modifiers.some(modifier =>
         ['initializer', 'reinitializer', 'onlyInitializing'].includes(modifier.modifierName.name),
-      ) || ['initialize', 'initializer', 'reinitialize', 'reinitializer'].includes(fnDef.name))
-        &&
-      !(fnDef.virtual && !fnDef.body) // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
+      ) ||
+        ['initialize', 'initializer', 'reinitialize', 'reinitializer'].includes(fnDef.name)) &&
+      !(fnDef.virtual && !fnDef.body), // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
   );
 }
 
