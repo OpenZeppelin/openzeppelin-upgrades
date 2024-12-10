@@ -134,3 +134,7 @@ testValid('InitializationOrder_Duplicate_UnsafeAllow_Contract', 'transparent', t
 testValid('InitializationOrder_Duplicate_UnsafeAllow_Function', 'transparent', true);
 testValid('InitializationOrder_Duplicate_UnsafeAllow_Call', 'transparent', true);
 testOverride('InitializationOrder_Duplicate_Bad', 'transparent', { unsafeAllow: ['duplicate-initializer-call'] }, true);
+
+testValid('Child_Of_ParentPrivateInitializer_Ok', 'transparent', true);
+testValid('Child_Of_ParentPublicInitializer_Ok', 'transparent', true);
+testValid('Child_Has_PrivateInitializer_Bad', 'transparent', false, 'Contract is missing an initializer');

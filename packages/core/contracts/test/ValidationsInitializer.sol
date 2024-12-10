@@ -24,19 +24,19 @@ contract Parent__OnlyInitializingModifier is Initializable {
 }
 
 contract Parent_InitializeName {
-  function initialize() public virtual {}
+  function initialize() internal virtual {}
 }
 
 contract Parent_InitializerName {
-  function initializer() public {}
+  function initializer() internal {}
 }
 
 contract Parent_ReinitializeName {
-  function reinitialize(uint64 version) public {}
+  function reinitialize(uint64 version) internal {}
 }
 
 contract Parent_ReinitializerName {
-  function reinitializer(uint64 version) public {}
+  function reinitializer(uint64 version) internal {}
 }
 
 // ==== Child contracts ====
@@ -220,4 +220,24 @@ contract InitializationOrder_Duplicate_UnsafeAllow_Call is A, B, C, Parent_NoIni
     __B_init();
     __C_init();
   }
+}
+
+// ==== Initializer visibility ====
+
+contract Parent_PrivateInitializer {
+  function initialize() private {} // not considered an initializer because it's private
+}
+
+contract Parent_PublicInitializer {
+  function initialize() public {} // does not strictly need to be called by child
+}
+
+contract Child_Of_ParentPrivateInitializer_Ok is Parent_PrivateInitializer { // no initializer required since parent initializer is private
+}
+
+contract Child_Of_ParentPublicInitializer_Ok is Parent_PublicInitializer { // no initializer required since parent initializer is public
+}
+
+contract Child_Has_PrivateInitializer_Bad is Parent__OnlyInitializingModifier { // parent has internal initializer, but child has private
+  function initialize() private {}
 }
