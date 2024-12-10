@@ -12,11 +12,11 @@ contract Parent_NoInitializer {
 }
 
 contract Parent_InitializerModifier is Initializable {
-  function parentInit() initializer public {}
+  function parentInit() initializer internal {}
 }
 
 contract Parent_ReinitializerModifier is Initializable {
-  function parentReinit() reinitializer(2) public {}
+  function parentReinit() reinitializer(2) internal {}
 }
 
 contract Parent__OnlyInitializingModifier is Initializable {

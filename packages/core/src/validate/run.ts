@@ -678,7 +678,7 @@ function* getInitializerErrors(
       deref('ContractDefinition', base.baseName.referencedDeclaration),
     );
     const baseContractsInitializersMap = new Map(
-      baseContractDefs.map(base => [base.name, getPossibleInitializers(base)]),
+      baseContractDefs.map(base => [base.name, getPossibleInitializers(base, { ignorePublicInitializers: true })]),
     );
     const baseContractsWithInitializers = baseContractDefs
       .filter(base => hasInitializers(base.name, baseContractsInitializersMap))
@@ -773,7 +773,7 @@ function hasInitializers(baseName: string, baseContractsInitializersMap: Map<str
   return initializers !== undefined && initializers.length > 0;
 }
 
-function getPossibleInitializers(contractDef: ContractDefinition) {
+function getPossibleInitializers(contractDef: ContractDefinition, { ignorePublicInitializers = false } = {}) {
   const fns = [...findAll('FunctionDefinition', contractDef)];
   return fns.filter(
     fnDef =>
@@ -781,7 +781,8 @@ function getPossibleInitializers(contractDef: ContractDefinition) {
         ['initializer', 'reinitializer', 'onlyInitializing'].includes(modifier.modifierName.name),
       ) ||
         ['initialize', 'initializer', 'reinitialize', 'reinitializer'].includes(fnDef.name)) &&
-      !(fnDef.virtual && !fnDef.body), // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
+      !(fnDef.virtual && !fnDef.body) && // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
+      (!ignorePublicInitializers || (fnDef.visibility !== 'public' && fnDef.visibility !== 'external')), // For parent contracts, ignore public initializers since they do not strictly need to be called from the child
   );
 }
 
