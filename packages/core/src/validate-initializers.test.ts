@@ -72,7 +72,7 @@ testValid(
   'Child_Of_InitializerModifier_Bad',
   'transparent',
   false,
-  'Contract is missing a call to a parent initializer',
+  'Contract is missing initializer calls for one or more parent contracts: `Parent_InitializerModifier`',
 );
 testValid('Child_Of_InitializerModifier_UsesSuper_Ok', 'transparent', true);
 
@@ -81,7 +81,7 @@ testValid(
   'Child_Of_ReinitializerModifier_Bad',
   'transparent',
   false,
-  'Contract is missing a call to a parent initializer',
+  'Contract is missing initializer calls for one or more parent contracts: `Parent_ReinitializerModifier`',
 );
 
 testValid('Child_Of_OnlyInitializingModifier_Ok', 'transparent', true);
@@ -89,7 +89,7 @@ testValid(
   'Child_Of_OnlyInitializingModifier_Bad',
   'transparent',
   false,
-  'Contract is missing a call to a parent initializer',
+  'Contract is missing initializer calls for one or more parent contracts: `Parent__OnlyInitializingModifier`',
 );
 
 testValid('MissingInitializer_Bad', 'transparent', false, 'Contract is missing an initializer');
@@ -118,7 +118,7 @@ testValid(
   'InitializationOrder_MissingCall_Bad',
   'transparent',
   false,
-  'Contract is missing a call to a parent initializer',
+  'Contract is missing initializer calls for one or more parent contracts: `C`',
 );
 testValid('InitializationOrder_MissingCall_UnsafeAllow_Contract', 'transparent', true);
 testValid('InitializationOrder_MissingCall_UnsafeAllow_Function', 'transparent', true);
@@ -128,7 +128,7 @@ testValid(
   'InitializationOrder_Duplicate_Bad',
   'transparent',
   false,
-  'Contract has duplicate calls to initializer `__B_init` from parent contract `B`',
+  'Contract has duplicate calls to parent initializer `__B_init` for contract `B`',
 );
 testValid('InitializationOrder_Duplicate_UnsafeAllow_Contract', 'transparent', true);
 testValid('InitializationOrder_Duplicate_UnsafeAllow_Function', 'transparent', true);

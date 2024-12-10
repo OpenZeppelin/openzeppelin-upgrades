@@ -79,22 +79,31 @@ interface ValidationErrorWithName extends ValidationErrorBase {
     | 'internal-function-storage';
 }
 
-interface ValidationErrorInitializerMissing extends ValidationErrorBase {
-  kind: 'missing-initializer' | 'missing-initializer-call';
+interface ValidationErrorMissingInitializer extends ValidationErrorBase {
+  kind: 'missing-initializer';
 }
 
-interface ValidationErrorInitializerDuplicate extends ValidationErrorBase {
+interface ValidationErrorMissingInitializerCall extends ValidationErrorBase {
+  kind: 'missing-initializer-call';
+  parentContracts: string[];
+}
+
+interface ValidationErrorDuplicateInitializerCall extends ValidationErrorBase {
   kind: 'duplicate-initializer-call';
   parentInitializer: string;
   parentContract: string;
 }
 
-interface ValidationErrorInitializerOrder extends ValidationErrorBase {
+interface ValidationErrorIncorrectInitializerOrder extends ValidationErrorBase {
   kind: 'incorrect-initializer-order';
   expectedLinearization: string[];
 }
 
-type ValidationErrorInitializer = ValidationErrorInitializerMissing | ValidationErrorInitializerDuplicate | ValidationErrorInitializerOrder;
+type ValidationErrorInitializer =
+  | ValidationErrorMissingInitializer
+  | ValidationErrorMissingInitializerCall
+  | ValidationErrorDuplicateInitializerCall
+  | ValidationErrorIncorrectInitializerOrder;
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
   kind: 'constructor';
@@ -751,6 +760,7 @@ function* getInitializerErrors(
           yield {
             kind: 'missing-initializer-call',
             src: decodeSrc(contractInitializer),
+            parentContracts: uninitializedBaseContracts,
           };
         }
       }

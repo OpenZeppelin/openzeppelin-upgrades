@@ -78,12 +78,14 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     link: 'https://zpl.in/upgrades/error-001',
   },
   'missing-initializer-call': {
-    msg: () => `Contract is missing a call to a parent initializer`,
-    hint: () => `Call the parent initializer in your initializer function`,
+    msg: e =>
+      `Contract is missing initializer calls for one or more parent contracts: \`${e.parentContracts.join(', ')}\``,
+    hint: () => `Call the parent initializers in your initializer function`,
     link: 'https://zpl.in/upgrades/error-001',
   },
   'duplicate-initializer-call': {
-    msg: e => `Contract has duplicate calls to initializer \`${e.parentInitializer}\` from parent contract \`${e.parentContract}\``,
+    msg: e =>
+      `Contract has duplicate calls to parent initializer \`${e.parentInitializer}\` for contract \`${e.parentContract}\``,
     hint: () => `Only call each parent initializer once`,
     link: 'https://zpl.in/upgrades/error-001',
   },

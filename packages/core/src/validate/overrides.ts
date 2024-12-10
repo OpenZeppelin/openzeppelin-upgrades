@@ -83,7 +83,7 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
   ],
   'missing-initializer': [
     `You are using the \`unsafeAllow.missing-initializer\` flag.`,
-    `Make sure you have manually checked that the contract has an initializer and that it correctly calls any parent initializers.`,
+    `Make sure you have manually checked that the contract has an initializer and that it correctly calls all parent initializers.`,
   ],
   'missing-initializer-call': [
     `You are using the \`unsafeAllow.missing-initializer-call\` flag.`,
