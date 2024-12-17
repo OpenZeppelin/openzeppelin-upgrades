@@ -33,108 +33,96 @@ test.before(async t => {
   }
 });
 
-function testValid(name: string, kind: ValidationOptions['kind'], valid: boolean, expectedErrorContains?: string) {
-  testOverride(name, kind, {}, valid, expectedErrorContains);
+function testAccepts(name: string, kind: ValidationOptions['kind']) {
+  testOverride(name, kind, {}, undefined);
+}
+
+function testRejects(name: string, kind: ValidationOptions['kind'], expectedErrorContains: string) {
+  testOverride(name, kind, {}, expectedErrorContains);
 }
 
 function testOverride(
   name: string,
   kind: ValidationOptions['kind'],
   opts: ValidationOptions,
-  valid: boolean,
-  expectedErrorContains?: string,
+  expectErrorContains?: string,
 ) {
-  if (expectedErrorContains !== undefined && valid) {
-    throw new Error('Cannot expect errors for a valid contract');
-  }
+  const expectValid = expectErrorContains === undefined;
 
   const optKeys = Object.keys(opts);
   const describeOpts = optKeys.length > 0 ? '(' + optKeys.join(', ') + ')' : '';
-  const testName = [valid ? 'accepts' : 'rejects', kind, name, describeOpts].join(' ');
+  const testName = [expectValid ? 'accepts' : 'rejects', kind, name, describeOpts].join(' ');
   test(testName, t => {
     const version = getContractVersion(t.context.validation, name);
     const assertUpgSafe = () => assertUpgradeSafe([t.context.validation], version, { kind, ...opts });
-    if (valid) {
+    if (expectValid) {
       t.notThrows(assertUpgSafe);
     } else {
       const error = t.throws(assertUpgSafe) as ValidationErrors;
-      if (expectedErrorContains !== undefined) {
-        t.true(error.message.includes(expectedErrorContains), error.message);
-      }
+      t.true(error.message.includes(expectErrorContains), error.message);
     }
   });
 }
 
-testValid('Child_Of_NoInitializer_Ok', 'transparent', true);
+testAccepts('Child_Of_NoInitializer_Ok', 'transparent');
 
-testValid('Child_Of_InitializerModifier_Ok', 'transparent', true);
-testValid(
+testAccepts('Child_Of_InitializerModifier_Ok', 'transparent');
+testRejects(
   'Child_Of_InitializerModifier_Bad',
   'transparent',
-  false,
   'Contract is missing initializer calls for one or more parent contracts: `Parent_InitializerModifier`',
 );
-testValid('Child_Of_InitializerModifier_UsesSuper_Ok', 'transparent', true);
+testAccepts('Child_Of_InitializerModifier_UsesSuper_Ok', 'transparent');
 
-testValid('Child_Of_ReinitializerModifier_Ok', 'transparent', true);
-testValid(
+testAccepts('Child_Of_ReinitializerModifier_Ok', 'transparent');
+testRejects(
   'Child_Of_ReinitializerModifier_Bad',
   'transparent',
-  false,
   'Contract is missing initializer calls for one or more parent contracts: `Parent_ReinitializerModifier`',
 );
 
-testValid('Child_Of_OnlyInitializingModifier_Ok', 'transparent', true);
-testValid(
+testAccepts('Child_Of_OnlyInitializingModifier_Ok', 'transparent');
+testRejects(
   'Child_Of_OnlyInitializingModifier_Bad',
   'transparent',
-  false,
   'Contract is missing initializer calls for one or more parent contracts: `Parent__OnlyInitializingModifier`',
 );
 
-testValid('MissingInitializer_Bad', 'transparent', false, 'Contract is missing an initializer');
-testValid('MissingInitializer_UnsafeAllow_Contract', 'transparent', true);
-testOverride('MissingInitializer_Bad', 'transparent', { unsafeAllow: ['missing-initializer'] }, true);
+testRejects('MissingInitializer_Bad', 'transparent', 'Contract is missing an initializer');
+testAccepts('MissingInitializer_UnsafeAllow_Contract', 'transparent');
+testOverride('MissingInitializer_Bad', 'transparent', { unsafeAllow: ['missing-initializer'] });
 
-testValid('InitializationOrder_Ok', 'transparent', true);
-testValid('InitializationOrder_Ok_2', 'transparent', true);
+testAccepts('InitializationOrder_Ok', 'transparent');
+testAccepts('InitializationOrder_Ok_2', 'transparent');
 
-testValid(
+testRejects(
   'InitializationOrder_WrongOrder_Bad',
   'transparent',
-  false,
   'Contract has an incorrect order of parent initializer calls. Expected initializers to be called for parent contracts in the following order: A, B, C',
 );
-testValid('InitializationOrder_WrongOrder_UnsafeAllow_Contract', 'transparent', true);
-testValid('InitializationOrder_WrongOrder_UnsafeAllow_Function', 'transparent', true);
-testOverride(
-  'InitializationOrder_WrongOrder_Bad',
-  'transparent',
-  { unsafeAllow: ['incorrect-initializer-order'] },
-  true,
-);
+testAccepts('InitializationOrder_WrongOrder_UnsafeAllow_Contract', 'transparent');
+testAccepts('InitializationOrder_WrongOrder_UnsafeAllow_Function', 'transparent');
+testOverride('InitializationOrder_WrongOrder_Bad', 'transparent', { unsafeAllow: ['incorrect-initializer-order'] });
 
-testValid(
+testRejects(
   'InitializationOrder_MissingCall_Bad',
   'transparent',
-  false,
   'Contract is missing initializer calls for one or more parent contracts: `C`',
 );
-testValid('InitializationOrder_MissingCall_UnsafeAllow_Contract', 'transparent', true);
-testValid('InitializationOrder_MissingCall_UnsafeAllow_Function', 'transparent', true);
-testOverride('InitializationOrder_MissingCall_Bad', 'transparent', { unsafeAllow: ['missing-initializer-call'] }, true);
+testAccepts('InitializationOrder_MissingCall_UnsafeAllow_Contract', 'transparent');
+testAccepts('InitializationOrder_MissingCall_UnsafeAllow_Function', 'transparent');
+testOverride('InitializationOrder_MissingCall_Bad', 'transparent', { unsafeAllow: ['missing-initializer-call'] });
 
-testValid(
+testRejects(
   'InitializationOrder_Duplicate_Bad',
   'transparent',
-  false,
   'Contract has duplicate calls to parent initializer `__B_init` for contract `B`',
 );
-testValid('InitializationOrder_Duplicate_UnsafeAllow_Contract', 'transparent', true);
-testValid('InitializationOrder_Duplicate_UnsafeAllow_Function', 'transparent', true);
-testValid('InitializationOrder_Duplicate_UnsafeAllow_Call', 'transparent', true);
-testOverride('InitializationOrder_Duplicate_Bad', 'transparent', { unsafeAllow: ['duplicate-initializer-call'] }, true);
+testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Contract', 'transparent');
+testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Function', 'transparent');
+testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Call', 'transparent');
+testOverride('InitializationOrder_Duplicate_Bad', 'transparent', { unsafeAllow: ['duplicate-initializer-call'] });
 
-testValid('Child_Of_ParentPrivateInitializer_Ok', 'transparent', true);
-testValid('Child_Of_ParentPublicInitializer_Ok', 'transparent', true);
-testValid('Child_Has_PrivateInitializer_Bad', 'transparent', false, 'Contract is missing an initializer');
+testAccepts('Child_Of_ParentPrivateInitializer_Ok', 'transparent');
+testAccepts('Child_Of_ParentPublicInitializer_Ok', 'transparent');
+testRejects('Child_Has_PrivateInitializer_Bad', 'transparent', 'Contract is missing an initializer');
