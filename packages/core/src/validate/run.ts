@@ -681,7 +681,7 @@ function* getInitializerErrors(
       baseContractDefs.map(base => [base.name, getPossibleInitializers(base, true)]),
     );
     const baseContractsWithInitializers = baseContractDefs
-      .filter(base => hasInitializers(base.name, baseContractsInitializersMap))
+      .filter(base => baseContractsInitializersMap.get(base.name)?.length)
       .map(base => base.name);
 
     if (baseContractsWithInitializers.length > 0) {
@@ -766,11 +766,6 @@ function* getInitializerErrors(
       }
     }
   }
-}
-
-function hasInitializers(baseName: string, baseContractsInitializersMap: Map<string, FunctionDefinition[]>) {
-  const initializers = baseContractsInitializersMap.get(baseName);
-  return initializers !== undefined && initializers.length > 0;
 }
 
 function getPossibleInitializers(contractDef: ContractDefinition, isParentContract: boolean) {
