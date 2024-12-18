@@ -122,6 +122,11 @@ testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Contract', 'transparent')
 testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Function', 'transparent');
 testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Call', 'transparent');
 testOverride('InitializationOrder_Duplicate_Bad', 'transparent', { unsafeAllow: ['duplicate-initializer-call'] });
+testRejects(
+  'InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder',
+  'transparent',
+  'Contract has an incorrect order of parent initializer calls. Expected initializers to be called for parent contracts in the following order: A, B, C',
+);
 
 testAccepts('Child_Of_ParentPrivateInitializer_Ok', 'transparent');
 testAccepts('Child_Of_ParentPublicInitializer_Ok', 'transparent');

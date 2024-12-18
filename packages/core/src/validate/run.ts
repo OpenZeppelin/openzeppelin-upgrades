@@ -709,8 +709,8 @@ function* getInitializerErrors(
             const referencedFn = fnCall.expression.referencedDeclaration;
 
             // If this is a call to a parent initializer, then:
-            // - Check for duplicates
-            // - Check if the parent initializer is called in the correct order
+            // - Check if it was already called (duplicate call)
+            // - Otherwise, check if the parent initializer is called in the correct order
             for (const [baseName, initializers] of baseContractsInitializersMap) {
               const foundParentInitializer = initializers.find(init => init.id === referencedFn);
               if (referencedFn && foundParentInitializer) {
@@ -732,7 +732,7 @@ function* getInitializerErrors(
 
                 const index = uninitializedBaseContracts.indexOf(baseName);
                 if (
-                  !duplicate &&
+                  !duplicate && // Omit duplicate calls to avoid treating them as out of order. Duplicates are either reported above or they were skipped.
                   index !== 0 &&
                   !skipCheck('incorrect-initializer-order', contractDef) &&
                   !skipCheck('incorrect-initializer-order', contractInitializer)

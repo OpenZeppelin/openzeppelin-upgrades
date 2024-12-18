@@ -222,6 +222,16 @@ contract InitializationOrder_Duplicate_UnsafeAllow_Call is A, B, C, Parent_NoIni
   }
 }
 
+/// @custom:oz-upgrades-unsafe-allow duplicate-initializer-call
+contract InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder is A, B, C, Parent_NoInitializer {
+  function initialize() public {
+    __A_init();
+    __C_init();
+    __B_init();
+    __B_init();
+  }
+}
+
 // ==== Initializer visibility ====
 
 contract Parent_PrivateInitializer {
