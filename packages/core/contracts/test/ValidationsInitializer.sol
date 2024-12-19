@@ -8,103 +8,160 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 // ==== Parent contracts ====
 
 contract Parent_NoInitializer {
-  function parentFn() internal {}
+  uint8 x;
+  function parentFn() internal {
+    x = 1;
+  }
 }
 
 contract Parent_InitializerModifier is Initializable {
-  function parentInit() initializer internal {}
+  uint8 x;
+  function parentInit() initializer internal {
+    x = 1;
+  }
 }
 
 contract Parent_ReinitializerModifier is Initializable {
-  function parentReinit() reinitializer(2) internal {}
+  uint8 x;
+  function parentReinit() reinitializer(2) internal {
+    x = 1;
+  }
 }
 
 contract Parent__OnlyInitializingModifier is Initializable {
-  function __Parent_init() onlyInitializing() internal {}
+  uint8 x;
+  function __Parent_init() onlyInitializing() internal {
+    x = 1;
+  }
 }
 
 contract Parent_InitializeName {
-  function initialize() internal virtual {}
+  uint8 x;
+  function initialize() internal virtual {
+    x = 1;
+  }
 }
 
 contract Parent_InitializerName {
-  function initializer() internal {}
+  uint8 x;
+  function initializer() internal {
+    x = 1;
+  }
 }
 
 contract Parent_ReinitializeName {
-  function reinitialize(uint64 version) internal {}
+  uint8 x;
+  function reinitialize(uint64 version) internal {
+    x = 1;
+  }
 }
 
 contract Parent_ReinitializerName {
-  function reinitializer(uint64 version) internal {}
+  uint8 x;
+  function reinitializer(uint64 version) internal {
+    x = 1;
+  }
 }
 
 // ==== Child contracts ====
 
 contract Child_Of_NoInitializer_Ok is Parent_NoInitializer {
-  function childFn() public {}
+  uint y;
+  function childFn() public {
+    y = 2;
+  }
 }
 
 contract Child_Of_InitializerModifier_Ok is Parent_InitializerModifier {
+  uint y;
   function initialize() public {
     parentInit();
+    y = 2;
   }
 }
 
 contract Child_Of_InitializerModifier_UsesSuper_Ok is Parent_InitializerModifier {
+  uint y;
   function initialize() public {
     super.parentInit();
+    y = 2;
   }
 }
 
 contract Child_Of_InitializerModifier_Bad is Parent_InitializerModifier {
-  function initialize() public {}
+  uint y;
+  function initialize() public {
+    y = 2;
+  }
 }
 
 contract Child_Of_ReinitializerModifier_Ok is Parent_ReinitializerModifier {
+  uint y;
   function initialize() public {
     parentReinit();
+    y = 2;
   }
 }
 
 contract Child_Of_ReinitializerModifier_Bad is Parent_ReinitializerModifier {
-  function initialize() public {}
+  uint y;
+  function initialize() public {
+    y = 2;
+  }
 }
 
 contract Child_Of_OnlyInitializingModifier_Ok is Parent__OnlyInitializingModifier {
+  uint y;
   function initialize() public {
     __Parent_init();
+    y = 2;
   }
 }
 
 contract Child_Of_OnlyInitializingModifier_Bad is Parent__OnlyInitializingModifier {
-  function initialize() public {}
+  uint y;
+  function initialize() public {
+    y = 2;
+  }
 }
 
 // This is considered to have a missing initializer because the `regularFn` function is not inferred as an intializer
 contract MissingInitializer_Bad is Parent_InitializerModifier {
+  uint y;
   function regularFn() public {
     parentInit();
+    y = 2;
   }
 }
 
 /// @custom:oz-upgrades-unsafe-allow missing-initializer
 contract MissingInitializer_UnsafeAllow_Contract is Parent_InitializerModifier {
+  uint y;
   function regularFn() public {
     parentInit();
+    y = 2;
   }
 }
 
 contract A is Initializable {
-  function __A_init() onlyInitializing internal {}
+  uint a;
+  function __A_init() onlyInitializing internal {
+    a = 2;
+  }
 }
 
 contract B is Initializable {
-  function __B_init() onlyInitializing internal {}
+  uint b;
+  function __B_init() onlyInitializing internal {
+    b = 2;
+  }
 }
 
 contract C is Initializable {
-  function __C_init() onlyInitializing internal {}
+  uint c;
+  function __C_init() onlyInitializing internal {
+    c = 2;
+  }
 }
 
 contract InitializationOrder_Ok is A, B, C, Parent_NoInitializer {
@@ -235,11 +292,17 @@ contract InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder is A, B, C, Par
 // ==== Initializer visibility ====
 
 contract Parent_PrivateInitializer {
-  function initialize() private {} // not considered an initializer because it's private
+  uint x;
+  function initialize() private { // not considered an initializer because it's private
+    x = 1;
+  }
 }
 
 contract Parent_PublicInitializer {
-  function initialize() public {} // does not strictly need to be called by child
+  uint x;
+  function initialize() public { // does not strictly need to be called by child
+    x = 1;
+  }
 }
 
 contract Child_Of_ParentPrivateInitializer_Ok is Parent_PrivateInitializer { // no initializer required since parent initializer is private
@@ -249,5 +312,7 @@ contract Child_Of_ParentPublicInitializer_Ok is Parent_PublicInitializer { // no
 }
 
 contract Child_Has_PrivateInitializer_Bad is Parent__OnlyInitializingModifier { // parent has internal initializer, but child has private
-  function initialize() private {}
+  function initialize() private {
+    __Parent_init();
+  }
 }

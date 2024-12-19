@@ -778,9 +778,11 @@ function getPossibleInitializers(contractDef: ContractDefinition, isParentContra
         ['initialize', 'initializer', 'reinitialize', 'reinitializer'].includes(fnDef.name)) &&
       // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
       !(fnDef.virtual && !fnDef.body) &&
-      // For parent contracts, only treat internal functions as initializers (since they MUST be called by the child)
+      // For parent contracts, only treat internal functions which contain statements as initializers (since they MUST be called by the child)
       // For child contracts, treat all non-private functions as initializers (since they can be called by another contract or externally)
-      (isParentContract ? fnDef.visibility === 'internal' : fnDef.visibility !== 'private'),
+      (isParentContract
+        ? fnDef.visibility === 'internal' && fnDef.body?.statements?.length
+        : fnDef.visibility !== 'private'),
   );
 }
 
