@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
 // These contracts are for testing only. They are not safe for use in production, and do not represent best practices.
 
@@ -315,4 +319,44 @@ contract Child_Has_PrivateInitializer_Bad is Parent__OnlyInitializingModifier { 
   function initialize() private {
     __Parent_init();
   }
+}
+
+// ==== Transitive initialization ====
+
+contract Ownable_Ok is Initializable, ERC20Upgradeable, OwnableUpgradeable {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address initialOwner) initializer public {
+        __ERC20_init("MyToken", "MTK");
+        __Ownable_init(initialOwner);
+    }
+}
+
+contract Ownable2Step_Ok is Initializable, ERC20Upgradeable, Ownable2StepUpgradeable {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address initialOwner) initializer public {
+        __ERC20_init("MyToken", "MTK");
+        __Ownable_init(initialOwner); // Transitive dependency that needs to be initialized
+        __Ownable2Step_init();
+    }
+}
+
+contract Ownable2Step_Bad is Initializable, ERC20Upgradeable, Ownable2StepUpgradeable {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() initializer public {
+        __ERC20_init("MyToken", "MTK");
+        // Missing Ownable, which is a transitive dependency that needs to be initialized
+        __Ownable2Step_init();
+    }
 }

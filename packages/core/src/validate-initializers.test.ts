@@ -131,3 +131,11 @@ testRejects(
 testAccepts('Child_Of_ParentPrivateInitializer_Ok', 'transparent');
 testAccepts('Child_Of_ParentPublicInitializer_Ok', 'transparent');
 testRejects('Child_Has_PrivateInitializer_Bad', 'transparent', 'Contract is missing an initializer');
+
+testAccepts('Ownable_Ok', 'transparent');
+testAccepts('Ownable2Step_Ok', 'transparent');
+testRejects(
+  'Ownable2Step_Bad',
+  'transparent',
+  'Contract is missing initializer calls for one or more parent contracts: `OwnableUpgradeable`',
+);
