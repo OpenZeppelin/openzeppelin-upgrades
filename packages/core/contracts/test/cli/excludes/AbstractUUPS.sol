@@ -11,4 +11,8 @@ abstract contract AbstractUUPS is UUPSUpgradeable, Abstract1, Abstract2 {
     constructor(uint256 _x, uint256 _y, uint256 _z) Abstract1(_x) Abstract2(_y) {
         z = _z;
     }
+
+    function initialize() initializer public {
+        __UUPSUpgradeable_init();
+    }
 }
