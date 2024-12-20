@@ -26,22 +26,17 @@ import {
 } from './utils';
 import { getDeployData } from './utils/deploy-impl';
 import { attach, getSigner } from './utils/ethers';
-import { ContractTypeOfFactory } from './type-extensions';
 
 export interface ForceImportFunction {
-  <F extends ContractFactory>(
-    proxyAddress: string,
-    ImplFactory: F,
-    opts?: ForceImportOptions,
-  ): Promise<ContractTypeOfFactory<F> | Contract>;
+  (proxyAddress: string, ImplFactory: ContractFactory, opts?: ForceImportOptions): Promise<Contract>;
 }
 
 export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunction {
-  return async function forceImport<F extends ContractFactory>(
+  return async function forceImport(
     addressOrInstance: ContractAddressOrInstance,
-    ImplFactory: F,
+    ImplFactory: ContractFactory,
     opts: ForceImportOptions = {},
-  ): Promise<ContractTypeOfFactory<F> | Contract> {
+  ) {
     const { provider } = hre.network;
     const manifest = await Manifest.forNetwork(provider);
 
@@ -51,19 +46,19 @@ export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunc
     if (implAddress !== undefined) {
       await importProxyToManifest(provider, hre, address, implAddress, ImplFactory, opts, manifest);
 
-      return attach(ImplFactory, address) as ContractTypeOfFactory<F>;
+      return attach(ImplFactory, address);
     } else if (await isBeacon(provider, address)) {
       const beaconImplAddress = await getImplementationAddressFromBeacon(provider, address);
       await addImplToManifest(hre, beaconImplAddress, ImplFactory, opts);
 
       const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, getSigner(ImplFactory.runner));
-      return attach(UpgradeableBeaconFactory, address) as Contract;
+      return attach(UpgradeableBeaconFactory, address);
     } else {
       if (!(await hasCode(provider, address))) {
         throw new NoContractImportError(address);
       }
       await addImplToManifest(hre, address, ImplFactory, opts);
-      return attach(ImplFactory, address) as ContractTypeOfFactory<F>;
+      return attach(ImplFactory, address);
     }
   };
 }
