@@ -31,7 +31,7 @@ async function deployNonUpgradeableContract(
   hre: HardhatRuntimeEnvironment,
   Contract: ContractFactory,
   opts: DeployContractOptions,
-): Promise<Deployment & DeployTransaction & RemoteDeploymentId> {
+): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> {
   const deployData = await getDeployData(hre, Contract, opts);
 
   if (!opts.unsafeAllowDeployContract) {
