@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Support TypeChain in `deployProxy`, `upgradeProxy`, `deployBeaconProxy`, `defender.deployContract`. ([#1099](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1099))
+
 ## 3.7.0 (2024-12-04)
 
 - Add `proxyFactory` and `deployFunction` options which can be used to deploy a custom proxy contract. ([#1104](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1104))
