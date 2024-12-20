@@ -2,9 +2,9 @@
   "compilerOptions": {
     "incremental": true,
     "target": "es2020",
-    "module": "commonjs",
+    "module": "nodenext",
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,

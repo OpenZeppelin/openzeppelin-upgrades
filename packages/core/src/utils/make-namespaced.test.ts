@@ -6,7 +6,7 @@ import {
   TASK_COMPILE_SOLIDITY_RUN_SOLCJS,
 } from 'hardhat/builtin-tasks/task-names';
 
-import { makeNamespacedInput } from './make-namespaced';
+import { makeNamespacedInput, trySanitizeNatSpec } from './make-namespaced';
 import { SolcBuild } from 'hardhat/types/builtin-tasks';
 import { SolcInput, SolcOutput } from '../solc-api';
 import { BuildInfo } from 'hardhat/types';
@@ -40,11 +40,10 @@ async function testMakeNamespaced(
   // Inefficient, but we want to test that we don't actually modify the original input object
   const origInput = JSON.parse(JSON.stringify(origBuildInfo.input));
 
-  const modifiedInput = makeNamespacedInput(
-    origBuildInfo.input,
-    origBuildInfo.output,
-    keepAllNatSpec ? undefined : origBuildInfo.solcVersion,
-  );
+  let modifiedInput = makeNamespacedInput(origBuildInfo.input, origBuildInfo.output, origBuildInfo.solcVersion);
+  if (!keepAllNatSpec) {
+    modifiedInput = await trySanitizeNatSpec(modifiedInput, origBuildInfo.solcVersion);
+  }
 
   // Run hardhat compile on the modified input and make sure it has no errors
   const modifiedOutput = await hardhatCompile(modifiedInput, solcVersion);
