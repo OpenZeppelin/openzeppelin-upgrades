@@ -97,6 +97,7 @@ interface ValidationErrorDuplicateInitializerCall extends ValidationErrorBase {
 interface ValidationErrorIncorrectInitializerOrder extends ValidationErrorBase {
   kind: 'incorrect-initializer-order';
   expectedLinearization: string[];
+  foundOrder: string[];
 }
 
 type ValidationErrorInitializer =
@@ -662,7 +663,7 @@ function* getInternalFunctionStorageErrors(
 }
 
 /**
- * Reports an error if a parent contract has an initializer and any of the following are true:
+ * Reports an error this contract is non-abstract, a linearized parent contract has an initializer, and any of the following are true:
  * - 1. Missing initializer: This contract does not appear to have an initializer.
  * - 2. Missing initializer call: This contract's initializer is missing a call to a parent initializer.
  * - 3. Duplicate initializer call: This contract has duplicate calls to the same parent initializer function.
@@ -673,21 +674,97 @@ function* getInitializerErrors(
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationErrorInitializer> {
-  if (contractDef.baseContracts.length > 0) {
-    const baseContractDefs = contractDef.baseContracts.map(base =>
-      deref('ContractDefinition', base.baseName.referencedDeclaration),
+  if (contractDef.abstract) {
+    return;
+  }
+  if (contractDef.linearizedBaseContracts.length > 0) {
+    console.log('- Checking initializers for contract [' + contractDef.name + ']');
+
+    const linearizedBaseContractDefs = contractDef.linearizedBaseContracts.map(base =>
+      deref('ContractDefinition', base),
     );
+
+    // Remove the least derived contract from the list
+    linearizedBaseContractDefs.shift();
+    // Reverse the order to start from the most derived contract
+    linearizedBaseContractDefs.reverse();
+
     const baseContractsInitializersMap = new Map(
-      baseContractDefs.map(base => [base.name, getPossibleInitializers(base, true)]),
+      linearizedBaseContractDefs.map(base => [base.name, getPossibleInitializers(base, true)]),
     );
-    const baseContractsWithInitializers = baseContractDefs
+
+    console.log(' -> Before removing: ' + linearizedBaseContractDefs.map(base => base.name).join(', '));
+
+    // For each base contract, if its initializer calls any of the earlier base contracts' intializers, it can be removed from the list.
+    // Ignore whether the base contracts are calling their initializers in the correct order, because we only check the order of THIS contract's calls.
+    for (const base of linearizedBaseContractDefs) {
+      const baseInitializers = baseContractsInitializersMap.get(base.name)!;
+      for (const initializer of baseInitializers) {
+        const expressionStatements =
+          initializer.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
+        for (const stmt of expressionStatements) {
+          const fnCall = stmt.expression;
+          if (
+            fnCall.nodeType === 'FunctionCall' &&
+            (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
+          ) {
+            const referencedFn = fnCall.expression.referencedDeclaration;
+            if (referencedFn) {
+              const earlierBaseContractDefs = linearizedBaseContractDefs.slice(
+                0,
+                linearizedBaseContractDefs.indexOf(base),
+              );
+
+              const foundParentInitializer = earlierBaseContractDefs.find(base =>
+                baseContractsInitializersMap.get(base.name)!.some(init => init.id === referencedFn),
+              );
+              if (foundParentInitializer) {
+                const index = earlierBaseContractDefs.indexOf(foundParentInitializer);
+                if (index !== -1) {
+                  console.log(
+                    '  - Removing ' +
+                      foundParentInitializer.name +
+                      ' from linearizedBaseContractDefs because it is called by ' +
+                      base.name,
+                  );
+                  linearizedBaseContractDefs.splice(linearizedBaseContractDefs.indexOf(foundParentInitializer), 1);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    console.log(' -> After removing: ' + linearizedBaseContractDefs.map(base => base.name).join(', '));
+
+    const baseContractsToInitialize = linearizedBaseContractDefs
       .filter(base => baseContractsInitializersMap.get(base.name)?.length)
       .map(base => base.name);
 
-    if (baseContractsWithInitializers.length > 0) {
+    console.log('    - baseContractsToInitialize: ' + baseContractsToInitialize);
+
+    if (baseContractsToInitialize.length > 0) {
       // Check for missing initializers
       const contractInitializers = getPossibleInitializers(contractDef, false);
-      if (contractInitializers.length === 0 && !skipCheck('missing-initializer', contractDef)) {
+
+      // If there are multiple parents with initializers, the contract must have its own initializer to call them.
+      // If there is one parent with possible initializers:
+      // - they are all internal, the contract must have its own initializer
+      // - otherwise the contract does not need its own initializer, since one of the parent's initializers can be called during deployment
+      const requiresParentInitializerCall =
+        baseContractsToInitialize.length > 1 ||
+        (baseContractsToInitialize.length === 1 &&
+          baseContractsInitializersMap.get(baseContractsToInitialize[0])!.length > 0 &&
+          baseContractsInitializersMap
+            .get(baseContractsToInitialize[0])!
+            .every(contractDef => contractDef.visibility === 'internal'));
+
+      if (
+        requiresParentInitializerCall &&
+        contractInitializers.length === 0 &&
+        !skipCheck('missing-initializer', contractDef)
+      ) {
         yield {
           kind: 'missing-initializer',
           src: decodeSrc(contractDef),
@@ -695,7 +772,8 @@ function* getInitializerErrors(
       }
 
       for (const contractInitializer of contractInitializers) {
-        const uninitializedBaseContracts = [...baseContractsWithInitializers];
+        const remaining: string[] = [...baseContractsToInitialize];
+        const foundOrder: string[] = [];
         const calledInitializerIds: number[] = [];
 
         const expressionStatements =
@@ -711,8 +789,9 @@ function* getInitializerErrors(
             // If this is a call to a parent initializer, then:
             // - Check if it was already called (duplicate call)
             // - Otherwise, check if the parent initializer is called in the correct order
-            for (const [baseName, initializers] of baseContractsInitializersMap) {
-              const foundParentInitializer = initializers.find(init => init.id === referencedFn);
+            for (const baseContractToInitialize of baseContractsToInitialize) {
+              const baseInitializers = baseContractsInitializersMap.get(baseContractToInitialize)!;
+              const foundParentInitializer = baseInitializers.find(init => init.id === referencedFn);
               if (referencedFn && foundParentInitializer) {
                 const duplicate = calledInitializerIds.includes(referencedFn);
                 if (
@@ -725,12 +804,14 @@ function* getInitializerErrors(
                     kind: 'duplicate-initializer-call',
                     src: decodeSrc(fnCall),
                     parentInitializer: foundParentInitializer.name,
-                    parentContract: baseName,
+                    parentContract: baseContractToInitialize,
                   };
                 }
                 calledInitializerIds.push(referencedFn);
 
-                const index = uninitializedBaseContracts.indexOf(baseName);
+                foundOrder.push(baseContractToInitialize);
+                // TODO handle linearized contracts
+                const index = remaining.indexOf(baseContractToInitialize);
                 if (
                   !duplicate && // Omit duplicate calls to avoid treating them as out of order. Duplicates are either reported above or they were skipped.
                   index !== 0 &&
@@ -740,11 +821,12 @@ function* getInitializerErrors(
                   yield {
                     kind: 'incorrect-initializer-order',
                     src: decodeSrc(fnCall),
-                    expectedLinearization: baseContractsWithInitializers,
+                    expectedLinearization: baseContractsToInitialize,
+                    foundOrder,
                   };
                 }
                 if (index !== -1) {
-                  uninitializedBaseContracts.splice(index, 1);
+                  remaining.splice(index, 1);
                 }
               }
             }
@@ -753,14 +835,14 @@ function* getInitializerErrors(
 
         // If there are any base contracts that were not initialized, report an error
         if (
-          uninitializedBaseContracts.length > 0 &&
+          remaining.length > 0 &&
           !skipCheck('missing-initializer-call', contractDef) &&
           !skipCheck('missing-initializer-call', contractInitializer)
         ) {
           yield {
             kind: 'missing-initializer-call',
             src: decodeSrc(contractInitializer),
-            parentContracts: uninitializedBaseContracts,
+            parentContracts: remaining,
           };
         }
       }
@@ -768,6 +850,9 @@ function* getInitializerErrors(
   }
 }
 
+/**
+ * Get all functions that could be initializers. Does not include private functions.
+ */
 function getPossibleInitializers(contractDef: ContractDefinition, isParentContract: boolean) {
   const fns = [...findAll('FunctionDefinition', contractDef)];
   return fns.filter(
@@ -778,11 +863,10 @@ function getPossibleInitializers(contractDef: ContractDefinition, isParentContra
         ['initialize', 'initializer', 'reinitialize', 'reinitializer'].includes(fnDef.name)) &&
       // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
       !(fnDef.virtual && !fnDef.body) &&
-      // For parent contracts, only treat internal functions which contain statements as initializers (since they MUST be called by the child)
-      // For child contracts, treat all non-private functions as initializers (since they can be called by another contract or externally)
-      (isParentContract
-        ? fnDef.visibility === 'internal' && fnDef.body?.statements?.length
-        : fnDef.visibility !== 'private'),
+      // Ignore private functions, since they cannot be called outside the contract
+      fnDef.visibility !== 'private' &&
+      // For parent contracts, only functions which contain statements need to be called
+      (isParentContract ? fnDef.body?.statements?.length : true),
   );
 }
 

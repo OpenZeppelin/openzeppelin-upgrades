@@ -323,6 +323,61 @@ contract Child_Has_PrivateInitializer_Bad is Parent__OnlyInitializingModifier { 
 
 // ==== Transitive initialization ====
 
+abstract contract TransitiveGrandparent1 is Initializable {
+  uint x;
+  function __TransitiveGrandparent1_init() onlyInitializing internal {
+    x = 1;
+  }
+}
+
+abstract contract TransitiveGrandparent2 is Initializable {
+  uint y;
+  function __TransitiveGrandparent2_init() onlyInitializing internal {
+    y = 1;
+  }
+}
+
+contract TransitiveParent_Ok is TransitiveGrandparent1, TransitiveGrandparent2 {
+  function initializeParent() initializer public {
+    __TransitiveGrandparent1_init();
+    __TransitiveGrandparent2_init();
+  }
+}
+
+contract TransitiveParent_Bad is TransitiveGrandparent1, TransitiveGrandparent2 {
+  function initializeParent() initializer public {
+    __TransitiveGrandparent1_init();
+    // Does not call __TransitiveGrandparent2_init, and this contract is not abstract, so it is required
+  }
+}
+
+contract TransitiveChild_Bad_Parent is TransitiveParent_Bad { // this contract is ok but the parent is not
+  function initialize() initializer public {
+    initializeParent();
+  }
+}
+
+contract TransitiveChild_Bad_Order is TransitiveParent_Bad { // grandparent should be initialized first
+  function initialize() initializer public {
+    initializeParent();
+    __TransitiveGrandparent2_init();
+  }
+}
+
+contract TransitiveChild_Bad_Order2 is TransitiveParent_Bad { // this contract is ok but the parent is not
+  function initialize() initializer public {
+    __TransitiveGrandparent2_init();
+    initializeParent();
+  }
+}
+
+contract TransitiveDuplicate_Bad is TransitiveGrandparent1, TransitiveParent_Ok {
+  function initialize() initializer public {
+    __TransitiveGrandparent1_init();
+    initializeParent();
+  }
+}
+
 contract Ownable_Ok is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
