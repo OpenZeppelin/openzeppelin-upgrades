@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.8.0 (2024-12-19)
 
 - Support TypeChain in `deployProxy`, `upgradeProxy`, `deployBeaconProxy`, `defender.deployContract`. ([#1099](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1099))
 
