@@ -678,7 +678,7 @@ function* getInitializerErrors(
     return;
   }
   if (contractDef.linearizedBaseContracts.length > 0) {
-    console.log('- Checking initializers for contract [' + contractDef.name + ']');
+    // console.log('- Checking initializers for contract [' + contractDef.name + ']');
 
     const linearizedBaseContractDefs = contractDef.linearizedBaseContracts.map(base =>
       deref('ContractDefinition', base),
@@ -693,7 +693,7 @@ function* getInitializerErrors(
       linearizedBaseContractDefs.map(base => [base.name, getPossibleInitializers(base, true)]),
     );
 
-    console.log(' -> Before removing: ' + linearizedBaseContractDefs.map(base => base.name).join(', '));
+    // console.log(' -> Before removing: ' + linearizedBaseContractDefs.map(base => base.name).join(', '));
 
     // For each base contract, if its initializer calls any of the earlier base contracts' intializers, it can be removed from the list.
     // Ignore whether the base contracts are calling their initializers in the correct order, because we only check the order of THIS contract's calls.
@@ -721,12 +721,12 @@ function* getInitializerErrors(
               if (foundParentInitializer) {
                 const index = earlierBaseContractDefs.indexOf(foundParentInitializer);
                 if (index !== -1) {
-                  console.log(
-                    '  - Removing ' +
-                      foundParentInitializer.name +
-                      ' from linearizedBaseContractDefs because it is called by ' +
-                      base.name,
-                  );
+                  // console.log(
+                  //   '  - Removing ' +
+                  //     foundParentInitializer.name +
+                  //     ' from linearizedBaseContractDefs because it is called by ' +
+                  //     base.name,
+                  // );
                   linearizedBaseContractDefs.splice(linearizedBaseContractDefs.indexOf(foundParentInitializer), 1);
                 }
               }
@@ -736,13 +736,13 @@ function* getInitializerErrors(
       }
     }
 
-    console.log(' -> After removing: ' + linearizedBaseContractDefs.map(base => base.name).join(', '));
+    // console.log(' -> After removing: ' + linearizedBaseContractDefs.map(base => base.name).join(', '));
 
     const baseContractsToInitialize = linearizedBaseContractDefs
       .filter(base => baseContractsInitializersMap.get(base.name)?.length)
       .map(base => base.name);
 
-    console.log('    - baseContractsToInitialize: ' + baseContractsToInitialize);
+    // console.log('    - baseContractsToInitialize: ' + baseContractsToInitialize);
 
     if (baseContractsToInitialize.length > 0) {
       // Check for missing initializers
