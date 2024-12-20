@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory } from 'ethers';
 
-import { deploy, DeployContractOptions, EthersOrDefenderDeployment } from './utils';
+import { deploy, DeployContractOptions, DeployTransaction, EthersOrDefenderDeployment } from './utils';
 import { DeployData, getDeployData } from './utils/deploy-impl';
 import { enableDefender } from './defender/utils';
 import {
@@ -9,6 +9,8 @@ import {
   inferProxyKind,
   UpgradesError,
   inferInitializable,
+  Deployment,
+  RemoteDeploymentId,
 } from '@openzeppelin/upgrades-core';
 import { getContractInstance } from './utils/contract-instance';
 import { ContractTypeOfFactory } from './type-extensions';
