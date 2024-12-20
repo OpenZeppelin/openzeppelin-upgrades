@@ -4,7 +4,7 @@ import 'hardhat/types/config';
 import type { HardhatUpgrades, DefenderHardhatUpgrades } from '.';
 import { ContractFactory } from 'ethers';
 
-export type ContractTypeOfFactory<F extends ContractFactory> = ReturnType<F['attach']>;
+export type ContractTypeOfFactory<F extends ContractFactory> = ReturnType<F['attach']> & ReturnType<F['deploy']>;
 
 declare module 'hardhat/types/runtime' {
   export interface HardhatRuntimeEnvironment {

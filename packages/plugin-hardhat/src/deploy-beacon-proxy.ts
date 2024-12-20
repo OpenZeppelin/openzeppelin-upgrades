@@ -1,5 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { Contract, ContractFactory } from 'ethers';
+import { ContractFactory } from 'ethers';
 
 import {
   Manifest,
@@ -29,11 +29,15 @@ import { ContractTypeOfFactory } from './type-extensions';
 export interface DeployBeaconProxyFunction {
   <F extends ContractFactory>(
     beacon: ContractAddressOrInstance,
-    attachTo: ContractFactory,
+    attachTo: F,
     args?: unknown[],
     opts?: DeployBeaconProxyOptions,
   ): Promise<ContractTypeOfFactory<F>>;
-  (beacon: ContractAddressOrInstance, attachTo: ContractFactory, opts?: DeployBeaconProxyOptions): Promise<Contract>;
+  <F extends ContractFactory>(
+    beacon: ContractAddressOrInstance,
+    attachTo: F,
+    opts?: DeployBeaconProxyOptions,
+  ): Promise<ContractTypeOfFactory<F>>;
 }
 
 export function makeDeployBeaconProxy(
