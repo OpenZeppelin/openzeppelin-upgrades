@@ -72,11 +72,36 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
       `     flag and ensure you always reassign internal functions in storage during upgrades`,
     link: 'https://zpl.in/upgrades/error-009',
   },
+  'missing-initializer': {
+    msg: () => `Contract is missing an initializer`,
+    hint: () => `Define an initializer function and use it to call the initializers of parent contracts`,
+    link: 'https://zpl.in/upgrades/error-001',
+  },
+  'missing-initializer-call': {
+    msg: e =>
+      `Contract is missing initializer calls for one or more parent contracts: \`${e.parentContracts.join(', ')}\``,
+    hint: () => `Call the parent initializers in your initializer function`,
+    link: 'https://zpl.in/upgrades/error-001',
+  },
+  'duplicate-initializer-call': {
+    msg: e =>
+      `Contract has duplicate calls to parent initializer \`${e.parentInitializer}\` for contract \`${e.parentContract}\``,
+    hint: () => `Only call each parent initializer once`,
+    link: 'https://zpl.in/upgrades/error-001',
+  },
+  'incorrect-initializer-order': {
+    msg: e =>
+      `Contract has an incorrect order of parent initializer calls.
+- Expected initializers to be called for parent contracts in the following order: ${e.expectedLinearization.join(', ')}
+- Found order: ${e.foundOrder.join(', ')}`,
+    hint: () => `Call parent initializers in the order they are inherited`,
+    link: 'https://zpl.in/upgrades/error-001',
+  },
 };
 
 function describeError(e: ValidationError, color = true): string {
   const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
-  const info = errorInfo[e.kind];
+  const info: any = errorInfo[e.kind]; // union type is too complex for TypeScript to represent, so we use `any`
   const log = [chalk.bold(e.src) + ': ' + info.msg(e as any)];
   const hint = info.hint?.(e as any);
   if (hint) {
