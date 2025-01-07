@@ -325,28 +325,28 @@ contract Child_Has_PrivateInitializer_Bad is Parent__OnlyInitializingModifier { 
 
 abstract contract TransitiveGrandparent1 is Initializable {
   uint x;
-  function __TransitiveGrandparent1_init() onlyInitializing internal {
-    x = 1;
+  function __TransitiveGrandparent1_init(uint a) onlyInitializing internal {
+    x = a;
   }
 }
 
 abstract contract TransitiveGrandparent2 is Initializable {
   uint y;
-  function __TransitiveGrandparent2_init() onlyInitializing internal {
-    y = 1;
+  function __TransitiveGrandparent2_init(uint b) onlyInitializing internal {
+    y = b;
   }
 }
 
 contract TransitiveParent_Ok is TransitiveGrandparent1, TransitiveGrandparent2 {
   function initializeParent() initializer public {
-    __TransitiveGrandparent1_init();
-    __TransitiveGrandparent2_init();
+    __TransitiveGrandparent1_init(1);
+    __TransitiveGrandparent2_init(2);
   }
 }
 
 contract TransitiveParent_Bad is TransitiveGrandparent1, TransitiveGrandparent2 {
   function initializeParent() initializer public {
-    __TransitiveGrandparent1_init();
+    __TransitiveGrandparent1_init(1);
     // Does not call __TransitiveGrandparent2_init, and this contract is not abstract, so it is required
   }
 }
@@ -357,23 +357,23 @@ contract TransitiveChild_Bad_Parent is TransitiveParent_Bad { // this contract i
   }
 }
 
-contract TransitiveChild_Bad_Order is TransitiveParent_Bad { // grandparent should be initialized first
+contract TransitiveChild_Bad_Order is TransitiveParent_Bad {
   function initialize() initializer public {
     initializeParent();
-    __TransitiveGrandparent2_init();
+    __TransitiveGrandparent2_init(2); // grandparent should be initialized first
   }
 }
 
 contract TransitiveChild_Bad_Order2 is TransitiveParent_Bad { // this contract is ok but the parent is not
   function initialize() initializer public {
-    __TransitiveGrandparent2_init();
+    __TransitiveGrandparent2_init(2);
     initializeParent();
   }
 }
 
 contract TransitiveDuplicate_Bad is TransitiveGrandparent1, TransitiveParent_Ok {
   function initialize() initializer public {
-    __TransitiveGrandparent1_init();
+    __TransitiveGrandparent1_init(1000); // duplicate
     initializeParent();
   }
 }

@@ -695,6 +695,8 @@ function* getInitializerErrors(
 
     // console.log(' -> Before removing: ' + linearizedBaseContractDefs.map(base => base.name).join(', '));
 
+    const parentCalledInitializerIds: number[] = [];
+
     // For each base contract, if its initializer calls any of the earlier base contracts' intializers, it can be removed from the list.
     // Ignore whether the base contracts are calling their initializers in the correct order, because we only check the order of THIS contract's calls.
     for (const base of linearizedBaseContractDefs) {
@@ -727,6 +729,7 @@ function* getInitializerErrors(
                   //     ' from linearizedBaseContractDefs because it is called by ' +
                   //     base.name,
                   // );
+                  parentCalledInitializerIds.push(referencedFn);
                   linearizedBaseContractDefs.splice(linearizedBaseContractDefs.indexOf(foundParentInitializer), 1);
                 }
               }
@@ -774,7 +777,7 @@ function* getInitializerErrors(
       for (const contractInitializer of contractInitializers) {
         const remaining: string[] = [...baseContractsToInitialize];
         const foundOrder: string[] = [];
-        const calledInitializerIds: number[] = [];
+        const calledInitializerIds: number[] = [...parentCalledInitializerIds];
 
         const expressionStatements =
           contractInitializer.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
@@ -789,7 +792,7 @@ function* getInitializerErrors(
             // If this is a call to a parent initializer, then:
             // - Check if it was already called (duplicate call)
             // - Otherwise, check if the parent initializer is called in the correct order
-            for (const baseContractToInitialize of baseContractsToInitialize) {
+            for (const baseContractToInitialize of baseContractsInitializersMap.keys()) {
               const baseInitializers = baseContractsInitializersMap.get(baseContractToInitialize)!;
               const foundParentInitializer = baseInitializers.find(init => init.id === referencedFn);
               if (referencedFn && foundParentInitializer) {
@@ -810,7 +813,6 @@ function* getInitializerErrors(
                 calledInitializerIds.push(referencedFn);
 
                 foundOrder.push(baseContractToInitialize);
-                // TODO handle linearized contracts
                 const index = remaining.indexOf(baseContractToInitialize);
                 if (
                   !duplicate && // Omit duplicate calls to avoid treating them as out of order. Duplicates are either reported above or they were skipped.

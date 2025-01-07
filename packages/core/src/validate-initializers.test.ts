@@ -161,7 +161,6 @@ testRejects('TransitiveChild_Bad_Order', 'transparent', {
     'Expected initializers to be called for parent contracts in the following order: TransitiveGrandparent2, TransitiveParent_Bad',
   count: 2,
 }); // should have 2 errors: 'Expected initializers to be called for parent contracts in the following order: TransitiveGrandparent2, TransitiveParent_Bad', 'Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`'
-// but 1 if we ignore wrong order
 testRejects('TransitiveChild_Bad_Order2', 'transparent', {
   contains: 'Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`',
   count: 1,
@@ -170,7 +169,6 @@ testRejects('TransitiveDuplicate_Bad', 'transparent', {
   contains: 'Contract has duplicate calls to parent',
   count: 1,
 });
-// should allow this if we ignore duplicate calls transitively
 
 testAccepts('Ownable_Ok', 'transparent');
 testAccepts('Ownable2Step_Ok', 'transparent');
