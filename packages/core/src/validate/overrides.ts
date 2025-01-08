@@ -1,6 +1,7 @@
 import { ValidationError } from './run';
 import { ProxyDeployment } from '../manifest';
 import { logWarning } from '../utils/log';
+import { describeError } from './report';
 
 // Backwards compatibility
 export { silenceWarnings } from '../utils/log';
@@ -50,7 +51,7 @@ export interface ValidationOptions extends StandaloneValidationOptions {
   unsafeSkipStorageCheck?: boolean;
 }
 
-export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], string[]> = {
+export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], string[] | null> = {
   'state-variable-assignment': [
     `You are using the \`unsafeAllow.state-variable-assignment\` flag.`,
     `The value will be stored in the implementation and not the proxy.`,
@@ -93,10 +94,7 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
     `You are using the \`unsafeAllow.duplicate-initializer-call\` flag.`,
     `Make sure you have manually checked that the contract initializer calls each parent initializer only once.`,
   ],
-  'incorrect-initializer-order': [
-    `You are using the \`unsafeAllow.incorrect-initializer-order\` flag.`,
-    `Make sure you have manually checked that the contract initializer calls parent initializers in linearized inheritance order.`,
-  ],
+  'incorrect-initializer-order': null,
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
@@ -113,6 +111,11 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   if (unsafeAllowLinkedLibraries) {
     unsafeAllow.push('external-library-linking');
   }
+  // Allow the following by default
+  if (!unsafeAllow.includes('incorrect-initializer-order')) {
+    unsafeAllow.push('incorrect-initializer-order');
+  }
+
   const kind = opts.kind ?? 'transparent';
 
   const unsafeAllowRenames = opts.unsafeAllowRenames ?? false;
@@ -143,14 +146,18 @@ export function processExceptions(
     if (unsafeAllow.includes(errorType as ValidationError['kind'])) {
       let exceptionsFound = false;
 
-      errors = errors.filter(error => {
-        const isException = errorType === error.kind;
-        exceptionsFound = exceptionsFound || isException;
-        return !isException;
-      });
+      const errorsWithType = errors.filter(error => error.kind === errorType);
+      exceptionsFound = errorsWithType.length > 0;
+      errors = errors.filter(error => !errorsWithType.includes(error));
 
-      if (exceptionsFound && errorDescription) {
-        logWarning(`Potentially unsafe deployment of ${contractName}`, errorDescription);
+      if (exceptionsFound) {
+        if (errorDescription !== null) {
+          logWarning(`Potentially unsafe deployment of ${contractName}`, errorDescription);
+        } else {
+          for (const error of errorsWithType) {
+            logWarning(`Potentially unsafe deployment of ${contractName}`, [describeError(error)]);
+          }
+        }
       }
     }
   }

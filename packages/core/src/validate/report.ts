@@ -99,7 +99,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
   },
 };
 
-function describeError(e: ValidationError, color = true): string {
+export function describeError(e: ValidationError, color = true): string {
   const chalk = new _chalk.Instance({ level: color && _chalk.supportsColor ? _chalk.supportsColor.level : 0 });
   const info: any = errorInfo[e.kind]; // union type is too complex for TypeScript to represent, so we use `any`
   const log = [chalk.bold(e.src) + ': ' + info.msg(e as any)];
