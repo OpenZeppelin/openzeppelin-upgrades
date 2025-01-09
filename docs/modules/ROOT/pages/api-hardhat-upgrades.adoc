@@ -8,7 +8,7 @@ Both `deployProxy` and `upgradeProxy` functions will return instances of https:/
 The following options are common to some functions.
 
 * `kind`: (`"uups" | "transparent" | "beacon"`) The kind of proxy to deploy, upgrade or import, or the kind of proxy that the implementation will be used with. `deployProxy()` and `upgradeProxy()` only support the values `"uups" | "transparent"`. Defaults to `"transparent"`. See xref:contracts:api:proxy.adoc#transparent-vs-uups[Transparent vs UUPS].
-* `unsafeAllow`: (`ValidationError[]`) Selectively disable one or more validation errors:
+* `unsafeAllow`: (`ValidationError[]`) Selectively disable one or more validation errors or warnings:
 ** `"external-library-linking"`: Allows a deployment with external libraries linked to the implementation contract. (External libraries are otherwise xref:faq.adoc#why-cant-i-use-external-libraries[not yet supported].)
 ** `"struct-definition"`, `"enum-definition"`: Used to be necessary to deploy a contract with structs or enums. No longer necessary.
 ** `"state-variable-assignment"`: Allows assigning state variables in a contract even though they will be stored in the implementation.
@@ -20,7 +20,7 @@ The following options are common to some functions.
 ** `"missing-initializer"`: Allows implementations where an initializer function is not detected.
 ** `"missing-initializer-call"`: Allows implementations where a parent initializer is not called from the child initializer.
 ** `"duplicate-initializer-call"`: Allows implementations where a parent initializer is called more than once from the child initializer.
-** `"incorrect-initializer-order"`: Allows implementations where parent initializers are not called in the order that they are inherited.
+** `"incorrect-initializer-order"`: Allows implementations where parent initializers are not called in linearized order. *Note*: This condition shows a warning by default, and setting this option will silence the warning.
 * `unsafeAllowRenames`: (`boolean`) Configure storage layout check to allow variable renaming.
 * `unsafeSkipStorageCheck`: (`boolean`) upgrades the proxy or beacon without first checking for storage layout compatibility errors. This is a dangerous option meant to be used as a last resort.
 * `constructorArgs`: (`unknown[]`) Provide arguments for the constructor of the implementation contract. Note that these are different from initializer arguments, and will be used in the deployment of the implementation contract itself. Can be used to initialize immutable variables.

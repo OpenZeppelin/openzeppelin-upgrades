@@ -31,7 +31,7 @@ export interface StandaloneValidationOptions extends ProxyKindOption {
   unsafeAllowLinkedLibraries?: boolean;
 
   /**
-   * Selectively disable one or more validation errors.
+   * Selectively disable one or more validation errors or warnings.
    */
   unsafeAllow?: ValidationError['kind'][];
 }
