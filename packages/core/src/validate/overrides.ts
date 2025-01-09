@@ -154,7 +154,8 @@ export function processExceptions(
       exceptionsFound = errorsWithType.length > 0;
       errors = errors.filter(error => !errorsWithType.includes(error));
 
-      if (exceptionsFound && !(skip && warn)) { // Display message about the exception, unless it is a warning that the user has chosen to skip
+      // Display message about the exception, unless it is a warning that the user has chosen to skip
+      if (exceptionsFound && !(skip && warn)) {
         if (errorDescription !== null) {
           logWarning(`Potentially unsafe deployment of ${contractName}`, errorDescription);
         } else {
