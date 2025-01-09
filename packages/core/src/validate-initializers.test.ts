@@ -109,13 +109,10 @@ testOverride('MissingInitializer_Bad', 'transparent', { unsafeAllow: ['missing-i
 testAccepts('InitializationOrder_Ok', 'transparent');
 testAccepts('InitializationOrder_Ok_2', 'transparent');
 
-testRejects('InitializationOrder_WrongOrder_Bad', 'transparent', {
-  contains: ['Expected initializers to be called for parent contracts in the following order: A, B, C'],
-  count: 1,
-});
+testAccepts('InitializationOrder_WrongOrder_Bad', 'transparent'); // warn 'Expected initializers to be called for parent contracts in the following order: A, B, C'
 testAccepts('InitializationOrder_WrongOrder_UnsafeAllow_Contract', 'transparent');
 testAccepts('InitializationOrder_WrongOrder_UnsafeAllow_Function', 'transparent');
-testOverride('InitializationOrder_WrongOrder_Bad', 'transparent', { unsafeAllow: ['incorrect-initializer-order'] });
+testOverride('InitializationOrder_WrongOrder_Bad', 'transparent', { unsafeAllow: ['incorrect-initializer-order'] }); // TODO this option should not be visible to user
 
 testRejects('InitializationOrder_MissingCall_Bad', 'transparent', {
   contains: ['Contract is missing initializer calls for one or more parent contracts: `C`'],
@@ -133,10 +130,7 @@ testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Contract', 'transparent')
 testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Function', 'transparent');
 testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Call', 'transparent');
 testOverride('InitializationOrder_Duplicate_Bad', 'transparent', { unsafeAllow: ['duplicate-initializer-call'] });
-testRejects('InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder', 'transparent', {
-  contains: ['Expected initializers to be called for parent contracts in the following order: A, B, C'],
-  count: 1,
-});
+testAccepts('InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder', 'transparent'); // warn 'Expected initializers to be called for parent contracts in the following order: A, B, C'
 
 testAccepts('Child_Of_ParentPrivateInitializer_Ok', 'transparent');
 testAccepts('Child_Of_ParentPublicInitializer_Ok', 'transparent');
@@ -152,19 +146,15 @@ testRejects('TransitiveParent_Bad', 'transparent', {
 });
 testRejects('TransitiveChild_Bad_Parent', 'transparent', {
   contains: [
-    'Expected initializers to be called for parent contracts in the following order: TransitiveGrandparent2, TransitiveParent_Bad',
     'Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`', // occurs twice: missing initializer for child, missing initializer for parent
   ],
-  count: 3,
-});
-testRejects('TransitiveChild_Bad_Order', 'transparent', {
-  contains: [
-    'Expected initializers to be called for parent contracts in the following order: TransitiveGrandparent2, TransitiveParent_Bad',
-    'Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`',
-  ],
   count: 2,
-});
-testRejects('TransitiveChild_Bad_Order_From_Parent', 'transparent', {
+}); // warn 'Expected initializers to be called for parent contracts in the following order: TransitiveGrandparent2, TransitiveParent_Bad'
+testRejects('TransitiveChild_Bad_Order', 'transparent', {
+  contains: ['Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`'],
+  count: 1,
+}); // warn 'Expected initializers to be called for parent contracts in the following order: TransitiveGrandparent2, TransitiveParent_Bad'
+testRejects('TransitiveChild_Good_Order_Bad_Parent', 'transparent', {
   contains: ['Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`'],
   count: 1,
 });

@@ -364,7 +364,7 @@ contract TransitiveChild_Bad_Order is TransitiveParent_Bad {
   }
 }
 
-contract TransitiveChild_Bad_Order_From_Parent is TransitiveParent_Bad { // this contract is ok but the parent is not
+contract TransitiveChild_Good_Order_Bad_Parent is TransitiveParent_Bad { // this contract is ok but the parent is not
   function initialize() initializer public {
     __TransitiveGrandparent2_init(2);
     initializeParent();
