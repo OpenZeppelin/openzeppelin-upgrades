@@ -56,6 +56,8 @@ export const errorKinds = [
   'incorrect-initializer-order',
 ] as const;
 
+export const convertToWarning: (typeof errorKinds)[number][] = ['incorrect-initializer-order'] as const;
+
 export type ValidationError =
   | ValidationErrorConstructor
   | ValidationErrorOpcode
@@ -94,7 +96,7 @@ interface ValidationErrorDuplicateInitializerCall extends ValidationErrorBase {
   parentContract: string;
 }
 
-interface ValidationErrorIncorrectInitializerOrder extends ValidationErrorBase {
+interface ValidationWarningIncorrectInitializerOrder extends ValidationErrorBase {
   kind: 'incorrect-initializer-order';
   expectedLinearization: string[];
   foundOrder: string[];
@@ -104,7 +106,7 @@ type ValidationErrorInitializer =
   | ValidationErrorMissingInitializer
   | ValidationErrorMissingInitializerCall
   | ValidationErrorDuplicateInitializerCall
-  | ValidationErrorIncorrectInitializerOrder;
+  | ValidationWarningIncorrectInitializerOrder;
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
   kind: 'constructor';

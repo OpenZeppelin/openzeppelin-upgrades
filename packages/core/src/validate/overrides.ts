@@ -1,4 +1,4 @@
-import { ValidationError } from './run';
+import { ValidationError, convertToWarning } from './run';
 import { ProxyDeployment } from '../manifest';
 import { logWarning } from '../utils/log';
 import { describeError } from './report';
@@ -51,6 +51,10 @@ export interface ValidationOptions extends StandaloneValidationOptions {
   unsafeSkipStorageCheck?: boolean;
 }
 
+/**
+ * Warnings to display when a validation error occurs but is allowed.
+ * `null` indicates that the original message should be displayed.
+ */
 export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], string[] | null> = {
   'state-variable-assignment': [
     `You are using the \`unsafeAllow.state-variable-assignment\` flag.`,
@@ -111,10 +115,6 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   if (unsafeAllowLinkedLibraries) {
     unsafeAllow.push('external-library-linking');
   }
-  // Allow the following by default
-  if (!unsafeAllow.includes('incorrect-initializer-order')) {
-    unsafeAllow.push('incorrect-initializer-order');
-  }
 
   const kind = opts.kind ?? 'transparent';
 
@@ -142,15 +142,19 @@ export function processExceptions(
     errors = errors.filter(error => error.kind !== 'missing-public-upgradeto');
   }
 
-  for (const [errorType, errorDescription] of Object.entries(ValidationErrorUnsafeMessages)) {
-    if (unsafeAllow.includes(errorType as ValidationError['kind'])) {
+  for (const [key, errorDescription] of Object.entries(ValidationErrorUnsafeMessages)) {
+    const errorType = key as ValidationError['kind'];
+    const skip = unsafeAllow.includes(errorType);
+    const warn = convertToWarning.includes(errorType);
+
+    if (skip || warn) {
       let exceptionsFound = false;
 
-      const errorsWithType = errors.filter(error => error.kind === errorType);
+      const errorsWithType = errors.filter(error => error.kind === key);
       exceptionsFound = errorsWithType.length > 0;
       errors = errors.filter(error => !errorsWithType.includes(error));
 
-      if (exceptionsFound) {
+      if (exceptionsFound && !(skip && warn)) { // Display message about the exception, unless it is a warning that the user has chosen to skip
         if (errorDescription !== null) {
           logWarning(`Potentially unsafe deployment of ${contractName}`, errorDescription);
         } else {

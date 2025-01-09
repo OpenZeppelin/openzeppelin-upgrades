@@ -112,7 +112,7 @@ testAccepts('InitializationOrder_Ok_2', 'transparent');
 testAccepts('InitializationOrder_WrongOrder_Bad', 'transparent'); // warn 'Expected initializers to be called for parent contracts in the following order: A, B, C'
 testAccepts('InitializationOrder_WrongOrder_UnsafeAllow_Contract', 'transparent');
 testAccepts('InitializationOrder_WrongOrder_UnsafeAllow_Function', 'transparent');
-testOverride('InitializationOrder_WrongOrder_Bad', 'transparent', { unsafeAllow: ['incorrect-initializer-order'] }); // TODO this option should not be visible to user
+testOverride('InitializationOrder_WrongOrder_Bad', 'transparent', { unsafeAllow: ['incorrect-initializer-order'] }); // skips the warning
 
 testRejects('InitializationOrder_MissingCall_Bad', 'transparent', {
   contains: ['Contract is missing initializer calls for one or more parent contracts: `C`'],
