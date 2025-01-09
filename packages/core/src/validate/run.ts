@@ -63,7 +63,7 @@ export type ValidationError =
   | ValidationErrorOpcode
   | ValidationErrorWithName
   | ValidationErrorUpgradeability
-  | ValidationErrorInitializer;
+  | ValidationExceptionInitializer;
 
 interface ValidationErrorBase {
   src: string;
@@ -102,7 +102,7 @@ interface ValidationWarningIncorrectInitializerOrder extends ValidationErrorBase
   foundOrder: string[];
 }
 
-type ValidationErrorInitializer =
+type ValidationExceptionInitializer =
   | ValidationErrorMissingInitializer
   | ValidationErrorMissingInitializerCall
   | ValidationErrorDuplicateInitializerCall
@@ -159,7 +159,7 @@ function skipCheckReachable(error: string, node: Node): boolean {
   return getAllowed(node, true).includes(error);
 }
 
-function skipCheck(error: string, node: Node): boolean {
+function skipCheck(error: ValidationError['kind'], node: Node): boolean {
   // skip both allow and allow-reachable errors in the lexical scope
   return getAllowed(node, false).includes(error) || getAllowed(node, true).includes(error);
 }
@@ -675,7 +675,7 @@ function* getInitializerErrors(
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
-): Generator<ValidationErrorInitializer> {
+): Generator<ValidationExceptionInitializer> {
   if (contractDef.abstract) {
     return;
   }
