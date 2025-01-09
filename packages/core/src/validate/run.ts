@@ -684,21 +684,27 @@ function* getInitializerErrors(
   const parentNameToInitializersMap = new Map(linearizedParentContracts.map(base => [base.name, getPossibleInitializers(base, true)]));
 
   const {calledInitializers: initializersCalledByParents, remainingParents} = removeParentsInitializedByOtherParents(linearizedParentContracts, parentNameToInitializersMap);
-  const parentsWithCallableInitializers = remainingParents.filter(base => parentNameToInitializersMap.get(base.name)!.length > 0).map(base => base.name);
 
-  if (parentsWithCallableInitializers.length > 0) {
+  // Parents with any initializers that are callable (including public and internal).
+  const callableParents = remainingParents.filter(base => parentNameToInitializersMap.get(base.name)!.length > 0);
+
+  // Parents with initializers that MUST be called (they are all internal)
+  const requiredParents = callableParents.filter(base => parentNameToInitializersMap.get(base.name)!.every(init => init.visibility === 'internal'));
+
+  if (callableParents.length > 0) {
     const contractInitializers = getPossibleInitializers(contractDef, false);
-    const requiresParentInitializerCall = checkRequiresParentInitializerCall(parentsWithCallableInitializers, parentNameToInitializersMap);
 
-    if (requiresParentInitializerCall && contractInitializers.length === 0 && !skipCheck('missing-initializer', contractDef)) {
+    if (requiredParents.length > 0 && contractInitializers.length === 0 && !skipCheck('missing-initializer', contractDef)) {
       yield {
         kind: 'missing-initializer',
         src: decodeSrc(contractDef),
       };
     }
 
+    // If this contract has initializers, they MUST call initializers from all callable parents (even public ones) so that the entire state is initialized in one transaction.
+    const expectedLinearization = callableParents.map(p => p.name);
     for (const contractInitializer of contractInitializers) {
-      yield* checkInitializerErrors(contractInitializer, parentsWithCallableInitializers, parentNameToInitializersMap, initializersCalledByParents, contractDef, decodeSrc);
+      yield* checkInitializerErrors(contractInitializer, expectedLinearization, parentNameToInitializersMap, initializersCalledByParents, contractDef, decodeSrc);
     }
   }
 }
@@ -746,22 +752,15 @@ function removeParentsInitializedByOtherParents(linearizedParentContracts: Contr
   };
 }
 
-function checkRequiresParentInitializerCall(parentsWithCallableInitializers: string[], parentNameToInitializersMap: Map<string, FunctionDefinition[]>) {
-  return parentsWithCallableInitializers.length > 1 || // TODO should we check all parents?
-    (parentsWithCallableInitializers.length === 1 &&
-      parentNameToInitializersMap.get(parentsWithCallableInitializers[0])!.length > 0 &&
-      parentNameToInitializersMap.get(parentsWithCallableInitializers[0])!.every(contractDef => contractDef.visibility === 'internal'));
-}
-
 function* checkInitializerErrors(
   contractInitializer: FunctionDefinition,
-  parentsWithCallableInitializers: string[],
+  expectedLinearization: string[],
   parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
   initializersCalledByParents: number[],
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationExceptionInitializer> {
-  const remainingParents: string[] = [...parentsWithCallableInitializers];
+  const remainingParents: string[] = [...expectedLinearization];
   const foundParents: string[] = [];
   const calledInitializerIds: number[] = [...initializersCalledByParents];
 
@@ -790,7 +789,7 @@ function* checkInitializerErrors(
             yield {
               kind: 'incorrect-initializer-order',
               src: decodeSrc(fnCall),
-              expectedLinearization: parentsWithCallableInitializers,
+              expectedLinearization,
               foundOrder: foundParents,
             };
           }
@@ -813,6 +812,7 @@ function* checkInitializerErrors(
 
 /**
  * Get all functions that could be initializers. Does not include private functions.
+ * For parent contracts, only internal and public functions which contain statements are included.
  */
 function getPossibleInitializers(contractDef: ContractDefinition, isParentContract: boolean) {
   const fns = [...findAll('FunctionDefinition', contractDef)];
@@ -826,8 +826,8 @@ function getPossibleInitializers(contractDef: ContractDefinition, isParentContra
       !(fnDef.virtual && !fnDef.body) &&
       // Ignore private functions, since they cannot be called outside the contract
       fnDef.visibility !== 'private' &&
-      // For parent contracts, only functions which contain statements need to be called
-      (isParentContract ? fnDef.body?.statements?.length : true),
+      // For parent contracts, only internal and public functions which contain statements need to be called
+      (isParentContract ? fnDef.body?.statements?.length && (fnDef.visibility === 'internal' || fnDef.visibility === 'public') : true),
   );
 }
 
