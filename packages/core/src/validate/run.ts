@@ -680,15 +680,15 @@ function* getInitializerErrors(
     return;
   }
 
-  const linearizedBaseContractDefs = getLinearizedBaseContractDefs(contractDef, deref);
-  const baseContractsInitializersMap = getBaseContractsInitializersMap(linearizedBaseContractDefs);
-  const parentCalledInitializerIds = getParentCalledInitializerIds(linearizedBaseContractDefs, baseContractsInitializersMap);
+  const linearizedParentContracts = getLinearizedParentContracts(contractDef, deref);
+  const parentNameToInitializersMap = new Map(linearizedParentContracts.map(base => [base.name, getPossibleInitializers(base, true)]));
 
-  const baseContractsToInitialize = getBaseContractsToInitialize(linearizedBaseContractDefs, baseContractsInitializersMap);
+  const {calledInitializers: initializersCalledByParents, remainingParents} = removeParentsInitializedByOtherParents(linearizedParentContracts, parentNameToInitializersMap);
+  const parentsWithCallableInitializers = remainingParents.filter(base => parentNameToInitializersMap.get(base.name)!.length > 0).map(base => base.name);
 
-  if (baseContractsToInitialize.length > 0) {
+  if (parentsWithCallableInitializers.length > 0) {
     const contractInitializers = getPossibleInitializers(contractDef, false);
-    const requiresParentInitializerCall = checkRequiresParentInitializerCall(baseContractsToInitialize, baseContractsInitializersMap);
+    const requiresParentInitializerCall = checkRequiresParentInitializerCall(parentsWithCallableInitializers, parentNameToInitializersMap);
 
     if (requiresParentInitializerCall && contractInitializers.length === 0 && !skipCheck('missing-initializer', contractDef)) {
       yield {
@@ -698,112 +698,115 @@ function* getInitializerErrors(
     }
 
     for (const contractInitializer of contractInitializers) {
-      yield* checkInitializerErrors(contractInitializer, baseContractsToInitialize, baseContractsInitializersMap, parentCalledInitializerIds, contractDef, decodeSrc);
+      yield* checkInitializerErrors(contractInitializer, parentsWithCallableInitializers, parentNameToInitializersMap, initializersCalledByParents, contractDef, decodeSrc);
     }
   }
 }
 
-function getLinearizedBaseContractDefs(contractDef: ContractDefinition, deref: ASTDereferencer) {
-  const linearizedBaseContractDefs = contractDef.linearizedBaseContracts.map(base => deref('ContractDefinition', base));
-  linearizedBaseContractDefs.shift();
-  linearizedBaseContractDefs.reverse();
-  return linearizedBaseContractDefs;
+function getLinearizedParentContracts(contractDef: ContractDefinition, deref: ASTDereferencer) {
+  const parents = contractDef.linearizedBaseContracts.map(base => deref('ContractDefinition', base));
+  parents.reverse(); // use most derived first
+  parents.pop(); // remove self
+  return parents;
 }
 
-function getBaseContractsInitializersMap(linearizedBaseContractDefs: ContractDefinition[]) {
-  return new Map(linearizedBaseContractDefs.map(base => [base.name, getPossibleInitializers(base, true)]));
+interface ParentInitializerCallResults {
+  calledInitializers: number[];
+  remainingParents: ContractDefinition[];
 }
 
-function getParentCalledInitializerIds(linearizedBaseContractDefs: ContractDefinition[], baseContractsInitializersMap: Map<string, FunctionDefinition[]>) {
-  const parentCalledInitializerIds: number[] = [];
-  for (const base of linearizedBaseContractDefs) {
-    const baseInitializers = baseContractsInitializersMap.get(base.name)!;
-    for (const initializer of baseInitializers) {
+function removeParentsInitializedByOtherParents(linearizedParentContracts: ContractDefinition[], parentNameToInitializersMap: Map<string, FunctionDefinition[]>): ParentInitializerCallResults {
+  const calledInitializers: number[] = [];
+  const remainingParents = [...linearizedParentContracts];
+
+  for (const parent of remainingParents) {
+    const parentInitializers = parentNameToInitializersMap.get(parent.name)!;
+    for (const initializer of parentInitializers) {
       const expressionStatements = initializer.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
       for (const stmt of expressionStatements) {
         const fnCall = stmt.expression;
         if (fnCall.nodeType === 'FunctionCall' && (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')) {
           const referencedFn = fnCall.expression.referencedDeclaration;
           if (referencedFn) {
-            const earlierBaseContractDefs = linearizedBaseContractDefs.slice(0, linearizedBaseContractDefs.indexOf(base));
-            const foundParentInitializer = earlierBaseContractDefs.find(base => baseContractsInitializersMap.get(base.name)!.some(init => init.id === referencedFn));
-            if (foundParentInitializer) {
-              parentCalledInitializerIds.push(referencedFn);
-              linearizedBaseContractDefs.splice(linearizedBaseContractDefs.indexOf(foundParentInitializer), 1);
+            const earlierParents = remainingParents.slice(0, remainingParents.indexOf(parent));
+            const callsEarlierParentInitializer = earlierParents.find(base => parentNameToInitializersMap.get(base.name)!.some(init => init.id === referencedFn));
+            if (callsEarlierParentInitializer) {
+              calledInitializers.push(referencedFn);
+              remainingParents.splice(remainingParents.indexOf(callsEarlierParentInitializer), 1);
             }
           }
         }
       }
     }
   }
-  return parentCalledInitializerIds;
+
+  return {
+    calledInitializers,
+    remainingParents,
+  };
 }
 
-function getBaseContractsToInitialize(linearizedBaseContractDefs: ContractDefinition[], baseContractsInitializersMap: Map<string, FunctionDefinition[]>) {
-  return linearizedBaseContractDefs.filter(base => baseContractsInitializersMap.get(base.name)?.length).map(base => base.name);
-}
-
-function checkRequiresParentInitializerCall(baseContractsToInitialize: string[], baseContractsInitializersMap: Map<string, FunctionDefinition[]>) {
-  return baseContractsToInitialize.length > 1 ||
-    (baseContractsToInitialize.length === 1 &&
-      baseContractsInitializersMap.get(baseContractsToInitialize[0])!.length > 0 &&
-      baseContractsInitializersMap.get(baseContractsToInitialize[0])!.every(contractDef => contractDef.visibility === 'internal'));
+function checkRequiresParentInitializerCall(parentsWithCallableInitializers: string[], parentNameToInitializersMap: Map<string, FunctionDefinition[]>) {
+  return parentsWithCallableInitializers.length > 1 || // TODO should we check all parents?
+    (parentsWithCallableInitializers.length === 1 &&
+      parentNameToInitializersMap.get(parentsWithCallableInitializers[0])!.length > 0 &&
+      parentNameToInitializersMap.get(parentsWithCallableInitializers[0])!.every(contractDef => contractDef.visibility === 'internal'));
 }
 
 function* checkInitializerErrors(
   contractInitializer: FunctionDefinition,
-  baseContractsToInitialize: string[],
-  baseContractsInitializersMap: Map<string, FunctionDefinition[]>,
-  parentCalledInitializerIds: number[],
+  parentsWithCallableInitializers: string[],
+  parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
+  initializersCalledByParents: number[],
   contractDef: ContractDefinition,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationExceptionInitializer> {
-  const remaining: string[] = [...baseContractsToInitialize];
-  const foundOrder: string[] = [];
-  const calledInitializerIds: number[] = [...parentCalledInitializerIds];
+  const remainingParents: string[] = [...parentsWithCallableInitializers];
+  const foundParents: string[] = [];
+  const calledInitializerIds: number[] = [...initializersCalledByParents];
 
   const expressionStatements = contractInitializer.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
   for (const stmt of expressionStatements) {
     const fnCall = stmt.expression;
     if (fnCall.nodeType === 'FunctionCall' && (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')) {
       const referencedFn = fnCall.expression.referencedDeclaration;
-      for (const baseContractToInitialize of baseContractsInitializersMap.keys()) {
-        const baseInitializers = baseContractsInitializersMap.get(baseContractToInitialize)!;
-        const foundParentInitializer = baseInitializers.find(init => init.id === referencedFn);
-        if (referencedFn && foundParentInitializer) {
+      for (const parent of parentNameToInitializersMap.keys()) {
+        const parentInitializers = parentNameToInitializersMap.get(parent)!;
+        const callsParentInitializer = parentInitializers.find(init => init.id === referencedFn);
+        if (referencedFn && callsParentInitializer) {
           const duplicate = calledInitializerIds.includes(referencedFn);
           if (duplicate && !skipCheck('duplicate-initializer-call', contractDef) && !skipCheck('duplicate-initializer-call', contractInitializer) && !skipCheck('duplicate-initializer-call', stmt)) {
             yield {
               kind: 'duplicate-initializer-call',
               src: decodeSrc(fnCall),
-              parentInitializer: foundParentInitializer.name,
-              parentContract: baseContractToInitialize,
+              parentInitializer: callsParentInitializer.name,
+              parentContract: parent,
             };
           }
           calledInitializerIds.push(referencedFn);
-          foundOrder.push(baseContractToInitialize);
-          const index = remaining.indexOf(baseContractToInitialize);
+          foundParents.push(parent);
+          const index = remainingParents.indexOf(parent);
           if (!duplicate && index !== 0 && !skipCheck('incorrect-initializer-order', contractDef) && !skipCheck('incorrect-initializer-order', contractInitializer)) {
             yield {
               kind: 'incorrect-initializer-order',
               src: decodeSrc(fnCall),
-              expectedLinearization: baseContractsToInitialize,
-              foundOrder,
+              expectedLinearization: parentsWithCallableInitializers,
+              foundOrder: foundParents,
             };
           }
           if (index !== -1) {
-            remaining.splice(index, 1);
+            remainingParents.splice(index, 1);
           }
         }
       }
     }
   }
 
-  if (remaining.length > 0 && !skipCheck('missing-initializer-call', contractDef) && !skipCheck('missing-initializer-call', contractInitializer)) {
+  if (remainingParents.length > 0 && !skipCheck('missing-initializer-call', contractDef) && !skipCheck('missing-initializer-call', contractInitializer)) {
     yield {
       kind: 'missing-initializer-call',
       src: decodeSrc(contractInitializer),
-      parentContracts: remaining,
+      parentContracts: remainingParents,
     };
   }
 }
