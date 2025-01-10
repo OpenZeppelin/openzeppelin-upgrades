@@ -132,10 +132,29 @@ testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Call', 'transparent');
 testOverride('InitializationOrder_Duplicate_Bad', 'transparent', { unsafeAllow: ['duplicate-initializer-call'] });
 testAccepts('InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder', 'transparent'); // warn 'Expected initializers to be called for parent contracts in the following order: A, B, C'
 
-testAccepts('Child_Of_ParentPrivateInitializer_Ok', 'transparent');
-testAccepts('Child_Of_ParentPublicInitializer_Ok', 'transparent');
-testRejects('Child_Has_PrivateInitializer_Bad', 'transparent', {
+testAccepts('Child_Of_Private_Ok', 'transparent');
+testAccepts('Child_Of_Public_Ok', 'transparent');
+testAccepts('Child_Of_External_Ok', 'transparent');
+testRejects('Child_Of_Internal_Bad', 'transparent', {
   contains: ['Contract is missing an initializer'],
+  count: 1,
+});
+testRejects('Child_Of_Internal_Has_Private_Bad', 'transparent', {
+  contains: ['Contract is missing an initializer'],
+  count: 1,
+});
+testAccepts('Child_Of_Internal_Has_Public_Ok', 'transparent');
+testAccepts('Child_Of_Internal_Has_Internal_Ok', 'transparent');
+testAccepts('Child_Of_Internal_Has_External_Ok', 'transparent');
+testAccepts('Child_Of_PrivatePublicExternal_Ok', 'transparent');
+testRejects('Child_Of_AllVisibilities_Bad', 'transparent', {
+  contains: ['Contract is missing an initializer'],
+  count: 1,
+});
+testRejects('Child_Of_AllVisibilities_EmptyInitializer_Bad', 'transparent', {
+  contains: [
+    'Contract is missing initializer calls for one or more parent contracts: `Parent_Public, Parent_Internal`',
+  ],
   count: 1,
 });
 

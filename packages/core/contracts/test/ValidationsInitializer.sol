@@ -295,29 +295,78 @@ contract InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder is A, B, C, Par
 
 // ==== Initializer visibility ====
 
-contract Parent_PrivateInitializer {
-  uint x;
-  function initialize() private { // not considered an initializer because it's private
-    x = 1;
+abstract contract Parent_Private is Initializable {
+  uint a;
+  function privateInit() initializer private { // not considered an initializer because it's private
+    a = 1;
   }
 }
 
-contract Parent_PublicInitializer {
-  uint x;
-  function initialize() public { // does not strictly need to be called by child
-    x = 1;
+abstract contract Parent_Public is Initializable {
+  uint b;
+  function publicInit() initializer public { // does not strictly need to be called by child
+    b = 1;
   }
 }
 
-contract Child_Of_ParentPrivateInitializer_Ok is Parent_PrivateInitializer { // no initializer required since parent initializer is private
+abstract contract Parent_External is Initializable {
+  uint c;
+  function externalInit() initializer external { // ignored since it cannot be called by child
+    c = 1;
+  }
 }
 
-contract Child_Of_ParentPublicInitializer_Ok is Parent_PublicInitializer { // no initializer required since parent initializer is public
+abstract contract Parent_Internal is Initializable {
+  uint d;
+  function internalInit() initializer internal { // require
+    d = 1;
+  }
 }
 
-contract Child_Has_PrivateInitializer_Bad is Parent__OnlyInitializingModifier { // parent has internal initializer, but child has private
-  function initialize() private {
-    __Parent_init();
+contract Child_Of_Private_Ok is Parent_Private { // no initializer required since parent initializer is private
+}
+
+contract Child_Of_Public_Ok is Parent_Public { // no initializer required since parent initializer is public
+}
+
+contract Child_Of_External_Ok is Parent_External { // no initializer required since parent initializer is external
+}
+
+contract Child_Of_Internal_Bad is Parent_Internal {
+}
+
+contract Child_Of_Internal_Has_Private_Bad is Parent_Internal { // private function is not considered an initializer
+  function initialize() initializer private {
+    internalInit();
+  }
+}
+
+contract Child_Of_Internal_Has_Public_Ok is Parent_Internal {
+  function initialize() initializer public {
+    internalInit();
+  }
+}
+
+contract Child_Of_Internal_Has_Internal_Ok is Parent_Internal {
+  function initialize() initializer internal {
+    internalInit();
+  }
+}
+
+contract Child_Of_Internal_Has_External_Ok is Parent_Internal {
+  function initialize() initializer external {
+    internalInit();
+  }
+}
+
+contract Child_Of_PrivatePublicExternal_Ok is Parent_Private, Parent_Public, Parent_External {
+}
+
+contract Child_Of_AllVisibilities_Bad is Parent_Private, Parent_Public, Parent_External, Parent_Internal { // internal causes missing initializer error
+}
+
+contract Child_Of_AllVisibilities_EmptyInitializer_Bad is Parent_Private, Parent_Public, Parent_External, Parent_Internal { // both public and internal parent initializers need to be called
+  function initialize() initializer public {
   }
 }
 

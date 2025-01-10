@@ -693,7 +693,7 @@ function* getInitializerErrors(
   // Parents with any initializers that are callable (including public and internal).
   const callableParents = remainingParents.filter(base => parentNameToInitializersMap.get(base.name)!.length > 0);
 
-  // Parents with initializers that MUST be called (they are all internal)
+  // Parents with initializers that MUST be called (because their initializers are internal)
   const requiredParents = callableParents.filter(base =>
     parentNameToInitializersMap.get(base.name)!.every(init => init.visibility === 'internal'),
   );
