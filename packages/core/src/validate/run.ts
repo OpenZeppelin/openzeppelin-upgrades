@@ -665,8 +665,8 @@ function* getInternalFunctionStorageErrors(
 }
 
 /**
- * Reports an error this contract is non-abstract, a linearized parent contract has an initializer, and any of the following are true:
- * - 1. Missing initializer: This contract does not appear to have an initializer.
+ * Reports an error if this contract is non-abstract and any of the following are true:
+ * - 1. Missing initializer: This contract does not appear to have an initializer, but parent contracts require initialization.
  * - 2. Missing initializer call: This contract's initializer is missing a call to a parent initializer.
  * - 3. Duplicate initializer call: This contract has duplicate calls to the same parent initializer function.
  * - 4. Incorrect initializer order: This contract does not call parent initializers in the correct order.
@@ -701,6 +701,7 @@ function* getInitializerErrors(
   if (callableParents.length > 0) {
     const contractInitializers = getPossibleInitializers(contractDef, false);
 
+    // Report if there is no initializer but parents need initialization
     if (
       requiredParents.length > 0 &&
       contractInitializers.length === 0 &&
@@ -739,6 +740,13 @@ interface ParentInitializerCallResults {
   remainingParents: ContractDefinition[];
 }
 
+/**
+ * Returns any parent initializers that have already been called by other parent initializers,
+ * and the remaining parent contracts that are not yet initialized.
+ *
+ * Ignores whether the parent contracts are calling their initializers in the correct order,
+ * because we only want to report the order of THIS contract's calls.
+ */
 function removeParentsInitializedByOtherParents(
   linearizedParentContracts: ContractDefinition[],
   parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
@@ -800,6 +808,10 @@ function* checkInitializerErrors(
       (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
     ) {
       const referencedFn = fnCall.expression.referencedDeclaration;
+
+      // If this is a call to a parent initializer, then:
+      // - Check if it was already called (duplicate call)
+      // - Otherwise, check if the parent initializer is called in linearized order
       for (const parent of parentNameToInitializersMap.keys()) {
         const parentInitializers = parentNameToInitializersMap.get(parent)!;
         const callsParentInitializer = parentInitializers.find(init => init.id === referencedFn);
@@ -822,6 +834,7 @@ function* checkInitializerErrors(
           foundParents.push(parent);
           const index = remainingParents.indexOf(parent);
           if (
+            // Omit duplicate calls to avoid treating them as out of order. Duplicates are either reported above or they were skipped.
             !duplicate &&
             index !== 0 &&
             !skipCheck('incorrect-initializer-order', contractDef) &&
@@ -842,6 +855,7 @@ function* checkInitializerErrors(
     }
   }
 
+  // Report any remaining parents that were not initialized
   if (
     remainingParents.length > 0 &&
     !skipCheck('missing-initializer-call', contractDef) &&
