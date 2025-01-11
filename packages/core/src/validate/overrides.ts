@@ -148,14 +148,11 @@ export function processExceptions(
     const warn = convertToWarning.includes(errorType);
 
     if (skip || warn) {
-      let exceptionsFound = false;
-
       const errorsWithType = errors.filter(error => error.kind === errorType);
-      exceptionsFound = errorsWithType.length > 0;
       errors = errors.filter(error => !errorsWithType.includes(error));
 
       // Display message about the exception, unless it is a warning that the user has chosen to skip
-      if (exceptionsFound && !(skip && warn)) {
+      if (errorsWithType.length > 0 && !(skip && warn)) {
         if (errorDescription !== null) {
           logWarning(`Potentially unsafe deployment of ${contractName}`, errorDescription);
         } else {
