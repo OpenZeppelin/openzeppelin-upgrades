@@ -693,17 +693,12 @@ function* getInitializerErrors(
   // Parents with any initializers that are callable (including public and internal).
   const callableParents = remainingParents.filter(base => parentNameToInitializersMap.get(base.name)!.length > 0);
 
-  // Parents with initializers that MUST be called (because their initializers are internal)
-  const requiredParents = callableParents.filter(base =>
-    parentNameToInitializersMap.get(base.name)!.every(init => init.visibility === 'internal'),
-  );
-
   if (callableParents.length > 0) {
     const contractInitializers = getPossibleInitializers(contractDef, false);
 
     // Report if there is no initializer but parents need initialization
     if (
-      requiredParents.length > 0 &&
+      checkNeedsInitialization(callableParents, parentNameToInitializersMap) &&
       contractInitializers.length === 0 &&
       !skipCheck('missing-initializer', contractDef)
     ) {
@@ -726,6 +721,21 @@ function* getInitializerErrors(
       );
     }
   }
+}
+
+/**
+ * If there are multiple parents with initializers, regardless of whether they are internal or public,
+ * this contract must have its own initializer to call them so that the state is initialized in one transaction.
+ *
+ * Otherwise, if there is only one parent with initializers, they only need to be called if they are internal, since public initializers can be called directly.
+ */
+function checkNeedsInitialization(callableParents: ContractDefinition[], parentNameToInitializersMap: Map<string, FunctionDefinition[]>) {
+  if (callableParents.length > 1) {
+    return true;
+  }
+  const [parent] = callableParents;
+  const parentInitializers = parentNameToInitializersMap.get(parent.name)!;
+  return parentInitializers.every(init => init.visibility === 'internal');
 }
 
 function getLinearizedParentContracts(contractDef: ContractDefinition, deref: ASTDereferencer) {

@@ -134,6 +134,10 @@ testAccepts('InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder', 'transpar
 
 testAccepts('Child_Of_Private_Ok', 'transparent');
 testAccepts('Child_Of_Public_Ok', 'transparent');
+testRejects('Child_Of_Public_MissingCall_Bad', 'transparent', {
+  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent_Public`'],
+  count: 1,
+});
 testAccepts('Child_Of_External_Ok', 'transparent');
 testRejects('Child_Of_Internal_Bad', 'transparent', {
   contains: ['Contract is missing an initializer'],
@@ -157,6 +161,16 @@ testRejects('Child_Of_AllVisibilities_EmptyInitializer_Bad', 'transparent', {
   ],
   count: 1,
 });
+
+testRejects('Child_Of_MultiplePublic_MissingInitializer_Bad', 'transparent', {
+  contains: ['Contract is missing an initializer'],
+  count: 1,
+});
+testRejects('Child_Of_MultiplePublic_MissingCall_Bad', 'transparent', {
+  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent_Public_2`'],
+  count: 1,
+});
+testAccepts('Child_Of_MultiplePublic_Ok', 'transparent');
 
 testAccepts('TransitiveParent_Ok', 'transparent');
 testRejects('TransitiveParent_Bad', 'transparent', {

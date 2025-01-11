@@ -329,6 +329,12 @@ contract Child_Of_Private_Ok is Parent_Private { // no initializer required sinc
 contract Child_Of_Public_Ok is Parent_Public { // no initializer required since parent initializer is public
 }
 
+contract Child_Of_Public_MissingCall_Bad is Parent_Public {
+  function initialize() initializer public {
+    // missing call
+  }
+}
+
 contract Child_Of_External_Ok is Parent_External { // no initializer required since parent initializer is external
 }
 
@@ -367,6 +373,30 @@ contract Child_Of_AllVisibilities_Bad is Parent_Private, Parent_Public, Parent_E
 
 contract Child_Of_AllVisibilities_EmptyInitializer_Bad is Parent_Private, Parent_Public, Parent_External, Parent_Internal { // both public and internal parent initializers need to be called
   function initialize() initializer public {
+  }
+}
+
+abstract contract Parent_Public_2 is Initializable {
+  uint b2;
+  function public2Init() initializer public { // does not strictly need to be called by child
+    b2 = 1;
+  }
+}
+
+contract Child_Of_MultiplePublic_MissingInitializer_Bad is Parent_Public, Parent_Public_2 { // both public parent initializers need to be called
+}
+
+contract Child_Of_MultiplePublic_MissingCall_Bad is Parent_Public, Parent_Public_2 {
+  function initialize() initializer public {
+    publicInit();
+    // missing call to public2Init
+  }
+}
+
+contract Child_Of_MultiplePublic_Ok is Parent_Public, Parent_Public_2 {
+  function initialize() initializer public {
+    publicInit();
+    public2Init();
   }
 }
 
