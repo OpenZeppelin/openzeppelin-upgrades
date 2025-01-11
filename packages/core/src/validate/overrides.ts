@@ -150,7 +150,7 @@ export function processExceptions(
     if (skip || warn) {
       let exceptionsFound = false;
 
-      const errorsWithType = errors.filter(error => error.kind === key);
+      const errorsWithType = errors.filter(error => error.kind === errorType);
       exceptionsFound = errorsWithType.length > 0;
       errors = errors.filter(error => !errorsWithType.includes(error));
 
