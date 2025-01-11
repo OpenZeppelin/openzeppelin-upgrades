@@ -729,7 +729,10 @@ function* getInitializerErrors(
  *
  * Otherwise, if there is only one parent with initializers, they only need to be called if they are internal, since public initializers can be called directly.
  */
-function checkNeedsInitialization(callableParents: ContractDefinition[], parentNameToInitializersMap: Map<string, FunctionDefinition[]>) {
+function checkNeedsInitialization(
+  callableParents: ContractDefinition[],
+  parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
+) {
   if (callableParents.length > 1) {
     return true;
   }
