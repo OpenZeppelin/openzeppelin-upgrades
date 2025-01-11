@@ -243,7 +243,7 @@ export function validate(
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
           ...getInternalFunctionStorageErrors(contractDef, deref, decodeSrc),
-          ...getInitializerErrors(contractDef, deref, decodeSrc),
+          ...getInitializerExceptions(contractDef, deref, decodeSrc),
         ];
 
         validation[key].layout = extractStorageLayout(
@@ -665,16 +665,13 @@ function* getInternalFunctionStorageErrors(
 }
 
 /**
- * If this contract is non-abstract and any of the following are true, report an error or warning.
- *
- * Errors:
+ * If this contract is non-abstract and any of the following are true, report exceptions if any of the following are true:
  * - 1. Missing initializer: This contract does not appear to have an initializer, but parent contracts require initialization.
  * - 2. Missing initializer call: This contract's initializer is missing a call to a parent initializer.
  * - 3. Duplicate initializer call: This contract has duplicate calls to the same parent initializer function.
- * Warnings:
- * - 4. Incorrect initializer order: This contract does not call parent initializers in the correct order.
+ * - 4. Incorrect initializer order (warning): This contract does not call parent initializers in the correct order.
  */
-function* getInitializerErrors(
+function* getInitializerExceptions(
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
@@ -714,7 +711,7 @@ function* getInitializerErrors(
     // If this contract has initializers, they MUST call initializers from all callable parents (even public ones) so that the entire state is initialized in one transaction.
     const expectedLinearization = callableParents.map(p => p.name);
     for (const contractInitializer of contractInitializers) {
-      yield* checkInitializerErrors(
+      yield* getInitializerCallExceptions(
         contractInitializer,
         expectedLinearization,
         parentNameToInitializersMap,
@@ -727,6 +724,8 @@ function* getInitializerErrors(
 }
 
 /**
+ * Returns true if this contract must have its own initializer to call parent initializers.
+ *
  * If there are multiple parents with initializers, regardless of whether they are internal or public,
  * this contract must have its own initializer to call them so that the state is initialized in one transaction.
  *
@@ -803,7 +802,17 @@ function removeParentsInitializedByOtherParents(
   };
 }
 
-function* checkInitializerErrors(
+/**
+ * Reports exceptions for missing initializer calls, duplicate initializer calls, and incorrect initializer order.
+ *
+ * @param contractInitializer An initializer function for the current contract
+ * @param expectedLinearization The expected initialization order of parent contracts
+ * @param parentNameToInitializersMap Map of parent contract names to their possible initializers
+ * @param initializersCalledByParents List of parent initializers that have already been called by other parents
+ * @param contractDef The current contract
+ * @param decodeSrc Source decoder
+ */
+function* getInitializerCallExceptions(
   contractInitializer: FunctionDefinition,
   expectedLinearization: string[],
   parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
