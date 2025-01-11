@@ -665,7 +665,7 @@ function* getInternalFunctionStorageErrors(
 }
 
 /**
- * If this contract is non-abstract and any of the following are true, report exceptions if any of the following are true:
+ * Reports if this contract is non-abstract and any of the following are true:
  * - 1. Missing initializer: This contract does not appear to have an initializer, but parent contracts require initialization.
  * - 2. Missing initializer call: This contract's initializer is missing a call to a parent initializer.
  * - 3. Duplicate initializer call: This contract has duplicate calls to the same parent initializer function.
