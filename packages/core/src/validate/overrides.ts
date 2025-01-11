@@ -1,4 +1,4 @@
-import { ValidationError, convertToWarning } from './run';
+import { ValidationError, convertToWarnings } from './run';
 import { ProxyDeployment } from '../manifest';
 import { logWarning } from '../utils/log';
 import { describeError } from './report';
@@ -145,7 +145,7 @@ export function processExceptions(
   for (const [key, errorDescription] of Object.entries(ValidationErrorUnsafeMessages)) {
     const errorType = key as ValidationError['kind'];
     const skip = unsafeAllow.includes(errorType);
-    const warn = convertToWarning.includes(errorType);
+    const warn = convertToWarnings.includes(errorType);
 
     if (skip || warn) {
       const errorsWithType = errors.filter(error => error.kind === errorType);

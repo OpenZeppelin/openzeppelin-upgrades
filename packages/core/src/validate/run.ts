@@ -56,7 +56,7 @@ export const errorKinds = [
   'incorrect-initializer-order',
 ] as const;
 
-export const convertToWarning: (typeof errorKinds)[number][] = ['incorrect-initializer-order'] as const;
+export const convertToWarnings: (typeof errorKinds)[number][] = ['incorrect-initializer-order'] as const;
 
 export type ValidationError =
   | ValidationErrorConstructor
