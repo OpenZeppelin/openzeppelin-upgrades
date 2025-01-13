@@ -110,6 +110,7 @@ test('calls defender deploy', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -139,6 +140,7 @@ test('calls defender deploy with relayerId', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -168,6 +170,7 @@ test('calls defender deploy with salt', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -197,6 +200,7 @@ test('calls defender deploy with createFactoryAddress', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -226,6 +230,7 @@ test('calls defender deploy with license', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -257,6 +262,7 @@ test('calls defender deploy - licenseType', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -288,6 +294,7 @@ test('calls defender deploy - verifySourceCode false', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -319,6 +326,7 @@ test('calls defender deploy - skipLicenseType', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -401,6 +409,7 @@ test('calls defender deploy - no contract license', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -430,6 +439,7 @@ test('calls defender deploy - unlicensed', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -459,6 +469,7 @@ test('calls defender deploy with constructor args', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -488,6 +499,7 @@ test('calls defender deploy with constructor args with array', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -517,6 +529,7 @@ test('calls defender deploy with verify false', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -546,6 +559,7 @@ test('calls defender deploy with ERC1967Proxy', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 });
 
@@ -573,6 +587,7 @@ test('calls defender deploy with ERC1967Proxy - ignores constructorArgs', async 
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 });
 
@@ -600,6 +615,7 @@ test('calls defender deploy with ERC1967Proxy - ignores empty constructorArgs', 
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 });
 
@@ -627,6 +643,7 @@ test('calls defender deploy with BeaconProxy', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 });
 
@@ -657,6 +674,7 @@ test('calls defender deploy with TransparentUpgradeableProxy', async t => {
     txOverrides: undefined,
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 });
 
@@ -689,6 +707,7 @@ test('calls defender deploy with txOverrides.gasLimit', async t => {
     },
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -723,6 +742,7 @@ test('calls defender deploy with txOverrides.gasPrice', async t => {
     },
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -759,6 +779,7 @@ test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPri
     },
     libraries: undefined,
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -794,6 +815,7 @@ test('calls defender deploy with external library', async t => {
       'contracts/ExternalLibraries.sol:SafeMath': EXTERNAL_LIBRARY_ADDRESS,
     },
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -831,6 +853,7 @@ test('calls defender deploy with multiple external libraries', async t => {
       'contracts/ExternalLibraries.sol:SafeMathV2': EXTERNAL_LIBRARY_2_ADDRESS,
     },
     metadata: undefined,
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
@@ -870,6 +893,7 @@ test('calls defender deploy with metadata', async t => {
       tag: 'v1.0.0',
       anyOtherField: 'anyValue',
     },
+    origin: "Hardhat",
   });
 
   assertResult(t, result);
