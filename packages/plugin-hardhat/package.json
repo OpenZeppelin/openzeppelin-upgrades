@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-upgrades",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
@@ -35,9 +35,9 @@
     "sinon": "^19.0.0"
   },
   "dependencies": {
-    "@openzeppelin/defender-sdk-base-client": "^1.14.4",
-    "@openzeppelin/defender-sdk-deploy-client": "^1.14.4",
-    "@openzeppelin/defender-sdk-network-client": "^1.14.4",
+    "@openzeppelin/defender-sdk-base-client": "^2.1.0",
+    "@openzeppelin/defender-sdk-deploy-client": "^2.1.0",
+    "@openzeppelin/defender-sdk-network-client": "^2.1.0",
     "@openzeppelin/upgrades-core": "^1.41.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
