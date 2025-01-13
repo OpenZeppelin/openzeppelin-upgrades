@@ -681,24 +681,15 @@ function* getInitializerExceptions(
   }
 
   const linearizedParentContracts = getLinearizedParentContracts(contractDef, deref);
-  const parentNameToInitializersMap = new Map(
-    linearizedParentContracts.map(base => [base.name, getPossibleInitializers(base, true)]),
-  );
+  const parentNameToInitializersMap = getParentNameToInitializersMap(linearizedParentContracts);
+  const { initializersCalledByParents, remainingParents } = getInitializersCalledByParents(parentNameToInitializersMap);
 
-  const { calledInitializers: initializersCalledByParents, remainingParents } = removeParentsInitializedByOtherParents(
-    linearizedParentContracts,
-    parentNameToInitializersMap,
-  );
-
-  // Parents with any initializers that are callable (including public and internal).
-  const callableParents = remainingParents.filter(base => parentNameToInitializersMap.get(base.name)!.length > 0);
-
-  if (callableParents.length > 0) {
+  if (remainingParents.length > 0) {
     const contractInitializers = getPossibleInitializers(contractDef, false);
 
     // Report if there is no initializer but parents need initialization
     if (
-      checkNeedsInitialization(callableParents, parentNameToInitializersMap) &&
+      checkNeedsInitialization(remainingParents, parentNameToInitializersMap) &&
       contractInitializers.length === 0 &&
       !skipCheck('missing-initializer', contractDef)
     ) {
@@ -708,8 +699,10 @@ function* getInitializerExceptions(
       };
     }
 
-    // If this contract has initializers, they MUST call initializers from all callable parents (even public ones) so that the entire state is initialized in one transaction.
-    const expectedLinearization = callableParents.map(p => p.name);
+    // If this contract has initializers, they MUST call initializers from all parents which are not yet initialized
+    // (regardless of whether the parent initializers are internal or public), so that the entire state is initialized in one transaction.
+    const expectedLinearization = remainingParents;
+
     for (const contractInitializer of contractInitializers) {
       yield* getInitializerCallExceptions(
         contractInitializer,
@@ -724,6 +717,21 @@ function* getInitializerExceptions(
 }
 
 /**
+ * Gets a map of parent contract names to their possible initializers.
+ * If a parent contract has no initializers, it is not included in the map.
+ */
+function getParentNameToInitializersMap(linearizedParentContracts: ContractDefinition[]) {
+  const map = new Map();
+  for (const parent of linearizedParentContracts) {
+    const initializers = getPossibleInitializers(parent, true);
+    if (initializers.length > 0) {
+      map.set(parent.name, initializers);
+    }
+  }
+  return map;
+}
+
+/**
  * Returns true if this contract must have its own initializer to call parent initializers.
  *
  * If there are multiple parents with initializers, regardless of whether they are internal or public,
@@ -732,14 +740,14 @@ function* getInitializerExceptions(
  * Otherwise, if there is only one parent with initializers, they only need to be called if they are internal, since public initializers can be called directly.
  */
 function checkNeedsInitialization(
-  callableParents: ContractDefinition[],
+  remainingParents: string[],
   parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
 ) {
-  if (callableParents.length > 1) {
+  if (remainingParents.length > 1) {
     return true;
   }
-  const [parent] = callableParents;
-  const parentInitializers = parentNameToInitializersMap.get(parent.name)!;
+  const [parent] = remainingParents;
+  const parentInitializers = parentNameToInitializersMap.get(parent)!;
   return parentInitializers.every(init => init.visibility === 'internal');
 }
 
@@ -751,8 +759,15 @@ function getLinearizedParentContracts(contractDef: ContractDefinition, deref: AS
 }
 
 interface ParentInitializerCallResults {
-  calledInitializers: number[];
-  remainingParents: ContractDefinition[];
+  /**
+   * Parent initializer ids that have already been called by other parent initializers.
+   */
+  initializersCalledByParents: number[];
+
+  /**
+   * Parent contracts that are not yet initialized by other parent initializers.
+   */
+  remainingParents: string[];
 }
 
 /**
@@ -762,15 +777,14 @@ interface ParentInitializerCallResults {
  * Ignores whether the parent contracts are calling their initializers in the correct order,
  * because we only want to report the order of THIS contract's calls.
  */
-function removeParentsInitializedByOtherParents(
-  linearizedParentContracts: ContractDefinition[],
+function getInitializersCalledByParents(
   parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
 ): ParentInitializerCallResults {
   const calledInitializers: number[] = [];
-  const remainingParents = [...linearizedParentContracts];
+  const remainingParents = [...parentNameToInitializersMap.keys()];
 
   for (const parent of remainingParents) {
-    const parentInitializers = parentNameToInitializersMap.get(parent.name)!;
+    const parentInitializers = parentNameToInitializersMap.get(parent)!;
     for (const initializer of parentInitializers) {
       const expressionStatements =
         initializer.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
@@ -784,7 +798,7 @@ function removeParentsInitializedByOtherParents(
           if (referencedFn) {
             const earlierParents = remainingParents.slice(0, remainingParents.indexOf(parent));
             const callsEarlierParentInitializer = earlierParents.find(base =>
-              parentNameToInitializersMap.get(base.name)!.some(init => init.id === referencedFn),
+              parentNameToInitializersMap.get(base)!.some(init => init.id === referencedFn),
             );
             if (callsEarlierParentInitializer) {
               calledInitializers.push(referencedFn);
@@ -797,7 +811,7 @@ function removeParentsInitializedByOtherParents(
   }
 
   return {
-    calledInitializers,
+    initializersCalledByParents: calledInitializers,
     remainingParents,
   };
 }
