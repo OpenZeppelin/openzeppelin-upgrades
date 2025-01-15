@@ -257,9 +257,9 @@ function getPossibleInitializers(contractDef: ContractDefinition, isParentContra
   return fns.filter(
     fnDef =>
       (fnDef.modifiers.some(modifier =>
-        ['initializer', 'reinitializer', 'onlyInitializing'].includes(modifier.modifierName.name),
+        ['initializer', 'onlyInitializing'].includes(modifier.modifierName.name),
       ) ||
-        ['initialize', 'initializer', 'reinitialize', 'reinitializer'].includes(fnDef.name)) &&
+        ['initialize', 'initializer'].includes(fnDef.name)) &&
       // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
       !(fnDef.virtual && !fnDef.body) &&
       // Ignore private functions, since they cannot be called outside the contract

@@ -85,12 +85,6 @@ testRejects('Child_Of_InitializerModifier_Bad', 'transparent', {
 });
 testAccepts('Child_Of_InitializerModifier_UsesSuper_Ok', 'transparent');
 
-testAccepts('Child_Of_ReinitializerModifier_Ok', 'transparent');
-testRejects('Child_Of_ReinitializerModifier_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent_ReinitializerModifier`'],
-  count: 1,
-});
-
 testAccepts('Child_Of_OnlyInitializingModifier_Ok', 'transparent');
 testRejects('Child_Of_OnlyInitializingModifier_Bad', 'transparent', {
   contains: [

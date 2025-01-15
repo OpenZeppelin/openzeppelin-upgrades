@@ -25,13 +25,6 @@ contract Parent_InitializerModifier is Initializable {
   }
 }
 
-contract Parent_ReinitializerModifier is Initializable {
-  uint8 x;
-  function parentReinit() reinitializer(2) internal {
-    x = 1;
-  }
-}
-
 contract Parent__OnlyInitializingModifier is Initializable {
   uint8 x;
   function __Parent_init() onlyInitializing() internal {
@@ -49,20 +42,6 @@ contract Parent_InitializeName {
 contract Parent_InitializerName {
   uint8 x;
   function initializer() internal {
-    x = 1;
-  }
-}
-
-contract Parent_ReinitializeName {
-  uint8 x;
-  function reinitialize(uint64 version) internal {
-    x = 1;
-  }
-}
-
-contract Parent_ReinitializerName {
-  uint8 x;
-  function reinitializer(uint64 version) internal {
     x = 1;
   }
 }
@@ -93,21 +72,6 @@ contract Child_Of_InitializerModifier_UsesSuper_Ok is Parent_InitializerModifier
 }
 
 contract Child_Of_InitializerModifier_Bad is Parent_InitializerModifier {
-  uint y;
-  function initialize() public {
-    y = 2;
-  }
-}
-
-contract Child_Of_ReinitializerModifier_Ok is Parent_ReinitializerModifier {
-  uint y;
-  function initialize() public {
-    parentReinit();
-    y = 2;
-  }
-}
-
-contract Child_Of_ReinitializerModifier_Bad is Parent_ReinitializerModifier {
   uint y;
   function initialize() public {
     y = 2;
