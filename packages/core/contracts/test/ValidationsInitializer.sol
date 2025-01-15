@@ -458,3 +458,62 @@ contract Ownable2Step_Bad is Initializable, ERC20Upgradeable, Ownable2StepUpgrad
         __Ownable2Step_init();
     }
 }
+
+// ==== Detection of duplicates from different contracts ====
+
+abstract contract Grandparent is Initializable {
+  uint64 x;
+  function __Grandparent_init() onlyInitializing internal {
+    x = 1;
+  }
+}
+
+abstract contract Parent is Grandparent {
+  function __Parent_init() onlyInitializing internal {
+    __Grandparent_init();
+  }
+}
+
+contract SkipsParent_Bad is Parent {
+  function initialize() initializer public {
+    // missing call to __Parent_init
+    __Grandparent_init(); // should not be duplicate since __Parent_init was not called
+  }
+}
+
+contract DuplicateInHelpers_Bad is Grandparent {
+  function initialize() initializer public {
+    helper1();
+    helper2();
+  }
+
+  function helper1() initializer private {
+    __Grandparent_init();
+  }
+
+  function helper2() initializer private {
+    __Grandparent_init();
+  }
+}
+
+contract Recursive_Bad is Parent {
+  function initialize() initializer public {
+    recurse();
+  }
+
+  function recurse() private {
+    // missing call to __Parent_init
+    initialize(); // recursion should be ignored for validations
+  }
+}
+
+contract Recursive_Ok is Parent {
+  function initialize() initializer public {
+    recurse();
+  }
+
+  function recurse() private {
+    __Parent_init();
+    initialize(); // recursion should be ignored for validations
+  }
+}

@@ -21,14 +21,14 @@ export function* getInitializerExceptions(
 
   const linearizedParentContracts = getLinearizedParentContracts(contractDef, deref);
   const parentNameToInitializersMap = getParentNameToInitializersMap(linearizedParentContracts);
-  const { initializersCalledByParents, remainingParents } = getInitializersCalledByParents(parentNameToInitializersMap);
+  const parentsWithInitializers = [...parentNameToInitializersMap.keys()];
 
-  if (remainingParents.length > 0) {
+  if (parentsWithInitializers.length > 0) {
     const contractInitializers = getPossibleInitializers(contractDef, false);
 
     // Report if there is no initializer but parents need initialization
     if (
-      checkNeedsInitialization(remainingParents, parentNameToInitializersMap) &&
+      checkNeedsInitialization(parentsWithInitializers, parentNameToInitializersMap) &&
       contractInitializers.length === 0 &&
       !skipCheck('missing-initializer', contractDef)
     ) {
@@ -40,15 +40,15 @@ export function* getInitializerExceptions(
 
     // If this contract has initializers, they MUST call initializers from all parents which are not yet initialized
     // (regardless of whether the parent initializers are internal or public), so that the entire state is initialized in one transaction.
-    const expectedLinearization = remainingParents;
+    const expectedLinearization = parentsWithInitializers;
 
     for (const contractInitializer of contractInitializers) {
       yield* getInitializerCallExceptions(
         contractInitializer,
         expectedLinearization,
         parentNameToInitializersMap,
-        initializersCalledByParents,
         contractDef,
+        deref,
         decodeSrc,
       );
     }
@@ -98,64 +98,6 @@ function checkNeedsInitialization(
   return parentInitializers.every(init => init.visibility === 'internal');
 }
 
-interface ParentInitializerCallResults {
-  /**
-   * Parent initializer ids that have already been called by other parent initializers.
-   */
-  initializersCalledByParents: number[];
-
-  /**
-   * Parent contracts that are not yet initialized by other parent initializers.
-   */
-  remainingParents: string[];
-}
-
-/**
- * Returns any parent initializers that have already been called by other parent initializers,
- * and the remaining parent contracts that are not yet initialized.
- *
- * Ignores whether the parent contracts are calling their initializers in the correct order,
- * because we only want to report the order of THIS contract's calls.
- */
-function getInitializersCalledByParents(
-  parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
-): ParentInitializerCallResults {
-  const calledInitializers: number[] = [];
-  const remainingParents = [...parentNameToInitializersMap.keys()];
-
-  for (const parent of remainingParents) {
-    const parentInitializers = parentNameToInitializersMap.get(parent)!;
-    for (const initializer of parentInitializers) {
-      const expressionStatements =
-        initializer.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
-      for (const stmt of expressionStatements) {
-        const fnCall = stmt.expression;
-        if (
-          fnCall.nodeType === 'FunctionCall' &&
-          (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
-        ) {
-          const referencedFn = fnCall.expression.referencedDeclaration;
-          if (referencedFn) {
-            const earlierParents = remainingParents.slice(0, remainingParents.indexOf(parent));
-            const callsEarlierParentInitializer = earlierParents.find(base =>
-              parentNameToInitializersMap.get(base)!.some(init => init.id === referencedFn),
-            );
-            if (callsEarlierParentInitializer) {
-              calledInitializers.push(referencedFn);
-              remainingParents.splice(remainingParents.indexOf(callsEarlierParentInitializer), 1);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return {
-    initializersCalledByParents: calledInitializers,
-    remainingParents,
-  };
-}
-
 /**
  * Reports exceptions for missing initializer calls, duplicate initializer calls, and incorrect initializer order.
  *
@@ -164,19 +106,20 @@ function getInitializersCalledByParents(
  * @param parentNameToInitializersMap Map of parent contract names to their possible initializers
  * @param initializersCalledByParents List of parent initializers that have already been called by other parents
  * @param contractDef The current contract
+ * @param deref AST dereferencer
  * @param decodeSrc Source decoder
  */
 function* getInitializerCallExceptions(
   contractInitializer: FunctionDefinition,
   expectedLinearization: string[],
   parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
-  initializersCalledByParents: number[],
   contractDef: ContractDefinition,
+  deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationExceptionInitializer> {
-  const remainingParents: string[] = [...expectedLinearization];
   const foundParents: string[] = [];
-  const calledInitializerIds: number[] = [...initializersCalledByParents];
+  const remainingParents: string[] = [...expectedLinearization];
+  const calledInitializerIds: number[] = [];
 
   const expressionStatements =
     contractInitializer.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
@@ -186,48 +129,61 @@ function* getInitializerCallExceptions(
       fnCall.nodeType === 'FunctionCall' &&
       (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
     ) {
+      let recursiveFunctionIds: number[] = [];
       const referencedFn = fnCall.expression.referencedDeclaration;
+      if (referencedFn) {
+        recursiveFunctionIds = getRecursiveFunctionIds(referencedFn, deref);
+      }
 
-      // If this is a call to a parent initializer, then:
+      // For each recursively called function, if it is a parent initializer, then:
       // - Check if it was already called (duplicate call)
       // - Otherwise, check if the parent initializer is called in linearized order
-      for (const parent of parentNameToInitializersMap.keys()) {
-        const parentInitializers = parentNameToInitializersMap.get(parent)!;
-        const callsParentInitializer = parentInitializers.find(init => init.id === referencedFn);
-        if (referencedFn && callsParentInitializer) {
-          const duplicate = calledInitializerIds.includes(referencedFn);
-          if (
-            duplicate &&
-            !skipCheck('duplicate-initializer-call', contractDef) &&
-            !skipCheck('duplicate-initializer-call', contractInitializer) &&
-            !skipCheck('duplicate-initializer-call', stmt)
-          ) {
-            yield {
-              kind: 'duplicate-initializer-call',
-              src: decodeSrc(fnCall),
-              parentInitializer: callsParentInitializer.name,
-              parentContract: parent,
-            };
-          }
-          calledInitializerIds.push(referencedFn);
-          foundParents.push(parent);
-          const index = remainingParents.indexOf(parent);
-          if (
-            // Omit duplicate calls to avoid treating them as out of order. Duplicates are either reported above or they were skipped.
-            !duplicate &&
-            index !== 0 &&
-            !skipCheck('incorrect-initializer-order', contractDef) &&
-            !skipCheck('incorrect-initializer-order', contractInitializer)
-          ) {
-            yield {
-              kind: 'incorrect-initializer-order',
-              src: decodeSrc(fnCall),
-              expectedLinearization,
-              foundOrder: foundParents,
-            };
-          }
-          if (index !== -1) {
-            remainingParents.splice(index, 1);
+      for (const calledFn of recursiveFunctionIds) {
+        for (const parent of parentNameToInitializersMap.keys()) {
+          const parentInitializers = parentNameToInitializersMap.get(parent)!;
+          const callsParentInitializer = parentInitializers.find(init => init.id === calledFn);
+
+          if (calledFn && callsParentInitializer) {
+            const duplicate = calledInitializerIds.includes(calledFn);
+            if (
+              duplicate &&
+              !skipCheck('duplicate-initializer-call', contractDef) &&
+              !skipCheck('duplicate-initializer-call', contractInitializer) &&
+              !skipCheck('duplicate-initializer-call', stmt)
+            ) {
+              yield {
+                kind: 'duplicate-initializer-call',
+                src: decodeSrc(fnCall),
+                parentInitializer: callsParentInitializer.name,
+                parentContract: parent,
+              };
+            }
+            calledInitializerIds.push(calledFn);
+
+            // Omit multiple initializer calls of the same parent via different functions e.g. `__X_init` which calls `__X_init_unchained`
+            if (!foundParents.includes(parent)) {
+              foundParents.push(parent);
+
+              const remainingParentIndex = remainingParents.indexOf(parent);
+              if (
+                // Omit duplicate calls to avoid treating them as out of order. Duplicates are either reported above or they were skipped.
+                !duplicate &&
+                // If the parent is not the next expected parent, report it as out of order
+                remainingParentIndex !== 0 &&
+                !skipCheck('incorrect-initializer-order', contractDef) &&
+                !skipCheck('incorrect-initializer-order', contractInitializer)
+              ) {
+                yield {
+                  kind: 'incorrect-initializer-order',
+                  src: decodeSrc(fnCall),
+                  expectedLinearization,
+                  foundOrder: foundParents,
+                };
+              }
+              if (remainingParentIndex !== -1) {
+                remainingParents.splice(remainingParentIndex, 1);
+              }
+            }
           }
         }
       }
@@ -249,6 +205,45 @@ function* getInitializerCallExceptions(
 }
 
 /**
+ * Gets the IDs of all functions that are recursively called by the given function, including the given function itself at the end of the list.
+ *
+ * @param referencedFn The ID of the function to start from
+ * @param deref AST dereferencer
+ * @param visited Set of function IDs that have already been visited
+ * @returns The IDs of all functions that are recursively called by the given function, including the given function itself at the end of the list.
+ */
+function getRecursiveFunctionIds(referencedFn: number, deref: ASTDereferencer, visited?: Set<number>): number[] {
+  const result: number[] = [];
+
+  if (visited === undefined) {
+    visited = new Set();
+  }
+  if (visited.has(referencedFn)) {
+    return result;
+  } else {
+    visited.add(referencedFn);
+  }
+
+  const fn = deref('FunctionDefinition', referencedFn);
+  const expressionStatements = fn.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
+  for (const stmt of expressionStatements) {
+    const fnCall = stmt.expression;
+    if (
+      fnCall.nodeType === 'FunctionCall' &&
+      (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
+    ) {
+      const referencedId = fnCall.expression.referencedDeclaration;
+      if (referencedId) {
+        result.push(...getRecursiveFunctionIds(referencedId, deref, visited));
+      }
+    }
+  }
+  result.push(referencedFn);
+
+  return result;
+}
+
+/**
  * Get all functions that could be initializers. Does not include private functions.
  * For parent contracts, only internal and public functions which contain statements are included.
  */
@@ -256,9 +251,7 @@ function getPossibleInitializers(contractDef: ContractDefinition, isParentContra
   const fns = [...findAll('FunctionDefinition', contractDef)];
   return fns.filter(
     fnDef =>
-      (fnDef.modifiers.some(modifier =>
-        ['initializer', 'onlyInitializing'].includes(modifier.modifierName.name),
-      ) ||
+      (fnDef.modifiers.some(modifier => ['initializer', 'onlyInitializing'].includes(modifier.modifierName.name)) ||
         ['initialize', 'initializer'].includes(fnDef.name)) &&
       // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
       !(fnDef.virtual && !fnDef.body) &&

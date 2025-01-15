@@ -198,3 +198,17 @@ testRejects('Ownable2Step_Bad', 'transparent', {
   contains: ['Contract is missing initializer calls for one or more parent contracts: `OwnableUpgradeable`'],
   count: 1,
 });
+
+testRejects('SkipsParent_Bad', 'transparent', {
+  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent`'],
+  count: 1,
+});
+testRejects('DuplicateInHelpers_Bad', 'transparent', {
+  contains: ['Contract has duplicate calls to parent initializer `__Grandparent_init` for contract `Grandparent`'],
+  count: 1,
+});
+testRejects('Recursive_Bad', 'transparent', {
+  contains: ['Contract is missing initializer calls for one or more parent contracts: `Grandparent, Parent`'],
+  count: 1,
+});
+testAccepts('Recursive_Ok', 'transparent');
