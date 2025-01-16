@@ -21,14 +21,15 @@ export function* getInitializerExceptions(
 
   const linearizedParentContracts = getLinearizedParentContracts(contractDef, deref);
   const parentNameToInitializersMap = getParentNameToInitializersMap(linearizedParentContracts);
-  const parentsWithInitializers = [...parentNameToInitializersMap.keys()];
 
-  if (parentsWithInitializers.length > 0) {
+  const remainingParents = getParentsNotInitializedByOtherParents(parentNameToInitializersMap);
+
+  if (remainingParents.length > 0) {
     const contractInitializers = getPossibleInitializers(contractDef, false);
 
     // Report if there is no initializer but parents need initialization
     if (
-      checkNeedsInitialization(parentsWithInitializers, parentNameToInitializersMap) &&
+      checkNeedsInitialization(remainingParents, parentNameToInitializersMap) &&
       contractInitializers.length === 0 &&
       !skipCheck('missing-initializer', contractDef)
     ) {
@@ -38,14 +39,18 @@ export function* getInitializerExceptions(
       };
     }
 
-    // If this contract has initializers, they MUST call initializers from all parents which are not yet initialized
-    // (regardless of whether the parent initializers are internal or public), so that the entire state is initialized in one transaction.
-    const expectedLinearization = parentsWithInitializers;
+    // Linearized list of parent contracts that have initializers
+    const expectedLinearized: string[] = [...parentNameToInitializersMap.keys()];
+
+    // The parent contracts that need to be directly initialized by this contract, which excludes parents that are initialized by other parents.
+    // Calling these will initialize all parent contracts so that the entire state is initialized in one transaction.
+    const expectedDirectCalls = remainingParents;
 
     for (const contractInitializer of contractInitializers) {
       yield* getInitializerCallExceptions(
         contractInitializer,
-        expectedLinearization,
+        expectedLinearized,
+        expectedDirectCalls,
         parentNameToInitializersMap,
         contractDef,
         deref,
@@ -99,10 +104,49 @@ function checkNeedsInitialization(
 }
 
 /**
+ * Returns parent contract names that are not initialized by other parent contracts,
+ * keeping the same order as they appear in the original linearization.
+ */
+function getParentsNotInitializedByOtherParents(
+  parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
+): string[] {
+  const remainingParents = [...parentNameToInitializersMap.keys()];
+
+  for (const parent of remainingParents) {
+    const parentInitializers = parentNameToInitializersMap.get(parent)!;
+    for (const initializer of parentInitializers) {
+      const expressionStatements =
+        initializer.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
+      for (const stmt of expressionStatements) {
+        const fnCall = stmt.expression;
+        if (
+          fnCall.nodeType === 'FunctionCall' &&
+          (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
+        ) {
+          const referencedFn = fnCall.expression.referencedDeclaration;
+          if (referencedFn) {
+            const earlierParents = remainingParents.slice(0, remainingParents.indexOf(parent));
+            const callsEarlierParentInitializer = earlierParents.find(base =>
+              parentNameToInitializersMap.get(base)!.some(init => init.id === referencedFn),
+            );
+            if (callsEarlierParentInitializer) {
+              remainingParents.splice(remainingParents.indexOf(callsEarlierParentInitializer), 1);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return remainingParents;
+}
+
+/**
  * Reports exceptions for missing initializer calls, duplicate initializer calls, and incorrect initializer order.
  *
  * @param contractInitializer An initializer function for the current contract
- * @param expectedLinearization The expected initialization order of parent contracts
+ * @param expectedLinearized Linearized list of parent contracts that have initializers
+ * @param expectedDirectCalls The parent contracts that need to be directly initialized by this contract
  * @param parentNameToInitializersMap Map of parent contract names to their possible initializers
  * @param initializersCalledByParents List of parent initializers that have already been called by other parents
  * @param contractDef The current contract
@@ -111,14 +155,16 @@ function checkNeedsInitialization(
  */
 function* getInitializerCallExceptions(
   contractInitializer: FunctionDefinition,
-  expectedLinearization: string[],
+  expectedLinearized: string[],
+  expectedDirectCalls: string[],
   parentNameToInitializersMap: Map<string, FunctionDefinition[]>,
   contractDef: ContractDefinition,
   deref: ASTDereferencer,
   decodeSrc: SrcDecoder,
 ): Generator<ValidationExceptionInitializer> {
   const foundParents: string[] = [];
-  const remainingParents: string[] = [...expectedLinearization];
+  const remainingLinearized: string[] = [...expectedLinearized];
+  const remainingDirectCalls: string[] = [...expectedDirectCalls];
   const calledInitializerIds: number[] = [];
 
   const expressionStatements =
@@ -164,24 +210,29 @@ function* getInitializerCallExceptions(
             if (!foundParents.includes(parent)) {
               foundParents.push(parent);
 
-              const remainingParentIndex = remainingParents.indexOf(parent);
+              const indexLinearized = remainingLinearized.indexOf(parent);
               if (
                 // Omit duplicate calls to avoid treating them as out of order. Duplicates are either reported above or they were skipped.
                 !duplicate &&
-                // If the parent is not the next expected parent, report it as out of order
-                remainingParentIndex !== 0 &&
+                // If the parent is not the next expected linearized parent, report it as out of order
+                indexLinearized !== 0 &&
                 !skipCheck('incorrect-initializer-order', contractDef) &&
                 !skipCheck('incorrect-initializer-order', contractInitializer)
               ) {
                 yield {
                   kind: 'incorrect-initializer-order',
                   src: decodeSrc(fnCall),
-                  expectedLinearization,
+                  expectedLinearization: expectedDirectCalls,
                   foundOrder: foundParents,
                 };
               }
-              if (remainingParentIndex !== -1) {
-                remainingParents.splice(remainingParentIndex, 1);
+              if (indexLinearized !== -1) {
+                remainingLinearized.splice(indexLinearized, 1);
+              }
+
+              const indexDirect = remainingDirectCalls.indexOf(parent);
+              if (indexDirect !== -1) {
+                remainingDirectCalls.splice(indexDirect, 1);
               }
             }
           }
@@ -190,16 +241,16 @@ function* getInitializerCallExceptions(
     }
   }
 
-  // Report any remaining parents that were not initialized
+  // Report any remaining parents that were not directly initialized
   if (
-    remainingParents.length > 0 &&
+    remainingDirectCalls.length > 0 &&
     !skipCheck('missing-initializer-call', contractDef) &&
     !skipCheck('missing-initializer-call', contractInitializer)
   ) {
     yield {
       kind: 'missing-initializer-call',
       src: decodeSrc(contractInitializer),
-      parentContracts: remainingParents,
+      parentContracts: remainingDirectCalls,
     };
   }
 }

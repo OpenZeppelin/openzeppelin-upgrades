@@ -208,7 +208,15 @@ testRejects('DuplicateInHelpers_Bad', 'transparent', {
   count: 1,
 });
 testRejects('Recursive_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `Grandparent, Parent`'],
+  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent`'],
   count: 1,
 });
 testAccepts('Recursive_Ok', 'transparent');
+
+testAccepts('ERC20_Ok', 'uups');
+testRejects('ERC20_Bad', 'uups', {
+  contains: [
+    'Contract is missing initializer calls for one or more parent contracts: `ERC20Upgradeable, ERC20PausableUpgradeable, OwnableUpgradeable, ERC20PermitUpgradeable`',
+  ],
+  count: 1,
+});
