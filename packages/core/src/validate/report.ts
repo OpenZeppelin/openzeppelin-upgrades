@@ -73,25 +73,23 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     link: 'https://zpl.in/upgrades/error-009',
   },
   'missing-initializer': {
-    msg: () => `Contract is missing an initializer`,
+    msg: () => `Missing initializer`,
     hint: () => `Define an initializer function and use it to call the initializers of parent contracts`,
     link: 'https://zpl.in/upgrades/error-001',
   },
   'missing-initializer-call': {
-    msg: e =>
-      `Contract is missing initializer calls for one or more parent contracts: \`${e.parentContracts.join(', ')}\``,
+    msg: e => `Missing initializer calls for one or more parent contracts: \`${e.parentContracts.join(', ')}\``,
     hint: () => `Call the parent initializers in your initializer function`,
     link: 'https://zpl.in/upgrades/error-001',
   },
   'duplicate-initializer-call': {
-    msg: e =>
-      `Contract has duplicate calls to parent initializer \`${e.parentInitializer}\` for contract \`${e.parentContract}\``,
+    msg: e => `Duplicate calls found to initializer \`${e.parentInitializer}\` for contract \`${e.parentContract}\``,
     hint: () => `Only call each parent initializer once`,
     link: 'https://zpl.in/upgrades/error-001',
   },
   'incorrect-initializer-order': {
     msg: e =>
-      `Contract has an incorrect order of parent initializer calls.
+      `Incorrect order of parent initializer calls.
 - Found initializer calls to parent contracts in the following order: ${e.foundOrder.join(', ')}
 - Expected: ${e.expectedLinearization.join(', ')}`,
     hint: () => `Call parent initializers in linearized order`,

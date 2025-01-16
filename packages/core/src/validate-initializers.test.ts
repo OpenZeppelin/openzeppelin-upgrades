@@ -80,21 +80,19 @@ testAccepts('Child_Of_NoInitializer_Ok', 'transparent');
 
 testAccepts('Child_Of_InitializerModifier_Ok', 'transparent');
 testRejects('Child_Of_InitializerModifier_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent_InitializerModifier`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent_InitializerModifier`'],
   count: 1,
 });
 testAccepts('Child_Of_InitializerModifier_UsesSuper_Ok', 'transparent');
 
 testAccepts('Child_Of_OnlyInitializingModifier_Ok', 'transparent');
 testRejects('Child_Of_OnlyInitializingModifier_Bad', 'transparent', {
-  contains: [
-    'Contract is missing initializer calls for one or more parent contracts: `Parent__OnlyInitializingModifier`',
-  ],
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent__OnlyInitializingModifier`'],
   count: 1,
 });
 
 testRejects('MissingInitializer_Bad', 'transparent', {
-  contains: ['Contract is missing an initializer'],
+  contains: ['Missing initializer'],
   count: 1,
 });
 testAccepts('MissingInitializer_UnsafeAllow_Contract', 'transparent');
@@ -109,7 +107,7 @@ testAccepts('InitializationOrder_WrongOrder_UnsafeAllow_Function', 'transparent'
 testOverride('InitializationOrder_WrongOrder_Bad', 'transparent', { unsafeAllow: ['incorrect-initializer-order'] }); // skips the warning
 
 testRejects('InitializationOrder_MissingCall_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `C`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `C`'],
   count: 1,
 });
 testAccepts('InitializationOrder_MissingCall_UnsafeAllow_Contract', 'transparent');
@@ -117,7 +115,7 @@ testAccepts('InitializationOrder_MissingCall_UnsafeAllow_Function', 'transparent
 testOverride('InitializationOrder_MissingCall_Bad', 'transparent', { unsafeAllow: ['missing-initializer-call'] });
 
 testRejects('InitializationOrder_Duplicate_Bad', 'transparent', {
-  contains: ['Contract has duplicate calls to parent initializer `__B_init` for contract `B`'],
+  contains: ['Duplicate calls found to initializer `__B_init` for contract `B`'],
   count: 1,
 });
 testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Contract', 'transparent');
@@ -129,16 +127,16 @@ testAccepts('InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder', 'transpar
 testAccepts('Child_Of_Private_Ok', 'transparent');
 testAccepts('Child_Of_Public_Ok', 'transparent');
 testRejects('Child_Of_Public_MissingCall_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent_Public`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent_Public`'],
   count: 1,
 });
 testAccepts('Child_Of_External_Ok', 'transparent');
 testRejects('Child_Of_Internal_Bad', 'transparent', {
-  contains: ['Contract is missing an initializer'],
+  contains: ['Missing initializer'],
   count: 1,
 });
 testRejects('Child_Of_Internal_Has_Private_Bad', 'transparent', {
-  contains: ['Contract is missing an initializer'],
+  contains: ['Missing initializer'],
   count: 1,
 });
 testAccepts('Child_Of_Internal_Has_Public_Ok', 'transparent');
@@ -146,48 +144,46 @@ testAccepts('Child_Of_Internal_Has_Internal_Ok', 'transparent');
 testAccepts('Child_Of_Internal_Has_External_Ok', 'transparent');
 testAccepts('Child_Of_PrivatePublicExternal_Ok', 'transparent');
 testRejects('Child_Of_AllVisibilities_Bad', 'transparent', {
-  contains: ['Contract is missing an initializer'],
+  contains: ['Missing initializer'],
   count: 1,
 });
 testRejects('Child_Of_AllVisibilities_EmptyInitializer_Bad', 'transparent', {
-  contains: [
-    'Contract is missing initializer calls for one or more parent contracts: `Parent_Public, Parent_Internal`',
-  ],
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent_Public, Parent_Internal`'],
   count: 1,
 });
 
 testRejects('Child_Of_MultiplePublic_MissingInitializer_Bad', 'transparent', {
-  contains: ['Contract is missing an initializer'],
+  contains: ['Missing initializer'],
   count: 1,
 });
 testRejects('Child_Of_MultiplePublic_MissingCall_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent_Public_2`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent_Public_2`'],
   count: 1,
 });
 testAccepts('Child_Of_MultiplePublic_Ok', 'transparent');
 
 testAccepts('TransitiveParent_Ok', 'transparent');
 testRejects('TransitiveParent_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`'],
   count: 1,
 });
 testRejects('TransitiveChild_Bad_Parent', 'transparent', {
   contains: [
-    'Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`', // occurs twice: missing initializer for child, missing initializer for parent
+    'Missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`', // occurs twice: missing initializer for child, missing initializer for parent
   ],
   count: 2,
 }); // warn 'Expected initializers to be called for parent contracts in the following order: TransitiveGrandparent2, TransitiveParent_Bad'
 testRejects('TransitiveChild_Bad_Order', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`'],
   count: 1,
 }); // warn 'Expected initializers to be called for parent contracts in the following order: TransitiveGrandparent2, TransitiveParent_Bad'
 testRejects('TransitiveChild_Good_Order_Bad_Parent', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `TransitiveGrandparent2`'],
   count: 1,
 });
 testRejects('TransitiveDuplicate_Bad', 'transparent', {
   contains: [
-    'Contract has duplicate calls to parent initializer `__TransitiveGrandparent1_init` for contract `TransitiveGrandparent1`',
+    'Duplicate calls found to initializer `__TransitiveGrandparent1_init` for contract `TransitiveGrandparent1`',
   ],
   count: 1,
 });
@@ -195,20 +191,20 @@ testRejects('TransitiveDuplicate_Bad', 'transparent', {
 testAccepts('Ownable_Ok', 'transparent');
 testAccepts('Ownable2Step_Ok', 'transparent');
 testRejects('Ownable2Step_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `OwnableUpgradeable`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `OwnableUpgradeable`'],
   count: 1,
 });
 
 testRejects('SkipsParent_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent`'],
   count: 1,
 });
 testRejects('DuplicateInHelpers_Bad', 'transparent', {
-  contains: ['Contract has duplicate calls to parent initializer `__Grandparent_init` for contract `Grandparent`'],
+  contains: ['Duplicate calls found to initializer `__Grandparent_init` for contract `Grandparent`'],
   count: 1,
 });
 testRejects('Recursive_Bad', 'transparent', {
-  contains: ['Contract is missing initializer calls for one or more parent contracts: `Parent`'],
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent`'],
   count: 1,
 });
 testAccepts('Recursive_Ok', 'transparent');
@@ -216,7 +212,7 @@ testAccepts('Recursive_Ok', 'transparent');
 testAccepts('ERC20_Ok', 'uups');
 testRejects('ERC20_Bad', 'uups', {
   contains: [
-    'Contract is missing initializer calls for one or more parent contracts: `ERC20Upgradeable, ERC20PausableUpgradeable, OwnableUpgradeable, ERC20PermitUpgradeable`',
+    'Missing initializer calls for one or more parent contracts: `ERC20Upgradeable, ERC20PausableUpgradeable, OwnableUpgradeable, ERC20PermitUpgradeable`',
   ],
   count: 1,
 });
