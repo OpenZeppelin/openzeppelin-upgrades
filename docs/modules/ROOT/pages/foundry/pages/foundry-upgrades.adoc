@@ -49,13 +49,41 @@ Set the following in `remappings.txt`:
 
 NOTE: Use `LegacyUpgrades.sol` instead of `Upgrades.sol` to upgrade existing deployments that were created with OpenZeppelin Contracts v4.
 
+=== Optional: Alternative installation methods
+
+==== NPM
+
+Follow the steps above, but instead of running `forge install OpenZeppelin/openzeppelin-foundry-upgrades`, use this command instead:
+[source,console]
+----
+npm install @openzeppelin/foundry-upgrades
+----
+
+Then add the following additional lines to `remappings.txt`, in addition to the ones described above:
+[source,console]
+----
+openzeppelin-foundry-upgrades/=node_modules/@openzeppelin/foundry-upgrades/src/
+solidity-stringutils/=node_modules/@openzeppelin/foundry-upgrades/lib/solidity-stringutils/
+----
+
+==== Soldeer
+
+Follow the steps above, but instead of running `forge install OpenZeppelin/openzeppelin-foundry-upgrades`, use one of the install commands described in https://soldeer.xyz/project/openzeppelin-foundry-upgrades
+
+Then add the following additional lines to `remappings.txt`, in addition to the ones described above (replace `0.3.6` with the version of the plugin that you installed):
+[source,console]
+----
+openzeppelin-foundry-upgrades/=dependencies/openzeppelin-foundry-upgrades-0.3.6/src/
+solidity-stringutils/=dependencies/openzeppelin-foundry-upgrades-0.3.6/lib/solidity-stringutils/
+----
+
 == Foundry Requirements
 
 This library requires https://github.com/foundry-rs/forge-std[forge-std] version 1.8.0 or higher.
 
 == Before Running
 
-This library uses the https://docs.openzeppelin.com/upgrades-plugins/1.x/api-core[OpenZeppelin Upgrades CLI] for upgrade safety validations, which are run by default during deployments and upgrades.
+This library uses the https://docs.openzeppelin.com/upgrades-plugins/api-core[OpenZeppelin Upgrades CLI] for upgrade safety validations, which are run by default during deployments and upgrades.
 
 If you want to be able to run upgrade safety validations, the following are needed:
 
@@ -73,7 +101,7 @@ extra_output = ["storageLayout"]
 ----
 
 [start=3]
-3. If you are upgrading your contract from a previous version, add the `@custom:oz-upgrades-from <reference>` annotation to the new version of your contract according to https://docs.openzeppelin.com/upgrades-plugins/1.x/api-core#define-reference-contracts[Define Reference Contracts] or specify the `referenceContract` option when calling the library's functions.
+3. If you are upgrading your contract from a previous version, add the `@custom:oz-upgrades-from <reference>` annotation to the new version of your contract according to https://docs.openzeppelin.com/upgrades-plugins/api-core#define-reference-contracts[Define Reference Contracts] or specify the `referenceContract` option when calling the library's functions.
 
 4. Run `forge clean` before running your Foundry script or tests, or include the `--force` option when running `forge script` or `forge test`.
 

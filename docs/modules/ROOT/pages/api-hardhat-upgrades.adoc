@@ -36,6 +36,10 @@ The following options are common to some functions.
 * `relayerId`: (`string`) When using OpenZeppelin Defender deployments, the ID of the relayer to use for the deployment. Defaults to the relayer configured for your deployment environment on Defender.
 * `salt`: (`string`) When using OpenZeppelin Defender deployments, if this is not set, deployments will be performed using the CREATE opcode. If this is set, deployments will be performed using the CREATE2 opcode with the provided salt. Note that deployments using a Safe are done using CREATE2 and require a salt. **Warning:** CREATE2 affects `msg.sender` behavior. See https://docs.openzeppelin.com/defender/tutorial/deploy#deploy-caveat[Caveats] for more information.
 * `metadata`: (`{ commitHash?: string; tag?: string; [k: string]: any; }`) When using OpenZeppelin Defender deployments, you can use this to identify, tag, or classify deployments. See https://docs.openzeppelin.com/defender/module/deploy#metadata[Metadata].
+* `proxyFactory`: (`ethers.ContractFactory`) Customizes the ethers contract factory to use for deploying the proxy, allowing a custom proxy contract to be deployed. See https://github.com/OpenZeppelin/openzeppelin-upgrades/blob/master/packages/plugin-hardhat/src/utils/factories.ts[factories.ts] for the default contract factory for each kind of proxy.
+** *Since:* `@openzeppelin/hardhat-upgrades@3.7.0`
+* `deployFunction`: (`(hre, opts, factory, ...args) => Promise<EthersOrDefenderDeployment>`) Customizes the function used to deploy the proxy. Can be used along with the `proxyFactory` option to override constructor parameters for custom proxy deployments. See https://github.com/OpenZeppelin/openzeppelin-upgrades/blob/master/packages/plugin-hardhat/src/utils/deploy.ts[deploy.ts] for the default deploy function.
+** *Since:* `@openzeppelin/hardhat-upgrades@3.7.0`
 
 Note that the options `unsafeAllow` can also be specified in a more granular way directly in the source code if using Solidity >=0.8.2. See xref:faq.adoc#how-can-i-disable-checks[How can I disable some of the checks?]
 
@@ -65,6 +69,8 @@ async function deployProxy(
     txOverrides?: ethers.Overrides,
     kind?: 'uups' | 'transparent',
     useDefenderDeploy?: boolean,
+    proxyFactory?: ethers.ContractFactory,
+    deployFunction?: () => Promise<EthersOrDefenderDeployment>,
   },
 ): Promise<ethers.Contract>
 ----
@@ -208,6 +214,8 @@ async function deployBeaconProxy(
     initializer?: string | false,
     txOverrides?: ethers.Overrides,
     useDefenderDeploy?: boolean,
+    proxyFactory?: ethers.ContractFactory,
+    deployFunction?: () => Promise<EthersOrDefenderDeployment>,
   },
 ): Promise<ethers.Contract>
 ----
@@ -249,7 +257,7 @@ Forces the import of an existing proxy, beacon, or implementation contract deplo
 
 CAUTION: When importing a proxy or beacon, the `deployedImpl` argument must be the contract factory of the *current* implementation contract version that is being used, not the version that you are planning to upgrade to.
 
-Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
+Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
 
 *Parameters:*
 

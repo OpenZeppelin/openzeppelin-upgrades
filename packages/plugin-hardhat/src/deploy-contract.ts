@@ -1,42 +1,49 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract } from 'ethers';
+import type { ContractFactory } from 'ethers';
 
-import { deploy, DeployContractOptions, DeployTransaction } from './utils';
+import { deploy, DeployContractOptions, DeployTransaction, EthersOrDefenderDeployment } from './utils';
 import { DeployData, getDeployData } from './utils/deploy-impl';
 import { enableDefender } from './defender/utils';
 import {
-  Deployment,
-  RemoteDeploymentId,
   getContractNameAndRunValidation,
   inferProxyKind,
   UpgradesError,
   inferInitializable,
+  Deployment,
+  RemoteDeploymentId,
 } from '@openzeppelin/upgrades-core';
 import { getContractInstance } from './utils/contract-instance';
+import { ContractTypeOfFactory } from './type-extensions';
 
 export interface DeployContractFunction {
-  (Contract: ContractFactory, args?: unknown[], opts?: DeployContractOptions): Promise<Contract>;
-  (Contract: ContractFactory, opts?: DeployContractOptions): Promise<Contract>;
+  <F extends ContractFactory>(
+    Contract: F,
+    args?: unknown[],
+    opts?: DeployContractOptions,
+  ): Promise<ContractTypeOfFactory<F>>;
+  <F extends ContractFactory>(
+    Contract: ContractFactory,
+    opts?: DeployContractOptions,
+  ): Promise<ContractTypeOfFactory<F>>;
 }
 
 async function deployNonUpgradeableContract(
   hre: HardhatRuntimeEnvironment,
   Contract: ContractFactory,
   opts: DeployContractOptions,
-) {
+): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> {
   const deployData = await getDeployData(hre, Contract, opts);
 
   if (!opts.unsafeAllowDeployContract) {
     assertNonUpgradeable(deployData);
   }
 
-  const deployment: Required<Deployment> & DeployTransaction & RemoteDeploymentId = await deploy(
+  const deployment: EthersOrDefenderDeployment = await deploy(
     hre,
     opts,
     Contract,
     ...deployData.fullOpts.constructorArgs,
   );
-
   return deployment;
 }
 
@@ -54,11 +61,11 @@ function assertNonUpgradeable(deployData: DeployData) {
 }
 
 export function makeDeployContract(hre: HardhatRuntimeEnvironment, defenderModule: boolean): DeployContractFunction {
-  return async function deployContract(
-    Contract,
+  return async function deployContract<F extends ContractFactory>(
+    Contract: F,
     args: unknown[] | DeployContractOptions = [],
     opts: DeployContractOptions = {},
-  ) {
+  ): Promise<ContractTypeOfFactory<F>> {
     if (!Array.isArray(args)) {
       opts = args;
       args = [];
