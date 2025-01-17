@@ -50,6 +50,8 @@ type CompilerOutputWithMetadata = CompilerOutputContract & {
   metadata?: string;
 };
 
+const ORIGIN_HARDHAT: DeployContractRequest['origin'] = 'Hardhat';
+
 export async function defenderDeploy(
   hre: HardhatRuntimeEnvironment,
   factory: ContractFactory,
@@ -109,6 +111,7 @@ export async function defenderDeploy(
     txOverrides: parseTxOverrides(opts.txOverrides),
     libraries: contractInfo.libraries,
     metadata: opts.metadata,
+    origin: ORIGIN_HARDHAT,
   };
 
   let deploymentResponse: DeploymentResponse;

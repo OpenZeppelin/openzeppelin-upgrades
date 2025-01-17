@@ -1,5 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ContractFactory, Contract } from 'ethers';
+import type { ContractFactory } from 'ethers';
 
 import {
   Manifest,
@@ -25,18 +25,23 @@ import {
 import { enableDefender } from './defender/utils';
 import { getContractInstance } from './utils/contract-instance';
 import { getInitialOwner } from './utils/initial-owner';
+import { ContractTypeOfFactory } from './type-extensions';
 
 export interface DeployFunction {
-  (ImplFactory: ContractFactory, args?: unknown[], opts?: DeployProxyOptions): Promise<Contract>;
-  (ImplFactory: ContractFactory, opts?: DeployProxyOptions): Promise<Contract>;
+  <F extends ContractFactory>(
+    ImplFactory: F,
+    args?: unknown[],
+    opts?: DeployProxyOptions,
+  ): Promise<ContractTypeOfFactory<F>>;
+  <F extends ContractFactory>(ImplFactory: F, opts?: DeployProxyOptions): Promise<ContractTypeOfFactory<F>>;
 }
 
 export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: boolean): DeployFunction {
-  return async function deployProxy(
-    ImplFactory: ContractFactory,
+  return async function deployProxy<F extends ContractFactory>(
+    ImplFactory: F,
     args: unknown[] | DeployProxyOptions = [],
     opts: DeployProxyOptions = {},
-  ) {
+  ): Promise<ContractTypeOfFactory<F>> {
     if (!Array.isArray(args)) {
       opts = args;
       args = [];

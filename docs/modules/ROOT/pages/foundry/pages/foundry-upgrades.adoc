@@ -83,7 +83,7 @@ This library requires https://github.com/foundry-rs/forge-std[forge-std] version
 
 == Before Running
 
-This library uses the https://docs.openzeppelin.com/upgrades-plugins/1.x/api-core[OpenZeppelin Upgrades CLI] for upgrade safety validations, which are run by default during deployments and upgrades.
+This library uses the https://docs.openzeppelin.com/upgrades-plugins/api-core[OpenZeppelin Upgrades CLI] for upgrade safety validations, which are run by default during deployments and upgrades.
 
 If you want to be able to run upgrade safety validations, the following are needed:
 
@@ -101,7 +101,7 @@ extra_output = ["storageLayout"]
 ----
 
 [start=3]
-3. If you are upgrading your contract from a previous version, add the `@custom:oz-upgrades-from <reference>` annotation to the new version of your contract according to https://docs.openzeppelin.com/upgrades-plugins/1.x/api-core#define-reference-contracts[Define Reference Contracts] or specify the `referenceContract` option when calling the library's functions.
+3. If you are upgrading your contract from a previous version, add the `@custom:oz-upgrades-from <reference>` annotation to the new version of your contract according to https://docs.openzeppelin.com/upgrades-plugins/api-core#define-reference-contracts[Define Reference Contracts] or specify the `referenceContract` option when calling the library's functions.
 
 4. Run `forge clean` before running your Foundry script or tests, or include the `--force` option when running `forge script` or `forge test`.
 

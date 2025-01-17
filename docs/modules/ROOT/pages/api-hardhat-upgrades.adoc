@@ -261,7 +261,7 @@ Forces the import of an existing proxy, beacon, or implementation contract deplo
 
 CAUTION: When importing a proxy or beacon, the `deployedImpl` argument must be the contract factory of the *current* implementation contract version that is being used, not the version that you are planning to upgrade to.
 
-Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/1.x/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
+Use this function to recreate a lost https://docs.openzeppelin.com/upgrades-plugins/network-files[network file] by importing previous deployments, or to register proxies or beacons for upgrading even if they were not originally deployed by this plugin. Supported for UUPS, Transparent, and Beacon proxies, as well as beacons and implementation contracts.
 
 *Parameters:*
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.9.0 (2025-01-13)
+
+- Update Defender SDK to v2.1.0, set Hardhat origin for Defender deployments. ([#1111](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1111))
+
+## 3.8.0 (2024-12-19)
+
+- Support TypeChain in `deployProxy`, `upgradeProxy`, `deployBeaconProxy`, and `defender.deployContract`. ([#1099](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1099))
+
 ## 3.7.0 (2024-12-04)
 
 - Add `proxyFactory` and `deployFunction` options which can be used to deploy a custom proxy contract. ([#1104](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1104))

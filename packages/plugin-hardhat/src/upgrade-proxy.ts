@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import type { ethers, ContractFactory, Contract, Signer } from 'ethers';
+import type { ethers, ContractFactory, Signer } from 'ethers';
 import debug from './utils/debug';
 import { getAdminAddress, getCode, getUpgradeInterfaceVersion, isEmptySlot } from '@openzeppelin/upgrades-core';
 
@@ -18,19 +18,24 @@ import {
   attachProxyAdminV4,
   attachProxyAdminV5,
 } from './utils/attach-abi';
+import { ContractTypeOfFactory } from './type-extensions';
 
-export type UpgradeFunction = (
+export type UpgradeFunction = <F extends ContractFactory>(
   proxy: ContractAddressOrInstance,
-  ImplFactory: ContractFactory,
+  ImplFactory: F,
   opts?: UpgradeProxyOptions,
-) => Promise<Contract>;
+) => Promise<ContractTypeOfFactory<F>>;
 
 export function makeUpgradeProxy(
   hre: HardhatRuntimeEnvironment,
   defenderModule: boolean,
   log = debug,
 ): UpgradeFunction {
-  return async function upgradeProxy(proxy, ImplFactory, opts: UpgradeProxyOptions = {}) {
+  return async function upgradeProxy<F extends ContractFactory>(
+    proxy: ContractAddressOrInstance,
+    ImplFactory: F,
+    opts: UpgradeProxyOptions = {},
+  ): Promise<ContractTypeOfFactory<F>> {
     disableDefender(hre, defenderModule, opts, upgradeProxy.name);
 
     const proxyAddress = await getContractAddress(proxy);
@@ -44,7 +49,7 @@ export function makeUpgradeProxy(
     const inst = attach(ImplFactory, proxyAddress);
     // @ts-ignore Won't be readonly because inst was created through attach.
     inst.deployTransaction = upgradeTx;
-    return inst;
+    return inst as ContractTypeOfFactory<F>;
   };
 
   type Upgrader = (nextImpl: string, call?: string) => Promise<ethers.TransactionResponse>;
