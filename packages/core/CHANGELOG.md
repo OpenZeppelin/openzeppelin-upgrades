@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update dependencies. ([#1096](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1096))
+
 ## 1.41.0 (2024-11-25)
 
 - Update Slang dependency to 0.18.3. ([#1102](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1102))
