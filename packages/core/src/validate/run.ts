@@ -24,6 +24,7 @@ import { getStorageLocationAnnotation, isNamespaceSupported } from '../storage/n
 import { UpgradesError } from '../error';
 import { assertUnreachable } from '../utils/assert';
 import { logWarning } from '../utils/log';
+import { getInitializerExceptions } from './run/initializer';
 
 export type ValidationRunData = Record<string, ContractValidation>;
 
@@ -50,13 +51,20 @@ export const errorKinds = [
   'selfdestruct',
   'missing-public-upgradeto',
   'internal-function-storage',
+  'missing-initializer',
+  'missing-initializer-call',
+  'duplicate-initializer-call',
+  'incorrect-initializer-order',
 ] as const;
+
+export const convertToWarnings: (typeof errorKinds)[number][] = ['incorrect-initializer-order'] as const;
 
 export type ValidationError =
   | ValidationErrorConstructor
   | ValidationErrorOpcode
   | ValidationErrorWithName
-  | ValidationErrorUpgradeability;
+  | ValidationErrorUpgradeability
+  | ValidationExceptionInitializer;
 
 interface ValidationErrorBase {
   src: string;
@@ -73,6 +81,33 @@ interface ValidationErrorWithName extends ValidationErrorBase {
     | 'enum-definition'
     | 'internal-function-storage';
 }
+
+interface ValidationErrorMissingInitializer extends ValidationErrorBase {
+  kind: 'missing-initializer';
+}
+
+interface ValidationErrorMissingInitializerCall extends ValidationErrorBase {
+  kind: 'missing-initializer-call';
+  parentContracts: string[];
+}
+
+interface ValidationErrorDuplicateInitializerCall extends ValidationErrorBase {
+  kind: 'duplicate-initializer-call';
+  parentInitializer: string;
+  parentContract: string;
+}
+
+interface ValidationWarningIncorrectInitializerOrder extends ValidationErrorBase {
+  kind: 'incorrect-initializer-order';
+  expectedLinearization: string[];
+  foundOrder: string[];
+}
+
+export type ValidationExceptionInitializer =
+  | ValidationErrorMissingInitializer
+  | ValidationErrorMissingInitializerCall
+  | ValidationErrorDuplicateInitializerCall
+  | ValidationWarningIncorrectInitializerOrder;
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
   kind: 'constructor';
@@ -125,7 +160,7 @@ function skipCheckReachable(error: string, node: Node): boolean {
   return getAllowed(node, true).includes(error);
 }
 
-function skipCheck(error: string, node: Node): boolean {
+export function skipCheck(error: ValidationError['kind'], node: Node): boolean {
   // skip both allow and allow-reachable errors in the lexical scope
   return getAllowed(node, false).includes(error) || getAllowed(node, true).includes(error);
 }
@@ -209,6 +244,7 @@ export function validate(
           // https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/52
           ...getLinkingErrors(contractDef, bytecode),
           ...getInternalFunctionStorageErrors(contractDef, deref, decodeSrc),
+          ...getInitializerExceptions(contractDef, deref, decodeSrc),
         ];
 
         validation[key].layout = extractStorageLayout(

@@ -1,6 +1,7 @@
-import { ValidationError } from './run';
+import { ValidationError, convertToWarnings } from './run';
 import { ProxyDeployment } from '../manifest';
 import { logWarning } from '../utils/log';
+import { describeError } from './report';
 
 // Backwards compatibility
 export { silenceWarnings } from '../utils/log';
@@ -30,7 +31,7 @@ export interface StandaloneValidationOptions extends ProxyKindOption {
   unsafeAllowLinkedLibraries?: boolean;
 
   /**
-   * Selectively disable one or more validation errors.
+   * Selectively disable one or more validation errors or warnings.
    */
   unsafeAllow?: ValidationError['kind'][];
 }
@@ -50,7 +51,11 @@ export interface ValidationOptions extends StandaloneValidationOptions {
   unsafeSkipStorageCheck?: boolean;
 }
 
-export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], string[]> = {
+/**
+ * Warnings to display when a validation error occurs but is allowed.
+ * `null` indicates that the original message should be displayed.
+ */
+export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], string[] | null> = {
   'state-variable-assignment': [
     `You are using the \`unsafeAllow.state-variable-assignment\` flag.`,
     `The value will be stored in the implementation and not the proxy.`,
@@ -81,6 +86,19 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
     `Internal functions are code pointers which will no longer be valid after an upgrade.`,
     `Make sure you reassign internal functions in storage variables during upgrades.`,
   ],
+  'missing-initializer': [
+    `You are using the \`unsafeAllow.missing-initializer\` flag.`,
+    `Make sure you have manually checked that the contract has an initializer and that it correctly calls all parent initializers.`,
+  ],
+  'missing-initializer-call': [
+    `You are using the \`unsafeAllow.missing-initializer-call\` flag.`,
+    `Make sure you have manually checked that the contract initializer calls all parent initializers.`,
+  ],
+  'duplicate-initializer-call': [
+    `You are using the \`unsafeAllow.duplicate-initializer-call\` flag.`,
+    `Make sure you have manually checked that the contract initializer calls each parent initializer only once.`,
+  ],
+  'incorrect-initializer-order': null,
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {
@@ -97,6 +115,7 @@ export function withValidationDefaults(opts: ValidationOptions): Required<Valida
   if (unsafeAllowLinkedLibraries) {
     unsafeAllow.push('external-library-linking');
   }
+
   const kind = opts.kind ?? 'transparent';
 
   const unsafeAllowRenames = opts.unsafeAllowRenames ?? false;
@@ -123,18 +142,24 @@ export function processExceptions(
     errors = errors.filter(error => error.kind !== 'missing-public-upgradeto');
   }
 
-  for (const [errorType, errorDescription] of Object.entries(ValidationErrorUnsafeMessages)) {
-    if (unsafeAllow.includes(errorType as ValidationError['kind'])) {
-      let exceptionsFound = false;
+  for (const [key, errorDescription] of Object.entries(ValidationErrorUnsafeMessages)) {
+    const errorType = key as ValidationError['kind'];
+    const skip = unsafeAllow.includes(errorType);
+    const warn = convertToWarnings.includes(errorType);
 
-      errors = errors.filter(error => {
-        const isException = errorType === error.kind;
-        exceptionsFound = exceptionsFound || isException;
-        return !isException;
-      });
+    if (skip || warn) {
+      const errorsWithType = errors.filter(error => error.kind === errorType);
+      errors = errors.filter(error => !errorsWithType.includes(error));
 
-      if (exceptionsFound && errorDescription) {
-        logWarning(`Potentially unsafe deployment of ${contractName}`, errorDescription);
+      // Display message about the exception, unless it is a warning that the user has chosen to skip
+      if (errorsWithType.length > 0 && !(skip && warn)) {
+        if (errorDescription !== null) {
+          logWarning(`Potentially unsafe deployment of ${contractName}`, errorDescription);
+        } else {
+          for (const error of errorsWithType) {
+            logWarning(`Potentially unsafe deployment of ${contractName}`, [describeError(error)]);
+          }
+        }
       }
     }
   }

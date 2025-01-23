@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.42.0 (2025-01-23)
 
 - Update dependencies. ([#1096](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1096))
+- Detect issues in parent initializer calls. ([#1095](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1095))
 
 ## 1.41.0 (2024-11-25)
 
