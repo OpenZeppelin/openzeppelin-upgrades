@@ -124,7 +124,7 @@ function getParentsNotInitializedByOtherParents(
           (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
         ) {
           const referencedFn = fnCall.expression.referencedDeclaration;
-          if (referencedFn) {
+          if (referencedFn && referencedFn > 0) {
             const earlierParents = remainingParents.slice(0, remainingParents.indexOf(parent));
             const callsEarlierParentInitializer = earlierParents.find(base =>
               parentNameToInitializersMap.get(base)!.some(init => init.id === referencedFn),
@@ -177,7 +177,7 @@ function* getInitializerCallExceptions(
     ) {
       let recursiveFunctionIds: number[] = [];
       const referencedFn = fnCall.expression.referencedDeclaration;
-      if (referencedFn) {
+      if (referencedFn && referencedFn > 0) {
         recursiveFunctionIds = getRecursiveFunctionIds(referencedFn, deref);
       }
 
@@ -284,7 +284,7 @@ function getRecursiveFunctionIds(referencedFn: number, deref: ASTDereferencer, v
       (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
     ) {
       const referencedId = fnCall.expression.referencedDeclaration;
-      if (referencedId) {
+      if (referencedId && referencedId > 0) {
         result.push(...getRecursiveFunctionIds(referencedId, deref, visited));
       }
     }
