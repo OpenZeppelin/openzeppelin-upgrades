@@ -263,6 +263,21 @@ contract InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder is A, B, C, Par
   }
 }
 
+contract WithRequire_Ok is Parent__OnlyInitializingModifier {
+  uint y;
+  function initialize(bool foo) initializer public {
+    require(foo, "foo should be true");
+    __Parent_init();
+  }
+}
+
+contract WithRequire_Bad is Parent__OnlyInitializingModifier {
+  uint y;
+  function initialize(bool foo) initializer public {
+    require(foo, "foo should be true");
+  }
+}
+
 // ==== Initializer visibility ====
 
 abstract contract Parent_Private is Initializable {

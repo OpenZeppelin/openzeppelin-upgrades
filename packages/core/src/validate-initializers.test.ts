@@ -124,6 +124,12 @@ testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Call', 'transparent');
 testOverride('InitializationOrder_Duplicate_Bad', 'transparent', { unsafeAllow: ['duplicate-initializer-call'] });
 testAccepts('InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder', 'transparent'); // warn 'Expected initializers to be called for parent contracts in the following order: A, B, C'
 
+testAccepts('WithRequire_Ok', 'transparent');
+testRejects('WithRequire_Bad', 'transparent', {
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent__OnlyInitializingModifier`'],
+  count: 1,
+});
+
 testAccepts('Child_Of_Private_Ok', 'transparent');
 testAccepts('Child_Of_Public_Ok', 'transparent');
 testRejects('Child_Of_Public_MissingCall_Bad', 'transparent', {
