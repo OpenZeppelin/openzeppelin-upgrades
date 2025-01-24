@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.42.1 (2025-01-24)
+
+- Fix `ASTDereferencerError` when validating initializers.
+
 ## 1.42.0 (2025-01-23)
 
 - Update dependencies. ([#1096](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1096))
