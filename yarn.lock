@@ -6464,10 +6464,10 @@ undici@^5.14.0:
   dependencies:
     "@fastify/busboy" "^2.0.0"
 
-undici@^6.11.1:
-  version "6.21.1"
-  resolved "https://registry.yarnpkg.com/undici/-/undici-6.21.1.tgz#336025a14162e6837e44ad7b819b35b6c6af0e05"
-  integrity sha512-q/1rj5D0/zayJB2FraXdaWxbhWiNKDvu8naDT2dl1yTlvJp4BLtOcp2a5BvgGNQpYYJzau7tf1WgKv3b+7mqpQ==
+undici@^7.0.0:
+  version "7.2.3"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-7.2.3.tgz#e3e8ff2ddee1c3ab624b3a4f275093cff4b2fc77"
+  integrity sha512-2oSLHaDalSt2/O/wHA9M+/ZPAOcU2yrSP/cdBYJ+YxZskiPYDSqHbysLSlD7gq3JMqOoJI5O31RVU3BxX/MnAA==
 
 unfetch@^4.2.0:
   version "4.2.0"
