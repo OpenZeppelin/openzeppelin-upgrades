@@ -302,6 +302,13 @@ function checkNamespaceSolidityVersion(source: string, solcVersion?: string, sol
 }
 
 function checkNamespacesOutsideContract(source: string, solcOutput: SolcOutput, decodeSrc: SrcDecoder) {
+  if (solcOutput.sources[source].ast === undefined) {
+    logWarning(`AST is undefined for source ${source}`, [
+      'Skipping namespace checks for this source.',
+    ]);
+    return;
+  }
+
   for (const node of solcOutput.sources[source].ast.nodes) {
     if (isNodeType('StructDefinition', node)) {
       // Namespace struct outside contract - error

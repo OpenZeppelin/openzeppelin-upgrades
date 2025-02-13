@@ -109,3 +109,17 @@ test('findSpecifiedContracts - requireReference option without contract', async 
     );
   }
 });
+
+test('validate upgrade safety with undefined ast', async t => {
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
+
+  // Modify buildInfo to have undefined ast
+  buildInfo.output.sources['contracts/test/cli/Validate.sol'].ast = undefined;
+
+  await fs.mkdir('validate-upgrade-safety-undefined-ast');
+  await fs.writeFile('validate-upgrade-safety-undefined-ast/1.json', JSON.stringify(buildInfo));
+
+  const report = await validateUpgradeSafety('validate-upgrade-safety-undefined-ast');
+  t.false(report.ok);
+  t.snapshot(report.explain());
+});
