@@ -1,3 +1,3 @@
 [submodule "submodules/openzeppelin-foundry-upgrades"]
 	path = submodules/openzeppelin-foundry-upgrades
-	url = https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades
+	url = https://github.com/CoveMB/openzeppelin-foundry-upgrades
