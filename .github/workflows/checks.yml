@@ -4,6 +4,8 @@ on:
   push:
     branches: [master]
   pull_request: {}
+  repository_dispatch:
+    types: [custom-event]
 
 concurrency:
   group: checks-${{ github.ref }}
@@ -53,3 +55,16 @@ jobs:
       run: yarn coverage
 
     - uses: codecov/codecov-action@v5
+
+  update-foundry-submodule:
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up environment
+      uses: ./.github/actions/setup
+
+    - name: Run triggered job
+      run: echo "Running tests from ${{ github.event.client_payload }}"
