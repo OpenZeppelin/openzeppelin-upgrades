@@ -266,7 +266,7 @@ WARNING: `UnsafeUpgrades` is not recommended for use in Forge scripts. It does n
 
 == Deploying and Verifying
 
-Run your script with `forge script` to broadcast and deploy. See Foundry's https://book.getfoundry.sh/tutorials/solidity-scripting[Solidity Scripting] guide.
+Run your script with `forge script` to broadcast and deploy. See Foundry's https://book.getfoundry.sh/guides/scripting-with-solidity[Solidity Scripting] guide.
 
 IMPORTANT: Include the `--sender <ADDRESS>` flag for the `forge script` command when performing upgrades, specifying an address that owns the proxy or proxy admin. Otherwise, `OwnableUnauthorizedAccount` errors will occur.
 
