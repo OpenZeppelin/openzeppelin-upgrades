@@ -75,17 +75,17 @@ jobs:
         git reset --hard origin/main
 
     - name: Regenerate docs
-      run: yarn docs
+      run: yarn docs:foundry:ci
 
-    - name: Check for changes in docs/
+    - name: Check for changes in docs/modules/ROOT/pages/foundry/
       id: check_changes
       run: |
-        [ -n "$(git diff --name-only HEAD -- docs/)" ] && echo "SHOULD_COMMIT_DOC_UPDATE=true" >> $GITHUB_ENV || true
+        [ -n "$(git diff --name-only HEAD -- docs/modules/ROOT/pages/foundry/)" ] && echo "SHOULD_COMMIT_DOC_UPDATE=true" >> $GITHUB_ENV || true
 
     - name: Commit and push changes
       if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
       run: |
-        git add docs/
+        git add docs/modules/ROOT/pages/foundry/
         git commit -m "[CI] Update Foundry Upgrades plugin docs"
 
     - name: Create a Pull Request for docs changes
