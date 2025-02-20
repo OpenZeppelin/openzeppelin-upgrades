@@ -82,6 +82,12 @@ jobs:
       run: |
         [ -n "$(git diff --name-only HEAD -- docs/modules/ROOT/pages/foundry/)" ] && echo "SHOULD_COMMIT_DOC_UPDATE=true" >> $GITHUB_ENV || true
 
+    - name: Set Git identity
+      if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "github-actions@github.com"
+      
     - name: Commit and push changes
       if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
       run: |
