@@ -80,7 +80,7 @@ jobs:
     - name: Check for changes in docs/
       id: check_changes
       run: |
-        [ -n "$(git diff --name-only HEAD -- docs/)" ] && echo "SHOULD_COMMIT_DOC_UPDATE=true" >> $GITHUB_ENV
+        [ -n "$(git diff --name-only HEAD -- docs/)" ] && echo "SHOULD_COMMIT_DOC_UPDATE=true" >> $GITHUB_ENV || true
 
     - name: Commit and push changes
       if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
