@@ -64,6 +64,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true 
+        fetch-depth: 0
 
     - name: Set up environment
       uses: ./.github/actions/setup
@@ -87,14 +88,23 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "github-actions@github.com"
-      
-    - name: Commit and push changes
+
+    - name: Create new branch, commit and push changes
       if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
       run: |
+        BRANCH_NAME="ci/update-foundry-docs-$(date +'%Y-%m-%d-%H%M%S')-${{ github.run_id }}"
+        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+        git checkout -b $BRANCH_NAME
         git add docs/modules/ROOT/pages/foundry/
         git commit -m "[CI] Update Foundry Upgrades plugin docs"
+        git push origin $BRANCH_NAME
 
     - name: Create a Pull Request for docs changes
       if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh pr create --title "[CI] Update Foundry Upgrades plugin docs" --body "[CI] This PR updates the docs for the Foundry Upgrades plugin" --base main --head $GITHUB_REF
+        gh pr create --title "[CI] Update Foundry Upgrades plugin docs" \
+                   --body "[CI] This PR updates the docs for the Foundry Upgrades plugin" \
+                   --base main \
+                   --head $BRANCH_NAME
