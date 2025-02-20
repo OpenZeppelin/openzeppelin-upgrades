@@ -100,11 +100,18 @@ jobs:
         git push origin $BRANCH_NAME
 
     - name: Create a Pull Request for docs changes
+      id: create_pull_request
       if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh pr create --title "[CI] Update Foundry Upgrades plugin docs" \
-                   --body "[CI] This PR updates the docs for the Foundry Upgrades plugin" \
-                   --base main \
-                   --head $BRANCH_NAME
+                 --body "[CI] This PR updates the docs for the Foundry Upgrades plugin" \
+                 --base master \
+                 --head $BRANCH_NAME || echo "PR creation failed"
+
+    - name: Clean up branch if PR creation fails
+      if: steps.create_pull_request.outcome == 'failure'
+      run: |
+        git push origin --delete $BRANCH_NAME
+               
