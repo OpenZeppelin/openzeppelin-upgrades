@@ -106,11 +106,11 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh pr create --title "[CI] Update Foundry Upgrades plugin docs" \
-                 --body "[CI] This PR updates the docs for the Foundry Upgrades plugin" \
+                 --body "This Pull Request updates the docs for the Foundry Upgrades plugin" \
                  --base master \
-                 --head $BRANCH_NAME || echo "PR creation failed"
+                 --head $BRANCH_NAME || echo "Pull Request creation failed"
 
-    - name: Clean up branch if PR creation fails
+    - name: Clean up branch if Pull Request creation fails
       if: steps.create_pull_request.outcome == 'failure'
       run: |
         git push origin --delete $BRANCH_NAME
