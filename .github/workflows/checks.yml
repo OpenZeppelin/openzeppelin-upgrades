@@ -5,7 +5,7 @@ on:
     branches: [master]
   pull_request: {}
   repository_dispatch:
-    types: [custom-event]
+    types: [update-foundry-submodule]
 
 concurrency:
   group: checks-${{ github.ref }}
@@ -62,9 +62,32 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true 
 
     - name: Set up environment
       uses: ./.github/actions/setup
 
-    - name: Run triggered job
-      run: echo "Running tests from ${{ github.event.client_payload }}"
+    - name: Update submodule
+      run: |
+        cd submodules/openzeppelin-foundry-upgrades
+        git pull origin main
+
+    - name: Regenerate docs
+      run: yarn docs
+
+    - name: Check for changes in docs/
+      id: check_changes
+      run: |
+        [ -n "$(git diff --name-only HEAD -- docs/)" ] && echo "SHOULD_COMMIT_DOC_UPDATE=true" >> $GITHUB_ENV
+
+    - name: Commit and push changes
+      if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
+      run: |
+        git add docs/
+        git commit -m "[CI] Update Foundry Upgrades plugin docs"
+
+    - name: Create a Pull Request for docs changes
+      if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
+      run: |
+        gh pr create --title "[CI] Update Foundry Upgrades plugin docs" --body "[CI] This PR updates the docs for the Foundry Upgrades plugin" --base main --head $GITHUB_REF
