@@ -86,8 +86,8 @@ jobs:
     - name: Set Git identity
       if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
       run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "github-actions@github.com"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
     - name: Create new branch, commit and push changes
       if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
