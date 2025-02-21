@@ -4,6 +4,8 @@ on:
   push:
     branches: [master]
   pull_request: {}
+  repository_dispatch:
+    types: [update-foundry-submodule-docs]
 
 concurrency:
   group: checks-${{ github.ref }}
@@ -53,3 +55,63 @@ jobs:
       run: yarn coverage
 
     - uses: codecov/codecov-action@v5
+
+  update-foundry-submodule-docs:
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true 
+        fetch-depth: 0
+
+    - name: Set up environment
+      uses: ./.github/actions/setup
+
+    - name: Update submodule
+      run: |
+        cd submodules/openzeppelin-foundry-upgrades
+        git fetch origin main
+        git reset --hard origin/main
+
+    - name: Regenerate docs
+      run: yarn docs:foundry:ci
+
+    - name: Check for changes in docs/modules/ROOT/pages/foundry/
+      id: check_changes
+      run: |
+        [ -n "$(git diff --name-only HEAD -- docs/modules/ROOT/pages/foundry/)" ] && echo "SHOULD_COMMIT_DOC_UPDATE=true" >> $GITHUB_ENV || true
+
+    - name: Set Git identity
+      if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+    - name: Create new branch, commit and push changes
+      if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
+      run: |
+        BRANCH_NAME="ci/update-foundry-docs-$(date +'%Y-%m-%d-%H%M%S')-${{ github.run_id }}"
+        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+        git checkout -b $BRANCH_NAME
+        git add docs/modules/ROOT/pages/foundry/
+        git commit -m "[CI] Update Foundry Upgrades plugin docs"
+        git push origin $BRANCH_NAME
+
+    - name: Create a Pull Request for docs changes
+      id: create_pull_request
+      if: env.SHOULD_COMMIT_DOC_UPDATE == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh pr create --title "[CI] Update Foundry Upgrades plugin docs" \
+                 --body "This Pull Request updates the docs for the Foundry Upgrades plugin" \
+                 --base master \
+                 --head $BRANCH_NAME || echo "Pull Request creation failed"
+
+    - name: Clean up branch if Pull Request creation fails
+      if: steps.create_pull_request.outcome == 'failure'
+      run: |
+        git push origin --delete $BRANCH_NAME
+               
