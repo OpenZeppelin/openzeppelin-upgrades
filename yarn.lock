@@ -670,10 +670,10 @@
     "@babel/helper-validator-identifier" "^7.24.7"
     to-fast-properties "^2.0.0"
 
-"@bytecodealliance/preview2-shim@0.17.0":
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/@bytecodealliance/preview2-shim/-/preview2-shim-0.17.0.tgz#9bc1cadbb9f86c446c6f579d3431c08a06a6672e"
-  integrity sha512-JorcEwe4ud0x5BS/Ar2aQWOQoFzjq/7jcnxYXCvSMh0oRm0dQXzOA+hqLDBnOMks1LLBA7dmiLLsEBl09Yd6iQ==
+"@bytecodealliance/preview2-shim@0.17.1":
+  version "0.17.1"
+  resolved "https://registry.yarnpkg.com/@bytecodealliance/preview2-shim/-/preview2-shim-0.17.1.tgz#369b4745387dd700ce13d377d95f8d1045942844"
+  integrity sha512-h1qLL0TN5KXk/zagY2BtbZuDX6xYjz4Br9RZXEa0ID4UpiPc0agUMhTdz9r89G4vX5SU/tqBg1A6UNv2+DJ5pg==
 
 "@eslint-community/eslint-utils@^4.2.0", "@eslint-community/eslint-utils@^4.4.0":
   version "4.4.0"
@@ -1152,12 +1152,12 @@
     table "^6.8.0"
     undici "^5.14.0"
 
-"@nomicfoundation/slang@^0.18.3":
-  version "0.18.3"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang/-/slang-0.18.3.tgz#976b6c3820081cebf050afbea434038aac9313cc"
-  integrity sha512-YqAWgckqbHM0/CZxi9Nlf4hjk9wUNLC9ngWCWBiqMxPIZmzsVKYuChdlrfeBPQyvQQBoOhbx+7C1005kLVQDZQ==
+"@nomicfoundation/slang@^0.19.0":
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang/-/slang-0.19.0.tgz#70102e3d39e2f1002f92f91f5e98e8096b83d356"
+  integrity sha512-bOKJnc5/Q4Fbkm9OkaPItri81DGjZbzPeeGKbqUefPftEgGsFMtAqj+vSfT0fwGGuhoGXkGXk7SZ5oTpNE7xGg==
   dependencies:
-    "@bytecodealliance/preview2-shim" "0.17.0"
+    "@bytecodealliance/preview2-shim" "0.17.1"
 
 "@nomicfoundation/solidity-analyzer-darwin-arm64@0.1.2":
   version "0.1.2"
