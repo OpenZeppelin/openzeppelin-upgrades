@@ -95,7 +95,7 @@ jobs:
         BRANCH_NAME="ci/update-foundry-docs-$(date +'%Y-%m-%d-%H%M%S')-${{ github.run_id }}"
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
         git checkout -b $BRANCH_NAME
-        git add docs/modules/ROOT/pages/foundry/
+        git add docs/modules/ROOT/pages/foundry/ submodules/openzeppelin-foundry-upgrades/
         git commit -m "[CI] Update Foundry Upgrades plugin docs"
         git push origin $BRANCH_NAME
 
