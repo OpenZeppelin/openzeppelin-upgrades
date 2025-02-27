@@ -99,6 +99,13 @@ test('recursive struct bad', t => {
   });
 });
 
+test('recursive append struct ok', t => {
+  const v1 = t.context.extractStorageLayout('Recursive_AppendStruct_V1');
+  const v2 = t.context.extractStorageLayout('Recursive_AppendStruct_V2_Ok');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, []);
+});
+
 test('multiple namespaces and regular variables ok', t => {
   const v1 = t.context.extractStorageLayout('MultipleNamespacesAndRegularVariables');
   const v2 = t.context.extractStorageLayout('MultipleNamespacesAndRegularVariablesV2_Ok');

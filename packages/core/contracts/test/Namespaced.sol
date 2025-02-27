@@ -239,3 +239,30 @@ contract UsesInterfaceV2_Bad is InterfaceWithNamespaceV2_Bad {
         }
     }
 }
+
+contract Recursive_AppendStruct_V1 {
+    struct MyStruct {
+        uint256 x;
+        uint256 y;
+    }
+
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        MyStruct s;
+        uint256 a;
+    }
+}
+
+contract Recursive_AppendStruct_V2_Ok {
+    struct MyStruct {
+        uint256 x;
+        uint256 y;
+        uint256 z;
+    }
+
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        MyStruct s;
+        uint256 a;
+    }
+}

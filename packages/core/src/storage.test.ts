@@ -182,6 +182,12 @@ test('storage upgrade with obvious mismatch', t => {
   });
 });
 
+test('storage upgrade append struct', t=> {
+  const v1 = t.context.extractStorageLayout('StorageUpgrade_AppendStruct_V1');
+  const v2_Ok = t.context.extractStorageLayout('StorageUpgrade_AppendStruct_V2_Ok');
+  t.deepEqual(getStorageUpgradeErrors(v1, v2_Ok), []);
+});
+
 test('storage upgrade with structs', t => {
   const v1 = t.context.extractStorageLayout('StorageUpgrade_Struct_V1');
 

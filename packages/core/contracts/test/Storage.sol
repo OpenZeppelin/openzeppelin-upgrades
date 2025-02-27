@@ -129,6 +129,21 @@ contract StorageUpgrade_Delete_V2 {
   address x2;
 }
 
+contract StorageUpgrade_AppendStruct_V1 {
+    struct MyStruct {
+        uint y;
+    }
+    MyStruct s;
+}
+
+contract StorageUpgrade_AppendStruct_V2_Ok {
+    struct MyStruct {
+        uint y;
+        uint x;
+    }
+    MyStruct s;
+}
+
 contract StorageUpgrade_Struct_V1 {
     struct StructInner {
         uint y;
