@@ -256,7 +256,7 @@ Upgrades.upgradeProxy(proxy, "MyContract.sol", "", opts);
 To enable code coverage reports with `forge coverage`, use the following deployment pattern in your tests: instantiate your implementation contracts directly and use the `UnsafeUpgrades` library. For example:
 ```solidity
 address implementation = address(new MyContract());
-address proxy = Upgrades.deployUUPSProxy(
+address proxy = UnsafeUpgrades.deployUUPSProxy(
     implementation,
     abi.encodeCall(MyContract.initialize, ("arguments for the initialize function"))
 );
@@ -266,7 +266,7 @@ WARNING: `UnsafeUpgrades` is not recommended for use in Forge scripts. It does n
 
 == Deploying and Verifying
 
-Run your script with `forge script` to broadcast and deploy. See Foundry's https://book.getfoundry.sh/tutorials/solidity-scripting[Solidity Scripting] guide.
+Run your script with `forge script` to broadcast and deploy. See Foundry's https://book.getfoundry.sh/guides/scripting-with-solidity[Solidity Scripting] guide.
 
 IMPORTANT: Include the `--sender <ADDRESS>` flag for the `forge script` command when performing upgrades, specifying an address that owns the proxy or proxy admin. Otherwise, `OwnableUnauthorizedAccount` errors will occur.
 
