@@ -180,7 +180,7 @@ function* getInitializerCallExceptions(
       if (referencedDeclaration && referencedDeclaration > 0) {
         const referencedNode = tryDerefFunction(deref, referencedDeclaration);
         if (referencedNode !== undefined) {
-          recursiveFunctionIds = getRecursiveFunctionIds(referencedNode, deref);
+          recursiveFunctionIds = getRecursiveFunctionIds(deref, referencedNode);
         }
       }
 
@@ -261,12 +261,12 @@ function* getInitializerCallExceptions(
 /**
  * Gets the IDs of all functions that are recursively called by the given function, including the given function itself at the end of the list.
  *
- * @param functionDef The node of the function definition to start from
  * @param deref AST dereferencer
+ * @param functionDef The node of the function definition to start from
  * @param visited Set of function IDs that have already been visited
  * @returns The IDs of all functions that are recursively called by the given function, including the given function itself at the end of the list.
  */
-function getRecursiveFunctionIds(functionDef: FunctionDefinition, deref: ASTDereferencer, visited?: Set<number>): number[] {
+function getRecursiveFunctionIds(deref: ASTDereferencer, functionDef: FunctionDefinition, visited?: Set<number>): number[] {
   const result: number[] = [];
 
   if (visited === undefined) {
@@ -289,7 +289,7 @@ function getRecursiveFunctionIds(functionDef: FunctionDefinition, deref: ASTDere
       if (referencedDeclaration && referencedDeclaration > 0) {
         const recursiveReferencedNode = tryDerefFunction(deref, referencedDeclaration);
         if (recursiveReferencedNode !== undefined) {
-          result.push(...getRecursiveFunctionIds(recursiveReferencedNode, deref, visited));
+          result.push(...getRecursiveFunctionIds(deref, recursiveReferencedNode, visited));
         }
       }
     }
