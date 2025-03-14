@@ -512,7 +512,10 @@ function setCachedOpcodes(key: number, scope: string, cache: OpcodeCache, errors
   }
 }
 
-export function tryDerefFunction(deref: ASTDereferencer, referencedDeclaration: number): FunctionDefinition | undefined {
+export function tryDerefFunction(
+  deref: ASTDereferencer,
+  referencedDeclaration: number,
+): FunctionDefinition | undefined {
   try {
     return deref(['FunctionDefinition'], referencedDeclaration);
   } catch (e: any) {

@@ -266,7 +266,11 @@ function* getInitializerCallExceptions(
  * @param visited Set of function IDs that have already been visited
  * @returns The IDs of all functions that are recursively called by the given function, including the given function itself at the end of the list.
  */
-function getRecursiveFunctionIds(deref: ASTDereferencer, functionDef: FunctionDefinition, visited?: Set<number>): number[] {
+function getRecursiveFunctionIds(
+  deref: ASTDereferencer,
+  functionDef: FunctionDefinition,
+  visited?: Set<number>,
+): number[] {
   const result: number[] = [];
 
   if (visited === undefined) {
@@ -278,7 +282,8 @@ function getRecursiveFunctionIds(deref: ASTDereferencer, functionDef: FunctionDe
     visited.add(functionDef.id);
   }
 
-  const expressionStatements = functionDef.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
+  const expressionStatements =
+    functionDef.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
   for (const stmt of expressionStatements) {
     const fnCall = stmt.expression;
     if (
