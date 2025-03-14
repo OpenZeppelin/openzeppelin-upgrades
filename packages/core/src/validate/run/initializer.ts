@@ -1,7 +1,7 @@
 import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
 import { ASTDereferencer, findAll } from 'solidity-ast/utils';
 import { SrcDecoder } from '../../src-decoder';
-import { ValidationExceptionInitializer, skipCheck } from '../run';
+import { ValidationExceptionInitializer, skipCheck, tryDerefFunction } from '../run';
 
 /**
  * Reports if this contract is non-abstract and any of the following are true:
@@ -176,9 +176,12 @@ function* getInitializerCallExceptions(
       (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
     ) {
       let recursiveFunctionIds: number[] = [];
-      const referencedFn = fnCall.expression.referencedDeclaration;
-      if (referencedFn && referencedFn > 0) {
-        recursiveFunctionIds = getRecursiveFunctionIds(referencedFn, deref);
+      const referencedDeclaration = fnCall.expression.referencedDeclaration;
+      if (referencedDeclaration && referencedDeclaration > 0) {
+        const referencedNode = tryDerefFunction(deref, referencedDeclaration);
+        if (referencedNode !== undefined) {
+          recursiveFunctionIds = getRecursiveFunctionIds(referencedNode, deref);
+        }
       }
 
       // For each recursively called function, if it is a parent initializer, then:
@@ -258,38 +261,40 @@ function* getInitializerCallExceptions(
 /**
  * Gets the IDs of all functions that are recursively called by the given function, including the given function itself at the end of the list.
  *
- * @param referencedFn The ID of the function to start from
+ * @param functionDef The node of the function definition to start from
  * @param deref AST dereferencer
  * @param visited Set of function IDs that have already been visited
  * @returns The IDs of all functions that are recursively called by the given function, including the given function itself at the end of the list.
  */
-function getRecursiveFunctionIds(referencedFn: number, deref: ASTDereferencer, visited?: Set<number>): number[] {
+function getRecursiveFunctionIds(functionDef: FunctionDefinition, deref: ASTDereferencer, visited?: Set<number>): number[] {
   const result: number[] = [];
 
   if (visited === undefined) {
     visited = new Set();
   }
-  if (visited.has(referencedFn)) {
+  if (visited.has(functionDef.id)) {
     return result;
   } else {
-    visited.add(referencedFn);
+    visited.add(functionDef.id);
   }
 
-  const fn = deref('FunctionDefinition', referencedFn);
-  const expressionStatements = fn.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
+  const expressionStatements = functionDef.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
   for (const stmt of expressionStatements) {
     const fnCall = stmt.expression;
     if (
       fnCall.nodeType === 'FunctionCall' &&
       (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
     ) {
-      const referencedId = fnCall.expression.referencedDeclaration;
-      if (referencedId && referencedId > 0) {
-        result.push(...getRecursiveFunctionIds(referencedId, deref, visited));
+      const referencedDeclaration = fnCall.expression.referencedDeclaration;
+      if (referencedDeclaration && referencedDeclaration > 0) {
+        const recursiveReferencedNode = tryDerefFunction(deref, referencedDeclaration);
+        if (recursiveReferencedNode !== undefined) {
+          result.push(...getRecursiveFunctionIds(recursiveReferencedNode, deref, visited));
+        }
       }
     }
   }
-  result.push(referencedFn);
+  result.push(functionDef.id);
 
   return result;
 }
