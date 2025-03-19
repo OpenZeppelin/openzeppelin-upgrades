@@ -142,6 +142,27 @@ function getParentsNotInitializedByOtherParents(
 }
 
 /**
+ * Calls the callback if the referenced function definition is found in the AST.
+ * Otherwise, does nothing.
+ *
+ * @param deref AST dereferencer
+ * @param referencedDeclaration ID of the referenced function
+ * @param callback Function to call if the referenced function definition is found
+ */
+function doIfReferencedFunctionFound(
+  deref: ASTDereferencer,
+  referencedDeclaration: number | null | undefined,
+  callback: (functionDef: FunctionDefinition) => void,
+) {
+  if (referencedDeclaration && referencedDeclaration > 0) {
+    const functionDef = tryDerefFunction(deref, referencedDeclaration);
+    if (functionDef !== undefined) {
+      callback(functionDef);
+    }
+  }
+}
+
+/**
  * Reports exceptions for missing initializer calls, duplicate initializer calls, and incorrect initializer order.
  *
  * @param contractInitializer An initializer function for the current contract
@@ -176,13 +197,9 @@ function* getInitializerCallExceptions(
       (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
     ) {
       let recursiveFunctionIds: number[] = [];
-      const referencedDeclaration = fnCall.expression.referencedDeclaration;
-      if (referencedDeclaration && referencedDeclaration > 0) {
-        const referencedNode = tryDerefFunction(deref, referencedDeclaration);
-        if (referencedNode !== undefined) {
-          recursiveFunctionIds = getRecursiveFunctionIds(deref, referencedNode);
-        }
-      }
+      doIfReferencedFunctionFound(deref, fnCall.expression.referencedDeclaration, (functionDef: FunctionDefinition) => {
+        recursiveFunctionIds = getRecursiveFunctionIds(deref, functionDef);
+      });
 
       // For each recursively called function, if it is a parent initializer, then:
       // - Check if it was already called (duplicate call)
@@ -290,13 +307,9 @@ function getRecursiveFunctionIds(
       fnCall.nodeType === 'FunctionCall' &&
       (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
     ) {
-      const referencedDeclaration = fnCall.expression.referencedDeclaration;
-      if (referencedDeclaration && referencedDeclaration > 0) {
-        const recursiveReferencedNode = tryDerefFunction(deref, referencedDeclaration);
-        if (recursiveReferencedNode !== undefined) {
-          result.push(...getRecursiveFunctionIds(deref, recursiveReferencedNode, visited));
-        }
-      }
+      doIfReferencedFunctionFound(deref, fnCall.expression.referencedDeclaration, (functionDef: FunctionDefinition) => {
+        result.push(...getRecursiveFunctionIds(deref, functionDef, visited));
+      });
     }
   }
   result.push(functionDef.id);
