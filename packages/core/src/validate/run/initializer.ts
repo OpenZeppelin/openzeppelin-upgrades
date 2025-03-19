@@ -1,7 +1,7 @@
 import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
 import { ASTDereferencer, findAll } from 'solidity-ast/utils';
 import { SrcDecoder } from '../../src-decoder';
-import { ValidationExceptionInitializer, skipCheck } from '../run';
+import { ValidationExceptionInitializer, skipCheck, tryDerefFunction } from '../run';
 
 /**
  * Reports if this contract is non-abstract and any of the following are true:
@@ -142,6 +142,27 @@ function getParentsNotInitializedByOtherParents(
 }
 
 /**
+ * Calls the callback if the referenced function definition is found in the AST.
+ * Otherwise, does nothing.
+ *
+ * @param deref AST dereferencer
+ * @param referencedDeclaration ID of the referenced function
+ * @param callback Function to call if the referenced function definition is found
+ */
+function doIfReferencedFunctionFound(
+  deref: ASTDereferencer,
+  referencedDeclaration: number | null | undefined,
+  callback: (functionDef: FunctionDefinition) => void,
+) {
+  if (referencedDeclaration && referencedDeclaration > 0) {
+    const functionDef = tryDerefFunction(deref, referencedDeclaration);
+    if (functionDef !== undefined) {
+      callback(functionDef);
+    }
+  }
+}
+
+/**
  * Reports exceptions for missing initializer calls, duplicate initializer calls, and incorrect initializer order.
  *
  * @param contractInitializer An initializer function for the current contract
@@ -176,10 +197,9 @@ function* getInitializerCallExceptions(
       (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
     ) {
       let recursiveFunctionIds: number[] = [];
-      const referencedFn = fnCall.expression.referencedDeclaration;
-      if (referencedFn && referencedFn > 0) {
-        recursiveFunctionIds = getRecursiveFunctionIds(referencedFn, deref);
-      }
+      doIfReferencedFunctionFound(deref, fnCall.expression.referencedDeclaration, (functionDef: FunctionDefinition) => {
+        recursiveFunctionIds = getRecursiveFunctionIds(deref, functionDef);
+      });
 
       // For each recursively called function, if it is a parent initializer, then:
       // - Check if it was already called (duplicate call)
@@ -258,38 +278,41 @@ function* getInitializerCallExceptions(
 /**
  * Gets the IDs of all functions that are recursively called by the given function, including the given function itself at the end of the list.
  *
- * @param referencedFn The ID of the function to start from
  * @param deref AST dereferencer
+ * @param functionDef The node of the function definition to start from
  * @param visited Set of function IDs that have already been visited
  * @returns The IDs of all functions that are recursively called by the given function, including the given function itself at the end of the list.
  */
-function getRecursiveFunctionIds(referencedFn: number, deref: ASTDereferencer, visited?: Set<number>): number[] {
+function getRecursiveFunctionIds(
+  deref: ASTDereferencer,
+  functionDef: FunctionDefinition,
+  visited?: Set<number>,
+): number[] {
   const result: number[] = [];
 
   if (visited === undefined) {
     visited = new Set();
   }
-  if (visited.has(referencedFn)) {
+  if (visited.has(functionDef.id)) {
     return result;
   } else {
-    visited.add(referencedFn);
+    visited.add(functionDef.id);
   }
 
-  const fn = deref('FunctionDefinition', referencedFn);
-  const expressionStatements = fn.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
+  const expressionStatements =
+    functionDef.body?.statements?.filter(stmt => stmt.nodeType === 'ExpressionStatement') ?? [];
   for (const stmt of expressionStatements) {
     const fnCall = stmt.expression;
     if (
       fnCall.nodeType === 'FunctionCall' &&
       (fnCall.expression.nodeType === 'Identifier' || fnCall.expression.nodeType === 'MemberAccess')
     ) {
-      const referencedId = fnCall.expression.referencedDeclaration;
-      if (referencedId && referencedId > 0) {
-        result.push(...getRecursiveFunctionIds(referencedId, deref, visited));
-      }
+      doIfReferencedFunctionFound(deref, fnCall.expression.referencedDeclaration, (functionDef: FunctionDefinition) => {
+        result.push(...getRecursiveFunctionIds(deref, functionDef, visited));
+      });
     }
   }
-  result.push(referencedFn);
+  result.push(functionDef.id);
 
   return result;
 }
