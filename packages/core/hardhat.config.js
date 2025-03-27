@@ -38,8 +38,11 @@ function getNamespacedOverrides() {
   for (const c of namespacedContracts) {
     if (c === 'NamespacedToModify07.sol') {
       overrides[`contracts/test/${c}`] = { version: '0.7.6', settings };
+    } else if (c === 'NamespacedToModifyCustomLayout.sol') {
+      overrides[`contracts/test/${c}`] = { version: '0.8.29', settings: settingsWithParisEVM };
     } else {
-      overrides[`contracts/test/${c}`] = { version: '0.8.20', settings: settingsWithParisEVM };
+      // pin compiler version to the most recent Solidity version that Slang supports
+      overrides[`contracts/test/${c}`] = { version: '0.8.28', settings: settingsWithParisEVM };
     }
   }
   return overrides;
