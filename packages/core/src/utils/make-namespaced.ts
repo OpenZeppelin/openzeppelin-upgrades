@@ -63,6 +63,11 @@ export function makeNamespacedInput(input: SolcInput, output: SolcOutput, _solcV
             modifications.push(makeInsertBefore(contractDef, 'abstract '));
           }
 
+          // Remove custom layout annotation
+          if (contractDef.storageLayout !== undefined) {
+            modifications.push(makeDelete(contractDef.storageLayout, orig));
+          }
+
           // Remove any calls to parent constructors from the inheritance list
           const inherits = contractDef.baseContracts;
           for (const inherit of inherits) {

@@ -27,6 +27,13 @@ test('make namespaced input - solc 0.7', async t => {
   await testMakeNamespaced(origBuildInfo, t, '0.7.6');
 });
 
+test('make namespaced input - custom layout', async t => {
+  const origBuildInfo = await artifacts.getBuildInfo(
+    'contracts/test/NamespacedToModifyCustomLayout.sol:ExampleCustomLayout',
+  );
+  await testMakeNamespaced(origBuildInfo, t, '0.8.29');
+});
+
 async function testMakeNamespaced(
   origBuildInfo: BuildInfo | undefined,
   t: ExecutionContext<unknown>,

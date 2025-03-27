@@ -8,6 +8,8 @@ import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
 import { UpgradesError } from '../error';
 import * as versions from 'compare-versions';
+import { integerLiteralTo64ByteHexString } from '../utils/integer-literals';
+import { calculateERC7201StorageLocation } from '../utils/erc7201';
 
 /**
  * Loads a contract's namespaces and namespaced type information into the storage layout.
@@ -78,6 +80,19 @@ Use a unique namespace id for each struct annotated with '@custom:storage-locati
   }
 }
 
+class CustomLayoutClashWithNamespaceError extends UpgradesError {
+  constructor(id: string, contractName: string, src: string) {
+    super(
+      `Custom layout for contract ${contractName} clashes with the storage location for namespace ${id}`,
+      () => `\
+The namespace ${id} is defined in a struct at the following location:
+- ${src}
+
+Specify a different custom layout for the contract or use a different namespace for the struct.`,
+    );
+  }
+}
+
 /**
  * Namespaced storage items, along with the original source location of the namespace struct.
  */
@@ -130,11 +145,42 @@ function addContractNamespacesWithSrc(
             origSrc,
           );
         } else {
+          checkCustomLayoutClashWithNamespace(origContractDef, storageLocation, leastDerivedContractName, origSrc);
+
           namespacesWithSrc[storageLocation] = {
             namespace: getNamespacedStorageItems(node, decodeSrc, layout, contractContext, origContractDef),
             src: origSrc,
           };
         }
+      }
+    }
+  }
+}
+
+/**
+ * Checks if a custom layout clashes with a namespace.
+ *
+ * @param contractDef The contract definition to check.
+ * @param storageLocation The namespace storage location string, e.g. `erc7201:<NAMESPACE_ID>`.
+ * @param contractName The name of the contract.
+ * @param src The original source location of the struct with the namespace.
+ * @throws CustomLayoutClashWithNamespaceError if the custom layout clashes with the namespace.
+ */
+function checkCustomLayoutClashWithNamespace(
+  contractDef: ContractDefinition,
+  storageLocation: string,
+  contractName: string,
+  src: string,
+) {
+  if (contractDef.storageLayout !== undefined && storageLocation.startsWith('erc7201:')) {
+    const namespaceId = storageLocation.split(':')[1];
+    const storageLocationHash = calculateERC7201StorageLocation(namespaceId);
+    if (contractDef.storageLayout.baseSlotExpression.nodeType === 'Literal') {
+      const baseSlotNormalized = integerLiteralTo64ByteHexString(
+        contractDef.storageLayout.baseSlotExpression.value ?? undefined,
+      ); // TODO: when Solidity supports an erc7201 helper function, also check that for clash
+      if (baseSlotNormalized === storageLocationHash) {
+        throw new CustomLayoutClashWithNamespaceError(storageLocation, contractName, src);
       }
     }
   }

@@ -3,7 +3,7 @@ import { isEnumMembers } from '../storage/layout';
 import { stabilizeTypeIdentifier } from './type-id';
 
 export function stabilizeStorageLayout(layout: StorageLayout) {
-  return {
+  const stabilized = {
     storage: layout.storage.map(s => ({ ...s, type: stabilizeTypeIdentifier(s.type) })),
     types: Object.entries(layout.types).map(([type, item]) => {
       const members =
@@ -18,5 +18,7 @@ export function stabilizeStorageLayout(layout: StorageLayout) {
           return [ns, items.map(item => ({ ...item, type: stabilizeTypeIdentifier(item.type) }))];
         })
       : undefined,
+    baseSlot: layout.baseSlot,
   };
+  return stabilized;
 }

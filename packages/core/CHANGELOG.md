@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Validate Solidity custom storage layouts, use proxies from OpenZeppelin Contracts 5.2.0. ([#1144](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1144))
+
 ## 1.42.2 (2025-03-19)
 
 - Fix `ASTDereferencerError` for additional scenario when validating initializers. ([#1137](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1137))
