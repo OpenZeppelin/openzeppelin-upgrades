@@ -176,9 +176,7 @@ function checkCustomLayoutClashWithNamespace(
     const namespaceId = storageLocation.split(':')[1];
     const storageLocationHash = calculateERC7201StorageLocation(namespaceId);
     if (contractDef.storageLayout.baseSlotExpression.nodeType === 'Literal') {
-      const baseSlotNormalized = integerLiteralTo64ByteHexString(
-        contractDef.storageLayout.baseSlotExpression.value ?? undefined,
-      ); // TODO: when Solidity supports an erc7201 helper function, also check that for clash
+      const baseSlotNormalized = integerLiteralTo64ByteHexString(contractDef.storageLayout.baseSlotExpression.value); // TODO: when Solidity supports an erc7201 helper function, also check that for clash
       if (baseSlotNormalized === storageLocationHash) {
         throw new CustomLayoutClashWithNamespaceError(storageLocation, contractName, src);
       }

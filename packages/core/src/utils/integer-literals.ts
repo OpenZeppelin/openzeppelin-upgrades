@@ -2,15 +2,15 @@
  * Converts a Solidity integer literal according to https://docs.soliditylang.org/en/latest/types.html#rational-literals
  * to a 64-byte padded hex string.
  *
- * If the input is undefined, returns '0x0000000000000000000000000000000000000000000000000000000000000000'.
+ * If the input is null or undefined, returns '0x0000000000000000000000000000000000000000000000000000000000000000'.
  *
  * Assumes the input is a valid integer literal for Solidity, and does not perform any validation.
  *
  * @param literal Integer literal to convert
  * @returns Hex string with 0x prefix, padded to 64 bytes with leading zeroes
  */
-export function integerLiteralTo64ByteHexString(literal: string | undefined): string {
-  if (literal === undefined) {
+export function integerLiteralTo64ByteHexString(literal: string | null | undefined): string {
+  if (!literal) {
     return '0x0000000000000000000000000000000000000000000000000000000000000000';
   }
   const lowercaseNoUnderscores = literal.replace(/_/g, '').toLowerCase();

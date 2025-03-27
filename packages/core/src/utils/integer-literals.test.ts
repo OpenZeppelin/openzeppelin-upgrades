@@ -4,8 +4,10 @@ import { integerLiteralTo64ByteHexString } from './integer-literals';
 
 const ZEROES = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
-test('undefined string', t => {
+test('falsy', t => {
   t.is(integerLiteralTo64ByteHexString(undefined), ZEROES);
+  t.is(integerLiteralTo64ByteHexString(null), ZEROES);
+  t.is(integerLiteralTo64ByteHexString(''), ZEROES);
 });
 
 test('hex', t => {
@@ -25,10 +27,6 @@ test('hex - capital', t => {
 
 test('decimal', t => {
   t.is(integerLiteralTo64ByteHexString('1234'), '0x00000000000000000000000000000000000000000000000000000000000004d2');
-});
-
-test('empty string', t => {
-  t.is(integerLiteralTo64ByteHexString(''), ZEROES);
 });
 
 test('zeroes', t => {
