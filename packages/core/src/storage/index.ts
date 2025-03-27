@@ -66,7 +66,7 @@ export function getStorageUpgradeReport(
   }
 
   if (original.storage.some(item => item.slot === undefined) || updated.storage.some(item => item.slot === undefined)) {
-    // This may occur if compiler was not configured to output detailed storage layout with slot information
+    // Compiler was not configured to output detailed storage layout with slot information
     validateBaseSlotUnchanged(original, updated);
   }
 
