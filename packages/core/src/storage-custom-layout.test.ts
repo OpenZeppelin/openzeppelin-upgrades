@@ -302,6 +302,11 @@ test('Namespaced - custom layout clash decimal', t => {
   t.snapshot(error?.message);
 });
 
+test('CustomLayout multiple namespaces', t => {
+  const layout = t.context.extractStorageLayout('CustomLayout_Multiple_Namespaces');
+  t.snapshot(stabilizeStorageLayout(layout));
+});
+
 test('Gap - changed root - ok', t => {
   const v1 = t.context.extractStorageLayout('Gap');
   const v2 = t.context.extractStorageLayout('Gap_Changed_Root_Ok');

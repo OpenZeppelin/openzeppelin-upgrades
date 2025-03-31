@@ -10,6 +10,7 @@ import { UpgradesError } from '../error';
 import * as versions from 'compare-versions';
 import { integerLiteralTo64ByteHexString } from '../utils/integer-literals';
 import { calculateERC7201StorageLocation } from '../utils/erc7201';
+import { logWarning } from '../utils/log';
 
 /**
  * Loads a contract's namespaces and namespaced type information into the storage layout.
@@ -59,8 +60,10 @@ export function loadNamespaces(
     );
   }
 
+  warnIfCustomLayoutAndNamespacesFound(namespacesWithSrc, origContext.contractDef);
+
   // Add to layout without the namespaced structs' src locations, since those are no longer needed
-  // as they were only used to give duplicate namespace errors above.
+  // as they were only used to give duplicate namespace errors in `addContractNamespacesWithSrc` above.
   layout.namespaces = Object.fromEntries(
     Object.entries(namespacesWithSrc).map(([id, namespaceWithSrc]) => [id, namespaceWithSrc.namespace]),
   );
@@ -158,7 +161,7 @@ function addContractNamespacesWithSrc(
 }
 
 /**
- * Checks if a custom layout clashes with a namespace.
+ * Checks if a custom layout's base slot clashes with a namespace's base slot, and throws an error if it does.
  *
  * @param contractDef The contract definition to check.
  * @param storageLocation The namespace storage location string, e.g. `erc7201:<NAMESPACE_ID>`.
@@ -181,6 +184,21 @@ function checkCustomLayoutClashWithNamespace(
         throw new CustomLayoutClashWithNamespaceError(storageLocation, contractName, src);
       }
     }
+  }
+}
+
+function warnIfCustomLayoutAndNamespacesFound(
+  namespacesWithSrc: Record<string, NamespaceWithSrc>,
+  origContractDef: ContractDefinition,
+) {
+  // TODO: when Solidity supports an erc7201 helper function, only give this warning if the custom storage layout is not using the erc7201 helper function
+  if (Object.entries(namespacesWithSrc).length > 0 && origContractDef.storageLayout !== undefined) {
+    const contractName = origContractDef.canonicalName ?? origContractDef.name;
+    logWarning('Ensure custom storage layout does not overlap with namespaced storage layout.', [
+      `Contract \`${contractName}\` has both custom storage layout and namespaces.`,
+      'The Upgrades Plugin validates that they do not use the same base slot, but does not check for overlaps.',
+      "Ensure the base slot for the contract's `layout at` specifier is chosen such that its storage variables do not overlap with any namespaces.",
+    ]);
   }
 }
 

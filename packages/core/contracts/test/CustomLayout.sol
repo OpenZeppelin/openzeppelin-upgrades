@@ -109,6 +109,22 @@ contract Namespaced_Custom_Layout_Clash_Decimal layout at 1095865598326115227184
         0x183a6125c38840424c4a85fa12bab2ab606c4b6d0e7cc73c0c06ba5300eab500;
 }
 
+abstract contract NamespaceA {
+    /// @custom:storage-location erc7201:example.a
+    struct AStorage {
+        uint256 x;
+    }
+}
+
+abstract contract NamespaceB {
+    /// @custom:storage-location erc7201:example.b
+    struct BStorage {
+        uint256 x;
+    }
+}
+
+contract CustomLayout_Multiple_Namespaces layout at 0x1 is NamespaceA, NamespaceB {
+}
 
 contract Gap {
     uint256[50] __gap;
