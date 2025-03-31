@@ -195,11 +195,14 @@ function warnIfCustomLayoutAndNamespacesFound(
   // TODO: when Solidity supports an erc7201 helper function, only give this warning if the custom storage layout is not using the erc7201 helper function
   if (Object.entries(namespacesWithSrc).length > 0 && origContractDef.storageLayout !== undefined) {
     const contractName = origContractDef.canonicalName ?? origContractDef.name;
-    logWarning(`${decodeSrc(origContractDef.storageLayout)}: Ensure custom storage layout does not overlap with namespaced storage layout.`, [
-      `Contract \`${contractName}\` has both custom storage layout and namespaces.`,
-      'The Upgrades Plugin validates that they do not use the same base slot, but does not check for overlaps.',
-      "Ensure the base slot for the contract's `layout at` specifier is chosen such that its storage variables do not overlap with any namespaces.",
-    ]);
+    logWarning(
+      `${decodeSrc(origContractDef.storageLayout)}: Ensure custom storage layout does not overlap with namespaced storage layout.`,
+      [
+        `Contract \`${contractName}\` has both custom storage layout and namespaces.`,
+        'The Upgrades Plugin validates that they do not use the same base slot, but does not check for overlaps.',
+        "Ensure the base slot for the contract's `layout at` specifier is chosen such that its storage variables do not overlap with any namespaces.",
+      ],
+    );
   }
 }
 
