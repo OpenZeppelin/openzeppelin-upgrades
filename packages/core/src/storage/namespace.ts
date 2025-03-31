@@ -60,7 +60,7 @@ export function loadNamespaces(
     );
   }
 
-  warnIfCustomLayoutAndNamespacesFound(namespacesWithSrc, origContext.contractDef);
+  warnIfCustomLayoutAndNamespacesFound(namespacesWithSrc, decodeSrc, origContext.contractDef);
 
   // Add to layout without the namespaced structs' src locations, since those are no longer needed
   // as they were only used to give duplicate namespace errors in `addContractNamespacesWithSrc` above.
@@ -189,12 +189,13 @@ function checkCustomLayoutClashWithNamespace(
 
 function warnIfCustomLayoutAndNamespacesFound(
   namespacesWithSrc: Record<string, NamespaceWithSrc>,
+  decodeSrc: SrcDecoder,
   origContractDef: ContractDefinition,
 ) {
   // TODO: when Solidity supports an erc7201 helper function, only give this warning if the custom storage layout is not using the erc7201 helper function
   if (Object.entries(namespacesWithSrc).length > 0 && origContractDef.storageLayout !== undefined) {
     const contractName = origContractDef.canonicalName ?? origContractDef.name;
-    logWarning('Ensure custom storage layout does not overlap with namespaced storage layout.', [
+    logWarning(`${decodeSrc(origContractDef.storageLayout)}: Ensure custom storage layout does not overlap with namespaced storage layout.`, [
       `Contract \`${contractName}\` has both custom storage layout and namespaces.`,
       'The Upgrades Plugin validates that they do not use the same base slot, but does not check for overlaps.',
       "Ensure the base slot for the contract's `layout at` specifier is chosen such that its storage variables do not overlap with any namespaces.",
