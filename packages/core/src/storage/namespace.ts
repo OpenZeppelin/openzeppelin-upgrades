@@ -9,7 +9,7 @@ import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
 import { UpgradesError } from '../error';
 import * as versions from 'compare-versions';
 import { integerLiteralTo64ByteHexString } from '../utils/integer-literals';
-import { calculateERC7201StorageLocation } from '../utils/erc7201';
+import { calculateERC7201StorageLocation, ERC7201_FORMULA_PREFIX } from '../utils/erc7201';
 import { logWarning } from '../utils/log';
 
 /**
@@ -175,8 +175,8 @@ function checkCustomLayoutClashWithNamespace(
   contractName: string,
   src: string,
 ) {
-  if (contractDef.storageLayout !== undefined && storageLocation.startsWith('erc7201:')) {
-    const namespaceId = storageLocation.split(':')[1];
+  if (contractDef.storageLayout !== undefined && storageLocation.startsWith(ERC7201_FORMULA_PREFIX)) {
+    const namespaceId = storageLocation.substring(ERC7201_FORMULA_PREFIX.length);
     const storageLocationHash = calculateERC7201StorageLocation(namespaceId);
     if (contractDef.storageLayout.baseSlotExpression.nodeType === 'Literal') {
       const baseSlotNormalized = integerLiteralTo64ByteHexString(contractDef.storageLayout.baseSlotExpression.value); // TODO: when Solidity supports an erc7201 helper function, also check that for clash

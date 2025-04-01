@@ -302,6 +302,21 @@ test('Namespaced - custom layout clash decimal', t => {
   t.snapshot(error?.message);
 });
 
+test('Namespaced - custom layout clash extra colon', t => {
+  const error = t.throws(() => t.context.extractStorageLayout('Namespaced_Custom_Layout_Clash_Extra_Colon'));
+  t.snapshot(error?.message);
+});
+
+test('CustomLayout no namespace formula - ok', t => {
+  const layout = t.context.extractStorageLayout('CustomLayout_No_Namespace_Formula');
+  t.snapshot(stabilizeStorageLayout(layout));
+});
+
+test('CustomLayout unknown namespace formula - ok', t => {
+  const layout = t.context.extractStorageLayout('CustomLayout_Unknown_Namespace_Formula');
+  t.snapshot(stabilizeStorageLayout(layout));
+});
+
 test('CustomLayout multiple namespaces', t => {
   const layout = t.context.extractStorageLayout('CustomLayout_Multiple_Namespaces');
   t.snapshot(stabilizeStorageLayout(layout));

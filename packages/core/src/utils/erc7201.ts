@@ -1,5 +1,7 @@
 import { keccak256 } from 'ethereumjs-util';
 
+export const ERC7201_FORMULA_PREFIX = 'erc7201:';
+
 /**
  * Returns the ERC-7201 storage location hash for a given namespace id using formula:
  * keccak256(abi.encode(uint256(keccak256(bytes(id))) - 1)) & ~bytes32(uint256(0xff))
