@@ -47,6 +47,22 @@ test('scientific notation - capital', t => {
   t.is(integerLiteralTo64ByteHexString('20E10'), '0x0000000000000000000000000000000000000000000000000000002e90edd000');
 });
 
+test('scientific notation - fractional base', t => {
+  t.is(integerLiteralTo64ByteHexString('2.5e3'), '0x00000000000000000000000000000000000000000000000000000000000009c4');
+});
+
+test('scientific notation - negative exponent', t => {
+  t.is(
+    integerLiteralTo64ByteHexString('250000e-2'),
+    '0x00000000000000000000000000000000000000000000000000000000000009c4',
+  );
+});
+
+test('scientific notation - invalid integer literal', t => {
+  const error = t.throws(() => integerLiteralTo64ByteHexString('2e-3'));
+  t.is(error?.message, 'Invalid integer literal: 2e-3');
+});
+
 test('full hex', t => {
   t.is(
     integerLiteralTo64ByteHexString('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),

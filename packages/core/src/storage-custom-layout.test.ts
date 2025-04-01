@@ -79,6 +79,20 @@ test('CustomLayout same root decimal - fallback - ok', t => {
   t.deepEqual(comparison, []);
 });
 
+test('CustomLayout same root scientific notation - ok', t => {
+  const v1 = t.context.extractStorageLayout('CustomLayout');
+  const v2 = t.context.extractStorageLayout('CustomLayout_Same_Root_ScientificNotation_Ok');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, []);
+});
+
+test('CustomLayout same root scientific notation - fallback - ok', t => {
+  const v1 = t.context.extractStorageLayoutFallback('CustomLayout');
+  const v2 = t.context.extractStorageLayoutFallback('CustomLayout_Same_Root_ScientificNotation_Ok');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.deepEqual(comparison, []);
+});
+
 test('CustomLayout changed root - bad', t => {
   const v1 = t.context.extractStorageLayout('CustomLayout');
   const v2 = t.context.extractStorageLayout('CustomLayout_Changed_Root_Bad');

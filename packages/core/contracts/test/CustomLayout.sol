@@ -19,6 +19,11 @@ contract CustomLayout_Same_Root_Decimal_Ok layout at 1 is Base {
     uint256 public z;
 }
 
+contract CustomLayout_Same_Root_ScientificNotation_Ok layout at 1000.0e-3 is Base {
+    uint256 public y;
+    uint256 public z;
+}
+
 contract CustomLayout_Changed_Root_Bad layout at 0x2 is Base {
     uint256 public y;
     uint256 public z;
@@ -29,7 +34,7 @@ contract CustomLayout_Changed_Root_Decimal_Bad layout at 2 is Base {
     uint256 public z;
 }
 
-contract CustomLayout_Changed_Root_ScientificNotation_Bad layout at 2e10 is Base {
+contract CustomLayout_Changed_Root_ScientificNotation_Bad layout at 2.0e10 is Base {
     uint256 public y;
     uint256 public z;
 }
