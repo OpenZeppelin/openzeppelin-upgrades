@@ -11,12 +11,15 @@ task(TASK_COMPILE_SOLIDITY_GET_COMPILATION_JOB_FOR_FILE, async (params, _, runSu
   // compiled separately (along with the other marked files).
   // Dependencies of proxy contracts would be automatically included in the proxy contracts compilation.
   if (!params.file.sourceName.startsWith('@openzeppelin/contracts/proxy/')) {
-    // Mark each CLI Solidity file differently from regular tests, so that they can be compiled separately.
-    // This is needed because CLI tests validate the entire build-info file, so each build-info should include only relevant contracts.
     if (params.file.sourceName.startsWith('contracts/test/cli/')) {
+      // Mark each CLI Solidity file differently from regular tests, so that they can be compiled separately.
+      // This is needed because CLI tests validate the entire build-info file, so each build-info should include only relevant contracts.
       mark(job, params.file.sourceName);
     } else if (params.file.sourceName.startsWith('contracts/test/Namespaced')) {
       mark(job, 'testNamespaced');
+    } else if (params.file.sourceName.includes('CustomLayout')) {
+      // Tests layout conflicts which causes errors if validated together with other tests.
+      mark(job, 'testCustomLayout');
     } else {
       mark(job, 'test');
     }
@@ -35,6 +38,10 @@ function mark(job, group) {
   }
 
   const originalConfig = job.solidityConfig;
+
+  if (originalConfig === undefined) {
+    throw Error(`Solidity config is missing for job: ${JSON.stringify(job, null, 2)}`);
+  }
 
   if (originalConfig[marker] && originalConfig[marker] !== group) {
     throw Error('Same job in different compilation groups');
