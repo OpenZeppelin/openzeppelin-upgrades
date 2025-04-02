@@ -6,7 +6,7 @@ import { StorageOperation, StorageItem, StorageLayoutComparator } from './compar
 import { LayoutCompatibilityReport } from './report';
 import { ValidationOptions, withValidationDefaults } from '../validate/overrides';
 import { logNote, logWarning } from '../utils/log';
-import { integerLiteralTo64ByteHexString } from '../utils/integer-literals';
+import { normalizeUint256Literal } from '../utils/integer-literals';
 
 export function assertStorageUpgradeSafe(
   original: StorageLayout,
@@ -38,8 +38,8 @@ export function assertStorageUpgradeSafe(
 }
 
 function validateBaseSlotUnchanged(original: StorageLayout, updated: StorageLayout) {
-  const origNormalized = integerLiteralTo64ByteHexString(original.baseSlot);
-  const updatedNormalized = integerLiteralTo64ByteHexString(updated.baseSlot);
+  const origNormalized = normalizeUint256Literal(original.baseSlot);
+  const updatedNormalized = normalizeUint256Literal(updated.baseSlot);
 
   if (origNormalized !== updatedNormalized) {
     throw new UpgradesError(
