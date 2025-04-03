@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add Sonic network to manifest file names. ([#1146](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1146))
+
 ## 1.42.2 (2025-03-19)
 
 - Fix `ASTDereferencerError` for additional scenario when validating initializers. ([#1137](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1137))
