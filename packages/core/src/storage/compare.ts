@@ -176,7 +176,19 @@ export class StorageLayoutComparator {
         // Gap shrink or gap replacement that finishes on the same slot is safe
         return false;
       } else if (o.kind === 'append' && allowAppend) {
+        // Allow append operation if the allowAppend flag is set
+        // This applies to both direct storage appends and appends within structs
         return false;
+      } else if (o.kind === 'typechange' && o.change?.kind === 'struct members' && o.change.allowAppend) {
+        // If this is a struct change where all the operations are appends and allowAppend is true, 
+        // then it should be considered safe. When appending to a struct at the end of storage layout,
+        // we're only extending into unused storage space, which doesn't cause any collisions or 
+        // layout corruption. This is different from insertions/modifications in the middle of storage.
+        // Fix for: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/1136
+        const structOps = o.change.ops;
+        const hasUnsafeOps = structOps.some(op => op.kind !== 'append');
+        
+        return hasUnsafeOps;
       }
       return true;
     });
@@ -324,6 +336,26 @@ export class StorageLayoutComparator {
           }
         }
         assert(isStructMembers(originalMembers) && isStructMembers(updatedMembers));
+        
+        // Check if all new fields are appended at the end and there are no other changes
+        // This is safe when the struct is at the end of the storage layout because it doesn't
+        // affect the layout of any other storage variables. When a struct is the last item
+        // in storage, appending fields to it only extends into unused storage space.
+        // Fix for: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/1136
+        const isOnlyAppending = 
+          updatedMembers.length > originalMembers.length &&
+          originalMembers.every((member, i) => 
+            member.label === updatedMembers[i].label && 
+            member.type.id === updatedMembers[i].type.id
+          );
+        
+        // If we're only appending fields to a struct and allowAppend is true, 
+        // then this should be a valid upgrade. When a struct is the last element
+        // in a storage layout, we can safely append new fields to it.
+        if (isOnlyAppending && allowAppend) {
+          return undefined;
+        }
+        
         const ops = this.layoutLevenshtein(originalMembers, updatedMembers, { allowAppend });
         if (ops.length > 0) {
           return { kind: 'struct members', ops, original, updated, allowAppend };
