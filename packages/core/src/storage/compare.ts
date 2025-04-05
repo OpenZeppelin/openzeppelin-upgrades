@@ -337,11 +337,6 @@ export class StorageLayoutComparator {
         }
         assert(isStructMembers(originalMembers) && isStructMembers(updatedMembers));
         
-        // Check if all new fields are appended at the end and there are no other changes
-        // This is safe when the struct is at the end of the storage layout because it doesn't
-        // affect the layout of any other storage variables. When a struct is the last item
-        // in storage, appending fields to it only extends into unused storage space.
-        // Fix for: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/1136
         const isOnlyAppending = 
           updatedMembers.length > originalMembers.length &&
           originalMembers.every((member, i) => 
@@ -349,9 +344,6 @@ export class StorageLayoutComparator {
             member.type.id === updatedMembers[i].type.id
           );
         
-        // If we're only appending fields to a struct and allowAppend is true, 
-        // then this should be a valid upgrade. When a struct is the last element
-        // in a storage layout, we can safely append new fields to it.
         if (isOnlyAppending && allowAppend) {
           return undefined;
         }
