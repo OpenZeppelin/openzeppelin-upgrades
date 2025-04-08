@@ -337,16 +337,6 @@ export class StorageLayoutComparator {
         }
         assert(isStructMembers(originalMembers) && isStructMembers(updatedMembers));
 
-        const isOnlyAppending =
-          updatedMembers.length > originalMembers.length &&
-          originalMembers.every(
-            (member, i) => member.label === updatedMembers[i].label && member.type.id === updatedMembers[i].type.id,
-          );
-
-        if (isOnlyAppending && allowAppend) {
-          return undefined;
-        }
-
         const ops = this.layoutLevenshtein(originalMembers, updatedMembers, { allowAppend });
         if (ops.length > 0) {
           return { kind: 'struct members', ops, original, updated, allowAppend };
