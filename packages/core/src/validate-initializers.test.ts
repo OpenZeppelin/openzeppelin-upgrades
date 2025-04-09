@@ -218,7 +218,7 @@ testAccepts('Recursive_Ok', 'transparent');
 testAccepts('ERC20_Ok', 'uups');
 testRejects('ERC20_Bad', 'uups', {
   contains: [
-    'Missing initializer calls for one or more parent contracts: `ERC20Upgradeable, ERC20PausableUpgradeable, OwnableUpgradeable, ERC20PermitUpgradeable`',
+    'Missing initializer calls for one or more parent contracts: `ERC20Upgradeable, OwnableUpgradeable, ERC20PermitUpgradeable`',
   ],
   count: 1,
 });
