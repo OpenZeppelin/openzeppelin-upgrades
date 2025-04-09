@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add Sonic network to manifest file names. ([#1146](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1146))
 - Validate Solidity custom storage layouts, use proxies from OpenZeppelin Contracts 5.2.0. ([#1144](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1144))
 
 ## 1.42.2 (2025-03-19)
