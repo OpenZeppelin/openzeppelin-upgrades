@@ -98,6 +98,8 @@ testRejects('MissingInitializer_Bad', 'transparent', {
 testAccepts('MissingInitializer_UnsafeAllow_Contract', 'transparent');
 testOverride('MissingInitializer_Bad', 'transparent', { unsafeAllow: ['missing-initializer'] });
 
+testAccepts('AssumeInitializer_Ok', 'transparent');
+
 testAccepts('InitializationOrder_Ok', 'transparent');
 testAccepts('InitializationOrder_Ok_2', 'transparent');
 

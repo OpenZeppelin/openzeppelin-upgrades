@@ -1,7 +1,9 @@
 import type { ContractDefinition, FunctionDefinition } from 'solidity-ast';
+import type { Node } from 'solidity-ast/node';
 import { ASTDereferencer, findAll } from 'solidity-ast/utils';
 import { SrcDecoder } from '../../src-decoder';
 import { ValidationExceptionInitializer, skipCheck, tryDerefFunction } from '../run';
+import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../../utils/annotations';
 
 /**
  * Reports if this contract is non-abstract and any of the following are true:
@@ -324,16 +326,35 @@ function getRecursiveFunctionIds(
 function getPossibleInitializers(contractDef: ContractDefinition, isParentContract: boolean) {
   const fns = [...findAll('FunctionDefinition', contractDef)];
   return fns.filter(
-    fnDef =>
-      (fnDef.modifiers.some(modifier => ['initializer', 'onlyInitializing'].includes(modifier.modifierName.name)) ||
-        ['initialize', 'initializer'].includes(fnDef.name)) &&
-      // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
-      !(fnDef.virtual && !fnDef.body) &&
-      // Ignore private functions, since they cannot be called outside the contract
-      fnDef.visibility !== 'private' &&
-      // For parent contracts, only internal and public functions which contain statements need to be called
-      (isParentContract
-        ? fnDef.body?.statements?.length && (fnDef.visibility === 'internal' || fnDef.visibility === 'public')
-        : true),
+    (fnDef: FunctionDefinition) =>
+      hasAssumeInitializerAnnotation(fnDef) || inferPossibleInitializer(fnDef, isParentContract),
+  );
+}
+
+function hasAssumeInitializerAnnotation(node: Node) {
+  const doc = getDocumentation(node);
+  const tag = 'oz-upgrades-assume-initializer';
+  const assumeInitializer = hasAnnotationTag(doc, tag);
+  if (assumeInitializer) {
+    const annotationArgs = getAnnotationArgs(doc, tag);
+    if (annotationArgs.length !== 0) {
+      throw new Error(`@custom:${tag} annotation must not have any arguments`);
+    }
+  }
+  return assumeInitializer;
+}
+
+function inferPossibleInitializer(fnDef: FunctionDefinition, isParentContract: boolean): boolean {
+  return (
+    (fnDef.modifiers.some(modifier => ['initializer', 'onlyInitializing'].includes(modifier.modifierName.name)) ||
+      ['initialize', 'initializer'].includes(fnDef.name)) &&
+    // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
+    !(fnDef.virtual && !fnDef.body) &&
+    // Ignore private functions, since they cannot be called outside the contract
+    fnDef.visibility !== 'private' &&
+    // For parent contracts, only internal and public functions which contain statements need to be called
+    (isParentContract
+      ? Boolean(fnDef.body?.statements?.length) && (fnDef.visibility === 'internal' || fnDef.visibility === 'public')
+      : true)
   );
 }

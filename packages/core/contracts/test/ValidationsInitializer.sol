@@ -117,6 +117,15 @@ contract MissingInitializer_UnsafeAllow_Contract is Parent_InitializerModifier {
   }
 }
 
+contract AssumeInitializer_Ok is Parent_InitializerModifier {
+  uint y;
+  /// @custom:oz-upgrades-assume-initializer
+  function regularFn() public {
+    parentInit();
+    y = 2;
+  }
+}
+
 contract A is Initializable {
   uint a;
   function __A_init() onlyInitializing internal {
