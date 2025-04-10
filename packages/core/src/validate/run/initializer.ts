@@ -4,6 +4,7 @@ import { ASTDereferencer, findAll } from 'solidity-ast/utils';
 import { SrcDecoder } from '../../src-decoder';
 import { ValidationExceptionInitializer, skipCheck, tryDerefFunction } from '../run';
 import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../../utils/annotations';
+import { logNote } from '../../utils/log';
 
 /**
  * Reports if this contract is non-abstract and any of the following are true:
@@ -22,12 +23,12 @@ export function* getInitializerExceptions(
   }
 
   const linearizedParentContracts = getLinearizedParentContracts(contractDef, deref);
-  const parentNameToInitializersMap = getParentNameToInitializersMap(linearizedParentContracts);
+  const parentNameToInitializersMap = getParentNameToInitializersMap(linearizedParentContracts, decodeSrc);
 
   const remainingParents = getParentsNotInitializedByOtherParents(parentNameToInitializersMap);
 
   if (remainingParents.length > 0) {
-    const contractInitializers = getPossibleInitializers(contractDef, false);
+    const contractInitializers = getPossibleInitializers(contractDef, false, decodeSrc);
 
     // Report if there is no initializer but parents need initialization
     if (
@@ -73,10 +74,10 @@ function getLinearizedParentContracts(contractDef: ContractDefinition, deref: AS
  * Gets a map of parent contract names to their possible initializers.
  * If a parent contract has no initializers, it is not included in the map.
  */
-function getParentNameToInitializersMap(linearizedParentContracts: ContractDefinition[]) {
+function getParentNameToInitializersMap(linearizedParentContracts: ContractDefinition[], decodeSrc: SrcDecoder) {
   const map = new Map();
   for (const parent of linearizedParentContracts) {
-    const initializers = getPossibleInitializers(parent, true);
+    const initializers = getPossibleInitializers(parent, true, decodeSrc);
     if (initializers.length > 0) {
       map.set(parent.name, initializers);
     }
@@ -323,22 +324,32 @@ function getRecursiveFunctionIds(
  * Get all functions that could be initializers. Does not include private functions.
  * For parent contracts, only internal and public functions which contain statements are included.
  */
-function getPossibleInitializers(contractDef: ContractDefinition, isParentContract: boolean) {
+function getPossibleInitializers(
+  contractDef: ContractDefinition,
+  isParentContract: boolean,
+  decodeSrc: SrcDecoder,
+): FunctionDefinition[] {
   const fns = [...findAll('FunctionDefinition', contractDef)];
-  return fns.filter(
-    (fnDef: FunctionDefinition) =>
-      hasAssumeInitializerAnnotation(fnDef) || inferPossibleInitializer(fnDef, isParentContract),
-  );
+  return fns.filter((fnDef: FunctionDefinition) => {
+    const assumeInitializer = hasAssumeInitializerAnnotation(fnDef, decodeSrc);
+    if (!assumeInitializer && fnDef.modifiers.some(modifier => 'reinitializer' === modifier.modifierName.name)) {
+      logNote(`Reinitializers are not included in validations by default`, [
+        `${decodeSrc(fnDef)}: If you want to validate this function as an initializer, add the NatSpec annotation \`@custom:oz-upgrades-assume-initializer\` above this function.`,
+      ]);
+    }
+
+    return assumeInitializer || inferPossibleInitializer(fnDef, isParentContract);
+  });
 }
 
-function hasAssumeInitializerAnnotation(node: Node) {
+function hasAssumeInitializerAnnotation(node: Node, decodeSrc: SrcDecoder): boolean {
   const doc = getDocumentation(node);
   const tag = 'oz-upgrades-assume-initializer';
   const assumeInitializer = hasAnnotationTag(doc, tag);
   if (assumeInitializer) {
     const annotationArgs = getAnnotationArgs(doc, tag);
     if (annotationArgs.length !== 0) {
-      throw new Error(`@custom:${tag} annotation must not have any arguments`);
+      throw new Error(`${decodeSrc(node)}: @custom:${tag} annotation must not have any arguments`);
     }
   }
   return assumeInitializer;
