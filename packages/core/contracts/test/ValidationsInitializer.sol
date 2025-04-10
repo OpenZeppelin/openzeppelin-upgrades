@@ -24,6 +24,14 @@ contract Parent_NoInitializer {
   }
 }
 
+contract Parent_AssumeInitializer {
+  uint8 x;
+  /// @custom:oz-upgrades-assume-initializer
+  function parentAssumeInit() public {
+    x = 1;
+  }
+}
+
 contract Parent_InitializerModifier is Initializable {
   uint8 x;
   function parentInit() initializer internal {
@@ -269,6 +277,42 @@ contract InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder is A, B, C, Par
     __C_init();
     __B_init();
     __B_init();
+  }
+}
+
+contract InitializationOrder_AssumeInitializer_Ok is A, B, C, Parent_AssumeInitializer {
+  function initialize() public {
+    __A_init();
+    __B_init();
+    __C_init();
+    parentAssumeInit();
+  }
+}
+
+contract InitializationOrder_AssumeInitializer_WrongOrder is A, B, C, Parent_AssumeInitializer {
+  function initialize() public {
+    __A_init();
+    __B_init();
+    parentAssumeInit();
+    __C_init();
+  }
+}
+
+contract InitializationOrder_AssumeInitializer_MissingCall is A, B, C, Parent_AssumeInitializer {
+  function initialize() public {
+    __A_init();
+    __B_init();
+    __C_init();
+  }
+}
+
+contract InitializationOrder_AssumeInitializer_DuplicateCall is A, B, C, Parent_AssumeInitializer {
+  function initialize() public {
+    __A_init();
+    __B_init();
+    __C_init();
+    parentAssumeInit();
+    parentAssumeInit();
   }
 }
 
