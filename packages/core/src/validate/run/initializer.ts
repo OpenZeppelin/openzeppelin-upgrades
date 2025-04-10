@@ -321,8 +321,8 @@ function getRecursiveFunctionIds(
 }
 
 /**
- * Get all functions that could be initializers. Does not include private functions.
- * For parent contracts, only internal and public functions which contain statements are included.
+ * Get all functions that are annotated as initializers or are inferred to be initializers.
+ * Logs a note if any reinitializer is found.
  */
 function getPossibleInitializers(
   contractDef: ContractDefinition,
@@ -355,6 +355,10 @@ function hasAssumeInitializerAnnotation(node: Node, decodeSrc: SrcDecoder): bool
   return assumeInitializer;
 }
 
+/**
+ * Infers whether a function could be an initializer. Does not include private functions.
+ * For parent contracts, only internal and public functions which contain statements are included.
+ */
 function inferPossibleInitializer(fnDef: FunctionDefinition, isParentContract: boolean): boolean {
   return (
     (fnDef.modifiers.some(modifier => ['initializer', 'onlyInitializing'].includes(modifier.modifierName.name)) ||
