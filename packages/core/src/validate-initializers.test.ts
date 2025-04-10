@@ -98,13 +98,13 @@ testRejects('MissingInitializer_Bad', 'transparent', {
 testAccepts('MissingInitializer_UnsafeAllow_Contract', 'transparent');
 testOverride('MissingInitializer_Bad', 'transparent', { unsafeAllow: ['missing-initializer'] });
 
-testAccepts('AssumeInitializer_Ok', 'transparent');
+testAccepts('ValidateAsInitializer_Ok', 'transparent');
 
 testRejects('Reinitializer_NotDetected', 'transparent', {
   contains: ['Missing initializer'],
   count: 1,
 });
-testAccepts('Reinitializer_AssumeInitializer_Ok', 'transparent');
+testAccepts('Reinitializer_ValidateAsInitializer_Ok', 'transparent');
 
 testAccepts('InitializationOrder_Ok', 'transparent');
 testAccepts('InitializationOrder_Ok_2', 'transparent');
@@ -132,14 +132,14 @@ testAccepts('InitializationOrder_Duplicate_UnsafeAllow_Call', 'transparent');
 testOverride('InitializationOrder_Duplicate_Bad', 'transparent', { unsafeAllow: ['duplicate-initializer-call'] });
 testAccepts('InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder', 'transparent'); // warn 'Expected: A, B, C'
 
-testAccepts('InitializationOrder_AssumeInitializer_Ok', 'transparent');
-testAccepts('InitializationOrder_AssumeInitializer_WrongOrder', 'transparent'); // warn 'Expected: A, B, C, Parent_AssumeInitializer'
-testRejects('InitializationOrder_AssumeInitializer_MissingCall', 'transparent', {
-  contains: ['Missing initializer calls for one or more parent contracts: `Parent_AssumeInitializer`'],
+testAccepts('InitializationOrder_ValidateAsInitializer_Ok', 'transparent');
+testAccepts('InitializationOrder_ValidateAsInitializer_WrongOrder', 'transparent'); // warn 'Expected: A, B, C, Parent_ValidateAsInitializer'
+testRejects('InitializationOrder_ValidateAsInitializer_MissingCall', 'transparent', {
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent_ValidateAsInitializer`'],
   count: 1,
 });
-testRejects('InitializationOrder_AssumeInitializer_DuplicateCall', 'transparent', {
-  contains: ['Duplicate calls found to initializer `parentAssumeInit` for contract `Parent_AssumeInitializer`'],
+testRejects('InitializationOrder_ValidateAsInitializer_DuplicateCall', 'transparent', {
+  contains: ['Duplicate calls found to initializer `parentAssumeInit` for contract `Parent_ValidateAsInitializer`'],
   count: 1,
 });
 

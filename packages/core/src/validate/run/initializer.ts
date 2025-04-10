@@ -331,28 +331,28 @@ function getPossibleInitializers(
 ): FunctionDefinition[] {
   const fns = [...findAll('FunctionDefinition', contractDef)];
   return fns.filter((fnDef: FunctionDefinition) => {
-    const assumeInitializer = hasAssumeInitializerAnnotation(fnDef, decodeSrc);
-    if (!assumeInitializer && fnDef.modifiers.some(modifier => 'reinitializer' === modifier.modifierName.name)) {
+    const validateAsInitializer = hasValidateAsInitializerAnnotation(fnDef, decodeSrc);
+    if (!validateAsInitializer && fnDef.modifiers.some(modifier => 'reinitializer' === modifier.modifierName.name)) {
       logNote(`Reinitializers are not included in validations by default`, [
-        `${decodeSrc(fnDef)}: If you want to validate this function as an initializer, annotate it with '@custom:oz-upgrades-assume-initializer'`,
+        `${decodeSrc(fnDef)}: If you want to validate this function as an initializer, annotate it with '@custom:oz-upgrades-validate-as-initializer'`,
       ]);
     }
 
-    return assumeInitializer || inferPossibleInitializer(fnDef, isParentContract);
+    return validateAsInitializer || inferPossibleInitializer(fnDef, isParentContract);
   });
 }
 
-function hasAssumeInitializerAnnotation(node: Node, decodeSrc: SrcDecoder): boolean {
+function hasValidateAsInitializerAnnotation(node: Node, decodeSrc: SrcDecoder): boolean {
   const doc = getDocumentation(node);
-  const tag = 'oz-upgrades-assume-initializer';
-  const assumeInitializer = hasAnnotationTag(doc, tag);
-  if (assumeInitializer) {
+  const tag = 'oz-upgrades-validate-as-initializer';
+  const validateAsInitializer = hasAnnotationTag(doc, tag);
+  if (validateAsInitializer) {
     const annotationArgs = getAnnotationArgs(doc, tag);
     if (annotationArgs.length !== 0) {
       throw new Error(`${decodeSrc(node)}: @custom:${tag} annotation must not have any arguments`);
     }
   }
-  return assumeInitializer;
+  return validateAsInitializer;
 }
 
 /**

@@ -24,9 +24,9 @@ contract Parent_NoInitializer {
   }
 }
 
-contract Parent_AssumeInitializer {
+contract Parent_ValidateAsInitializer {
   uint8 x;
-  /// @custom:oz-upgrades-assume-initializer
+  /// @custom:oz-upgrades-validate-as-initializer
   function parentAssumeInit() public {
     x = 1;
   }
@@ -125,9 +125,9 @@ contract MissingInitializer_UnsafeAllow_Contract is Parent_InitializerModifier {
   }
 }
 
-contract AssumeInitializer_Ok is Parent_InitializerModifier {
+contract ValidateAsInitializer_Ok is Parent_InitializerModifier {
   uint y;
-  /// @custom:oz-upgrades-assume-initializer
+  /// @custom:oz-upgrades-validate-as-initializer
   function regularFn() public {
     parentInit();
     y = 2;
@@ -142,11 +142,11 @@ contract Reinitializer_NotDetected is Parent_InitializerModifier {
   }
 }
 
-contract Reinitializer_AssumeInitializer_Ok is Parent_InitializerModifier {
+contract Reinitializer_ValidateAsInitializer_Ok is Parent_InitializerModifier {
   uint y;
   /**
    * Text before
-   * @custom:oz-upgrades-assume-initializer
+   * @custom:oz-upgrades-validate-as-initializer
    * Text after
    */
   function initializeV2() public reinitializer(2) {
@@ -301,7 +301,7 @@ contract InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder is A, B, C, Par
   }
 }
 
-contract InitializationOrder_AssumeInitializer_Ok is A, B, C, Parent_AssumeInitializer {
+contract InitializationOrder_ValidateAsInitializer_Ok is A, B, C, Parent_ValidateAsInitializer {
   function initialize() public {
     __A_init();
     __B_init();
@@ -310,7 +310,7 @@ contract InitializationOrder_AssumeInitializer_Ok is A, B, C, Parent_AssumeIniti
   }
 }
 
-contract InitializationOrder_AssumeInitializer_WrongOrder is A, B, C, Parent_AssumeInitializer {
+contract InitializationOrder_ValidateAsInitializer_WrongOrder is A, B, C, Parent_ValidateAsInitializer {
   function initialize() public {
     __A_init();
     __B_init();
@@ -319,7 +319,7 @@ contract InitializationOrder_AssumeInitializer_WrongOrder is A, B, C, Parent_Ass
   }
 }
 
-contract InitializationOrder_AssumeInitializer_MissingCall is A, B, C, Parent_AssumeInitializer {
+contract InitializationOrder_ValidateAsInitializer_MissingCall is A, B, C, Parent_ValidateAsInitializer {
   function initialize() public {
     __A_init();
     __B_init();
@@ -327,7 +327,7 @@ contract InitializationOrder_AssumeInitializer_MissingCall is A, B, C, Parent_As
   }
 }
 
-contract InitializationOrder_AssumeInitializer_DuplicateCall is A, B, C, Parent_AssumeInitializer {
+contract InitializationOrder_ValidateAsInitializer_DuplicateCall is A, B, C, Parent_ValidateAsInitializer {
   function initialize() public {
     __A_init();
     __B_init();
