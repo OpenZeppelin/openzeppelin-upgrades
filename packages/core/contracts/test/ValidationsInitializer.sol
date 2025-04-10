@@ -134,6 +134,27 @@ contract AssumeInitializer_Ok is Parent_InitializerModifier {
   }
 }
 
+contract Reinitializer_NotDetected is Parent_InitializerModifier {
+  uint y;
+  function initializeV2() public reinitializer(2) {
+    parentInit();
+    y = 2;
+  }
+}
+
+contract Reinitializer_AssumeInitializer_Ok is Parent_InitializerModifier {
+  uint y;
+  /**
+   * Text before
+   * @custom:oz-upgrades-assume-initializer
+   * Text after
+   */
+  function initializeV2() public reinitializer(2) {
+    parentInit();
+    y = 2;
+  }
+}
+
 contract A is Initializable {
   uint a;
   function __A_init() onlyInitializing internal {

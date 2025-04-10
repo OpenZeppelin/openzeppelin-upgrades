@@ -100,6 +100,12 @@ testOverride('MissingInitializer_Bad', 'transparent', { unsafeAllow: ['missing-i
 
 testAccepts('AssumeInitializer_Ok', 'transparent');
 
+testRejects('Reinitializer_NotDetected', 'transparent', {
+  contains: ['Missing initializer'],
+  count: 1,
+});
+testAccepts('Reinitializer_AssumeInitializer_Ok', 'transparent');
+
 testAccepts('InitializationOrder_Ok', 'transparent');
 testAccepts('InitializationOrder_Ok_2', 'transparent');
 
