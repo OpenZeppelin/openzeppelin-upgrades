@@ -334,7 +334,7 @@ function getPossibleInitializers(
     const assumeInitializer = hasAssumeInitializerAnnotation(fnDef, decodeSrc);
     if (!assumeInitializer && fnDef.modifiers.some(modifier => 'reinitializer' === modifier.modifierName.name)) {
       logNote(`Reinitializers are not included in validations by default`, [
-        `${decodeSrc(fnDef)}: If you want to validate this function as an initializer, add the NatSpec annotation \`@custom:oz-upgrades-assume-initializer\` above this function.`,
+        `${decodeSrc(fnDef)}: If you want to validate this function as an initializer, annotate it with '@custom:oz-upgrades-assume-initializer'`,
       ]);
     }
 
