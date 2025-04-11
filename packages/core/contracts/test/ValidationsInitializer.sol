@@ -24,6 +24,14 @@ contract Parent_NoInitializer {
   }
 }
 
+contract Parent_ValidateAsInitializer {
+  uint8 x;
+  /// @custom:oz-upgrades-validate-as-initializer
+  function parentAssumeInit() public {
+    x = 1;
+  }
+}
+
 contract Parent_InitializerModifier is Initializable {
   uint8 x;
   function parentInit() initializer internal {
@@ -112,6 +120,36 @@ contract MissingInitializer_Bad is Parent_InitializerModifier {
 contract MissingInitializer_UnsafeAllow_Contract is Parent_InitializerModifier {
   uint y;
   function regularFn() public {
+    parentInit();
+    y = 2;
+  }
+}
+
+contract ValidateAsInitializer_Ok is Parent_InitializerModifier {
+  uint y;
+  /// @custom:oz-upgrades-validate-as-initializer
+  function regularFn() public {
+    parentInit();
+    y = 2;
+  }
+}
+
+contract Reinitializer_NotDetected is Parent_InitializerModifier {
+  uint y;
+  function initializeV2() public reinitializer(2) {
+    parentInit();
+    y = 2;
+  }
+}
+
+contract Reinitializer_ValidateAsInitializer_Ok is Parent_InitializerModifier {
+  uint y;
+  /**
+   * Text before
+   * @custom:oz-upgrades-validate-as-initializer
+   * Text after
+   */
+  function initializeV2() public reinitializer(2) {
     parentInit();
     y = 2;
   }
@@ -260,6 +298,58 @@ contract InitializationOrder_UnsafeAllowDuplicate_But_WrongOrder is A, B, C, Par
     __C_init();
     __B_init();
     __B_init();
+  }
+}
+
+contract InitializationOrder_ValidateAsInitializer_Ok is A, B, C, Parent_ValidateAsInitializer {
+  function initialize() public {
+    __A_init();
+    __B_init();
+    __C_init();
+    parentAssumeInit();
+  }
+}
+
+contract InitializationOrder_ValidateAsInitializer_WrongOrder is A, B, C, Parent_ValidateAsInitializer {
+  function initialize() public {
+    __A_init();
+    __B_init();
+    parentAssumeInit();
+    __C_init();
+  }
+}
+
+contract InitializationOrder_ValidateAsInitializer_MissingCall is A, B, C, Parent_ValidateAsInitializer {
+  function initialize() public {
+    __A_init();
+    __B_init();
+    __C_init();
+  }
+}
+
+contract InitializationOrder_ValidateAsInitializer_DuplicateCall is A, B, C, Parent_ValidateAsInitializer {
+  function initialize() public {
+    __A_init();
+    __B_init();
+    __C_init();
+    parentAssumeInit();
+    parentAssumeInit();
+  }
+}
+
+contract Parent_ValidateAsInitializer_External_Ok {
+  uint8 x;
+  /// @custom:oz-upgrades-validate-as-initializer
+  function parentAssumeInit() external {
+    // this is a valid initializer, but it does not need to be called by the child (and it is not possible to do so), because it is external
+    x = 1;
+  }
+}
+
+contract Child_Of_ValidateAsInitializer_External_Ok is Parent_ValidateAsInitializer_External_Ok {
+  uint y;
+  function initialize() public {
+    y = 2;
   }
 }
 
