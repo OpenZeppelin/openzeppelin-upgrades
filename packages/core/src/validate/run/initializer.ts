@@ -338,7 +338,7 @@ function getPossibleInitializers(
       ]);
     }
 
-    return validateAsInitializer || inferPossibleInitializer(fnDef, isParentContract);
+    return inferPossibleInitializer(fnDef, validateAsInitializer, isParentContract);
   });
 }
 
@@ -355,14 +355,24 @@ function hasValidateAsInitializerAnnotation(node: Node, decodeSrc: SrcDecoder): 
   return validateAsInitializer;
 }
 
+function hasInitializerNameOrModifier(fnDef: FunctionDefinition) {
+  return (
+    fnDef.modifiers.some(modifier => ['initializer', 'onlyInitializing'].includes(modifier.modifierName.name)) ||
+    ['initialize', 'initializer'].includes(fnDef.name)
+  );
+}
+
 /**
  * Infers whether a function could be an initializer. Does not include private functions.
  * For parent contracts, only internal and public functions which contain statements are included.
  */
-function inferPossibleInitializer(fnDef: FunctionDefinition, isParentContract: boolean): boolean {
+function inferPossibleInitializer(
+  fnDef: FunctionDefinition,
+  validateAsInitializer: boolean,
+  isParentContract: boolean,
+): boolean {
   return (
-    (fnDef.modifiers.some(modifier => ['initializer', 'onlyInitializing'].includes(modifier.modifierName.name)) ||
-      ['initialize', 'initializer'].includes(fnDef.name)) &&
+    (validateAsInitializer || hasInitializerNameOrModifier(fnDef)) &&
     // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
     !(fnDef.virtual && !fnDef.body) &&
     // Ignore private functions, since they cannot be called outside the contract

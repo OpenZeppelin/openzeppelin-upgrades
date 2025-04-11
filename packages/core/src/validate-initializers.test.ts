@@ -42,7 +42,7 @@ interface ExpectedErrors {
   count: number;
 }
 
-function testRejects(name: string, kind: ValidationOptions['kind'], expectedErrors?: ExpectedErrors) {
+function testRejects(name: string, kind: ValidationOptions['kind'], expectedErrors: ExpectedErrors) {
   testOverride(name, kind, {}, expectedErrors);
 }
 
@@ -142,6 +142,9 @@ testRejects('InitializationOrder_ValidateAsInitializer_DuplicateCall', 'transpar
   contains: ['Duplicate calls found to initializer `parentAssumeInit` for contract `Parent_ValidateAsInitializer`'],
   count: 1,
 });
+
+testAccepts('Parent_ValidateAsInitializer_External_Ok', 'transparent');
+testAccepts('Child_Of_ValidateAsInitializer_External_Ok', 'transparent');
 
 testAccepts('WithRequire_Ok', 'transparent');
 testRejects('WithRequire_Bad', 'transparent', {

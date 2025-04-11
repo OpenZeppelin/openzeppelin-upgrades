@@ -337,6 +337,22 @@ contract InitializationOrder_ValidateAsInitializer_DuplicateCall is A, B, C, Par
   }
 }
 
+contract Parent_ValidateAsInitializer_External_Ok {
+  uint8 x;
+  /// @custom:oz-upgrades-validate-as-initializer
+  function parentAssumeInit() external {
+    // this is a valid initializer, but it does not need to be called by the child (and it is not possible to do so), because it is external
+    x = 1;
+  }
+}
+
+contract Child_Of_ValidateAsInitializer_External_Ok is Parent_ValidateAsInitializer_External_Ok {
+  uint y;
+  function initialize() public {
+    y = 2;
+  }
+}
+
 contract WithRequire_Ok is Parent__OnlyInitializingModifier {
   uint y;
   function initialize(bool foo) initializer public {
