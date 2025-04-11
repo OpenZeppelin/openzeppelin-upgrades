@@ -7,7 +7,6 @@ import { SolcOutput } from '../solc-api';
 import { getStorageUpgradeErrors } from '../storage';
 import { StorageLayout } from './layout';
 import { extractStorageLayout } from './extract';
-import { stabilizeStorageLayout } from '../utils/stabilize-layout';
 
 interface Context {
   extractStorageLayout: (contract: string) => StorageLayout;
@@ -38,15 +37,15 @@ test('struct append at end of storage - ok', t => {
   const v1 = t.context.extractStorageLayout('StructAppendV1');
   const v2 = t.context.extractStorageLayout('StructAppendV2_Ok');
   const comparison = getStorageUpgradeErrors(v1, v2);
-  t.deepEqual(comparison, []);
+  t.deepEqual(comparison, [], JSON.stringify(comparison, null, 2));
 });
 
 test('struct append not at end of storage - bad', t => {
-  const v1 = t.context.extractStorageLayout('StructAppendV1');
-  const v2 = t.context.extractStorageLayout('StructAppendV2_Bad');
+  const v1 = t.context.extractStorageLayout('StructAppendBeforeStorageEndV1');
+  const v2 = t.context.extractStorageLayout('StructAppendBeforeStorageEndV2_Bad');
   const comparison = getStorageUpgradeErrors(v1, v2);
   t.like(comparison, {
-    length: 1,
+    length: 2,
     0: {
       kind: 'typechange',
       change: {
@@ -58,6 +57,17 @@ test('struct append not at end of storage - bad', t => {
       },
       original: { label: 'myStruct' },
       updated: { label: 'myStruct' },
+    },
+    1: {
+      kind: 'layoutchange',
+      change: {
+        slot: {
+          from: '2',
+          to: '3',
+        },
+      },
+      original: { label: 'zz' },
+      updated: { label: 'zz' },
     },
   });
 });
