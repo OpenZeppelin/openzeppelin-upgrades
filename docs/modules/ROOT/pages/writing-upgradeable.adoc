@@ -203,7 +203,7 @@ constructor() {
 
 The OpenZeppelin Upgrades plugins will automatically detect specific issues with initializers in implementation contracts. These include checking if your implementation contract is missing an initializer when there are parent initializers that need to be called, if a parent initializer is not called, or if a parent initializer is called more than once. The plugins will also warn if parent initializers are not called in linearized order.
 
-Note that reinitializers are not included in validations by default, because the Upgrades plugins cannot determine whether they are intended to be used for new deployments. If you want to validate a reinitializer function as an initializer that can be used for new deployments, annotate it with `@custom:oz-upgrades-validate-as-initializer`.
+Reinitializers are not included in validations by default, because the Upgrades plugins cannot determine whether they are intended to be used for new deployments. If you want to validate a reinitializer function as an initializer that can be used for new deployments, annotate it with `@custom:oz-upgrades-validate-as-initializer`. Note that functions which cannot possibly be initializers are always ignored, such as private functions that cannot be called externally or by child contracts.
 
 [[creating-new-instances-from-your-contract-code]]
 == Creating New Instances From Your Contract Code
