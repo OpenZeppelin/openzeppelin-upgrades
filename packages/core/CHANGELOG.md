@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.43.0 (2025-04-11)
 
 - Add Sonic network to manifest file names. ([#1146](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1146))
 - Support annotation to validate functions as initializers. ([#1148](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1148))
