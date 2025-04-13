@@ -8,6 +8,9 @@ import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
 import { UpgradesError } from '../error';
 import * as versions from 'compare-versions';
+import { normalizeUint256Literal } from '../utils/integer-literals';
+import { calculateERC7201StorageLocation, ERC7201_FORMULA_PREFIX } from '../utils/erc7201';
+import { logWarning } from '../utils/log';
 
 /**
  * Loads a contract's namespaces and namespaced type information into the storage layout.
@@ -57,8 +60,10 @@ export function loadNamespaces(
     );
   }
 
+  warnIfCustomLayoutAndNamespacesFound(namespacesWithSrc, decodeSrc, origContext.contractDef);
+
   // Add to layout without the namespaced structs' src locations, since those are no longer needed
-  // as they were only used to give duplicate namespace errors above.
+  // as they were only used to give duplicate namespace errors in `addContractNamespacesWithSrc` above.
   layout.namespaces = Object.fromEntries(
     Object.entries(namespacesWithSrc).map(([id, namespaceWithSrc]) => [id, namespaceWithSrc.namespace]),
   );
@@ -74,6 +79,19 @@ The namespace ${id} was found in structs at the following locations:
 - ${src2}
 
 Use a unique namespace id for each struct annotated with '@custom:storage-location erc7201:<NAMESPACE_ID>' in your contract and its inherited contracts.`,
+    );
+  }
+}
+
+class CustomLayoutClashWithNamespaceError extends UpgradesError {
+  constructor(id: string, contractName: string, src: string) {
+    super(
+      `Custom layout for contract ${contractName} clashes with the storage location for namespace ${id}`,
+      () => `\
+The namespace ${id} is defined in a struct at the following location:
+- ${src}
+
+Specify a different custom layout for the contract or use a different namespace for the struct.`,
     );
   }
 }
@@ -130,6 +148,8 @@ function addContractNamespacesWithSrc(
             origSrc,
           );
         } else {
+          checkCustomLayoutClashWithNamespace(origContractDef, storageLocation, leastDerivedContractName, origSrc);
+
           namespacesWithSrc[storageLocation] = {
             namespace: getNamespacedStorageItems(node, decodeSrc, layout, contractContext, origContractDef),
             src: origSrc,
@@ -137,6 +157,52 @@ function addContractNamespacesWithSrc(
         }
       }
     }
+  }
+}
+
+/**
+ * Checks if a custom layout's base slot clashes with a namespace's base slot, and throws an error if it does.
+ *
+ * @param contractDef The contract definition to check.
+ * @param storageLocation The namespace storage location string, e.g. `erc7201:<NAMESPACE_ID>`.
+ * @param contractName The name of the contract.
+ * @param src The original source location of the struct with the namespace.
+ * @throws CustomLayoutClashWithNamespaceError if the custom layout clashes with the namespace.
+ */
+function checkCustomLayoutClashWithNamespace(
+  contractDef: ContractDefinition,
+  storageLocation: string,
+  contractName: string,
+  src: string,
+) {
+  if (contractDef.storageLayout !== undefined && storageLocation.startsWith(ERC7201_FORMULA_PREFIX)) {
+    const namespaceId = storageLocation.substring(ERC7201_FORMULA_PREFIX.length);
+    const calculatedStorageLocation = calculateERC7201StorageLocation(namespaceId);
+    if (contractDef.storageLayout.baseSlotExpression.nodeType === 'Literal') {
+      const baseSlotNormalized = normalizeUint256Literal(contractDef.storageLayout.baseSlotExpression.value); // TODO: when Solidity supports an erc7201 helper function, also check that for clash
+      if (baseSlotNormalized === calculatedStorageLocation) {
+        throw new CustomLayoutClashWithNamespaceError(storageLocation, contractName, src);
+      }
+    }
+  }
+}
+
+function warnIfCustomLayoutAndNamespacesFound(
+  namespacesWithSrc: Record<string, NamespaceWithSrc>,
+  decodeSrc: SrcDecoder,
+  origContractDef: ContractDefinition,
+) {
+  // TODO: when Solidity supports an erc7201 helper function, only give this warning if the custom storage layout is not using the erc7201 helper function
+  if (Object.entries(namespacesWithSrc).length > 0 && origContractDef.storageLayout !== undefined) {
+    const contractName = origContractDef.canonicalName ?? origContractDef.name;
+    logWarning(
+      `${decodeSrc(origContractDef.storageLayout)}: Ensure custom storage layout does not overlap with namespaced storage layout.`,
+      [
+        `Contract \`${contractName}\` has both custom storage layout and namespaces.`,
+        'The Upgrades Plugin validates that they do not use the same base slot, but does not check for overlaps.',
+        "Ensure the base slot for the contract's `layout at` specifier is chosen such that its storage variables do not overlap with any namespaces.",
+      ],
+    );
   }
 }
 

@@ -15,6 +15,7 @@ import { mapValues } from '../utils/map-values';
 import { pick } from '../utils/pick';
 import { execall } from '../utils/execall';
 import { loadNamespaces } from './namespace';
+import { UpgradesError } from '../error';
 
 const currentLayoutVersion = '1.2';
 
@@ -36,6 +37,8 @@ export function extractStorageLayout(
   namespacedContext?: CompilationContext,
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
+
+  loadBaseSlot(contractDef, decodeSrc, layout);
 
   // The namespaced context will contain the types of namespaces that may not be included
   // in the original storage layout.
@@ -99,6 +102,24 @@ export function extractStorageLayout(
   loadNamespaces(decodeSrc, layout, origContext, namespacedContext);
 
   return layout;
+}
+
+function loadBaseSlot(contractDef: ContractDefinition, decodeSrc: SrcDecoder, layout: StorageLayout) {
+  if (contractDef.storageLayout !== undefined) {
+    if (contractDef.storageLayout.baseSlotExpression.nodeType !== 'Literal') {
+      const src = decodeSrc(contractDef.storageLayout.baseSlotExpression);
+
+      // TODO when Slang supports Solidity 0.8.29, use it to parse the expression (of any node type) into a string, then just save it to `layout.baseSlot`.
+      // Then when comparing layouts in `storage/index.ts`, it will only be used when detailed storage layout is not available, and the comparison
+      // can be changed to a string comparison when `layout.baseSlot` not an integer literal.
+      throw new UpgradesError(
+        `${src}: Custom storage layout expression with node type ${contractDef.storageLayout.baseSlotExpression.nodeType} is not currently supported`,
+        () =>
+          'Please report this at https://zpl.in/upgrades/report and include the `layout at` expression from your contract.',
+      );
+    }
+    layout.baseSlot = contractDef.storageLayout.baseSlotExpression.value ?? undefined;
+  }
 }
 
 const findTypeNames = findAll([

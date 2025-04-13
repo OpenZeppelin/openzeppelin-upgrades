@@ -6,6 +6,7 @@ import { StorageOperation, StorageItem, StorageLayoutComparator } from './compar
 import { LayoutCompatibilityReport } from './report';
 import { ValidationOptions, withValidationDefaults } from '../validate/overrides';
 import { logNote, logWarning } from '../utils/log';
+import { normalizeUint256Literal } from '../utils/integer-literals';
 
 export function assertStorageUpgradeSafe(
   original: StorageLayout,
@@ -36,11 +37,39 @@ export function assertStorageUpgradeSafe(
   }
 }
 
+function validateBaseSlotUnchanged(original: StorageLayout, updated: StorageLayout) {
+  const origNormalized = normalizeUint256Literal(original.baseSlot);
+  const updatedNormalized = normalizeUint256Literal(updated.baseSlot);
+
+  if (origNormalized !== updatedNormalized) {
+    throw new UpgradesError(
+      `Base slot for custom storage layout changed from ${origNormalized} to ${updatedNormalized}`,
+      () => `\
+Do not change the base slot during upgrades when using custom storage layout.
+
+If you need to change the base slot, ensure you also do the following:
+1. Adjust all storage variables to continue using their original slots.
+2. Configure your Solidity compiler options to include storage layouts according to https://docs.openzeppelin.com/upgrades-plugins/api-core#compile_contracts_with_storage_layouts
+3. Recompile both the original and updated contracts.
+4. Run the storage layout check again.`,
+    );
+  }
+}
+
 export function getStorageUpgradeReport(
   original: StorageLayout,
   updated: StorageLayout,
   opts: Required<ValidationOptions>,
 ): LayoutCompatibilityReport {
+  if (opts.unsafeSkipStorageCheck) {
+    return new LayoutCompatibilityReport([]);
+  }
+
+  if (original.storage.some(item => item.slot === undefined) || updated.storage.some(item => item.slot === undefined)) {
+    // Compiler was not configured to output detailed storage layout with slot information
+    validateBaseSlotUnchanged(original, updated);
+  }
+
   const originalDetailed = getDetailedLayout(original);
   const updatedDetailed = getDetailedLayout(updated);
   const originalDetailedNamespaces = getDetailedNamespacedLayout(original);

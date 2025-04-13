@@ -12,6 +12,7 @@ export interface StorageLayout {
   types: Record<string, TypeItem>;
   flat?: boolean;
   namespaces?: Record<string, StorageItem[]>;
+  baseSlot?: string;
 }
 
 export type StorageField<Type = string> = StorageItem<Type> | StructMember<Type>;
