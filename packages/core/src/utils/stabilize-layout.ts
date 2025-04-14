@@ -18,5 +18,6 @@ export function stabilizeStorageLayout(layout: StorageLayout) {
           return [ns, items.map(item => ({ ...item, type: stabilizeTypeIdentifier(item.type) }))];
         })
       : undefined,
+    baseSlot: layout.baseSlot,
   };
 }

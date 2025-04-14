@@ -1,8 +1,13 @@
 # Changelog
 
-## Unreleased
+## 1.44.0 (2025-04-14)
+
+- Validate Solidity custom storage layouts, use proxies from OpenZeppelin Contracts 5.3.0. ([#1144](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1144))
+
+## 1.43.0 (2025-04-11)
 
 - Add Sonic network to manifest file names. ([#1146](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1146))
+- Support annotation to validate functions as initializers. ([#1148](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1148))
 
 ## 1.42.2 (2025-03-19)
 

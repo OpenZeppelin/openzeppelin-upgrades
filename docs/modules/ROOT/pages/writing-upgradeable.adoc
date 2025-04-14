@@ -191,12 +191,19 @@ contract MyContract {
 
 Do not leave an implementation contract uninitialized. An uninitialized implementation contract can be taken over by an attacker, which may impact the proxy. To prevent the implementation contract from being used, you should invoke the `_disableInitializers` function in the constructor to automatically lock it when it is deployed:
 
-```
+[source,solidity]
+----
 /// @custom:oz-upgrades-unsafe-allow constructor
 constructor() {
     _disableInitializers();
 }
-```
+----
+
+=== Validating Initializers
+
+The OpenZeppelin Upgrades plugins will automatically detect specific issues with initializers in implementation contracts. These include checking if your implementation contract is missing an initializer when there are parent initializers that need to be called, if a parent initializer is not called, or if a parent initializer is called more than once. The plugins will also warn if parent initializers are not called in linearized order.
+
+Reinitializers are not included in validations by default, because the Upgrades plugins cannot determine whether they are intended to be used for new deployments. If you want to validate a reinitializer function as an initializer that can be used for new deployments, annotate it with `@custom:oz-upgrades-validate-as-initializer`. Note that functions which cannot possibly be initializers are always ignored, such as private functions which cannot be called externally or by child contracts.
 
 [[creating-new-instances-from-your-contract-code]]
 == Creating New Instances From Your Contract Code
