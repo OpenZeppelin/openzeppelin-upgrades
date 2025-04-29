@@ -180,15 +180,28 @@ export class StorageLayoutComparator {
         // This applies to both direct storage appends and appends within structs
         return false;
       } else if (o.kind === 'typechange' && o.change?.kind === 'struct members' && o.change.allowAppend) {
-        // If this is a struct change where all the operations are appends and allowAppend is true,
-        // then it should be considered safe. When appending to a struct at the end of storage layout,
-        // we're only extending into unused storage space, which doesn't cause any collisions or
-        // layout corruption. This is different from insertions/modifications in the middle of storage.
-        // Fix for: https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/1136
         const structOps = o.change.ops;
-        const hasUnsafeOps = structOps.some(op => op.kind !== 'append');
+        const hasNonAppendOps = structOps.some(op => op.kind !== 'append');
+        if (hasNonAppendOps) {
+          return true;
+        }
 
-        return hasUnsafeOps;
+        const structEnd = storageFieldEnd(o.original);
+        if (structEnd === undefined) {
+          return true;
+        }
+
+        const hasFieldsAfter = original
+          .filter(field => !isGap(field))
+          .some(field => {
+            const fieldStart = storageFieldBegin(field);
+            if (field === o.original || fieldStart === undefined) {
+              return false;
+            }
+            return fieldStart > structEnd;
+          });
+
+        return hasFieldsAfter;
       }
       return true;
     });
