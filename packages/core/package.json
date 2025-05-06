@@ -38,7 +38,6 @@
     "test": "ava",
     "test:update-snapshots": "yarn test --update-snapshots",
     "test:watch": "hardhat compile --force && yarn copyfiles && fgbg 'ava --watch' 'tsc -b --watch' --",
-    "version": "node ../../scripts/bump-changelog.js",
     "cli": "node ./dist/cli/cli.js"
   },
   "bin": {

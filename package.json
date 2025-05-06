@@ -10,7 +10,9 @@
     "lint": "yarn lint:path .",
     "lint:path": "eslint --ignore-path .gitignore --max-warnings 0",
     "test": "wsrun -ms test",
-    "coverage": "nyc yarn test"
+    "coverage": "nyc yarn test",
+    "version": "bash scripts/release/version.sh",
+    "publish": "bash scripts/release/publish.sh"
   },
   "devDependencies": {
     "@openzeppelin/docs-utils": "^0.1.0",
