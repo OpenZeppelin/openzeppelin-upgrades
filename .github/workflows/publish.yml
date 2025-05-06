@@ -1,0 +1,44 @@
+name: Publish Packages
+
+on:
+  workflow_dispatch:
+
+concurrency: version-or-publish-${{ github.ref }}
+
+jobs:
+  publish:
+    name: Publish Packages
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    environment: publish
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          fetch-depth: 0 # To get all tags
+          ref: ${{ github.ref }}
+      - name: Set up environment
+        uses: ./.github/actions/setup
+      - name: Create Prepare Release PR or Publish
+        id: changesets
+        uses: changesets/action@746c25e23caa47dceb6a48ee85b4cbc5a9f5f293 # v1.5.0
+        with:
+          title: Prepare Release
+          commit: Prepare Release
+          version: npm run version
+          publish: npm run publish
+          commitMode: github-api
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Check changesets status
+        if: steps.changesets.outputs.hasChangesets == 'true'
+        run: |
+          echo "Changesets found. Merge Prepare Release PR before publishing."
+          exit 1
+      - name: Check publish status
+        if: steps.changesets.outputs.published == 'false'
+        run: |
+          echo "Publish failed. Check the logs for more details."
+          exit 1
