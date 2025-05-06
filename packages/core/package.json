@@ -51,7 +51,7 @@
     "@types/debug": "^4.1.5",
     "@types/minimist": "^1.2.5",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^16.11.7",
+    "@types/node": "^20.0.0",
     "@types/proper-lockfile": "^4.1.1",
     "@types/sinon": "^17.0.0",
     "ava": "^6.0.0",
