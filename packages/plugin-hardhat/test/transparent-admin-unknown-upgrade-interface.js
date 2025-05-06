@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const { ethers, upgrades } = require('hardhat');
 const hre = require('hardhat');
 
-const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
+const TransparentUpgradableProxy = require('@ericglau/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
 
 test.before(async t => {
   t.context.GreeterTransparent40Fallback = await ethers.getContractFactory('GreeterTransparent40Fallback');

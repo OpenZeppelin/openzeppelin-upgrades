@@ -3,7 +3,7 @@ const test = require('ava');
 const { ethers, upgrades } = require('hardhat');
 const hre = require('hardhat');
 
-const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
+const ProxyAdmin = require('@ericglau/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
 
 const OWNABLE_ABI = ['function owner() view returns (address)'];
 

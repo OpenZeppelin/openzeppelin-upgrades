@@ -1,7 +1,7 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
 import type { ContractFactory, Contract } from 'ethers';
 
-import { Deployment } from '@openzeppelin/upgrades-core';
+import { Deployment } from '@ericglau/upgrades-core';
 
 import { DeployBeaconOptions, deploy, DeployTransaction, getUpgradeableBeaconFactory, deployBeaconImpl } from './utils';
 import { disableDefender } from './defender/utils';

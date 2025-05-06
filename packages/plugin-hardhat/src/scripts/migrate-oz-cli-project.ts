@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { migrateLegacyProject } from '@openzeppelin/upgrades-core';
+import { migrateLegacyProject } from '@ericglau/upgrades-core';
 
 migrateLegacyProject().catch(e => {
   console.error(e);

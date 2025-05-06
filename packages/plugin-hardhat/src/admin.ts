@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
+import { Manifest, getAdminAddress } from '@ericglau/upgrades-core';
 import { Contract, Signer } from 'ethers';
 import { EthersDeployOptions, attachProxyAdminV4 } from './utils';
 import { disableDefender } from './defender/utils';

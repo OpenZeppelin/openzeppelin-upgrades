@@ -6,7 +6,7 @@ import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 import { lazyObject } from 'hardhat/plugins';
 import { HardhatConfig, HardhatRuntimeEnvironment } from 'hardhat/types';
-import { assertUnreachable, type silenceWarnings, type SolcInput, type SolcOutput } from '@openzeppelin/upgrades-core';
+import { assertUnreachable, type silenceWarnings, type SolcInput, type SolcOutput } from '@ericglau/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
 import type { PrepareUpgradeFunction } from './prepare-upgrade';
 import type { UpgradeFunction } from './upgrade-proxy';
@@ -88,7 +88,7 @@ subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) =
 
 subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
   const { isNamespaceSupported, validate, solcInputOutputDecoder, makeNamespacedInput, trySanitizeNatSpec } =
-    await import('@openzeppelin/upgrades-core');
+    await import('@ericglau/upgrades-core');
   const { writeValidations } = await import('./utils/validations.js');
 
   // TODO: patch input
@@ -117,7 +117,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
         switch (hre.config.namespacedCompileErrors) {
           case undefined:
           case 'error': {
-            const { UpgradesError } = await import('@openzeppelin/upgrades-core');
+            const { UpgradesError } = await import('@ericglau/upgrades-core');
             const details = [
               ...preamble,
               'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades,',
@@ -126,7 +126,7 @@ subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSup
             throw new UpgradesError(msg, () => details.join('\n'));
           }
           case 'warn': {
-            const { logWarning } = await import('@openzeppelin/upgrades-core');
+            const { logWarning } = await import('@ericglau/upgrades-core');
             const details = [
               ...preamble,
               'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades,',
@@ -178,7 +178,7 @@ extendEnvironment(hre => {
 
 function warnOnHardhatDefender() {
   if (tryRequire('@openzeppelin/hardhat-defender', true)) {
-    const { logWarning } = require('@openzeppelin/upgrades-core');
+    const { logWarning } = require('@ericglau/upgrades-core');
     logWarning('The @openzeppelin/hardhat-defender package is deprecated.', [
       'Uninstall the @openzeppelin/hardhat-defender package.',
       'OpenZeppelin Defender integration is included as part of the Hardhat Upgrades plugin.',
@@ -224,7 +224,7 @@ function makeFunctions(hre: HardhatRuntimeEnvironment, defender: boolean) {
     getImplementationAddress,
     getBeaconAddress,
     getImplementationAddressFromBeacon,
-  } = require('@openzeppelin/upgrades-core');
+  } = require('@ericglau/upgrades-core');
   const { makeDeployProxy } = require('./deploy-proxy');
   const { makeUpgradeProxy } = require('./upgrade-proxy');
   const { makeValidateImplementation } = require('./validate-implementation');

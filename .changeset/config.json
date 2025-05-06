@@ -3,7 +3,7 @@
   "changelog": [
     "@changesets/changelog-github",
     {
-      "repo": "OpenZeppelin/openzeppelin-upgrades"
+      "repo": "ericglau/openzeppelin-upgrades"
     }
   ],
   "commit": false,

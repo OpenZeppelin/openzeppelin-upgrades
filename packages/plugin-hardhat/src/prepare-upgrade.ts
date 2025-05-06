@@ -14,7 +14,7 @@ import {
   isTransparentOrUUPSProxy,
   isBeacon,
   PrepareUpgradeRequiresKindError,
-} from '@openzeppelin/upgrades-core';
+} from '@ericglau/upgrades-core';
 import { DeployImplementationResponse } from './deploy-implementation';
 import { enableDefender } from './defender/utils';
 import { deployUpgradeableImpl, DeployedImpl } from './utils/deploy-impl';

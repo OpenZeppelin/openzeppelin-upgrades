@@ -8,7 +8,7 @@ import {
   Manifest,
   processProxyKind,
   ValidationOptions,
-} from '@openzeppelin/upgrades-core';
+} from '@ericglau/upgrades-core';
 import { DeployData } from './deploy-impl';
 
 /**

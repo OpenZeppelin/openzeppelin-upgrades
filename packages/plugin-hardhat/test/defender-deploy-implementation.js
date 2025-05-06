@@ -4,7 +4,7 @@ const proxyquire = require('proxyquire').noCallThru();
 const hre = require('hardhat');
 const { ethers } = hre;
 
-const manifest = require('@openzeppelin/upgrades-core/dist/manifest');
+const manifest = require('@ericglau/upgrades-core/dist/manifest');
 
 test.before(async t => {
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
