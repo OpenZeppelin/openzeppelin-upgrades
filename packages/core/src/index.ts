@@ -65,4 +65,4 @@ export { isNamespaceSupported } from './storage/namespace';
 export { inferProxyAdmin } from './infer-proxy-admin';
 export { assertUnreachable } from './utils/assert';
 
-export const FOO = 'bar';
+export const FOO = 'bar2';
