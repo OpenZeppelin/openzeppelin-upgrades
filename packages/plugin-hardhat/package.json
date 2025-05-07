@@ -1,6 +1,6 @@
 {
   "name": "@ericglau/hardhat-upgrades",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
   "license": "MIT",
@@ -37,7 +37,7 @@
     "@openzeppelin/defender-sdk-base-client": "^2.1.0",
     "@openzeppelin/defender-sdk-deploy-client": "^2.1.0",
     "@openzeppelin/defender-sdk-network-client": "^2.1.0",
-    "@ericglau/upgrades-core": "^1.45.0",
+    "@ericglau/upgrades-core": "^1.46.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
     "ethereumjs-util": "^7.1.5",

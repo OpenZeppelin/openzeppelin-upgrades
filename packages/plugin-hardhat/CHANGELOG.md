@@ -1,6 +1,12 @@
 # Changelog
 
 
+## 3.11.0 (2025-05-07)
+
+- test 3 ([#5](https://github.com/ericglau/openzeppelin-upgrades/pull/5))
+- Updated dependencies [[`8cd7e50`](https://github.com/ericglau/openzeppelin-upgrades/commit/8cd7e509a5a68c5b2b92a336292ba419a255974e)]:
+  - @ericglau/upgrades-core@1.46.0
+
 ## 3.10.0 (2025-05-07)
 
 - add dep

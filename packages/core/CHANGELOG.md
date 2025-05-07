@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 1.46.0 (2025-05-07)
+
+- test 3 ([#5](https://github.com/ericglau/openzeppelin-upgrades/pull/5))
+
 ## 1.45.0 (2025-05-07)
 
 - test ([#3](https://github.com/ericglau/openzeppelin-upgrades/pull/3))
