@@ -27,7 +27,7 @@ import type {
 
 import { FOO } from '@ericglau/upgrades-core';
 const FOO2 = FOO;
-export { FOO2 };
+export { FOO2, FOO };
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
