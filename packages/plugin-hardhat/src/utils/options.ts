@@ -5,7 +5,7 @@ import {
   StandaloneValidationOptions,
   ValidationOptions,
   withValidationDefaults,
-} from '@openzeppelin/upgrades-core';
+} from '@ericglau/upgrades-core';
 import { ContractFactory, Overrides } from 'ethers';
 import { EthersOrDefenderDeployment } from './deploy';
 

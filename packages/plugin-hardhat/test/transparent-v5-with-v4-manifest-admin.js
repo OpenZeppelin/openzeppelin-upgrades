@@ -3,10 +3,10 @@ const test = require('ava');
 const { ethers, upgrades } = require('hardhat');
 const hre = require('hardhat');
 
-const { fetchOrDeployAdmin } = require('@openzeppelin/upgrades-core');
+const { fetchOrDeployAdmin } = require('@ericglau/upgrades-core');
 const { deploy } = require('../dist/utils');
 
-const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
+const ProxyAdmin = require('@ericglau/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
 
 test.before(async t => {
   t.context.Greeter = await ethers.getContractFactory('Greeter');

@@ -9,20 +9,20 @@ import {
   DeployContractRequest,
   DeployRequestLibraries,
 } from '@openzeppelin/defender-sdk-deploy-client';
-import { getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
+import { getContractNameAndRunValidation, UpgradesError } from '@ericglau/upgrades-core';
 
-import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json';
+import artifactsBuildInfo from '@ericglau/upgrades-core/artifacts/build-info-v5.json';
 
-import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
-import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
-import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
-import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
+import ERC1967Proxy from '@ericglau/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
+import BeaconProxy from '@ericglau/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
+import UpgradeableBeacon from '@ericglau/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
+import TransparentUpgradeableProxy from '@ericglau/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 
 import { getNetwork, parseTxOverrides } from './utils';
 import { DefenderDeployOptions, UpgradeOptions, EthersDeployOptions, DefenderDeployment } from '../utils';
 import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
-import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
+import { ContractSourceNotFoundError } from '@ericglau/upgrades-core';
 import { getDeployClient } from './client';
 
 const deployableProxyContracts = [ERC1967Proxy, BeaconProxy, UpgradeableBeacon, TransparentUpgradeableProxy];

@@ -8,7 +8,7 @@ import {
   ValidationDataCurrent,
   ValidationOptions,
   Version,
-} from '@openzeppelin/upgrades-core';
+} from '@ericglau/upgrades-core';
 import type { ContractFactory, ethers } from 'ethers';
 import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
 import { deploy } from './deploy';

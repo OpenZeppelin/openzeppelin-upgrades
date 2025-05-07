@@ -6,7 +6,7 @@ import {
   DeployOpts,
   isDeploymentCompleted,
   UpgradesError,
-} from '@openzeppelin/upgrades-core';
+} from '@ericglau/upgrades-core';
 
 import { Network, fromChainId } from '@openzeppelin/defender-sdk-base-client';
 import { TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';

@@ -4,7 +4,7 @@ import assert from 'assert';
 
 import { DeployTransaction, DefenderDeploy } from '.';
 import { waitForDeployment } from '../defender/utils';
-import { Deployment, RemoteDeploymentId, DeployOpts } from '@openzeppelin/upgrades-core';
+import { Deployment, RemoteDeploymentId, DeployOpts } from '@ericglau/upgrades-core';
 import { attach } from './ethers';
 import { ContractTypeOfFactory } from '../type-extensions';
 

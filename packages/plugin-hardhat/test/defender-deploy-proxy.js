@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const hre = require('hardhat');
 const { ethers } = hre;
 
-const manifest = require('@openzeppelin/upgrades-core/dist/manifest');
+const manifest = require('@ericglau/upgrades-core/dist/manifest');
 
 const IMPL_ID = 'abc';
 

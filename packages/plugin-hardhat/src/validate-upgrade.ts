@@ -12,7 +12,7 @@ import {
   ValidationOptions,
   inferProxyKind,
   ValidateUpdateRequiresKindError,
-} from '@openzeppelin/upgrades-core';
+} from '@ericglau/upgrades-core';
 import { validateBeaconImpl, validateImpl, validateProxyImpl } from './utils/validate-impl';
 import { getDeployData } from './utils/deploy-impl';
 

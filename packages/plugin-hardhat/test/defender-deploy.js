@@ -10,7 +10,7 @@ const {
   getBeaconProxyFactory,
   getTransparentUpgradeableProxyFactory,
 } = require('../dist/utils/factories');
-const artifactsBuildInfo = require('@openzeppelin/upgrades-core/artifacts/build-info-v5.json');
+const artifactsBuildInfo = require('@ericglau/upgrades-core/artifacts/build-info-v5.json');
 
 const { AbiCoder } = require('ethers');
 

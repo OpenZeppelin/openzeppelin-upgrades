@@ -1,4 +1,4 @@
-import { UpgradesError } from '@openzeppelin/upgrades-core';
+import { UpgradesError } from '@ericglau/upgrades-core';
 import { Interface } from 'ethers';
 
 export function getInitializerData(

@@ -1,6 +1,6 @@
 import { Signer } from 'ethers';
 import { InitialOwner } from './options';
-import { UpgradesError } from '@openzeppelin/upgrades-core';
+import { UpgradesError } from '@ericglau/upgrades-core';
 
 export async function getInitialOwner(opts: InitialOwner, signer?: Signer) {
   const result = opts.initialOwner ?? (await signer?.getAddress()) ?? undefined;

@@ -4,7 +4,7 @@ import {
   getImplementationAddress,
   isBeaconProxy,
   isTransparentProxy,
-} from '@openzeppelin/upgrades-core';
+} from '@ericglau/upgrades-core';
 import { ContractFactory, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DefenderDeployOptions, UpgradeOptions } from '../utils';

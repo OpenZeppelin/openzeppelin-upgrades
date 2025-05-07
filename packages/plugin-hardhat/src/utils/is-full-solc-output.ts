@@ -1,4 +1,4 @@
-import type { SolcOutput } from '@openzeppelin/upgrades-core';
+import type { SolcOutput } from '@ericglau/upgrades-core';
 
 type RecursivePartial<T> = { [k in keyof T]?: RecursivePartial<T[k]> };
 

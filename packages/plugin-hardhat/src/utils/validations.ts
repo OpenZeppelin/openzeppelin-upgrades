@@ -8,7 +8,7 @@ import {
   ValidationRunData,
   concatRunData,
   isCurrentValidationData,
-} from '@openzeppelin/upgrades-core';
+} from '@ericglau/upgrades-core';
 
 async function lock(file: string) {
   await fs.mkdir(path.dirname(file), { recursive: true });

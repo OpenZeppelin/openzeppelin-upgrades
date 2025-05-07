@@ -1,4 +1,4 @@
-const { getVersion, getContractNameAndRunValidation } = require('@openzeppelin/upgrades-core');
+const { getVersion, getContractNameAndRunValidation } = require('@ericglau/upgrades-core');
 const test = require('ava');
 
 const hre = require('hardhat');
