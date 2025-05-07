@@ -1,10 +1,5 @@
 import '../type-extensions';
-import {
-  getAdminAddress,
-  getImplementationAddress,
-  isBeaconProxy,
-  isTransparentProxy,
-} from '@ericglau/upgrades-core';
+import { getAdminAddress, getImplementationAddress, isBeaconProxy, isTransparentProxy } from '@ericglau/upgrades-core';
 import { ContractFactory, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DefenderDeployOptions, UpgradeOptions } from '../utils';
