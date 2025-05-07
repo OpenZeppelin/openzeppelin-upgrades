@@ -2,7 +2,7 @@
   "name": "@ericglau/upgrades-core",
   "version": "1.46.1",
   "description": "",
-  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades",
+  "repository": "https://github.com/ericglau/openzeppelin-upgrades",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
