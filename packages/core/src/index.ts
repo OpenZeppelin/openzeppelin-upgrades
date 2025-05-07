@@ -64,3 +64,5 @@ export { makeNamespacedInput, trySanitizeNatSpec } from './utils/make-namespaced
 export { isNamespaceSupported } from './storage/namespace';
 export { inferProxyAdmin } from './infer-proxy-admin';
 export { assertUnreachable } from './utils/assert';
+
+export const FOO = 'bar';

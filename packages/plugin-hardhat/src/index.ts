@@ -25,6 +25,10 @@ import type {
   GetUpgradeApprovalProcessFunction,
 } from './defender/get-approval-process';
 
+import { FOO } from '@ericglau/upgrades-core';
+const FOO2 = FOO;
+export { FOO2 };
+
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
   upgradeProxy: UpgradeFunction;
