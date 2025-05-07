@@ -2,7 +2,7 @@
   "name": "@ericglau/hardhat-upgrades",
   "version": "3.11.1",
   "description": "",
-  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
+  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
