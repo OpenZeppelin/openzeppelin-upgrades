@@ -1,4 +1,4 @@
-require('@openzeppelin/hardhat-upgrades');
+require('@ericglau/hardhat-upgrades');
 
 const override = {
   version: '0.8.10',
