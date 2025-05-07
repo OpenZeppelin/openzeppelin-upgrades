@@ -2,7 +2,7 @@
   "name": "@openzeppelin/hardhat-upgrades",
   "version": "3.9.0",
   "description": "",
-  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/plugin-hardhat",
+  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
@@ -15,7 +15,7 @@
   "scripts": {
     "clean": "rimraf dist *.tsbuildinfo",
     "compile": "tsc -b",
-    "prepare": "yarn clean && yarn compile",
+    "prepare": "yarn compile",
     "test": "tsc -b && bash scripts/test.sh",
     "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --"
   },
