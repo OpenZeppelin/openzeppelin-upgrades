@@ -17,7 +17,7 @@ module.exports = {
 }
 ----
 
-NOTE: The API Key and Secret referenced above are specifically for the Production or Test Deploy Environment that you configured in Defender. You can obtain these from the Deploy module in Defender when setting up your environment. For more information, see https://docs.openzeppelin.com/defender/v2/tutorial/deploy#environment_setup.
+NOTE: The API key for the above must at least have the capability to Manage Deployments. You can configure your API keys at https://defender.openzeppelin.com/#/settings/api-keys.
 
 [[network-selection]]
 == Network Selection
