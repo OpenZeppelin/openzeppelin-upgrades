@@ -26,13 +26,15 @@ extra_output = ["storageLayout"]
 NOTE: Metadata must also be included in the compiler output, which it is by default.  
 
 [start=3]
-3. Set the following environment variables in your `.env` file at your project root, using your Team API key and secret from OpenZeppelin Defender:
+3. Set the following environment variables in your `.env` file at your project root, using your Team API key and secret from the OpenZeppelin Defender Deploy Environment (either Production or Test) that you configured:
 
 [source]
 ----
 DEFENDER_KEY=<Your API key>
 DEFENDER_SECRET=<Your API secret>
 ----
+
+NOTE: These API keys are specifically for the Deploy Environment (Production or Test) that you configured in Defender. You can obtain these keys from the Deploy module in Defender during the environment setup process. For more information, see https://docs.openzeppelin.com/defender/v2/tutorial/deploy#environment_setup.
 
 == Network Selection
 
