@@ -17,6 +17,8 @@ module.exports = {
 }
 ----
 
+NOTE: The API key for the above must at least have the capability to Manage Deployments (optionally Manage Relayers is needed to create an approval process with a Relayer). You can configure your API keys at https://defender.openzeppelin.com/#/settings/api-keys.
+
 [[network-selection]]
 == Network Selection
 
