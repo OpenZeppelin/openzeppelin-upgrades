@@ -1,6 +1,7 @@
 # <img src="assets/banner.svg" alt="OpenZeppelin Upgrades" height="40px">
 
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins)
+[![Forum](https://img.shields.io/badge/forum-%F0%9F%92%AC-blue)](https://forum.openzeppelin.com)
 [![Coverage Status](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades/graph/badge.svg)](https://codecov.io/gh/OpenZeppelin/openzeppelin-upgrades)
 [![Checks](https://github.com/OpenZeppelin/openzeppelin-upgrades/actions/workflows/checks.yml/badge.svg)](https://github.com/OpenZeppelin/openzeppelin-upgrades/actions/workflows/checks.yml)
 [![License](https://img.shields.io/github/license/OpenZeppelin/openzeppelin-upgrades)](https://github.com/OpenZeppelin/openzeppelin-upgrades/blob/master/LICENSE)
