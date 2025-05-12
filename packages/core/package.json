@@ -2,7 +2,7 @@
   "name": "@openzeppelin/upgrades-core",
   "version": "1.44.0",
   "description": "",
-  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades/tree/master/packages/core",
+  "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
@@ -38,7 +38,6 @@
     "test": "ava",
     "test:update-snapshots": "yarn test --update-snapshots",
     "test:watch": "hardhat compile --force && yarn copyfiles && fgbg 'ava --watch' 'tsc -b --watch' --",
-    "version": "node ../../scripts/bump-changelog.js",
     "cli": "node ./dist/cli/cli.js"
   },
   "bin": {
@@ -52,7 +51,7 @@
     "@types/debug": "^4.1.5",
     "@types/minimist": "^1.2.5",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^16.11.7",
+    "@types/node": "^20.0.0",
     "@types/proper-lockfile": "^4.1.1",
     "@types/sinon": "^17.0.0",
     "ava": "^6.0.0",
