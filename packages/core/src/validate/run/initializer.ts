@@ -371,15 +371,27 @@ function inferPossibleInitializer(
   validateAsInitializer: boolean,
   isParentContract: boolean,
 ): boolean {
-  return (
-    (validateAsInitializer || hasInitializerNameOrModifier(fnDef)) &&
+  const hasAnnotationOrNameOrModifier = validateAsInitializer || hasInitializerNameOrModifier(fnDef);
+  if (hasAnnotationOrNameOrModifier) {
     // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
-    !(fnDef.virtual && !fnDef.body) &&
+    const abstractFunction = fnDef.virtual && !fnDef.body;
+
     // Ignore private functions, since they cannot be called outside the contract
-    fnDef.visibility !== 'private' &&
-    // For parent contracts, only internal and public functions which contain statements need to be called
-    (isParentContract
-      ? Boolean(fnDef.body?.statements?.length) && (fnDef.visibility === 'internal' || fnDef.visibility === 'public')
-      : true)
-  );
+    const privateFunction = fnDef.visibility === 'private';
+
+    if (abstractFunction || privateFunction) {
+      return false;
+    }
+
+    if (isParentContract) {
+      // For parent contracts, only internal and public functions which contain statements need to be called
+      return (
+        Boolean(fnDef.body?.statements?.length) && (fnDef.visibility === 'internal' || fnDef.visibility === 'public')
+      );
+    } else {
+      // For non-parent contracts, skip functions named `*_unchained` since by design they don't need to call parent initializers
+      return !fnDef.name.endsWith('_unchained');
+    }
+  }
+  return false;
 }

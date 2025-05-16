@@ -237,6 +237,12 @@ testRejects('Recursive_Bad', 'transparent', {
 });
 testAccepts('Recursive_Ok', 'transparent');
 
+testAccepts('Child_With_Unchained_Ok', 'transparent');
+testRejects('Child_With_Unchained_Bad', 'transparent', {
+  contains: ['Missing initializer calls for one or more parent contracts: `Parent_With_Unchained`'],
+  count: 1,
+});
+
 testAccepts('ERC20_Ok', 'uups');
 testRejects('ERC20_Bad', 'uups', {
   contains: [
