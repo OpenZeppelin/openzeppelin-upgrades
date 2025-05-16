@@ -679,10 +679,22 @@ contract Child_Duplicate_Parent_Unchained_Call_Bad is Initializable, Parent_With
   }
 }
 
-contract Child_Wrong_Order_Parent_Unchained_Call_Warning is Initializable, Parent_With_Unchained {
+contract Parent2_With_Unchained is Initializable {
+  uint64 x2;
+  function __Parent2_init() onlyInitializing internal {
+    __Parent2_init_unchained();
+  }
+
+  function __Parent2_init_unchained() onlyInitializing internal {
+    x2 = 1;
+  }
+}
+
+contract Child_Wrong_Order_Parent_Unchained_Call_Warning is Initializable, Parent_With_Unchained, Parent2_With_Unchained {
   uint64 y;
   function __Child_init() onlyInitializing internal {
     __Child_init_unchained();
+    __Parent2_init_unchained();
     __Parent_init_unchained();
   }
 

@@ -246,7 +246,7 @@ testRejects('Child_Duplicate_Parent_Unchained_Call_Bad', 'transparent', {
   contains: ['Duplicate calls found to initializer `__Parent_init_unchained` for contract `Parent_With_Unchained`'],
   count: 1,
 });
-testAccepts('Child_Wrong_Order_Parent_Unchained_Call_Warning', 'transparent'); // warn 'Expected: Parent_With_Unchained, Child_With_Unchained'
+testAccepts('Child_Wrong_Order_Parent_Unchained_Call_Warning', 'transparent'); // warn 'Expected: Parent_With_Unchained, Parent2_With_Unchained'
 
 testAccepts('ERC20_Ok', 'uups');
 testRejects('ERC20_Bad', 'uups', {
