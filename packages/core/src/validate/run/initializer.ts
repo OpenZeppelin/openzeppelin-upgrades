@@ -264,8 +264,11 @@ function* getInitializerCallExceptions(
     }
   }
 
-  // Report any remaining parents that were not directly initialized
+  // Report any remaining parents that were not directly initialized,
+  // unless this initializer is named `*_unchained` since by design it doesn't need to call parent initializers
+  const unchained = contractInitializer.name.endsWith('_unchained');
   if (
+    !unchained &&
     remainingDirectCalls.length > 0 &&
     !skipCheck('missing-initializer-call', contractDef) &&
     !skipCheck('missing-initializer-call', contractInitializer)
@@ -371,27 +374,15 @@ function inferPossibleInitializer(
   validateAsInitializer: boolean,
   isParentContract: boolean,
 ): boolean {
-  const hasAnnotationOrNameOrModifier = validateAsInitializer || hasInitializerNameOrModifier(fnDef);
-  if (hasAnnotationOrNameOrModifier) {
+  return (
+    (validateAsInitializer || hasInitializerNameOrModifier(fnDef)) &&
     // Skip virtual functions without a body, since that indicates an abstract function and is not itself an initializer
-    const abstractFunction = fnDef.virtual && !fnDef.body;
-
+    !(fnDef.virtual && !fnDef.body) &&
     // Ignore private functions, since they cannot be called outside the contract
-    const privateFunction = fnDef.visibility === 'private';
-
-    if (abstractFunction || privateFunction) {
-      return false;
-    }
-
-    if (isParentContract) {
-      // For parent contracts, only internal and public functions which contain statements need to be called
-      return (
-        Boolean(fnDef.body?.statements?.length) && (fnDef.visibility === 'internal' || fnDef.visibility === 'public')
-      );
-    } else {
-      // For non-parent contracts, skip functions named `*_unchained` since by design they don't need to call parent initializers
-      return !fnDef.name.endsWith('_unchained');
-    }
-  }
-  return false;
+    fnDef.visibility !== 'private' &&
+    // For parent contracts, only internal and public functions which contain statements need to be called
+    (isParentContract
+      ? Boolean(fnDef.body?.statements?.length) && (fnDef.visibility === 'internal' || fnDef.visibility === 'public')
+      : true)
+  );
 }
