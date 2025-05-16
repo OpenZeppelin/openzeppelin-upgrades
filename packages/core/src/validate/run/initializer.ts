@@ -264,8 +264,11 @@ function* getInitializerCallExceptions(
     }
   }
 
-  // Report any remaining parents that were not directly initialized
+  // Report any remaining parents that were not directly initialized,
+  // unless this initializer is named `*_unchained` since by design it doesn't need to call parent initializers
+  const unchained = contractInitializer.name.endsWith('_unchained');
   if (
+    !unchained &&
     remainingDirectCalls.length > 0 &&
     !skipCheck('missing-initializer-call', contractDef) &&
     !skipCheck('missing-initializer-call', contractInitializer)
