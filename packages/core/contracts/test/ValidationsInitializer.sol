@@ -629,6 +629,80 @@ contract Recursive_Ok is Parent {
   }
 }
 
+// ==== Omitting validations of *_unchained for non-parent contracts ====
+
+contract Parent_With_Unchained is Initializable {
+  uint64 x;
+  function __Parent_init() onlyInitializing internal {
+    __Parent_init_unchained();
+  }
+
+  function __Parent_init_unchained() onlyInitializing internal {
+    x = 1;
+  }
+}
+
+contract Child_With_Unchained_Ok is Initializable, Parent_With_Unchained {
+  uint64 y;
+  function __Child_init() onlyInitializing internal {
+    __Parent_init_unchained();
+    __Child_init_unchained();
+  }
+
+  function __Child_init_unchained() onlyInitializing internal {
+    y = 1;
+  }
+}
+
+contract Child_Missing_Parent_Unchained_Call_Bad is Initializable, Parent_With_Unchained {
+  uint64 y;
+  function __Child_init() onlyInitializing internal {
+    // missing call to __Parent_init_unchained
+    __Child_init_unchained();
+  }
+
+  function __Child_init_unchained() onlyInitializing internal {
+    y = 1;
+  }
+}
+
+contract Child_Duplicate_Parent_Unchained_Call_Bad is Initializable, Parent_With_Unchained {
+  uint64 y;
+  function __Child_init() onlyInitializing internal {
+    __Parent_init_unchained();
+    __Parent_init_unchained();
+    __Child_init_unchained();
+  }
+
+  function __Child_init_unchained() onlyInitializing internal {
+    y = 1;
+  }
+}
+
+contract Parent2_With_Unchained is Initializable {
+  uint64 x2;
+  function __Parent2_init() onlyInitializing internal {
+    __Parent2_init_unchained();
+  }
+
+  function __Parent2_init_unchained() onlyInitializing internal {
+    x2 = 1;
+  }
+}
+
+contract Child_Wrong_Order_Parent_Unchained_Call_Warning is Initializable, Parent_With_Unchained, Parent2_With_Unchained {
+  uint64 y;
+  function __Child_init() onlyInitializing internal {
+    __Child_init_unchained();
+    __Parent2_init_unchained();
+    __Parent_init_unchained();
+  }
+
+  function __Child_init_unchained() onlyInitializing internal {
+    y = 1;
+  }
+}
+
 // ==== Complex ERC20 examples ====
 
 contract ERC20_Ok is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable, ERC20PausableUpgradeable, OwnableUpgradeable, ERC20PermitUpgradeable, ERC20FlashMintUpgradeable, UUPSUpgradeable {
