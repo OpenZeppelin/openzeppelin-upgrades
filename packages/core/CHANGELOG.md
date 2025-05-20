@@ -1,5 +1,10 @@
 # Changelog
 
+
+## 1.44.1 (2025-05-20)
+
+- Fix `Missing initializer calls` error when initializer name ends with `_unchained` ([#1161](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1161))
+
 ## 1.44.0 (2025-04-14)
 
 - Validate Solidity custom storage layouts, use proxies from OpenZeppelin Contracts 5.3.0. ([#1144](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1144))
@@ -379,6 +384,7 @@
 - Fix parsing of NatSpec `@custom:oz-upgrades-unsafe-allow` when included in a `/**`-style comment.
 
 ## 1.6.0 (2021-04-14)
+
 - Add `unsafeAllow` as a new field in `ValidationOptions`, which can be used as a manual override to silence any type of validation error. For example, `opts = { unsafeAllow: ['external-library-linking', 'delegatecall'] }` will silence the corresponding checks. ([#320](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/320))
 - Custom NatSpec comments can disable error checks directly from the Solidity code. See `core/contracts/test/ValidationNatspec.sol` for example usage of these NatSpec comments. Note: this requires Solidity >=0.8.2. ([#320](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/320))
 - Fix a bug with library placeholders when hashing contract source code. ([#320](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/320))
