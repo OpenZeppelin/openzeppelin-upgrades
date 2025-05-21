@@ -176,7 +176,32 @@ export class StorageLayoutComparator {
         // Gap shrink or gap replacement that finishes on the same slot is safe
         return false;
       } else if (o.kind === 'append' && allowAppend) {
+        // Allow append operation if the allowAppend flag is set
+        // This applies to both direct storage appends and appends within structs
         return false;
+      } else if (o.kind === 'typechange' && o.change?.kind === 'struct members' && o.change.allowAppend) {
+        const structOps = o.change.ops;
+        const hasNonAppendOps = structOps.some(op => op.kind !== 'append');
+        if (hasNonAppendOps) {
+          return true;
+        }
+
+        const structEnd = storageFieldEnd(o.original);
+        if (structEnd === undefined) {
+          return true;
+        }
+
+        const hasFieldsAfter = original
+          .filter(field => !isGap(field))
+          .some(field => {
+            const fieldStart = storageFieldBegin(field);
+            if (field === o.original || fieldStart === undefined) {
+              return false;
+            }
+            return fieldStart > structEnd;
+          });
+
+        return hasFieldsAfter;
       }
       return true;
     });
@@ -324,6 +349,7 @@ export class StorageLayoutComparator {
           }
         }
         assert(isStructMembers(originalMembers) && isStructMembers(updatedMembers));
+
         const ops = this.layoutLevenshtein(originalMembers, updatedMembers, { allowAppend });
         if (ops.length > 0) {
           return { kind: 'struct members', ops, original, updated, allowAppend };
