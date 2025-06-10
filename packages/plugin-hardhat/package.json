@@ -27,7 +27,7 @@
     "@types/mocha": "^7.0.2",
     "ava": "^6.0.0",
     "fgbg": "^0.1.4",
-    "hardhat": "^2.19.1",
+    "hardhat": "^2.24.1",
     "promisified": "^0.5.0",
     "proxyquire": "^2.1.3",
     "rimraf": "^5.0.0",
@@ -46,9 +46,9 @@
   },
   "peerDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
-    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.14",
     "ethers": "^6.6.0",
-    "hardhat": "^2.0.2"
+    "hardhat": "^2.24.1"
   },
   "peerDependenciesMeta": {
     "@nomicfoundation/hardhat-verify": {

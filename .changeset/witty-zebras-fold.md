@@ -2,4 +2,6 @@
 '@openzeppelin/hardhat-upgrades': patch
 ---
 
-In order to support contract verification via etherscan V2 API, hardhat-verify dependency is updated to latest and 'chainid' param is added in etherscan API call.
+Support contract verification via etherscan V2 API.
+- **Potentially breaking changes**:
+  - Changes peer dependencies to `hardhat@2.24.1` and `@nomicfoundation/hardhat-verify@2.0.14`
