@@ -14,7 +14,7 @@ import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
  * @returns The Etherscan API response
  */
 export async function callEtherscanApi(etherscan: Etherscan, params: any): Promise<EtherscanResponseBody> {
-  const parameters = { ...params, apikey: etherscan.apiKey };
+  const parameters = { ...params, apikey: etherscan.apiKey, chainid: etherscan.chainId };
   const response = await request(etherscan.apiUrl, {
     method: 'POST',
     query: parameters,
