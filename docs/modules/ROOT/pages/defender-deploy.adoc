@@ -1,4 +1,4 @@
-= OpenZeppelin Defender integration
+= OpenZeppelin Defender with Hardhat
 
 The Hardhat Upgrades package can use https://docs.openzeppelin.com/defender/[OpenZeppelin Defender] for deployments instead of ethers.js, which allows for features such as gas pricing estimation, resubmissions, and automated bytecode and source code verification.
 
