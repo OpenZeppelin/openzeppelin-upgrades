@@ -160,7 +160,7 @@ describe("Box", function() {
 });
 ----
 
-== Defender
+== Usage with Defender
 
 If you are using OpenZeppelin Defender, see xref:defender-deploy.adoc[OpenZeppelin Defender with Hardhat] for how to use it for deployments.
 
