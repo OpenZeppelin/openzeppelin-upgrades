@@ -160,6 +160,10 @@ describe("Box", function() {
 });
 ----
 
+== Usage with Defender
+
+If you are using OpenZeppelin Defender, see xref:defender-deploy.adoc[OpenZeppelin Defender with Hardhat] for how to use it for deployments.
+
 == API
 
 See xref:api-hardhat-upgrades.adoc[Hardhat Upgrades API] for the full API documentation.
