@@ -272,6 +272,10 @@ IMPORTANT: Include the `--sender <ADDRESS>` flag for the `forge script` command 
 
 NOTE: Include the `--verify` flag for the `forge script` command if you want to verify source code such as on Etherscan. This will verify your implementation contracts along with any proxy contracts as part of the deployment.
 
+== Usage with Defender
+
+If you are using OpenZeppelin Defender, see xref:foundry-defender.adoc[OpenZeppelin Defender with Foundry] for how to use it for deployments.
+
 == API
 
 See xref:api-foundry-upgrades.adoc[Foundry Upgrades API] for the full API documentation.

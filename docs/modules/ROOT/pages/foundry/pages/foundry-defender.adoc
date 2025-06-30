@@ -1,4 +1,4 @@
-= OpenZeppelin Defender integration
+= OpenZeppelin Defender with Foundry
 
 OpenZeppelin Foundry Upgrades can be used for performing deployments through https://docs.openzeppelin.com/defender/[OpenZeppelin Defender], which allows for features such as gas pricing estimation, resubmissions, and automated bytecode and source code verification.
 
