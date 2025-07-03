@@ -1,5 +1,14 @@
 # Changelog
 
+
+## 3.9.1 (2025-06-30)
+
+- Support contract verification via etherscan V2 API. ([#1166](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1166))
+  - **Potentially breaking changes**: Changes peer dependencies to the following:
+    - `"@nomicfoundation/hardhat-ethers": "^3.0.6"`
+    - `"@nomicfoundation/hardhat-verify": "^2.0.14"`
+    - `"hardhat": "^2.24.1"`
+
 ## 3.9.0 (2025-01-13)
 
 - Update Defender SDK to v2.1.0, set Hardhat origin for Defender deployments. ([#1111](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1111))
@@ -24,6 +33,7 @@
 ## 3.4.0 (2024-09-23)
 
 ### Potentially breaking changes
+
 - Adds a check to ensure `initialOwner` is not a ProxyAdmin contract when deploying a transparent proxy. ([#1083](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1083))
 
 ## 3.3.0 (2024-09-16)
@@ -48,6 +58,7 @@
 - Defender: Fix handling of license types for block explorer verification, support `licenseType` and `skipLicenseType` options. ([#1013](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1013))
 
 ### Breaking changes
+
 - When deploying through Defender, if your contract does not have an SPDX license identifier, the verified source code on Etherscan will no longer show any license type.
   - If you want the license type to appear as "None", either set your contract to have `// SPDX-License-Identifier: UNLICENSED` according to [Solidity docs](https://docs.soliditylang.org/en/latest/layout-of-source-files.html#spdx-license-identifier), or set the `licenseType` option to `"None"`.
 
@@ -81,6 +92,7 @@
   - **Note**: [Fully verifying proxies](https://docs.openzeppelin.com/upgrades-plugins/1.x/api-hardhat-upgrades#verify) is only supported with Etherscan at the moment. The Hardhat Upgrades plugin does not currently assist with Sourcify verification for proxies.
 
 ### Breaking changes
+
 - `deployProxy`, `deployBeacon`, `deployBeaconProxy`: Deploys proxy contracts from [OpenZeppelin Contracts 5.0](https://docs.openzeppelin.com/contracts/5.x/api/proxy).
 - `deployProxy`:
   - Deploying a transparent proxy automatically causes a new proxy admin contract to be deployed along with the proxy.
@@ -171,10 +183,12 @@
 - Remove address override for deployments. ([#832](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/832))
 
 ### Breaking changes
+
 This new major version requires `ethers` v6 and `@nomicfoundation/hardhat-ethers` v3 as peer dependencies.  
 For Etherscan verification, it also requires `@nomicfoundation/hardhat-verify`.
 
 ### How to update from a previous version
+
 Update your existing project according to [Hardhat Toolbox v3's release notes](https://github.com/NomicFoundation/hardhat/releases/tag/%40nomicfoundation%2Fhardhat-toolbox%403.0.0).  
 Then update this plugin, for example: `npm install @openzeppelin/hardhat-upgrades@latest`
 
@@ -244,6 +258,7 @@ Then update this plugin, for example: `npm install @openzeppelin/hardhat-upgrade
 - Override `verify:verify` subtask from hardhat-etherscan. ([#619](https://github.com/OpenZeppelin/openzeppelin-upgrades/issues/619))
 
 **Breaking change**: To verify a proxy on Etherscan programmatically from a Hardhat script, call `verify:verify` instead of `verify`:
+
 ```
 await hre.run("verify:verify", {
   address: PROXY_ADDRESS,
