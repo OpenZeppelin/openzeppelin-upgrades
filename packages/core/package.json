@@ -29,10 +29,15 @@
     "/artifacts/build-info-v5.json"
   ],
   "scripts": {
-    "clean": "hardhat clean && rimraf dist *.tsbuildinfo",
-    "compile": "tsc -b && yarn compile:contracts",
+    "clean": "yarn clean:contracts && yarn clean:pvm && rimraf dist *.tsbuildinfo",
+    "clean:contracts": "hardhat clean",
+    "clean:pvm": "hardhat clean --config hardhat.revive.config.js",
+    "compile": "tsc -b && yarn compile:contracts && yarn compile:pvm",
+    "compile:pvm": "hardhat compile --config hardhat.revive.config.js",
     "compile:contracts": "hardhat compile",
-    "copyfiles": "node scripts/copy-build-info-v5.js && bash scripts/copy-legacy-artifacts.sh",
+    "copyfiles:pvm": "node scripts/copy-build-info-v5.js artifacts-pvm",
+    "copyfiles:contracts": "node scripts/copy-build-info-v5.js && bash scripts/copy-legacy-artifacts.sh",
+    "copyfiles": "yarn copyfiles:contracts && yarn copyfiles:pvm",
     "prepare": "yarn clean && yarn compile && yarn copyfiles",
     "pretest": "tsc -b && hardhat compile --force && yarn copyfiles",
     "test": "ava",
@@ -58,20 +63,21 @@
     "dotenv": "^16.0.0",
     "fgbg": "^0.1.4",
     "hardhat": "^2.19.1",
+    "minimatch": "^10.0.3",
     "rimraf": "^5.0.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "@nomicfoundation/slang": "^0.18.3",
+    "@parity/hardhat-polkadot": "^0.1.11-pre1",
+    "bignumber.js": "^9.1.2",
     "cbor": "^10.0.0",
     "chalk": "^4.1.0",
     "compare-versions": "^6.0.0",
-    "bignumber.js": "^9.1.2",
     "debug": "^4.1.1",
     "ethereumjs-util": "^7.0.3",
     "minimist": "^1.2.7",
     "proper-lockfile": "^4.1.1",
-    "solidity-ast": "^0.4.60",
-    "minimatch": "^9.0.5"
+    "solidity-ast": "^0.4.60"
   }
 }

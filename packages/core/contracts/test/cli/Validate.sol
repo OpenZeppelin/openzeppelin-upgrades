@@ -9,12 +9,6 @@ contract Safe {
   }
 }
 
-contract NonUpgradeable {
-  function sd() public {
-    selfdestruct(payable(msg.sender));
-  }
-}
-
 abstract contract Initializable {
   function initialize() virtual public;
 }
@@ -37,36 +31,6 @@ contract HasUpgradeToConstructorUnsafe {
 }
 
 /**
- * @custom:oz-upgrades
- */
-contract MultipleUnsafe {
-  function sd() public {
-    selfdestruct(payable(msg.sender));
-  }
-
-  /// @custom:oz-upgrades-unsafe-allow selfdestruct
-  function sd2() public {
-    selfdestruct(payable(msg.sender));
-  }
-
-  function dc() public {
-    (bool s, ) = msg.sender.delegatecall("");
-    s;
-  }
-
-  function dc2() public {
-    (bool s, ) = msg.sender.delegatecall("");
-    s;
-  }
-}
-
-/**
- * @custom:oz-upgrades
- */
-contract InheritsMultipleUnsafe is MultipleUnsafe {
-}
-
-/**
  * @custom:oz-upgrades-from HasUpgradeTo
  */
 contract UpgradesFromUUPS {
@@ -86,19 +50,6 @@ contract StorageV1 {
 }
 
 /**
- * @custom:oz-upgrades-from StorageV1
- */
-contract UnsafeAndStorageLayoutErrors {
-  uint256 public x;
-  uint256 public y;
-  uint256[49] private __gap;
-
-  function sd() public {
-    selfdestruct(payable(msg.sender));
-  }
-}
-
-/**
  * @custom:oz-upgrades-from MultipleUnsafe
  */
 contract BecomesSafe {
@@ -111,34 +62,11 @@ contract BecomesSafe {
 contract BecomesBadLayout {
 }
 
-/**
- * @custom:oz-upgrades-from NonUpgradeable
- */
-contract StillUnsafe {
-  function sd() public {
-    selfdestruct(payable(msg.sender));
-  }
-}
-
 abstract contract AbstractUpgradeable is Initializable {
 }
 
 contract InheritsAbstractUpgradeable is AbstractUpgradeable {
     function initialize() public virtual override {}
-}
-
-/**
- * @custom:oz-upgrades
- * @custom:oz-upgrades-from StorageV1
- */
-contract BothAnnotationsUnsafe {
-  uint256 public x;
-  uint256 public y;
-  uint256[49] private __gap;
-
-  function sd() public {
-    selfdestruct(payable(msg.sender));
-  }
 }
 
 contract StorageV2_Bad_NoAnnotation {

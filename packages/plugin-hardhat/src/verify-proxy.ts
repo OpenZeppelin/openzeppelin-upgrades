@@ -11,15 +11,8 @@ import {
   isEmptySlot,
   getCode,
 } from '@openzeppelin/upgrades-core';
-import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json';
 
-import { HardhatRuntimeEnvironment, RunSuperFunction } from 'hardhat/types';
-
-import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
-import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
-import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
-import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
-import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
+import { Artifact, HardhatRuntimeEnvironment, RunSuperFunction } from 'hardhat/types';
 
 import { keccak256 } from 'ethereumjs-util';
 
@@ -27,6 +20,8 @@ import debug from './utils/debug';
 import { callEtherscanApi, getEtherscanInstance, RESPONSE_OK } from './utils/etherscan-api';
 import { verifyAndGetStatus } from './utils/etherscan-api';
 import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
+import { getContracts } from './utils';
+import { ReducedBuildInfo } from './defender/deploy';
 
 /**
  * Hardhat artifact for a precompiled contract
@@ -63,13 +58,46 @@ interface EtherscanEventResponse {
 /**
  * The proxy-related contracts and their corresponding events that may have been deployed the current version of this plugin.
  */
-const verifiableContracts = {
-  erc1967proxy: { artifact: ERC1967Proxy, event: 'Upgraded(address)' },
-  beaconProxy: { artifact: BeaconProxy, event: 'BeaconUpgraded(address)' },
-  upgradeableBeacon: { artifact: UpgradeableBeacon, event: 'OwnershipTransferred(address,address)' },
-  transparentUpgradeableProxy: { artifact: TransparentUpgradeableProxy, event: 'AdminChanged(address,address)' },
-  proxyAdmin: { artifact: ProxyAdmin, event: 'OwnershipTransferred(address,address)' },
-};
+
+interface VerifiableContract {
+  artifact: Artifact;
+  event: string;
+}
+interface VerifiableContracts {
+  erc1967proxy: VerifiableContract;
+  beaconProxy: VerifiableContract;
+  upgradeableBeacon: VerifiableContract;
+  transparentUpgradeableProxy: VerifiableContract;
+  proxyAdmin: VerifiableContract;
+  buildInfo: ReducedBuildInfo;
+}
+
+function getVerifiableContracts(hre: HardhatRuntimeEnvironment): VerifiableContracts {
+  let contracts = getContracts(hre);
+  return {
+    erc1967proxy: {
+      artifact: contracts.erc1967,
+      event: 'Upgraded(address)'
+    },
+    beaconProxy: {
+      artifact: contracts.beaconProxy,
+      event: 'BeaconUpgraded(address)'
+    },
+    upgradeableBeacon: {
+      artifact: contracts.upgradeableBeacon,
+      event: 'OwnershipTransferred(address,address)',
+    },
+    transparentUpgradeableProxy: {
+      artifact: contracts.transparentUpgradeableProxy,
+      event: 'AdminChanged(address,address)'
+    },
+    proxyAdmin: {
+      artifact: contracts.proxyAdminV5,
+      event: 'OwnershipTransferred(address,address)'
+    },
+    buildInfo: contracts.buildInfo
+  }
+}
 
 /**
  * Overrides hardhat-verify's verify:etherscan subtask to fully verify a proxy or beacon.
@@ -251,6 +279,7 @@ async function fullVerifyTransparentOrUUPS(
   ) {
     const attemptVerify = async () => {
       let encodedOwner: string;
+      let verifiableContracts = getVerifiableContracts(hre);
       // Get the OwnershipTransferred event when the ProxyAdmin was created, which should have the encoded owner address as its second parameter (third topic).
       const response = await getEventResponse(adminAddress, verifiableContracts.proxyAdmin.event, etherscan);
       if (response === undefined) {
@@ -273,7 +302,7 @@ async function fullVerifyTransparentOrUUPS(
         );
       }
 
-      await verifyContractWithConstructorArgs(etherscan, adminAddress, artifact, encodedOwner, errorReport);
+      await verifyContractWithConstructorArgs(etherscan, adminAddress, artifact, encodedOwner, errorReport, verifiableContracts.buildInfo);
     };
 
     await attemptVerifyOrFallback(
@@ -288,6 +317,8 @@ async function fullVerifyTransparentOrUUPS(
   }
 
   async function verifyTransparentOrUUPS() {
+    let verifiableContracts = getVerifiableContracts(hre);
+
     console.log(`Verifying proxy: ${proxyAddress}`);
     await verifyWithArtifactOrFallback(
       hre,
@@ -316,6 +347,7 @@ async function fullVerifyBeaconProxy(
   hardhatVerify: (address: string) => Promise<any>,
   errorReport: ErrorReport,
 ) {
+  let verifiableContracts = getVerifiableContracts(hre);
   const provider = hre.network.provider;
   const beaconAddress = await getBeaconAddress(provider, proxyAddress);
   const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
@@ -362,6 +394,7 @@ async function fullVerifyBeacon(
   await verifyBeacon();
 
   async function verifyBeacon() {
+    let verifiableContracts = getVerifiableContracts(hre);
     console.log(`Verifying beacon or beacon-like contract: ${beaconAddress}`);
     await verifyWithArtifactOrFallback(
       hre,
@@ -560,12 +593,14 @@ async function attemptVerifyWithCreationEvent(
       contractInfo.artifact.contractName,
     );
   } else {
+    let contracts = getContracts(hre);
     await verifyContractWithConstructorArgs(
       etherscan,
       address,
       contractInfo.artifact,
       constructorArguments,
       errorReport,
+      contracts.buildInfo
     );
   }
 }
@@ -584,14 +619,15 @@ async function verifyContractWithConstructorArgs(
   artifact: ContractArtifact,
   constructorArguments: string,
   errorReport: ErrorReport,
+  buildInfo: ReducedBuildInfo
 ) {
   debug(`verifying contract ${address} with constructor args ${constructorArguments}`);
 
   const params = {
     contractAddress: address,
-    sourceCode: JSON.stringify(artifactsBuildInfo.input),
+    sourceCode: JSON.stringify(buildInfo.input),
     contractName: `${artifact.sourceName}:${artifact.contractName}`,
-    compilerVersion: `v${artifactsBuildInfo.solcLongVersion}`,
+    compilerVersion: `v${buildInfo.solcLongVersion}`,
     constructorArguments: constructorArguments,
   };
 

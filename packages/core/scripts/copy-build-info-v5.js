@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const artifactsDir = process.argv[2] || 'artifacts';
+
 const fs = require('fs');
 const assert = require('assert');
 
@@ -22,29 +24,29 @@ function hasPropertyStartsWith(obj, prefix) {
 }
 
 const buildInfoField = readJSON(
-  'artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.dbg.json',
+  `${artifactsDir}/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.dbg.json`
 ).buildInfo;
-const jsonRelativePath = `artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/${buildInfoField}`;
+const jsonRelativePath = `${artifactsDir}/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/${buildInfoField}`;
 
 // Assert that all deployable proxy artifacts use the same build-info file
 assert(
   buildInfoField ===
-    readJSON('artifacts/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.dbg.json').buildInfo,
+  readJSON(`${artifactsDir}/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.dbg.json`).buildInfo,
 );
 assert(
   buildInfoField ===
-    readJSON('artifacts/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.dbg.json')
-      .buildInfo,
+  readJSON(`${artifactsDir}/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.dbg.json`)
+    .buildInfo,
 );
 assert(
   buildInfoField ===
-    readJSON(
-      'artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.dbg.json',
-    ).buildInfo,
+  readJSON(
+    `${artifactsDir}/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.dbg.json`,
+  ).buildInfo,
 );
 assert(
   buildInfoField ===
-    readJSON('artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.dbg.json').buildInfo,
+  readJSON(`${artifactsDir}/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.dbg.json`).buildInfo,
 );
 
 let buildInfo = readJSON(jsonRelativePath);
@@ -78,6 +80,7 @@ const modifiedBuildInfo = {
 // Assert input's outputSelection includes all required outputs
 const outputSelection = buildInfo.input.settings.outputSelection['*']['*'];
 assert(outputSelection.includes('abi'));
+// TODO: uncomment before any fixes
 assert(outputSelection.includes('evm.bytecode'));
 assert(outputSelection.includes('evm.deployedBytecode'));
 assert(outputSelection.includes('evm.methodIdentifiers'));
@@ -104,10 +107,20 @@ for (const contractFile in modifiedBuildInfo.output.contracts) {
   }
 }
 
-writeJSON('artifacts/build-info-v5.json', modifiedBuildInfo);
-
-// Moves v5 contracts to a separate folder (replacing it if it already exists, since this may be run after a recompilation)
-if (fs.existsSync('artifacts/@openzeppelin/contracts-v5')) {
-  fs.rmSync('artifacts/@openzeppelin/contracts-v5', { recursive: true });
+const outputPath = `${artifactsDir}/build-info-v5.json`;
+// Ensure the target directory exists
+if (!fs.existsSync(artifactsDir)) {
+  fs.mkdirSync(artifactsDir, { recursive: true });
 }
-fs.renameSync('artifacts/@openzeppelin/contracts', 'artifacts/@openzeppelin/contracts-v5');
+writeJSON(outputPath, modifiedBuildInfo);
+
+const v5ContractsDir = `${artifactsDir}/@openzeppelin/contracts-v5`;
+// Moves v5 contracts to a separate folder (replacing it if it already exists, since this may be run after a recompilation)
+if (fs.existsSync(v5ContractsDir)) {
+  fs.rmSync(`${artifactsDir}/@openzeppelin/contracts-v5`, { recursive: true });
+}
+// Ensure the source directory exists
+const sourceContractsDir = `${artifactsDir}/@openzeppelin/contracts`;
+if (fs.existsSync(sourceContractsDir)) {
+  fs.renameSync(sourceContractsDir, v5ContractsDir);
+}
