@@ -135,5 +135,9 @@ module.exports = {
     ...OLD_SOLIDITY_VERSION_IGNORES,
     ...SELFDESTRUCT_IGNORES,
     ...LIBRARY_NOT_FOUND_IGNORES
-  ]
+  ],
+  paths: {
+    artifacts: './artifacts-pvm',
+    cache: './cache-pvm'
+  }
 };

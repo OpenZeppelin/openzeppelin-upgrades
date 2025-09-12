@@ -1865,10 +1865,10 @@
     proper-lockfile "^4.1.1"
     solidity-ast "^0.4.51"
 
-"@parity/hardhat-polkadot-node@0.1.6-pre1":
-  version "0.1.6-pre1"
-  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot-node/-/hardhat-polkadot-node-0.1.6-pre1.tgz#012348dd108ba318b1569ffaa354b0ceb4307bf0"
-  integrity sha512-Wy45cEAvZI+kdKqCKnpBVJaG79S14BVh9/lkehW06o5yX94gc2osIDpb1lwB7tVsDTONiqj/UEjehBUya/5mDQ==
+"@parity/hardhat-polkadot-node@0.2.0-pre1":
+  version "0.2.0-pre1"
+  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot-node/-/hardhat-polkadot-node-0.2.0-pre1.tgz#1e2d815a87675b310d7e760639a4e63483b36bfe"
+  integrity sha512-kijmNia2fS0vy8NlKI0Z9ZhwlVsYR8wCCMpLzoYYbopvhOK+xv/2VgiBMO7Kyb62PKZQlDSzZcd//og3uTYAVw==
   dependencies:
     axios "1.9.0"
     chalk "4"
@@ -1882,10 +1882,10 @@
     source-map-support "^0.5.21"
     ts-node "^10.9.2"
 
-"@parity/hardhat-polkadot-resolc@0.1.9-pre0":
-  version "0.1.9-pre0"
-  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot-resolc/-/hardhat-polkadot-resolc-0.1.9-pre0.tgz#73e51f32e32e857cee697d60f7256a43ec780692"
-  integrity sha512-Wm3VQ9g4pa14zHqADEuoOjUub8p/Hy8FG23+PHUccWfg4aBB2ZwEWEcc30+e6q6dDZoYs9bNdcXYjQwBliPxow==
+"@parity/hardhat-polkadot-resolc@0.2.0-pre0":
+  version "0.2.0-pre0"
+  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot-resolc/-/hardhat-polkadot-resolc-0.2.0-pre0.tgz#e83b906a53b70c1230b5f5c213cd01bdcfc42b06"
+  integrity sha512-b4cxHYaXxporaCBxj/j10RogqYfLvtfSar4PGpGcdO5ZXd2FwAH0xKHiclBEUb7IYN0jqhPJ/OkI7Gs3ckHV9Q==
   dependencies:
     "@ethereumjs/util" "^10.0.0"
     "@parity/resolc" "0.3.0"
@@ -1898,14 +1898,14 @@
     semver "^7.7.2"
     ts-node "^10.9.2"
 
-"@parity/hardhat-polkadot@^0.1.11-pre1":
-  version "0.1.11-pre1"
-  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot/-/hardhat-polkadot-0.1.11-pre1.tgz#4b044f6b47df15655f2910506a90ab350636c3e9"
-  integrity sha512-MLXzjCYz2iLO9oQv86HSvgWSOQ3K52HMSpdyiuaWgP90oJriDwZP77Ien+rzP9f73PXqKnE8BEMJP/48YW+YDQ==
+"@parity/hardhat-polkadot@^0.2.0-pre1":
+  version "0.2.0-pre1"
+  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot/-/hardhat-polkadot-0.2.0-pre1.tgz#0c57c2dc8d43d4dbb7343604d0e0d46a1a2ae02e"
+  integrity sha512-9L5A0ZKVRV/geSPEBuCZckTXm+fumBpP+413ejAq1F7Qq5EkJKwcYfuNzgsoIZYxEI4l8a7cWsZ/y9GttC8X9w==
   dependencies:
     "@openzeppelin/contracts" "^5.3.0"
-    "@parity/hardhat-polkadot-node" "0.1.6-pre1"
-    "@parity/hardhat-polkadot-resolc" "0.1.9-pre0"
+    "@parity/hardhat-polkadot-node" "0.2.0-pre1"
+    "@parity/hardhat-polkadot-resolc" "0.2.0-pre0"
     enquirer "2.3.0"
     find-up "5.0.0"
     fs-extra "^11.3.0"
