@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add Celo Sepolia network to manifest file names. ([#1189](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1189))
+
 
 ## 1.44.1 (2025-05-20)
 
