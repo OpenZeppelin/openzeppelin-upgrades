@@ -49,19 +49,6 @@ contract StorageV1 {
   uint256[49] private __gap;
 }
 
-/**
- * @custom:oz-upgrades-from MultipleUnsafe
- */
-contract BecomesSafe {
-  bool public x;
-}
-
-/**
- * @custom:oz-upgrades-from BecomesSafe
- */
-contract BecomesBadLayout {
-}
-
 abstract contract AbstractUpgradeable is Initializable {
 }
 
