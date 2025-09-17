@@ -89,7 +89,6 @@ const OLD_SOLIDITY_VERSION_IGNORES = [
   "contracts/test/NamespacedToModify07.sol",
 ];
 
-// consult with Eric about it
 const SELFDESTRUCT_IGNORES = [
   "contracts/test/cli/ValidateSelfdestruct.sol",
   "contracts/test/ValidationsNatspecSelfdestruct.sol"

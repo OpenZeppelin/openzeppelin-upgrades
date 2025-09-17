@@ -80,7 +80,6 @@ const modifiedBuildInfo = {
 // Assert input's outputSelection includes all required outputs
 const outputSelection = buildInfo.input.settings.outputSelection['*']['*'];
 assert(outputSelection.includes('abi'));
-// TODO: uncomment before any fixes
 assert(outputSelection.includes('evm.bytecode'));
 assert(outputSelection.includes('evm.deployedBytecode'));
 assert(outputSelection.includes('evm.methodIdentifiers'));
@@ -107,20 +106,10 @@ for (const contractFile in modifiedBuildInfo.output.contracts) {
   }
 }
 
-const outputPath = `${artifactsDir}/build-info-v5.json`;
-// Ensure the target directory exists
-if (!fs.existsSync(artifactsDir)) {
-  fs.mkdirSync(artifactsDir, { recursive: true });
-}
-writeJSON(outputPath, modifiedBuildInfo);
+writeJSON(`${artifactsDir}/build-info-v5.json`, modifiedBuildInfo);
 
-const v5ContractsDir = `${artifactsDir}/@openzeppelin/contracts-v5`;
 // Moves v5 contracts to a separate folder (replacing it if it already exists, since this may be run after a recompilation)
-if (fs.existsSync(v5ContractsDir)) {
+if (fs.existsSync(`${artifactsDir}/@openzeppelin/contracts-v5`)) {
   fs.rmSync(`${artifactsDir}/@openzeppelin/contracts-v5`, { recursive: true });
 }
-// Ensure the source directory exists
-const sourceContractsDir = `${artifactsDir}/@openzeppelin/contracts`;
-if (fs.existsSync(sourceContractsDir)) {
-  fs.renameSync(sourceContractsDir, v5ContractsDir);
-}
+fs.renameSync(`${artifactsDir}/@openzeppelin/contracts`, `${artifactsDir}/@openzeppelin/contracts-v5`);
