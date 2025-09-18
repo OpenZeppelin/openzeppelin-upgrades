@@ -84,6 +84,7 @@
     "ethereumjs-util": "^7.0.3",
     "minimist": "^1.2.7",
     "proper-lockfile": "^4.1.1",
-    "solidity-ast": "^0.4.60"
+    "solidity-ast": "^0.4.60",
+    "minimatch": "^9.0.5"
   }
 }
