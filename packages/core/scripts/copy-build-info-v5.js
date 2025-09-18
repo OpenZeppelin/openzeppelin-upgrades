@@ -24,29 +24,29 @@ function hasPropertyStartsWith(obj, prefix) {
 }
 
 const buildInfoField = readJSON(
-  `${artifactsDir}/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.dbg.json`
+  `${artifactsDir}/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.dbg.json`,
 ).buildInfo;
 const jsonRelativePath = `${artifactsDir}/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/${buildInfoField}`;
 
 // Assert that all deployable proxy artifacts use the same build-info file
 assert(
   buildInfoField ===
-  readJSON(`${artifactsDir}/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.dbg.json`).buildInfo,
+    readJSON(`${artifactsDir}/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.dbg.json`).buildInfo,
 );
 assert(
   buildInfoField ===
-  readJSON(`${artifactsDir}/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.dbg.json`)
-    .buildInfo,
+    readJSON(`${artifactsDir}/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.dbg.json`)
+      .buildInfo,
 );
 assert(
   buildInfoField ===
-  readJSON(
-    `${artifactsDir}/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.dbg.json`,
-  ).buildInfo,
+    readJSON(
+      `${artifactsDir}/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.dbg.json`,
+    ).buildInfo,
 );
 assert(
   buildInfoField ===
-  readJSON(`${artifactsDir}/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.dbg.json`).buildInfo,
+    readJSON(`${artifactsDir}/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.dbg.json`).buildInfo,
 );
 
 let buildInfo = readJSON(jsonRelativePath);

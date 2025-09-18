@@ -1,5 +1,5 @@
-import { Artifact, HardhatRuntimeEnvironment } from "hardhat/types";
-import { ReducedBuildInfo } from "../defender/deploy";
+import { Artifact, HardhatRuntimeEnvironment } from 'hardhat/types';
+import { ReducedBuildInfo } from '../defender/deploy';
 
 import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json';
 import artifactsBuildInfoPVM from '@openzeppelin/upgrades-core/artifacts-pvm/build-info-v5.json';
@@ -20,22 +20,22 @@ import ProxyAdminV5 from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/co
 import ProxyAdminV5PVM from '@openzeppelin/upgrades-core/artifacts-pvm/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
 export interface UpgradeContracts {
-    buildInfo: ReducedBuildInfo;
-    erc1967: Artifact;
-    beaconProxy: Artifact;
-    upgradeableBeacon: Artifact;
-    transparentUpgradeableProxy: Artifact;
-    proxyAdminV5: Artifact;
+  buildInfo: ReducedBuildInfo;
+  erc1967: Artifact;
+  beaconProxy: Artifact;
+  upgradeableBeacon: Artifact;
+  transparentUpgradeableProxy: Artifact;
+  proxyAdminV5: Artifact;
 }
 
 export function getContracts(hre: HardhatRuntimeEnvironment): UpgradeContracts {
-    const notPVM = !('polkavm' in hre.network && hre.network.polkavm === true);
-    return {
-        buildInfo: notPVM ? artifactsBuildInfo : artifactsBuildInfoPVM,
-        erc1967: notPVM ? ERC1967Proxy : ERC1967ProxyPVM,
-        beaconProxy: notPVM ? BeaconProxy : BeaconProxyPVM,
-        transparentUpgradeableProxy: notPVM ? TransparentUpgradeableProxy : TransparentUpgradeableProxyPVM,
-        upgradeableBeacon: notPVM ? UpgradeableBeacon : UpgradeableBeaconPVM,
-        proxyAdminV5: notPVM ? ProxyAdminV5 : ProxyAdminV5PVM,
-    }
+  const notPVM = !('polkavm' in hre.network && hre.network.polkavm === true);
+  return {
+    buildInfo: notPVM ? artifactsBuildInfo : artifactsBuildInfoPVM,
+    erc1967: notPVM ? ERC1967Proxy : ERC1967ProxyPVM,
+    beaconProxy: notPVM ? BeaconProxy : BeaconProxyPVM,
+    transparentUpgradeableProxy: notPVM ? TransparentUpgradeableProxy : TransparentUpgradeableProxyPVM,
+    upgradeableBeacon: notPVM ? UpgradeableBeacon : UpgradeableBeaconPVM,
+    proxyAdminV5: notPVM ? ProxyAdminV5 : ProxyAdminV5PVM,
+  };
 }

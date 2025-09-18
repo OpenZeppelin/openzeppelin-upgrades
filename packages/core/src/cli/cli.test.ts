@@ -60,7 +60,9 @@ test('validate - single contract', async t => {
 
 test('validate - single contract, has upgrades-from', async t => {
   const temp = await getTempDir(t);
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateSelfdestruct.sol:UnsafeAndStorageLayoutErrors`);
+  const buildInfo = await artifacts.getBuildInfo(
+    `contracts/test/cli/ValidateSelfdestruct.sol:UnsafeAndStorageLayoutErrors`,
+  );
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(execAsync(`${CLI} validate ${temp} --contract UnsafeAndStorageLayoutErrors`));
@@ -70,7 +72,9 @@ test('validate - single contract, has upgrades-from', async t => {
 
 test('validate - single contract, reference overrides upgrades-from', async t => {
   const temp = await getTempDir(t);
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateSelfdestruct.sol:UnsafeAndStorageLayoutErrors`);
+  const buildInfo = await artifacts.getBuildInfo(
+    `contracts/test/cli/ValidateSelfdestruct.sol:UnsafeAndStorageLayoutErrors`,
+  );
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(
@@ -82,7 +86,9 @@ test('validate - single contract, reference overrides upgrades-from', async t =>
 
 test('validate - single contract, reference is uups, overrides upgrades-from', async t => {
   const temp = await getTempDir(t);
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateSelfdestruct.sol:UnsafeAndStorageLayoutErrors`);
+  const buildInfo = await artifacts.getBuildInfo(
+    `contracts/test/cli/ValidateSelfdestruct.sol:UnsafeAndStorageLayoutErrors`,
+  );
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(
@@ -653,10 +659,14 @@ test('validate - excludes specified contract', async t => {
   await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
 
   const error = await t.throwsAsync(
-    execAsync(`${CLI} validate ${temp} --contract BecomesBadLayout --reference StorageV1 --exclude "**/ValidateSelfdestruct.sol"`),
+    execAsync(
+      `${CLI} validate ${temp} --contract BecomesBadLayout --reference StorageV1 --exclude "**/ValidateSelfdestruct.sol"`,
+    ),
   );
   t.true(
-    error?.message.includes('No validation report found for contract contracts/test/cli/ValidateSelfdestruct.sol:BecomesBadLayout'),
+    error?.message.includes(
+      'No validation report found for contract contracts/test/cli/ValidateSelfdestruct.sol:BecomesBadLayout',
+    ),
     error?.message,
   );
 });

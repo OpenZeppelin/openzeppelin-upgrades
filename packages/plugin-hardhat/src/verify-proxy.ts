@@ -73,15 +73,15 @@ interface VerifiableContracts {
 }
 
 function getVerifiableContracts(hre: HardhatRuntimeEnvironment): VerifiableContracts {
-  let contracts = getContracts(hre);
+  const contracts = getContracts(hre);
   return {
     erc1967proxy: {
       artifact: contracts.erc1967,
-      event: 'Upgraded(address)'
+      event: 'Upgraded(address)',
     },
     beaconProxy: {
       artifact: contracts.beaconProxy,
-      event: 'BeaconUpgraded(address)'
+      event: 'BeaconUpgraded(address)',
     },
     upgradeableBeacon: {
       artifact: contracts.upgradeableBeacon,
@@ -89,14 +89,14 @@ function getVerifiableContracts(hre: HardhatRuntimeEnvironment): VerifiableContr
     },
     transparentUpgradeableProxy: {
       artifact: contracts.transparentUpgradeableProxy,
-      event: 'AdminChanged(address,address)'
+      event: 'AdminChanged(address,address)',
     },
     proxyAdmin: {
       artifact: contracts.proxyAdminV5,
-      event: 'OwnershipTransferred(address,address)'
+      event: 'OwnershipTransferred(address,address)',
     },
-    buildInfo: contracts.buildInfo
-  }
+    buildInfo: contracts.buildInfo,
+  };
 }
 
 /**
@@ -279,7 +279,7 @@ async function fullVerifyTransparentOrUUPS(
   ) {
     const attemptVerify = async () => {
       let encodedOwner: string;
-      let verifiableContracts = getVerifiableContracts(hre);
+      const verifiableContracts = getVerifiableContracts(hre);
       // Get the OwnershipTransferred event when the ProxyAdmin was created, which should have the encoded owner address as its second parameter (third topic).
       const response = await getEventResponse(adminAddress, verifiableContracts.proxyAdmin.event, etherscan);
       if (response === undefined) {
@@ -302,7 +302,14 @@ async function fullVerifyTransparentOrUUPS(
         );
       }
 
-      await verifyContractWithConstructorArgs(etherscan, adminAddress, artifact, encodedOwner, errorReport, verifiableContracts.buildInfo);
+      await verifyContractWithConstructorArgs(
+        etherscan,
+        adminAddress,
+        artifact,
+        encodedOwner,
+        errorReport,
+        verifiableContracts.buildInfo,
+      );
     };
 
     await attemptVerifyOrFallback(
@@ -317,7 +324,7 @@ async function fullVerifyTransparentOrUUPS(
   }
 
   async function verifyTransparentOrUUPS() {
-    let verifiableContracts = getVerifiableContracts(hre);
+    const verifiableContracts = getVerifiableContracts(hre);
 
     console.log(`Verifying proxy: ${proxyAddress}`);
     await verifyWithArtifactOrFallback(
@@ -347,7 +354,7 @@ async function fullVerifyBeaconProxy(
   hardhatVerify: (address: string) => Promise<any>,
   errorReport: ErrorReport,
 ) {
-  let verifiableContracts = getVerifiableContracts(hre);
+  const verifiableContracts = getVerifiableContracts(hre);
   const provider = hre.network.provider;
   const beaconAddress = await getBeaconAddress(provider, proxyAddress);
   const implAddress = await getImplementationAddressFromBeacon(provider, beaconAddress);
@@ -394,7 +401,7 @@ async function fullVerifyBeacon(
   await verifyBeacon();
 
   async function verifyBeacon() {
-    let verifiableContracts = getVerifiableContracts(hre);
+    const verifiableContracts = getVerifiableContracts(hre);
     console.log(`Verifying beacon or beacon-like contract: ${beaconAddress}`);
     await verifyWithArtifactOrFallback(
       hre,
@@ -593,14 +600,14 @@ async function attemptVerifyWithCreationEvent(
       contractInfo.artifact.contractName,
     );
   } else {
-    let contracts = getContracts(hre);
+    const contracts = getContracts(hre);
     await verifyContractWithConstructorArgs(
       etherscan,
       address,
       contractInfo.artifact,
       constructorArguments,
       errorReport,
-      contracts.buildInfo
+      contracts.buildInfo,
     );
   }
 }
@@ -619,7 +626,7 @@ async function verifyContractWithConstructorArgs(
   artifact: ContractArtifact,
   constructorArguments: string,
   errorReport: ErrorReport,
-  buildInfo: ReducedBuildInfo
+  buildInfo: ReducedBuildInfo,
 ) {
   debug(`verifying contract ${address} with constructor args ${constructorArguments}`);
 

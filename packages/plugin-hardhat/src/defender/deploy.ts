@@ -11,7 +11,7 @@ import {
 } from '@openzeppelin/defender-sdk-deploy-client';
 import { getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
 
-import { getContracts } from "../utils";
+import { getContracts } from '../utils';
 
 import { getNetwork, parseTxOverrides } from './utils';
 import { DefenderDeployOptions, UpgradeOptions, EthersDeployOptions, DefenderDeployment } from '../utils';
@@ -184,7 +184,12 @@ async function getContractInfo(
   } catch (e) {
     if (e instanceof ContractSourceNotFoundError) {
       const contracts = getContracts(hre);
-      const deployableProxyContracts = [contracts.erc1967, contracts.beaconProxy, contracts.beaconProxy, contracts.transparentUpgradeableProxy];
+      const deployableProxyContracts = [
+        contracts.erc1967,
+        contracts.beaconProxy,
+        contracts.beaconProxy,
+        contracts.transparentUpgradeableProxy,
+      ];
       // Proxy contracts would not be found in the validations, so try to get these from the plugin's precompiled artifacts.
       for (const artifact of deployableProxyContracts) {
         if (artifact.bytecode === factory.bytecode) {
