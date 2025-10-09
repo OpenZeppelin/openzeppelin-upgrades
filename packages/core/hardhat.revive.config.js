@@ -90,13 +90,6 @@ const SELFDESTRUCT_IGNORES = [
   'contracts/test/ValidationsNatspecSelfdestruct.sol',
 ];
 
-// raise the question with Torstent & Alberto
-const LIBRARY_NOT_FOUND_IGNORES = [
-  'contracts/test/NamespacedToModify.sol',
-  'contracts/test/NamespacedToModifyImported.sol',
-  'contracts/test/ValidationsNatspec.sol',
-];
-
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
@@ -106,14 +99,13 @@ module.exports = {
       url: 'https://cloudflare-eth.com',
     },
     hardhat: {
-      polkavm: true,
+      polkadot: {
+        target: "pvm"
+      },
     },
   },
   solidity: {
     compilers: [
-      // { version: '0.5.16', settings },
-      // { version: '0.6.12', settings },
-      // { version: '0.7.6', settings },
       { version: '0.8.8', settings },
       { version: '0.8.9', settings },
       proxyCompiler,
@@ -126,7 +118,7 @@ module.exports = {
       mainnet: process.env.ETHERSCAN_API_KEY,
     },
   },
-  ignorePatterns: [...OLD_SOLIDITY_VERSION_IGNORES, ...SELFDESTRUCT_IGNORES, ...LIBRARY_NOT_FOUND_IGNORES],
+  ignorePatterns: [...OLD_SOLIDITY_VERSION_IGNORES, ...SELFDESTRUCT_IGNORES],
   paths: {
     artifacts: './artifacts-pvm',
     cache: './cache-pvm',

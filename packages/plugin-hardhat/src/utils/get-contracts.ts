@@ -29,7 +29,7 @@ export interface UpgradeContracts {
 }
 
 export function getContracts(hre: HardhatRuntimeEnvironment): UpgradeContracts {
-  const notPVM = !('polkavm' in hre.network && hre.network.polkavm === true);
+  const notPVM = !('polkadot' in hre.network && hre.network.polkadot instanceof Object && 'target' in hre.network.polkadot && hre.network.polkadot.target === 'pvm');
   return {
     buildInfo: notPVM ? artifactsBuildInfo : artifactsBuildInfoPVM,
     erc1967: notPVM ? ERC1967Proxy : ERC1967ProxyPVM,

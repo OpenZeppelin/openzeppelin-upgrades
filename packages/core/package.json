@@ -71,11 +71,11 @@
     "fgbg": "^0.1.4",
     "hardhat": "^2.19.1",
     "rimraf": "^5.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "@parity/hardhat-polkadot": "^0.2.0-pre2"
   },
   "dependencies": {
     "@nomicfoundation/slang": "^0.18.3",
-    "@parity/hardhat-polkadot": "^0.2.0-pre1",
     "bignumber.js": "^9.1.2",
     "cbor": "^10.0.0",
     "chalk": "^4.1.0",
