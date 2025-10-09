@@ -31,9 +31,10 @@ export interface UpgradeContracts {
 export function getContracts(hre: HardhatRuntimeEnvironment): UpgradeContracts {
   const notPVM = !(
     'polkadot' in hre.network &&
-    (hre.network.polkadot instanceof Object &&
+    ((hre.network.polkadot instanceof Object &&
       'target' in hre.network.polkadot &&
-      hre.network.polkadot.target === 'pvm' || hre.network.polkadot === true)
+      hre.network.polkadot.target === 'pvm') ||
+      hre.network.polkadot === true)
   );
   return {
     buildInfo: notPVM ? artifactsBuildInfo : artifactsBuildInfoPVM,
