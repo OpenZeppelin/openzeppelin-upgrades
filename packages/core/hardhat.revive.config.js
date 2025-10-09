@@ -100,16 +100,12 @@ module.exports = {
     },
     hardhat: {
       polkadot: {
-        target: "pvm"
+        target: 'pvm',
       },
     },
   },
   solidity: {
-    compilers: [
-      { version: '0.8.8', settings },
-      { version: '0.8.9', settings },
-      proxyCompiler,
-    ],
+    compilers: [{ version: '0.8.8', settings }, { version: '0.8.9', settings }, proxyCompiler],
     overrides: getNamespacedOverrides(),
     excludeContracts: ['contracts/Initializable.sol'],
   },
