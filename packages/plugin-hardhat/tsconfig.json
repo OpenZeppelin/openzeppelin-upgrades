@@ -1,17 +1,23 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "nodenext",
-    "composite": true,
+    "target": "ES2022",
+    "module": "ESNext", // Pure ESM
+    "moduleResolution": "Bundler", // More lenient than NodeNext
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
     "outDir": "dist",
     "rootDir": "src",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
+    "composite": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"
   ],
   "references": [
-    { "path": "../core" }
+    {
+      "path": "../core"
+    }
   ]
 }
