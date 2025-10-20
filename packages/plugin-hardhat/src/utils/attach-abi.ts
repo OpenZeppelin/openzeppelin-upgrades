@@ -6,14 +6,15 @@ import ITransparentUpgradeableProxyV4 from '@openzeppelin/upgrades-core/artifact
 import ProxyAdminV5 from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 import ProxyAdminV4 from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 
 export async function attachITransparentUpgradeableProxyV5(
   hre: HardhatRuntimeEnvironment,
   address: string,
   signer?: Signer,
 ): Promise<Contract> {
-  return hre.ethers.getContractAt(ITransparentUpgradeableProxyV5.abi, address, signer);
+  const { ethers } = await hre.network.connect();
+  return ethers.getContractAt(ITransparentUpgradeableProxyV5.abi, address, signer);
 }
 
 export async function attachITransparentUpgradeableProxyV4(
@@ -21,7 +22,8 @@ export async function attachITransparentUpgradeableProxyV4(
   address: string,
   signer?: Signer,
 ): Promise<Contract> {
-  return hre.ethers.getContractAt(ITransparentUpgradeableProxyV4.abi, address, signer);
+  const { ethers } = await hre.network.connect();
+  return ethers.getContractAt(ITransparentUpgradeableProxyV4.abi, address, signer);
 }
 
 export async function attachProxyAdminV5(
@@ -29,7 +31,8 @@ export async function attachProxyAdminV5(
   address: string,
   signer?: Signer,
 ): Promise<Contract> {
-  return hre.ethers.getContractAt(ProxyAdminV5.abi, address, signer);
+  const { ethers } = await hre.network.connect();
+  return ethers.getContractAt(ProxyAdminV5.abi, address, signer);
 }
 
 export async function attachProxyAdminV4(
@@ -37,5 +40,6 @@ export async function attachProxyAdminV4(
   address: string,
   signer?: Signer,
 ): Promise<Contract> {
-  return hre.ethers.getContractAt(ProxyAdminV4.abi, address, signer);
+  const { ethers } = await hre.network.connect();
+  return ethers.getContractAt(ProxyAdminV4.abi, address, signer);
 }

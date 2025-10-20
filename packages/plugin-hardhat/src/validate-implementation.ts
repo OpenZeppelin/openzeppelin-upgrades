@@ -1,4 +1,5 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+
 import type { ContractFactory } from 'ethers';
 
 import { validateImpl } from './utils/validate-impl';

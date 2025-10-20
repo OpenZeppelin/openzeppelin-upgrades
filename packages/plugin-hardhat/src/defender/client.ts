@@ -1,6 +1,7 @@
 import { DeployClient } from '@openzeppelin/defender-sdk-deploy-client';
 import { NetworkClient } from '@openzeppelin/defender-sdk-network-client';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+
 import { getDefenderApiKey } from './utils';
 
 export function getNetworkClient(hre: HardhatRuntimeEnvironment): NetworkClient {

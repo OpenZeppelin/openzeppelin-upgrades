@@ -1,5 +1,7 @@
+// TODO: figure out, the 
 import type { ethers, ContractFactory } from 'ethers';
-import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from 'hardhat/types';
+import type {HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { CompilerInput, CompilerOutputContract  } from 'hardhat/types/solidity';
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
@@ -24,24 +26,14 @@ import debug from '../utils/debug';
 import { getDeployData } from '../utils/deploy-impl';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
 import { getDeployClient } from './client';
+import { getCombinedBuildInfo, type CombinedBuildInfo } from '../utils/artifacts';
 
 const deployableProxyContracts = [ERC1967Proxy, BeaconProxy, UpgradeableBeacon, TransparentUpgradeableProxy];
-
-interface ReducedBuildInfo {
-  _format: string;
-  id: string;
-  solcVersion: string;
-  solcLongVersion: string;
-  input: CompilerInput;
-  output: {
-    contracts: any;
-  };
-}
 
 interface ContractInfo {
   sourceName: string;
   contractName: string;
-  buildInfo: ReducedBuildInfo;
+  buildInfo: CombinedBuildInfo;
   libraries?: DeployRequestLibraries;
   constructorBytecode: string;
 }
@@ -148,8 +140,10 @@ export async function defenderDeploy(
     }
   }
 
-  const txResponse = (await hre.ethers.provider.getTransaction(deploymentResponse.txHash)) ?? undefined;
-  const checksumAddress = hre.ethers.getAddress(deploymentResponse.address);
+  const { ethers } = await hre.network.connect();
+
+  const txResponse = (await ethers.provider.getTransaction(deploymentResponse.txHash)) ?? undefined;
+  const checksumAddress = ethers.getAddress(deploymentResponse.address);
   return {
     address: checksumAddress,
     txHash: deploymentResponse.txHash,
@@ -212,7 +206,8 @@ async function getContractInfo(
 
   const { sourceName, contractName } = parseFullyQualifiedName(fullContractName);
   // Get the build-info file corresponding to the fully qualified contract name
-  const buildInfo = await hre.artifacts.getBuildInfo(fullContractName);
+  const buildInfo = await getCombinedBuildInfo(hre.artifacts, fullContractName);
+
   if (buildInfo === undefined) {
     throw new UpgradesError(
       `Could not get Hardhat compilation artifact for contract ${fullContractName}`,

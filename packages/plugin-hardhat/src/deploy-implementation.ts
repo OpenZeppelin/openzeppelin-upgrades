@@ -1,4 +1,4 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { ContractFactory, ethers } from 'ethers';
 
 import { DeployImplementationOptions } from './utils';

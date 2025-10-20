@@ -1,4 +1,5 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+
 import type { ContractFactory } from 'ethers';
 
 import {
@@ -46,7 +47,9 @@ export async function deployImplForUpgrade(
   opts: PrepareUpgradeOptions = {},
 ): Promise<DeployedImpl> {
   const referenceAddress = await getContractAddress(referenceAddressOrContract);
-  const { provider } = hre.network;
+  const { ethers } = await hre.network.connect();
+  const provider = ethers.provider;
+
   let deployedImpl;
   if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
     deployedImpl = await deployProxyImpl(hre, ImplFactory, opts, referenceAddress);

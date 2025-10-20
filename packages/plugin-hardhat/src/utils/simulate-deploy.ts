@@ -1,6 +1,6 @@
 import { fetchOrDeploy } from '@openzeppelin/upgrades-core';
 import type { ContractFactory } from 'ethers';
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import { getDeployData } from './deploy-impl';
 import { UpgradeOptions } from './options';
 

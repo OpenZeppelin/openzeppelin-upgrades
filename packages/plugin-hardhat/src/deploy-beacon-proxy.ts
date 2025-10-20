@@ -1,4 +1,4 @@
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import { ContractFactory } from 'ethers';
 
 import {
@@ -63,7 +63,8 @@ export function makeDeployBeaconProxy(
 
     opts = enableDefender(hre, defenderModule, opts);
 
-    const { provider } = hre.network;
+    const { ethers } = await hre.network.connect();
+    const provider = ethers.provider;
     const manifest = await Manifest.forNetwork(provider);
 
     if (opts.kind !== undefined && opts.kind !== 'beacon') {

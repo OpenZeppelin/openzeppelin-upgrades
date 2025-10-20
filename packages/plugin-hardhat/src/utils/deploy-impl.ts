@@ -10,7 +10,8 @@ import {
   Version,
 } from '@openzeppelin/upgrades-core';
 import type { ContractFactory, ethers } from 'ethers';
-import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { EthereumProvider } from 'hardhat/types/providers';
 import { deploy } from './deploy';
 import { GetTxResponse, DefenderDeployOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
 import { getRemoteDeployment } from '../defender/utils';
@@ -41,7 +42,14 @@ export async function getDeployData(
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
 ): Promise<DeployData> {
-  const { provider } = hre.network;
+  const { ethers } = await hre.network.connect();
+
+  // the type HardhatEthersProvider; has method send(method: string, params?: any[]): Promise<any>;
+  // EthereumProvider have a bunch of send methods just like the one above, like this:
+  // send(method: 'anvil_metadata', params: []): Promise<HardhatMetadata>
+  // so we can make the cast safely
+  const provider = ethers.provider as unknown as EthereumProvider;
+
   const validations = await readValidations(hre);
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
   const encodedArgs = ImplFactory.interface.encodeDeploy(opts.constructorArgs);
@@ -132,12 +140,15 @@ async function deployImpl(
     remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId),
   );
 
+  const { ethers } = await hre.network.connect();
+  const { provider } = ethers.provider;
+
   let txResponse;
   if (opts.getTxResponse) {
     if ('deployTransaction' in deployment) {
       txResponse = deployment.deployTransaction ?? undefined;
     } else if (deployment.txHash !== undefined) {
-      txResponse = (await hre.ethers.provider.getTransaction(deployment.txHash)) ?? undefined;
+      txResponse = (await provider.getTransaction(deployment.txHash)) ?? undefined;
     }
   }
 
