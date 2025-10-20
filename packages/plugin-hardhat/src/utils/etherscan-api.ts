@@ -5,7 +5,7 @@
 // import { request } from 'undici';
 
 // import debug from './debug';
-// import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan'; 
+// import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
 
 // /**
 //  * Call the configured Etherscan API with the given parameters.

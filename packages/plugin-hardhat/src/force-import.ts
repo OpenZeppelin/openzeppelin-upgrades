@@ -39,7 +39,7 @@ export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunc
     opts: ForceImportOptions = {},
   ) {
     const { ethers } = await hre.network.connect();
-    const provider = ethers.provider as unknown as EthereumProvider
+    const provider = ethers.provider as unknown as EthereumProvider;
     const manifest = await Manifest.forNetwork(provider);
 
     const address = await getContractAddress(addressOrInstance);

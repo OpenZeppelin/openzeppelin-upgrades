@@ -1,7 +1,7 @@
-// TODO: figure out, the 
+// TODO: figure out, the
 import type { ethers, ContractFactory } from 'ethers';
-import type {HardhatRuntimeEnvironment } from 'hardhat/types/hre';
-import type { CompilerInput, CompilerOutputContract  } from 'hardhat/types/solidity';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { CompilerInput, CompilerOutputContract } from 'hardhat/types/solidity';
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
