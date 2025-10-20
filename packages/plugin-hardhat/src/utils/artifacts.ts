@@ -26,15 +26,15 @@ export interface CombinedBuildInfo {
 
 /**
  * Gets the BuildInfo for a given contract name or fully qualified name.
- * 
+ *
  * This utility uses the public API of Hardhat's ArtifactManager to retrieve
  * the full BuildInfo object, which includes compilation details, compiler version,
  * and all contract artifacts from a compilation unit.
- * 
+ *
  * @param artifactManager - The ArtifactManager instance from hre.artifacts
  * @param contractNameOrFullyQualifiedName - Contract name or fully qualified name (e.g., "MyContract" or "contracts/MyContract.sol:MyContract")
  * @returns The BuildInfo object or undefined if not found
- * 
+ *
  * @example
  * ```typescript
  * const buildInfo = await getBuildInfo(hre.artifacts, 'MyContract');
@@ -49,9 +49,7 @@ export async function getBuildInfo(
   contractNameOrFullyQualifiedName: string,
 ): Promise<BuildInfo | undefined> {
   // Get the build info ID from the artifact
-  const buildInfoId = await artifactManager.getBuildInfoId(
-    contractNameOrFullyQualifiedName,
-  );
+  const buildInfoId = await artifactManager.getBuildInfoId(contractNameOrFullyQualifiedName);
 
   if (buildInfoId === undefined) {
     return undefined;
@@ -70,14 +68,14 @@ export async function getBuildInfo(
 
 /**
  * Gets the combined BuildInfo with output for a given contract name or fully qualified name.
- * 
+ *
  * In Hardhat 3, build info and output are stored separately. This utility combines them
  * into a single object for backwards compatibility with code expecting the Hardhat 2 format.
- * 
+ *
  * @param artifactManager - The ArtifactManager instance from hre.artifacts
  * @param contractNameOrFullyQualifiedName - Contract name or fully qualified name (e.g., "MyContract" or "contracts/MyContract.sol:MyContract")
  * @returns The combined BuildInfo with output, or undefined if not found
- * 
+ *
  * @example
  * ```typescript
  * const buildInfo = await getCombinedBuildInfo(hre.artifacts, 'MyContract');
@@ -92,9 +90,7 @@ export async function getCombinedBuildInfo(
   contractNameOrFullyQualifiedName: string,
 ): Promise<CombinedBuildInfo | undefined> {
   // Get the build info ID from the artifact
-  const buildInfoId = await artifactManager.getBuildInfoId(
-    contractNameOrFullyQualifiedName,
-  );
+  const buildInfoId = await artifactManager.getBuildInfoId(contractNameOrFullyQualifiedName);
 
   if (buildInfoId === undefined) {
     return undefined;

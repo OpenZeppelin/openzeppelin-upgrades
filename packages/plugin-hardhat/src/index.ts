@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // TODO figure out what is the newer, TASK_COMPILE_SOLIDITY and TASK_COMPILE_SOLIDITY_COMPILE
 
-// TODO extendEnvironment and such are not used anymore now it's plugin hooks 
+// TODO extendEnvironment and such are not used anymore now it's plugin hooks
 // https://hardhat.org/plugin-development/explanations/lifecycle
-
 
 import '@nomicfoundation/hardhat-ethers';
 import './type-extensions';
@@ -13,7 +12,7 @@ import './type-extensions';
 
 // import { TASK_COMPILE_SOLIDITY, TASK_COMPILE_SOLIDITY_COMPILE } from 'hardhat/builtin-tasks/task-names';
 
-import {  HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import { HardhatConfig } from 'hardhat/types/config';
 import { assertUnreachable, type silenceWarnings, type SolcInput, type SolcOutput } from '@openzeppelin/upgrades-core';
 import type { DeployFunction } from './deploy-proxy';
@@ -218,7 +217,6 @@ interface RunCompilerArgs {
 //     }
 //   }
 // })
-;
 
 // if (tryRequire('@nomicfoundation/hardhat-verify')) {
 //   subtask('verify:etherscan').setAction(async (args, hre, runSuper) => {

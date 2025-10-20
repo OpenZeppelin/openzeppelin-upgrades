@@ -39,7 +39,7 @@ export function makeProposeUpgradeWithApproval(
 
     const client = getDeployClient(hre);
     const network = await getNetwork(hre);
-    const {ethers}  = await hre.network.connect();
+    const { ethers } = await hre.network.connect();
     const provider = ethers.provider as unknown as EthereumProvider;
 
     if (await isBeaconProxy(provider, proxyAddress)) {
