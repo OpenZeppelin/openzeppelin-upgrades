@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import lockfile from 'proper-lockfile';
 
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import {
   ValidationDataCurrent,
   ValidationRunData,

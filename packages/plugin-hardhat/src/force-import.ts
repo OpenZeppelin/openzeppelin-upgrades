@@ -1,4 +1,5 @@
-import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { EthereumProvider } from 'hardhat/types/providers';
 import type { ContractFactory, Contract } from 'ethers';
 
 import {
@@ -37,7 +38,8 @@ export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunc
     ImplFactory: ContractFactory,
     opts: ForceImportOptions = {},
   ) {
-    const { provider } = hre.network;
+    const { ethers } = await hre.network.connect();
+    const provider = ethers.provider as unknown as EthereumProvider
     const manifest = await Manifest.forNetwork(provider);
 
     const address = await getContractAddress(addressOrInstance);

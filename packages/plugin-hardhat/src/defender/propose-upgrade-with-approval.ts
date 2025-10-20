@@ -6,7 +6,9 @@ import {
   isTransparentProxy,
 } from '@openzeppelin/upgrades-core';
 import { ContractFactory, ethers } from 'ethers';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import { EthereumProvider } from 'hardhat/types/providers';
+
 import { DefenderDeployOptions, UpgradeOptions } from '../utils';
 import { getNetwork, enableDefender } from './utils';
 import { deployImplForUpgrade } from '../prepare-upgrade';
@@ -37,23 +39,25 @@ export function makeProposeUpgradeWithApproval(
 
     const client = getDeployClient(hre);
     const network = await getNetwork(hre);
+    const {ethers}  = await hre.network.connect();
+    const provider = ethers.provider as unknown as EthereumProvider;
 
-    if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
+    if (await isBeaconProxy(provider, proxyAddress)) {
       throw new Error(`Beacon proxy is not currently supported with defender.proposeUpgradeWithApproval()`);
     } else {
       // try getting the implementation address so that it will give an error if it's not a transparent/uups proxy
-      await getImplementationAddress(hre.network.provider, proxyAddress);
+      await getImplementationAddress(provider, proxyAddress);
     }
 
     let proxyAdmin = undefined;
-    if (await isTransparentProxy(hre.network.provider, proxyAddress)) {
+    if (await isTransparentProxy(provider, proxyAddress)) {
       // use the erc1967 admin address as the proxy admin
-      proxyAdmin = await getAdminAddress(hre.network.provider, proxyAddress);
+      proxyAdmin = await getAdminAddress(provider, proxyAddress);
     }
 
     const implFactory =
       typeof contractNameOrImplFactory === 'string'
-        ? await hre.ethers.getContractFactory(contractNameOrImplFactory)
+        ? await ethers.getContractFactory(contractNameOrImplFactory)
         : contractNameOrImplFactory;
     const abi = implFactory.interface.formatJson();
 

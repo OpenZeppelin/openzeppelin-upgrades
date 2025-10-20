@@ -1,4 +1,4 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { ContractFactory } from 'ethers';
 import assert from 'assert';
 
@@ -42,8 +42,10 @@ export function getContractInstance<F extends ContractFactory>(
         deployment.remoteDeploymentId,
       );
 
+      const { ethers } = await hre.network.connect();
+
       if (updatedTxHash !== undefined && updatedTxHash !== deployment.txHash) {
-        const updatedTx = await hre.ethers.provider.getTransaction(updatedTxHash);
+        const updatedTx = await ethers.provider.getTransaction(updatedTxHash);
         // @ts-ignore Won't be readonly because instance was created through attach.
         instance.deploymentTransaction = () => updatedTx;
       }

@@ -1,9 +1,11 @@
 import chalk from 'chalk';
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { EthereumProvider } from 'hardhat/types/providers';
+
 import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
 import { Contract, Signer } from 'ethers';
-import { EthersDeployOptions, attachProxyAdminV4 } from './utils';
-import { disableDefender } from './defender/utils';
+import { EthersDeployOptions, attachProxyAdminV4 } from './utils/index.js';
+import { disableDefender } from './defender/utils.js';
 
 const SUCCESS_CHECK = chalk.green('✔') + ' ';
 
@@ -34,7 +36,10 @@ export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, defenderMod
   ) {
     disableDefender(hre, defenderModule, {}, changeProxyAdmin.name);
 
-    const proxyAdminAddress = await getAdminAddress(hre.network.provider, proxyAddress);
+    const { ethers } = await hre.network.connect();
+    const provider = ethers.provider as unknown as EthereumProvider;
+
+    const proxyAdminAddress = await getAdminAddress(provider, proxyAddress);
     // Only compatible with v4 admins
     const admin = await attachProxyAdminV4(hre, proxyAdminAddress, signer);
 
@@ -55,7 +60,10 @@ export function makeTransferProxyAdminOwnership(
   ) {
     disableDefender(hre, defenderModule, {}, transferProxyAdminOwnership.name);
 
-    const proxyAdminAddress = await getAdminAddress(hre.network.provider, proxyAddress);
+    const { ethers } = await hre.network.connect();
+    const provider = ethers.provider as unknown as EthereumProvider;
+
+    const proxyAdminAddress = await getAdminAddress(provider, proxyAddress);
     // Compatible with both v4 and v5 admins since they both have transferOwnership
     const admin = await attachProxyAdminV4(hre, proxyAdminAddress, signer);
 
@@ -63,7 +71,8 @@ export function makeTransferProxyAdminOwnership(
     await admin.transferOwnership(newOwner, ...overrides);
 
     if (!opts.silent) {
-      const { provider } = hre.network;
+      const { ethers } = await hre.network.connect();
+      const provider = ethers.provider;
       const manifest = await Manifest.forNetwork(provider);
       const { proxies } = await manifest.read();
       const adminAddress = await admin.getAddress();

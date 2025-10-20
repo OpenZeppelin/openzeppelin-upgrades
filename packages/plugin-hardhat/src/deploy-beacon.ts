@@ -1,4 +1,4 @@
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { ContractFactory, Contract } from 'ethers';
 
 import { Deployment } from '@openzeppelin/upgrades-core';

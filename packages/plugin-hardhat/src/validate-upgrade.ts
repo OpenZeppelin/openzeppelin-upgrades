@@ -1,4 +1,5 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+
 import { ContractFactory } from 'ethers';
 
 import { ContractAddressOrInstance, getContractAddress } from './utils';
@@ -45,7 +46,8 @@ export function makeValidateUpgrade(hre: HardhatRuntimeEnvironment): ValidateUpg
       }
     } else {
       const referenceAddress = await getContractAddress(referenceAddressOrImplFactory);
-      const { provider } = hre.network;
+      const { ethers } = await hre.network.connect();
+      const provider = ethers.provider;
       const deployData = await getDeployData(hre, newImplFactory, opts);
       if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
         await validateProxyImpl(deployData, opts, referenceAddress);

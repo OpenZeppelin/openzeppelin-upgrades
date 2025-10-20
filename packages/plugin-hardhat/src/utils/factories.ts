@@ -5,26 +5,30 @@ import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/con
 import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 
 export async function getProxyFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
-  return hre.ethers.getContractFactory(ERC1967Proxy.abi, ERC1967Proxy.bytecode, signer);
+  const { ethers } = await hre.network.connect();
+  return ethers.getContractFactory(ERC1967Proxy.abi, ERC1967Proxy.bytecode, signer);
 }
 
 export async function getTransparentUpgradeableProxyFactory(
   hre: HardhatRuntimeEnvironment,
   signer?: Signer,
 ): Promise<ContractFactory> {
-  return hre.ethers.getContractFactory(TransparentUpgradeableProxy.abi, TransparentUpgradeableProxy.bytecode, signer);
+  const { ethers } = await hre.network.connect();
+  return ethers.getContractFactory(TransparentUpgradeableProxy.abi, TransparentUpgradeableProxy.bytecode, signer);
 }
 
 export async function getBeaconProxyFactory(hre: HardhatRuntimeEnvironment, signer?: Signer): Promise<ContractFactory> {
-  return hre.ethers.getContractFactory(BeaconProxy.abi, BeaconProxy.bytecode, signer);
+  const { ethers } = await hre.network.connect();
+  return ethers.getContractFactory(BeaconProxy.abi, BeaconProxy.bytecode, signer);
 }
 
 export async function getUpgradeableBeaconFactory(
   hre: HardhatRuntimeEnvironment,
   signer?: Signer,
 ): Promise<ContractFactory> {
-  return hre.ethers.getContractFactory(UpgradeableBeacon.abi, UpgradeableBeacon.bytecode, signer);
+  const { ethers } = await hre.network.connect();
+  return ethers.getContractFactory(UpgradeableBeacon.abi, UpgradeableBeacon.bytecode, signer);
 }

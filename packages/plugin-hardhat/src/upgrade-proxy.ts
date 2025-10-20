@@ -1,4 +1,5 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+
 import type { ethers, ContractFactory, Signer } from 'ethers';
 import debug from './utils/debug';
 import { getAdminAddress, getCode, getUpgradeInterfaceVersion, isEmptySlot } from '@openzeppelin/upgrades-core';
@@ -55,7 +56,8 @@ export function makeUpgradeProxy(
   type Upgrader = (nextImpl: string, call?: string) => Promise<ethers.TransactionResponse>;
 
   async function getUpgrader(proxyAddress: string, opts: UpgradeProxyOptions, signer?: Signer): Promise<Upgrader> {
-    const { provider } = hre.network;
+    const { ethers } = await hre.network.connect();
+    const provider = ethers.provider;
 
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     const adminBytecode = await getCode(provider, adminAddress);

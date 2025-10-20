@@ -1,4 +1,4 @@
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { ContractFactory } from 'ethers';
 
 import {
@@ -49,7 +49,9 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
 
     opts = enableDefender(hre, defenderModule, opts);
 
-    const { provider } = hre.network;
+    const { ethers } = await hre.network.connect();
+    const { provider } = ethers.provider;
+
     const manifest = await Manifest.forNetwork(provider);
 
     const { impl, kind } = await deployProxyImpl(hre, ImplFactory, opts);

@@ -1,4 +1,5 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+
 import {
   getChainId,
   hasCode,
@@ -32,8 +33,9 @@ export function getDefenderApiKey(hre: HardhatRuntimeEnvironment): HardhatDefend
 }
 
 export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Network> {
-  const { provider } = hre.network;
-  const chainId = hre.network.config.chainId ?? (await getChainId(provider));
+  const { networkConfig, ethers } = await hre.network.connect();
+  const provider = ethers.provider;
+  const chainId = networkConfig.chainId ?? (await getChainId(provider));
 
   const networkNames = await getNetworkNames(chainId, hre);
 
@@ -181,10 +183,11 @@ export async function waitForDeployment(
 ): Promise<string | undefined> {
   const pollInterval = opts.pollingInterval ?? 5e3;
   let lastKnownTxHash: string | undefined;
+  const { ethers } = await hre.network.connect();
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (await hasCode(hre.ethers.provider, address)) {
+    if (await hasCode(ethers.provider, address)) {
       debug('code in target address found', address);
       break;
     }
