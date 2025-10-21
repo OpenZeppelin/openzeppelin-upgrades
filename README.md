@@ -69,3 +69,5 @@ Join the [OpenZeppelin forum](https://forum.openzeppelin.com/) to ask questions 
 ## License
 
 OpenZeppelin Upgrade plugins are released under the [MIT License](LICENSE).
+<br>## Welcome to Proxy Upgrades<br>OpenZeppelin's upgrades enable safe Solidity proxy patterns—new contributors, start with the UUPS tutorial for your first upgradable contract. Tip: Use Defender for monitoring! <br>
+
