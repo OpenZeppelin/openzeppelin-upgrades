@@ -20,13 +20,13 @@ import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/con
 import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 
-import { getNetwork, parseTxOverrides } from './utils';
-import { DefenderDeployOptions, UpgradeOptions, EthersDeployOptions, DefenderDeployment } from '../utils';
-import debug from '../utils/debug';
-import { getDeployData } from '../utils/deploy-impl';
+import { getNetwork, parseTxOverrides } from './utils.js';
+import { DefenderDeployOptions, UpgradeOptions, EthersDeployOptions, DefenderDeployment } from '../utils/index.js';
+import debug from '../utils/debug.js';
+import { getDeployData } from '../utils/deploy-impl.js';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
-import { getDeployClient } from './client';
-import { getCombinedBuildInfo, type CombinedBuildInfo } from '../utils/artifacts';
+import { getDeployClient } from './client.js';
+import { getCombinedBuildInfo, type CombinedBuildInfo } from '../utils/artifacts.js';
 
 const deployableProxyContracts = [ERC1967Proxy, BeaconProxy, UpgradeableBeacon, TransparentUpgradeableProxy];
 

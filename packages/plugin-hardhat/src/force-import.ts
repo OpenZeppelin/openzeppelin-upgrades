@@ -24,9 +24,9 @@ import {
   getContractAddress,
   getUpgradeableBeaconFactory,
   ForceImportOptions,
-} from './utils';
-import { getDeployData } from './utils/deploy-impl';
-import { attach, getSigner } from './utils/ethers';
+} from './utils/index.js';
+import { getDeployData } from './utils/deploy-impl.js';
+import { attach, getSigner } from './utils/ethers.js';
 
 export interface ForceImportFunction {
   (proxyAddress: string, ImplFactory: ContractFactory, opts?: ForceImportOptions): Promise<Contract>;

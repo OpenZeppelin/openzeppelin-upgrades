@@ -1,9 +1,9 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { ContractFactory, ethers } from 'ethers';
 
-import { DeployImplementationOptions } from './utils';
-import { deployUpgradeableImpl } from './utils/deploy-impl';
-import { enableDefender } from './defender/utils';
+import { DeployImplementationOptions } from './utils/index.js';
+import { deployUpgradeableImpl } from './utils/deploy-impl.js';
+import { enableDefender } from './defender/utils.js';
 
 export type DeployImplementationFunction = (
   ImplFactory: ContractFactory,

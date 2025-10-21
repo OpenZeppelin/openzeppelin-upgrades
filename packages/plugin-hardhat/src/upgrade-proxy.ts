@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 
 import type { ethers, ContractFactory, Signer } from 'ethers';
-import debug from './utils/debug';
+import debug from './utils/debug.js';
 import { getAdminAddress, getCode, getUpgradeInterfaceVersion, isEmptySlot } from '@openzeppelin/upgrades-core';
 
 import {
@@ -10,16 +10,16 @@ import {
   getContractAddress,
   ContractAddressOrInstance,
   getSigner,
-} from './utils';
-import { disableDefender } from './defender/utils';
-import { attach } from './utils/ethers';
+} from './utils/index.js';
+import { disableDefender } from './defender/utils.js';
+import { attach } from './utils/ethers.js';
 import {
   attachITransparentUpgradeableProxyV4,
   attachITransparentUpgradeableProxyV5,
   attachProxyAdminV4,
   attachProxyAdminV5,
-} from './utils/attach-abi';
-import { ContractTypeOfFactory } from './type-extensions';
+} from './utils/attach-abi.js';
+import { ContractTypeOfFactory } from './type-extensions.js';
 
 export type UpgradeFunction = <F extends ContractFactory>(
   proxy: ContractAddressOrInstance,

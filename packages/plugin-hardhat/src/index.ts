@@ -5,7 +5,7 @@
 // https://hardhat.org/plugin-development/explanations/lifecycle
 
 import '@nomicfoundation/hardhat-ethers';
-import './type-extensions';
+import './type-extensions.ts';
 
 // import { subtask, extendEnvironment, extendConfig } from 'hardhat/config';
 // import { lazyObject } from 'hardhat/plugins';
@@ -15,23 +15,23 @@ import './type-extensions';
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import { HardhatConfig } from 'hardhat/types/config';
 import { assertUnreachable, type silenceWarnings, type SolcInput, type SolcOutput } from '@openzeppelin/upgrades-core';
-import type { DeployFunction } from './deploy-proxy';
-import type { PrepareUpgradeFunction } from './prepare-upgrade';
-import type { UpgradeFunction } from './upgrade-proxy';
-import type { DeployBeaconFunction } from './deploy-beacon';
-import type { DeployBeaconProxyFunction } from './deploy-beacon-proxy';
-import type { UpgradeBeaconFunction } from './upgrade-beacon';
-import type { ForceImportFunction } from './force-import';
-import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction } from './admin';
-import type { ValidateImplementationFunction } from './validate-implementation';
-import type { ValidateUpgradeFunction } from './validate-upgrade';
-import type { DeployImplementationFunction } from './deploy-implementation';
-import type { DeployContractFunction } from './deploy-contract';
-import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade-with-approval';
+import type { DeployFunction } from './deploy-proxy.ts';
+import type { PrepareUpgradeFunction } from './prepare-upgrade.ts';
+import type { UpgradeFunction } from './upgrade-proxy.ts';
+import type { DeployBeaconFunction } from './deploy-beacon.ts';
+import type { DeployBeaconProxyFunction } from './deploy-beacon-proxy.ts';
+import type { UpgradeBeaconFunction } from './upgrade-beacon.ts';
+import type { ForceImportFunction } from './force-import.ts';
+import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction } from './admin.ts';
+import type { ValidateImplementationFunction } from './validate-implementation.ts';
+import type { ValidateUpgradeFunction } from './validate-upgrade.ts';
+import type { DeployImplementationFunction } from './deploy-implementation.ts';
+import type { DeployContractFunction } from './deploy-contract.ts';
+import type { ProposeUpgradeWithApprovalFunction } from './defender/propose-upgrade-with-approval.ts';
 import type {
   GetDeployApprovalProcessFunction,
   GetUpgradeApprovalProcessFunction,
-} from './defender/get-approval-process';
+} from './defender/get-approval-process.ts';
 
 export interface HardhatUpgrades {
   deployProxy: DeployFunction;
@@ -78,7 +78,7 @@ interface RunCompilerArgs {
 
 // subtask(TASK_COMPILE_SOLIDITY, async (args: { force: boolean }, hre, runSuper) => {
 //   const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
-//     './utils/validations.js'
+//     './utils/validations.ts'
 //   );
 
 //   try {
@@ -97,12 +97,12 @@ interface RunCompilerArgs {
 // subtask(TASK_COMPILE_SOLIDITY_COMPILE, async (args: RunCompilerArgs, hre, runSuper) => {
 //   const { isNamespaceSupported, validate, solcInputOutputDecoder, makeNamespacedInput, trySanitizeNatSpec } =
 //     await import('@openzeppelin/upgrades-core');
-//   const { writeValidations } = await import('./utils/validations.js');
+//   const { writeValidations } = await import('./utils/validations.ts');
 
 //   // TODO: patch input
 //   const { output, solcBuild } = await runSuper();
 
-//   const { isFullSolcOutput } = await import('./utils/is-full-solc-output.js');
+//   const { isFullSolcOutput } = await import('./utils/is-full-solc-output.ts');
 //   if (isFullSolcOutput(output)) {
 //     const decodeSrc = solcInputOutputDecoder(args.input, output);
 
@@ -220,7 +220,7 @@ interface RunCompilerArgs {
 
 // if (tryRequire('@nomicfoundation/hardhat-verify')) {
 //   subtask('verify:etherscan').setAction(async (args, hre, runSuper) => {
-//     const { verify } = await import('./verify-proxy.js');
+//     const { verify } = await import('./verify-proxy.ts');
 //     return await verify(args, hre, runSuper);
 //   });
 // }
@@ -307,4 +307,4 @@ interface RunCompilerArgs {
 //   return false;
 // }
 
-export { UpgradeOptions } from './utils/options';
+export { UpgradeOptions } from './utils/options.ts';

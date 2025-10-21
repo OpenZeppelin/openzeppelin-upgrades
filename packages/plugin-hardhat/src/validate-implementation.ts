@@ -2,9 +2,9 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 
 import type { ContractFactory } from 'ethers';
 
-import { validateImpl } from './utils/validate-impl';
-import { getDeployData } from './utils/deploy-impl';
-import { ValidateImplementationOptions } from './utils';
+import { validateImpl } from './utils/validate-impl.js';
+import { getDeployData } from './utils/deploy-impl.js';
+import { ValidateImplementationOptions } from './utils/index.js';
 
 export type ValidateImplementationFunction = (
   ImplFactory: ContractFactory,

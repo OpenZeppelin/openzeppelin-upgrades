@@ -24,9 +24,9 @@
 
 // import { keccak256 } from 'ethereumjs-util';
 
-// import debug from './utils/debug';
-// import { callEtherscanApi, getVerificationProviderInstance, RESPONSE_OK } from './utils/etherscan-api';
-// import { verifyAndGetStatus } from './utils/etherscan-api';
+// import debug from './utils/debug.js';
+// import { callEtherscanApi, getVerificationProviderInstance, RESPONSE_OK } from './utils/etherscan-api.js';
+// import { verifyAndGetStatus } from './utils/etherscan-api.js';
 // import { verifyContract } from "@nomicfoundation/hardhat-verify/verify";
 
 // // import type { VerificationProvider } from '@nomicfoundation/hardhat-verify/internal/types';

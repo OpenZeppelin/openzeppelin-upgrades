@@ -9,10 +9,10 @@ import { ContractFactory, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import { EthereumProvider } from 'hardhat/types/providers';
 
-import { DefenderDeployOptions, UpgradeOptions } from '../utils';
-import { getNetwork, enableDefender } from './utils';
-import { deployImplForUpgrade } from '../prepare-upgrade';
-import { getDeployClient } from './client';
+import { DefenderDeployOptions, UpgradeOptions } from '../utils/index.js';
+import { getNetwork, enableDefender } from './utils.js';
+import { deployImplForUpgrade } from '../prepare-upgrade.js';
+import { getDeployClient } from './client.js';
 
 export interface UpgradeProposalResponse {
   proposalId: string;

@@ -2,11 +2,11 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { ContractFactory } from 'ethers';
 import assert from 'assert';
 
-import { DeployTransaction, DefenderDeploy } from '.';
-import { waitForDeployment } from '../defender/utils';
+import { DeployTransaction, DefenderDeploy } from './index.js';
+import { waitForDeployment } from '../defender/utils.js';
 import { Deployment, RemoteDeploymentId, DeployOpts } from '@openzeppelin/upgrades-core';
-import { attach } from './ethers';
-import { ContractTypeOfFactory } from '../type-extensions';
+import { attach } from './ethers.js';
+import { ContractTypeOfFactory } from '../type-extensions.js';
 
 /**
  * Gets a contract instance from a deployment, where the deployment may be remote.

@@ -21,10 +21,10 @@ import {
   getContractAddress,
   getInitializerData,
   getSigner,
-} from './utils';
-import { enableDefender } from './defender/utils';
-import { getContractInstance } from './utils/contract-instance';
-import { ContractTypeOfFactory } from './type-extensions';
+} from './utils/index.js';
+import { enableDefender } from './defender/utils.js';
+import { getContractInstance } from './utils/contract-instance.js';
+import { ContractTypeOfFactory } from './type-extensions.js';
 
 export interface DeployBeaconProxyFunction {
   <F extends ContractFactory>(
