@@ -8,7 +8,7 @@ import {
   deployProxyImpl,
   deployBeaconImpl,
   PrepareUpgradeOptions,
-} from './utils';
+} from './utils/index.js';
 import {
   getBeaconAddress,
   isBeaconProxy,
@@ -16,9 +16,9 @@ import {
   isBeacon,
   PrepareUpgradeRequiresKindError,
 } from '@openzeppelin/upgrades-core';
-import { DeployImplementationResponse } from './deploy-implementation';
-import { enableDefender } from './defender/utils';
-import { deployUpgradeableImpl, DeployedImpl } from './utils/deploy-impl';
+import { DeployImplementationResponse } from './deploy-implementation.js';
+import { enableDefender } from './defender/utils.js';
+import { deployUpgradeableImpl, DeployedImpl } from './utils/deploy-impl.js';
 
 export type PrepareUpgradeFunction = (
   referenceAddressOrContract: ContractAddressOrInstance,

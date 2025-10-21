@@ -3,10 +3,10 @@ import type { ContractFactory, Contract } from 'ethers';
 
 import { Deployment } from '@openzeppelin/upgrades-core';
 
-import { DeployBeaconOptions, deploy, DeployTransaction, getUpgradeableBeaconFactory, deployBeaconImpl } from './utils';
-import { disableDefender } from './defender/utils';
-import { attach, getSigner } from './utils/ethers';
-import { getInitialOwner } from './utils/initial-owner';
+import { DeployBeaconOptions, deploy, DeployTransaction, getUpgradeableBeaconFactory, deployBeaconImpl } from './utils/index.js';
+import { disableDefender } from './defender/utils.js';
+import { attach, getSigner } from './utils/ethers.js';
+import { getInitialOwner } from './utils/initial-owner.js';
 
 export interface DeployBeaconFunction {
   (ImplFactory: ContractFactory, opts?: DeployBeaconOptions): Promise<Contract>;

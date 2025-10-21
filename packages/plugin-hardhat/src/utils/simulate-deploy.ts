@@ -1,8 +1,8 @@
 import { fetchOrDeploy } from '@openzeppelin/upgrades-core';
 import type { ContractFactory } from 'ethers';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
-import { getDeployData } from './deploy-impl';
-import { UpgradeOptions } from './options';
+import { getDeployData } from './deploy-impl.js';
+import { UpgradeOptions } from './options.js';
 
 // To import an already deployed contract we want to reuse fetchOrDeploy for its ability to validate
 // a deployment and record it in the network file. We are able to do this by "simulating" a deployment:

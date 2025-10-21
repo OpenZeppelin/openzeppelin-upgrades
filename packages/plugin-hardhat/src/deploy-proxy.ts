@@ -21,11 +21,11 @@ import {
   deployProxyImpl,
   getInitializerData,
   getSigner,
-} from './utils';
-import { enableDefender } from './defender/utils';
-import { getContractInstance } from './utils/contract-instance';
-import { getInitialOwner } from './utils/initial-owner';
-import { ContractTypeOfFactory } from './type-extensions';
+} from './utils/index.js';
+import { enableDefender } from './defender/utils.js';
+import { getContractInstance } from './utils/contract-instance.js';
+import { getInitialOwner } from './utils/initial-owner.js';
+import { ContractTypeOfFactory } from './type-extensions.js';
 
 export interface DeployFunction {
   <F extends ContractFactory>(

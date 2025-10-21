@@ -10,8 +10,8 @@ import {
   UpgradeBeaconOptions,
   attach,
   getSigner,
-} from './utils';
-import { disableDefender } from './defender/utils';
+} from './utils/index.js';
+import { disableDefender } from './defender/utils.js';
 
 export type UpgradeBeaconFunction = (
   beacon: ContractAddressOrInstance,

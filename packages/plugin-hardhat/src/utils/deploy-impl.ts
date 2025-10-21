@@ -12,11 +12,11 @@ import {
 import type { ContractFactory, ethers } from 'ethers';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { EthereumProvider } from 'hardhat/types/providers';
-import { deploy } from './deploy';
-import { GetTxResponse, DefenderDeployOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
-import { getRemoteDeployment } from '../defender/utils';
-import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
-import { readValidations } from './validations';
+import { deploy } from './deploy.js';
+import { GetTxResponse, DefenderDeployOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options.js';
+import { getRemoteDeployment } from '../defender/utils.js';
+import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl.js';
+import { readValidations } from './validations.js';
 
 export interface DeployedImpl {
   impl: string;

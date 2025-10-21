@@ -2,8 +2,8 @@
 import 'hardhat/types/hre';
 import 'hardhat/types/config';
 
-// import type { HardhatUpgrades, DefenderHardhatUpgrades } from '.';
-import type { HardhatUpgrades } from '.';
+// import type { HardhatUpgrades, DefenderHardhatUpgrades } from './index.js';
+import type { HardhatUpgrades } from './index.js';
 import { ContractFactory } from 'ethers';
 
 export type ContractTypeOfFactory<F extends ContractFactory> = ReturnType<F['attach']> & ReturnType<F['deploy']>;

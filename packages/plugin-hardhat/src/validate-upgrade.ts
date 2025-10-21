@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 
 import { ContractFactory } from 'ethers';
 
-import { ContractAddressOrInstance, getContractAddress } from './utils';
+import { ContractAddressOrInstance, getContractAddress } from './utils/index.js';
 import {
   getBeaconAddress,
   isBeaconProxy,
@@ -14,8 +14,8 @@ import {
   inferProxyKind,
   ValidateUpdateRequiresKindError,
 } from '@openzeppelin/upgrades-core';
-import { validateBeaconImpl, validateImpl, validateProxyImpl } from './utils/validate-impl';
-import { getDeployData } from './utils/deploy-impl';
+import { validateBeaconImpl, validateImpl, validateProxyImpl } from './utils/validate-impl.js';
+import { getDeployData } from './utils/deploy-impl.js';
 
 export interface ValidateUpgradeFunction {
   (origImplFactory: ContractFactory, newImplFactory: ContractFactory, opts?: ValidationOptions): Promise<void>;

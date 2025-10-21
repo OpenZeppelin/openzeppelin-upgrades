@@ -12,13 +12,13 @@ import {
 import { Network, fromChainId } from '@openzeppelin/defender-sdk-base-client';
 import { TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
 
-import { HardhatDefenderConfig } from '../type-extensions';
-import { DefenderDeploy } from '../utils';
-import debug from '../utils/debug';
+import { HardhatDefenderConfig } from '../type-extensions.js';
+import { DefenderDeploy } from '../utils/index.js';
+import debug from '../utils/debug.js';
 import { Overrides } from 'ethers';
 
 import { promisify } from 'util';
-import { getDeployClient, getNetworkClient } from './client';
+import { getDeployClient, getNetworkClient } from './client.js';
 const sleep = promisify(setTimeout);
 
 export function getDefenderApiKey(hre: HardhatRuntimeEnvironment): HardhatDefenderConfig {

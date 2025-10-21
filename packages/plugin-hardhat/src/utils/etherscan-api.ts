@@ -4,7 +4,7 @@
 
 // import { request } from 'undici';
 
-// import debug from './debug';
+// import debug from './debug.js';
 // import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
 
 // /**
