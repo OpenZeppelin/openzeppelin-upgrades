@@ -14,7 +14,11 @@ const plugin: HardhatPlugin = {
     // TODO: add all tasks here
   ],
   
-  dependencies: () => ['@nomicfoundation/hardhat-ethers'],
+  // TODO: check this in others plugins... ( this can be wrong 100% )
+  dependencies: () => {
+    // Return array of promises to plugin modules
+    return [import('@nomicfoundation/hardhat-ethers').then(m => ({ default: m.default }))];
+  },
 };
 
 export default plugin;
