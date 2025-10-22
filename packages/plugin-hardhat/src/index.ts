@@ -10,7 +10,9 @@ const plugin: HardhatPlugin = {
     solidity: () => import('./hooks/solidity.js'),
   },
   
-  tasks: [],
+  tasks: [
+    // TODO: add all tasks here
+  ],
   
   dependencies: () => ['@nomicfoundation/hardhat-ethers'],
 };
