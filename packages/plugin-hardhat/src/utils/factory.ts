@@ -69,8 +69,8 @@ function createUpgradesAPI(
 
   // Helper to get provider lazily when needed
   const getProvider = async () => {
-    const network = await hre.network.connect();
-    return network.provider;
+    const { ethers } = await hre.network.connect();
+    return ethers.provider;
   };
 
   return {
