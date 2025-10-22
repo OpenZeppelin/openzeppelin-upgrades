@@ -29,13 +29,13 @@ export default async (): Promise<Partial<SolidityHooks>> => {
         if (e instanceof ValidationsCacheOutdated || e instanceof ValidationsCacheNotFound) {
           // Force recompilation by deleting artifacts and cache
           const fs = await import('fs/promises');
-          
+
           console.log('🔄 OpenZeppelin: Validation cache outdated, forcing recompilation...');
-          
+
           try {
             // Delete artifacts directory to force rebuild
             await fs.rm(context.config.paths.artifacts, { recursive: true, force: true });
-            
+
             // Also delete cache if it exists
             await fs.rm(context.config.paths.cache, { recursive: true, force: true });
           } catch (err: any) {
@@ -56,36 +56,33 @@ export default async (): Promise<Partial<SolidityHooks>> => {
     // have to yet review this.
     async onCleanUpArtifacts(context, artifactPaths, next) {
       await next(context, artifactPaths);
-      
-      const { 
-        validate, 
-        solcInputOutputDecoder, 
-        isNamespaceSupported,
-        makeNamespacedInput,
-        trySanitizeNatSpec 
-      } = await import('@openzeppelin/upgrades-core');
+
+      const { validate, solcInputOutputDecoder, isNamespaceSupported, makeNamespacedInput, trySanitizeNatSpec } =
+        await import('@openzeppelin/upgrades-core');
       const { writeValidations } = await import('../utils/validations.js');
       const { isFullSolcOutput } = await import('../utils/is-full-solc-output.js');
       const path = await import('path');
       const fs = await import('fs/promises');
-      
+
       // Get the artifacts directory
       const artifactsDir = context.config.paths.artifacts;
       const buildInfoDir = path.join(artifactsDir, 'build-info');
-      
+
       try {
         const buildInfoFiles = await fs.readdir(buildInfoDir);
-        
+
         // Process each build-info file (each represents a compilation job)
         for (const file of buildInfoFiles) {
-          if (!file.endsWith('.json')) continue;
-          
+          if (!file.endsWith('.json')) {
+            continue;
+          }
+
           const buildInfoPath = path.join(buildInfoDir, file);
           const buildInfoContent = await fs.readFile(buildInfoPath, 'utf-8');
           const buildInfo = JSON.parse(buildInfoContent);
-          
+
           const { input, output, solcVersion } = buildInfo;
-          
+
           if (!isFullSolcOutput(output)) {
             continue;
           }
@@ -98,30 +95,27 @@ export default async (): Promise<Partial<SolidityHooks>> => {
             try {
               let namespacedInput = makeNamespacedInput(input, output, solcVersion);
               namespacedInput = await trySanitizeNatSpec(namespacedInput, solcVersion);
-              
+
               // Create a modified build info for namespaced compilation
               const namespacedBuildInfo = {
                 ...buildInfo,
                 input: namespacedInput,
               };
-              
+
               // Run the namespaced compilation
-              const namespacedResult = await context.solidity.compileBuildInfo(
-                namespacedBuildInfo,
-                { quiet: true }
-              );
-              
+              const namespacedResult = await context.solidity.compileBuildInfo(namespacedBuildInfo, { quiet: true });
+
               const namespacedCompileErrors = getNamespacedCompileErrors(namespacedResult);
-              
+
               if (namespacedCompileErrors.length > 0) {
                 const msg = `Failed to compile modified contracts for namespaced storage layout validations:\n\n${namespacedCompileErrors.join('\n')}`;
                 const preamble = [
                   'Please report this at https://zpl.in/upgrades/report.',
                   'This step allows for advanced storage modifications with namespaced storage layouts.',
                 ];
-                
+
                 const namespacedErrorsSetting = (context.config as any).namespacedCompileErrors;
-                
+
                 switch (namespacedErrorsSetting) {
                   case undefined:
                   case 'error': {

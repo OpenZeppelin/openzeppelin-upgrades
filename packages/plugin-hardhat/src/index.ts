@@ -4,16 +4,16 @@ import type { HardhatPlugin } from 'hardhat/types/plugins';
 
 const plugin: HardhatPlugin = {
   id: '@openzeppelin/hardhat-upgrades',
-  
+
   hookHandlers: {
     config: () => import('./hooks/config.js'),
     solidity: () => import('./hooks/solidity.js'),
   },
-  
+
   tasks: [
     // TODO: add all tasks here
   ],
-  
+
   // TODO: check this in others plugins... ( this can be wrong 100% )
   dependencies: () => {
     // Return array of promises to plugin modules

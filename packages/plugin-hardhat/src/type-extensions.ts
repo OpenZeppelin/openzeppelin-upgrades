@@ -30,7 +30,7 @@ declare module 'hardhat/types/hre' {
   export interface HardhatRuntimeEnvironment {
     upgrades: HardhatUpgrades;
     defender: DefenderHardhatUpgrades;
-    
+
     // Internal caching properties (not part of public API)
     _upgrades?: HardhatUpgrades;
     _defender?: DefenderHardhatUpgrades;

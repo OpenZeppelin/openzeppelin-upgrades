@@ -10,17 +10,17 @@ import {
 
 /**
  * Factory function to create the upgrades API for a given HRE.
- * 
+ *
  * @example
  * ```typescript
  * import { upgrades } from '@openzeppelin/hardhat-upgrades';
- * 
+ *
  * task('deploy', async (args, hre) => {
  *   const { deployProxy, upgradeProxy } = upgrades(hre);
  *   await deployProxy(MyContract, []);
  * });
  * ```
- * 
+ *
  * @param hre - Hardhat Runtime Environment
  * @returns API object with all upgrade functions
  */
@@ -31,17 +31,17 @@ export function upgrades(hre: HardhatRuntimeEnvironment): HardhatUpgrades {
 
 /**
  * Factory function to create the Defender-enabled upgrades API.
- * 
+ *
  * @example
  * ```typescript
  * import { defender } from '@openzeppelin/hardhat-upgrades';
- * 
+ *
  * task('deploy', async (args, hre) => {
  *   const { deployContract } = defender(hre);
  *   await deployContract(...);
  * });
  * ```
- * 
+ *
  * @param hre - Hardhat Runtime Environment
  * @returns API object with all upgrade and Defender functions
  */
@@ -50,10 +50,7 @@ export function defender(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrade
   return createDefenderAPI(hre);
 }
 
-function createUpgradesAPI(
-  hre: HardhatRuntimeEnvironment,
-  isDefender: boolean
-): HardhatUpgrades {
+function createUpgradesAPI(hre: HardhatRuntimeEnvironment, isDefender: boolean): HardhatUpgrades {
   // Synchronous lazy load using require() for immediate availability
   const { makeDeployProxy } = require('../deploy-proxy.js');
   const { makeUpgradeProxy } = require('../upgrade-proxy.js');
@@ -119,7 +116,10 @@ function createDefenderAPI(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgra
   // Synchronous lazy load of Defender-specific functions
   const { makeDeployContract } = require('../deploy-contract.js');
   const { makeProposeUpgradeWithApproval } = require('../defender/propose-upgrade-with-approval.js');
-  const { makeGetDeployApprovalProcess, makeGetUpgradeApprovalProcess } = require('../defender/get-approval-process.js');
+  const {
+    makeGetDeployApprovalProcess,
+    makeGetUpgradeApprovalProcess,
+  } = require('../defender/get-approval-process.js');
 
   const getUpgradeApprovalProcess = makeGetUpgradeApprovalProcess(hre);
 
