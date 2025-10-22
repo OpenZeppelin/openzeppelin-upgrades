@@ -187,7 +187,7 @@ async function getContractInfo(
       const deployableProxyContracts = [
         contracts.erc1967,
         contracts.beaconProxy,
-        contracts.beaconProxy,
+        contracts.upgradeableBeacon,
         contracts.transparentUpgradeableProxy,
       ];
       // Proxy contracts would not be found in the validations, so try to get these from the plugin's precompiled artifacts.
