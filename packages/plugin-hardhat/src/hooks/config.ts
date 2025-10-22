@@ -5,17 +5,17 @@ export default async (): Promise<Partial<ConfigHooks>> => {
     async resolveUserConfig(userConfig, resolveConfigurationVariable, next) {
       // First, let other plugins resolve the config
       const config = await next(userConfig, resolveConfigurationVariable);
-      
+
       // Iterate through all profiles
       for (const profile of Object.values(config.solidity.profiles)) {
         // Accumulate references to all the compiler settings, including overrides
         const settings = [];
-        
+
         for (const compiler of profile.compilers) {
           compiler.settings ??= {};
           settings.push(compiler.settings);
         }
-        
+
         for (const compilerOverride of Object.values(profile.overrides)) {
           compilerOverride.settings ??= {};
           settings.push(compilerOverride.settings);
