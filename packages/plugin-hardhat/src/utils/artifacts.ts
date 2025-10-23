@@ -1,5 +1,5 @@
 import type { BuildInfo, ArtifactManager } from 'hardhat/types/artifacts';
-import type { SolidityBuildInfoOutput, CompilerInput, CompilerOutput } from 'hardhat/types/solidity';
+import type { SolidityBuildInfoOutput, CompilerInput } from 'hardhat/types/solidity';
 import { readJsonFile } from '@nomicfoundation/hardhat-utils/fs';
 
 /**
