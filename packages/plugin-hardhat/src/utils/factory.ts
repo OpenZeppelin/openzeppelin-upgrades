@@ -16,17 +16,17 @@ import {
  * import { upgrades } from '@openzeppelin/hardhat-upgrades';
  *
  * task('deploy', async (args, hre) => {
- *   const { deployProxy, upgradeProxy } = upgrades(hre);
- *   await deployProxy(MyContract, []);
+ *   const api = await upgrades(hre);
+ *   await api.deployProxy(MyContract, []);
  * });
  * ```
  *
  * @param hre - Hardhat Runtime Environment
  * @returns API object with all upgrade functions
  */
-export function upgrades(hre: HardhatRuntimeEnvironment): HardhatUpgrades {
-  warnOnHardhatDefender();
-  return createUpgradesAPI(hre, false);
+export async function upgrades(hre: HardhatRuntimeEnvironment): Promise<HardhatUpgrades> {
+  await warnOnHardhatDefender();
+  return await createUpgradesAPI(hre, false);
 }
 
 /**
@@ -37,32 +37,46 @@ export function upgrades(hre: HardhatRuntimeEnvironment): HardhatUpgrades {
  * import { defender } from '@openzeppelin/hardhat-upgrades';
  *
  * task('deploy', async (args, hre) => {
- *   const { deployContract } = defender(hre);
- *   await deployContract(...);
+ *   const api = await defender(hre);
+ *   await api.deployContract(...);
  * });
  * ```
  *
  * @param hre - Hardhat Runtime Environment
  * @returns API object with all upgrade and Defender functions
  */
-export function defender(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrades {
-  warnOnHardhatDefender();
-  return createDefenderAPI(hre);
+export async function defender(hre: HardhatRuntimeEnvironment): Promise<DefenderHardhatUpgrades> {
+  await warnOnHardhatDefender();
+  return await createDefenderAPI(hre);
 }
 
-function createUpgradesAPI(hre: HardhatRuntimeEnvironment, isDefender: boolean): HardhatUpgrades {
-  // Synchronous lazy load using require() for immediate availability
-  const { makeDeployProxy } = require('../deploy-proxy.js');
-  const { makeUpgradeProxy } = require('../upgrade-proxy.js');
-  const { makeValidateImplementation } = require('../validate-implementation.js');
-  const { makeValidateUpgrade } = require('../validate-upgrade.js');
-  const { makeDeployImplementation } = require('../deploy-implementation.js');
-  const { makePrepareUpgrade } = require('../prepare-upgrade.js');
-  const { makeDeployBeacon } = require('../deploy-beacon.js');
-  const { makeDeployBeaconProxy } = require('../deploy-beacon-proxy.js');
-  const { makeUpgradeBeacon } = require('../upgrade-beacon.js');
-  const { makeForceImport } = require('../force-import.js');
-  const { makeChangeProxyAdmin, makeTransferProxyAdminOwnership } = require('../admin.js');
+async function createUpgradesAPI(hre: HardhatRuntimeEnvironment, isDefender: boolean): Promise<HardhatUpgrades> {
+  // Dynamic imports for ES modules
+  const [
+    { makeDeployProxy },
+    { makeUpgradeProxy },
+    { makeValidateImplementation },
+    { makeValidateUpgrade },
+    { makeDeployImplementation },
+    { makePrepareUpgrade },
+    { makeDeployBeacon },
+    { makeDeployBeaconProxy },
+    { makeUpgradeBeacon },
+    { makeForceImport },
+    { makeChangeProxyAdmin, makeTransferProxyAdminOwnership },
+  ] = await Promise.all([
+    import('../deploy-proxy.js'),
+    import('../upgrade-proxy.js'),
+    import('../validate-implementation.js'),
+    import('../validate-upgrade.js'),
+    import('../deploy-implementation.js'),
+    import('../prepare-upgrade.js'),
+    import('../deploy-beacon.js'),
+    import('../deploy-beacon-proxy.js'),
+    import('../upgrade-beacon.js'),
+    import('../force-import.js'),
+    import('../admin.js'),
+  ]);
 
   // Helper to get provider lazily when needed
   const getProvider = async () => {
@@ -109,17 +123,20 @@ function createUpgradesAPI(hre: HardhatRuntimeEnvironment, isDefender: boolean):
   };
 }
 
-function createDefenderAPI(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgrades {
-  // Get base upgrades API with defender flag (synchronous)
-  const upgradesAPI = createUpgradesAPI(hre, true);
+async function createDefenderAPI(hre: HardhatRuntimeEnvironment): Promise<DefenderHardhatUpgrades> {
+  // Get base upgrades API with defender flag
+  const upgradesAPI = await createUpgradesAPI(hre, true);
 
-  // Synchronous lazy load of Defender-specific functions
-  const { makeDeployContract } = require('../deploy-contract.js');
-  const { makeProposeUpgradeWithApproval } = require('../defender/propose-upgrade-with-approval.js');
-  const {
-    makeGetDeployApprovalProcess,
-    makeGetUpgradeApprovalProcess,
-  } = require('../defender/get-approval-process.js');
+  // Dynamic imports for Defender-specific functions
+  const [
+    { makeDeployContract },
+    { makeProposeUpgradeWithApproval },
+    { makeGetDeployApprovalProcess, makeGetUpgradeApprovalProcess },
+  ] = await Promise.all([
+    import('../deploy-contract.js'),
+    import('../defender/propose-upgrade-with-approval.js'),
+    import('../defender/get-approval-process.js'),
+  ]);
 
   const getUpgradeApprovalProcess = makeGetUpgradeApprovalProcess(hre);
 
@@ -133,10 +150,12 @@ function createDefenderAPI(hre: HardhatRuntimeEnvironment): DefenderHardhatUpgra
   };
 }
 
-function warnOnHardhatDefender(): void {
+async function warnOnHardhatDefender(): Promise<void> {
   try {
-    require.resolve('@openzeppelin/hardhat-defender');
-    const { logWarning } = require('@openzeppelin/upgrades-core');
+    // Try to import the deprecated package to check if it's installed
+    // @ts-expect-error - Package may not be installed, which is the expected case
+    await import('@openzeppelin/hardhat-defender');
+    const { logWarning } = await import('@openzeppelin/upgrades-core');
     logWarning('The @openzeppelin/hardhat-defender package is deprecated.', [
       'Uninstall the @openzeppelin/hardhat-defender package.',
       'OpenZeppelin Defender integration is included as part of the Hardhat Upgrades plugin.',
