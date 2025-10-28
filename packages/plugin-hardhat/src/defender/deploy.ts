@@ -1,6 +1,7 @@
 // TODO: figure out, the
 import type { ethers, ContractFactory } from 'ethers';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 import type { CompilerOutputContract } from 'hardhat/types/solidity';
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
@@ -50,13 +51,16 @@ export async function defenderDeploy(
   opts: UpgradeOptions & EthersDeployOptions & DefenderDeployOptions,
   ...args: unknown[]
 ): Promise<DefenderDeployment> {
+  // Create connection if not available in context
+  const connection = await hre.network.connect();
+  
   const client = getDeployClient(hre);
 
   // Override constructor arguments in options with the ones passed as arguments to this function.
   // The ones in the options are for implementation contracts only, while this function
   // can be used to deploy proxies as well.
-  const contractInfo = await getContractInfo(hre, factory, { ...opts, constructorArgs: args });
-  const network = await getNetwork(hre);
+  const contractInfo = await getContractInfo(hre, factory, { ...opts, constructorArgs: args }, connection);
+  const network = await getNetwork(hre, connection);
   debug(`Network ${network}`);
 
   const verifySourceCode = opts.verifySourceCode ?? true;
@@ -140,7 +144,7 @@ export async function defenderDeploy(
     }
   }
 
-  const { ethers } = await hre.network.connect();
+  const { ethers } = connection;
 
   const txResponse = (await ethers.provider.getTransaction(deploymentResponse.txHash)) ?? undefined;
   const checksumAddress = ethers.getAddress(deploymentResponse.address);
@@ -156,13 +160,14 @@ async function getContractInfo(
   hre: HardhatRuntimeEnvironment,
   factory: ethers.ContractFactory,
   opts: UpgradeOptions & Required<Pick<UpgradeOptions, 'constructorArgs'>>,
+  connection: NetworkConnection,
 ): Promise<ContractInfo> {
   let fullContractName, runValidation;
   let libraries: DeployRequestLibraries | undefined;
   let constructorBytecode: string;
   try {
     // Get fully qualified contract name and link references from validations
-    const deployData = await getDeployData(hre, factory, opts);
+    const deployData = await getDeployData(hre, factory, opts, connection);
     constructorBytecode = deployData.encodedArgs;
     [fullContractName, runValidation] = getContractNameAndRunValidation(deployData.validations, deployData.version);
     debug(`Contract ${fullContractName}`);

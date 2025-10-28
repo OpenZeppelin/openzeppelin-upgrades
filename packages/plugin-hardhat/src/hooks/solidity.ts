@@ -1,4 +1,3 @@
-// TODO: There are some AS ANY here, which I still need to test.
 import type { SolidityHooks } from 'hardhat/types/hooks';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { CompilerOutput } from 'solc';
@@ -182,14 +181,6 @@ export default async (): Promise<Partial<SolidityHooks>> => {
           const validations = validate(output as any, decodeSrc, solcVersion, input as any, namespacedOutput);
 
           // Debug validations content (safer access)
-          // console.log('  🔍 Validations structure:', JSON.stringify(Object.keys(validations), null, 2));
-          // console.log('  🔍 Validations.log length:', (validations as any)?.log?.length);
-          // if ((validations as any)?.log?.[0]) {
-          //   console.log('  🔍 First entry contract count:', Object.keys((validations as any).log[0]).length);
-          //   console.log('  🔍 First 5 contracts:', Object.keys((validations as any).log[0]).slice(0, 5));
-          // }
-
-          // console.log('  🔍 Calling writeValidations...');
           await writeValidations(context as HardhatRuntimeEnvironment, validations);
 
         }

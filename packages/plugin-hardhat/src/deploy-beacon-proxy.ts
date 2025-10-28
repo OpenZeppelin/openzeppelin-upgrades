@@ -1,4 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 import { ContractFactory } from 'ethers';
 
 import {
@@ -43,6 +44,7 @@ export interface DeployBeaconProxyFunction {
 export function makeDeployBeaconProxy(
   hre: HardhatRuntimeEnvironment,
   defenderModule: boolean,
+  connection: NetworkConnection,
 ): DeployBeaconProxyFunction {
   return async function deployBeaconProxy<F extends ContractFactory>(
     beacon: ContractAddressOrInstance,
@@ -63,7 +65,7 @@ export function makeDeployBeaconProxy(
 
     opts = enableDefender(hre, defenderModule, opts);
 
-    const { ethers } = await hre.network.connect();
+    const { ethers } = connection;
     const provider = ethers.provider;
     const manifest = await Manifest.forNetwork(provider);
 
@@ -73,11 +75,8 @@ export function makeDeployBeaconProxy(
     opts.kind = 'beacon';
 
     const beaconAddress = await getContractAddress(beacon);
-    console.log('🔍 [deployBeaconProxy] Checking if address is beacon:', beaconAddress);
-    console.log('🔍 [deployBeaconProxy] Provider:', !!provider);
 
     const isBeaconResult = await isBeacon(provider as any, beaconAddress);
-    console.log('🔍 [deployBeaconProxy] isBeacon result:', isBeaconResult);
     if (!isBeaconResult) {
       throw new DeployBeaconProxyUnsupportedError(beaconAddress);
     }
@@ -91,7 +90,7 @@ export function makeDeployBeaconProxy(
       ]);
     }
 
-    const BeaconProxyFactory = opts.proxyFactory || (await getBeaconProxyFactory(hre, getSigner(attachTo.runner)));
+    const BeaconProxyFactory = opts.proxyFactory || (await getBeaconProxyFactory(connection, getSigner(attachTo.runner)));
     const proxyDeployment: Required<ProxyDeployment> & DeployTransaction & RemoteDeploymentId = Object.assign(
       { kind: opts.kind },
       await (opts.deployFunction || deploy)(hre, opts, BeaconProxyFactory, beaconAddress, data),

@@ -5,19 +5,10 @@ export async function callOptionalSignature(provider: EthereumProvider, address:
 
   const data = '0x' + keccak256(Buffer.from(signature)).toString('hex').slice(0, 8);
 
-  console.log(`[callOptionalSignature] Calling ${signature} on address ${address} with data ${data}`);
-  console.log(`[callOptionalSignature] provider:`, provider);
-  console.log('[callOptionalSignature] provider type:', provider.constructor.name);
-  console.log('[callOptionalSignature] provider keys:', Object.keys(provider));
-  console.log('[callOptionalSignature] provider methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(provider)));
-
-
   try {
     const result = await call(provider, address, data);
-    console.log(`[callOptionalSignature] call result:`, result);
     return result;
   } catch (e: any) {
-    console.log(`[callOptionalSignature] Caught error`, e);
     if (
       e.message.includes('function selector was not recognized') ||
       e.message.includes('invalid opcode') ||
