@@ -1,8 +1,15 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+let upgrades;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
-const { disableDefender, enableDefender } = require('../dist/defender/utils');
-const { getDeployClient } = require('../dist/defender/client');
+import { disableDefender, enableDefender } from '../dist/defender/utils.js';
+import { getDeployClient } from '../dist/defender/client.js';
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x01';

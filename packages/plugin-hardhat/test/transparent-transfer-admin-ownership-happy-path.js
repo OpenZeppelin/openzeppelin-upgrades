@@ -1,4 +1,11 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+let upgrades;
 
 const hre = require('hardhat');
 const { ethers, upgrades } = hre;
@@ -7,6 +14,7 @@ const TEST_ADDRESS = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 const OWNABLE_ABI = ['function owner() view returns (address)'];
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
 });
 

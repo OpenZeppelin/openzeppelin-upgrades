@@ -1,4 +1,11 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+let upgrades;
 const proxyquire = require('proxyquire').noCallThru();
 const sinon = require('sinon');
 

@@ -1,4 +1,11 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+let upgrades;
 const proxyquire = require('proxyquire').noCallThru();
 
 const hre = require('hardhat');
@@ -7,6 +14,7 @@ const { ethers } = hre;
 const manifest = require('@openzeppelin/upgrades-core/dist/manifest');
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
   t.context.deployImplementation = proxyquire('../dist/deploy-implementation', {
