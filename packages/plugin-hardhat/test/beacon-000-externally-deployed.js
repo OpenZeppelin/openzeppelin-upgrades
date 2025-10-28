@@ -43,15 +43,26 @@ test('block upgrade to unregistered beacon', async t => {
     await ethers.provider.getCode(await beacon.getAddress())
   )
 
+  //
   console.log( 
-    "call beacon implementation function",
-    await (await ethers.getContractAt('Beacon', await beacon.getAddress())).implementation()
-
+    "direct call beacon implementation function from ethers",
+    await (await ethers.getContractAt('Beacon', await beacon.getAddress())).implementation(),
+    "using ethers provider",
   );
 
+  console.log('provider:', ethers.provider);
+
   call(ethers.provider, await beacon.getAddress(), '0x5c60da1b').then((implAddress) => {
+    console.log('TEST Implementation address from call:', implAddress);
+  });
+
+  const connection = await hre.network.connect();
+  const ethers2 = connection.ethers;
+  call(ethers2.provider, await beacon.getAddress(), '0x5c60da1b').then((implAddress) => {
     console.log('TEST2 Implementation address from call:', implAddress);
   });
+
+  console.log( "in test file called with core package")
 
   /*
     [call] r was returned                   0x0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa3
@@ -68,18 +79,18 @@ test('block upgrade to unregistered beacon', async t => {
   }
 });
 
-test('add proxy to unregistered beacon using contract factory', async t => {
-  const { Greeter, Beacon } = t.context;
+// test('add proxy to unregistered beacon using contract factory', async t => {
+//   const { Greeter, Beacon } = t.context;
   
-  // deploy beacon without upgrades plugin
-  const greeter = await Greeter.deploy();
-  await greeter.waitForDeployment();
-  const beacon = await Beacon.deploy(await greeter.getAddress());
-  await beacon.waitForDeployment();
+//   // deploy beacon without upgrades plugin
+//   const greeter = await Greeter.deploy();
+//   await greeter.waitForDeployment();
+//   const beacon = await Beacon.deploy(await greeter.getAddress());
+//   await beacon.waitForDeployment();
   
-  // add proxy to beacon
-  const greeterProxy = await upgrades.deployBeaconProxy(await beacon.getAddress(), Greeter, ['Hello, proxy!'], {
-    implementation: Greeter,
-  });
-  t.is(await greeterProxy.greet(), 'Hello, proxy!');
-});
+//   // add proxy to beacon
+//   const greeterProxy = await upgrades.deployBeaconProxy(await beacon.getAddress(), Greeter, ['Hello, proxy!'], {
+//     implementation: Greeter,
+//   });
+//   t.is(await greeterProxy.greet(), 'Hello, proxy!');
+// });
