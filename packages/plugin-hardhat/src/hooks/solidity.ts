@@ -18,37 +18,36 @@ function getNamespacedCompileErrors(output: CompilerOutput | undefined): string[
 export default async (): Promise<Partial<SolidityHooks>> => {
   return {
     async preprocessSolcInputBeforeBuilding(context, solcInput, next) {
-      const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
-        '../utils/validations.js'
-      );
+      // STARTING TO CONSIDER THAT THIS IS UNEEDED FOR NOW
+      // const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
+      //   '../utils/validations.js'
+      // );
 
-      try {
-        // Cast context to HRE for compatibility with existing utility functions
-        await readValidations(context as HardhatRuntimeEnvironment);
-      } catch (e) {
-        if (e instanceof ValidationsCacheOutdated || e instanceof ValidationsCacheNotFound) {
-          // Force recompilation by deleting artifacts and cache
-          const fs = await import('fs/promises');
+      // try {
+      //   await readValidations(context as HardhatRuntimeEnvironment);
+      //   // Cache exists and is valid, continue normally
+      // } catch (e) {
+      //   if (e instanceof ValidationsCacheOutdated) {
+      //     // Cache exists but is outdated - delete it
+      //     // const fs = await import('fs/promises');
 
-          console.log('🔄 OpenZeppelin: Validation cache outdated, forcing recompilation...');
-
-          try {
-            // Delete artifacts directory to force rebuild
-            await fs.rm(context.config.paths.artifacts, { recursive: true, force: true });
-
-            // Also delete cache if it exists
-            await fs.rm(context.config.paths.cache, { recursive: true, force: true });
-          } catch (err: any) {
-            // Ignore errors if directories don't exist
-            if (err.code !== 'ENOENT') {
-              console.warn('⚠️  Could not delete cache:', err.message);
-            }
-          }
-        } else {
-          throw e;
-        }
-      }
-
+      //     // We shouldn't need to delete anything here, Hardhat will recompile changed contracts automatically
+      //     // try {
+      //     //   await fs.rm(context.config.paths.artifacts, { recursive: true, force: true });
+      //     //   await fs.rm(context.config.paths.cache, { recursive: true, force: true });
+      //     // } catch (err: any) {
+      //     //   if (err.code !== 'ENOENT') {
+      //     //     console.warn('⚠️  Could not delete cache:', err.message);
+      //     //   }
+      //     // }
+      //   } else if (e instanceof ValidationsCacheNotFound) {
+      //     // Cache doesn't exist - that's fine, just proceed with compilation
+      //     // No need to delete anything!
+      //   } else {
+      //     throw e;
+      //   }
+      // }
+      
       return await next(context, solcInput);
     },
 
@@ -73,7 +72,9 @@ export default async (): Promise<Partial<SolidityHooks>> => {
 
         // Process each build-info file (each represents a compilation job)
         for (const file of buildInfoFiles) {
-          if (!file.endsWith('.json')) {
+          
+          // Skip output files - we only want to process input files
+          if (!file.endsWith('.json') || file.endsWith('.output.json')) {
             continue;
           }
 
@@ -81,7 +82,37 @@ export default async (): Promise<Partial<SolidityHooks>> => {
           const buildInfoContent = await fs.readFile(buildInfoPath, 'utf-8');
           const buildInfo = JSON.parse(buildInfoContent);
 
-          const { input, output, solcVersion } = buildInfo;
+
+          // Verify this is an input file
+          if (buildInfo._format !== 'hh3-sol-build-info-1') {
+            continue;
+          }
+
+          const { input, solcVersion } = buildInfo;
+
+          // Skip if no solcVersion
+          if (!solcVersion) {
+            continue;
+          }
+
+          // Load the corresponding output file
+          // Input file: abc123.json, Output file: abc123.output.json
+          const outputFileName = file.replace('.json', '.output.json');
+          const outputPath = path.join(buildInfoDir, outputFileName);
+
+          let outputContent;
+          try {
+            outputContent = await fs.readFile(outputPath, 'utf-8');
+          } catch (err: any) {
+            if (err.code === 'ENOENT') {
+              console.warn(`  ⚠️  Output file not found for ${file}, skipping`);
+              continue;
+            }
+            throw err;
+          }
+
+          const outputBuildInfo = JSON.parse(outputContent);
+          const output = outputBuildInfo.output;
 
           if (!isFullSolcOutput(output)) {
             continue;
@@ -147,17 +178,16 @@ export default async (): Promise<Partial<SolidityHooks>> => {
               namespacedOutput = undefined;
             }
           }
-
           // Generate and write validations
-          // Cast output to any to handle type compatibility between Hardhat and upgrades-core
           const validations = validate(output as any, decodeSrc, solcVersion, input as any, namespacedOutput);
+
           await writeValidations(context as HardhatRuntimeEnvironment, validations);
+
         }
       } catch (error: any) {
         if (error.code !== 'ENOENT') {
           throw error;
         }
-        // Build-info directory doesn't exist yet (first compile), that's ok
       }
     },
   };
