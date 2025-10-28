@@ -2194,7 +2194,7 @@
     semver "^7.7.2"
     ts-node "^10.9.2"
 
-"@parity/hardhat-polkadot@^0.2.0-pre2":
+"@parity/hardhat-polkadot@0.2.0-pre2", "@parity/hardhat-polkadot@^0.2.0-pre2":
   version "0.2.0-pre2"
   resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot/-/hardhat-polkadot-0.2.0-pre2.tgz#d79a92e2e72fa737f6d112d3f535c772d78e5bdb"
   integrity sha512-nrGPFFH4Lku3R+ScFLW3AeTOGvsdLPyyVDW9cr9aW5c3zI6mef8RZRqvXavPznJL8Ltr1zi+8D9Hfj/WcR5bsA==
@@ -4254,6 +4254,11 @@ cbor@^9.0.0, cbor@^9.0.1:
   integrity sha512-JPypkxsB10s9QOWwa6zwPzqE1Md3vqpPc+cai4sAecuCsRyAtAl/pMyhPlMbT/xtPnm2dznJZYRLui57qiRhaQ==
   dependencies:
     nofilter "^3.1.0"
+
+chai@^6.2.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/chai/-/chai-6.2.0.tgz#181bca6a219cddb99c3eeefb82483800ffa550ce"
+  integrity sha512-aUTnJc/JipRzJrNADXVvpVqi6CO0dn3nx4EVPxijri+fj3LUUDyZQOgVeW54Ob3Y1Xh9Iz8f+CgaCl8v0mn9bA==
 
 chalk@4, chalk@^4.0.0, chalk@^4.1.0:
   version "4.1.2"
