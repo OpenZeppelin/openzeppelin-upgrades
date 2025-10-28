@@ -16,10 +16,9 @@
     "clean": "rimraf dist *.tsbuildinfo",
     "compile": "tsc -b",
     "prepare": "yarn compile",
-    "test": "yarn test:evm && yarn test:polkavm",
-    "test:evm": "tsc -b && bash scripts/test.sh",
+    "test": "tsc -b && bash scripts/test.sh",
     "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --",
-    "test:polkavm": "tsc -b && bash scripts/test-polkavm.sh"
+    "test:pvm": "tsc -b && bash scripts/test-polkavm.sh"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.6",
