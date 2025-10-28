@@ -32,9 +32,7 @@ const override = {
   },
 };
 
-const OLD_SOLIDITY_VERSION_IGNORES = [
-
-]
+const OLD_SOLIDITY_VERSION_IGNORES = [];
 
 module.exports = {
   networks: {
@@ -44,12 +42,12 @@ module.exports = {
         nodeBinaryPath: './bin/dev-node',
         dev: true,
         consensus: {
-          seal: "instant-seal",
+          seal: 'instant-seal',
         },
         rpcPort: 8000,
       },
       adapterConfig: {
-        adapterBinaryPath: "./bin/eth-rpc",
+        adapterBinaryPath: './bin/eth-rpc',
         dev: true,
       },
     },
@@ -58,7 +56,7 @@ module.exports = {
     compilers: [
       {
         version: '0.8.28',
-      }
+      },
     ],
     overrides: {
       'contracts/GapV1.sol': override,
@@ -70,5 +68,5 @@ module.exports = {
     artifacts: './artifacts-pvm',
     cache: './cache-pvm',
   },
-  ignorePatterns: [...OLD_SOLIDITY_VERSION_IGNORES]
+  ignorePatterns: [...OLD_SOLIDITY_VERSION_IGNORES],
 };

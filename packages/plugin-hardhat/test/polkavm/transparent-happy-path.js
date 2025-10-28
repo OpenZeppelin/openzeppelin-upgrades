@@ -1,4 +1,4 @@
-const { expect } = require("chai");
+const { expect } = require('chai');
 
 const { ethers, upgrades } = require('hardhat');
 
@@ -11,9 +11,9 @@ describe('happy path', async () => {
     context = {
       Greeter,
       GreeterV2,
-      GreeterV3
-    }
-  })
+      GreeterV3,
+    };
+  });
   it('test', async () => {
     const { Greeter, GreeterV2, GreeterV3 } = context;
 
@@ -24,15 +24,15 @@ describe('happy path', async () => {
     try {
       await greeter2.resetGreeting();
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
 
     const greeter3ImplAddr = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3);
     const greeter3 = GreeterV3.attach(greeter3ImplAddr);
     const version3 = await greeter3.version();
     expect(version3).to.equal('V3');
-  })
-})
+  });
+});
 
 // test.before(async t => {
 //   t.context.Greeter = await ethers.getContractFactory('Greeter');

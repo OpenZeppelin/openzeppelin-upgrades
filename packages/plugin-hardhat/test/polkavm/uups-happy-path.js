@@ -1,5 +1,5 @@
 // const test = require('ava');
-const { expect } = require("chai");
+const { expect } = require('chai');
 
 describe('happy path', async () => {
   let context;
@@ -10,8 +10,8 @@ describe('happy path', async () => {
     context = {
       Greeter,
       GreeterV2,
-      GreeterV3
-    }
+      GreeterV3,
+    };
   });
 
   it('happy path', async () => {
@@ -28,4 +28,4 @@ describe('happy path', async () => {
     const version3 = await greeter3.version();
     expect(version3).to.equal('V3');
   });
-})
+});

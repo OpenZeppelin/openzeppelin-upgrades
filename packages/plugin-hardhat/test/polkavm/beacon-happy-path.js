@@ -1,4 +1,4 @@
-const { expect } = require("chai");
+const { expect } = require('chai');
 // const test = require('ava');
 
 const { ethers, upgrades } = require('hardhat');
@@ -12,9 +12,9 @@ describe('happy path', async () => {
     context = {
       Greeter,
       GreeterV2,
-      GreeterV3
-    }
-  })
+      GreeterV3,
+    };
+  });
 
   it('happy path', async () => {
     const { Greeter, GreeterV2, GreeterV3 } = context;
@@ -54,5 +54,5 @@ describe('happy path', async () => {
     const greeter3FromBeacon = GreeterV3.attach(greeter3ImplAddrFromBeacon);
     const version3FromBeacon = await greeter3FromBeacon.version();
     expect(version3FromBeacon).to.equal('V3');
-  })
+  });
 });
