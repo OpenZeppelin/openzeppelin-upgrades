@@ -32,9 +32,7 @@ const override = {
   },
 };
 
-const SELFDESTRUCT_IGNORES = [
-  "contracts/Invalid.sol"
-];
+const SELFDESTRUCT_IGNORES = ['contracts/Invalid.sol'];
 
 module.exports = {
   networks: {

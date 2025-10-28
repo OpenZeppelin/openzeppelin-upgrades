@@ -42,5 +42,11 @@ module.exports = {
         it: 'readonly',
       },
     },
+    {
+      files: ['packages/plugin-hardhat/test/polkavm/**'],
+      env: {
+        mocha: true,
+      },
+    },
   ],
 };

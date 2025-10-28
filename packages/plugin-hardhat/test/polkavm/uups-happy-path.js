@@ -1,5 +1,6 @@
 // const test = require('ava');
 const { expect } = require('chai');
+const { ethers, upgrades } = require('hardhat');
 
 describe('happy path', async () => {
   let context;
