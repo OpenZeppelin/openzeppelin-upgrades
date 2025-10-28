@@ -50,7 +50,17 @@ export async function getDeployData(
   // so we can make the cast safely
   const provider = ethers.provider as unknown as EthereumProvider;
 
+
+  
+  // console.log('🔍 [getDeployData] Reading validations...');
   const validations = await readValidations(hre);
+  // console.log('🔍 [getDeployData] Validations keys:', Object.keys(validations.log[0] || {}).slice(0, 5));
+  
+  console.log('🔍 [getDeployData] ImplFactory:', !!ImplFactory);
+  // bytecode can be a string or BytesLike; log length if present
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const byteLen: any = (ImplFactory as any)?.bytecode?.length;
+  console.log('🔍 [getDeployData] ImplFactory.bytecode length:', byteLen);
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
   const encodedArgs = ImplFactory.interface.encodeDeploy(opts.constructorArgs);
   const version = getVersion(unlinkedBytecode, ImplFactory.bytecode, encodedArgs);

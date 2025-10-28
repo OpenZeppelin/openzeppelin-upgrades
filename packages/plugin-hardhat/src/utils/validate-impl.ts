@@ -3,7 +3,7 @@ import {
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
   getImplementationAddress,
-  getImplementationAddressFromBeacon,
+  getImplementationAddressFromBeacon, // substitute this ( not working )
   getStorageLayoutForAddress,
   Manifest,
   processProxyKind,
@@ -31,7 +31,10 @@ async function processProxyImpl(deployData: DeployData, proxyAddress: string | u
 async function processBeaconImpl(deployData: DeployData, beaconAddress: string) {
   // upgrade scenario
   await assertNotProxy(deployData.provider, beaconAddress);
-  return await getImplementationAddressFromBeacon(deployData.provider, beaconAddress);
+  return await getImplementationAddressFromBeacon(
+    deployData.provider, 
+    beaconAddress
+  );
 }
 
 export async function validateImpl(

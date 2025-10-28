@@ -1,17 +1,15 @@
 import test from 'ava';
 import hre from 'hardhat';
+
+const { ethers } = await hre.network.connect();
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 
 let upgrades;
-let ethers;
+// let ethers;
 
 test.before(async t => {
   // Initialize upgrades API (needs full HRE)
   upgrades = await upgradesFactory(hre);
-  
-  // Get ethers from network connection (Hardhat 3 way)
-  const connection = await hre.network.connect();
-  ethers = connection.ethers;
   
   // Now get contract factories
   t.context.Greeter = await ethers.getContractFactory('Greeter');
@@ -28,9 +26,24 @@ test('block upgrade to unregistered beacon', async t => {
   const greeter = await Greeter.deploy();
   await greeter.waitForDeployment();
 
+  console.log('Deployed Greeter at:', await greeter.getAddress());
+
   // upgrades.deployBeacon()
   const beacon = await Beacon.deploy(await greeter.getAddress());
   await beacon.waitForDeployment();
+
+  console.log('Deployed Beacon at:', await beacon.getAddress());
+
+  // call implementation via ethers
+  console.log(
+    "bytecode",
+    await ethers.provider.getCode(await beacon.getAddress())
+  )
+
+  console.log( 
+    "call beacon implementation function",
+    await (await ethers.getContractAt('Beacon', await beacon.getAddress())).implementation()
+  )
   
   // upgrade beacon to new impl
   try {
