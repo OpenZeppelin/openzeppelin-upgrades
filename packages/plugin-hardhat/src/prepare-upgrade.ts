@@ -1,4 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 
 import type { ContractFactory } from 'ethers';
 
@@ -26,11 +27,11 @@ export type PrepareUpgradeFunction = (
   opts?: PrepareUpgradeOptions,
 ) => Promise<DeployImplementationResponse>;
 
-export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, defenderModule: boolean): PrepareUpgradeFunction {
+export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): PrepareUpgradeFunction {
   return async function prepareUpgrade(referenceAddressOrContract, ImplFactory, opts: PrepareUpgradeOptions = {}) {
     opts = enableDefender(hre, defenderModule, opts);
 
-    const deployedImpl = await deployImplForUpgrade(hre, referenceAddressOrContract, ImplFactory, opts);
+    const deployedImpl = await deployImplForUpgrade(hre, referenceAddressOrContract, ImplFactory, opts, connection);
 
     if (opts.getTxResponse && deployedImpl.txResponse) {
       return deployedImpl.txResponse;
@@ -45,24 +46,25 @@ export async function deployImplForUpgrade(
   referenceAddressOrContract: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
   opts: PrepareUpgradeOptions = {},
+  connection: NetworkConnection,
 ): Promise<DeployedImpl> {
   const referenceAddress = await getContractAddress(referenceAddressOrContract);
-  const { ethers } = await hre.network.connect();
+  const { ethers } = connection;
   const provider = ethers.provider;
 
   let deployedImpl;
   if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
-    deployedImpl = await deployProxyImpl(hre, ImplFactory, opts, referenceAddress);
+    deployedImpl = await deployProxyImpl(hre, ImplFactory, opts, referenceAddress, connection);
   } else if (await isBeaconProxy(provider, referenceAddress)) {
     const beaconAddress = await getBeaconAddress(provider, referenceAddress);
-    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
+    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress, connection);
   } else if (await isBeacon(provider, referenceAddress)) {
-    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, referenceAddress);
+    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, referenceAddress, connection);
   } else {
     if (opts.kind === undefined) {
       throw new PrepareUpgradeRequiresKindError();
     }
-    deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts, referenceAddress);
+    deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts, referenceAddress, connection);
   }
   return deployedImpl;
 }

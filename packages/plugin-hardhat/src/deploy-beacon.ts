@@ -1,4 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 import type { ContractFactory, Contract } from 'ethers';
 
 import { Deployment } from '@openzeppelin/upgrades-core';
@@ -18,14 +19,14 @@ export interface DeployBeaconFunction {
   (ImplFactory: ContractFactory, opts?: DeployBeaconOptions): Promise<Contract>;
 }
 
-export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, defenderModule: boolean): DeployBeaconFunction {
+export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): DeployBeaconFunction {
   return async function deployBeacon(ImplFactory: ContractFactory, opts: DeployBeaconOptions = {}) {
     disableDefender(hre, defenderModule, opts, deployBeacon.name);
 
-    const { impl } = await deployBeaconImpl(hre, ImplFactory, opts);
+    const { impl } = await deployBeaconImpl(hre, ImplFactory, opts, undefined, connection);
 
     const signer = getSigner(ImplFactory.runner);
-    const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, signer);
+    const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(connection, signer);
 
     const initialOwner = await getInitialOwner(opts, signer);
 

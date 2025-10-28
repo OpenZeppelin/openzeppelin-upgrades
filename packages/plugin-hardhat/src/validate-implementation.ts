@@ -1,4 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 
 import type { ContractFactory } from 'ethers';
 
@@ -11,9 +12,9 @@ export type ValidateImplementationFunction = (
   opts?: ValidateImplementationOptions,
 ) => Promise<void>;
 
-export function makeValidateImplementation(hre: HardhatRuntimeEnvironment): ValidateImplementationFunction {
+export function makeValidateImplementation(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): ValidateImplementationFunction {
   return async function validateImplementation(ImplFactory, opts: ValidateImplementationOptions = {}) {
-    const deployData = await getDeployData(hre, ImplFactory, opts);
+    const deployData = await getDeployData(hre, ImplFactory, opts, connection);
     await validateImpl(deployData, opts);
   };
 }

@@ -1,4 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 
 import {
   getChainId,
@@ -32,8 +33,8 @@ export function getDefenderApiKey(hre: HardhatRuntimeEnvironment): HardhatDefend
   return cfg;
 }
 
-export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Network> {
-  const { networkConfig, ethers } = await hre.network.connect();
+export async function getNetwork(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): Promise<Network> {
+  const { networkConfig, ethers } = connection;
   const provider = ethers.provider;
   const chainId = networkConfig.chainId ?? (await getChainId(provider));
 
@@ -158,6 +159,7 @@ export function disableDefender(
 export async function getRemoteDeployment(
   hre: HardhatRuntimeEnvironment,
   remoteDeploymentId: string,
+  connection: NetworkConnection,
 ): Promise<RemoteDeployment | undefined> {
   const client = getDeployClient(hre);
   try {
@@ -183,7 +185,8 @@ export async function waitForDeployment(
 ): Promise<string | undefined> {
   const pollInterval = opts.pollingInterval ?? 5e3;
   let lastKnownTxHash: string | undefined;
-  const { ethers } = await hre.network.connect();
+  const connection = await hre.network.connect();
+  const { ethers } = connection;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -192,7 +195,7 @@ export async function waitForDeployment(
       break;
     }
 
-    const response = await getRemoteDeployment(hre, remoteDeploymentId);
+    const response = await getRemoteDeployment(hre, remoteDeploymentId, connection);
     lastKnownTxHash = response?.txHash;
     const completed = await isDeploymentCompleted(address, remoteDeploymentId, response);
     if (completed) {

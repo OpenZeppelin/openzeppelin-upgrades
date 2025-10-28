@@ -7,6 +7,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 import { ContractFactory, ethers } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 import { EthereumProvider } from 'hardhat/types/providers';
 
 import { DefenderDeployOptions, UpgradeOptions } from '../utils/index.js';
@@ -33,13 +34,14 @@ export interface ProposalOptions extends UpgradeOptions, DefenderDeployOptions {
 export function makeProposeUpgradeWithApproval(
   hre: HardhatRuntimeEnvironment,
   defenderModule: boolean,
+  connection: NetworkConnection,
 ): ProposeUpgradeWithApprovalFunction {
   return async function proposeUpgradeWithApproval(proxyAddress, contractNameOrImplFactory, opts = {}) {
     opts = enableDefender(hre, defenderModule, opts);
 
     const client = getDeployClient(hre);
-    const network = await getNetwork(hre);
-    const { ethers } = await hre.network.connect();
+    const network = await getNetwork(hre, connection);
+    const { ethers } = connection;
     const provider = ethers.provider as unknown as EthereumProvider;
 
     if (await isBeaconProxy(provider, proxyAddress)) {
@@ -64,7 +66,7 @@ export function makeProposeUpgradeWithApproval(
     const deployedImpl = await deployImplForUpgrade(hre, proxyAddress, implFactory, {
       getTxResponse: true,
       ...opts,
-    });
+    }, connection);
 
     const txResponse = deployedImpl.txResponse;
     const newImplementation = deployedImpl.impl;

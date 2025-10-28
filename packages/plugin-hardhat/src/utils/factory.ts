@@ -1,4 +1,5 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 import type { HardhatUpgrades, DefenderHardhatUpgrades } from '../types.js';
 import {
   silenceWarnings,
@@ -16,17 +17,22 @@ import {
  * import { upgrades } from '@openzeppelin/hardhat-upgrades';
  *
  * task('deploy', async (args, hre) => {
- *   const api = await upgrades(hre);
+ *   const connection = await hre.network.connect();
+ *   const api = await upgrades(hre, connection);
  *   await api.deployProxy(MyContract, []);
  * });
  * ```
  *
  * @param hre - Hardhat Runtime Environment
+ * @param connection - Optional network connection object from await hre.network.connect()
  * @returns API object with all upgrade functions
  */
-export async function upgrades(hre: HardhatRuntimeEnvironment): Promise<HardhatUpgrades> {
+export async function upgrades(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): Promise<HardhatUpgrades> {
   await warnOnHardhatDefender();
-  return await createUpgradesAPI(hre, false);
+  if (!connection) {
+    connection = await hre.network.connect();
+  }
+  return await createUpgradesAPI(hre, false, connection);
 }
 
 /**
@@ -37,20 +43,22 @@ export async function upgrades(hre: HardhatRuntimeEnvironment): Promise<HardhatU
  * import { defender } from '@openzeppelin/hardhat-upgrades';
  *
  * task('deploy', async (args, hre) => {
- *   const api = await defender(hre);
+ *   const connection = await hre.network.connect();
+ *   const api = await defender(hre, connection);
  *   await api.deployContract(...);
  * });
  * ```
  *
  * @param hre - Hardhat Runtime Environment
+ * @param connection - Optional network connection object from await hre.network.connect()
  * @returns API object with all upgrade and Defender functions
  */
-export async function defender(hre: HardhatRuntimeEnvironment): Promise<DefenderHardhatUpgrades> {
+export async function defender(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): Promise<DefenderHardhatUpgrades> {
   await warnOnHardhatDefender();
-  return await createDefenderAPI(hre);
+  return await createDefenderAPI(hre, connection);
 }
 
-async function createUpgradesAPI(hre: HardhatRuntimeEnvironment, isDefender: boolean): Promise<HardhatUpgrades> {
+async function createUpgradesAPI(hre: HardhatRuntimeEnvironment, isDefender: boolean, connection: NetworkConnection): Promise<HardhatUpgrades> {
   // Dynamic imports for ES modules
   const [
     { makeDeployProxy },
@@ -78,54 +86,47 @@ async function createUpgradesAPI(hre: HardhatRuntimeEnvironment, isDefender: boo
     import('../admin.js'),
   ]);
 
-  // Helper to get provider lazily when needed
-  const getProvider = async () => {
-    const { ethers } = await hre.network.connect();
-    return ethers.provider;
-  };
+  // Extract ethers from connection for use in erc1967 and beacon helpers
+  const { ethers } = connection;
 
   return {
     silenceWarnings,
-    deployProxy: makeDeployProxy(hre, isDefender),
-    upgradeProxy: makeUpgradeProxy(hre, isDefender),
-    validateImplementation: makeValidateImplementation(hre),
-    validateUpgrade: makeValidateUpgrade(hre),
-    deployImplementation: makeDeployImplementation(hre, isDefender),
-    prepareUpgrade: makePrepareUpgrade(hre, isDefender),
-    deployBeacon: makeDeployBeacon(hre, isDefender),
-    deployBeaconProxy: makeDeployBeaconProxy(hre, isDefender),
-    upgradeBeacon: makeUpgradeBeacon(hre, isDefender),
-    forceImport: makeForceImport(hre),
+    deployProxy: makeDeployProxy(hre, isDefender, connection),
+    upgradeProxy: makeUpgradeProxy(hre, isDefender, connection),
+    validateImplementation: makeValidateImplementation(hre, connection),
+    validateUpgrade: makeValidateUpgrade(hre, connection),
+    deployImplementation: makeDeployImplementation(hre, isDefender, connection),
+    prepareUpgrade: makePrepareUpgrade(hre, isDefender, connection),
+    deployBeacon: makeDeployBeacon(hre, isDefender, connection),
+    deployBeaconProxy: makeDeployBeaconProxy(hre, isDefender, connection),
+    upgradeBeacon: makeUpgradeBeacon(hre, isDefender, connection),
+    forceImport: makeForceImport(hre, connection),
     admin: {
-      changeProxyAdmin: makeChangeProxyAdmin(hre, isDefender),
-      transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre, isDefender),
+      changeProxyAdmin: makeChangeProxyAdmin(hre, isDefender, connection),
+      transferProxyAdminOwnership: makeTransferProxyAdminOwnership(hre, isDefender, connection),
     },
     erc1967: {
       getAdminAddress: async (proxyAddress: string) => {
-        const provider = await getProvider();
-        return getAdminAddress(provider, proxyAddress);
+        return getAdminAddress(ethers.provider, proxyAddress);
       },
       getImplementationAddress: async (proxyAddress: string) => {
-        const provider = await getProvider();
-        return getImplementationAddress(provider, proxyAddress);
+        return getImplementationAddress(ethers.provider, proxyAddress);
       },
       getBeaconAddress: async (proxyAddress: string) => {
-        const provider = await getProvider();
-        return getBeaconAddress(provider, proxyAddress);
+        return getBeaconAddress(ethers.provider, proxyAddress);
       },
     },
     beacon: {
       getImplementationAddress: async (beaconAddress: string) => {
-        const provider = await getProvider();
-        return getImplementationAddressFromBeacon(provider, beaconAddress);
+        return getImplementationAddressFromBeacon(ethers.provider, beaconAddress);
       },
     },
   };
 }
 
-async function createDefenderAPI(hre: HardhatRuntimeEnvironment): Promise<DefenderHardhatUpgrades> {
+async function createDefenderAPI(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): Promise<DefenderHardhatUpgrades> {
   // Get base upgrades API with defender flag
-  const upgradesAPI = await createUpgradesAPI(hre, true);
+  const upgradesAPI = await createUpgradesAPI(hre, true, connection);
 
   // Dynamic imports for Defender-specific functions
   const [
@@ -138,13 +139,13 @@ async function createDefenderAPI(hre: HardhatRuntimeEnvironment): Promise<Defend
     import('../defender/get-approval-process.js'),
   ]);
 
-  const getUpgradeApprovalProcess = makeGetUpgradeApprovalProcess(hre);
+  const getUpgradeApprovalProcess = makeGetUpgradeApprovalProcess(hre, connection);
 
   return {
     ...upgradesAPI,
-    deployContract: makeDeployContract(hre, true),
-    proposeUpgradeWithApproval: makeProposeUpgradeWithApproval(hre, true),
-    getDeployApprovalProcess: makeGetDeployApprovalProcess(hre),
+    deployContract: makeDeployContract(hre, true, connection),
+    proposeUpgradeWithApproval: makeProposeUpgradeWithApproval(hre, true, connection),
+    getDeployApprovalProcess: makeGetDeployApprovalProcess(hre, connection),
     getUpgradeApprovalProcess: getUpgradeApprovalProcess,
     getDefaultApprovalProcess: getUpgradeApprovalProcess, // deprecated alias
   };

@@ -1,4 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 import type { ContractFactory, ethers } from 'ethers';
 
 import { DeployImplementationOptions } from './utils/index.js';
@@ -15,11 +16,12 @@ export type DeployImplementationResponse = string | ethers.TransactionResponse;
 export function makeDeployImplementation(
   hre: HardhatRuntimeEnvironment,
   defenderModule: boolean,
+  connection: NetworkConnection,
 ): DeployImplementationFunction {
   return async function deployImplementation(ImplFactory, opts: DeployImplementationOptions = {}) {
     opts = enableDefender(hre, defenderModule, opts);
 
-    const deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts);
+    const deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts, undefined, connection);
 
     if (opts.getTxResponse && deployedImpl.txResponse) {
       return deployedImpl.txResponse;

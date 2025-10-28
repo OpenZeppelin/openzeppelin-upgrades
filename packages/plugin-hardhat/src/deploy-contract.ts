@@ -1,4 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 
 import type { ContractFactory } from 'ethers';
 
@@ -32,8 +33,9 @@ async function deployNonUpgradeableContract(
   hre: HardhatRuntimeEnvironment,
   Contract: ContractFactory,
   opts: DeployContractOptions,
+  connection: NetworkConnection,
 ): Promise<Required<Deployment> & DeployTransaction & RemoteDeploymentId> {
-  const deployData = await getDeployData(hre, Contract, opts);
+  const deployData = await getDeployData(hre, Contract, opts, connection);
 
   if (!opts.unsafeAllowDeployContract) {
     assertNonUpgradeable(deployData);
@@ -61,7 +63,7 @@ function assertNonUpgradeable(deployData: DeployData) {
   }
 }
 
-export function makeDeployContract(hre: HardhatRuntimeEnvironment, defenderModule: boolean): DeployContractFunction {
+export function makeDeployContract(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): DeployContractFunction {
   return async function deployContract<F extends ContractFactory>(
     Contract: F,
     args: unknown[] | DeployContractOptions = [],
@@ -85,7 +87,7 @@ export function makeDeployContract(hre: HardhatRuntimeEnvironment, defenderModul
     }
     opts.constructorArgs = args;
 
-    const deployment = await deployNonUpgradeableContract(hre, Contract, opts);
+    const deployment = await deployNonUpgradeableContract(hre, Contract, opts, connection);
 
     return getContractInstance(hre, Contract, opts, deployment);
   };

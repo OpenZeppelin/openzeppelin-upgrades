@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 import type { EthereumProvider } from 'hardhat/types/providers';
 
 import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
@@ -27,7 +28,7 @@ export type TransferProxyAdminOwnershipFunction = (
 ) => Promise<void>;
 export type GetInstanceFunction = (signer?: Signer) => Promise<Contract>;
 
-export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, defenderModule: boolean): ChangeAdminFunction {
+export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): ChangeAdminFunction {
   return async function changeProxyAdmin(
     proxyAddress: string,
     newAdmin: string,
@@ -36,12 +37,12 @@ export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, defenderMod
   ) {
     disableDefender(hre, defenderModule, {}, changeProxyAdmin.name);
 
-    const { ethers } = await hre.network.connect();
+    const { ethers } = connection;
     const provider = ethers.provider as unknown as EthereumProvider;
 
     const proxyAdminAddress = await getAdminAddress(provider, proxyAddress);
     // Only compatible with v4 admins
-    const admin = await attachProxyAdminV4(hre, proxyAdminAddress, signer);
+    const admin = await attachProxyAdminV4(connection, proxyAdminAddress, signer);
 
     const overrides = opts.txOverrides ? [opts.txOverrides] : [];
     await admin.changeProxyAdmin(proxyAddress, newAdmin, ...overrides);
@@ -51,6 +52,7 @@ export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, defenderMod
 export function makeTransferProxyAdminOwnership(
   hre: HardhatRuntimeEnvironment,
   defenderModule: boolean,
+  connection: NetworkConnection,
 ): TransferProxyAdminOwnershipFunction {
   return async function transferProxyAdminOwnership(
     proxyAddress: string,
@@ -60,19 +62,17 @@ export function makeTransferProxyAdminOwnership(
   ) {
     disableDefender(hre, defenderModule, {}, transferProxyAdminOwnership.name);
 
-    const { ethers } = await hre.network.connect();
+    const { ethers } = connection;
     const provider = ethers.provider as unknown as EthereumProvider;
 
     const proxyAdminAddress = await getAdminAddress(provider, proxyAddress);
     // Compatible with both v4 and v5 admins since they both have transferOwnership
-    const admin = await attachProxyAdminV4(hre, proxyAdminAddress, signer);
+    const admin = await attachProxyAdminV4(connection, proxyAdminAddress, signer);
 
     const overrides = opts.txOverrides ? [opts.txOverrides] : [];
     await admin.transferOwnership(newOwner, ...overrides);
 
     if (!opts.silent) {
-      const { ethers } = await hre.network.connect();
-      const provider = ethers.provider;
       const manifest = await Manifest.forNetwork(provider);
       const { proxies } = await manifest.read();
       const adminAddress = await admin.getAddress();
