@@ -32,7 +32,9 @@ const override = {
   },
 };
 
-const OLD_SOLIDITY_VERSION_IGNORES = [];
+const SELFDESTRUCT_IGNORES = [
+  "contracts/Invalid.sol"
+];
 
 module.exports = {
   networks: {
@@ -68,5 +70,5 @@ module.exports = {
     artifacts: './artifacts-pvm',
     cache: './cache-pvm',
   },
-  ignorePatterns: [...OLD_SOLIDITY_VERSION_IGNORES],
+  ignorePatterns: [...SELFDESTRUCT_IGNORES],
 };

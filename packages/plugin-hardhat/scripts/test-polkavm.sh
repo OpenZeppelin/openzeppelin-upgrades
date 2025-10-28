@@ -17,12 +17,7 @@ elif [[ "$arch" == "aarch64" ]] || [[ "$arch" == "arm64" ]]; then
 fi
 
 # Replace all pragma lines in .sol files with pragma solidity ^0.8.20;
-if [[ "$system" == "darwin" ]]; then
-    sed_inplace="-i ''"
-else
-    sed_inplace="-i"
-fi
-find contracts -name "*.sol" -exec sed $sed_inplace 's/^pragma solidity ^0\.[^8].*/pragma solidity ^0.8.20;/' {} \;
+find contracts -name "*.sol" -exec sh -c 'sed -E "s/pragma solidity (>=[0-9]+\.[0-7]\.[0-9]+<|[<>]=?|\^[0-9]+\.[0-7]\.[0-9]+).*;/pragma solidity ^0.8.20;/g" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
 # Check if the system is macOS or Linux based and architecture
 
 mkdir bin
