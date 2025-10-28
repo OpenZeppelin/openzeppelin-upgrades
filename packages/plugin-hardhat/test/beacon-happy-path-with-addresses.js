@@ -1,8 +1,14 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
 
-const { ethers, upgrades } = require('hardhat');
+const { ethers } = await hre.network.connect();
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+let upgrades;
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre);
+  
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
   t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3');
