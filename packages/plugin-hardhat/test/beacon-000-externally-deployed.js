@@ -4,6 +4,9 @@ import hre from 'hardhat';
 const { ethers } = await hre.network.connect();
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 
+import { call } from '@openzeppelin/upgrades-core';
+
+
 let upgrades;
 // let ethers;
 
@@ -43,8 +46,18 @@ test('block upgrade to unregistered beacon', async t => {
   console.log( 
     "call beacon implementation function",
     await (await ethers.getContractAt('Beacon', await beacon.getAddress())).implementation()
-  )
-  
+
+  );
+
+  call(ethers.provider, await beacon.getAddress(), '0x5c60da1b').then((implAddress) => {
+    console.log('TEST2 Implementation address from call:', implAddress);
+  });
+
+  /*
+    [call] r was returned                   0x0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa3
+    TEST2 Implementation address from call: 0x0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa3
+  */
+
   // upgrade beacon to new impl
   try {
     await upgrades.upgradeBeacon(await beacon.getAddress(), GreeterV2);
