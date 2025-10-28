@@ -30,4 +30,4 @@ export { upgrades, defender } from './utils/factory.js';
 export type { HardhatUpgrades, DefenderHardhatUpgrades } from './types.js';
 
 // Utilities
-export { UpgradeOptions } from './utils/options.js';
+export type { UpgradeOptions } from './utils/options.js';
