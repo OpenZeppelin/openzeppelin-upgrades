@@ -73,7 +73,12 @@ export function makeDeployBeaconProxy(
     opts.kind = 'beacon';
 
     const beaconAddress = await getContractAddress(beacon);
-    if (!(await isBeacon(provider, beaconAddress))) {
+    console.log('🔍 [deployBeaconProxy] Checking if address is beacon:', beaconAddress);
+    console.log('🔍 [deployBeaconProxy] Provider:', !!provider);
+
+    const isBeaconResult = await isBeacon(provider as any, beaconAddress);
+    console.log('🔍 [deployBeaconProxy] isBeacon result:', isBeaconResult);
+    if (!isBeaconResult) {
       throw new DeployBeaconProxyUnsupportedError(beaconAddress);
     }
 

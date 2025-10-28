@@ -20,19 +20,38 @@ export class InvalidBeacon extends UpgradesError {}
  * @throws {InvalidBeacon} If the implementation() function could not be called or does not return an address.
  */
 export async function getImplementationAddressFromBeacon(
-  provider: EthereumProvider,
+  provider: EthereumProvider, // v2 may differ from v3
   beaconAddress: string,
 ): Promise<string> {
-  const impl = await callOptionalSignature(provider, beaconAddress, 'implementation()');
-  let parsedImplAddress;
-  if (impl !== undefined) {
-    parsedImplAddress = parseAddress(impl);
-  }
+  try {
+    const impl = await callOptionalSignature(provider, beaconAddress, 'implementation()');
+    console.debug(`[getImplementationAddressFromBeacon] beacon=${beaconAddress} implementationRaw=`, impl);
 
-  if (parsedImplAddress === undefined) {
-    throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
-  } else {
-    return parsedImplAddress;
+    let parsedImplAddress;
+    console.log(`[getImplementationAddressFromBeacon] bool check ${impl !== undefined}`);
+    if (impl !== undefined) {
+      try {
+        parsedImplAddress = parseAddress(impl);
+        console.debug(`[getImplementationAddressFromBeacon] parsedImplAddress=${parsedImplAddress}`);
+      } catch (parseErr) {
+        console.error(
+          `[getImplementationAddressFromBeacon] parseAddress failed for value=${impl} at beacon=${beaconAddress}`,
+          parseErr,
+        );
+        throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
+      }
+    } else {
+      console.warn(`[getImplementationAddressFromBeacon] implementation() not found on contract at ${beaconAddress}`);
+    }
+
+    if (parsedImplAddress === undefined) {
+      throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
+    } else {
+      return parsedImplAddress;
+    }
+  } catch (err) {
+    console.error(`[getImplementationAddressFromBeacon] unexpected error for beacon=${beaconAddress}:`, err);
+    throw err;
   }
 }
 
