@@ -87,13 +87,16 @@ export async function call(
   data: string,
   block = 'latest',
 ): Promise<string> {
-  return provider.send('eth_call', [
+  console.log(`[call] Calling address ${address} with data ${data} at block ${block}`);
+  const r = provider.send('eth_call', [
     {
       to: address,
       data: data,
     },
     block,
   ]);
+  console.log("[call] r was returned", await r);
+  return r
 }
 
 export async function hasCode(provider: EthereumProvider, address: string, block?: string): Promise<boolean> {
