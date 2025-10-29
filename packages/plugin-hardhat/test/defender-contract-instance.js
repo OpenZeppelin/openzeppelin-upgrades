@@ -4,10 +4,9 @@ import hre from 'hardhat';
 const connection = await hre.network.connect();
 const { ethers } = connection;
 import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
-import proxyquire from 'proxyquire';
+import esmock from 'esmock';
 import sinon from 'sinon';
 
-const proxyquireStrict = proxyquire.noCallThru();
 const defender = await defenderFactory(hre, connection);
 
 const DEPLOYMENT_ID = 'abc';
@@ -35,12 +34,11 @@ test('get contract instance - tx hash not updated', async t => {
 
   const waitStub = sinon.stub();
 
-  const getContractInstance = proxyquire('../dist/utils/contract-instance', {
-    '../defender/utils': {
+  const { getContractInstance } = await esmock('../dist/utils/contract-instance.js', {
+    '../dist/defender/utils.js': {
       waitForDeployment: waitStub,
-      '@global': true,
     },
-  }).getContractInstance;
+  });
 
   const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { useDefenderDeploy: true }, deployment);
   await stubbedInstance.waitForDeployment();
@@ -70,12 +68,25 @@ test('get contract instance - tx hash updated', async t => {
 
   const waitStub = sinon.stub().returns(second.deploymentTransaction().hash);
 
-  const getContractInstance = proxyquire('../dist/utils/contract-instance', {
-    '../defender/utils': {
+  const { getContractInstance } = await esmock('../dist/utils/contract-instance.js', {
+    '../dist/defender/utils.js': {
       waitForDeployment: waitStub,
-      '@global': true,
     },
-  }).getContractInstance;
+  });
+
+  // Stub hre.network.connect to return a provider with mocked getTransaction
+  const originalConnect = hre.network.connect.bind(hre.network);
+  const connectStub = sinon.stub(hre.network, 'connect').callsFake(async () => {
+    const connection = await originalConnect();
+    const originalGetTransaction = connection.ethers.provider.getTransaction.bind(connection.ethers.provider);
+    sinon.stub(connection.ethers.provider, 'getTransaction').callsFake(async (hash) => {
+      if (hash === second.deploymentTransaction().hash) {
+        return second.deploymentTransaction();
+      }
+      return originalGetTransaction(hash);
+    });
+    return connection;
+  });
 
   const stubbedInstance = await getContractInstance(hre, GreeterProxiable, { useDefenderDeploy: true }, deployment);
 
@@ -92,4 +103,6 @@ test('get contract instance - tx hash updated', async t => {
   t.not(stubbedInstance.deploymentTransaction().hash, undefined);
   t.not(stubbedInstance.deploymentTransaction().hash, first.deploymentTransaction().hash);
   t.is(stubbedInstance.deploymentTransaction().hash, second.deploymentTransaction().hash);
+
+  connectStub.restore();
 });

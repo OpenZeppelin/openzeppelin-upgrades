@@ -3,16 +3,21 @@ import hre from 'hardhat';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
+import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import sinon from 'sinon';
-import proxyquire from 'proxyquire';
-
-const proxyquireStrict = proxyquire.noCallThru();
+import esmock from 'esmock';
 
 let upgrades;
+let defender;
 
 const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
+
+test.before(async () => {
+  upgrades = await upgradesFactory(hre, connection);
+  defender = await defenderFactory(hre, connection);
+});
 
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
@@ -29,15 +34,18 @@ test.beforeEach(async t => {
 
   t.context.spy = sinon.spy(t.context.fakeDefenderClient, 'upgradeContract');
 
-  t.context.proposeUpgradeWithApproval = proxyquire('../dist/defender/propose-upgrade-with-approval', {
-    './utils': {
-      ...require('../dist/defender/utils'),
+  const { getNetwork: _getNetwork, ...otherDefenderUtils } = await import('../dist/defender/utils.js');
+  const module = await esmock('../dist/defender/propose-upgrade-with-approval.js', {
+    '../dist/defender/utils.js': {
+      ...otherDefenderUtils,
       getNetwork: () => t.context.fakeChainId,
     },
-    './client': {
+    '../dist/defender/client.js': {
       getDeployClient: () => t.context.fakeDefenderClient,
     },
-  }).makeProposeUpgradeWithApproval(hre);
+  });
+  
+  t.context.proposeUpgradeWithApproval = module.makeProposeUpgradeWithApproval(hre, true, connection);
 
   t.context.Greeter = await ethers.getContractFactory('GreeterDefender');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterDefenderV2');

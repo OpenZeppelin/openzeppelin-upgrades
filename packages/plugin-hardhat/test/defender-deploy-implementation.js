@@ -3,29 +3,27 @@ import hre from 'hardhat';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
-import proxyquire from 'proxyquire';
+import esmock from 'esmock';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
+import { mockDeploy } from './defender-utils.js';
 
-const proxyquireStrict = proxyquire.noCallThru();
-const defender = await defenderFactory(hre, connection);
-
-test.before(async t => {
+test.beforeEach(async t => {
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
-  t.context.deployImplementation = proxyquireStrict('../dist/deploy-implementation', {
-    './utils/deploy': {
-      deploy: async (hre, opts, factory, ...args) => {
-        opts.useDefenderDeploy = false;
-        return {
-          // just do regular deploy but add a deployment id
-          ...(await require('../dist/utils/deploy').deploy(hre, opts, factory, ...args)),
-          remoteDeploymentId: 'abc',
-        };
-      },
-      '@global': true,
+  
+  // Mock at the deploy-implementation level AND at the deploy-impl level
+  const module = await esmock('../dist/deploy-implementation.js', {
+    '../dist/utils/deploy.js': {
+      deploy: mockDeploy,
     },
-  }).makeDeployImplementation(hre, true);
+  }, {
+    // This is the third parameter - global mocks that apply to all imports
+    '../dist/utils/deploy.js': {
+      deploy: mockDeploy,
+    },
+  });
+  
+  t.context.deployImplementation = module.makeDeployImplementation(hre, true, connection);
 });
 
 test('deploy implementation', async t => {

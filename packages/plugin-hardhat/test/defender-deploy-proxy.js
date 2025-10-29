@@ -4,11 +4,10 @@ import hre from 'hardhat';
 const connection = await hre.network.connect();
 const { ethers } = connection;
 import { upgrades as upgradesFactory, defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
-import proxyquire from 'proxyquire';
+import esmock from 'esmock';
 import sinon from 'sinon';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
-
-const proxyquireStrict = proxyquire.noCallThru();
+import { mockDeploy as baseMockDeploy } from './defender-utils.js';
 
 let upgrades;
 let defender;
@@ -29,19 +28,29 @@ test.beforeEach(async t => {
   stub.onCall(1).returns(PROXY_ID);
 
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
-  t.context.deployProxy = proxyquire('../dist/deploy-proxy', {
-    './utils/deploy': {
-      deploy: async (hre, opts, factory, ...args) => {
-        opts.useDefenderDeploy = false;
-        return {
-          // just do regular deploy but add a deployment id
-          ...(await require('../dist/utils/deploy').deploy(hre, opts, factory, ...args)),
-          remoteDeploymentId: stub(),
-        };
-      },
-      '@global': true,
+  t.context.Invalid = await ethers.getContractFactory('Invalid');
+  
+  // Create a wrapper around the shared mock deploy function to use the stub
+  const mockDeploy = async (hre, opts, factory, ...args) => {
+    const result = await baseMockDeploy(hre, opts, factory, ...args);
+    return {
+      ...result,
+      remoteDeploymentId: stub(),
+    };
+  };
+  
+  const module = await esmock('../dist/deploy-proxy.js', {
+    '../dist/utils/deploy.js': {
+      deploy: mockDeploy,
     },
-  }).makeDeployProxy(hre, true);
+  }, {
+    // Global mocks
+    '../dist/utils/deploy.js': {
+      deploy: mockDeploy,
+    },
+  });
+  
+  t.context.deployProxy = module.makeDeployProxy(hre, true, connection);
 });
 
 test.afterEach.always(() => {
@@ -94,12 +103,11 @@ test('deployed calls wait for deployment', async t => {
   // stub the waitForDeployment function
   const waitStub = sinon.stub();
 
-  const deployProxy = proxyquire('../dist/deploy-proxy', {
-    './defender/deploy': {
+  const module = await esmock('../dist/deploy-proxy.js', {
+    '../dist/defender/deploy.js': {
       defenderDeploy: deployStub,
-      '@global': true,
     },
-    './defender/utils': {
+    '../dist/defender/utils.js': {
       waitForDeployment: waitStub,
       enableDefender: (hre, defenderModule, opts) => {
         return {
@@ -107,9 +115,24 @@ test('deployed calls wait for deployment', async t => {
           useDefenderDeploy: true,
         };
       },
-      '@global': true,
     },
-  }).makeDeployProxy(hre, true);
+  }, {
+    // Global mocks
+    '../dist/defender/deploy.js': {
+      defenderDeploy: deployStub,
+    },
+    '../dist/defender/utils.js': {
+      waitForDeployment: waitStub,
+      enableDefender: (hre, defenderModule, opts) => {
+        return {
+          ...opts,
+          useDefenderDeploy: true,
+        };
+      },
+    },
+  });
+  
+  const deployProxy = module.makeDeployProxy(hre, true, connection);
 
   const inst = await deployProxy(GreeterProxiable, ['Hello World']);
   await inst.waitForDeployment();

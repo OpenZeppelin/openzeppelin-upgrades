@@ -5,14 +5,17 @@ const connection = await hre.network.connect();
 const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import sinon from 'sinon';
-import proxyquire from 'proxyquire';
-
-const proxyquireStrict = proxyquire.noCallThru();
+import esmock from 'esmock';
+import { mockDeploy } from './defender-utils.js';
 
 let upgrades;
 
 const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
+
+test.before(async () => {
+  upgrades = await upgradesFactory(hre, connection);
+});
 
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
@@ -29,15 +32,31 @@ test.beforeEach(async t => {
 
   t.context.spy = sinon.spy(t.context.fakeDefenderClient, 'upgradeContract');
 
-  t.context.proposeUpgradeWithApproval = proxyquire('../dist/defender/propose-upgrade-with-approval', {
-    './utils': {
-      ...require('../dist/defender/utils'),
+  const { getNetwork: _getNetwork, ...otherDefenderUtils } = await import('../dist/defender/utils.js');
+  const module = await esmock('../dist/defender/propose-upgrade-with-approval.js', {
+    '../dist/defender/utils.js': {
+      ...otherDefenderUtils,
       getNetwork: () => t.context.fakeChainId,
     },
-    './client': {
+    '../dist/defender/client.js': {
       getDeployClient: () => t.context.fakeDefenderClient,
+      getNetworkClient: () => t.context.fakeDefenderClient,
     },
-  }).makeProposeUpgradeWithApproval(hre);
+    '../dist/utils/deploy.js': {
+      deploy: mockDeploy,
+    },
+  }, {
+    // Global mocks
+    '../dist/defender/client.js': {
+      getDeployClient: () => t.context.fakeDefenderClient,
+      getNetworkClient: () => t.context.fakeDefenderClient,
+    },
+    '../dist/utils/deploy.js': {
+      deploy: mockDeploy,
+    },
+  });
+  
+  t.context.proposeUpgradeWithApproval = module.makeProposeUpgradeWithApproval(hre, true, connection);
 
   t.context.Greeter = await ethers.getContractFactory('GreeterDefenderProxiable');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterDefenderV2Proxiable');

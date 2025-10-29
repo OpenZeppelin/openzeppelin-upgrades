@@ -30,12 +30,24 @@ import { getCombinedBuildInfo, type CombinedBuildInfo } from '../utils/artifacts
 
 const deployableProxyContracts = [ERC1967Proxy, BeaconProxy, UpgradeableBeacon, TransparentUpgradeableProxy];
 
+/**
+ * Removes the 'project/' prefix from a fully qualified name if present.
+ * In Hardhat 3, validation data uses 'project/' prefix for local contracts
+ * (e.g., "project/contracts/Greeter.sol:Greeter"), but the artifact system
+ * expects names without this prefix (e.g., "contracts/Greeter.sol:Greeter").
+ */
+function removeProjectPrefix(fullyQualifiedName: string): string {
+  const prefix = 'project/';
+  return fullyQualifiedName.startsWith(prefix) ? fullyQualifiedName.slice(prefix.length) : fullyQualifiedName;
+}
+
 interface ContractInfo {
   sourceName: string;
   contractName: string;
   buildInfo: CombinedBuildInfo;
   libraries?: DeployRequestLibraries;
   constructorBytecode: string;
+  inputSourceName?: string; // Hardhat 3: source name with project/ prefix for buildInfo access
 }
 
 type CompilerOutputWithMetadata = CompilerOutputContract & {
@@ -208,9 +220,16 @@ async function getContractInfo(
     throw e;
   }
 
-  const { sourceName, contractName } = parseFullyQualifiedName(fullContractName);
+  // Remove 'project/' prefix for artifact resolution (Hardhat 3 compatibility)
+  const artifactName = removeProjectPrefix(fullContractName);
+  const { sourceName, contractName } = parseFullyQualifiedName(artifactName);
+  
+  // Read the artifact to get inputSourceName which is needed for buildInfo access
+  const artifact = await hre.artifacts.readArtifact(artifactName);
+  const inputSourceName = artifact.inputSourceName || sourceName; // fallback for Hardhat 2
+  
   // Get the build-info file corresponding to the fully qualified contract name
-  const buildInfo = await getCombinedBuildInfo(hre.artifacts, fullContractName);
+  const buildInfo = await getCombinedBuildInfo(hre.artifacts, artifactName);
 
   if (buildInfo === undefined) {
     throw new UpgradesError(
@@ -219,15 +238,17 @@ async function getContractInfo(
     );
   }
 
-  return { sourceName, contractName, buildInfo, libraries, constructorBytecode };
+  return { sourceName, contractName, buildInfo, libraries, constructorBytecode, inputSourceName };
 }
 
 /**
  * Get the SPDX license identifier from the contract metadata without validating it.
  */
 function getSpdxLicenseIdentifier(contractInfo: ContractInfo): string | undefined {
+  // Use inputSourceName for buildInfo access (Hardhat 3 has project/ prefix), fallback to sourceName
+  const buildInfoSourceName = contractInfo.inputSourceName || contractInfo.sourceName;
   const compilerOutput: CompilerOutputWithMetadata =
-    contractInfo.buildInfo.output.contracts[contractInfo.sourceName][contractInfo.contractName];
+    contractInfo.buildInfo.output.contracts[buildInfoSourceName][contractInfo.contractName];
 
   const metadataString = compilerOutput.metadata;
   if (metadataString === undefined) {
@@ -239,7 +260,8 @@ function getSpdxLicenseIdentifier(contractInfo: ContractInfo): string | undefine
 
   const metadata = JSON.parse(metadataString);
 
-  return metadata.sources[contractInfo.sourceName].license;
+  // Metadata sources are also keyed by inputSourceName in Hardhat 3
+  return metadata.sources[buildInfoSourceName].license;
 }
 
 /**
