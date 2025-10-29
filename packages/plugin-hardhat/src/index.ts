@@ -10,11 +10,8 @@ const plugin: HardhatPlugin = {
     solidity: () => import('./hooks/solidity.js'),
   },
 
-  tasks: [
-    // TODO: add all tasks here
-  ],
+  tasks: [],
 
-  // TODO: check this in others plugins... ( this can be wrong 100% )
   dependencies: () => {
     // Return array of promises to plugin modules
     return [import('@nomicfoundation/hardhat-ethers').then(m => ({ default: m.default }))];

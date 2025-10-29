@@ -1,4 +1,4 @@
-// // TODO ARTHUR, this is not finished, I can't import the older types from newer hardhat-verify.
+// TODO: this is not finished, I can't import the older types from newer hardhat-verify.
 // import { UpgradesError } from '@openzeppelin/upgrades-core';
 // import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
