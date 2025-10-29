@@ -22,7 +22,7 @@ test('initial owner using default signer', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello']);
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
+  const admin = await ethers.getContractAt(OWNABLE_ABI, adminAddress); // ← mudou aqui
 
   const defaultSigner = await ethers.provider.getSigner(0);
 
@@ -36,7 +36,7 @@ test('initial owner using custom signer', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello']);
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
+  const admin = await ethers.getContractAt(OWNABLE_ABI, adminAddress); // ← mudou aqui
 
   t.is(await admin.owner(), customSigner.address);
 });
@@ -48,7 +48,7 @@ test('initial owner using initialOwner option', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello'], { initialOwner: initialOwner.address });
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
+  const admin = await ethers.getContractAt(OWNABLE_ABI, adminAddress); // ← mudou aqui
 
   t.is(await admin.owner(), initialOwner.address);
 });
@@ -66,7 +66,7 @@ test('initial owner - no signer in ContractFactory', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello'], { initialOwner: initialOwner.address });
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
+  const admin = await ethers.getContractAt(OWNABLE_ABI, adminAddress); // ← mudou aqui
 
   t.is(await admin.owner(), initialOwner.address);
 });

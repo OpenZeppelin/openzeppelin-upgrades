@@ -5,7 +5,7 @@ const connection = await hre.network.connect();
 const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import { fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
-import { deploy } from '../dist/utils.js';
+import { deploy } from '../dist/utils/deploy.js'; // ← mudou de ../dist/utils.js para ../dist/utils/deploy.js
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json' with { type: 'json' };
 
 let upgrades;
