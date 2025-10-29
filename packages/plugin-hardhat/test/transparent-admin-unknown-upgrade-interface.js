@@ -4,13 +4,10 @@ import hre from 'hardhat';
 const connection = await hre.network.connect();
 const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import sinon from 'sinon';
+import TransparentUpgradableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json' with { type: 'json' };
 
 let upgrades;
-const sinon = require('sinon');
-
-const hre = require('hardhat');
-
-const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);

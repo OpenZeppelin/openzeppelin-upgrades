@@ -8,9 +8,11 @@ const artifacts = hre.artifacts;
 
 let upgrades;
 
-
 const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 
+test.before(async () => {
+  upgrades = await upgradesFactory(hre, connection);
+});
 
 test('without flag', async t => {
   // Deploying library

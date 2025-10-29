@@ -2,14 +2,14 @@ import test from 'ava';
 import hre from 'hardhat';
 
 const connection = await hre.network.connect();
-const { ethers } = connection;
-import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
-
-let upgrades;
-const sinon = require('sinon');
-const proxyquire = require('proxyquire').noCallThru();
+import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+import sinon from 'sinon';
+import proxyquire from 'proxyquire';
 import { disableDefender, enableDefender } from '../dist/defender/utils.js';
 import { getDeployClient } from '../dist/defender/client.js';
+
+const proxyquireStrict = proxyquire.noCallThru();
+const defender = await defenderFactory(hre, connection);
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x01';
