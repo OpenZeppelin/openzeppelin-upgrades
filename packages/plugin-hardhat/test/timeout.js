@@ -6,7 +6,6 @@ const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 
 let upgrades;
-const network = hre.network;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
@@ -17,25 +16,30 @@ test.before(async t => {
 });
 
 test.beforeEach(async t => {
-  // reset network before each test to avoid finding a previously deployed impl
-  await network.provider.request({
-    method: 'hardhat_reset',
-    params: [],
-  });
+  // Use ethers.provider from connection
+  const provider = ethers.provider;
+  
+  // In Hardhat 3, we need to reset using the network manager
+  // or simply create a new snapshot and restore it
+  const snapshotId = await provider.send('evm_snapshot', []);
+  t.context.snapshotId = snapshotId;
 
   // enable interval mining for timeout tests
-  t.context.automine = await network.provider.send('hardhat_getAutomine');
-  await network.provider.send('evm_setAutomine', [false]);
-  await network.provider.send('evm_setIntervalMining', [500]);
+  t.context.automine = await provider.send('hardhat_getAutomine', []);
+  await provider.send('evm_setAutomine', [false]);
+  await provider.send('evm_setIntervalMining', [500]);
+  
+  // Store provider in context for use in tests
+  t.context.provider = provider;
 });
 
 test.afterEach(async t => {
-  // reset network state after each test, otherwise ava tests may hang due to interval mining
-  await network.provider.send('evm_setAutomine', [t.context.automine]);
-  await network.provider.request({
-    method: 'hardhat_reset',
-    params: [],
-  });
+  const provider = t.context.provider;
+  // reset network state after each test
+  await provider.send('evm_setAutomine', [t.context.automine]);
+  
+  // Revert to snapshot instead of hardhat_reset
+  await provider.send('evm_revert', [t.context.snapshotId]);
 });
 
 const TIMED_OUT_IMPL = 'Timed out waiting for implementation contract deployment';
@@ -50,8 +54,9 @@ test('timeout too low - beacon', async t => {
 });
 
 test('timeout too low - proxy impl', async t => {
+  const provider = t.context.provider;
   // manual mining
-  await network.provider.send('evm_setIntervalMining', [0]);
+  await provider.send('evm_setIntervalMining', [0]);
 
   const error = await t.throwsAsync(() =>
     upgrades.deployProxy(t.context.Greeter, ['Hello, Hardhat!'], {
@@ -63,7 +68,7 @@ test('timeout too low - proxy impl', async t => {
   t.true(error.message.includes(TIMED_OUT_IMPL) && error.message.includes(USE_OPTIONS), error.message);
 
   // mine the impl deployment
-  await network.provider.send('evm_mine');
+  await provider.send('evm_mine', []);
 
   // run again to continue with proxy deployment
   await upgrades.deployProxy(t.context.Greeter, ['Hello, Hardhat!'], {
@@ -105,13 +110,14 @@ test('single option', async t => {
 });
 
 test('upgrade beacon', async t => {
+  const provider = t.context.provider;
   // automine to immediately deploy a new beacon to use in below tests
-  await network.provider.send('evm_setAutomine', [true]);
+  await provider.send('evm_setAutomine', [true]);
   const beacon = await upgrades.deployBeacon(t.context.Greeter, {
     timeout: 0,
     pollingInterval: 0,
   });
-  await network.provider.send('evm_setAutomine', [false]);
+  await provider.send('evm_setAutomine', [false]);
 
   // upgrade: timeout too low
   const error = await t.throwsAsync(() =>
@@ -124,14 +130,15 @@ test('upgrade beacon', async t => {
 });
 
 test('upgrade proxy', async t => {
+  const provider = t.context.provider;
   // automine to immediately deploy a new proxy to use in below tests
-  await network.provider.send('evm_setAutomine', [true]);
+  await provider.send('evm_setAutomine', [true]);
   const proxy = await upgrades.deployProxy(t.context.GreeterProxiable, ['Hello, Hardhat!'], {
     kind: 'uups',
     timeout: 0,
     pollingInterval: 0,
   });
-  await network.provider.send('evm_setAutomine', [false]);
+  await provider.send('evm_setAutomine', [false]);
 
   // upgrade: timeout too low
   const error = await t.throwsAsync(() =>
