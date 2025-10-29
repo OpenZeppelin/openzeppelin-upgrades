@@ -1,6 +1,7 @@
 import type { SolidityHooks } from 'hardhat/types/hooks';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { CompilerOutput } from 'solc';
+
 // Helper to extract compile errors from output
 function getNamespacedCompileErrors(output: CompilerOutput | undefined): string[] {
   const errors: string[] = [];
@@ -17,35 +18,24 @@ function getNamespacedCompileErrors(output: CompilerOutput | undefined): string[
 export default async (): Promise<Partial<SolidityHooks>> => {
   return {
     async preprocessSolcInputBeforeBuilding(context, solcInput, next) {
-      // STARTING TO CONSIDER THAT THIS IS UNEEDED FOR NOW
-      // const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
-      //   '../utils/validations.js'
-      // );
+      const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
+        '../utils/validations.js'
+      );
 
-      // try {
-      //   await readValidations(context as HardhatRuntimeEnvironment);
-      //   // Cache exists and is valid, continue normally
-      // } catch (e) {
-      //   if (e instanceof ValidationsCacheOutdated) {
-      //     // Cache exists but is outdated - delete it
-      //     // const fs = await import('fs/promises');
-
-      //     // We shouldn't need to delete anything here, Hardhat will recompile changed contracts automatically
-      //     // try {
-      //     //   await fs.rm(context.config.paths.artifacts, { recursive: true, force: true });
-      //     //   await fs.rm(context.config.paths.cache, { recursive: true, force: true });
-      //     // } catch (err: any) {
-      //     //   if (err.code !== 'ENOENT') {
-      //     //     console.warn('⚠️  Could not delete cache:', err.message);
-      //     //   }
-      //     // }
-      //   } else if (e instanceof ValidationsCacheNotFound) {
-      //     // Cache doesn't exist - that's fine, just proceed with compilation
-      //     // No need to delete anything!
-      //   } else {
-      //     throw e;
-      //   }
-      // }
+      try {
+        await readValidations(context as HardhatRuntimeEnvironment);
+        // Cache exists and is valid, continue normally
+      } catch (e) {
+        if (e instanceof ValidationsCacheOutdated) {
+          // Cache exists but is outdated 
+          // TODO: when hardhat supports forcing recompilation, we should do it here
+        } else if (e instanceof ValidationsCacheNotFound) {
+          // Cache doesn't exist - that's fine, just proceed with compilation
+          // No need to delete anything!
+        } else {
+          throw e;
+        }
+      }
       
       return await next(context, solcInput);
     },
@@ -121,6 +111,7 @@ export default async (): Promise<Partial<SolidityHooks>> => {
           let namespacedOutput: any = undefined;
 
           // Handle namespaced storage layouts
+          // TODO: review this part, maybe we are missing something from hardhat, namespaced.js tests are failing.
           if (isNamespaceSupported(solcVersion)) {
             try {
               let namespacedInput = makeNamespacedInput(input, output, solcVersion);
@@ -173,13 +164,13 @@ export default async (): Promise<Partial<SolidityHooks>> => {
                 namespacedOutput = namespacedResult;
               }
             } catch (err) {
-              console.warn('⚠️  Failed to compile namespaced input:', err);
+              // console.warn('⚠️  Failed to compile namespaced input', buildInfoPath);
               namespacedOutput = undefined;
             }
           }
           // Generate and write validations
           const validations = validate(output as any, decodeSrc, solcVersion, input as any, namespacedOutput);
-
+          
           // Debug validations content (safer access)
           await writeValidations(context as HardhatRuntimeEnvironment, validations);
 

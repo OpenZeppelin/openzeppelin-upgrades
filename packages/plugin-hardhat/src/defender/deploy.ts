@@ -1,4 +1,3 @@
-// TODO: figure out, the
 import type { ethers, ContractFactory } from 'ethers';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
