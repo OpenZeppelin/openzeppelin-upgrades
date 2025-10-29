@@ -1,4 +1,4 @@
-import '../type-extensions';
+import '../type-extensions.js';
 import {
   getAdminAddress,
   getImplementationAddress,
