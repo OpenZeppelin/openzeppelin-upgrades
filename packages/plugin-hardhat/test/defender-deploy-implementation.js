@@ -3,21 +3,17 @@ import hre from 'hardhat';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+import proxyquire from 'proxyquire';
+import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
 
-let upgrades;
-const proxyquire = require('proxyquire').noCallThru();
-
-const hre = require('hardhat');
-const { ethers } = hre;
-
-const manifest = require('@openzeppelin/upgrades-core/dist/manifest');
+const proxyquireStrict = proxyquire.noCallThru();
+const defender = await defenderFactory(hre, connection);
 
 test.before(async t => {
-  upgrades = await upgradesFactory(hre, connection);
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
-  t.context.deployImplementation = proxyquire('../dist/deploy-implementation', {
+  t.context.deployImplementation = proxyquireStrict('../dist/deploy-implementation', {
     './utils/deploy': {
       deploy: async (hre, opts, factory, ...args) => {
         opts.useDefenderDeploy = false;

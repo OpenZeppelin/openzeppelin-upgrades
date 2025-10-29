@@ -2,15 +2,12 @@ import test from 'ava';
 import hre from 'hardhat';
 
 const connection = await hre.network.connect();
-const { ethers } = connection;
-import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+import sinon from 'sinon';
+import proxyquire from 'proxyquire';
 
-let upgrades;
-const sinon = require('sinon');
-const proxyquire = require('proxyquire').noCallThru();
-
-const { defender } = require('hardhat');
-const hre = require('hardhat');
+const proxyquireStrict = proxyquire.noCallThru();
+const defender = await defenderFactory(hre, connection);
 
 const APPROVAL_PROCESS_ID = 'abc-def';
 const MULTISIG_ADDRESS = '0x123';

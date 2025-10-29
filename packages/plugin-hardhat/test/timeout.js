@@ -6,8 +6,7 @@ const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 
 let upgrades;
-
-const { ethers, upgrades, network } = require('hardhat');
+const network = hre.network;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);

@@ -3,23 +3,19 @@ import hre from 'hardhat';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
-
-let upgrades;
-const sinon = require('sinon');
-const proxyquire = require('proxyquire').noCallThru();
-
-const hre = require('hardhat');
-const { ethers } = hre;
-
-const {
+import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+import sinon from 'sinon';
+import proxyquire from 'proxyquire';
+import {
   getProxyFactory,
   getBeaconProxyFactory,
   getTransparentUpgradeableProxyFactory,
-} = require('../dist/utils/factories');
-const artifactsBuildInfo = require('@openzeppelin/upgrades-core/artifacts/build-info-v5.json');
+} from '../dist/utils/factories.js';
+import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json' with { type: 'json' };
+import { AbiCoder } from 'ethers';
 
-const { AbiCoder } = require('ethers');
+const proxyquireStrict = proxyquire.noCallThru();
+const defender = await defenderFactory(hre, connection);
 
 const TX_HASH = '0x1';
 const DEPLOYMENT_ID = 'abc';

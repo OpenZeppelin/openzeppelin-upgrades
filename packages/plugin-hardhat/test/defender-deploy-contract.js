@@ -3,20 +3,17 @@ import hre from 'hardhat';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+import proxyquire from 'proxyquire';
+import sinon from 'sinon';
 
-let upgrades;
-const proxyquire = require('proxyquire').noCallThru();
-const sinon = require('sinon');
-
-const hre = require('hardhat');
-const { ethers } = hre;
+const proxyquireStrict = proxyquire.noCallThru();
+const defender = await defenderFactory(hre, connection);
 
 const ADDR = '0x1';
 const TX_HASH = '0x0000000000000000000000000000000000000000000000000000000000000002';
 
 test.before(async t => {
-  upgrades = await upgradesFactory(hre, connection);
   t.context.NonUpgradeable = await ethers.getContractFactory('NonUpgradeable');
   t.context.WithConstructor = await ethers.getContractFactory('WithConstructor');
   t.context.IsInitializable = await ethers.getContractFactory('IsInitializable');

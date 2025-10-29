@@ -3,21 +3,25 @@ import hre from 'hardhat';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { upgrades as upgradesFactory, defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+import proxyquire from 'proxyquire';
+import sinon from 'sinon';
+import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
+
+const proxyquireStrict = proxyquire.noCallThru();
 
 let upgrades;
-const proxyquire = require('proxyquire').noCallThru();
-const sinon = require('sinon');
-
-const hre = require('hardhat');
-const { ethers } = hre;
-
-const manifest = require('@openzeppelin/upgrades-core/dist/manifest');
+let defender;
 
 const IMPL_ID = 'abc';
 
 const PROXY_TX_HASH = '0x2';
 const PROXY_ID = 'def';
+
+test.before(async () => {
+  upgrades = await upgradesFactory(hre, connection);
+  defender = await defenderFactory(hre, connection);
+});
 
 test.beforeEach(async t => {
   const stub = sinon.stub();
@@ -58,7 +62,7 @@ test('deploy proxy', async t => {
     t.is(proxy.remoteDeploymentId, PROXY_ID);
 
     const impl = await m.getDeploymentFromAddress(
-      await hre.upgrades.erc1967.getImplementationAddress(await inst.getAddress()),
+      await upgrades.erc1967.getImplementationAddress(await inst.getAddress()),
     );
     t.is(impl.remoteDeploymentId, IMPL_ID);
   });
@@ -76,7 +80,7 @@ test('deployed calls wait for deployment', async t => {
   // predeploy a proxy normally for two reasons:
   // 1. so we have a real address
   // 2. so it predeploys the implementation since we are assuming the impl is being deployed by Defender
-  const realProxy = await hre.upgrades.deployProxy(GreeterProxiable, ['Hello World']);
+  const realProxy = await upgrades.deployProxy(GreeterProxiable, ['Hello World']);
 
   // stub proxy deployment
   const deployStub = sinon.stub();
