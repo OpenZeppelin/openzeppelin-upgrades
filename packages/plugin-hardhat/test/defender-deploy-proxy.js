@@ -7,7 +7,7 @@ import { upgrades as upgradesFactory, defender as defenderFactory } from '@openz
 import esmock from 'esmock';
 import sinon from 'sinon';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
-import { mockDeploy as baseMockDeploy } from './defender-utils.js';
+import { mockDeploy as baseMockDeploy } from '../dist/test-utils/mock-deploy.js';
 
 let upgrades;
 let defender;

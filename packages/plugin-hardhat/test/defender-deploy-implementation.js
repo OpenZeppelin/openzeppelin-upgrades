@@ -5,7 +5,7 @@ const connection = await hre.network.connect();
 const { ethers } = connection;
 import esmock from 'esmock';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
-import { mockDeploy } from './defender-utils.js';
+import { mockDeploy } from '../dist/test-utils/mock-deploy.js';
 
 test.beforeEach(async t => {
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');

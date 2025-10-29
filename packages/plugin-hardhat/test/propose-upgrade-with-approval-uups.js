@@ -6,7 +6,7 @@ const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import sinon from 'sinon';
 import esmock from 'esmock';
-import { mockDeploy } from './defender-utils.js';
+import { mockDeploy } from '../dist/test-utils/mock-deploy.js';
 
 let upgrades;
 
