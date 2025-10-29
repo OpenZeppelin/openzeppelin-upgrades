@@ -15,6 +15,8 @@ function getNamespacedCompileErrors(output: CompilerOutput | undefined): string[
   return errors;
 }
 
+let lockWarningShown = false;
+
 export default async (): Promise<Partial<SolidityHooks>> => {
   return {
     async preprocessSolcInputBeforeBuilding(context, solcInput, next) {
@@ -31,12 +33,17 @@ export default async (): Promise<Partial<SolidityHooks>> => {
           // TODO: when hardhat supports forcing recompilation, we should do it here
         } else if (e instanceof ValidationsCacheNotFound) {
           // Cache doesn't exist - that's fine, just proceed with compilation
-          // No need to delete anything!
+        } else if (e.code === 'ELOCKED') {
+          // Lock file is being held by another process - warn once and continue
+          if (!lockWarningShown) {
+            console.warn('\nWarning: Validations cache is locked by another process. Continuing without cache validation.');
+            lockWarningShown = true;
+          }
         } else {
           throw e;
         }
       }
-      
+
       return await next(context, solcInput);
     },
 
@@ -61,7 +68,7 @@ export default async (): Promise<Partial<SolidityHooks>> => {
 
         // Process each build-info file (each represents a compilation job)
         for (const file of buildInfoFiles) {
-          
+
           // Skip output files - we only want to process input files
           if (!file.endsWith('.json') || file.endsWith('.output.json')) {
             continue;
@@ -170,7 +177,7 @@ export default async (): Promise<Partial<SolidityHooks>> => {
           }
           // Generate and write validations
           const validations = validate(output as any, decodeSrc, solcVersion, input as any, namespacedOutput);
-          
+
           // Debug validations content (safer access)
           await writeValidations(context as HardhatRuntimeEnvironment, validations);
 
