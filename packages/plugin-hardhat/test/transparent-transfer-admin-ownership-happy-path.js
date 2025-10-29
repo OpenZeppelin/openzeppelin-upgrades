@@ -23,7 +23,7 @@ test('transferProxyAdminOwnership', async t => {
   await upgrades.admin.transferProxyAdminOwnership(await greeter.getAddress(), TEST_ADDRESS);
 
   const adminAddress = await upgrades.erc1967.getAdminAddress(await greeter.getAddress());
-  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
+  const admin = await ethers.getContractAt(OWNABLE_ABI, adminAddress); // ← mudou aqui de hre.ethers para ethers
   const newOwner = await admin.owner();
 
   t.is(newOwner, TEST_ADDRESS);
