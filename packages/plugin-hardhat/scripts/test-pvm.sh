@@ -35,7 +35,7 @@ if [[ "$system" == "darwin" ]]; then
     xattr -c bin/dev-node
 fi
 hardhat compile --config hardhat.revive.config.js
-hardhat test --config hardhat.revive.config.js test-pvm/uups-upgrade-validation.js
+hardhat test --config hardhat.revive.config.js test-pvm/*
 rm -rf contracts
 rm -rf bin
 mv contracts-backup contracts
