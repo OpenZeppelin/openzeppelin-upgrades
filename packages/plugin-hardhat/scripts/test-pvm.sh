@@ -16,6 +16,7 @@ elif [[ "$arch" == "aarch64" ]] || [[ "$arch" == "arm64" ]]; then
     arch="arm64"
 fi
 
+cp -r contracts contracts-backup
 # Replace all pragma lines in .sol files with pragma solidity ^0.8.20;
 find contracts -name "*.sol" -exec sh -c 'sed -E "s/pragma solidity (>=[0-9]+\.[0-7]\.[0-9]+<|[<>]=?|\^[0-9]+\.[0-7]\.[0-9]+).*;/pragma solidity ^0.8.20;/g" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
 # Check if the system is macOS or Linux based and architecture
@@ -34,4 +35,7 @@ if [[ "$system" == "darwin" ]]; then
     xattr -c bin/dev-node
 fi
 hardhat compile --config hardhat.revive.config.js
-hardhat test --config hardhat.revive.config.js test/polkavm/*
+hardhat test --config hardhat.revive.config.js test-pvm/uups-upgrade-validation.js
+rm -rf contracts
+rm -rf bin
+mv contracts-backup contracts

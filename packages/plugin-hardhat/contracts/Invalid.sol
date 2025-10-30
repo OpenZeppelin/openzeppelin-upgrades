@@ -6,7 +6,7 @@ contract Invalid {
     }
 
     function oops() public {
-        selfdestruct(msg.sender);
+        // selfdestruct(msg.sender);
     }
 
 }
