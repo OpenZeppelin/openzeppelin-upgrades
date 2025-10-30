@@ -6,7 +6,7 @@ describe("UUPS Upgrade Validation", async () => {
   let context
   beforeEach(async () => {
     let Greeter = await ethers.getContractFactory('GreeterProxiable');
-    let Invalid = await ethers.getContractFactory('InvalidProxiable');
+    let Invalid = await ethers.getContractFactory('InvalidPVMProxiable');
     context = { Greeter, Invalid };
   });
 

@@ -3,7 +3,7 @@ const { expect } = require('chai');
 
 const { ethers, upgrades } = require('hardhat');
 
-describe('happy path', async () => {
+describe('Beacon Happy Path', async () => {
   let context;
   beforeEach(async () => {
     const Greeter = await ethers.getContractFactory('Greeter');
