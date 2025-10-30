@@ -1,4 +1,5 @@
 require('@openzeppelin/hardhat-upgrades');
+require('@nomicfoundation/hardhat-chai-matchers');
 
 const override = {
   version: '0.8.10',

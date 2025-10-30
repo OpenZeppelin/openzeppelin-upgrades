@@ -43,7 +43,7 @@ module.exports = {
       },
     },
     {
-      files: ['packages/plugin-hardhat/test/polkavm/**'],
+      files: ['packages/plugin-hardhat/test-pvm/**'],
       env: {
         mocha: true,
       },
