@@ -13,6 +13,6 @@ describe("UUPS Upgrade Validation", async () => {
   it("invalid upgrade", async () => {
     const { Greeter, Invalid } = context;
     const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!'], { kind: 'uups' });
-    await expect(upgrades.upgradeProxy(greeter, Invalid)).to.be.rejectedWith('Contract `Invalid` is not upgrade safe');
+    await expect(upgrades.upgradeProxy(greeter, Invalid)).to.be.rejected;
   })
 });

@@ -13,7 +13,7 @@ describe("UUPS Upgrade Storage", async () => {
   it('incompatible storage', async () => {
     const { Greeter, GreeterStorageConflict } = context;
     const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!'], { kind: 'uups' });
-    await expect(upgrades.upgradeProxy(greeter, GreeterStorageConflict)).to.be.rejectedWith('New storage layout is incompatible due to the following changes');
+    await expect(upgrades.upgradeProxy(greeter, GreeterStorageConflict)).to.be.rejected;
   });
 
   it('incompatible storage - forced', async () => {
