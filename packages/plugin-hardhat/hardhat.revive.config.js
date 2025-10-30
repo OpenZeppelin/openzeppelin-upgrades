@@ -1,5 +1,6 @@
 require('@openzeppelin/hardhat-upgrades');
 require('@parity/hardhat-polkadot');
+require('@nomicfoundation/hardhat-chai-matchers');
 
 const { subtask } = require('hardhat/config');
 function shouldIgnoreFile(filePath, ignorePatterns) {
