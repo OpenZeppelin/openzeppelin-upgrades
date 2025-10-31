@@ -2188,10 +2188,10 @@
     source-map-support "^0.5.21"
     ts-node "^10.9.2"
 
-"@parity/hardhat-polkadot-resolc@0.2.0-pre1":
-  version "0.2.0-pre1"
-  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot-resolc/-/hardhat-polkadot-resolc-0.2.0-pre1.tgz#3eda635bcbf44763c0154cf78cec1af3003e9742"
-  integrity sha512-B+Kgtr8MaZH253yPmXhnWn4qA810Eu0ZIPWcx2y4tqLSCsHQvSLnSi3Zss33AYNRQZIVZ4yQEQdlQoHc9UryYw==
+"@parity/hardhat-polkadot-resolc@0.2.0-pre2":
+  version "0.2.0-pre2"
+  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot-resolc/-/hardhat-polkadot-resolc-0.2.0-pre2.tgz#d080735d1e03fc2ca5a29e942c32cf2cde4ec77b"
+  integrity sha512-a7xPKWnBb0VzG4hypx1+m5w2xuk0N4E28HRvtZKGcb2aGF5wxEK6G2mazFn5JtFSGvIMkxz9xy0sF0iPuQm12A==
   dependencies:
     "@ethereumjs/util" "^10.0.0"
     "@parity/resolc" "0.3.0"
@@ -2204,14 +2204,14 @@
     semver "^7.7.2"
     ts-node "^10.9.2"
 
-"@parity/hardhat-polkadot@0.2.0-pre2", "@parity/hardhat-polkadot@^0.2.0-pre2":
-  version "0.2.0-pre2"
-  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot/-/hardhat-polkadot-0.2.0-pre2.tgz#d79a92e2e72fa737f6d112d3f535c772d78e5bdb"
-  integrity sha512-nrGPFFH4Lku3R+ScFLW3AeTOGvsdLPyyVDW9cr9aW5c3zI6mef8RZRqvXavPznJL8Ltr1zi+8D9Hfj/WcR5bsA==
+"@parity/hardhat-polkadot@0.2.0-pre3", "@parity/hardhat-polkadot@^0.2.0-pre3":
+  version "0.2.0-pre3"
+  resolved "https://registry.yarnpkg.com/@parity/hardhat-polkadot/-/hardhat-polkadot-0.2.0-pre3.tgz#42c9c99711d44b7c8b501f201d6b385d6e20f5e0"
+  integrity sha512-oBoBZQfsHLVZyWYHK9j+Oc3Cbq7rFZX04+J46xxfyF92Q4MC1zk1xfzzq4+hBxnYQaXxo0u2jtXg23dGV5BQmQ==
   dependencies:
     "@openzeppelin/contracts" "^5.3.0"
     "@parity/hardhat-polkadot-node" "0.2.0-pre2"
-    "@parity/hardhat-polkadot-resolc" "0.2.0-pre1"
+    "@parity/hardhat-polkadot-resolc" "0.2.0-pre2"
     chalk "4"
     diff "^8.0.2"
     enquirer "2.3.0"

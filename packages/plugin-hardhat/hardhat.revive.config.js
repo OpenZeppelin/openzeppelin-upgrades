@@ -64,6 +64,13 @@ module.exports = {
       'contracts/GapV2.sol': override,
       'contracts/GapV2_Bad.sol': override,
     },
+    settings: {
+      outputSelection: {
+        '*': {
+          '*': ['storageLayout'],
+        },
+      },
+    },
   },
   paths: {
     artifacts: './artifacts-pvm',
