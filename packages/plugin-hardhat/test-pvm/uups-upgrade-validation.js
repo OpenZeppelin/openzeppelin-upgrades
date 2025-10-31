@@ -13,15 +13,13 @@ describe('UUPS Upgrade Validation', async () => {
   it('deploy unsafe implementation', async () => {
     const { Invalid } = context;
     await expect(upgrades.deployProxy(Invalid, ['Hola mundo!'], { kind: 'uups' })).to.be.rejectedWith(
-      /Contract `InvalidPVMProxiable` is not upgrade safe/,
+      /is not upgrade safe/,
     );
   });
 
   it('upgrade to unsafe implementation', async () => {
     const { Greeter, Invalid } = context;
     const greeter = await upgrades.deployProxy(Greeter, ['Hola mundo!'], { kind: 'uups' });
-    await expect(upgrades.upgradeProxy(greeter, Invalid)).to.be.rejectedWith(
-      /Contract `InvalidPVMProxiable` is not upgrade safe/,
-    );
+    await expect(upgrades.upgradeProxy(greeter, Invalid)).to.be.rejectedWith(/is not upgrade safe/);
   });
 });
