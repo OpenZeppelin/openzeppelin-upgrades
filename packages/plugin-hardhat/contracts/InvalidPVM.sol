@@ -4,9 +4,12 @@ contract InvalidPVM {
     function initialize() public view {}
 
     function oops() public {
-        // selfdestruct(msg.sender);
     }
 }
 
 import './utils/Proxiable.sol';
-contract InvalidPVMProxiable is InvalidPVM, Proxiable {}
+contract InvalidPVMProxiable is InvalidPVM, Proxiable {
+    string greeting;
+
+    constructor(uint256 breakingArgument) public {}
+}
