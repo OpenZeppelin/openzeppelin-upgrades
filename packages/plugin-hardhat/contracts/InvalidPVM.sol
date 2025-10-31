@@ -1,15 +1,11 @@
 pragma solidity ^0.5.1;
 
-contract InvalidPVM {
-    function initialize() public view {}
-
-    function oops() public {
-    }
-}
-
 import './utils/Proxiable.sol';
-contract InvalidPVMProxiable is InvalidPVM, Proxiable {
+contract InvalidPVMProxiable is Proxiable {
     string greeting;
 
-    constructor(uint256 breakingArgument) public {}
+    // This constructor should cause validations to fail, since there is no annotation set to allow it
+    constructor() public {
+        greeting = 'Constructor called';
+    }
 }
