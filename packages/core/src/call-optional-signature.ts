@@ -10,6 +10,7 @@ export async function callOptionalSignature(provider: EthereumProvider, address:
       e.message.includes('function selector was not recognized') ||
       e.message.includes('invalid opcode') ||
       e.message.includes('revert') ||
+      e.message.includes('Action not found') ||
       e.message.includes('execution error')
     ) {
       return undefined;
