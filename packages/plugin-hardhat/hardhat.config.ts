@@ -39,6 +39,11 @@ const config: HardhatUserConfig = {
       'contracts/GapV2_Bad.sol': override,
     },
   },
+  paths: {
+    tests: {
+      solidity: "./test/solidity"
+    }
+  },
 };
 
 export default config;
