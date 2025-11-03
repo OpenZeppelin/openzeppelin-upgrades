@@ -147,6 +147,7 @@ export const networkNames: { [chainId in number]?: string } = Object.freeze({
   44787: 'celo-alfajores',
   80001: 'polygon-mumbai',
   84532: 'base-sepolia',
+  11142220: 'celo-sepolia',
   11155111: 'sepolia',
   11155420: 'op-sepolia',
 });
