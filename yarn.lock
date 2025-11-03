@@ -1723,6 +1723,9 @@
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
 
+"@openzeppelin/foundry-upgrades@file:submodules/openzeppelin-foundry-upgrades":
+  version "0.4.0"
+
 "@openzeppelin/upgrades-core-legacy@npm:@openzeppelin/upgrades-core@1.31.3":
   version "1.31.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.31.3.tgz#ff268a498fcd23106c33149e01dd3e7dfcae79fe"
@@ -4157,6 +4160,10 @@ foreground-child@^3.1.0:
   dependencies:
     cross-spawn "^7.0.6"
     signal-exit "^4.0.1"
+
+"forge-std@github:foundry-rs/forge-std#v1.9.7":
+  version "1.9.7"
+  resolved "https://codeload.github.com/foundry-rs/forge-std/tar.gz/77041d2ce690e692d6e03cc812b57d1ddaa4d505"
 
 form-data@^4.0.0:
   version "4.0.0"
