@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 1.44.2 (2025-11-03)
+
+- Add Celo Sepolia network to manifest file names. ([#1189](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1189))
+
 ## 1.44.1 (2025-05-20)
 
 - Fix `Missing initializer calls` error when initializer name ends with `_unchained` ([#1161](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1161))
