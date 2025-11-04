@@ -2,7 +2,7 @@ import type { HardhatUserConfig } from 'hardhat/config';
 import type { SolcUserConfig } from 'hardhat/types/config';
 import hardhatVerify from '@nomicfoundation/hardhat-verify';
 import hardhatEthers from '@nomicfoundation/hardhat-ethers';
-import upgradesPlugin from './dist/index.js';  // ✓ Correct
+import upgradesPlugin from './dist/index.js';
 
 const override: SolcUserConfig = {
   version: '0.8.10',
@@ -43,6 +43,24 @@ const config: HardhatUserConfig = {
     tests: {
       solidity: "./test/solidity"
     }
+  },
+  test: {
+    solidity: {
+      ffi: true,
+      fsPermissions: {
+        readFile: [
+          './hardhat.config.ts',
+          './hardhat.config.js',
+          './artifacts/contracts/**/*.json',
+        ],
+        readDirectory: [
+          './artifacts',
+          './artifacts/build-info',
+          './artifacts/contracts',
+          './out',
+        ],
+      },
+    },
   },
 };
 
