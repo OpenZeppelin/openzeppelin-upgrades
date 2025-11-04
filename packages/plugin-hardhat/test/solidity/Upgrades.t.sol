@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import { Test } from "forge-std/Test.sol";
-
+import { console } from "forge-std/console.sol";
 
 import { IBeacon } from "@openzeppelin/contracts/proxy/beacon/IBeacon.sol";
 import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
@@ -20,8 +20,6 @@ import { GreeterV2 } from "@openzeppelin/foundry-upgrades/test/contracts/Greeter
 import { GreeterV2Proxiable } from "@openzeppelin/foundry-upgrades/test/contracts/GreeterV2Proxiable.sol";
 import { WithConstructor, NoInitializer } from "@openzeppelin/foundry-upgrades/test/contracts/WithConstructor.sol";
 import { HasOwner } from "@openzeppelin/foundry-upgrades/test/contracts/HasOwner.sol";
-
-// Import additional contracts to include them for compilation
 import "@openzeppelin/foundry-upgrades/test/contracts/Validations.sol";
 
 /**
@@ -252,6 +250,14 @@ contract UpgradesTest is Test {
     }
 
     function testWithConstructor() public {
+        console.log("Test 1: Checking hardhat.config.js existence...");
+        bool configJsExists = vm.exists("hardhat.config.js");
+        console.log("hardhat.config.js exists:", configJsExists);
+
+        console.log("Checking hardhat.config.ts existence...");
+        bool configTsExists = vm.exists("hardhat.config.ts");
+        console.log("hardhat.config.ts exists:", configTsExists);
+
         Options memory opts;
         opts.constructorData = abi.encode(123);
         address proxy = Upgrades.deployTransparentProxy(
