@@ -129,7 +129,7 @@ async function exists(dir: string) {
 
 async function getJsonFiles(dir: string): Promise<string[]> {
   const files = await fs.readdir(dir);
-  const jsonFiles = files.filter(file => file.endsWith('.json'));
+  const jsonFiles = files.filter(file => file.endsWith('.json') && !file.endsWith('.output.json'));
   return jsonFiles.map(file => path.join(dir, file));
 }
 
@@ -137,44 +137,129 @@ async function readBuildInfo(buildInfoFilePaths: string[], dirShortName: string)
   const buildInfoFiles: BuildInfoFile[] = [];
 
   for (const buildInfoFilePath of buildInfoFilePaths) {
-    const buildInfoJson = await readJSON(buildInfoFilePath);
-    if (
-      buildInfoJson.input === undefined ||
-      buildInfoJson.output === undefined ||
-      buildInfoJson.solcVersion === undefined
-    ) {
-      throw new ValidateCommandError(
-        `Build info file ${buildInfoFilePath} must contain Solidity compiler input, output, and solcVersion.`,
-      );
-    } else {
-      checkOutputSelection(buildInfoJson, buildInfoFilePath);
+    const buildInfo = await loadBuildInfo(buildInfoFilePath);
 
-      buildInfoFiles.push({
-        input: buildInfoJson.input,
-        output: buildInfoJson.output,
-        solcVersion: buildInfoJson.solcVersion,
-        dirShortName: dirShortName,
-      });
-    }
+    checkOutputSelection(buildInfo.input, buildInfoFilePath);
+
+    buildInfoFiles.push({
+      input: buildInfo.input,
+      output: buildInfo.output,
+      solcVersion: buildInfo.solcVersion,
+      dirShortName,
+    });
   }
   return buildInfoFiles;
+}
+
+async function loadBuildInfo(buildInfoFilePath: string): Promise<{
+  input: SolcInput;
+  output: SolcOutput;
+  solcVersion: string;
+}> {
+  const buildInfoJson = await readJSON(buildInfoFilePath);
+
+  if (buildInfoJson.input !== undefined && buildInfoJson.output !== undefined && buildInfoJson.solcVersion !== undefined) {
+    return {
+      input: buildInfoJson.input,
+      output: buildInfoJson.output,
+      solcVersion: buildInfoJson.solcVersion,
+    };
+  }
+
+  const format = buildInfoJson._format as string | undefined;
+
+  if (typeof format === 'string' && (format.startsWith('hh3-sol-build-info') || format.startsWith('hh-sol-build-info'))) {
+    if (buildInfoJson.input !== undefined && buildInfoJson.solcVersion !== undefined) {
+      let inputData: SolcInput = buildInfoJson.input;
+      let outputData: SolcOutput | undefined = buildInfoJson.output;
+
+      if (outputData === undefined) {
+        const { dir, name } = path.parse(buildInfoFilePath);
+        const outputFilePath = path.join(dir, `${name}.output.json`);
+
+        try {
+          const outputJson = await readJSON(outputFilePath);
+          outputData = outputJson.output ?? outputJson;
+        } catch (error) {
+          throw new ValidateCommandError(
+            `Build info file ${buildInfoFilePath} does not contain output, and output file ${outputFilePath} could not be read.`,
+          );
+        }
+
+        if (outputData === undefined) {
+          throw new ValidateCommandError(
+            `Build info file ${buildInfoFilePath} does not contain output, and output file ${outputFilePath} is missing Solidity compiler output.`,
+          );
+        }
+      }
+
+      const userSourceNameMap: Record<string, string> | undefined = buildInfoJson.userSourceNameMap;
+      if (userSourceNameMap !== undefined) {
+        const canonicalToUser = Object.entries(userSourceNameMap).reduce<Record<string, string>>((acc, [userSource, canonicalSource]) => {
+          acc[canonicalSource] = userSource;
+          return acc;
+        }, {});
+
+        if (inputData.sources !== undefined) {
+          inputData = {
+            ...inputData,
+            sources: remapKeys(inputData.sources, canonicalToUser),
+          };
+        }
+
+        if (outputData.sources !== undefined) {
+          outputData = {
+            ...outputData,
+            sources: remapKeys(outputData.sources, canonicalToUser),
+            contracts: outputData.contracts !== undefined ? remapKeys(outputData.contracts, canonicalToUser) : outputData.contracts,
+          };
+        } else if (outputData.contracts !== undefined) {
+          outputData = {
+            ...outputData,
+            contracts: remapKeys(outputData.contracts, canonicalToUser),
+          };
+        }
+      }
+
+      return {
+        input: inputData,
+        output: outputData,
+        solcVersion: buildInfoJson.solcVersion,
+      };
+    }
+  }
+
+  throw new ValidateCommandError(
+    `Build info file ${buildInfoFilePath} must contain Solidity compiler input, output, and solcVersion. Got format: ${format ?? 'unknown'}.`,
+  );
 }
 
 /**
  * Gives an error if there is empty output selection for any contract, or a contract does not have storage layout.
  */
-function checkOutputSelection(buildInfoJson: any, buildInfoFilePath: string) {
-  const o = buildInfoJson.input.settings?.outputSelection;
+function checkOutputSelection(input: SolcInput, buildInfoFilePath: string) {
+  const outputSelection = input.settings?.outputSelection;
 
-  return Object.keys(o).forEach((item: any) => {
-    if ((o[item][''] === undefined || o[item][''].length === 0) && o[item]['*'].length === 0) {
+  if (outputSelection === undefined) {
+    throw new ValidateCommandError(
+      `Build info file ${buildInfoFilePath} does not define compiler outputSelection.`,
+      () => STORAGE_LAYOUT_HELP,
+    );
+  }
+
+  Object.keys(outputSelection).forEach(item => {
+    const selection = outputSelection[item] ?? {};
+    const unnamed = Array.isArray(selection['']) ? selection[''] : [];
+    const wildcard = Array.isArray(selection['*']) ? selection['*'] : [];
+
+    if (unnamed.length === 0 && wildcard.length === 0) {
       // No outputs at all for this contract e.g. if there were no changes since the last compile in Foundry.
       // This is not supported for now, since it leads to AST nodes that reference node ids in other build-info files.
       throw new ValidateCommandError(
         `Build info file ${buildInfoFilePath} is not from a full compilation.`,
         () => PARTIAL_COMPILE_HELP,
       );
-    } else if (!o[item]['*'].includes('storageLayout')) {
+    } else if (!wildcard.includes('storageLayout')) {
       throw new ValidateCommandError(
         `Build info file ${buildInfoFilePath} does not contain storage layout for all contracts.`,
         () => STORAGE_LAYOUT_HELP,
@@ -185,4 +270,13 @@ function checkOutputSelection(buildInfoJson: any, buildInfoFilePath: string) {
 
 async function readJSON(path: string) {
   return JSON.parse(await fs.readFile(path, 'utf8'));
+}
+
+function remapKeys<T>(original: Record<string, T>, canonicalToUser: Record<string, string>): Record<string, T> {
+  const remapped: Record<string, T> = {};
+  for (const [key, value] of Object.entries(original)) {
+    const mappedKey = canonicalToUser[key] ?? key;
+    remapped[mappedKey] = value;
+  }
+  return remapped;
 }

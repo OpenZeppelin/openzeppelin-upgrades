@@ -51,12 +51,13 @@ const config: HardhatUserConfig = {
         readFile: [
           './hardhat.config.ts',
           './hardhat.config.js',
-          './artifacts/contracts/**/*.json',
+          './artifacts/**/*.json',
         ],
         readDirectory: [
           './artifacts',
           './artifacts/build-info',
           './artifacts/contracts',
+          './artifacts/@openzeppelin',
           './out',
         ],
       },

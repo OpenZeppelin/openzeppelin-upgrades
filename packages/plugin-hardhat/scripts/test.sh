@@ -3,7 +3,23 @@
 set -euo pipefail
 
 rimraf .openzeppelin
+
 hardhat compile
+
+# Ensure core artifacts exist
+if [ ! -d "../core/artifacts/@openzeppelin" ]; then
+  echo "⚠️  Building core package artifacts..."
+  (cd ../core && yarn prepare)
+fi
+
+# Copy OpenZeppelin proxy artifacts for Foundry/Hardhat tests (only v5)
+echo "📦 Copying OpenZeppelin proxy artifacts (v5 only)..."
+mkdir -p artifacts/@openzeppelin
+# Copy only contracts-v5 directory, skip contracts (v4) and contracts-upgradeable
+if [ -d "../core/artifacts/@openzeppelin/contracts-v5" ]; then
+  cp -r ../core/artifacts/@openzeppelin/contracts-v5/* artifacts/@openzeppelin/
+fi
+
 
 # Separate .sol and .js test files, and collect other arguments (flags)
 sol_tests=()
