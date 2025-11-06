@@ -1,3 +1,10 @@
+import 'dotenv/config';
+
+// Set FOUNDRY_OUT for testing (can be overridden by .env file or inline env var)
+if (!process.env.FOUNDRY_OUT) {
+  process.env.FOUNDRY_OUT = 'artifacts/contracts';
+}
+
 import type { HardhatUserConfig } from 'hardhat/config';
 import type { SolcUserConfig } from 'hardhat/types/config';
 import hardhatVerify from '@nomicfoundation/hardhat-verify';

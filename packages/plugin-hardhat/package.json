@@ -32,6 +32,7 @@
     "@openzeppelin/foundry-upgrades": "file:../../submodules/openzeppelin-foundry-upgrades",
     "@types/mocha": "^7.0.2",
     "ava": "^6.0.0",
+    "dotenv": "^16.0.0",
     "esmock": "^2.7.3",
     "fgbg": "^0.1.4",
     "forge-std": "github:foundry-rs/forge-std#v1.9.7",
