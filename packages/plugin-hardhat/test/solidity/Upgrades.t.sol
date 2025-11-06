@@ -250,22 +250,25 @@ contract UpgradesTest is Test {
     }
 
     function testWithConstructor() public {
-        console.log("Test 1: Checking hardhat.config.js existence...");
+        console.log("testWithConstructor Test 1: Checking hardhat.config.js existence...");
         bool configJsExists = vm.exists("hardhat.config.js");
-        console.log("hardhat.config.js exists:", configJsExists);
+        console.log("testWithConstructor hardhat.config.js exists:", configJsExists);
 
-        console.log("Checking hardhat.config.ts existence...");
+        console.log("testWithConstructor Checking hardhat.config.ts existence...");
         bool configTsExists = vm.exists("hardhat.config.ts");
-        console.log("hardhat.config.ts exists:", configTsExists);
+        console.log("testWithConstructor hardhat.config.ts exists:", configTsExists);
 
         Options memory opts;
         opts.constructorData = abi.encode(123);
+        console.log("testWithConstructor before Upgrades.deployTransparentProxy");
+
         address proxy = Upgrades.deployTransparentProxy(
             "WithConstructor.sol:WithConstructor",
             msg.sender,
             abi.encodeCall(WithConstructor.initialize, (456)),
             opts
         );
+        console.log("testWithConstructor after Upgrades.deployTransparentProxy");
         assertEq(WithConstructor(proxy).a(), 123);
         assertEq(WithConstructor(proxy).b(), 456);
     }
