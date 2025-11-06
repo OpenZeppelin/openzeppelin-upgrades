@@ -158,11 +158,7 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
 }> {
   const buildInfoJson = await readJSON(buildInfoFilePath);
 
-  if (
-    buildInfoJson.input !== undefined &&
-    buildInfoJson.output !== undefined &&
-    buildInfoJson.solcVersion !== undefined
-  ) {
+  if (buildInfoJson.input !== undefined && buildInfoJson.output !== undefined && buildInfoJson.solcVersion !== undefined) {
     return {
       input: buildInfoJson.input,
       output: buildInfoJson.output,
@@ -172,10 +168,7 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
 
   const format = buildInfoJson._format as string | undefined;
 
-  if (
-    typeof format === 'string' &&
-    (format.startsWith('hh3-sol-build-info') || format.startsWith('hh-sol-build-info'))
-  ) {
+  if (typeof format === 'string' && (format.startsWith('hh3-sol-build-info') || format.startsWith('hh-sol-build-info'))) {
     if (buildInfoJson.input !== undefined && buildInfoJson.solcVersion !== undefined) {
       let inputData: SolcInput = buildInfoJson.input;
       let outputData: SolcOutput | undefined = buildInfoJson.output;
@@ -202,10 +195,10 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
 
       const userSourceNameMap: Record<string, string> | undefined = buildInfoJson.userSourceNameMap;
       if (userSourceNameMap !== undefined) {
-        const canonicalToUser: Record<string, string> = {};
-        for (const [userSource, canonicalSource] of Object.entries(userSourceNameMap)) {
-          canonicalToUser[canonicalSource] = userSource;
-        }
+        const canonicalToUser = Object.entries(userSourceNameMap).reduce<Record<string, string>>((acc, [userSource, canonicalSource]) => {
+          acc[canonicalSource] = userSource;
+          return acc;
+        }, {});
 
         if (inputData.sources !== undefined) {
           inputData = {
@@ -218,10 +211,7 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
           outputData = {
             ...outputData,
             sources: remapKeys(outputData.sources, canonicalToUser),
-            contracts:
-              outputData.contracts !== undefined
-                ? remapKeys(outputData.contracts, canonicalToUser)
-                : outputData.contracts,
+            contracts: outputData.contracts !== undefined ? remapKeys(outputData.contracts, canonicalToUser) : outputData.contracts,
           };
         } else if (outputData.contracts !== undefined) {
           outputData = {

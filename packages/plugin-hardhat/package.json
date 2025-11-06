@@ -19,7 +19,7 @@
   },
   "scripts": {
     "clean": "rimraf dist *.tsbuildinfo",
-    "compile": "tsc -b",
+    "compile": "tsc -b && hardhat compile",
     "prepare": "yarn compile",
     "test": "tsc -b && bash scripts/test.sh",
     "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --"
