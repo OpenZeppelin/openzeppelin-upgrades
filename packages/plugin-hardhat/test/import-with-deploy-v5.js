@@ -14,8 +14,8 @@ test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterV2Proxiable = await ethers.getContractFactory('contracts/GreeterV2Proxiable.sol:GreeterV2Proxiable');
 
   t.context.ProxyAdmin = await ethers.getContractFactory(ProxyAdmin.abi, ProxyAdmin.bytecode);
   t.context.TransparentUpgradableProxy = await ethers.getContractFactory(
@@ -31,16 +31,17 @@ test('import then deploy with same impl', async t => {
 
   const impl = await GreeterProxiable.deploy();
   await impl.waitForDeployment();
+  const signer = await ethers.provider.getSigner();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', [await signer.getAddress(), 'Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 
   const greeter = await upgrades.forceImport(await proxy.getAddress(), GreeterProxiable);
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
-  const greeter2 = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat 2!']);
+  const greeter2 = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello, Hardhat 2!']);
   await greeter2.waitForDeployment();
   t.is(await greeter2.greet(), 'Hello, Hardhat 2!');
 
@@ -53,14 +54,15 @@ test('import then deploy with same impl', async t => {
 test('deploy then import with same impl', async t => {
   const { GreeterProxiable, GreeterV2Proxiable, ERC1967Proxy } = t.context;
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!']);
+  const signer = await ethers.provider.getSigner();
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello, Hardhat!']);
   await greeter.waitForDeployment();
 
   const impl = await GreeterProxiable.deploy();
   await impl.waitForDeployment();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat 2!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', [await signer.getAddress(), 'Hello, Hardhat 2!']),
   );
   await proxy.waitForDeployment();
 
@@ -85,7 +87,8 @@ test('deploy then import with same impl', async t => {
 test('import previous deployment', async t => {
   const { GreeterProxiable } = t.context;
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!']);
+  const signer = await ethers.provider.getSigner();
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello, Hardhat!']);
   await greeter.waitForDeployment();
 
   const greeterImported = await upgrades.forceImport(await greeter.getAddress(), GreeterProxiable);
@@ -103,9 +106,10 @@ test('import previous import', async t => {
 
   const impl = await GreeterProxiable.deploy();
   await impl.waitForDeployment();
+  const signer = await ethers.provider.getSigner();
   const proxy = await ERC1967Proxy.deploy(
     await impl.getAddress(),
-    GreeterProxiable.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
+    GreeterProxiable.interface.encodeFunctionData('initialize', [await signer.getAddress(), 'Hello, Hardhat!']),
   );
   await proxy.waitForDeployment();
 

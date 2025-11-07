@@ -45,8 +45,9 @@ test('transferProxyAdminOwnership v4 multiple proxies', async t => {
   await upgrades.forceImport(await proxy2.getAddress(), Greeter);
 
   // Deploy an unrelated UUPS proxy
-  const GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
-  await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!'], { kind: 'uups' });
+  const GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  const signer = await ethers.provider.getSigner();
+  await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
 
   await upgrades.admin.transferProxyAdminOwnership(await greeter.getAddress(), testAddress);
   t.is(await admin.owner(), testAddress);

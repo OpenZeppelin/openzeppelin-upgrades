@@ -10,14 +10,15 @@ let upgrades;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2Proxiable.sol:GreeterV2Proxiable');
 });
 
 test('happy path - call with args', async t => {
   const { Greeter, GreeterV2 } = t.context;
+  const signer = await ethers.provider.getSigner();
 
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
 
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 
@@ -30,8 +31,9 @@ test('happy path - call with args', async t => {
 
 test('happy path - call without args', async t => {
   const { Greeter, GreeterV2 } = t.context;
+  const signer = await ethers.provider.getSigner();
 
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
 
   t.is(await greeter.greet(), 'Hello, Hardhat!');
 

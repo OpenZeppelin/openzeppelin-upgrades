@@ -18,7 +18,7 @@ test.before(async t => {
   t.context.IsInitializable = await ethers.getContractFactory('IsInitializable');
   t.context.IsInitializableUpgradeable = await ethers.getContractFactory('IsInitializableUpgradeable');
   t.context.IsUUPS = await ethers.getContractFactory('IsUUPS');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
 
   const { makeDeployContract } = await esmock('../dist/deploy-contract.js', {
     '../dist/utils/index.js': {

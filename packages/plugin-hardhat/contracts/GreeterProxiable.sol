@@ -19,5 +19,13 @@ contract GreeterProxiable is Initializable, OwnableUpgradeable, UUPSUpgradeable 
         greeting = _greeting;
     }
 
+    function greet() public view returns (string memory) {
+        return greeting;
+    }
+
+    function setGreeting(string memory _greeting) public {
+        greeting = _greeting;
+    }
+
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

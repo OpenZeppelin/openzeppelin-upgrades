@@ -11,9 +11,9 @@ let upgrades;
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
-  t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.GreeterV2Proxiable = await ethers.getContractFactory('contracts/GreeterV2Proxiable.sol:GreeterV2Proxiable');
   t.context.GreeterFallback = await ethers.getContractFactory('GreeterFallback');
 });
 
@@ -79,8 +79,9 @@ test('block transparent proxy upgrade via upgradeBeacon', async t => {
 
 test('block uups proxy upgrade via upgradeBeacon', async t => {
   const { GreeterProxiable, GreeterV2Proxiable } = t.context;
+  const signer = await ethers.provider.getSigner();
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
 
   try {
     await upgrades.upgradeBeacon(greeter, GreeterV2Proxiable);

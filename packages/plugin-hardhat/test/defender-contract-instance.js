@@ -12,7 +12,7 @@ const defender = await defenderFactory(hre, connection);
 const DEPLOYMENT_ID = 'abc';
 
 test.beforeEach(async t => {
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
 });
 
 test.afterEach.always(() => {

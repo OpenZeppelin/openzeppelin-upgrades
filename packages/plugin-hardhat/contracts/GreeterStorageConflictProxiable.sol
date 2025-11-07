@@ -8,12 +8,14 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 // These contracts are for testing only, they are not safe for use in production.
 
 /// @custom:oz-upgrades-from GreeterProxiable
-contract GreeterV2Proxiable is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+contract GreeterStorageConflictProxiable is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
 
+    // Storage conflict: uint before string (different order than GreeterProxiable)
+    uint public greets;
     string public greeting;
 
     function initialize(address initialOwner, string memory _greeting) public initializer {
@@ -22,7 +24,8 @@ contract GreeterV2Proxiable is Initializable, OwnableUpgradeable, UUPSUpgradeabl
         greeting = _greeting;
     }
 
-    function greet() public view returns (string memory) {
+    function greet() public returns (string memory) {
+        greets = greets + 1;
         return greeting;
     }
 
@@ -31,8 +34,5 @@ contract GreeterV2Proxiable is Initializable, OwnableUpgradeable, UUPSUpgradeabl
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
-
-    function resetGreeting() public {
-        greeting = "Hello World";
-    }
 }
+
