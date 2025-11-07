@@ -8,7 +8,7 @@ import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
 import { mockDeploy } from '../dist/test-utils/mock-deploy.js';
 
 test.beforeEach(async t => {
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
   
   // Mock at the deploy-implementation level AND at the deploy-impl level

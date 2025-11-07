@@ -12,9 +12,9 @@ import { deploy } from '../dist/utils/deploy.js';
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2Proxiable');
-  t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3Proxiable');
+  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2Proxiable.sol:GreeterV2Proxiable');
+  t.context.GreeterV3 = await ethers.getContractFactory('contracts/GreeterV3Proxiable.sol:GreeterV3Proxiable');
   t.context.AccessManagedProxy = await ethers.getContractFactory('AccessManagedProxy');
   
   // Import AccessManager from OpenZeppelin Contracts
@@ -36,8 +36,9 @@ async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
 
 test('custom uups proxy factory and deploy function', async t => {
   const { Greeter, GreeterV2, GreeterV3, AccessManagedProxy, acMgr, admin, anon } = t.context;
+  const signer = await ethers.provider.getSigner();
 
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], {
+  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], {
     kind: 'uups',
     proxyExtraConstructorArgs: [await acMgr.getAddress()],
     deployFunction: deployWithExtraProxyArgs,

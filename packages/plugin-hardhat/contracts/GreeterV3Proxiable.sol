@@ -7,8 +7,8 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 
 // These contracts are for testing only, they are not safe for use in production.
 
-/// @custom:oz-upgrades-from GreeterProxiable
-contract GreeterV2Proxiable is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+/// @custom:oz-upgrades-from GreeterV2Proxiable
+contract GreeterV3Proxiable is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -30,9 +30,14 @@ contract GreeterV2Proxiable is Initializable, OwnableUpgradeable, UUPSUpgradeabl
         greeting = _greeting;
     }
 
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
-
     function resetGreeting() public {
         greeting = "Hello World";
     }
+
+    function version() public pure returns (string memory) {
+        return "V3";
+    }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }
+

@@ -50,7 +50,11 @@ fi
 
 # Run JavaScript tests if any
 if [ ${#js_tests[@]} -gt 0 ]; then
-  ava "${js_tests[@]}" "${other_args[@]}"
+  if [ ${#other_args[@]} -gt 0 ]; then
+    ava "${js_tests[@]}" "${other_args[@]}"
+  else
+    ava "${js_tests[@]}"
+  fi
 fi
 
 # If no arguments, run all tests
