@@ -182,6 +182,11 @@ export default async (): Promise<Partial<SolidityHooks>> => {
           await writeValidations(context as HardhatRuntimeEnvironment, validations);
 
         }
+
+        // Inject AST into artifact files for Hardhat 3 compatibility with Foundry plugin
+        // In Hardhat 3, AST is stored in build-info output files, not in artifacts
+        // The Foundry upgrades plugin expects AST in artifact files, so we inject it here
+        await injectAstIntoArtifacts(artifactsDir, buildInfoDir);
       } catch (error: any) {
         if (error.code !== 'ENOENT') {
           throw error;
@@ -190,3 +195,101 @@ export default async (): Promise<Partial<SolidityHooks>> => {
     },
   };
 };
+
+/**
+ * Injects AST from build-info output files into artifact files for Hardhat 3 compatibility.
+ * This allows the Foundry upgrades plugin to find AST in artifact files as expected.
+ */
+async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir: string): Promise<void> {
+  const path = await import('path');
+  const fs = await import('fs/promises');
+
+  // Recursively find all artifact JSON files
+  async function findArtifactFiles(dir: string): Promise<string[]> {
+    const files: string[] = [];
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          files.push(...(await findArtifactFiles(fullPath)));
+        } else if (entry.isFile() && entry.name.endsWith('.json')) {
+          files.push(fullPath);
+        }
+      }
+    } catch (error: any) {
+      // Ignore errors (e.g., directory doesn't exist)
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+    return files;
+  }
+
+  const artifactFiles = await findArtifactFiles(path.join(artifactsDir, 'contracts'));
+
+  for (const artifactPath of artifactFiles) {
+    try {
+      const artifactContent = await fs.readFile(artifactPath, 'utf-8');
+      const artifact = JSON.parse(artifactContent);
+
+      // Only process Hardhat 3 artifacts that have buildInfoId and inputSourceName
+      // and don't already have AST
+      if (
+        artifact._format === 'hh3-artifact-1' &&
+        artifact.buildInfoId &&
+        artifact.inputSourceName &&
+        !artifact.ast
+      ) {
+        // Read the corresponding build-info output file
+        const buildInfoOutputPath = path.join(buildInfoDir, `${artifact.buildInfoId}.output.json`);
+
+        try {
+          const buildInfoOutputContent = await fs.readFile(buildInfoOutputPath, 'utf-8');
+          const buildInfoOutput = JSON.parse(buildInfoOutputContent);
+
+          // Extract AST from output.sources[inputSourceName].ast
+          const inputSourceName = artifact.inputSourceName;
+          const contractName = artifact.contractName;
+          
+          if (
+            buildInfoOutput.output?.sources?.[inputSourceName]?.ast
+          ) {
+            const ast = buildInfoOutput.output.sources[inputSourceName].ast;
+
+            // Inject AST into artifact
+            artifact.ast = ast;
+
+            // Also inject metadata if it's missing (needed for Foundry plugin)
+            // Metadata is stored in output.contracts[inputSourceName][contractName].metadata
+            // Metadata is a JSON string, but we need to parse it to an object for the Foundry plugin
+            if (!artifact.metadata && buildInfoOutput.output?.contracts?.[inputSourceName]?.[contractName]?.metadata) {
+              const metadataString = buildInfoOutput.output.contracts[inputSourceName][contractName].metadata;
+              try {
+                // Parse the metadata JSON string to an object
+                artifact.metadata = JSON.parse(metadataString);
+              } catch (err) {
+                // If parsing fails, store as string (fallback)
+                artifact.metadata = metadataString;
+              }
+            }
+
+            // Write the updated artifact back
+            await fs.writeFile(artifactPath, JSON.stringify(artifact, null, 2), 'utf-8');
+          }
+        } catch (err: any) {
+          // If build-info output file doesn't exist or AST is missing, skip this artifact
+          if (err.code !== 'ENOENT') {
+            // Log other errors but don't fail the whole process
+            console.warn(`Warning: Could not inject AST into artifact ${artifactPath}: ${err.message}`);
+          }
+        }
+      }
+    } catch (err: any) {
+      // If artifact file is invalid JSON or can't be read, skip it
+      if (err.code !== 'ENOENT') {
+        console.warn(`Warning: Could not process artifact ${artifactPath}: ${err.message}`);
+      }
+    }
+  }
+}
