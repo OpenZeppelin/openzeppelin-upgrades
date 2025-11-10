@@ -6,6 +6,7 @@ contract GapV2 {
     uint256 new1;
     uint256 new2;
     uint256[47] private __gap;
+    uint256 end;
 }
 
 contract GapV2_Bad {
@@ -13,4 +14,5 @@ contract GapV2_Bad {
     uint256 new1;
     uint256 new2;
     uint256[48] private __gap;
+    uint256 end;
 }
