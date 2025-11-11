@@ -5,6 +5,8 @@
 
 **Hardhat plugin for deploying and managing upgradeable contracts.** This package adds functions to your Hardhat scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
 
+> **⚠️ Migrating from Hardhat 2?** See the [Migration Guide](./MIGRATION.md) for breaking changes and how to update your code.
+
 ## Installation
 
 ```
@@ -12,17 +14,21 @@ npm install --save-dev @openzeppelin/hardhat-upgrades
 npm install --save-dev @nomicfoundation/hardhat-ethers ethers # peer dependencies
 ```
 
-And register the plugin in your [`hardhat.config.js`](https://hardhat.org/config/):
+And register the plugin in your [`hardhat.config.ts`](https://hardhat.org/config/):
 
-```js
-// Javascript
-require('@openzeppelin/hardhat-upgrades');
+```typescript
+import { defineConfig } from 'hardhat/config';
+import hardhatUpgrades from '@openzeppelin/hardhat-upgrades';
 
-// Typescript
-import '@openzeppelin/hardhat-upgrades';
+export default defineConfig({
+  plugins: [hardhatUpgrades],
+  // ... rest of config
+});
 ```
 
 ## Usage in scripts
+
+**Important:** Create a single network connection and share it across all operations. This ensures operations share the same context and state.
 
 ### Proxies
 
@@ -30,13 +36,23 @@ You can use this plugin in a [Hardhat script](https://hardhat.org/guides/scripts
 
 ```js
 // scripts/create-box.js
-const { ethers, upgrades } = require("hardhat");
+const hre = require("hardhat");
+const { upgrades } = require("@openzeppelin/hardhat-upgrades");
 
 async function main() {
+  // Create connection once and reuse for all operations
+  const connection = await hre.network.connect();
+  const { ethers } = connection;
+  const { deployProxy, upgradeProxy } = await upgrades(hre, connection);
+  
   const Box = await ethers.getContractFactory("Box");
-  const box = await upgrades.deployProxy(Box, [42]);
+  const box = await deployProxy(Box, [42]);
   await box.waitForDeployment();
   console.log("Box deployed to:", await box.getAddress());
+  
+  // Reuse the same connection for upgrades
+  const BoxV2 = await ethers.getContractFactory("BoxV2");
+  await upgradeProxy(await box.getAddress(), BoxV2);
 }
 
 main();
@@ -48,11 +64,16 @@ Then, in another script, you can use the `upgradeProxy` function to upgrade the 
 
 ```js
 // scripts/upgrade-box.js
-const { ethers, upgrades } = require("hardhat");
+const hre = require("hardhat");
+const { upgrades } = require("@openzeppelin/hardhat-upgrades");
 
 async function main() {
+  const connection = await hre.network.connect();
+  const { ethers } = connection;
+  const { upgradeProxy } = await upgrades(hre, connection);
+  
   const BoxV2 = await ethers.getContractFactory("BoxV2");
-  const box = await upgrades.upgradeProxy(BOX_ADDRESS, BoxV2);
+  await upgradeProxy(BOX_ADDRESS, BoxV2);
   console.log("Box upgraded");
 }
 
@@ -69,16 +90,21 @@ You can also use this plugin to deploy an upgradeable beacon for your contract w
 
 ```js
 // scripts/create-box.js
-const { ethers, upgrades } = require("hardhat");
+const hre = require("hardhat");
+const { upgrades } = require("@openzeppelin/hardhat-upgrades");
 
 async function main() {
+  const connection = await hre.network.connect();
+  const { ethers } = connection;
+  const { deployBeacon, deployBeaconProxy } = await upgrades(hre, connection);
+  
   const Box = await ethers.getContractFactory("Box");
 
-  const beacon = await upgrades.deployBeacon(Box);
+  const beacon = await deployBeacon(Box);
   await beacon.waitForDeployment();
   console.log("Beacon deployed to:", await beacon.getAddress());
 
-  const box = await upgrades.deployBeaconProxy(beacon, Box, [42]);
+  const box = await deployBeaconProxy(beacon, Box, [42]);
   await box.waitForDeployment();
   console.log("Box deployed to:", await box.getAddress());
 }
@@ -90,12 +116,16 @@ Then, in another script, you can use the `upgradeBeacon` function to upgrade the
 
 ```js
 // scripts/upgrade-box.js
-const { ethers, upgrades } = require("hardhat");
+const hre = require("hardhat");
+const { upgrades } = require("@openzeppelin/hardhat-upgrades");
 
 async function main() {
+  const connection = await hre.network.connect();
+  const { ethers } = connection;
+  const { upgradeBeacon } = await upgrades(hre, connection);
+  
   const BoxV2 = await ethers.getContractFactory("BoxV2");
-
-  await upgrades.upgradeBeacon(BEACON_ADDRESS, BoxV2);
+  await upgradeBeacon(BEACON_ADDRESS, BoxV2);
   console.log("Beacon upgraded");
 
   const box = BoxV2.attach(BOX_ADDRESS);
@@ -108,18 +138,31 @@ main();
 
 You can also use the plugin's functions from your Hardhat tests, in case you want to add tests for upgrading your contracts (which you should!). The API is the same as in scripts.
 
+**Important:** Share a single connection across all tests in a suite. Create the connection once in a `before` block or use top-level await (ESM) to ensure all operations share the same context.
+
 ### Proxies
 
 ```js
 const { expect } = require("chai");
+const hre = require("hardhat");
+const { upgrades } = require("@openzeppelin/hardhat-upgrades");
 
 describe("Box", function() {
+  let upgradesApi;
+  let ethers;
+  
+  before(async () => {
+    const connection = await hre.network.connect();
+    ({ ethers } = connection);
+    upgradesApi = await upgrades(hre, connection);
+  });
+
   it('works', async () => {
     const Box = await ethers.getContractFactory("Box");
     const BoxV2 = await ethers.getContractFactory("BoxV2");
   
-    const instance = await upgrades.deployProxy(Box, [42]);
-    const upgraded = await upgrades.upgradeProxy(await instance.getAddress(), BoxV2);
+    const instance = await upgradesApi.deployProxy(Box, [42]);
+    const upgraded = await upgradesApi.upgradeProxy(await instance.getAddress(), BoxV2);
 
     const value = await upgraded.value();
     expect(value.toString()).to.equal('42');
@@ -131,21 +174,47 @@ describe("Box", function() {
 
 ```js
 const { expect } = require("chai");
+const hre = require("hardhat");
+const { upgrades } = require("@openzeppelin/hardhat-upgrades");
 
 describe("Box", function() {
+  let upgradesApi;
+  let ethers;
+  
+  before(async () => {
+    const connection = await hre.network.connect();
+    ({ ethers } = connection);
+    upgradesApi = await upgrades(hre, connection);
+  });
+
   it('works', async () => {
     const Box = await ethers.getContractFactory("Box");
     const BoxV2 = await ethers.getContractFactory("BoxV2");
 
-    const beacon = await upgrades.deployBeacon(Box);
-    const instance = await upgrades.deployBeaconProxy(beacon, Box, [42]);
+    const beacon = await upgradesApi.deployBeacon(Box);
+    const instance = await upgradesApi.deployBeaconProxy(beacon, Box, [42]);
     
-    await upgrades.upgradeBeacon(beacon, BoxV2);
+    await upgradesApi.upgradeBeacon(beacon, BoxV2);
     const upgraded = BoxV2.attach(await instance.getAddress());
 
     const value = await upgraded.value();
     expect(value.toString()).to.equal('42');
   });
+});
+```
+
+## TypeScript Support
+
+Full TypeScript support is included. Import the factory functions with type safety:
+
+```typescript
+import { upgrades, defender } from '@openzeppelin/hardhat-upgrades';
+import type { HardhatUpgrades, DefenderHardhatUpgrades } from '@openzeppelin/hardhat-upgrades';
+
+task('deploy', async (args, hre) => {
+  const connection = await hre.network.connect();
+  const api: HardhatUpgrades = await upgrades(hre, connection);
+  // ...
 });
 ```
 
