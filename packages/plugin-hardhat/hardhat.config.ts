@@ -20,6 +20,7 @@ const override: SolcUserConfig = {
   },
 };
 
+
 const config: HardhatUserConfig = {
   plugins: [hardhatVerify, hardhatEthers, upgradesPlugin],
   solidity: {
@@ -45,6 +46,13 @@ const config: HardhatUserConfig = {
       'contracts/GapV2.sol': override,
       'contracts/GapV2_Bad.sol': override,
     },
+    npmFilesToBuild: [
+      "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol",
+      "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol",
+      "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
+      "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol",
+      "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol",
+    ]
   },
   paths: {
     tests: {
