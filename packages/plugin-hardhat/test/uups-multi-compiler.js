@@ -1,13 +1,18 @@
-const { getVersion, getContractNameAndRunValidation } = require('@openzeppelin/upgrades-core');
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
 
-const hre = require('hardhat');
-const { readValidations } = require('../dist/utils/validations');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { getVersion, getContractNameAndRunValidation } from '@openzeppelin/upgrades-core';
+import { readValidations } from '../dist/utils/validations.js';
+
+let upgrades;
 
 test.before(async t => {
-  const { ethers } = hre;
+  upgrades = await upgradesFactory(hre, connection);
   t.context.validations = await readValidations(hre);
-  t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
+  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
   t.context.GreeterMulti = await ethers.getContractFactory('GreeterMultiPragmaProxiable');
 });
 

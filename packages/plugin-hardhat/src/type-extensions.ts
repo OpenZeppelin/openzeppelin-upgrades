@@ -1,17 +1,9 @@
-import 'hardhat/types/runtime';
 import 'hardhat/types/config';
-
-import type { HardhatUpgrades, DefenderHardhatUpgrades } from '.';
-import { ContractFactory } from 'ethers';
+import 'hardhat/types/hre';
+import type { HardhatUpgrades, DefenderHardhatUpgrades } from './types.js';
+import type { ContractFactory } from 'ethers';
 
 export type ContractTypeOfFactory<F extends ContractFactory> = ReturnType<F['attach']> & ReturnType<F['deploy']>;
-
-declare module 'hardhat/types/runtime' {
-  export interface HardhatRuntimeEnvironment {
-    upgrades: HardhatUpgrades;
-    defender: DefenderHardhatUpgrades;
-  }
-}
 
 export interface HardhatDefenderConfig {
   apiKey: string;
@@ -31,5 +23,16 @@ declare module 'hardhat/types/config' {
   export interface HardhatConfig {
     defender?: HardhatDefenderConfig;
     namespacedCompileErrors?: NamespacedCompileErrorsRule;
+  }
+}
+
+declare module 'hardhat/types/hre' {
+  export interface HardhatRuntimeEnvironment {
+    upgrades: HardhatUpgrades;
+    defender: DefenderHardhatUpgrades;
+
+    // Internal caching properties (not part of public API)
+    _upgrades?: HardhatUpgrades;
+    _defender?: DefenderHardhatUpgrades;
   }
 }

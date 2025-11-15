@@ -1,14 +1,28 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
 
-const { ethers, upgrades } = require('hardhat');
-const { deploy } = require('../dist/utils/deploy');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import AccessManagerArtifact from '@openzeppelin/contracts/build/contracts/AccessManager.json' with { type: 'json' };
+
+let upgrades;
+
+import { deploy } from '../dist/utils/deploy.js';
 
 test.before(async t => {
-  t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2Proxiable');
-  t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3Proxiable');
+  upgrades = await upgradesFactory(hre, connection);
+  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2Proxiable.sol:GreeterV2Proxiable');
+  t.context.GreeterV3 = await ethers.getContractFactory('contracts/GreeterV3Proxiable.sol:GreeterV3Proxiable');
   t.context.AccessManagedProxy = await ethers.getContractFactory('AccessManagedProxy');
-  const AccessManager = await ethers.getContractFactory('AccessManager');
+  
+  // Import AccessManager from OpenZeppelin Contracts
+  const AccessManager = await ethers.getContractFactory(
+    AccessManagerArtifact.abi,
+    AccessManagerArtifact.bytecode
+  );
+  
   const [admin, anon] = await ethers.getSigners();
   t.context.admin = admin;
   t.context.anon = anon;
@@ -22,8 +36,9 @@ async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
 
 test('custom uups proxy factory and deploy function', async t => {
   const { Greeter, GreeterV2, GreeterV3, AccessManagedProxy, acMgr, admin, anon } = t.context;
+  const signer = await ethers.provider.getSigner();
 
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], {
+  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], {
     kind: 'uups',
     proxyExtraConstructorArgs: [await acMgr.getAddress()],
     deployFunction: deployWithExtraProxyArgs,

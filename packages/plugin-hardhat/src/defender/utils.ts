@@ -1,4 +1,6 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
+
 import {
   getChainId,
   hasCode,
@@ -11,13 +13,13 @@ import {
 import { Network, fromChainId } from '@openzeppelin/defender-sdk-base-client';
 import { TxOverrides } from '@openzeppelin/defender-sdk-deploy-client';
 
-import { HardhatDefenderConfig } from '../type-extensions';
-import { DefenderDeploy } from '../utils';
-import debug from '../utils/debug';
+import { HardhatDefenderConfig } from '../type-extensions.js';
+import { DefenderDeploy } from '../utils/index.js';
+import debug from '../utils/debug.js';
 import { Overrides } from 'ethers';
 
 import { promisify } from 'util';
-import { getDeployClient, getNetworkClient } from './client';
+import { getDeployClient, getNetworkClient } from './client.js';
 const sleep = promisify(setTimeout);
 
 export function getDefenderApiKey(hre: HardhatRuntimeEnvironment): HardhatDefenderConfig {
@@ -31,9 +33,10 @@ export function getDefenderApiKey(hre: HardhatRuntimeEnvironment): HardhatDefend
   return cfg;
 }
 
-export async function getNetwork(hre: HardhatRuntimeEnvironment): Promise<Network> {
-  const { provider } = hre.network;
-  const chainId = hre.network.config.chainId ?? (await getChainId(provider));
+export async function getNetwork(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): Promise<Network> {
+  const { networkConfig, ethers } = connection;
+  const provider = ethers.provider;
+  const chainId = networkConfig.chainId ?? (await getChainId(provider));
 
   const networkNames = await getNetworkNames(chainId, hre);
 
@@ -156,6 +159,7 @@ export function disableDefender(
 export async function getRemoteDeployment(
   hre: HardhatRuntimeEnvironment,
   remoteDeploymentId: string,
+  connection: NetworkConnection,
 ): Promise<RemoteDeployment | undefined> {
   const client = getDeployClient(hre);
   try {
@@ -181,15 +185,17 @@ export async function waitForDeployment(
 ): Promise<string | undefined> {
   const pollInterval = opts.pollingInterval ?? 5e3;
   let lastKnownTxHash: string | undefined;
+  const connection = await hre.network.connect();
+  const { ethers } = connection;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (await hasCode(hre.ethers.provider, address)) {
+    if (await hasCode(ethers.provider, address)) {
       debug('code in target address found', address);
       break;
     }
 
-    const response = await getRemoteDeployment(hre, remoteDeploymentId);
+    const response = await getRemoteDeployment(hre, remoteDeploymentId, connection);
     lastKnownTxHash = response?.txHash;
     const completed = await isDeploymentCompleted(address, remoteDeploymentId, response);
     if (completed) {

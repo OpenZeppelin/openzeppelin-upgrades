@@ -1,4 +1,4 @@
-import '../type-extensions';
+import '../type-extensions.js';
 import {
   getAdminAddress,
   getImplementationAddress,
@@ -6,11 +6,14 @@ import {
   isTransparentProxy,
 } from '@openzeppelin/upgrades-core';
 import { ContractFactory, ethers } from 'ethers';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { DefenderDeployOptions, UpgradeOptions } from '../utils';
-import { getNetwork, enableDefender } from './utils';
-import { deployImplForUpgrade } from '../prepare-upgrade';
-import { getDeployClient } from './client';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
+import { EthereumProvider } from 'hardhat/types/providers';
+
+import { DefenderDeployOptions, UpgradeOptions } from '../utils/index.js';
+import { getNetwork, enableDefender } from './utils.js';
+import { deployImplForUpgrade } from '../prepare-upgrade.js';
+import { getDeployClient } from './client.js';
 
 export interface UpgradeProposalResponse {
   proposalId: string;
@@ -31,36 +34,39 @@ export interface ProposalOptions extends UpgradeOptions, DefenderDeployOptions {
 export function makeProposeUpgradeWithApproval(
   hre: HardhatRuntimeEnvironment,
   defenderModule: boolean,
+  connection: NetworkConnection,
 ): ProposeUpgradeWithApprovalFunction {
   return async function proposeUpgradeWithApproval(proxyAddress, contractNameOrImplFactory, opts = {}) {
     opts = enableDefender(hre, defenderModule, opts);
 
     const client = getDeployClient(hre);
-    const network = await getNetwork(hre);
+    const network = await getNetwork(hre, connection);
+    const { ethers } = connection;
+    const provider = ethers.provider as unknown as EthereumProvider;
 
-    if (await isBeaconProxy(hre.network.provider, proxyAddress)) {
+    if (await isBeaconProxy(provider, proxyAddress)) {
       throw new Error(`Beacon proxy is not currently supported with defender.proposeUpgradeWithApproval()`);
     } else {
       // try getting the implementation address so that it will give an error if it's not a transparent/uups proxy
-      await getImplementationAddress(hre.network.provider, proxyAddress);
+      await getImplementationAddress(provider, proxyAddress);
     }
 
     let proxyAdmin = undefined;
-    if (await isTransparentProxy(hre.network.provider, proxyAddress)) {
+    if (await isTransparentProxy(provider, proxyAddress)) {
       // use the erc1967 admin address as the proxy admin
-      proxyAdmin = await getAdminAddress(hre.network.provider, proxyAddress);
+      proxyAdmin = await getAdminAddress(provider, proxyAddress);
     }
 
     const implFactory =
       typeof contractNameOrImplFactory === 'string'
-        ? await hre.ethers.getContractFactory(contractNameOrImplFactory)
+        ? await ethers.getContractFactory(contractNameOrImplFactory)
         : contractNameOrImplFactory;
     const abi = implFactory.interface.formatJson();
 
     const deployedImpl = await deployImplForUpgrade(hre, proxyAddress, implFactory, {
       getTxResponse: true,
       ...opts,
-    });
+    }, connection);
 
     const txResponse = deployedImpl.txResponse;
     const newImplementation = deployedImpl.impl;

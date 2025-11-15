@@ -1,12 +1,19 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
 
-const { ethers, upgrades } = require('hardhat');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+let upgrades;
+
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterV2Proxiable = await ethers.getContractFactory('contracts/GreeterV2Proxiable.sol:GreeterV2Proxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
   t.context.GreeterStorageConflict = await ethers.getContractFactory('GreeterStorageConflict');
   t.context.GreeterStorageConflictProxiable = await ethers.getContractFactory('GreeterStorageConflictProxiable');
@@ -155,14 +162,16 @@ test('validate upgrade transparent - incompatible storage - forced', async t => 
 test('validate upgrade uups - happy path', async t => {
   const { GreeterProxiable, GreeterV2Proxiable } = t.context;
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hola mundo!'], { kind: 'uups' });
+  const signer = await ethers.provider.getSigner();
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!'], { kind: 'uups' });
   await upgrades.validateUpgrade(greeter, GreeterV2Proxiable);
 });
 
 test('validate upgrade uups - incompatible storage', async t => {
   const { GreeterProxiable, GreeterStorageConflictProxiable } = t.context;
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hola mundo!'], { kind: 'uups' });
+  const signer = await ethers.provider.getSigner();
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!'], { kind: 'uups' });
   await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterStorageConflictProxiable), {
     message: /(New storage layout is incompatible)/,
   });
@@ -171,14 +180,16 @@ test('validate upgrade uups - incompatible storage', async t => {
 test('validate upgrade uups - incompatible storage - forced', async t => {
   const { GreeterProxiable, GreeterStorageConflictProxiable } = t.context;
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hola mundo!'], { kind: 'uups' });
+  const signer = await ethers.provider.getSigner();
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!'], { kind: 'uups' });
   await upgrades.validateUpgrade(greeter, GreeterStorageConflictProxiable, { unsafeSkipStorageCheck: true });
 });
 
 test('validate upgrade uups - wrong kind', async t => {
   const { GreeterProxiable, GreeterV2 } = t.context;
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hola mundo!']);
+  const signer = await ethers.provider.getSigner();
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!']);
   await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterV2), {
     message: /(Requested an upgrade of kind transparent but proxy is uups)/,
   });
@@ -187,7 +198,8 @@ test('validate upgrade uups - wrong kind', async t => {
 test('validate upgrade uups - no upgrade function', async t => {
   const { GreeterProxiable, GreeterV2 } = t.context;
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hola mundo!']);
+  const signer = await ethers.provider.getSigner();
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!']);
   await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterV2, { kind: 'uups' }), {
     message: getUpgradeUnsafeRegex('GreeterV2'),
   });

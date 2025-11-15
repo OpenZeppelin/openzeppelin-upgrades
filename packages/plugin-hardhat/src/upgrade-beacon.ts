@@ -1,4 +1,6 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
+
 import type { ContractFactory, Contract } from 'ethers';
 
 import {
@@ -9,8 +11,8 @@ import {
   UpgradeBeaconOptions,
   attach,
   getSigner,
-} from './utils';
-import { disableDefender } from './defender/utils';
+} from './utils/index.js';
+import { disableDefender } from './defender/utils.js';
 
 export type UpgradeBeaconFunction = (
   beacon: ContractAddressOrInstance,
@@ -18,14 +20,14 @@ export type UpgradeBeaconFunction = (
   opts?: UpgradeBeaconOptions,
 ) => Promise<Contract>;
 
-export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, defenderModule: boolean): UpgradeBeaconFunction {
+export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): UpgradeBeaconFunction {
   return async function upgradeBeacon(beacon, ImplFactory, opts: UpgradeBeaconOptions = {}) {
     disableDefender(hre, defenderModule, opts, upgradeBeacon.name);
 
     const beaconAddress = await getContractAddress(beacon);
-    const { impl: nextImpl } = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress);
+    const { impl: nextImpl } = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress, connection);
 
-    const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, getSigner(ImplFactory.runner));
+    const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(connection, getSigner(ImplFactory.runner));
     const beaconContract = attach(UpgradeableBeaconFactory, beaconAddress);
 
     const overrides = opts.txOverrides ? [opts.txOverrides] : [];

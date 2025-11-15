@@ -1,9 +1,12 @@
-const test = require('ava');
-const sinon = require('sinon');
-const proxyquire = require('proxyquire').noCallThru();
+import test from 'ava';
+import hre from 'hardhat';
 
-const { defender } = require('hardhat');
-const hre = require('hardhat');
+const connection = await hre.network.connect();
+import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+import sinon from 'sinon';
+import esmock from 'esmock';
+
+const defender = await defenderFactory(hre, connection);
 
 const APPROVAL_PROCESS_ID = 'abc-def';
 const MULTISIG_ADDRESS = '0x123';
@@ -17,12 +20,13 @@ test.beforeEach(async t => {
     getUpgradeApprovalProcess: sinon.stub(),
   };
 
-  const mockedGetApprovalProcess = proxyquire('../dist/defender/get-approval-process', {
-    './utils': {
-      ...require('../dist/defender/utils'),
+  const { getNetwork: _getNetwork, ...otherDefenderUtils } = await import('../dist/defender/utils.js');
+  const mockedGetApprovalProcess = await esmock('../dist/defender/get-approval-process.js', {
+    '../dist/defender/utils.js': {
+      ...otherDefenderUtils,
       getNetwork: () => t.context.fakeChainId,
     },
-    './client': {
+    '../dist/defender/client.js': {
       getDeployClient: () => t.context.fakeDefenderClient,
     },
   });

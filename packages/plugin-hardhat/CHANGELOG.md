@@ -1,5 +1,7 @@
 # Changelog
 
+## 3.10.0 (2025-XX-YY)
+- Update hardhat, hardhat-ethers and hardhat-verify to support to hardhat v3
 
 ## 3.9.1 (2025-06-30)
 

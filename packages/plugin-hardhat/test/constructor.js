@@ -1,19 +1,26 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
 
-const { ethers, upgrades } = require('hardhat');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+let upgrades;
+
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.WithConstructor = await ethers.getContractFactory('WithConstructor');
 });
 
 test('new proxy - do not redeploy with same args', async t => {
   const { WithConstructor } = t.context;
 
-  const proxy1 = await upgrades.deployProxy(WithConstructor, { constructorArgs: [17] });
+  const proxy1 = await upgrades.deployProxy(WithConstructor, [], { constructorArgs: [17], initializer: false });
   const implementation1 = await upgrades.erc1967.getImplementationAddress(await proxy1.getAddress());
   t.is(await proxy1.value(), 17n);
 
-  const proxy2 = await upgrades.deployProxy(WithConstructor, { constructorArgs: [17] });
+  const proxy2 = await upgrades.deployProxy(WithConstructor, [], { constructorArgs: [17], initializer: false });
   const implementation2 = await upgrades.erc1967.getImplementationAddress(await proxy2.getAddress());
   t.is(await proxy2.value(), 17n);
 
@@ -23,11 +30,11 @@ test('new proxy - do not redeploy with same args', async t => {
 test('new proxy - redeploy with different args', async t => {
   const { WithConstructor } = t.context;
 
-  const proxy1 = await upgrades.deployProxy(WithConstructor, { constructorArgs: [17] });
+  const proxy1 = await upgrades.deployProxy(WithConstructor, [], { constructorArgs: [17], initializer: false });
   const implementation1 = await upgrades.erc1967.getImplementationAddress(await proxy1.getAddress());
   t.is(await proxy1.value(), 17n);
 
-  const proxy2 = await upgrades.deployProxy(WithConstructor, { constructorArgs: [42] });
+  const proxy2 = await upgrades.deployProxy(WithConstructor, [], { constructorArgs: [42], initializer: false });
   const implementation2 = await upgrades.erc1967.getImplementationAddress(await proxy2.getAddress());
   t.is(await proxy2.value(), 42n);
 
@@ -37,11 +44,11 @@ test('new proxy - redeploy with different args', async t => {
 test('upgrade - do not redeploy with same args', async t => {
   const { WithConstructor } = t.context;
 
-  const proxy1 = await upgrades.deployProxy(WithConstructor, { constructorArgs: [17] });
+  const proxy1 = await upgrades.deployProxy(WithConstructor, [], { constructorArgs: [17], initializer: false });
   const implementation1 = await upgrades.erc1967.getImplementationAddress(await proxy1.getAddress());
   t.is(await proxy1.value(), 17n);
 
-  const proxy2 = await upgrades.upgradeProxy(proxy1, WithConstructor, { constructorArgs: [17] });
+  const proxy2 = await upgrades.upgradeProxy(proxy1, WithConstructor, { constructorArgs: [17], initializer: false });
   const implementation2 = await upgrades.erc1967.getImplementationAddress(await proxy2.getAddress());
   t.is(await proxy2.value(), 17n);
 
@@ -51,11 +58,11 @@ test('upgrade - do not redeploy with same args', async t => {
 test('upgrade - redeploy with different args', async t => {
   const { WithConstructor } = t.context;
 
-  const proxy1 = await upgrades.deployProxy(WithConstructor, { constructorArgs: [17] });
+  const proxy1 = await upgrades.deployProxy(WithConstructor, [], { constructorArgs: [17], initializer: false });
   const implementation1 = await upgrades.erc1967.getImplementationAddress(await proxy1.getAddress());
   t.is(await proxy1.value(), 17n);
 
-  const proxy2 = await upgrades.upgradeProxy(proxy1, WithConstructor, { constructorArgs: [42] });
+  const proxy2 = await upgrades.upgradeProxy(proxy1, WithConstructor, { constructorArgs: [42], initializer: false });
   const implementation2 = await upgrades.erc1967.getImplementationAddress(await proxy2.getAddress());
   t.is(await proxy2.value(), 42n);
 

@@ -1,5 +1,7 @@
 import type { ethers, ContractFactory } from 'ethers';
-import { CompilerInput, CompilerOutputContract, HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
+import type { CompilerOutputContract } from 'hardhat/types/solidity';
 
 import { parseFullyQualifiedName } from 'hardhat/utils/contract-names';
 
@@ -11,39 +13,41 @@ import {
 } from '@openzeppelin/defender-sdk-deploy-client';
 import { getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
 
-import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json';
+import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json' with { type: 'json' };
 
-import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
-import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
-import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
-import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
+import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json' with { type: 'json' };
+import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json' with { type: 'json' };
+import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json' with { type: 'json' };
+import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json' with { type: 'json' };
 
-import { getNetwork, parseTxOverrides } from './utils';
-import { DefenderDeployOptions, UpgradeOptions, EthersDeployOptions, DefenderDeployment } from '../utils';
-import debug from '../utils/debug';
-import { getDeployData } from '../utils/deploy-impl';
+import { getNetwork, parseTxOverrides } from './utils.js';
+import { DefenderDeployOptions, UpgradeOptions, EthersDeployOptions, DefenderDeployment } from '../utils/index.js';
+import debug from '../utils/debug.js';
+import { getDeployData } from '../utils/deploy-impl.js';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
-import { getDeployClient } from './client';
+import { getDeployClient } from './client.js';
+import { getCombinedBuildInfo, type CombinedBuildInfo } from '../utils/artifacts.js';
 
 const deployableProxyContracts = [ERC1967Proxy, BeaconProxy, UpgradeableBeacon, TransparentUpgradeableProxy];
 
-interface ReducedBuildInfo {
-  _format: string;
-  id: string;
-  solcVersion: string;
-  solcLongVersion: string;
-  input: CompilerInput;
-  output: {
-    contracts: any;
-  };
+/**
+ * Removes the 'project/' prefix from a fully qualified name if present.
+ * In Hardhat 3, validation data uses 'project/' prefix for local contracts
+ * (e.g., "project/contracts/Greeter.sol:Greeter"), but the artifact system
+ * expects names without this prefix (e.g., "contracts/Greeter.sol:Greeter").
+ */
+function removeProjectPrefix(fullyQualifiedName: string): string {
+  const prefix = 'project/';
+  return fullyQualifiedName.startsWith(prefix) ? fullyQualifiedName.slice(prefix.length) : fullyQualifiedName;
 }
 
 interface ContractInfo {
   sourceName: string;
   contractName: string;
-  buildInfo: ReducedBuildInfo;
+  buildInfo: CombinedBuildInfo;
   libraries?: DeployRequestLibraries;
   constructorBytecode: string;
+  inputSourceName?: string; // Hardhat 3: source name with project/ prefix for buildInfo access
 }
 
 type CompilerOutputWithMetadata = CompilerOutputContract & {
@@ -58,13 +62,16 @@ export async function defenderDeploy(
   opts: UpgradeOptions & EthersDeployOptions & DefenderDeployOptions,
   ...args: unknown[]
 ): Promise<DefenderDeployment> {
+  // Create connection if not available in context
+  const connection = await hre.network.connect();
+  
   const client = getDeployClient(hre);
 
   // Override constructor arguments in options with the ones passed as arguments to this function.
   // The ones in the options are for implementation contracts only, while this function
   // can be used to deploy proxies as well.
-  const contractInfo = await getContractInfo(hre, factory, { ...opts, constructorArgs: args });
-  const network = await getNetwork(hre);
+  const contractInfo = await getContractInfo(hre, factory, { ...opts, constructorArgs: args }, connection);
+  const network = await getNetwork(hre, connection);
   debug(`Network ${network}`);
 
   const verifySourceCode = opts.verifySourceCode ?? true;
@@ -148,8 +155,10 @@ export async function defenderDeploy(
     }
   }
 
-  const txResponse = (await hre.ethers.provider.getTransaction(deploymentResponse.txHash)) ?? undefined;
-  const checksumAddress = hre.ethers.getAddress(deploymentResponse.address);
+  const { ethers } = connection;
+
+  const txResponse = (await ethers.provider.getTransaction(deploymentResponse.txHash)) ?? undefined;
+  const checksumAddress = ethers.getAddress(deploymentResponse.address);
   return {
     address: checksumAddress,
     txHash: deploymentResponse.txHash,
@@ -162,13 +171,14 @@ async function getContractInfo(
   hre: HardhatRuntimeEnvironment,
   factory: ethers.ContractFactory,
   opts: UpgradeOptions & Required<Pick<UpgradeOptions, 'constructorArgs'>>,
+  connection: NetworkConnection,
 ): Promise<ContractInfo> {
   let fullContractName, runValidation;
   let libraries: DeployRequestLibraries | undefined;
   let constructorBytecode: string;
   try {
     // Get fully qualified contract name and link references from validations
-    const deployData = await getDeployData(hre, factory, opts);
+    const deployData = await getDeployData(hre, factory, opts, connection);
     constructorBytecode = deployData.encodedArgs;
     [fullContractName, runValidation] = getContractNameAndRunValidation(deployData.validations, deployData.version);
     debug(`Contract ${fullContractName}`);
@@ -210,9 +220,17 @@ async function getContractInfo(
     throw e;
   }
 
-  const { sourceName, contractName } = parseFullyQualifiedName(fullContractName);
+  // Remove 'project/' prefix for artifact resolution (Hardhat 3 compatibility)
+  const artifactName = removeProjectPrefix(fullContractName);
+  const { sourceName, contractName } = parseFullyQualifiedName(artifactName);
+  
+  // Read the artifact to get inputSourceName which is needed for buildInfo access
+  const artifact = await hre.artifacts.readArtifact(artifactName);
+  const inputSourceName = artifact.inputSourceName || sourceName; // fallback for Hardhat 2
+  
   // Get the build-info file corresponding to the fully qualified contract name
-  const buildInfo = await hre.artifacts.getBuildInfo(fullContractName);
+  const buildInfo = await getCombinedBuildInfo(hre.artifacts, artifactName);
+
   if (buildInfo === undefined) {
     throw new UpgradesError(
       `Could not get Hardhat compilation artifact for contract ${fullContractName}`,
@@ -220,15 +238,17 @@ async function getContractInfo(
     );
   }
 
-  return { sourceName, contractName, buildInfo, libraries, constructorBytecode };
+  return { sourceName, contractName, buildInfo, libraries, constructorBytecode, inputSourceName };
 }
 
 /**
  * Get the SPDX license identifier from the contract metadata without validating it.
  */
 function getSpdxLicenseIdentifier(contractInfo: ContractInfo): string | undefined {
+  // Use inputSourceName for buildInfo access (Hardhat 3 has project/ prefix), fallback to sourceName
+  const buildInfoSourceName = contractInfo.inputSourceName || contractInfo.sourceName;
   const compilerOutput: CompilerOutputWithMetadata =
-    contractInfo.buildInfo.output.contracts[contractInfo.sourceName][contractInfo.contractName];
+    contractInfo.buildInfo.output.contracts[buildInfoSourceName][contractInfo.contractName];
 
   const metadataString = compilerOutput.metadata;
   if (metadataString === undefined) {
@@ -240,7 +260,8 @@ function getSpdxLicenseIdentifier(contractInfo: ContractInfo): string | undefine
 
   const metadata = JSON.parse(metadataString);
 
-  return metadata.sources[contractInfo.sourceName].license;
+  // Metadata sources are also keyed by inputSourceName in Hardhat 3
+  return metadata.sources[buildInfoSourceName].license;
 }
 
 /**

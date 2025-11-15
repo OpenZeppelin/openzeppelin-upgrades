@@ -1,14 +1,17 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
 
-const { ethers, upgrades } = require('hardhat');
-const hre = require('hardhat');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
+import { deploy } from '../dist/utils/deploy.js'; // ← mudou de ../dist/utils.js para ../dist/utils/deploy.js
+import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json' with { type: 'json' };
 
-const { fetchOrDeployAdmin } = require('@openzeppelin/upgrades-core');
-const { deploy } = require('../dist/utils');
-
-const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
+let upgrades;
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.ProxyAdmin = await ethers.getContractFactory(ProxyAdmin.abi, ProxyAdmin.bytecode);
 });

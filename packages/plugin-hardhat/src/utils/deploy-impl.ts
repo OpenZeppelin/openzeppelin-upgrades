@@ -10,12 +10,14 @@ import {
   Version,
 } from '@openzeppelin/upgrades-core';
 import type { ContractFactory, ethers } from 'ethers';
-import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
-import { deploy } from './deploy';
-import { GetTxResponse, DefenderDeployOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options';
-import { getRemoteDeployment } from '../defender/utils';
-import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl';
-import { readValidations } from './validations';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
+import type { EthereumProvider } from 'hardhat/types/providers';
+import { deploy } from './deploy.js';
+import { GetTxResponse, DefenderDeployOptions, StandaloneOptions, UpgradeOptions, withDefaults } from './options.js';
+import { getRemoteDeployment } from '../defender/utils.js';
+import { validateBeaconImpl, validateProxyImpl, validateImpl } from './validate-impl.js';
+import { readValidations } from './validations.js';
 
 export interface DeployedImpl {
   impl: string;
@@ -40,9 +42,21 @@ export async function getDeployData(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
+  connection: NetworkConnection,
 ): Promise<DeployData> {
-  const { provider } = hre.network;
+  const { ethers } = connection;
+
+  // the type HardhatEthersProvider; has method send(method: string, params?: any[]): Promise<any>;
+  // EthereumProvider have a bunch of send methods just like the one above, like this:
+  // send(method: 'anvil_metadata', params: []): Promise<HardhatMetadata>
+  // so we can make the cast safely
+  const provider = ethers.provider as unknown as EthereumProvider;
+
   const validations = await readValidations(hre);
+  
+  // bytecode can be a string or BytesLike; log length if present
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const byteLen: any = (ImplFactory as any)?.bytecode?.length;
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
   const encodedArgs = ImplFactory.interface.encodeDeploy(opts.constructorArgs);
   const version = getVersion(unlinkedBytecode, ImplFactory.bytecode, encodedArgs);
@@ -56,10 +70,15 @@ export async function deployUpgradeableImpl(
   ImplFactory: ContractFactory,
   opts: StandaloneOptions,
   currentImplAddress?: string,
+  connection?: NetworkConnection,
 ): Promise<DeployedImpl> {
-  const deployData = await getDeployData(hre, ImplFactory, opts);
+  // If connection not provided, create one (for backwards compatibility during migration)
+  if (!connection) {
+    connection = await hre.network.connect();
+  }
+  const deployData = await getDeployData(hre, ImplFactory, opts, connection);
   await validateImpl(deployData, opts, currentImplAddress);
-  return await deployImpl(hre, deployData, ImplFactory, opts);
+  return await deployImpl(hre, deployData, ImplFactory, opts, connection);
 }
 
 export async function deployProxyImpl(
@@ -67,14 +86,19 @@ export async function deployProxyImpl(
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
   proxyAddress?: string,
+  connection?: NetworkConnection,
 ): Promise<DeployedProxyImpl> {
-  const deployData = await getDeployData(hre, ImplFactory, opts);
+  // If connection not provided, create one (for backwards compatibility during migration)
+  if (!connection) {
+    connection = await hre.network.connect();
+  }
+  const deployData = await getDeployData(hre, ImplFactory, opts, connection);
   await validateProxyImpl(deployData, opts, proxyAddress);
   if (opts.kind === undefined) {
     throw new Error('Broken invariant: Proxy kind is undefined');
   }
   return {
-    ...(await deployImpl(hre, deployData, ImplFactory, opts)),
+    ...(await deployImpl(hre, deployData, ImplFactory, opts, connection)),
     kind: opts.kind,
   };
 }
@@ -84,10 +108,15 @@ export async function deployBeaconImpl(
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
   beaconAddress?: string,
+  connection?: NetworkConnection,
 ): Promise<DeployedImpl> {
-  const deployData = await getDeployData(hre, ImplFactory, opts);
+  // If connection not provided, create one (for backwards compatibility during migration)
+  if (!connection) {
+    connection = await hre.network.connect();
+  }
+  const deployData = await getDeployData(hre, ImplFactory, opts, connection);
   await validateBeaconImpl(deployData, opts, beaconAddress);
-  return await deployImpl(hre, deployData, ImplFactory, opts);
+  return await deployImpl(hre, deployData, ImplFactory, opts, connection);
 }
 
 async function deployImpl(
@@ -95,6 +124,7 @@ async function deployImpl(
   deployData: DeployData,
   ImplFactory: ContractFactory,
   opts: UpgradeOptions & GetTxResponse & DefenderDeployOptions,
+  connection: NetworkConnection,
 ): Promise<DeployedImpl> {
   const layout = deployData.layout;
 
@@ -129,15 +159,18 @@ async function deployImpl(
     },
     opts,
     merge,
-    remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId),
+    remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId, connection),
   );
+
+  const { ethers } = connection;
+  const provider = ethers.provider;
 
   let txResponse;
   if (opts.getTxResponse) {
     if ('deployTransaction' in deployment) {
       txResponse = deployment.deployTransaction ?? undefined;
     } else if (deployment.txHash !== undefined) {
-      txResponse = (await hre.ethers.provider.getTransaction(deployment.txHash)) ?? undefined;
+      txResponse = (await provider.getTransaction(deployment.txHash)) ?? undefined;
     }
   }
 

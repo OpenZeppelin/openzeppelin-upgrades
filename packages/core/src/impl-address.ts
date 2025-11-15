@@ -20,19 +20,28 @@ export class InvalidBeacon extends UpgradesError {}
  * @throws {InvalidBeacon} If the implementation() function could not be called or does not return an address.
  */
 export async function getImplementationAddressFromBeacon(
-  provider: EthereumProvider,
+  provider: EthereumProvider, // v2 may differ from v3
   beaconAddress: string,
 ): Promise<string> {
-  const impl = await callOptionalSignature(provider, beaconAddress, 'implementation()');
-  let parsedImplAddress;
-  if (impl !== undefined) {
-    parsedImplAddress = parseAddress(impl);
-  }
+  try {
+    const impl = await callOptionalSignature(provider, beaconAddress, 'implementation()');
 
-  if (parsedImplAddress === undefined) {
-    throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
-  } else {
-    return parsedImplAddress;
+    let parsedImplAddress;
+    if (impl !== undefined) {
+      try {
+        parsedImplAddress = parseAddress(impl);
+      } catch (parseErr) {
+        throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
+      }
+    }
+
+    if (parsedImplAddress === undefined) {
+      throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
+    } else {
+      return parsedImplAddress;
+    }
+  } catch (err) {
+    throw err;
   }
 }
 

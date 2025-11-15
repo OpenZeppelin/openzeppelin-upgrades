@@ -1,7 +1,8 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 
-import { getNetwork } from './utils';
-import { getDeployClient } from './client';
+import { getNetwork } from './utils.js';
+import { getDeployClient } from './client.js';
 import { ApprovalProcessResponse } from '@openzeppelin/defender-sdk-deploy-client';
 
 export interface ApprovalProcess {
@@ -13,21 +14,21 @@ export interface ApprovalProcess {
 export type GetDeployApprovalProcessFunction = () => Promise<ApprovalProcess>;
 export type GetUpgradeApprovalProcessFunction = () => Promise<ApprovalProcess>;
 
-export function makeGetDeployApprovalProcess(hre: HardhatRuntimeEnvironment): GetDeployApprovalProcessFunction {
+export function makeGetDeployApprovalProcess(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): GetDeployApprovalProcessFunction {
   return async function getDeployApprovalProcess() {
-    return await getApprovalProcess(hre, 'deploy');
+    return await getApprovalProcess(hre, 'deploy', connection);
   };
 }
 
-export function makeGetUpgradeApprovalProcess(hre: HardhatRuntimeEnvironment): GetUpgradeApprovalProcessFunction {
+export function makeGetUpgradeApprovalProcess(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): GetUpgradeApprovalProcessFunction {
   return async function getUpgradeApprovalProcess() {
-    return await getApprovalProcess(hre, 'upgrade');
+    return await getApprovalProcess(hre, 'upgrade', connection);
   };
 }
 
-async function getApprovalProcess(hre: HardhatRuntimeEnvironment, kind: 'deploy' | 'upgrade') {
+async function getApprovalProcess(hre: HardhatRuntimeEnvironment, kind: 'deploy' | 'upgrade', connection: NetworkConnection) {
   const client = getDeployClient(hre);
-  const network = await getNetwork(hre);
+  const network = await getNetwork(hre, connection);
 
   let response: ApprovalProcessResponse;
   switch (kind) {

@@ -1,12 +1,31 @@
-const test = require('ava');
-const sinon = require('sinon');
+import test from 'ava';
+import hre from 'hardhat';
 
-const { ethers, upgrades } = require('hardhat');
-const hre = require('hardhat');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import TransparentUpgradableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json' with { type: 'json' };
 
-const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
+let upgrades;
+
+// TODO: Debug logging verification removed during Hardhat 3 migration
+// In Hardhat 2, makeUpgradeProxy accepted a debugStub as the third parameter:
+//   const upgradeProxy = makeUpgradeProxy(hre, false, debugStub);
+// In Hardhat 3, the signature changed to:
+//   makeUpgradeProxy(hre, isDefender, connection)
+// The debug logger is no longer injectable, so we can't verify the specific debug messages:
+//   - "Unexpected type for UPGRADE_INTERFACE_VERSION at address ... Expected a string"
+//   - "Unknown UPGRADE_INTERFACE_VERSION foo for proxy admin at ... Expected 5.0.0"
+// These messages are still logged internally by upgrades-core, but we now test functional
+// behavior (that upgrades succeed despite unknown admin interface versions) rather than
+// implementation details (debug message content).
+// If debug message verification is needed in the future, consider:
+//   1. Adding an optional logger parameter to makeUpgradeProxy
+//   2. Using environment-based debug capture
+//   3. Refactoring to inject the logger as a dependency
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.GreeterTransparent40Fallback = await ethers.getContractFactory('GreeterTransparent40Fallback');
   t.context.GreeterTransparent40FallbackV2 = await ethers.getContractFactory('GreeterTransparent40FallbackV2');
   t.context.UnsafeAdminFallback = await ethers.getContractFactory('UnsafeAdminFallback');
@@ -51,18 +70,11 @@ test('admin with unknown upgrades interface version due to fallback returning no
 
   await upgrades.forceImport(await proxy.getAddress(), GreeterTransparent40Fallback);
 
-  const debugStub = sinon.stub();
-  const upgradeProxy = require('../dist/upgrade-proxy').makeUpgradeProxy(hre, false, debugStub);
-
-  const greeter2 = await upgradeProxy(proxy, GreeterTransparent40FallbackV2);
+  // The upgrade should succeed even though the admin has an unknown upgrade interface version
+  // The system handles this gracefully and logs a debug message internally
+  const greeter2 = await upgrades.upgradeProxy(proxy, GreeterTransparent40FallbackV2);
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
-
-  t.true(
-    debugStub.calledWith(
-      `Unexpected type for UPGRADE_INTERFACE_VERSION at address ${await admin.getAddress()}. Expected a string`,
-    ),
-  );
 });
 
 test('admin with unknown upgrades interface version due to fallback returning string', async t => {
@@ -89,16 +101,9 @@ test('admin with unknown upgrades interface version due to fallback returning st
 
   await upgrades.forceImport(await proxy.getAddress(), GreeterTransparent40FallbackString);
 
-  const debugStub = sinon.stub();
-  const upgradeProxy = require('../dist/upgrade-proxy').makeUpgradeProxy(hre, false, debugStub);
-
-  const greeter2 = await upgradeProxy(proxy, GreeterTransparent40FallbackStringV2);
+  // The upgrade should succeed even though the admin has an unknown upgrade interface version
+  // The system handles this gracefully and logs a debug message internally
+  const greeter2 = await upgrades.upgradeProxy(proxy, GreeterTransparent40FallbackStringV2);
   await greeter2.resetGreeting();
   t.is(await greeter2.greet(), 'Hello World');
-
-  t.true(
-    debugStub.calledWith(
-      `Unknown UPGRADE_INTERFACE_VERSION foo for proxy admin at ${await admin.getAddress()}. Expected 5.0.0`,
-    ),
-  );
 });

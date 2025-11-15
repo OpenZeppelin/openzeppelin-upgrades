@@ -1,4 +1,5 @@
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
 import type { ContractFactory } from 'ethers';
 
 import {
@@ -21,11 +22,11 @@ import {
   deployProxyImpl,
   getInitializerData,
   getSigner,
-} from './utils';
-import { enableDefender } from './defender/utils';
-import { getContractInstance } from './utils/contract-instance';
-import { getInitialOwner } from './utils/initial-owner';
-import { ContractTypeOfFactory } from './type-extensions';
+} from './utils/index.js';
+import { enableDefender } from './defender/utils.js';
+import { getContractInstance } from './utils/contract-instance.js';
+import { getInitialOwner } from './utils/initial-owner.js';
+import { ContractTypeOfFactory } from './type-extensions.js';
 
 export interface DeployFunction {
   <F extends ContractFactory>(
@@ -36,7 +37,7 @@ export interface DeployFunction {
   <F extends ContractFactory>(ImplFactory: F, opts?: DeployProxyOptions): Promise<ContractTypeOfFactory<F>>;
 }
 
-export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: boolean): DeployFunction {
+export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): DeployFunction {
   return async function deployProxy<F extends ContractFactory>(
     ImplFactory: F,
     args: unknown[] | DeployProxyOptions = [],
@@ -49,10 +50,12 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
 
     opts = enableDefender(hre, defenderModule, opts);
 
-    const { provider } = hre.network;
+    const { ethers } = connection;
+    const provider = ethers.provider;
+
     const manifest = await Manifest.forNetwork(provider);
 
-    const { impl, kind } = await deployProxyImpl(hre, ImplFactory, opts);
+    const { impl, kind } = await deployProxyImpl(hre, ImplFactory, opts, undefined, connection);
 
     const contractInterface = ImplFactory.interface;
     const data = getInitializerData(contractInterface, args, opts.initializer);
@@ -85,7 +88,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
           throw new InitialOwnerUnsupportedKindError(kind);
         }
 
-        const ProxyFactory = opts.proxyFactory || (await getProxyFactory(hre, signer));
+        const ProxyFactory = opts.proxyFactory || (await getProxyFactory(connection, signer));
         proxyDeployment = Object.assign({ kind }, await deployFn(hre, opts, ProxyFactory, impl, data));
         break;
       }
@@ -102,7 +105,7 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: 
         }
 
         const TransparentUpgradeableProxyFactory =
-          opts.proxyFactory || (await getTransparentUpgradeableProxyFactory(hre, signer));
+          opts.proxyFactory || (await getTransparentUpgradeableProxyFactory(connection, signer));
         proxyDeployment = Object.assign(
           { kind },
           await deployFn(hre, opts, TransparentUpgradeableProxyFactory, impl, initialOwner, data),

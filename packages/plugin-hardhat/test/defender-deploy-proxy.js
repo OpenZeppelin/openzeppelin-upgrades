@@ -1,36 +1,56 @@
-const test = require('ava');
-const proxyquire = require('proxyquire').noCallThru();
-const sinon = require('sinon');
+import test from 'ava';
+import hre from 'hardhat';
 
-const hre = require('hardhat');
-const { ethers } = hre;
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory, defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+import esmock from 'esmock';
+import sinon from 'sinon';
+import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
+import { mockDeploy as baseMockDeploy } from '../dist/test-utils/mock-deploy.js';
 
-const manifest = require('@openzeppelin/upgrades-core/dist/manifest');
+let upgrades;
+let defender;
 
 const IMPL_ID = 'abc';
 
 const PROXY_TX_HASH = '0x2';
 const PROXY_ID = 'def';
 
+test.before(async () => {
+  upgrades = await upgradesFactory(hre, connection);
+  defender = await defenderFactory(hre, connection);
+});
+
 test.beforeEach(async t => {
   const stub = sinon.stub();
   stub.onCall(0).returns(IMPL_ID);
   stub.onCall(1).returns(PROXY_ID);
 
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
-  t.context.deployProxy = proxyquire('../dist/deploy-proxy', {
-    './utils/deploy': {
-      deploy: async (hre, opts, factory, ...args) => {
-        opts.useDefenderDeploy = false;
-        return {
-          // just do regular deploy but add a deployment id
-          ...(await require('../dist/utils/deploy').deploy(hre, opts, factory, ...args)),
-          remoteDeploymentId: stub(),
-        };
-      },
-      '@global': true,
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.Invalid = await ethers.getContractFactory('Invalid');
+  
+  // Create a wrapper around the shared mock deploy function to use the stub
+  const mockDeploy = async (hre, opts, factory, ...args) => {
+    const result = await baseMockDeploy(hre, opts, factory, ...args);
+    return {
+      ...result,
+      remoteDeploymentId: stub(),
+    };
+  };
+  
+  const module = await esmock('../dist/deploy-proxy.js', {
+    '../dist/utils/deploy.js': {
+      deploy: mockDeploy,
     },
-  }).makeDeployProxy(hre, true);
+  }, {
+    // Global mocks
+    '../dist/utils/deploy.js': {
+      deploy: mockDeploy,
+    },
+  });
+  
+  t.context.deployProxy = module.makeDeployProxy(hre, true, connection);
 });
 
 test.afterEach.always(() => {
@@ -40,7 +60,8 @@ test.afterEach.always(() => {
 test('deploy proxy', async t => {
   const { deployProxy, GreeterProxiable } = t.context;
 
-  const inst = await deployProxy(GreeterProxiable, ['Hello World']);
+  const signer = await ethers.provider.getSigner();
+  const inst = await deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello World']);
   t.not(await inst.getAddress(), undefined);
 
   // check that manifest has deployment ids
@@ -51,7 +72,7 @@ test('deploy proxy', async t => {
     t.is(proxy.remoteDeploymentId, PROXY_ID);
 
     const impl = await m.getDeploymentFromAddress(
-      await hre.upgrades.erc1967.getImplementationAddress(await inst.getAddress()),
+      await upgrades.erc1967.getImplementationAddress(await inst.getAddress()),
     );
     t.is(impl.remoteDeploymentId, IMPL_ID);
   });
@@ -69,7 +90,8 @@ test('deployed calls wait for deployment', async t => {
   // predeploy a proxy normally for two reasons:
   // 1. so we have a real address
   // 2. so it predeploys the implementation since we are assuming the impl is being deployed by Defender
-  const realProxy = await hre.upgrades.deployProxy(GreeterProxiable, ['Hello World']);
+  const signer = await ethers.provider.getSigner();
+  const realProxy = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello World']);
 
   // stub proxy deployment
   const deployStub = sinon.stub();
@@ -83,12 +105,11 @@ test('deployed calls wait for deployment', async t => {
   // stub the waitForDeployment function
   const waitStub = sinon.stub();
 
-  const deployProxy = proxyquire('../dist/deploy-proxy', {
-    './defender/deploy': {
+  const module = await esmock('../dist/deploy-proxy.js', {
+    '../dist/defender/deploy.js': {
       defenderDeploy: deployStub,
-      '@global': true,
     },
-    './defender/utils': {
+    '../dist/defender/utils.js': {
       waitForDeployment: waitStub,
       enableDefender: (hre, defenderModule, opts) => {
         return {
@@ -96,11 +117,27 @@ test('deployed calls wait for deployment', async t => {
           useDefenderDeploy: true,
         };
       },
-      '@global': true,
     },
-  }).makeDeployProxy(hre, true);
+  }, {
+    // Global mocks
+    '../dist/defender/deploy.js': {
+      defenderDeploy: deployStub,
+    },
+    '../dist/defender/utils.js': {
+      waitForDeployment: waitStub,
+      enableDefender: (hre, defenderModule, opts) => {
+        return {
+          ...opts,
+          useDefenderDeploy: true,
+        };
+      },
+    },
+  });
+  
+  const deployProxy = module.makeDeployProxy(hre, true, connection);
 
-  const inst = await deployProxy(GreeterProxiable, ['Hello World']);
+  const signer2 = await ethers.provider.getSigner();
+  const inst = await deployProxy(GreeterProxiable, [await signer2.getAddress(), 'Hello World']);
   await inst.waitForDeployment();
 
   t.is(waitStub.callCount, 1);

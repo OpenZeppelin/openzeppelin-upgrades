@@ -1,17 +1,25 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
 
-const { ethers, upgrades } = require('hardhat');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+let upgrades;
+
 
 test.before(async t => {
-  t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3Proxiable');
+  upgrades = await upgradesFactory(hre, connection);
+  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterV3 = await ethers.getContractFactory('contracts/GreeterV3Proxiable.sol:GreeterV3Proxiable');
 });
 
 test('prepare upgrade with txresponse', async t => {
   const { Greeter, GreeterV3 } = t.context;
+  const signer = await ethers.provider.getSigner();
 
   // deploy a proxy
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
 
   // prepare the upgrade and get tx response
   const txResponse = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3, { getTxResponse: true });
@@ -28,9 +36,10 @@ test('prepare upgrade with txresponse', async t => {
 
 test('prepare upgrade twice with txresponse', async t => {
   const { Greeter, GreeterV3 } = t.context;
+  const signer = await ethers.provider.getSigner();
 
   // deploy a proxy
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
 
   // prepare the upgrade and get tx response
   const txResponse1 = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3, { getTxResponse: true });

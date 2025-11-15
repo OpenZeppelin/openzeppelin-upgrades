@@ -1,17 +1,25 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
 
-const { ethers, upgrades } = require('hardhat');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+let upgrades;
+
 
 test.before(async t => {
-  t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2Proxiable');
-  t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3Proxiable');
+  upgrades = await upgradesFactory(hre, connection);
+  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2Proxiable.sol:GreeterV2Proxiable');
+  t.context.GreeterV3 = await ethers.getContractFactory('contracts/GreeterV3Proxiable.sol:GreeterV3Proxiable');
 });
 
 test('happy path', async t => {
   const { Greeter, GreeterV2, GreeterV3 } = t.context;
+  const signer = await ethers.provider.getSigner();
 
-  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
 
   const greeter2 = await upgrades.upgradeProxy(greeter, GreeterV2);
   await greeter2.waitForDeployment();

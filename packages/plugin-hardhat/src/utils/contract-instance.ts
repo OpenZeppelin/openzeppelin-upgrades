@@ -1,12 +1,12 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { ContractFactory } from 'ethers';
 import assert from 'assert';
 
-import { DeployTransaction, DefenderDeploy } from '.';
-import { waitForDeployment } from '../defender/utils';
+import { DeployTransaction, DefenderDeploy } from './index.js';
+import { waitForDeployment } from '../defender/utils.js';
 import { Deployment, RemoteDeploymentId, DeployOpts } from '@openzeppelin/upgrades-core';
-import { attach } from './ethers';
-import { ContractTypeOfFactory } from '../type-extensions';
+import { attach } from './ethers.js';
+import { ContractTypeOfFactory } from '../type-extensions.js';
 
 /**
  * Gets a contract instance from a deployment, where the deployment may be remote.
@@ -42,8 +42,10 @@ export function getContractInstance<F extends ContractFactory>(
         deployment.remoteDeploymentId,
       );
 
+      const { ethers } = await hre.network.connect();
+
       if (updatedTxHash !== undefined && updatedTxHash !== deployment.txHash) {
-        const updatedTx = await hre.ethers.provider.getTransaction(updatedTxHash);
+        const updatedTx = await ethers.provider.getTransaction(updatedTxHash);
         // @ts-ignore Won't be readonly because instance was created through attach.
         instance.deploymentTransaction = () => updatedTx;
       }

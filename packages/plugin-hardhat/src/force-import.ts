@@ -1,4 +1,6 @@
-import type { EthereumProvider, HardhatRuntimeEnvironment } from 'hardhat/types';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
+import type { EthereumProvider } from 'hardhat/types/providers';
 import type { ContractFactory, Contract } from 'ethers';
 
 import {
@@ -23,41 +25,42 @@ import {
   getContractAddress,
   getUpgradeableBeaconFactory,
   ForceImportOptions,
-} from './utils';
-import { getDeployData } from './utils/deploy-impl';
-import { attach, getSigner } from './utils/ethers';
+} from './utils/index.js';
+import { getDeployData } from './utils/deploy-impl.js';
+import { attach, getSigner } from './utils/ethers.js';
 
 export interface ForceImportFunction {
   (proxyAddress: string, ImplFactory: ContractFactory, opts?: ForceImportOptions): Promise<Contract>;
 }
 
-export function makeForceImport(hre: HardhatRuntimeEnvironment): ForceImportFunction {
+export function makeForceImport(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): ForceImportFunction {
   return async function forceImport(
     addressOrInstance: ContractAddressOrInstance,
     ImplFactory: ContractFactory,
     opts: ForceImportOptions = {},
   ) {
-    const { provider } = hre.network;
+    const { ethers } = connection;
+    const provider = ethers.provider as unknown as EthereumProvider;
     const manifest = await Manifest.forNetwork(provider);
 
     const address = await getContractAddress(addressOrInstance);
 
     const implAddress = await getImplementationAddressFromProxy(provider, address);
     if (implAddress !== undefined) {
-      await importProxyToManifest(provider, hre, address, implAddress, ImplFactory, opts, manifest);
+      await importProxyToManifest(provider, hre, address, implAddress, ImplFactory, opts, manifest, connection);
 
       return attach(ImplFactory, address);
     } else if (await isBeacon(provider, address)) {
       const beaconImplAddress = await getImplementationAddressFromBeacon(provider, address);
-      await addImplToManifest(hre, beaconImplAddress, ImplFactory, opts);
+      await addImplToManifest(hre, beaconImplAddress, ImplFactory, opts, connection);
 
-      const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(hre, getSigner(ImplFactory.runner));
+      const UpgradeableBeaconFactory = await getUpgradeableBeaconFactory(connection, getSigner(ImplFactory.runner));
       return attach(UpgradeableBeaconFactory, address);
     } else {
       if (!(await hasCode(provider, address))) {
         throw new NoContractImportError(address);
       }
-      await addImplToManifest(hre, address, ImplFactory, opts);
+      await addImplToManifest(hre, address, ImplFactory, opts, connection);
       return attach(ImplFactory, address);
     }
   };
@@ -71,15 +74,16 @@ async function importProxyToManifest(
   ImplFactory: ContractFactory,
   opts: ForceImportOptions,
   manifest: Manifest,
+  connection: NetworkConnection,
 ) {
-  await addImplToManifest(hre, implAddress, ImplFactory, opts);
+  await addImplToManifest(hre, implAddress, ImplFactory, opts, connection);
 
   let importKind: ProxyDeployment['kind'];
   if (opts.kind === undefined) {
     if (await isBeaconProxy(provider, proxyAddress)) {
       importKind = 'beacon';
     } else {
-      const deployData = await getDeployData(hre, ImplFactory, opts);
+      const deployData = await getDeployData(hre, ImplFactory, opts, connection);
       importKind = inferProxyKind(deployData.validations, deployData.version);
     }
   } else {
@@ -98,8 +102,9 @@ async function addImplToManifest(
   implAddress: string,
   ImplFactory: ContractFactory,
   opts: ForceImportOptions,
+  connection: NetworkConnection,
 ) {
-  await simulateDeployImpl(hre, ImplFactory, opts, implAddress);
+  await simulateDeployImpl(hre, ImplFactory, opts, implAddress, connection);
 }
 
 async function assertNonEmptyAdminSlot(provider: EthereumProvider, proxyAddress: string) {
