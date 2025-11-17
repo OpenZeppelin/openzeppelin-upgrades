@@ -53,7 +53,7 @@
     "@types/mocha": "^7.0.2",
     "@types/node": "^20.0.0",
     "@types/proper-lockfile": "^4.1.1",
-    "@types/sinon": "^17.0.0",
+    "@types/sinon": "^21.0.0",
     "ava": "^6.0.0",
     "dotenv": "^16.0.0",
     "fgbg": "^0.1.4",
