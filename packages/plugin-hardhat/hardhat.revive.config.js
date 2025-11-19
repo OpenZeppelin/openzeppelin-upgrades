@@ -39,19 +39,22 @@ module.exports = {
   networks: {
     hardhat: {
       polkadot: true,
-      nodeConfig: {
-        nodeBinaryPath: './bin/dev-node',
-        dev: true,
-        consensus: {
-          seal: 'instant-seal',
-        },
-        rpcPort: 8000,
-      },
-      adapterConfig: {
-        adapterBinaryPath: './bin/eth-rpc',
-        dev: true,
-      },
+      // nodeConfig: {
+      //   nodeBinaryPath: './bin/dev-node',
+      //   dev: true,
+      //   consensus: {
+      //     seal: 'instant-seal',
+      //   },
+      //   rpcPort: 8000,
+      // },
+      // adapterConfig: {
+      //   adapterBinaryPath: './bin/eth-rpc',
+      //   dev: true,
+      // },
     },
+  },
+  resolc: {
+    version: '0.5.0',
   },
   solidity: {
     compilers: [

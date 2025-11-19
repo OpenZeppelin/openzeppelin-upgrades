@@ -59,6 +59,11 @@ function getNamespacedOverrides() {
   const namespacedContracts = contracts.filter(c => c.startsWith('Namespaced'));
   const overrides = {};
   for (const c of namespacedContracts) {
+    const contractPath = `contracts/test/${c}`;
+
+    if (ALL_IGNORES.includes(contractPath)) {
+      continue;
+    }
     if (c === 'NamespacedToModify07.sol') {
       overrides[`contracts/test/${c}`] = { version: '0.7.6', settings };
     } else if (c === 'NamespacedToModifyCustomLayout.sol') {
@@ -90,6 +95,8 @@ const SELFDESTRUCT_IGNORES = [
   'contracts/test/ValidationsNatspecSelfdestruct.sol',
 ];
 
+const ALL_IGNORES = [...OLD_SOLIDITY_VERSION_IGNORES, ...SELFDESTRUCT_IGNORES];
+
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
@@ -103,6 +110,9 @@ module.exports = {
         target: 'pvm',
       },
     },
+  },
+  resolc: {
+    version: '0.5.0',
   },
   solidity: {
     compilers: [{ version: '0.8.8', settings }, { version: '0.8.9', settings }, proxyCompiler],

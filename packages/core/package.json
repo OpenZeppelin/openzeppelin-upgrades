@@ -60,6 +60,7 @@
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
     "@openzeppelin/contracts": "5.3.0",
     "@openzeppelin/upgrades-core-legacy": "npm:@openzeppelin/upgrades-core@1.31.3",
+    "@parity/hardhat-polkadot": "^0.2.1",
     "@types/debug": "^4.1.5",
     "@types/minimist": "^1.2.5",
     "@types/mocha": "^7.0.2",
@@ -71,8 +72,8 @@
     "fgbg": "^0.1.4",
     "hardhat": "^2.19.1",
     "rimraf": "^5.0.0",
-    "typescript": "^5.0.0",
-    "@parity/hardhat-polkadot": "^0.2.0-pre2"
+    "solc": "0.8.29",
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "@nomicfoundation/slang": "^0.18.3",
@@ -82,9 +83,9 @@
     "compare-versions": "^6.0.0",
     "debug": "^4.1.1",
     "ethereumjs-util": "^7.0.3",
+    "minimatch": "^9.0.5",
     "minimist": "^1.2.7",
     "proper-lockfile": "^4.1.1",
-    "solidity-ast": "^0.4.60",
-    "minimatch": "^9.0.5"
+    "solidity-ast": "^0.4.60"
   }
 }
