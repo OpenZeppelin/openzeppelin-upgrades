@@ -11,12 +11,7 @@ import {
 } from '@openzeppelin/defender-sdk-deploy-client';
 import { getContractNameAndRunValidation, UpgradesError } from '@openzeppelin/upgrades-core';
 
-import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json';
-
-import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json';
-import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json';
-import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json';
-import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
+import { getContracts } from '../utils';
 
 import { getNetwork, parseTxOverrides } from './utils';
 import { DefenderDeployOptions, UpgradeOptions, EthersDeployOptions, DefenderDeployment } from '../utils';
@@ -25,9 +20,7 @@ import { getDeployData } from '../utils/deploy-impl';
 import { ContractSourceNotFoundError } from '@openzeppelin/upgrades-core';
 import { getDeployClient } from './client';
 
-const deployableProxyContracts = [ERC1967Proxy, BeaconProxy, UpgradeableBeacon, TransparentUpgradeableProxy];
-
-interface ReducedBuildInfo {
+export interface ReducedBuildInfo {
   _format: string;
   id: string;
   solcVersion: string;
@@ -190,12 +183,19 @@ async function getContractInfo(
     debug(`Libraries: ${JSON.stringify(libraries, null, 2)}`);
   } catch (e) {
     if (e instanceof ContractSourceNotFoundError) {
+      const contracts = getContracts(hre);
+      const deployableProxyContracts = [
+        contracts.erc1967,
+        contracts.beaconProxy,
+        contracts.upgradeableBeacon,
+        contracts.transparentUpgradeableProxy,
+      ];
       // Proxy contracts would not be found in the validations, so try to get these from the plugin's precompiled artifacts.
       for (const artifact of deployableProxyContracts) {
         if (artifact.bytecode === factory.bytecode) {
           const sourceName = artifact.sourceName;
           const contractName = artifact.contractName;
-          const buildInfo = artifactsBuildInfo;
+          const buildInfo = contracts.buildInfo;
           debug(`Proxy contract ${sourceName}:${contractName}`);
           return {
             sourceName,

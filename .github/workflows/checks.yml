@@ -41,6 +41,10 @@ jobs:
 
     - name: Run tests
       run: yarn --cwd "packages/${{matrix.package}}" run test
+    # This is temporary, later it would be integrated into the main run
+    - name: Run PVM tests
+      if: matrix.package == 'plugin-hardhat'
+      run: yarn --cwd "packages/${{matrix.package}}" run test:pvm
 
   coverage:
     runs-on: ubuntu-latest

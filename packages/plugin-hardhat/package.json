@@ -17,15 +17,19 @@
     "compile": "tsc -b",
     "prepare": "yarn compile",
     "test": "tsc -b && bash scripts/test.sh",
-    "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --"
+    "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --",
+    "test:pvm": "tsc -b && bash scripts/test-pvm.sh",
+    "test:pvm:ava": "tsc -b && bash scripts/test-pvm-ava.sh"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.6",
     "@nomicfoundation/hardhat-verify": "^2.0.14",
     "@openzeppelin/contracts": "5.3.0",
     "@openzeppelin/contracts-upgradeable": "5.3.0",
+    "@parity/hardhat-polkadot": "0.2.1",
     "@types/mocha": "^7.0.2",
     "ava": "^6.0.0",
+    "chai": "^4.2.0",
     "fgbg": "^0.1.4",
     "hardhat": "^2.24.1",
     "promisified": "^0.5.0",
@@ -34,6 +38,7 @@
     "sinon": "^20.0.0"
   },
   "dependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
     "@openzeppelin/defender-sdk-base-client": "^2.1.0",
     "@openzeppelin/defender-sdk-deploy-client": "^2.1.0",
     "@openzeppelin/defender-sdk-network-client": "^2.1.0",
