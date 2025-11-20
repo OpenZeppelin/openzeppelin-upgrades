@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-rimraf .openzeppelin
+# rimraf .openzeppelin
 os=$(uname -s)
 if [[ "$os" == "Linux" ]]; then
     system="linux"
@@ -19,6 +19,8 @@ fi
 cp -r contracts contracts-backup
 # Replace all pragma lines in .sol files with pragma solidity ^0.8.20;
 find contracts -name "*.sol" -exec sh -c 'sed -E "s/pragma solidity (>=[0-9]+\.[0-7]\.[0-9]+<|[<>]=?|\^[0-9]+\.[0-7]\.[0-9]+).*;/pragma solidity ^0.8.20;/g" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
+mv hardhat.config.js hardhat.config.js.sub
+mv hardhat.revive.config.js hardhat.config.js
 # Check if the system is macOS or Linux based and architecture
 mkdir bin
 # Download eth-rpc binary
@@ -33,8 +35,10 @@ chmod +x bin/dev-node
 if [[ "$system" == "darwin" ]]; then
     xattr -c bin/dev-node
 fi
-hardhat compile --config hardhat.revive.config.js
-hardhat test --config hardhat.revive.config.js test-pvm/*
+hardhat compile
+ava
+mv hardhat.config.js hardhat.revive.config.js
+mv hardhat.config.js.sub hardhat.config.js
 rm -rf contracts
 rm -rf bin
 mv contracts-backup contracts
