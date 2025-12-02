@@ -22,10 +22,15 @@
     "compile": "tsc -b && hardhat compile",
     "prepare": "yarn compile",
     "test": "tsc -b && bash scripts/test.sh",
-    "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --"
+    "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --",
+    "deploy:transparent": "hardhat ignition deploy ignition/modules/deploy-greeter-transparent.ts",
+    "deploy:beacon": "hardhat ignition deploy ignition/modules/deploy-greeter-beacon.ts",
+    "deploy:uups": "hardhat ignition deploy ignition/modules/deploy-greeter-uups.ts",
+    "upgrade:existing": "hardhat ignition deploy ignition/modules/upgrade-greeter-uups.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.2",
+    "@nomicfoundation/hardhat-ignition": "^3.0.5",
     "@nomicfoundation/hardhat-verify": "^3.0.3",
     "@openzeppelin/contracts": "5.3.0",
     "@openzeppelin/contracts-upgradeable": "5.3.0",
@@ -36,7 +41,7 @@
     "esmock": "^2.7.3",
     "fgbg": "^0.1.4",
     "forge-std": "github:foundry-rs/forge-std#v1.9.7",
-    "hardhat": "3.0.14",
+    "hardhat": "3.0.16",
     "promisified": "^0.5.0",
     "rimraf": "^5.0.0",
     "sinon": "^20.0.0"

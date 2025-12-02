@@ -9,7 +9,7 @@ import type { HardhatUserConfig } from 'hardhat/config';
 import type { SolcUserConfig } from 'hardhat/types/config';
 import hardhatVerify from '@nomicfoundation/hardhat-verify';
 import hardhatEthers from '@nomicfoundation/hardhat-ethers';
-import upgradesPlugin from './dist/index.js';
+import hardhatIgnition from '@nomicfoundation/hardhat-ignition';
 
 const override: SolcUserConfig = {
   version: '0.8.10',
@@ -22,7 +22,7 @@ const override: SolcUserConfig = {
 
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatVerify, hardhatEthers, upgradesPlugin],
+  plugins: [hardhatVerify, hardhatEthers, hardhatIgnition],
   solidity: {
     compilers: [
       {
