@@ -6,6 +6,7 @@ const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import { deploy } from '../dist/utils/deploy.js';
 
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
 test.before(async t => {

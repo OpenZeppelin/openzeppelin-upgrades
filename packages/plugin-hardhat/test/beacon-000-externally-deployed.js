@@ -5,6 +5,7 @@ const connection = await hre.network.connect();
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 
 const { ethers } = connection;
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
 test.before(async t => {

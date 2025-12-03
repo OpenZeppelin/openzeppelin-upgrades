@@ -8,6 +8,7 @@ import sinon from 'sinon';
 import esmock from 'esmock';
 import { mockDeploy } from '../dist/test-utils/mock-deploy.js';
 
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
 const proposalId = 'mocked proposal id';

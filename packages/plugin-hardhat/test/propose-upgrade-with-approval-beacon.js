@@ -8,7 +8,9 @@ import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import sinon from 'sinon';
 import esmock from 'esmock';
 
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
+/** @type {import('@openzeppelin/hardhat-upgrades').DefenderHardhatUpgrades} */
 let defender;
 
 const proposalId = 'mocked proposal id';

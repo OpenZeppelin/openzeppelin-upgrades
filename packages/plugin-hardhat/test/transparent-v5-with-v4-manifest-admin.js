@@ -8,6 +8,7 @@ import { fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
 import { deploy } from '../dist/utils/deploy.js'; // ← mudou de ../dist/utils.js para ../dist/utils/deploy.js
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json' with { type: 'json' };
 
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
 test.before(async t => {

@@ -7,6 +7,7 @@ import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import { getVersion, getContractNameAndRunValidation } from '@openzeppelin/upgrades-core';
 import { readValidations } from '../dist/utils/validations.js';
 
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
 test.before(async t => {

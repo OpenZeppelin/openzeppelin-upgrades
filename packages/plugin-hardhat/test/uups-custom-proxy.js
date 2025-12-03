@@ -6,6 +6,7 @@ const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import AccessManagerArtifact from '@openzeppelin/contracts/build/contracts/AccessManager.json' with { type: 'json' };
 
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
 import { deploy } from '../dist/utils/deploy.js';

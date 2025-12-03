@@ -9,7 +9,9 @@ import sinon from 'sinon';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
 import { mockDeploy as baseMockDeploy } from '../dist/test-utils/mock-deploy.js';
 
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
+/** @type {import('@openzeppelin/hardhat-upgrades').DefenderHardhatUpgrades} */
 let defender;
 
 const IMPL_ID = 'abc';

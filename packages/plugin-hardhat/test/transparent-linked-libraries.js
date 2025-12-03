@@ -6,6 +6,7 @@ const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 const artifacts = hre.artifacts;
 
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
 const testAddress = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
