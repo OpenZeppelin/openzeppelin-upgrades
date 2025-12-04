@@ -28,3 +28,5 @@ export type { HardhatUpgrades, DefenderHardhatUpgrades } from './types.js';
 
 // Utilities
 export type { UpgradeOptions } from './utils/options.js';
+
+export { OZfilesToBuild } from './utils/npmFilesToBuild.js';

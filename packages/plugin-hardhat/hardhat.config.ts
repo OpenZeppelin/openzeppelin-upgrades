@@ -9,7 +9,7 @@ import type { HardhatUserConfig } from 'hardhat/config';
 import type { SolcUserConfig } from 'hardhat/types/config';
 import hardhatVerify from '@nomicfoundation/hardhat-verify';
 import hardhatEthers from '@nomicfoundation/hardhat-ethers';
-import hardhatIgnition from '@nomicfoundation/hardhat-ignition';
+import { OZfilesToBuild} from './src/index.ts';
 
 const override: SolcUserConfig = {
   version: '0.8.10',
@@ -22,7 +22,7 @@ const override: SolcUserConfig = {
 
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatVerify, hardhatEthers, hardhatIgnition],
+  plugins: [hardhatVerify, hardhatEthers],
   solidity: {
     compilers: [
       {
@@ -46,13 +46,7 @@ const config: HardhatUserConfig = {
       'contracts/GapV2.sol': override,
       'contracts/GapV2_Bad.sol': override,
     },
-    npmFilesToBuild: [
-      "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol",
-      "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol",
-      "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
-      "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol",
-      "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol",
-    ]
+    npmFilesToBuild: [ ...OZfilesToBuild() ],
   },
   paths: {
     tests: {
