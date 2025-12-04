@@ -6,8 +6,12 @@
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades",
   "license": "MIT",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -30,7 +34,6 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.2",
-    "@nomicfoundation/hardhat-ignition": "^3.0.5",
     "@nomicfoundation/hardhat-verify": "^3.0.3",
     "@openzeppelin/contracts": "5.3.0",
     "@openzeppelin/contracts-upgradeable": "5.3.0",
