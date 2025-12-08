@@ -29,7 +29,7 @@ contract UpgradesTest is Test {
 
     function testUUPS() public {
         address proxy = Upgrades.deployUUPSProxy(
-            "GreeterProxiable.sol",
+            "foundry/GreeterProxiable.sol:GreeterProxiable",
             abi.encodeCall(GreeterInitializable.initialize, (msg.sender, "hello"))
         );
         GreeterInitializable instance = GreeterInitializable(proxy);
@@ -39,7 +39,7 @@ contract UpgradesTest is Test {
 
         Upgrades.upgradeProxy(
             proxy,
-            "GreeterV2Proxiable.sol",
+            "foundry/GreeterV2Proxiable.sol:GreeterV2Proxiable",
             abi.encodeCall(GreeterV2Proxiable.resetGreeting, ()),
             msg.sender
         );
@@ -51,12 +51,12 @@ contract UpgradesTest is Test {
 
     function testUUPS_upgradeWithoutData() public {
         address proxy = Upgrades.deployUUPSProxy(
-            "GreeterProxiable.sol",
+            "foundry/GreeterProxiable.sol:GreeterProxiable",
             abi.encodeCall(GreeterInitializable.initialize, (msg.sender, "hello"))
         );
         address implAddressV1 = Upgrades.getImplementationAddress(proxy);
 
-        Upgrades.upgradeProxy(proxy, "GreeterV2Proxiable.sol", "", msg.sender);
+        Upgrades.upgradeProxy(proxy, "foundry/GreeterV2Proxiable.sol:GreeterV2Proxiable", "", msg.sender);
         address implAddressV2 = Upgrades.getImplementationAddress(proxy);
 
         assertFalse(implAddressV2 == implAddressV1);
@@ -64,7 +64,7 @@ contract UpgradesTest is Test {
 
     function testTransparent() public {
         address proxy = Upgrades.deployTransparentProxy(
-            "GreeterInitializable.sol",
+            "foundry/GreeterInitializable.sol:GreeterInitializable",
             msg.sender,
             abi.encodeCall(GreeterInitializable.initialize, (msg.sender, "hello"))
         );
@@ -76,7 +76,7 @@ contract UpgradesTest is Test {
 
         assertEq(instance.greeting(), "hello");
 
-        Upgrades.upgradeProxy(proxy, "GreeterV2.sol", abi.encodeCall(GreeterV2.resetGreeting, ()), msg.sender);
+        Upgrades.upgradeProxy(proxy, "foundry/GreeterV2.sol:GreeterV2", abi.encodeCall(GreeterV2.resetGreeting, ()), msg.sender);
         address implAddressV2 = Upgrades.getImplementationAddress(proxy);
 
         assertEq(Upgrades.getAdminAddress(proxy), adminAddress);
@@ -87,7 +87,7 @@ contract UpgradesTest is Test {
 
     function testTransparent_upgradeWithoutData() public {
         address proxy = Upgrades.deployTransparentProxy(
-            "GreeterInitializable.sol",
+            "foundry/GreeterInitializable.sol:GreeterInitializable",
             msg.sender,
             abi.encodeCall(GreeterInitializable.initialize, (msg.sender, "hello"))
         );
@@ -96,7 +96,7 @@ contract UpgradesTest is Test {
 
         assertFalse(adminAddress == address(0));
 
-        Upgrades.upgradeProxy(proxy, "GreeterV2.sol", "", msg.sender);
+        Upgrades.upgradeProxy(proxy, "foundry/GreeterV2.sol:GreeterV2", "", msg.sender);
         address implAddressV2 = Upgrades.getImplementationAddress(proxy);
 
         assertEq(Upgrades.getAdminAddress(proxy), adminAddress);
@@ -105,7 +105,7 @@ contract UpgradesTest is Test {
     }
 
     function testBeacon() public {
-        address beacon = Upgrades.deployBeacon("GreeterInitializable.sol", msg.sender);
+        address beacon = Upgrades.deployBeacon("foundry/GreeterInitializable.sol:GreeterInitializable", msg.sender);
         address implAddressV1 = IBeacon(beacon).implementation();
 
         address proxy = Upgrades.deployBeaconProxy(beacon, abi.encodeCall(GreeterInitializable.initialize, (msg.sender, "hello")));
@@ -115,7 +115,7 @@ contract UpgradesTest is Test {
 
         assertEq(instance.greeting(), "hello");
 
-        Upgrades.upgradeBeacon(beacon, "GreeterV2.sol", msg.sender);
+        Upgrades.upgradeBeacon(beacon, "foundry/GreeterV2.sol:GreeterV2", msg.sender);
         address implAddressV2 = IBeacon(beacon).implementation();
 
         vm.prank(msg.sender);
@@ -127,20 +127,20 @@ contract UpgradesTest is Test {
 
     function testUpgradeProxyWithoutCaller() public {
         address proxy = Upgrades.deployUUPSProxy(
-            "GreeterProxiable.sol",
+            "foundry/GreeterProxiable.sol:GreeterProxiable",
             abi.encodeCall(GreeterProxiable.initialize, (msg.sender, "hello"))
         );
 
         vm.startPrank(msg.sender);
-        Upgrades.upgradeProxy(proxy, "GreeterV2Proxiable.sol", abi.encodeCall(GreeterV2Proxiable.resetGreeting, ()));
+        Upgrades.upgradeProxy(proxy, "foundry/GreeterV2Proxiable.sol:GreeterV2Proxiable", abi.encodeCall(GreeterV2Proxiable.resetGreeting, ()));
         vm.stopPrank();
     }
 
     function testUpgradeBeaconWithoutCaller() public {
-        address beacon = Upgrades.deployBeacon("GreeterInitializable.sol", msg.sender);
+        address beacon = Upgrades.deployBeacon("foundry/GreeterInitializable.sol:GreeterInitializable", msg.sender);
 
         vm.startPrank(msg.sender);
-        Upgrades.upgradeBeacon(beacon, "GreeterV2.sol");
+        Upgrades.upgradeBeacon(beacon, "foundry/GreeterV2.sol:GreeterV2");
         vm.stopPrank();
     }
 
@@ -262,7 +262,7 @@ contract UpgradesTest is Test {
         console.log("testWithConstructor before Upgrades.deployTransparentProxy");
 
         address proxy = Upgrades.deployTransparentProxy(
-            "WithConstructor.sol:WithConstructor",
+            "foundry/WithConstructor.sol:WithConstructor",
             msg.sender,
             abi.encodeCall(WithConstructor.initialize, (456)),
             opts
@@ -275,7 +275,7 @@ contract UpgradesTest is Test {
     function testNoInitializer() public {
         Options memory opts;
         opts.constructorData = abi.encode(123);
-        address proxy = Upgrades.deployTransparentProxy("WithConstructor.sol:NoInitializer", msg.sender, "", opts);
+        address proxy = Upgrades.deployTransparentProxy("foundry/WithConstructor.sol:NoInitializer", msg.sender, "", opts);
         assertEq(WithConstructor(proxy).a(), 123);
     }
 
@@ -285,7 +285,7 @@ contract UpgradesTest is Test {
         Invoker i = new Invoker();
         try
             i.deployTransparentProxy(
-                "GreeterInitializable.sol",
+                "foundry/GreeterInitializable.sol:GreeterInitializable",
                 address(admin), // NOT SAFE
                 abi.encodeCall(GreeterInitializable.initialize, (msg.sender, "hello"))
             )
@@ -304,7 +304,7 @@ contract UpgradesTest is Test {
         Invoker i = new Invoker();
         try
             i.deployTransparentProxy(
-                "GreeterInitializable.sol",
+                "foundry/GreeterInitializable.sol:GreeterInitializable",
                 address(hasOwner), // false positive
                 abi.encodeCall(GreeterInitializable.initialize, (msg.sender, "hello")),
                 opts
@@ -323,7 +323,7 @@ contract UpgradesTest is Test {
         opts.unsafeSkipProxyAdminCheck = true;
 
         Upgrades.deployTransparentProxy(
-            "GreeterInitializable.sol",
+            "foundry/GreeterInitializable.sol:GreeterInitializable",
             address(hasOwner),
             abi.encodeCall(GreeterInitializable.initialize, (msg.sender, "hello")),
             opts
@@ -336,7 +336,7 @@ contract UpgradesTest is Test {
         opts.unsafeSkipAllChecks = true;
 
         Upgrades.deployTransparentProxy(
-            "GreeterInitializable.sol",
+            "foundry/GreeterInitializable.sol:GreeterInitializable",
             address(hasOwner),
             abi.encodeCall(GreeterInitializable.initialize, (msg.sender, "hello")),
             opts

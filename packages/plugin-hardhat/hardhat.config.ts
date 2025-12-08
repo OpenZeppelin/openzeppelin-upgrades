@@ -9,6 +9,7 @@ import type { HardhatUserConfig } from 'hardhat/config';
 import type { SolcUserConfig } from 'hardhat/types/config';
 import hardhatVerify from '@nomicfoundation/hardhat-verify';
 import hardhatEthers from '@nomicfoundation/hardhat-ethers';
+import hardhatUpgrades from './src/index.ts';
 import { OZfilesToBuild} from './src/index.ts';
 
 const override: SolcUserConfig = {
@@ -22,7 +23,7 @@ const override: SolcUserConfig = {
 
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatVerify, hardhatEthers],
+  plugins: [hardhatVerify, hardhatEthers, hardhatUpgrades],
   solidity: {
     compilers: [
       {

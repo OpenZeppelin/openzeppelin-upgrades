@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-/// @custom:oz-upgrades-from Greeter
+/// @custom:oz-upgrades-from contracts/foundry/GreeterInitializable.sol:GreeterInitializable
 contract GreeterV2 is Initializable, OwnableUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {

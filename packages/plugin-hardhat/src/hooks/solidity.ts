@@ -186,6 +186,7 @@ export default async (): Promise<Partial<SolidityHooks>> => {
         // Inject AST into artifact files for Hardhat 3 compatibility with Foundry plugin
         // In Hardhat 3, AST is stored in build-info output files, not in artifacts
         // The Foundry upgrades plugin expects AST in artifact files, so we inject it here
+        console.log('[OpenZeppelin Upgrades] Starting AST injection into artifacts...');
         await injectAstIntoArtifacts(artifactsDir, buildInfoDir);
       } catch (error: any) {
         if (error.code !== 'ENOENT') {
@@ -200,7 +201,7 @@ export default async (): Promise<Partial<SolidityHooks>> => {
  * Injects AST from build-info output files into artifact files for Hardhat 3 compatibility.
  * This allows the Foundry upgrades plugin to find AST in artifact files as expected.
  */
-async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir: string): Promise<void> {
+export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir: string): Promise<void> {
   const path = await import('path');
   const fs = await import('fs/promises');
 
@@ -227,6 +228,9 @@ async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir: string
   }
 
   const artifactFiles = await findArtifactFiles(path.join(artifactsDir, 'contracts'));
+  let processedCount = 0;
+  let skippedCount = 0;
+  let errorCount = 0;
 
   for (const artifactPath of artifactFiles) {
     try {
@@ -235,6 +239,7 @@ async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir: string
 
       // Only process Hardhat 3 artifacts that have buildInfoId and inputSourceName
       // and don't already have AST
+      // Skip artifacts without buildInfoId (they may not be fully processed yet)
       if (
         artifact._format === 'hh3-artifact-1' &&
         artifact.buildInfoId &&
@@ -276,20 +281,48 @@ async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir: string
 
             // Write the updated artifact back
             await fs.writeFile(artifactPath, JSON.stringify(artifact, null, 2), 'utf-8');
+            processedCount++;
+          } else {
+            // AST not found in build-info - log for debugging
+            console.warn(
+              `Warning: AST not found in build-info for artifact ${artifactPath}\n` +
+              `  buildInfoId: ${artifact.buildInfoId}\n` +
+              `  inputSourceName: ${inputSourceName}\n` +
+              `  build-info output exists: ${!!buildInfoOutput.output}\n` +
+              `  sources exists: ${!!buildInfoOutput.output?.sources}\n` +
+              `  source key exists: ${!!buildInfoOutput.output?.sources?.[inputSourceName]}`
+            );
+            skippedCount++;
           }
         } catch (err: any) {
           // If build-info output file doesn't exist or AST is missing, skip this artifact
-          if (err.code !== 'ENOENT') {
+          if (err.code === 'ENOENT') {
+            console.warn(
+              `Warning: Build-info output file not found for artifact ${artifactPath}\n` +
+              `  Expected: ${buildInfoOutputPath}\n` +
+              `  buildInfoId: ${artifact.buildInfoId}`
+            );
+          } else {
             // Log other errors but don't fail the whole process
             console.warn(`Warning: Could not inject AST into artifact ${artifactPath}: ${err.message}`);
+            errorCount++;
           }
+          skippedCount++;
         }
       }
     } catch (err: any) {
       // If artifact file is invalid JSON or can't be read, skip it
       if (err.code !== 'ENOENT') {
         console.warn(`Warning: Could not process artifact ${artifactPath}: ${err.message}`);
+        errorCount++;
       }
     }
+  }
+
+  // Log summary if any artifacts were processed or had issues
+  if (processedCount > 0 || skippedCount > 0 || errorCount > 0) {
+    console.log(
+      `[OpenZeppelin Upgrades] AST injection: ${processedCount} processed, ${skippedCount} skipped, ${errorCount} errors`
+    );
   }
 }

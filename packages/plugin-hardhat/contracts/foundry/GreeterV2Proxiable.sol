@@ -7,7 +7,7 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 
 // These contracts are for testing only, they are not safe for use in production.
 
-/// @custom:oz-upgrades-from GreeterProxiable
+/// @custom:oz-upgrades-from contracts/foundry/GreeterProxiable.sol:GreeterProxiable
 contract GreeterV2Proxiable is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
