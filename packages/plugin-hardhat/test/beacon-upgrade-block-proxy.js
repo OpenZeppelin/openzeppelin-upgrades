@@ -8,7 +8,6 @@ import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
-
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
@@ -82,7 +81,9 @@ test('block uups proxy upgrade via upgradeBeacon', async t => {
   const { GreeterProxiable, GreeterV2Proxiable } = t.context;
   const signer = await ethers.provider.getSigner();
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello, Hardhat!'], {
+    kind: 'uups',
+  });
 
   try {
     await upgrades.upgradeBeacon(greeter, GreeterV2Proxiable);

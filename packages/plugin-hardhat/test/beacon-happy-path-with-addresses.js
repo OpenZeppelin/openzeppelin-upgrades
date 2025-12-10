@@ -9,9 +9,8 @@ import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 let upgrades;
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
 
-  upgrades = await upgradesFactory(hre,connection);
-  
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
   t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3');

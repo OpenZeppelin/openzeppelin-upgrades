@@ -8,11 +8,12 @@ import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
-
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
-  t.context.GreeterStorageConflict = await ethers.getContractFactory('contracts/GreeterStorageConflictProxiable.sol:GreeterStorageConflictProxiable');
+  t.context.GreeterStorageConflict = await ethers.getContractFactory(
+    'contracts/GreeterStorageConflictProxiable.sol:GreeterStorageConflictProxiable',
+  );
 });
 
 test('incompatible storage', async t => {

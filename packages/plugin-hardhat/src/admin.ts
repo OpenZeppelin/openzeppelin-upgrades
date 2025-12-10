@@ -28,7 +28,11 @@ export type TransferProxyAdminOwnershipFunction = (
 ) => Promise<void>;
 export type GetInstanceFunction = (signer?: Signer) => Promise<Contract>;
 
-export function makeChangeProxyAdmin(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): ChangeAdminFunction {
+export function makeChangeProxyAdmin(
+  hre: HardhatRuntimeEnvironment,
+  defenderModule: boolean,
+  connection: NetworkConnection,
+): ChangeAdminFunction {
   return async function changeProxyAdmin(
     proxyAddress: string,
     newAdmin: string,

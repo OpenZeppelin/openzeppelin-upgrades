@@ -19,7 +19,7 @@ test.before(async t => {
 test.beforeEach(async t => {
   // Use ethers.provider from connection
   const provider = ethers.provider;
-  
+
   // In Hardhat 3, we need to reset using the network manager
   // or simply create a new snapshot and restore it
   const snapshotId = await provider.send('evm_snapshot', []);
@@ -29,7 +29,7 @@ test.beforeEach(async t => {
   t.context.automine = await provider.send('hardhat_getAutomine', []);
   await provider.send('evm_setAutomine', [false]);
   await provider.send('evm_setIntervalMining', [500]);
-  
+
   // Store provider in context for use in tests
   t.context.provider = provider;
 });
@@ -38,7 +38,7 @@ test.afterEach(async t => {
   const provider = t.context.provider;
   // reset network state after each test
   await provider.send('evm_setAutomine', [t.context.automine]);
-  
+
   // Revert to snapshot instead of hardhat_reset
   await provider.send('evm_revert', [t.context.snapshotId]);
 });

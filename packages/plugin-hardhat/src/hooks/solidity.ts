@@ -29,14 +29,16 @@ export default async (): Promise<Partial<SolidityHooks>> => {
         // Cache exists and is valid, continue normally
       } catch (e) {
         if (e instanceof ValidationsCacheOutdated) {
-          // Cache exists but is outdated 
+          // Cache exists but is outdated
           // TODO: when hardhat supports forcing recompilation, we should do it here
         } else if (e instanceof ValidationsCacheNotFound) {
           // Cache doesn't exist - that's fine, just proceed with compilation
         } else if (e.code === 'ELOCKED') {
           // Lock file is being held by another process - warn once and continue
           if (!lockWarningShown) {
-            console.warn('\nWarning: Validations cache is locked by another process. Continuing without cache validation.');
+            console.warn(
+              '\nWarning: Validations cache is locked by another process. Continuing without cache validation.',
+            );
             lockWarningShown = true;
           }
         } else {
@@ -68,7 +70,6 @@ export default async (): Promise<Partial<SolidityHooks>> => {
 
         // Process each build-info file (each represents a compilation job)
         for (const file of buildInfoFiles) {
-
           // Skip output files - we only want to process input files
           if (!file.endsWith('.json') || file.endsWith('.output.json')) {
             continue;
@@ -77,7 +78,6 @@ export default async (): Promise<Partial<SolidityHooks>> => {
           const buildInfoPath = path.join(buildInfoDir, file);
           const buildInfoContent = await fs.readFile(buildInfoPath, 'utf-8');
           const buildInfo = JSON.parse(buildInfoContent);
-
 
           // Verify this is an input file
           if (buildInfo._format !== 'hh3-sol-build-info-1') {
@@ -180,7 +180,6 @@ export default async (): Promise<Partial<SolidityHooks>> => {
 
           // Debug validations content (safer access)
           await writeValidations(context as HardhatRuntimeEnvironment, validations);
-
         }
 
         // Inject AST into artifact files for Hardhat 3 compatibility with Foundry plugin
@@ -240,12 +239,7 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
       // Only process Hardhat 3 artifacts that have buildInfoId and inputSourceName
       // and don't already have AST
       // Skip artifacts without buildInfoId (they may not be fully processed yet)
-      if (
-        artifact._format === 'hh3-artifact-1' &&
-        artifact.buildInfoId &&
-        artifact.inputSourceName &&
-        !artifact.ast
-      ) {
+      if (artifact._format === 'hh3-artifact-1' && artifact.buildInfoId && artifact.inputSourceName && !artifact.ast) {
         // Read the corresponding build-info output file
         const buildInfoOutputPath = path.join(buildInfoDir, `${artifact.buildInfoId}.output.json`);
 
@@ -256,10 +250,8 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
           // Extract AST from output.sources[inputSourceName].ast
           const inputSourceName = artifact.inputSourceName;
           const contractName = artifact.contractName;
-          
-          if (
-            buildInfoOutput.output?.sources?.[inputSourceName]?.ast
-          ) {
+
+          if (buildInfoOutput.output?.sources?.[inputSourceName]?.ast) {
             const ast = buildInfoOutput.output.sources[inputSourceName].ast;
 
             // Inject AST into artifact
@@ -286,11 +278,11 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
             // AST not found in build-info - log for debugging
             console.warn(
               `Warning: AST not found in build-info for artifact ${artifactPath}\n` +
-              `  buildInfoId: ${artifact.buildInfoId}\n` +
-              `  inputSourceName: ${inputSourceName}\n` +
-              `  build-info output exists: ${!!buildInfoOutput.output}\n` +
-              `  sources exists: ${!!buildInfoOutput.output?.sources}\n` +
-              `  source key exists: ${!!buildInfoOutput.output?.sources?.[inputSourceName]}`
+                `  buildInfoId: ${artifact.buildInfoId}\n` +
+                `  inputSourceName: ${inputSourceName}\n` +
+                `  build-info output exists: ${!!buildInfoOutput.output}\n` +
+                `  sources exists: ${!!buildInfoOutput.output?.sources}\n` +
+                `  source key exists: ${!!buildInfoOutput.output?.sources?.[inputSourceName]}`,
             );
             skippedCount++;
           }
@@ -299,8 +291,8 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
           if (err.code === 'ENOENT') {
             console.warn(
               `Warning: Build-info output file not found for artifact ${artifactPath}\n` +
-              `  Expected: ${buildInfoOutputPath}\n` +
-              `  buildInfoId: ${artifact.buildInfoId}`
+                `  Expected: ${buildInfoOutputPath}\n` +
+                `  buildInfoId: ${artifact.buildInfoId}`,
             );
           } else {
             // Log other errors but don't fail the whole process
@@ -322,7 +314,7 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
   // Log summary if any artifacts were processed or had issues
   if (processedCount > 0 || skippedCount > 0 || errorCount > 0) {
     console.log(
-      `[OpenZeppelin Upgrades] AST injection: ${processedCount} processed, ${skippedCount} skipped, ${errorCount} errors`
+      `[OpenZeppelin Upgrades] AST injection: ${processedCount} processed, ${skippedCount} skipped, ${errorCount} errors`,
     );
   }
 }

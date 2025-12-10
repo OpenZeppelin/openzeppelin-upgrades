@@ -63,10 +63,16 @@ export function makeProposeUpgradeWithApproval(
         : contractNameOrImplFactory;
     const abi = implFactory.interface.formatJson();
 
-    const deployedImpl = await deployImplForUpgrade(hre, proxyAddress, implFactory, {
-      getTxResponse: true,
-      ...opts,
-    }, connection);
+    const deployedImpl = await deployImplForUpgrade(
+      hre,
+      proxyAddress,
+      implFactory,
+      {
+        getTxResponse: true,
+        ...opts,
+      },
+      connection,
+    );
 
     const txResponse = deployedImpl.txResponse;
     const newImplementation = deployedImpl.impl;

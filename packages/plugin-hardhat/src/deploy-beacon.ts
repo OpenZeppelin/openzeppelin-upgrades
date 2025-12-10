@@ -19,7 +19,11 @@ export interface DeployBeaconFunction {
   (ImplFactory: ContractFactory, opts?: DeployBeaconOptions): Promise<Contract>;
 }
 
-export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): DeployBeaconFunction {
+export function makeDeployBeacon(
+  hre: HardhatRuntimeEnvironment,
+  defenderModule: boolean,
+  connection: NetworkConnection,
+): DeployBeaconFunction {
   return async function deployBeacon(ImplFactory: ContractFactory, opts: DeployBeaconOptions = {}) {
     disableDefender(hre, defenderModule, opts, deployBeacon.name);
 

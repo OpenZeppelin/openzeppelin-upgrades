@@ -11,7 +11,7 @@ let upgrades;
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   upgrades.silenceWarnings();
-  
+
   t.context.Action = await ethers.getContractFactory('Action');
   t.context.ActionV2 = await ethers.getContractFactory('ActionV2');
   t.context.ActionV2Bad = await ethers.getContractFactory('ActionV2Bad');

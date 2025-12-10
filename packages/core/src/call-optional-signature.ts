@@ -2,7 +2,6 @@ import { keccak256 } from 'ethereumjs-util';
 import { call, EthereumProvider } from './provider';
 
 export async function callOptionalSignature(provider: EthereumProvider, address: string, signature: string) {
-
   const data = '0x' + keccak256(Buffer.from(signature)).toString('hex').slice(0, 8);
 
   try {

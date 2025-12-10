@@ -20,7 +20,11 @@ export type UpgradeBeaconFunction = (
   opts?: UpgradeBeaconOptions,
 ) => Promise<Contract>;
 
-export function makeUpgradeBeacon(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): UpgradeBeaconFunction {
+export function makeUpgradeBeacon(
+  hre: HardhatRuntimeEnvironment,
+  defenderModule: boolean,
+  connection: NetworkConnection,
+): UpgradeBeaconFunction {
   return async function upgradeBeacon(beacon, ImplFactory, opts: UpgradeBeaconOptions = {}) {
     disableDefender(hre, defenderModule, opts, upgradeBeacon.name);
 

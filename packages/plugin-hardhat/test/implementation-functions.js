@@ -8,7 +8,6 @@ import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
-
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
@@ -164,7 +163,9 @@ test('validate upgrade uups - happy path', async t => {
   const { GreeterProxiable, GreeterV2Proxiable } = t.context;
 
   const signer = await ethers.provider.getSigner();
-  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!'], {
+    kind: 'uups',
+  });
   await upgrades.validateUpgrade(greeter, GreeterV2Proxiable);
 });
 
@@ -172,7 +173,9 @@ test('validate upgrade uups - incompatible storage', async t => {
   const { GreeterProxiable, GreeterStorageConflictProxiable } = t.context;
 
   const signer = await ethers.provider.getSigner();
-  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!'], {
+    kind: 'uups',
+  });
   await t.throwsAsync(() => upgrades.validateUpgrade(greeter, GreeterStorageConflictProxiable), {
     message: /(New storage layout is incompatible)/,
   });
@@ -182,7 +185,9 @@ test('validate upgrade uups - incompatible storage - forced', async t => {
   const { GreeterProxiable, GreeterStorageConflictProxiable } = t.context;
 
   const signer = await ethers.provider.getSigner();
-  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hola mundo!'], {
+    kind: 'uups',
+  });
   await upgrades.validateUpgrade(greeter, GreeterStorageConflictProxiable, { unsafeSkipStorageCheck: true });
 });
 

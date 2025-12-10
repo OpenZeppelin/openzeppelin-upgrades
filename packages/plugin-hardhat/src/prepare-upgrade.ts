@@ -27,7 +27,11 @@ export type PrepareUpgradeFunction = (
   opts?: PrepareUpgradeOptions,
 ) => Promise<DeployImplementationResponse>;
 
-export function makePrepareUpgrade(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): PrepareUpgradeFunction {
+export function makePrepareUpgrade(
+  hre: HardhatRuntimeEnvironment,
+  defenderModule: boolean,
+  connection: NetworkConnection,
+): PrepareUpgradeFunction {
   return async function prepareUpgrade(referenceAddressOrContract, ImplFactory, opts: PrepareUpgradeOptions = {}) {
     opts = enableDefender(hre, defenderModule, opts);
 

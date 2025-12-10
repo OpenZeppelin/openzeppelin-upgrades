@@ -10,7 +10,7 @@ let upgrades;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  
+
   t.context.DeployOverload = await ethers.getContractFactory('DeployOverload');
 });
 

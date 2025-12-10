@@ -34,29 +34,33 @@ test.beforeEach(async t => {
   t.context.spy = sinon.spy(t.context.fakeDefenderClient, 'upgradeContract');
 
   const { getNetwork: _getNetwork, ...otherDefenderUtils } = await import('../dist/defender/utils.js');
-  const module = await esmock('../dist/defender/propose-upgrade-with-approval.js', {
-    '../dist/defender/utils.js': {
-      ...otherDefenderUtils,
-      getNetwork: () => t.context.fakeChainId,
+  const module = await esmock(
+    '../dist/defender/propose-upgrade-with-approval.js',
+    {
+      '../dist/defender/utils.js': {
+        ...otherDefenderUtils,
+        getNetwork: () => t.context.fakeChainId,
+      },
+      '../dist/defender/client.js': {
+        getDeployClient: () => t.context.fakeDefenderClient,
+        getNetworkClient: () => t.context.fakeDefenderClient,
+      },
+      '../dist/utils/deploy.js': {
+        deploy: mockDeploy,
+      },
     },
-    '../dist/defender/client.js': {
-      getDeployClient: () => t.context.fakeDefenderClient,
-      getNetworkClient: () => t.context.fakeDefenderClient,
+    {
+      // Global mocks
+      '../dist/defender/client.js': {
+        getDeployClient: () => t.context.fakeDefenderClient,
+        getNetworkClient: () => t.context.fakeDefenderClient,
+      },
+      '../dist/utils/deploy.js': {
+        deploy: mockDeploy,
+      },
     },
-    '../dist/utils/deploy.js': {
-      deploy: mockDeploy,
-    },
-  }, {
-    // Global mocks
-    '../dist/defender/client.js': {
-      getDeployClient: () => t.context.fakeDefenderClient,
-      getNetworkClient: () => t.context.fakeDefenderClient,
-    },
-    '../dist/utils/deploy.js': {
-      deploy: mockDeploy,
-    },
-  });
-  
+  );
+
   t.context.proposeUpgradeWithApproval = module.makeProposeUpgradeWithApproval(hre, true, connection);
 
   t.context.Greeter = await ethers.getContractFactory('GreeterDefender');

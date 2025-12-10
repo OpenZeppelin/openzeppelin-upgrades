@@ -10,19 +10,23 @@ import { mockDeploy } from '../dist/test-utils/mock-deploy.js';
 test.beforeEach(async t => {
   t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
-  
+
   // Mock at the deploy-implementation level AND at the deploy-impl level
-  const module = await esmock('../dist/deploy-implementation.js', {
-    '../dist/utils/deploy.js': {
-      deploy: mockDeploy,
+  const module = await esmock(
+    '../dist/deploy-implementation.js',
+    {
+      '../dist/utils/deploy.js': {
+        deploy: mockDeploy,
+      },
     },
-  }, {
-    // This is the third parameter - global mocks that apply to all imports
-    '../dist/utils/deploy.js': {
-      deploy: mockDeploy,
+    {
+      // This is the third parameter - global mocks that apply to all imports
+      '../dist/utils/deploy.js': {
+        deploy: mockDeploy,
+      },
     },
-  });
-  
+  );
+
   t.context.deployImplementation = module.makeDeployImplementation(hre, true, connection);
 });
 

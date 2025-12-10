@@ -14,19 +14,29 @@ export interface ApprovalProcess {
 export type GetDeployApprovalProcessFunction = () => Promise<ApprovalProcess>;
 export type GetUpgradeApprovalProcessFunction = () => Promise<ApprovalProcess>;
 
-export function makeGetDeployApprovalProcess(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): GetDeployApprovalProcessFunction {
+export function makeGetDeployApprovalProcess(
+  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
+): GetDeployApprovalProcessFunction {
   return async function getDeployApprovalProcess() {
     return await getApprovalProcess(hre, 'deploy', connection);
   };
 }
 
-export function makeGetUpgradeApprovalProcess(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): GetUpgradeApprovalProcessFunction {
+export function makeGetUpgradeApprovalProcess(
+  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
+): GetUpgradeApprovalProcessFunction {
   return async function getUpgradeApprovalProcess() {
     return await getApprovalProcess(hre, 'upgrade', connection);
   };
 }
 
-async function getApprovalProcess(hre: HardhatRuntimeEnvironment, kind: 'deploy' | 'upgrade', connection: NetworkConnection) {
+async function getApprovalProcess(
+  hre: HardhatRuntimeEnvironment,
+  kind: 'deploy' | 'upgrade',
+  connection: NetworkConnection,
+) {
   const client = getDeployClient(hre);
   const network = await getNetwork(hre, connection);
 

@@ -63,7 +63,11 @@ function assertNonUpgradeable(deployData: DeployData) {
   }
 }
 
-export function makeDeployContract(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): DeployContractFunction {
+export function makeDeployContract(
+  hre: HardhatRuntimeEnvironment,
+  defenderModule: boolean,
+  connection: NetworkConnection,
+): DeployContractFunction {
   return async function deployContract<F extends ContractFactory>(
     Contract: F,
     args: unknown[] | DeployContractOptions = [],

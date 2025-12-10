@@ -10,7 +10,7 @@ let upgrades;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  
+
   t.context.InitializerOverloaded = await ethers.getContractFactory('InitializerOverloaded');
   t.context.InitializerMissing = await ethers.getContractFactory('InitializerMissing');
 });

@@ -8,8 +8,6 @@ import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
-
-
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   upgrades.silenceWarnings();

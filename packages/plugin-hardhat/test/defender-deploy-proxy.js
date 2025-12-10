@@ -31,7 +31,7 @@ test.beforeEach(async t => {
 
   t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
-  
+
   // Create a wrapper around the shared mock deploy function to use the stub
   const mockDeploy = async (hre, opts, factory, ...args) => {
     const result = await baseMockDeploy(hre, opts, factory, ...args);
@@ -40,18 +40,22 @@ test.beforeEach(async t => {
       remoteDeploymentId: stub(),
     };
   };
-  
-  const module = await esmock('../dist/deploy-proxy.js', {
-    '../dist/utils/deploy.js': {
-      deploy: mockDeploy,
+
+  const module = await esmock(
+    '../dist/deploy-proxy.js',
+    {
+      '../dist/utils/deploy.js': {
+        deploy: mockDeploy,
+      },
     },
-  }, {
-    // Global mocks
-    '../dist/utils/deploy.js': {
-      deploy: mockDeploy,
+    {
+      // Global mocks
+      '../dist/utils/deploy.js': {
+        deploy: mockDeploy,
+      },
     },
-  });
-  
+  );
+
   t.context.deployProxy = module.makeDeployProxy(hre, true, connection);
 });
 
@@ -107,35 +111,39 @@ test('deployed calls wait for deployment', async t => {
   // stub the waitForDeployment function
   const waitStub = sinon.stub();
 
-  const module = await esmock('../dist/deploy-proxy.js', {
-    '../dist/defender/deploy.js': {
-      defenderDeploy: deployStub,
-    },
-    '../dist/defender/utils.js': {
-      waitForDeployment: waitStub,
-      enableDefender: (hre, defenderModule, opts) => {
-        return {
-          ...opts,
-          useDefenderDeploy: true,
-        };
+  const module = await esmock(
+    '../dist/deploy-proxy.js',
+    {
+      '../dist/defender/deploy.js': {
+        defenderDeploy: deployStub,
+      },
+      '../dist/defender/utils.js': {
+        waitForDeployment: waitStub,
+        enableDefender: (hre, defenderModule, opts) => {
+          return {
+            ...opts,
+            useDefenderDeploy: true,
+          };
+        },
       },
     },
-  }, {
-    // Global mocks
-    '../dist/defender/deploy.js': {
-      defenderDeploy: deployStub,
-    },
-    '../dist/defender/utils.js': {
-      waitForDeployment: waitStub,
-      enableDefender: (hre, defenderModule, opts) => {
-        return {
-          ...opts,
-          useDefenderDeploy: true,
-        };
+    {
+      // Global mocks
+      '../dist/defender/deploy.js': {
+        defenderDeploy: deployStub,
+      },
+      '../dist/defender/utils.js': {
+        waitForDeployment: waitStub,
+        enableDefender: (hre, defenderModule, opts) => {
+          return {
+            ...opts,
+            useDefenderDeploy: true,
+          };
+        },
       },
     },
-  });
-  
+  );
+
   const deployProxy = module.makeDeployProxy(hre, true, connection);
 
   const signer2 = await ethers.provider.getSigner();

@@ -10,7 +10,7 @@ let upgrades;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  
+
   t.context.Adder = await ethers.getContractFactory('Adder');
   t.context.AdderV2 = await ethers.getContractFactory('AdderV2');
 });

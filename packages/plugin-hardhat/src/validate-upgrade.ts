@@ -27,7 +27,10 @@ export interface ValidateUpgradeFunction {
   ): Promise<void>;
 }
 
-export function makeValidateUpgrade(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): ValidateUpgradeFunction {
+export function makeValidateUpgrade(
+  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
+): ValidateUpgradeFunction {
   return async function validateUpgrade(
     referenceAddressOrImplFactory: ContractAddressOrInstance | ContractFactory,
     newImplFactory: ContractFactory,

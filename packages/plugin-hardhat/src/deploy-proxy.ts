@@ -37,7 +37,11 @@ export interface DeployFunction {
   <F extends ContractFactory>(ImplFactory: F, opts?: DeployProxyOptions): Promise<ContractTypeOfFactory<F>>;
 }
 
-export function makeDeployProxy(hre: HardhatRuntimeEnvironment, defenderModule: boolean, connection: NetworkConnection): DeployFunction {
+export function makeDeployProxy(
+  hre: HardhatRuntimeEnvironment,
+  defenderModule: boolean,
+  connection: NetworkConnection,
+): DeployFunction {
   return async function deployProxy<F extends ContractFactory>(
     ImplFactory: F,
     args: unknown[] | DeployProxyOptions = [],

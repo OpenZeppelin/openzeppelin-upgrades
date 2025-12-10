@@ -79,7 +79,7 @@ test('get contract instance - tx hash updated', async t => {
   const connectStub = sinon.stub(hre.network, 'connect').callsFake(async () => {
     const connection = await originalConnect();
     const originalGetTransaction = connection.ethers.provider.getTransaction.bind(connection.ethers.provider);
-    sinon.stub(connection.ethers.provider, 'getTransaction').callsFake(async (hash) => {
+    sinon.stub(connection.ethers.provider, 'getTransaction').callsFake(async hash => {
       if (hash === second.deploymentTransaction().hash) {
         return second.deploymentTransaction();
       }

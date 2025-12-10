@@ -10,7 +10,7 @@ import type { SolcUserConfig } from 'hardhat/types/config';
 import hardhatVerify from '@nomicfoundation/hardhat-verify';
 import hardhatEthers from '@nomicfoundation/hardhat-ethers';
 import hardhatUpgrades from './src/index.ts';
-import { OZfilesToBuild} from './src/index.ts';
+import { OZfilesToBuild } from './src/index.ts';
 
 const override: SolcUserConfig = {
   version: '0.8.10',
@@ -20,7 +20,6 @@ const override: SolcUserConfig = {
     },
   },
 };
-
 
 const config: HardhatUserConfig = {
   plugins: [hardhatVerify, hardhatEthers, hardhatUpgrades],
@@ -47,22 +46,18 @@ const config: HardhatUserConfig = {
       'contracts/GapV2.sol': override,
       'contracts/GapV2_Bad.sol': override,
     },
-    npmFilesToBuild: [ ...OZfilesToBuild() ],
+    npmFilesToBuild: [...OZfilesToBuild()],
   },
   paths: {
     tests: {
-      solidity: "./test/solidity"
-    }
+      solidity: './test/solidity',
+    },
   },
   test: {
     solidity: {
       ffi: true,
       fsPermissions: {
-        readFile: [
-          './hardhat.config.ts',
-          './hardhat.config.js',
-          './artifacts/**/*.json',
-        ],
+        readFile: ['./hardhat.config.ts', './hardhat.config.js', './artifacts/**/*.json'],
         readDirectory: [
           './artifacts',
           './artifacts/build-info',

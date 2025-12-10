@@ -6,7 +6,7 @@ export * from './is-full-solc-output.js';
 export * from './validations.js';
 export * from './contract-types.js';
 export * from './options.js';
-export type { UpgradeOptions } from './options.js';  // ✓ Correct
+export type { UpgradeOptions } from './options.js'; // ✓ Correct
 export * from './initializer-data.js';
 export { attach, getSigner } from './ethers.js';
 export {

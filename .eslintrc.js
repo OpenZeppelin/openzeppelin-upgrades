@@ -29,9 +29,13 @@ module.exports = {
       },
     },
     {
-      files: ['ava.config.js'],
+      files: ['ava.config.js', 'packages/plugin-hardhat/test/*.js'],
       parserOptions: {
+        ecmaVersion: 'latest',
         sourceType: 'module',
+      },
+      rules: {
+        'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       },
     },
     {

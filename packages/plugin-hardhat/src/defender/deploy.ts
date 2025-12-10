@@ -64,7 +64,7 @@ export async function defenderDeploy(
 ): Promise<DefenderDeployment> {
   // Create connection if not available in context
   const connection = await hre.network.connect();
-  
+
   const client = getDeployClient(hre);
 
   // Override constructor arguments in options with the ones passed as arguments to this function.
@@ -223,11 +223,11 @@ async function getContractInfo(
   // Remove 'project/' prefix for artifact resolution (Hardhat 3 compatibility)
   const artifactName = removeProjectPrefix(fullContractName);
   const { sourceName, contractName } = parseFullyQualifiedName(artifactName);
-  
+
   // Read the artifact to get inputSourceName which is needed for buildInfo access
   const artifact = await hre.artifacts.readArtifact(artifactName);
   const inputSourceName = artifact.inputSourceName || sourceName; // fallback for Hardhat 2
-  
+
   // Get the build-info file corresponding to the fully qualified contract name
   const buildInfo = await getCombinedBuildInfo(hre.artifacts, artifactName);
 

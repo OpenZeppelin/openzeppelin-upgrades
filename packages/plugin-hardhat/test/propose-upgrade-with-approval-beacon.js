@@ -46,7 +46,7 @@ test.beforeEach(async t => {
       getDeployClient: () => t.context.fakeDefenderClient,
     },
   });
-  
+
   t.context.proposeUpgradeWithApproval = module.makeProposeUpgradeWithApproval(hre, true, connection);
 
   t.context.Greeter = await ethers.getContractFactory('GreeterDefender');

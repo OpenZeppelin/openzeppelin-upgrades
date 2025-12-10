@@ -27,7 +27,10 @@ import {
  * @param connection - Optional network connection object from await hre.network.connect()
  * @returns API object with all upgrade functions
  */
-export async function upgrades(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): Promise<HardhatUpgrades> {
+export async function upgrades(
+  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
+): Promise<HardhatUpgrades> {
   await warnOnHardhatDefender();
   if (!connection) {
     connection = await hre.network.connect();
@@ -53,12 +56,19 @@ export async function upgrades(hre: HardhatRuntimeEnvironment, connection: Netwo
  * @param connection - Optional network connection object from await hre.network.connect()
  * @returns API object with all upgrade and Defender functions
  */
-export async function defender(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): Promise<DefenderHardhatUpgrades> {
+export async function defender(
+  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
+): Promise<DefenderHardhatUpgrades> {
   await warnOnHardhatDefender();
   return await createDefenderAPI(hre, connection);
 }
 
-async function createUpgradesAPI(hre: HardhatRuntimeEnvironment, isDefender: boolean, connection: NetworkConnection): Promise<HardhatUpgrades> {
+async function createUpgradesAPI(
+  hre: HardhatRuntimeEnvironment,
+  isDefender: boolean,
+  connection: NetworkConnection,
+): Promise<HardhatUpgrades> {
   // Dynamic imports for ES modules
   const [
     { makeDeployProxy },
@@ -124,7 +134,10 @@ async function createUpgradesAPI(hre: HardhatRuntimeEnvironment, isDefender: boo
   };
 }
 
-async function createDefenderAPI(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): Promise<DefenderHardhatUpgrades> {
+async function createDefenderAPI(
+  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
+): Promise<DefenderHardhatUpgrades> {
   // Get base upgrades API with defender flag
   const upgradesAPI = await createUpgradesAPI(hre, true, connection);
 
