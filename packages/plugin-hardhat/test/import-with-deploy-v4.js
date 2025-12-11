@@ -14,7 +14,7 @@ let upgrades;
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2');
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable40');
   t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable40');
 

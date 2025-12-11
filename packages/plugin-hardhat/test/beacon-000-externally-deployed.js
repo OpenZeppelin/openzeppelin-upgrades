@@ -14,7 +14,7 @@ test.before(async t => {
 
   // Now get contract factories
   t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2');
   t.context.Beacon = await ethers.getContractFactory('Beacon');
 });
 

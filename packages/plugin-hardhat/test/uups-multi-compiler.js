@@ -13,7 +13,7 @@ let _upgrades;
 test.before(async t => {
   _upgrades = await upgradesFactory(hre, connection);
   t.context.validations = await readValidations(hre);
-  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.Greeter = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
   t.context.GreeterMulti = await ethers.getContractFactory('GreeterMultiPragmaProxiable');
 });
 

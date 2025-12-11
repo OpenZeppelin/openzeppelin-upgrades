@@ -2,6 +2,7 @@ import test from 'ava';
 import hre from 'hardhat';
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import { deploy } from '../dist/utils/deploy.js';
+// AccessManager is from @openzeppelin/contracts, we'll get it via artifacts
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
@@ -10,10 +11,11 @@ let upgrades;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.Greeter = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2Proxiable');
   t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3Proxiable');
   t.context.AccessManagedProxy = await ethers.getContractFactory('AccessManagedProxy');
+  // AccessManager is from @openzeppelin/contracts, imported via imports.sol
   const AccessManager = await ethers.getContractFactory('AccessManager');
   const [admin, anon] = await ethers.getSigners();
   t.context.admin = admin;

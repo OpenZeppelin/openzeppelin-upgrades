@@ -30,7 +30,7 @@ test.beforeEach(async t => {
   stub.onCall(0).returns(IMPL_ID);
   stub.onCall(1).returns(PROXY_ID);
 
-  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');
 
   // Create a wrapper around the shared mock deploy function to use the stub
@@ -68,7 +68,7 @@ test('deploy proxy', async t => {
   const { deployProxy, GreeterProxiable } = t.context;
 
   const signer = await ethers.provider.getSigner();
-  const inst = await deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello World']);
+  const inst = await deployProxy(GreeterProxiable, ['Hello World']);
   t.not(await inst.getAddress(), undefined);
 
   // check that manifest has deployment ids
@@ -98,7 +98,7 @@ test('deployed calls wait for deployment', async t => {
   // 1. so we have a real address
   // 2. so it predeploys the implementation since we are assuming the impl is being deployed by Defender
   const signer = await ethers.provider.getSigner();
-  const realProxy = await upgrades.deployProxy(GreeterProxiable, [await signer.getAddress(), 'Hello World']);
+  const realProxy = await upgrades.deployProxy(GreeterProxiable, ['Hello World']);
 
   // stub proxy deployment
   const deployStub = sinon.stub();
@@ -148,7 +148,7 @@ test('deployed calls wait for deployment', async t => {
   const deployProxy = module.makeDeployProxy(hre, true, connection);
 
   const signer2 = await ethers.provider.getSigner();
-  const inst = await deployProxy(GreeterProxiable, [await signer2.getAddress(), 'Hello World']);
+  const inst = await deployProxy(GreeterProxiable, ['Hello World']);
   await inst.waitForDeployment();
 
   t.is(waitStub.callCount, 1);

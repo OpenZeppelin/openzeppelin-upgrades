@@ -58,7 +58,7 @@ test('admin with unknown upgrades interface version due to fallback returning no
 
   const debugStub = sinon.stub();
   const { makeUpgradeProxy } = await import('../dist/upgrade-proxy.js');
-  const upgradeProxy = makeUpgradeProxy(hre, false, debugStub);
+  const upgradeProxy = makeUpgradeProxy(hre, false, connection, debugStub);
 
   const greeter2 = await upgradeProxy(proxy, GreeterTransparent40FallbackV2);
   await greeter2.resetGreeting();
@@ -97,7 +97,7 @@ test('admin with unknown upgrades interface version due to fallback returning st
 
   const debugStub = sinon.stub();
   const { makeUpgradeProxy } = await import('../dist/upgrade-proxy.js');
-  const upgradeProxy = makeUpgradeProxy(hre, false, debugStub);
+  const upgradeProxy = makeUpgradeProxy(hre, false, connection, debugStub);
 
   const greeter2 = await upgradeProxy(proxy, GreeterTransparent40FallbackStringV2);
   await greeter2.resetGreeting();

@@ -2,7 +2,7 @@ import test from 'ava';
 import hre from 'hardhat';
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import { fetchOrDeployAdmin } from '@openzeppelin/upgrades-core';
-import { deploy } from '../dist/utils.js';
+import { deploy } from '../dist/utils/deploy.js';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json' with { type: 'json' };
 
 

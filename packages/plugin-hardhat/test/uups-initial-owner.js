@@ -10,7 +10,7 @@ let upgrades;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.Greeter = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
 });
 
 test('uups with initialOwner option', async t => {
@@ -20,7 +20,7 @@ test('uups with initialOwner option', async t => {
   const signer = await ethers.provider.getSigner();
 
   await t.throwsAsync(
-    upgrades.deployProxy(Greeter, [await signer.getAddress(), 'hello'], { initialOwner: initialOwner.address }),
+    upgrades.deployProxy(Greeter, ['hello'], { initialOwner: initialOwner.address }),
     {
       message: /The `initialOwner` option is not supported for this kind of proxy \('uups'\)/,
     },

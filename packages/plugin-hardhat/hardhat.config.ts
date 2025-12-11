@@ -47,7 +47,7 @@ const config: HardhatUserConfig = {
       'contracts/GapV2.sol': override,
       'contracts/GapV2_Bad.sol': override,
     },
-    npmFilesToBuild: [...OZfilesToBuild()],
+    npmFilesToBuild: [...OZfilesToBuild(), "@openzeppelin/contracts/access/manager/AccessManager.sol"],
   },
   paths: {
     tests: {

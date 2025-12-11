@@ -10,8 +10,8 @@ let upgrades;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
-  t.context.GreeterV3 = await ethers.getContractFactory('contracts/GreeterV3Proxiable.sol:GreeterV3Proxiable');
+  t.context.Greeter = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
+  t.context.GreeterV3 = await ethers.getContractFactory('contracts/GreeterV3.sol:GreeterV3Proxiable');
 });
 
 test('prepare upgrade with txresponse', async t => {
@@ -19,7 +19,7 @@ test('prepare upgrade with txresponse', async t => {
   const signer = await ethers.provider.getSigner();
 
   // deploy a proxy
-  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
 
   // prepare the upgrade and get tx response
   const txResponse = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3, { getTxResponse: true });
@@ -39,7 +39,7 @@ test('prepare upgrade twice with txresponse', async t => {
   const signer = await ethers.provider.getSigner();
 
   // deploy a proxy
-  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], { kind: 'uups' });
 
   // prepare the upgrade and get tx response
   const txResponse1 = await upgrades.prepareUpgrade(await greeter.getAddress(), GreeterV3, { getTxResponse: true });

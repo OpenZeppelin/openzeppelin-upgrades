@@ -9,7 +9,7 @@ import sinon from 'sinon';
 const DEPLOYMENT_ID = 'abc';
 
 test.beforeEach(async t => {
-  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
 });
 
 test.afterEach.always(() => {

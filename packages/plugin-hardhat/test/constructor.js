@@ -10,7 +10,7 @@ let upgrades;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  t.context.WithConstructor = await ethers.getContractFactory('WithConstructor');
+  t.context.WithConstructor = await ethers.getContractFactory('contracts/WithConstructor.sol:WithConstructor');
 });
 
 test('new proxy - do not redeploy with same args', async t => {

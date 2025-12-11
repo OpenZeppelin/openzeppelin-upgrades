@@ -11,11 +11,11 @@ const TX_HASH = '0x0000000000000000000000000000000000000000000000000000000000000
 
 test.before(async t => {
   t.context.NonUpgradeable = await ethers.getContractFactory('NonUpgradeable');
-  t.context.WithConstructor = await ethers.getContractFactory('WithConstructor');
+  t.context.WithConstructor = await ethers.getContractFactory('contracts/WithConstructor.sol:WithConstructor');
   t.context.IsInitializable = await ethers.getContractFactory('IsInitializable');
   t.context.IsInitializableUpgradeable = await ethers.getContractFactory('IsInitializableUpgradeable');
   t.context.IsUUPS = await ethers.getContractFactory('IsUUPS');
-  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
 
   const { makeDeployContract } = await esmock('../dist/deploy-contract.js', {
     '../dist/utils/index.js': {
