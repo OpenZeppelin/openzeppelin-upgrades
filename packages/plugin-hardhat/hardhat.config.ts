@@ -1,17 +1,18 @@
+
+
+import type { HardhatUserConfig } from 'hardhat/config';
+import type { SolcUserConfig } from 'hardhat/types/config';
+import hardhatVerify from '@nomicfoundation/hardhat-verify';
+import hardhatEthers from '@nomicfoundation/hardhat-ethers';
+import hardhatUpgrades from './dist/index.js';
+import { OZfilesToBuild } from './dist/index.js';
+
 import 'dotenv/config';
 
 // Set FOUNDRY_OUT for testing (can be overridden by .env file or inline env var)
 if (!process.env.FOUNDRY_OUT) {
   process.env.FOUNDRY_OUT = 'artifacts/contracts';
 }
-
-import type { HardhatUserConfig } from 'hardhat/config';
-import type { SolcUserConfig } from 'hardhat/types/config';
-import hardhatVerify from '@nomicfoundation/hardhat-verify';
-import hardhatEthers from '@nomicfoundation/hardhat-ethers';
-import hardhatUpgrades from './src/index.ts';
-import { OZfilesToBuild } from './src/index.ts';
-
 const override: SolcUserConfig = {
   version: '0.8.10',
   settings: {
