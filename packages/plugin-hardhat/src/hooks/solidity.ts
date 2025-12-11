@@ -273,7 +273,7 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
 
             // Write the updated artifact back
             await fs.writeFile(artifactPath, JSON.stringify(artifact, null, 2), 'utf-8');
-            processedCount++;
+            processedCount += 1;
           } else {
             // AST not found in build-info - log for debugging
             console.warn(
@@ -284,7 +284,7 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
                 `  sources exists: ${!!buildInfoOutput.output?.sources}\n` +
                 `  source key exists: ${!!buildInfoOutput.output?.sources?.[inputSourceName]}`,
             );
-            skippedCount++;
+            skippedCount += 1;
           }
         } catch (err: any) {
           // If build-info output file doesn't exist or AST is missing, skip this artifact
@@ -297,16 +297,16 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
           } else {
             // Log other errors but don't fail the whole process
             console.warn(`Warning: Could not inject AST into artifact ${artifactPath}: ${err.message}`);
-            errorCount++;
+            errorCount += 1;
           }
-          skippedCount++;
+          skippedCount += 1;
         }
       }
     } catch (err: any) {
       // If artifact file is invalid JSON or can't be read, skip it
       if (err.code !== 'ENOENT') {
         console.warn(`Warning: Could not process artifact ${artifactPath}: ${err.message}`);
-        errorCount++;
+        errorCount += 1;
       }
     }
   }

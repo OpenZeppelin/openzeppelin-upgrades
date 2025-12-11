@@ -202,13 +202,10 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
 
       const userSourceNameMap: Record<string, string> | undefined = buildInfoJson.userSourceNameMap;
       if (userSourceNameMap !== undefined) {
-        const canonicalToUser = Object.entries(userSourceNameMap).reduce<Record<string, string>>(
-          (acc, [userSource, canonicalSource]) => {
-            acc[canonicalSource] = userSource;
-            return acc;
-          },
-          {},
-        );
+        const canonicalToUser: Record<string, string> = {};
+        for (const [userSource, canonicalSource] of Object.entries(userSourceNameMap)) {
+          canonicalToUser[canonicalSource] = userSource;
+        }
 
         if (inputData.sources !== undefined) {
           inputData = {

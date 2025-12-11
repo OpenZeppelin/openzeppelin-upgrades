@@ -3,7 +3,8 @@ import hre from 'hardhat';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import { upgrades as upgradesFactory, defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+//  defender as defenderFactory
 import esmock from 'esmock';
 import sinon from 'sinon';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
@@ -12,7 +13,7 @@ import { mockDeploy as baseMockDeploy } from '../dist/test-utils/mock-deploy.js'
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 /** @type {import('@openzeppelin/hardhat-upgrades').DefenderHardhatUpgrades} */
-let defender;
+// let defender;
 
 const IMPL_ID = 'abc';
 
@@ -21,7 +22,7 @@ const PROXY_ID = 'def';
 
 test.before(async () => {
   upgrades = await upgradesFactory(hre, connection);
-  defender = await defenderFactory(hre, connection);
+  // defender = await defenderFactory(hre, connection);
 });
 
 test.beforeEach(async t => {

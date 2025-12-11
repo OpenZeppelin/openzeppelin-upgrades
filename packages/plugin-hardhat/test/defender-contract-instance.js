@@ -3,11 +3,8 @@ import hre from 'hardhat';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
 import esmock from 'esmock';
 import sinon from 'sinon';
-
-const defender = await defenderFactory(hre, connection);
 
 const DEPLOYMENT_ID = 'abc';
 

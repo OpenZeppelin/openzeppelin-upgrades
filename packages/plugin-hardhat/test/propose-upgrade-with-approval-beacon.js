@@ -3,22 +3,22 @@ import hre from 'hardhat';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
+// import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import sinon from 'sinon';
 import esmock from 'esmock';
 
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
-/** @type {import('@openzeppelin/hardhat-upgrades').DefenderHardhatUpgrades} */
-let defender;
+// /** @type {import('@openzeppelin/hardhat-upgrades').DefenderHardhatUpgrades} */
+// let defender;
 
 const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
 
 test.before(async () => {
   upgrades = await upgradesFactory(hre, connection);
-  defender = await defenderFactory(hre, connection);
+  // defender = await defenderFactory(hre, connection);
 });
 
 test.beforeEach(async t => {

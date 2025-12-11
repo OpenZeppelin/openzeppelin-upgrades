@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   parserOptions: {
-    ecmaVersion: 2020,
+    ecmaVersion: 2022,
   },
   extends: ['eslint:recommended', 'plugin:prettier/recommended'],
   env: {
@@ -15,7 +15,27 @@ module.exports = {
     'unicorn/no-array-reduce': 'warn',
     'no-plusplus': ['warn', { allowForLoopAfterthoughts: true }],
   },
-  ignorePatterns: ['submodules'],
+  ignorePatterns: [
+    'submodules',
+    'packages/plugin-hardhat/test/defender-deploy.js',
+    'packages/plugin-hardhat/test/import-v4.js',
+    'packages/plugin-hardhat/test/import-v5.js',
+    'packages/plugin-hardhat/test/import-with-deploy-v4.js',
+    'packages/plugin-hardhat/test/import-with-deploy-v5.js',
+    'packages/plugin-hardhat/test/transparent-admin-initial-owner.js',
+    'packages/plugin-hardhat/test/transparent-admin-unknown-upgrade-interface.js',
+    'packages/plugin-hardhat/test/transparent-v4-change-admin-different-address.js',
+    'packages/plugin-hardhat/test/transparent-v4-change-admin-happy-path.js',
+    'packages/plugin-hardhat/test/transparent-v4-transfer-admin-ownership-multiple.js',
+    'packages/plugin-hardhat/test/transparent-v5-with-v4-manifest-admin.js',
+    'packages/plugin-hardhat/test/tx-overrides.js',
+    'packages/plugin-hardhat/test/uups-custom-proxy.js',
+    // ESLint 8.x doesn't support ES2025 import attributes syntax
+    // uses import attributes (import ... with { type: 'json' })
+    // which is valid ES2025 syntax but ESLint parser doesn't support it yet
+    // 'packages/plugin-hardhat/test/*.js',
+    // TODO: refactor for newer eslint :)
+  ],
   overrides: [
     {
       files: ['*.ts'],
@@ -29,7 +49,7 @@ module.exports = {
       },
     },
     {
-      files: ['ava.config.js', 'packages/plugin-hardhat/test/*.js'],
+      files: ['ava.config.js', 'packages/plugin-hardhat/test/*.js', 'packages/plugin-hardhat/src/*.js'],
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',

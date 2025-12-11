@@ -54,9 +54,6 @@ export async function getDeployData(
 
   const validations = await readValidations(hre);
 
-  // bytecode can be a string or BytesLike; log length if present
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const byteLen: any = (ImplFactory as any)?.bytecode?.length;
   const unlinkedBytecode = getUnlinkedBytecode(validations, ImplFactory.bytecode);
   const encodedArgs = ImplFactory.interface.encodeDeploy(opts.constructorArgs);
   const version = getVersion(unlinkedBytecode, ImplFactory.bytecode, encodedArgs);

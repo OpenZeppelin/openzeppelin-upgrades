@@ -159,7 +159,7 @@ export function disableDefender(
 export async function getRemoteDeployment(
   hre: HardhatRuntimeEnvironment,
   remoteDeploymentId: string,
-  connection: NetworkConnection,
+  _connection: NetworkConnection,
 ): Promise<RemoteDeployment | undefined> {
   const client = getDeployClient(hre);
   try {

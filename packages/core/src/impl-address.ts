@@ -23,25 +23,21 @@ export async function getImplementationAddressFromBeacon(
   provider: EthereumProvider, // v2 may differ from v3
   beaconAddress: string,
 ): Promise<string> {
-  try {
-    const impl = await callOptionalSignature(provider, beaconAddress, 'implementation()');
+  const impl = await callOptionalSignature(provider, beaconAddress, 'implementation()');
 
-    let parsedImplAddress;
-    if (impl !== undefined) {
-      try {
-        parsedImplAddress = parseAddress(impl);
-      } catch (parseErr) {
-        throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
-      }
-    }
-
-    if (parsedImplAddress === undefined) {
+  let parsedImplAddress;
+  if (impl !== undefined) {
+    try {
+      parsedImplAddress = parseAddress(impl);
+    } catch (parseErr) {
       throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
-    } else {
-      return parsedImplAddress;
     }
-  } catch (err) {
-    throw err;
+  }
+
+  if (parsedImplAddress === undefined) {
+    throw new InvalidBeacon(`Contract at ${beaconAddress} doesn't look like a beacon`);
+  } else {
+    return parsedImplAddress;
   }
 }
 

@@ -1,14 +1,17 @@
+/* eslint-disable */
+// This file uses import attributes (import ... with { type: 'json' })
+// which is valid ES2025 syntax but ESLint parser doesn't support it yet
 import test from 'ava';
 import hre from 'hardhat';
-
-const connection = await hre.network.connect();
-const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json' with { type: 'json' };
 import TransparentUpgradableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json' with { type: 'json' };
 import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json' with { type: 'json' };
 import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.json' with { type: 'json' };
 import UpgradableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json' with { type: 'json' };
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
 
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;

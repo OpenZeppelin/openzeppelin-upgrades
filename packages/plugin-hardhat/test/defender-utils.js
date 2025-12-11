@@ -1,14 +1,9 @@
 import test from 'ava';
-import hre from 'hardhat';
 
-const connection = await hre.network.connect();
-import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
 import sinon from 'sinon';
 import esmock from 'esmock';
 import { disableDefender, enableDefender } from '../dist/defender/utils.js';
 import { getDeployClient } from '../dist/defender/client.js';
-
-const defender = await defenderFactory(hre, connection);
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x01';

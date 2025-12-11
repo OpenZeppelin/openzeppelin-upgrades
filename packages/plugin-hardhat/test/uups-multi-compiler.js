@@ -8,10 +8,10 @@ import { getVersion, getContractNameAndRunValidation } from '@openzeppelin/upgra
 import { readValidations } from '../dist/utils/validations.js';
 
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
-let upgrades;
+let _upgrades;
 
 test.before(async t => {
-  upgrades = await upgradesFactory(hre, connection);
+  _upgrades = await upgradesFactory(hre, connection);
   t.context.validations = await readValidations(hre);
   t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
   t.context.GreeterMulti = await ethers.getContractFactory('GreeterMultiPragmaProxiable');
