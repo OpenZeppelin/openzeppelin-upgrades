@@ -1,6 +1,3 @@
-/* eslint-disable */
-// This file uses import attributes (import ... with { type: 'json' })
-// which is valid ES2025 syntax but ESLint parser doesn't support it yet
 import test from 'ava';
 import hre from 'hardhat';
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
@@ -10,10 +7,10 @@ import ERC1967Proxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/co
 import BeaconProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol/BeaconProxy.json' with { type: 'json' };
 import UpgradableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json' with { type: 'json' };
 
+
 const connection = await hre.network.connect();
 const { ethers } = connection;
 
-/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
 test.before(async t => {

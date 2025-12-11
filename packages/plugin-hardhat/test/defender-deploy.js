@@ -1,11 +1,8 @@
-/* eslint-disable */
-// This file uses import attributes (import ... with { type: 'json' })
-// which is valid ES2025 syntax but ESLint parser doesn't support it yet
 import test from 'ava';
 import hre from 'hardhat';
 import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
 import sinon from 'sinon';
-import esmock from 'esmock';
+import proxyquire from 'proxyquire';
 import {
   getProxyFactory,
   getBeaconProxyFactory,
@@ -17,6 +14,7 @@ import { AbiCoder } from 'ethers';
 const connection = await hre.network.connect();
 const { ethers } = connection;
 
+const proxyquireStrict = proxyquire.noCallThru();
 const defender = await defenderFactory(hre, connection);
 
 const TX_HASH = '0x1';
@@ -48,39 +46,32 @@ test.beforeEach(async t => {
   };
   t.context.spy = sinon.spy(t.context.fakeDefenderClient, 'deployContract');
 
-  // Create a fake connection object
-  t.context.fakeConnection = {
-    ethers: {
-      provider: {
-        getTransaction: () => TX_RESPONSE,
-      },
-      getAddress: address => address,
-    },
-  };
-
-  const { getNetwork: _getNetwork, ...otherDefenderUtils } = await import('../dist/defender/utils.js');
-  t.context.deploy = await esmock('../dist/defender/deploy.js', {
-    '../dist/defender/utils.js': {
-      ...otherDefenderUtils,
+  t.context.deploy = proxyquire('../dist/defender/deploy', {
+    './utils': {
+      ...require('../dist/defender/utils'),
       getNetwork: () => t.context.fakeChainId,
     },
-    '../dist/defender/client.js': {
+    './client': {
       getDeployClient: () => t.context.fakeDefenderClient,
     },
-    '../dist/utils/etherscan-api.js': {
+    '../utils/etherscan-api': {
       getEtherscanAPIConfig: () => {
         return { key: ETHERSCAN_API_KEY };
       },
     },
   });
 
-  // Use real HRE artifacts - this is critical for Hardhat 3
   t.context.fakeHre = {
     artifacts: hre.artifacts,
     config: hre.config,
+    ethers: {
+      provider: {
+        getTransaction: () => 'mocked response',
+      },
+      getAddress: address => address,
+    },
     network: {
       provider: { send: async () => t.context.fakeChainId },
-      connect: async () => t.context.fakeConnection,
     },
   };
 });
@@ -101,101 +92,189 @@ function assertResult(t, result) {
 test('calls defender deploy', async t => {
   const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, {});
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.contractName, contractName);
-  t.is(call.network, fakeChainId);
-  t.is(call.verifySourceCode, true);
-  t.is(call.constructorBytecode, '0x');
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with relayerId', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, { relayerId: RELAYER_ID });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.relayerId, RELAYER_ID);
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: RELAYER_ID,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with salt', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, { salt: SALT });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.salt, SALT);
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: SALT,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with createFactoryAddress', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, { createFactoryAddress: CREATE_FACTORY });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.createFactoryAddress, CREATE_FACTORY);
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: CREATE_FACTORY,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with license', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/WithLicense.sol';
   const contractName = 'WithLicense';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, {});
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.licenseType, 'MIT');
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy - licenseType', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/WithLicense.sol';
   const contractName = 'WithLicense';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, {
-    licenseType: 'My License Type',
+    licenseType: 'My License Type', // not a valid type, but this just sets the option
   });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.licenseType, 'My License Type');
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'My License Type',
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy - verifySourceCode false', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/WithLicense.sol';
   const contractName = 'WithLicense';
 
   const factory = await ethers.getContractFactory(contractName);
@@ -203,17 +282,31 @@ test('calls defender deploy - verifySourceCode false', async t => {
     verifySourceCode: false,
   });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.verifySourceCode, false);
-  t.is(call.licenseType, undefined);
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: false,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy - skipLicenseType', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/WithLicense.sol';
   const contractName = 'WithLicense';
 
   const factory = await ethers.getContractFactory(contractName);
@@ -221,9 +314,23 @@ test('calls defender deploy - skipLicenseType', async t => {
     skipLicenseType: true,
   });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.licenseType, undefined);
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
@@ -271,211 +378,383 @@ test('calls defender deploy - error - unrecognized license', async t => {
   const error = await t.throwsAsync(() => deploy.defenderDeploy(fakeHre, factory, {}));
   t.true(
     error?.message.includes(
-      'SPDX license identifier UnrecognizedId',
-    ) && error?.message.includes('does not look like a supported license'),
+      'SPDX license identifier UnrecognizedId in contracts/UnrecognizedLicense.sol does not look like a supported license for block explorer verification.',
+    ),
+  );
+  t.true(
+    error?.message.includes(
+      'Use the `licenseType` option to specify a license type, or set the `skipLicenseType` option to `true` to skip.',
+    ),
   );
 });
 
 test('calls defender deploy - no contract license', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/NoLicense.sol';
   const contractName = 'NoLicense';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, {});
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.licenseType, undefined);
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy - unlicensed', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Unlicensed.sol';
   const contractName = 'Unlicensed';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, {});
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.licenseType, 'None');
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'None',
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with constructor args', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Constructor.sol';
   const contractName = 'WithConstructor';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, {}, 10);
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.constructorBytecode, AbiCoder.defaultAbiCoder().encode(['uint256'], [10]));
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['uint256'], [10]),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with constructor args with array', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Constructor.sol';
   const contractName = 'WithConstructorArray';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, {}, [1, 2, 3]);
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.constructorBytecode, AbiCoder.defaultAbiCoder().encode(['uint256[]'], [[1, 2, 3]]));
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['uint256[]'], [[1, 2, 3]]),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with verify false', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, { verifySourceCode: false });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.verifySourceCode, false);
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: false,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with ERC1967Proxy', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
   const contractName = 'ERC1967Proxy';
-  // Fixed: getProxyFactory only needs connection, not hre
-  const factory = await getProxyFactory(connection);
+  const factory = await getProxyFactory(hre);
 
   const result = await deploy.defenderDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, DATA);
   assertResult(t, result);
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.contractName, contractName);
-  t.is(call.constructorBytecode, AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]));
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 });
 
 test('calls defender deploy with ERC1967Proxy - ignores constructorArgs', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
   const contractName = 'ERC1967Proxy';
-  const factory = await getProxyFactory(connection);
+  const factory = await getProxyFactory(hre);
 
   const result = await deploy.defenderDeploy(fakeHre, factory, { constructorArgs: ['foo'] }, LOGIC_ADDRESS, DATA);
   assertResult(t, result);
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.constructorBytecode, AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]));
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 });
 
 test('calls defender deploy with ERC1967Proxy - ignores empty constructorArgs', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
   const contractName = 'ERC1967Proxy';
-  const factory = await getProxyFactory(connection);
+  const factory = await getProxyFactory(hre);
 
   const result = await deploy.defenderDeploy(fakeHre, factory, { constructorArgs: [] }, LOGIC_ADDRESS, DATA);
   assertResult(t, result);
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.constructorBytecode, AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]));
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 });
 
 test('calls defender deploy with BeaconProxy', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
   const contractName = 'BeaconProxy';
-  const factory = await getBeaconProxyFactory(connection);
+  const factory = await getBeaconProxyFactory(hre);
 
   const result = await deploy.defenderDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, DATA);
   assertResult(t, result);
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.contractName, contractName);
-  t.is(call.constructorBytecode, AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]));
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [LOGIC_ADDRESS, DATA]),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 });
 
 test('calls defender deploy with TransparentUpgradeableProxy', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
   const contractPath = '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
   const contractName = 'TransparentUpgradeableProxy';
-  const factory = await getTransparentUpgradeableProxyFactory(connection);
+  const factory = await getTransparentUpgradeableProxyFactory(hre);
 
   const result = await deploy.defenderDeploy(fakeHre, factory, {}, LOGIC_ADDRESS, INITIAL_OWNER_ADDRESS, DATA);
   assertResult(t, result);
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.is(call.contractName, contractName);
-  t.is(call.constructorBytecode, AbiCoder.defaultAbiCoder().encode(
-    ['address', 'address', 'bytes'],
-    [LOGIC_ADDRESS, INITIAL_OWNER_ADDRESS, DATA],
-  ));
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(artifactsBuildInfo),
+    licenseType: 'MIT',
+    constructorBytecode: AbiCoder.defaultAbiCoder().encode(
+      ['address', 'address', 'bytes'],
+      [LOGIC_ADDRESS, INITIAL_OWNER_ADDRESS, DATA],
+    ),
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 });
 
 test('calls defender deploy with txOverrides.gasLimit', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, { txOverrides: { gasLimit: 1 } });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.deepEqual(call.txOverrides, {
-    gasLimit: 1,
-    gasPrice: undefined,
-    maxFeePerGas: undefined,
-    maxPriorityFeePerGas: undefined,
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: {
+      gasLimit: 1,
+      gasPrice: undefined,
+      maxFeePerGas: undefined,
+      maxPriorityFeePerGas: undefined,
+    },
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
   });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with txOverrides.gasPrice', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
   const result = await deploy.defenderDeploy(fakeHre, factory, { txOverrides: { gasPrice: 1 } });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.deepEqual(call.txOverrides, {
-    gasLimit: undefined,
-    gasPrice: '0x1',
-    maxFeePerGas: undefined,
-    maxPriorityFeePerGas: undefined,
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: {
+      gasLimit: undefined,
+      gasPrice: '0x1',
+      maxFeePerGas: undefined,
+      maxPriorityFeePerGas: undefined,
+    },
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
   });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPriorityFeePerGas', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
@@ -483,21 +762,36 @@ test('calls defender deploy with txOverrides.maxFeePerGas and txOverrides.maxPri
     txOverrides: { maxFeePerGas: 100, maxPriorityFeePerGas: '0xa' },
   });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.deepEqual(call.txOverrides, {
-    gasLimit: undefined,
-    gasPrice: undefined,
-    maxFeePerGas: '0x64',
-    maxPriorityFeePerGas: '0xa',
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: {
+      gasLimit: undefined,
+      gasPrice: undefined,
+      maxFeePerGas: '0x64',
+      maxPriorityFeePerGas: '0xa',
+    },
+    libraries: undefined,
+    metadata: undefined,
+    origin: 'Hardhat',
   });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with external library', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Token.sol';
   const contractName = 'TokenProxiable';
 
   const factory = await ethers.getContractFactory(contractName, {
@@ -507,17 +801,33 @@ test('calls defender deploy with external library', async t => {
   });
   const result = await deploy.defenderDeploy(fakeHre, factory, {});
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.truthy(call.libraries);
-  t.true(Object.values(call.libraries).includes(EXTERNAL_LIBRARY_ADDRESS));
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: {
+      'contracts/ExternalLibraries.sol:SafeMath': EXTERNAL_LIBRARY_ADDRESS,
+    },
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with multiple external libraries', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/MultipleExternalLibraries.sol';
   const contractName = 'MultipleExternalLibraries';
 
   const factory = await ethers.getContractFactory(contractName, {
@@ -528,19 +838,34 @@ test('calls defender deploy with multiple external libraries', async t => {
   });
   const result = await deploy.defenderDeploy(fakeHre, factory, {});
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.truthy(call.libraries);
-  const libraryValues = Object.values(call.libraries);
-  t.true(libraryValues.includes(EXTERNAL_LIBRARY_ADDRESS));
-  t.true(libraryValues.includes(EXTERNAL_LIBRARY_2_ADDRESS));
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: {
+      'contracts/ExternalLibraries.sol:SafeMath': EXTERNAL_LIBRARY_ADDRESS,
+      'contracts/ExternalLibraries.sol:SafeMathV2': EXTERNAL_LIBRARY_2_ADDRESS,
+    },
+    metadata: undefined,
+    origin: 'Hardhat',
+  });
 
   assertResult(t, result);
 });
 
 test('calls defender deploy with metadata', async t => {
-  const { spy, deploy, fakeHre } = t.context;
+  const { spy, deploy, fakeHre, fakeChainId } = t.context;
 
+  const contractPath = 'contracts/Greeter.sol';
   const contractName = 'Greeter';
 
   const factory = await ethers.getContractFactory(contractName);
@@ -552,12 +877,26 @@ test('calls defender deploy with metadata', async t => {
     },
   });
 
-  t.is(spy.callCount, 1);
-  const call = spy.firstCall.args[0];
-  t.deepEqual(call.metadata, {
-    commitHash: '4ae3e0d',
-    tag: 'v1.0.0',
-    anyOtherField: 'anyValue',
+  const buildInfo = await hre.artifacts.getBuildInfo(`${contractPath}:${contractName}`);
+  sinon.assert.calledWithExactly(spy, {
+    contractName: contractName,
+    contractPath: contractPath,
+    network: fakeChainId,
+    artifactPayload: JSON.stringify(buildInfo),
+    licenseType: undefined,
+    constructorBytecode: '0x',
+    verifySourceCode: true,
+    relayerId: undefined,
+    salt: undefined,
+    createFactoryAddress: undefined,
+    txOverrides: undefined,
+    libraries: undefined,
+    metadata: {
+      commitHash: '4ae3e0d',
+      tag: 'v1.0.0',
+      anyOtherField: 'anyValue',
+    },
+    origin: 'Hardhat',
   });
 
   assertResult(t, result);
@@ -600,7 +939,7 @@ test('waits until txHash is available', async t => {
 });
 
 async function testGetDeployedContractPolling(t, getDeployedContractStub, expectedCallCount) {
-  const fakeChainId = 'goerli';
+  const { fakeHre, fakeChainId } = t.context;
 
   const contractName = 'Greeter';
 
@@ -614,34 +953,15 @@ async function testGetDeployedContractPolling(t, getDeployedContractStub, expect
   };
   const deployContractSpy = sinon.spy(defenderClientWaits, 'deployContract');
 
-  const fakeConnection = {
-    ethers: {
-      provider: {
-        getTransaction: () => TX_RESPONSE,
-      },
-      getAddress: address => address,
-    },
-  };
-
-  const fakeHre = {
-    artifacts: hre.artifacts,
-    config: hre.config,
-    network: {
-      provider: { send: async () => fakeChainId },
-      connect: async () => fakeConnection,
-    },
-  };
-
-  const { getNetwork: _getNetwork, ...otherDefenderUtils } = await import('../dist/defender/utils.js');
-  const deployPending = await esmock('../dist/defender/deploy.js', {
-    '../dist/defender/utils.js': {
-      ...otherDefenderUtils,
+  const deployPending = proxyquire('../dist/defender/deploy', {
+    './utils': {
+      ...require('../dist/defender/utils'),
       getNetwork: () => fakeChainId,
     },
-    '../dist/defender/client.js': {
+    './client': {
       getDeployClient: () => defenderClientWaits,
     },
-    '../dist/utils/etherscan-api.js': {
+    '../utils/etherscan-api': {
       getEtherscanAPIConfig: () => {
         return { key: ETHERSCAN_API_KEY };
       },
@@ -649,7 +969,7 @@ async function testGetDeployedContractPolling(t, getDeployedContractStub, expect
   });
 
   const factory = await ethers.getContractFactory(contractName);
-  const result = await deployPending.defenderDeploy(fakeHre, factory, { pollingInterval: 1 });
+  const result = await deployPending.defenderDeploy(fakeHre, factory, { pollingInterval: 1 }); // poll in 1 ms
 
   t.is(deployContractSpy.callCount, 1);
   t.is(getDeployedContractStub.callCount, expectedCallCount);

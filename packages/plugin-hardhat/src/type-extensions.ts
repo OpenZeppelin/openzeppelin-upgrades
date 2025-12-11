@@ -36,3 +36,5 @@ declare module 'hardhat/types/hre' {
     _defender?: DefenderHardhatUpgrades;
   }
 }
+
+export {};

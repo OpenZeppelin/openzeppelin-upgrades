@@ -1,31 +1,20 @@
-/* eslint-disable */
-// This file uses import attributes (import ... with { type: 'json' })
-// which is valid ES2025 syntax but ESLint parser doesn't support it yet
 import test from 'ava';
 import hre from 'hardhat';
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
-import AccessManagerArtifact from '@openzeppelin/contracts/build/contracts/AccessManager.json' with { type: 'json' };
 import { deploy } from '../dist/utils/deploy.js';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
 
-/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
-  t.context.Greeter = await ethers.getContractFactory('contracts/GreeterProxiable.sol:GreeterProxiable');
-  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2Proxiable.sol:GreeterV2Proxiable');
-  t.context.GreeterV3 = await ethers.getContractFactory('contracts/GreeterV3Proxiable.sol:GreeterV3Proxiable');
+  t.context.Greeter = await ethers.getContractFactory('GreeterProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3Proxiable');
   t.context.AccessManagedProxy = await ethers.getContractFactory('AccessManagedProxy');
-  
-  // Import AccessManager from OpenZeppelin Contracts
-  const AccessManager = await ethers.getContractFactory(
-    AccessManagerArtifact.abi,
-    AccessManagerArtifact.bytecode
-  );
-  
+  const AccessManager = await ethers.getContractFactory('AccessManager');
   const [admin, anon] = await ethers.getSigners();
   t.context.admin = admin;
   t.context.anon = anon;
@@ -39,9 +28,8 @@ async function deployWithExtraProxyArgs(hre, opts, factory, ...args) {
 
 test('custom uups proxy factory and deploy function', async t => {
   const { Greeter, GreeterV2, GreeterV3, AccessManagedProxy, acMgr, admin, anon } = t.context;
-  const signer = await ethers.provider.getSigner();
 
-  const greeter = await upgrades.deployProxy(Greeter, [await signer.getAddress(), 'Hello, Hardhat!'], {
+  const greeter = await upgrades.deployProxy(Greeter, ['Hello, Hardhat!'], {
     kind: 'uups',
     proxyExtraConstructorArgs: [await acMgr.getAddress()],
     deployFunction: deployWithExtraProxyArgs,

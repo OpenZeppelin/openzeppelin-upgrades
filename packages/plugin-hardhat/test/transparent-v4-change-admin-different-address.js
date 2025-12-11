@@ -1,30 +1,30 @@
-/* eslint-disable */
-// This file uses import attributes (import ... with { type: 'json' })
-// which is valid ES2025 syntax but ESLint parser doesn't support it yet
 import test from 'ava';
 import hre from 'hardhat';
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json' with { type: 'json' };
 import TransparentUpgradableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json' with { type: 'json' };
 
+
 const connection = await hre.network.connect();
 const { ethers } = connection;
 
-
-/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
+
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
+
   t.context.ProxyAdmin = await ethers.getContractFactory(ProxyAdmin.abi, ProxyAdmin.bytecode);
   t.context.TransparentUpgradableProxy = await ethers.getContractFactory(
     TransparentUpgradableProxy.abi,
     TransparentUpgradableProxy.bytecode,
   );
 });
+
 test('use different admin addresses', async t => {
   const { Greeter, GreeterV2, ProxyAdmin, TransparentUpgradableProxy } = t.context;
+
   // Deploy a v4 proxy and admin, and import them
   const impl = await Greeter.deploy();
   await impl.waitForDeployment();
@@ -34,17 +34,25 @@ test('use different admin addresses', async t => {
     await impl.getAddress(),
     await admin.getAddress(),
     Greeter.interface.encodeFunctionData('initialize', ['Hello, Hardhat!']),
+  );
   const greeter = await upgrades.forceImport(await proxy.getAddress(), Greeter);
+
   // Change to new admin owned by signer 2
   const [signer1, signer2] = await ethers.getSigners();
   const ProxyAdminSigner2 = ProxyAdmin.connect(signer2);
   const newAdmin = await ProxyAdminSigner2.deploy();
+
   await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), await newAdmin.getAddress(), signer1);
+
   // Signer 1 cannot upgrade since it doesn't own the new admin
   await t.throwsAsync(() => upgrades.upgradeProxy(greeter, GreeterV2));
+
   // Upgrade using signer 2
   const GreeterV3 = Greeter.connect(signer2);
   await upgrades.upgradeProxy(greeter, GreeterV3);
+
   // Use the new admin to change the admin again, even though new admin is not the one in the manifest
   const deployedAdmin2 = await ProxyAdmin.deploy();
+
   await upgrades.admin.changeProxyAdmin(await greeter.getAddress(), await deployedAdmin2.getAddress(), signer2);
+});
