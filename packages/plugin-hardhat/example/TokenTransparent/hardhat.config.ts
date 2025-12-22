@@ -14,9 +14,9 @@ export default defineConfig({
     },
   },
   networks: {
-    localhost: {
-      url: 'http://127.0.0.1:8545',
-    },
+    // localhost: {
+    //   url: 'http://127.0.0.1:8545',
+    // },
     // Example testnet configuration (uncomment and configure as needed)
     // sepolia: {
     //   url: process.env.SEPOLIA_URL || '',

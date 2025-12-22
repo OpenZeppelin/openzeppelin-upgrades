@@ -9,7 +9,11 @@ import {
   getTransparentUpgradeableProxyFactory,
 } from '../dist/utils/factories.js';
 import { getCombinedBuildInfo } from '../dist/utils/artifacts.js';
-import artifactsBuildInfo from '@openzeppelin/upgrades-core/artifacts/build-info-v5.json' with { type: 'json' };
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+
+const artifactsBuildInfo = require('@openzeppelin/upgrades-core/artifacts/build-info-v5.json');
 import { AbiCoder } from 'ethers';
 import * as defenderUtils from '../dist/defender/utils.js';
 

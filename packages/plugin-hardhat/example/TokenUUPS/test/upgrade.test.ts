@@ -23,7 +23,7 @@ test.before(async t => {
   const connection = await hre.network.connect();
   const { ethers } = connection as any;
   const upgradesApi = await upgrades(hre, connection);
-  
+
   (t.context as TestContext).connection = connection;
   (t.context as TestContext).ethers = ethers;
   (t.context as TestContext).upgradesApi = upgradesApi;
@@ -31,7 +31,7 @@ test.before(async t => {
 
 test('Should deploy V1, upgrade to V2, and preserve state', async t => {
   const { upgradesApi, ethers } = t.context as TestContext;
-  const [owner, _, user] = await ethers.getSigners();
+  const [owner, , user] = await ethers.getSigners();
 
   // Deploy V1 with Ownable and UUPS
   const TokenV1 = await ethers.getContractFactory('TokenV1');
@@ -101,8 +101,9 @@ test('Should prevent non-minters from minting in V2', async t => {
   const tokenV2 = await ethers.getContractAt('TokenV2', proxyAddress);
 
   // Non-minter should not be able to mint
-  const error = await t.throwsAsync(
-    () => tokenV2.connect(nonMinter).mint(nonMinter.address, ethers.parseEther('100')),
+  const error = await t.throwsAsync(() => tokenV2.connect(nonMinter).mint(nonMinter.address, ethers.parseEther('100')));
+  t.true(
+    error?.message?.includes('AccessControlUnauthorizedAccount') ||
+      (error as any)?.reason?.includes('AccessControlUnauthorizedAccount'),
   );
-  t.true(error?.message?.includes('AccessControlUnauthorizedAccount') || (error as any)?.reason?.includes('AccessControlUnauthorizedAccount'));
 });
