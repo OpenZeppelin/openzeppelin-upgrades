@@ -1,0 +1,11 @@
+node_modules/
+dist/
+artifacts/
+cache/
+.openzeppelin/
+*.log
+.env
+coverage/
+coverage.json
+typechain-types/
+
