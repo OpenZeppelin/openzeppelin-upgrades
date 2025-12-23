@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/hardhat-upgrades",
-  "version": "3.9.1",
+  "version": "4.0.0",
   "description": "",
   "type": "module",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades",

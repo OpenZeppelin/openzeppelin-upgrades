@@ -1,6 +1,39 @@
 # Changelog
 
+## 4.0.0
+
+### Major Changes
+
+- Migrate to Hardhat 3 with ESM module structure and plugin hooks architecture.
+
+  ### Breaking Changes
+
+  - **Requires Hardhat 3**: Minimum `hardhat@^3.0.0` required
+  - **ESM-only**: Package converted to ESM, CommonJS no longer supported
+  - **API Changes**:
+    - No automatic `hre.upgrades` - must call factory function explicitly
+    - Factory functions are async: `await upgrades(hre, connection)`
+    - Network connection must be explicitly created: `await hre.network.connect()`
+    - `ethers` now comes from connection, not `hre.ethers`
+  - **Import Changes**: Import factory functions instead of side-effect import
+    - Before: `import '@openzeppelin/hardhat-upgrades'`
+    - After: `import { upgrades, defender } from '@openzeppelin/hardhat-upgrades'`
+
+  ### Migration
+
+  See `MIGRATION.md` for complete migration guide with examples for scripts, tasks, and tests.
+
+  ### Changes
+
+  - Migrated from `extendEnvironment` to Hardhat 3's `HardhatPlugin` with `hookHandlers`
+  - Converted package to ESM with updated TypeScript configuration (`moduleResolution: "node16"`)
+  - Updated dependencies: `hardhat@^3.0.16`, `@nomicfoundation/hardhat-ethers@^4.0.2`, `@nomicfoundation/hardhat-verify@^3.0.3`
+  - Replaced `import ... with { type: 'json' }` with `createRequire()` for Babel/nyc compatibility
+  - Fixed CI/CD workflows to initialize git submodules
+  - Updated example projects to work with Hardhat 3
+
 ## 3.10.0 (2025-XX-YY)
+
 - Update hardhat, hardhat-ethers and hardhat-verify to support to hardhat v3
 
 ## 3.9.1 (2025-06-30)
