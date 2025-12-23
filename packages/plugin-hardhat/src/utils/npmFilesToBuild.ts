@@ -16,5 +16,8 @@ export function OZfilesToBuild(): string[] {
     '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol',
     '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol',
     '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol',
+    '@openzeppelin/foundry-upgrades/src/Upgrades.sol',
+    '@openzeppelin/foundry-upgrades/src/Options.sol',
+    '@openzeppelin/foundry-upgrades/src/internal/StringFinder.sol',
   ];
 }
