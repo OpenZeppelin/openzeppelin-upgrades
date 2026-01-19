@@ -1,6 +1,8 @@
-import type { SolidityHooks } from 'hardhat/types/hooks';
+import type { SolidityHooks, HookContext } from 'hardhat/types/hooks';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
-import type { CompilerOutput } from 'solc';
+import type { SolcConfig } from 'hardhat/types/config';
+import type { CompilerInput, CompilerOutput, Compiler } from 'hardhat/types/solidity';
+import type { SolcInput, SolcOutput } from '@openzeppelin/upgrades-core';
 
 // Helper to extract compile errors from output
 function getNamespacedCompileErrors(output: CompilerOutput | undefined): string[] {
@@ -8,7 +10,7 @@ function getNamespacedCompileErrors(output: CompilerOutput | undefined): string[
   if (output?.errors) {
     for (const error of output.errors) {
       if (error.severity === 'error') {
-        errors.push(error.formattedMessage || error.message);
+        errors.push(error.formattedMessage ?? error.message);
       }
     }
   }
@@ -16,6 +18,29 @@ function getNamespacedCompileErrors(output: CompilerOutput | undefined): string[
 }
 
 let lockWarningShown = false;
+
+/**
+ * Converts Hardhat's CompilerInput to upgrades-core's SolcInput.
+ * The types are structurally compatible for the fields we use.
+ */
+function toSolcInput(input: CompilerInput): SolcInput {
+  return input as unknown as SolcInput;
+}
+
+/**
+ * Converts Hardhat's CompilerOutput to upgrades-core's SolcOutput.
+ * The types are structurally compatible for the fields we use.
+ */
+function toSolcOutput(output: CompilerOutput): SolcOutput {
+  return output as unknown as SolcOutput;
+}
+
+/**
+ * Converts upgrades-core's SolcInput to Hardhat's CompilerInput.
+ */
+function toCompilerInput(input: SolcInput): CompilerInput {
+  return input as unknown as CompilerInput;
+}
 
 export default async (): Promise<Partial<SolidityHooks>> => {
   return {
@@ -27,13 +52,13 @@ export default async (): Promise<Partial<SolidityHooks>> => {
       try {
         await readValidations(context as HardhatRuntimeEnvironment);
         // Cache exists and is valid, continue normally
-      } catch (e) {
+      } catch (e: unknown) {
         if (e instanceof ValidationsCacheOutdated) {
           // Cache exists but is outdated
           // TODO: when hardhat supports forcing recompilation, we should do it here
         } else if (e instanceof ValidationsCacheNotFound) {
           // Cache doesn't exist - that's fine, just proceed with compilation
-        } else if (e.code === 'ELOCKED') {
+        } else if (typeof e === 'object' && e !== null && 'code' in e && e.code === 'ELOCKED') {
           // Lock file is being held by another process - warn once and continue
           if (!lockWarningShown) {
             console.warn(
@@ -49,146 +74,130 @@ export default async (): Promise<Partial<SolidityHooks>> => {
       return await next(context, solcInput);
     },
 
-    // TODO: enter in contact with Hardhat because there is no hook for post compile processing
-    // have to yet review this.
-    async onCleanUpArtifacts(context, artifactPaths, next) {
-      await next(context, artifactPaths);
-
+    /**
+     * Hook that intercepts solc invocation to run upgrade validations.
+     * This replaces the old workaround of reading build-info files in onCleanUpArtifacts.
+     */
+    async invokeSolc(
+      context: HookContext,
+      compiler: Compiler,
+      solcInput: CompilerInput,
+      solcConfig: SolcConfig,
+      next: (
+        nextContext: HookContext,
+        nextCompiler: Compiler,
+        nextSolcInput: CompilerInput,
+        nextSolcConfig: SolcConfig,
+      ) => Promise<CompilerOutput>,
+    ): Promise<CompilerOutput> {
       const { validate, solcInputOutputDecoder, isNamespaceSupported, makeNamespacedInput, trySanitizeNatSpec } =
         await import('@openzeppelin/upgrades-core');
       const { writeValidations } = await import('../utils/validations.js');
       const { isFullSolcOutput } = await import('../utils/is-full-solc-output.js');
+
+      // Run the original compilation
+      const output = await next(context, compiler, solcInput, solcConfig);
+
+      // Convert to upgrades-core types for validation
+      const solcInputCore = toSolcInput(solcInput);
+      const solcOutputCore = toSolcOutput(output);
+
+      // Only process full solc output (with contracts, sources, etc.)
+      if (!isFullSolcOutput(solcOutputCore)) {
+        return output;
+      }
+
+      const solcVersion = compiler.version;
+      const decodeSrc = solcInputOutputDecoder(solcInputCore, solcOutputCore);
+      let namespacedOutput: SolcOutput | undefined = undefined;
+
+      // Handle namespaced storage layouts
+      if (isNamespaceSupported(solcVersion)) {
+        try {
+          let namespacedInput = makeNamespacedInput(solcInputCore, solcOutputCore, solcVersion);
+          namespacedInput = await trySanitizeNatSpec(namespacedInput, solcVersion);
+
+          // Run the namespaced compilation by calling next() with modified input
+          const namespacedResult = await next(context, compiler, toCompilerInput(namespacedInput), solcConfig);
+
+          const namespacedCompileErrors = getNamespacedCompileErrors(namespacedResult);
+
+          if (namespacedCompileErrors.length > 0) {
+            const msg = `Failed to compile modified contracts for namespaced storage layout validations:\n\n${namespacedCompileErrors.join('\n')}`;
+            const preamble = [
+              'Please report this at https://zpl.in/upgrades/report.',
+              'If possible, include the source code for the contracts mentioned in the errors above.',
+              'This step allows for advanced storage modifications such as tight variable packing when performing upgrades with namespaced storage layouts.',
+            ];
+
+            const namespacedErrorsSetting = (context.config as HardhatRuntimeEnvironment['config'] & { namespacedCompileErrors?: 'error' | 'warn' | 'ignore' }).namespacedCompileErrors;
+
+            switch (namespacedErrorsSetting) {
+              case undefined:
+              case 'error': {
+                const { UpgradesError } = await import('@openzeppelin/upgrades-core');
+                const details = [
+                  ...preamble,
+                  'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades,',
+                  "you can set namespacedCompileErrors: 'warn' or namespacedCompileErrors: 'ignore' in your hardhat config to convert this to a warning or to ignore this.",
+                ];
+                throw new UpgradesError(msg, () => details.join('\n'));
+              }
+              case 'warn': {
+                const { logWarning } = await import('@openzeppelin/upgrades-core');
+                const details = [
+                  ...preamble,
+                  "you can set namespacedCompileErrors: 'ignore' in your hardhat config to ignore this.",
+                ];
+                logWarning(msg, details);
+                break;
+              }
+              case 'ignore':
+                break;
+            }
+            namespacedOutput = undefined;
+          } else {
+            namespacedOutput = toSolcOutput(namespacedResult);
+          }
+        } catch (err: unknown) {
+          // If it's an UpgradesError, rethrow it
+          const { UpgradesError } = await import('@openzeppelin/upgrades-core');
+          if (err instanceof UpgradesError) {
+            throw err;
+          }
+          // Otherwise, silently continue without namespaced output
+          namespacedOutput = undefined;
+        }
+      }
+
+      // Generate and write validations
+      const validations = validate(solcOutputCore, decodeSrc, solcVersion, solcInputCore, namespacedOutput);
+      await writeValidations(context as HardhatRuntimeEnvironment, validations);
+
+      return output;
+    },
+
+    /**
+     * Hook for cleanup - only handles AST injection for Foundry plugin compatibility.
+     * Validation logic has been moved to invokeSolc hook.
+     */
+    async onCleanUpArtifacts(context, artifactPaths, next) {
+      await next(context, artifactPaths);
+
       const path = await import('path');
-      const fs = await import('fs/promises');
 
       // Get the artifacts directory
       const artifactsDir = context.config.paths.artifacts;
       const buildInfoDir = path.join(artifactsDir, 'build-info');
 
       try {
-        const buildInfoFiles = await fs.readdir(buildInfoDir);
-
-        // Process each build-info file (each represents a compilation job)
-        for (const file of buildInfoFiles) {
-          // Skip output files - we only want to process input files
-          if (!file.endsWith('.json') || file.endsWith('.output.json')) {
-            continue;
-          }
-
-          const buildInfoPath = path.join(buildInfoDir, file);
-          const buildInfoContent = await fs.readFile(buildInfoPath, 'utf-8');
-          const buildInfo = JSON.parse(buildInfoContent);
-
-          // Verify this is an input file
-          if (buildInfo._format !== 'hh3-sol-build-info-1') {
-            continue;
-          }
-
-          const { input, solcVersion } = buildInfo;
-
-          // Skip if no solcVersion
-          if (!solcVersion) {
-            continue;
-          }
-
-          // Load the corresponding output file
-          // Input file: abc123.json, Output file: abc123.output.json
-          const outputFileName = file.replace('.json', '.output.json');
-          const outputPath = path.join(buildInfoDir, outputFileName);
-
-          let outputContent;
-          try {
-            outputContent = await fs.readFile(outputPath, 'utf-8');
-          } catch (err: any) {
-            if (err.code === 'ENOENT') {
-              console.warn(`  ⚠️  Output file not found for ${file}, skipping`);
-              continue;
-            }
-            throw err;
-          }
-
-          const outputBuildInfo = JSON.parse(outputContent);
-          const output = outputBuildInfo.output;
-
-          if (!isFullSolcOutput(output)) {
-            continue;
-          }
-
-          const decodeSrc = solcInputOutputDecoder(input, output);
-          let namespacedOutput: any = undefined;
-
-          // Handle namespaced storage layouts
-          // TODO: review this part, maybe we are missing something from hardhat, namespaced.js tests are failing.
-          if (isNamespaceSupported(solcVersion)) {
-            try {
-              let namespacedInput = makeNamespacedInput(input, output, solcVersion);
-              namespacedInput = await trySanitizeNatSpec(namespacedInput, solcVersion);
-
-              // Create a modified build info for namespaced compilation
-              const namespacedBuildInfo = {
-                ...buildInfo,
-                input: namespacedInput,
-              };
-
-              // Run the namespaced compilation
-              const namespacedResult = await context.solidity.compileBuildInfo(namespacedBuildInfo, { quiet: true });
-
-              const namespacedCompileErrors = getNamespacedCompileErrors(namespacedResult);
-
-              if (namespacedCompileErrors.length > 0) {
-                const msg = `Failed to compile modified contracts for namespaced storage layout validations:\n\n${namespacedCompileErrors.join('\n')}`;
-                const preamble = [
-                  'Please report this at https://zpl.in/upgrades/report.',
-                  'This step allows for advanced storage modifications with namespaced storage layouts.',
-                ];
-
-                const namespacedErrorsSetting = (context.config as any).namespacedCompileErrors;
-
-                switch (namespacedErrorsSetting) {
-                  case undefined:
-                  case 'error': {
-                    const { UpgradesError } = await import('@openzeppelin/upgrades-core');
-                    const details = [
-                      ...preamble,
-                      'If you are not using namespaced storage, you can set namespacedCompileErrors: "warn" or "ignore" in your config.',
-                    ];
-                    throw new UpgradesError(msg, () => details.join('\n'));
-                  }
-                  case 'warn': {
-                    const { logWarning } = await import('@openzeppelin/upgrades-core');
-                    const details = [
-                      ...preamble,
-                      'Set namespacedCompileErrors: "ignore" in your config to suppress this warning.',
-                    ];
-                    logWarning(msg, details);
-                    break;
-                  }
-                  case 'ignore':
-                    break;
-                }
-                namespacedOutput = undefined;
-              } else {
-                namespacedOutput = namespacedResult;
-              }
-            } catch (err) {
-              // console.warn('⚠️  Failed to compile namespaced input', buildInfoPath);
-              namespacedOutput = undefined;
-            }
-          }
-          // Generate and write validations
-          const validations = validate(output as any, decodeSrc, solcVersion, input as any, namespacedOutput);
-
-          // Debug validations content (safer access)
-          await writeValidations(context as HardhatRuntimeEnvironment, validations);
-        }
-
         // Inject AST into artifact files for Hardhat 3 compatibility with Foundry plugin
         // In Hardhat 3, AST is stored in build-info output files, not in artifacts
         // The Foundry upgrades plugin expects AST in artifact files, so we inject it here
         console.log('[OpenZeppelin Upgrades] Starting AST injection into artifacts...');
         await injectAstIntoArtifacts(artifactsDir, buildInfoDir);
-      } catch (error: any) {
-        if (error.code !== 'ENOENT') {
+      } catch (error: unknown) {
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code !== 'ENOENT') {
           throw error;
         }
       }
@@ -217,9 +226,9 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
           files.push(fullPath);
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Ignore errors (e.g., directory doesn't exist)
-      if (error.code !== 'ENOENT') {
+      if (typeof error === 'object' && error !== null && 'code' in error && error.code !== 'ENOENT') {
         throw error;
       }
     }
@@ -265,7 +274,7 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
               try {
                 // Parse the metadata JSON string to an object
                 artifact.metadata = JSON.parse(metadataString);
-              } catch (err) {
+              } catch {
                 // If parsing fails, store as string (fallback)
                 artifact.metadata = metadataString;
               }
@@ -286,9 +295,10 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
             );
             skippedCount += 1;
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           // If build-info output file doesn't exist or AST is missing, skip this artifact
-          if (err.code === 'ENOENT') {
+          const isEnoent = typeof err === 'object' && err !== null && 'code' in err && err.code === 'ENOENT';
+          if (isEnoent) {
             console.warn(
               `Warning: Build-info output file not found for artifact ${artifactPath}\n` +
                 `  Expected: ${buildInfoOutputPath}\n` +
@@ -296,16 +306,19 @@ export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir:
             );
           } else {
             // Log other errors but don't fail the whole process
-            console.warn(`Warning: Could not inject AST into artifact ${artifactPath}: ${err.message}`);
+            const message = err instanceof Error ? err.message : String(err);
+            console.warn(`Warning: Could not inject AST into artifact ${artifactPath}: ${message}`);
             errorCount += 1;
           }
           skippedCount += 1;
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // If artifact file is invalid JSON or can't be read, skip it
-      if (err.code !== 'ENOENT') {
-        console.warn(`Warning: Could not process artifact ${artifactPath}: ${err.message}`);
+      const isEnoent = typeof err === 'object' && err !== null && 'code' in err && err.code === 'ENOENT';
+      if (!isEnoent) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.warn(`Warning: Could not process artifact ${artifactPath}: ${message}`);
         errorCount += 1;
       }
     }
