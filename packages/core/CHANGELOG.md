@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.0-alpha.0
+
+- Refactor validate and build-info to support HH3 format ([#1203](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1203))
 
 ## 1.44.2 (2025-11-03)
 
