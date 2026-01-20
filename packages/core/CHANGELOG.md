@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0-alpha.0
+
+- Support Hardhat 3 build-info file format for CLI validation ([#1203](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1203)) 
+
+> **Note** ⚠️ This version is still in testing and should not be used in production.
+
 
 ## 1.44.2 (2025-11-03)
 
