@@ -130,7 +130,11 @@ export default async (): Promise<Partial<SolidityHooks>> => {
               'This step allows for advanced storage modifications such as tight variable packing when performing upgrades with namespaced storage layouts.',
             ];
 
-            const namespacedErrorsSetting = (context.config as HardhatRuntimeEnvironment['config'] & { namespacedCompileErrors?: 'error' | 'warn' | 'ignore' }).namespacedCompileErrors;
+            const namespacedErrorsSetting = (
+              context.config as HardhatRuntimeEnvironment['config'] & {
+                namespacedCompileErrors?: 'error' | 'warn' | 'ignore';
+              }
+            ).namespacedCompileErrors;
 
             switch (namespacedErrorsSetting) {
               case undefined:
