@@ -3,10 +3,8 @@ import { call, EthereumProvider } from './provider';
 
 export async function callOptionalSignature(provider: EthereumProvider, address: string, signature: string) {
   const data = '0x' + keccak256(Buffer.from(signature)).toString('hex').slice(0, 8);
-
   try {
-    const result = await call(provider, address, data);
-    return result;
+    return await call(provider, address, data);
   } catch (e: any) {
     if (
       e.message.includes('function selector was not recognized') ||
