@@ -1,6 +1,6 @@
 {
   "name": "@openzeppelin/upgrades-core",
-  "version": "2.0.0-alpha.0",
+  "version": "1.45.0-alpha.0",
   "description": "",
   "repository": "https://github.com/OpenZeppelin/openzeppelin-upgrades",
   "license": "MIT",
