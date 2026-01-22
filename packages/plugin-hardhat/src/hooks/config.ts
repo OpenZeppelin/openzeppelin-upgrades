@@ -21,8 +21,7 @@ export default async (): Promise<Partial<ConfigHooks>> => {
           settings.push(compilerOverride.settings);
         }
 
-        // Enable storage layout in all of them
-        // TODO: Review this, not sure about the storage layout yet.
+        // Enable storage layout output for upgrade safety validations
         for (const setting of settings) {
           setting.outputSelection ??= {};
           setting.outputSelection['*'] ??= {};
