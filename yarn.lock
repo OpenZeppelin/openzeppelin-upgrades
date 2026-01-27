@@ -1768,23 +1768,6 @@
     proper-lockfile "^4.1.1"
     solidity-ast "^0.4.51"
 
-"@openzeppelin/upgrades-core@2.0.0-alpha.0":
-  version "2.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-2.0.0-alpha.0.tgz#030e458e042b6f94932c2abb5bce83b464a6f003"
-  integrity sha512-SlLCalHt6UTnvift5xvFQ4gKvtlGh2YYC1tQJeQvzi4AEhJQR8UM4VEW5EFFe4fcqfBu2Bpqi73lDgH5T2JtGw==
-  dependencies:
-    "@nomicfoundation/slang" "^0.18.3"
-    bignumber.js "^9.1.2"
-    cbor "^10.0.0"
-    chalk "^4.1.0"
-    compare-versions "^6.0.0"
-    debug "^4.1.1"
-    ethereumjs-util "^7.0.3"
-    minimatch "^9.0.5"
-    minimist "^1.2.7"
-    proper-lockfile "^4.1.1"
-    solidity-ast "^0.4.60"
-
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
