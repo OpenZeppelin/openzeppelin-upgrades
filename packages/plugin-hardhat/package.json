@@ -37,7 +37,7 @@
     "@nomicfoundation/hardhat-verify": "^3.0.3",
     "@openzeppelin/contracts": "5.3.0",
     "@openzeppelin/contracts-upgradeable": "5.3.0",
-    "@openzeppelin/foundry-upgrades": "file:../../submodules/openzeppelin-foundry-upgrades",
+    "@openzeppelin/foundry-upgrades": "0.4.1-alpha.0",
     "@types/mocha": "^7.0.2",
     "ava": "^6.0.0",
     "dotenv": "^16.0.0",
