@@ -38,6 +38,14 @@ for arg in "$@"; do
   fi
 done
 
+# Error if flags were provided but no test files
+if [ $# -gt 0 ] && [ ${#sol_tests[@]} -eq 0 ] && [ ${#js_tests[@]} -eq 0 ]; then
+  echo "Error: Flags provided but no test files specified." >&2
+  echo "Usage: $0 [test files...] [flags...]" >&2
+  echo "  Example: $0 test/beacon-happy-path.js --timeout=60s" >&2
+  exit 1
+fi
+
 # Run Solidity tests if any
 if [ ${#sol_tests[@]} -gt 0 ]; then
   # If there are extra args, include them; otherwise call without other_args
