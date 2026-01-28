@@ -1,14 +1,14 @@
 import test from 'ava';
 import hre from 'hardhat';
-
-const connection = await hre.network.connect();
-const { ethers } = connection;
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 //  defender as defenderFactory
 import esmock from 'esmock';
 import sinon from 'sinon';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
 import { mockDeploy as baseMockDeploy } from '../dist/test-utils/mock-deploy.js';
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
 
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;

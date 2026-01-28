@@ -1,10 +1,10 @@
 import test from 'ava';
 import hre from 'hardhat';
+import esmock from 'esmock';
+import sinon from 'sinon';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import esmock from 'esmock';
-import sinon from 'sinon';
 
 const ADDR = '0x1';
 const TX_HASH = '0x0000000000000000000000000000000000000000000000000000000000000002';

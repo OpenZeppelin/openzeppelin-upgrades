@@ -1,9 +1,9 @@
 import test from 'ava';
 import hre from 'hardhat';
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 
 const connection = await hre.network.connect();
 const { ethers } = connection;
-import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 const artifacts = hre.artifacts;
 
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */

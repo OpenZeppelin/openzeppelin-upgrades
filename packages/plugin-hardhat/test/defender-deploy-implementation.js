@@ -1,11 +1,11 @@
 import test from 'ava';
 import hre from 'hardhat';
-
-const connection = await hre.network.connect();
-const { ethers } = connection;
 import esmock from 'esmock';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
 import { mockDeploy } from '../dist/test-utils/mock-deploy.js';
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
 
 test.after.always(async () => {
   await connection.close();

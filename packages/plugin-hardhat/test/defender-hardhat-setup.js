@@ -1,9 +1,8 @@
 import test from 'ava';
 import hre from 'hardhat';
-
-const connection = await hre.network.connect();
 import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
 
+const connection = await hre.network.connect();
 const defender = await defenderFactory(hre, connection);
 
 test.after.always(async () => {
