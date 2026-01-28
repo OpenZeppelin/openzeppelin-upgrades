@@ -11,6 +11,10 @@ let upgrades;
 const TEST_ADDRESS = '0x1E6876a6C2757de611c9F12B23211dBaBd1C9028';
 const OWNABLE_ABI = ['function owner() view returns (address)'];
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async () => {
   upgrades = await upgradesFactory(hre, connection);
 });

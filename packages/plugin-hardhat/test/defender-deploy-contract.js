@@ -36,6 +36,10 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test('deploy contract', async t => {
   const { deployContract, NonUpgradeable } = t.context;
   const inst = await deployContract(NonUpgradeable);

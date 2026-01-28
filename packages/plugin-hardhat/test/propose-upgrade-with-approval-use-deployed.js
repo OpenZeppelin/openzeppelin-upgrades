@@ -72,6 +72,10 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test('proposes an upgrade using deployed implementation - implementation not deployed', async t => {
   const { proposeUpgradeWithApproval, greeter, GreeterV2 } = t.context;
 

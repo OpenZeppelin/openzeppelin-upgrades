@@ -59,6 +59,10 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 // TODO change the below tests when defender.proposeUpgradeWithApproval() supports beacons and beacon proxies.
 
 test('block proposing an upgrade on beacon proxy', async t => {

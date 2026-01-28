@@ -64,6 +64,10 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test('deploy proxy', async t => {
   const { deployProxy, GreeterProxiable } = t.context;
 

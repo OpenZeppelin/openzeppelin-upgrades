@@ -10,6 +10,10 @@ import { readValidations } from '../dist/utils/validations.js';
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let _upgrades;
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
   _upgrades = await upgradesFactory(hre, connection);
   t.context.validations = await readValidations(hre);

@@ -75,6 +75,10 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test('proposes an upgrade', async t => {
   const { proposeUpgradeWithApproval, spy, proxyAdmin, greeter, GreeterV2 } = t.context;
 

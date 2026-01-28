@@ -16,6 +16,10 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test('get contract instance - tx hash not updated', async t => {
   const { GreeterProxiable } = t.context;
 

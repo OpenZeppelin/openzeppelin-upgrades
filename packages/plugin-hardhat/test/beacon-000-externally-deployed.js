@@ -8,6 +8,10 @@ const { ethers } = connection;
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
   // Initialize upgrades API (needs full HRE)
   upgrades = await upgradesFactory(hre, connection);

@@ -9,6 +9,10 @@ import { deploy } from '../dist/utils/deploy.js';
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
 let upgrades;
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
 

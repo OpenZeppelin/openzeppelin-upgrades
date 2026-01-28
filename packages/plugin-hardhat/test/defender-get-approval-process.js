@@ -40,6 +40,10 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test('getDeployApprovalProcess', async t => {
   const { fakeChainId, fakeDefenderClient, getDeployApprovalProcess } = t.context;
 

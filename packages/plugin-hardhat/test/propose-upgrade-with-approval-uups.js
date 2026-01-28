@@ -76,6 +76,10 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test('proposes an upgrade and get tx response', async t => {
   const { proposeUpgradeWithApproval, greeter, GreeterV2 } = t.context;
 

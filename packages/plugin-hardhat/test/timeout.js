@@ -43,6 +43,10 @@ test.afterEach(async t => {
   await provider.send('evm_revert', [t.context.snapshotId]);
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 const TIMED_OUT_IMPL = 'Timed out waiting for implementation contract deployment';
 const USE_OPTIONS =
   'If the problem persists, adjust the polling parameters with the timeout and pollingInterval options.';

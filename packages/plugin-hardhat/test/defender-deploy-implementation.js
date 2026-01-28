@@ -7,6 +7,10 @@ import esmock from 'esmock';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
 import { mockDeploy } from '../dist/test-utils/mock-deploy.js';
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.beforeEach(async t => {
   t.context.GreeterProxiable = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
   t.context.Invalid = await ethers.getContractFactory('Invalid');

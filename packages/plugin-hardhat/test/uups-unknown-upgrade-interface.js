@@ -20,6 +20,10 @@ let upgrades;
 // behavior (that upgrades succeed despite unknown interface versions) rather than
 // implementation details (debug message content).
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.GreeterProxiable40Fallback = await ethers.getContractFactory('GreeterProxiable40Fallback');

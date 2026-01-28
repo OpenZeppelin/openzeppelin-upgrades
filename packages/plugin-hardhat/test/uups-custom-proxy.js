@@ -9,6 +9,10 @@ const { ethers } = connection;
 
 let upgrades;
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');

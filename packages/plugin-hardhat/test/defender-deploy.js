@@ -99,6 +99,10 @@ test.afterEach.always(() => {
   sinon.restore();
 });
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 function assertResult(t, result) {
   t.deepEqual(result, {
     address: ADDRESS,

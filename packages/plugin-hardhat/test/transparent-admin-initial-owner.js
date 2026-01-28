@@ -15,6 +15,10 @@ let upgrades;
 
 const OWNABLE_ABI = ['function owner() view returns (address)'];
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
   upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
