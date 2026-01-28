@@ -47,8 +47,8 @@ contract TokenUUPSTest is Test {
         tokenV1.mint(user, mintAmount);
         assertEq(tokenV1.balanceOf(user), mintAmount);
 
-        // Upgrade to V2 with migration
-        bytes memory migrateData = abi.encodeCall(TokenV2.migrateFromV1, (owner));
+        // Upgrade to V2 with migration (migrateFromV1 reads owner from storage)
+        bytes memory migrateData = abi.encodeCall(TokenV2.migrateFromV1, ());
         Upgrades.upgradeProxy(proxy, "contracts/TokenV2.sol:TokenV2", migrateData, owner);
         tokenV2 = TokenV2(proxy);
 
@@ -79,7 +79,7 @@ contract TokenUUPSTest is Test {
         proxy = Upgrades.deployUUPSProxy("contracts/TokenV1.sol:TokenV1", initData);
         tokenV1 = TokenV1(proxy);
 
-        bytes memory migrateData = abi.encodeCall(TokenV2.migrateFromV1, (owner));
+        bytes memory migrateData = abi.encodeCall(TokenV2.migrateFromV1, ());
         Upgrades.upgradeProxy(proxy, "contracts/TokenV2.sol:TokenV2", migrateData, owner);
         tokenV2 = TokenV2(proxy);
 

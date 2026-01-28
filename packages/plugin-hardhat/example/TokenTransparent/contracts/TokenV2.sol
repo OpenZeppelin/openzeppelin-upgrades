@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -11,8 +12,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @dev Upgraded version of the token using AccessControl instead of Ownable.
  * This contract demonstrates how to migrate from Ownable to AccessControl while
  * preserving the contract's state and functionality.
+ * 
+ * IMPORTANT: OwnableUpgradeable is retained in the inheritance chain to preserve
+ * storage layout compatibility with V1. Removing it would corrupt storage slots.
  */
-contract TokenV2 is Initializable, ERC20Upgradeable, AccessControlUpgradeable, ERC20PermitUpgradeable {
+contract TokenV2 is Initializable, ERC20Upgradeable, OwnableUpgradeable, AccessControlUpgradeable, ERC20PermitUpgradeable {
     /// @dev The role identifier for minters
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -22,13 +26,14 @@ contract TokenV2 is Initializable, ERC20Upgradeable, AccessControlUpgradeable, E
     }
 
     /**
-     * @dev Initializes the contract with an admin address.
+     * @dev Initializes the contract with an admin address (for fresh deployments).
      * Note: This function signature differs from V1, which is why we use
-     * a migration function instead of reinitializing.
+     * a migration function instead of reinitializing when upgrading.
      * @param initialAdmin The address that will have admin and minter roles
      */
     function initialize(address initialAdmin) public initializer {
         __ERC20_init("MyToken", "MTK");
+        __Ownable_init(initialAdmin);
         __AccessControl_init();
         __ERC20Permit_init("MyToken");
         _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
@@ -40,16 +45,22 @@ contract TokenV2 is Initializable, ERC20Upgradeable, AccessControlUpgradeable, E
      * This function is called during the upgrade process to grant the previous
      * owner the appropriate roles in the new access control system.
      * 
-     * @param previousOwner The owner address from V1 to grant admin/minter roles
-     * 
      * @dev Uses reinitializer(2) because:
      * - The contract was already initialized once in V1 (initializer)
      * - This is the second initialization (reinitializer(2))
-     * - We only initialize AccessControl here, not ERC20 or Permit (already initialized)
+     * - We only initialize AccessControl here, not ERC20, Ownable or Permit (already initialized)
+     * 
+     * The previous owner is derived from owner() (inherited from OwnableUpgradeable)
+     * rather than passed as a parameter to prevent unauthorized role assignment.
      */
-    function migrateFromV1(address previousOwner) public reinitializer(2) {
-        // Initialize AccessControl (ERC20 and Permit were already initialized in V1)
+    function migrateFromV1() public reinitializer(2) {
+        // Initialize AccessControl (ERC20, Ownable and Permit were already initialized in V1)
         __AccessControl_init();
+        
+        // Derive the previous owner from storage - this prevents anyone from
+        // calling this function with an arbitrary address to steal roles
+        address previousOwner = owner();
+        require(previousOwner != address(0), "TokenV2: owner not set");
         
         // Grant the previous owner both admin and minter roles
         _grantRole(DEFAULT_ADMIN_ROLE, previousOwner);
