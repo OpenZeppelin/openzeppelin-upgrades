@@ -365,6 +365,41 @@ test.serial('invalid build info file', async t => {
   t.true(error?.message.includes('must contain Solidity compiler input, output, and solcVersion'));
 });
 
+test.serial('Foundry format (ethers-rs) with missing output suggests forge clean && forge build', async t => {
+  await fs.mkdir('foundry-format-missing', { recursive: true });
+
+  await fs.writeFile(
+    'foundry-format-missing/build.json',
+    JSON.stringify({
+      _format: 'ethers-rs-sol-build-info-1',
+      input: BUILD_INFO.input,
+      solcVersion: '0.8.31',
+      // output missing
+    }),
+  );
+  const error = await t.throwsAsync(getBuildInfoFiles('foundry-format-missing'));
+  t.true(error?.message.includes('must contain Solidity compiler input, output, and solcVersion'));
+  t.true(error?.message.includes('ethers-rs-sol-build-info'));
+  t.true(error?.message.includes('forge clean && forge build'));
+});
+
+test.serial('Hardhat 3 (HH3) format with missing .output.json suggests hardhat compile', async t => {
+  await fs.mkdir('hh3-format-missing-output', { recursive: true });
+
+  await fs.writeFile(
+    'hh3-format-missing-output/solc-0_8_0-abc123.json',
+    JSON.stringify({
+      _format: 'hh3-sol-build-info-1',
+      input: BUILD_INFO.input,
+      solcVersion: '0.8.9',
+      // output in separate .output.json which we do not create
+    }),
+  );
+  const error = await t.throwsAsync(getBuildInfoFiles('hh3-format-missing-output'));
+  t.true(error?.message.includes('could not be read') || error?.message.includes('missing Solidity compiler output'));
+  t.true(error?.message.includes('hardhat compile'));
+});
+
 test.serial('dir does not exist', async t => {
   const error = await t.throwsAsync(getBuildInfoFiles('invalid-dir'));
   t.true(error?.message.includes('does not exist'));
