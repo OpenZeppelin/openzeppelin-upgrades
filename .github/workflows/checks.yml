@@ -43,7 +43,13 @@ jobs:
     - name: Set up environment
       uses: ./.github/actions/setup
 
-    # TODO: We have remove this when we have alpha-1 or alpha-2 with fix released on core package.
+    # The plugin-hardhat Solidity test suite invokes the `openzeppelin-upgrades-core` CLI via `npx`.
+    # This repo can end up with two packages exposing the same binary name:
+    #   - upgrades-core-legacy (from dependencies)
+    #   - our local packages/core
+    # In that situation, `npx` may resolve to the legacy binary, causing tests to run against the wrong implementation.
+    # To ensure the tests exercise the current workspace code, we first build the local core package and then
+    # replace `node_modules/.bin/openzeppelin-upgrades-core` with a symlink to the locally built CLI.
     - name: Build core (for plugin-hardhat Solidity tests that invoke upgrades-core CLI)
       if: matrix.package == 'plugin-hardhat'
       run: yarn --cwd packages/core run prepare
@@ -68,6 +74,16 @@ jobs:
 
     - name: Set up environment
       uses: ./.github/actions/setup
+
+    # Same fix as in tests job - see comment there for details
+    - name: Build core (for coverage tests that invoke upgrades-core CLI)
+      run: yarn --cwd packages/core run prepare
+
+    - name: Force local core CLI (fix bin conflict with upgrades-core-legacy)
+      run: |
+        rm -f node_modules/.bin/openzeppelin-upgrades-core
+        ln -s ../../packages/core/dist/cli/cli.js node_modules/.bin/openzeppelin-upgrades-core
+        chmod +x packages/core/dist/cli/cli.js
 
     - name: Run coverage
       run: yarn coverage
