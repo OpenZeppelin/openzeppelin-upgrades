@@ -81,9 +81,13 @@ jobs:
 
     - name: Force local core CLI (fix bin conflict with upgrades-core-legacy)
       run: |
+        chmod +x packages/core/dist/cli/cli.js
+        # Fix root node_modules
         rm -f node_modules/.bin/openzeppelin-upgrades-core
         ln -s ../../packages/core/dist/cli/cli.js node_modules/.bin/openzeppelin-upgrades-core
-        chmod +x packages/core/dist/cli/cli.js
+        # Fix plugin-hardhat node_modules (coverage runs tests in subdirs)
+        rm -f packages/plugin-hardhat/node_modules/.bin/openzeppelin-upgrades-core
+        ln -s ../../../core/dist/cli/cli.js packages/plugin-hardhat/node_modules/.bin/openzeppelin-upgrades-core
 
     - name: Run coverage
       run: yarn coverage
