@@ -43,6 +43,18 @@ jobs:
     - name: Set up environment
       uses: ./.github/actions/setup
 
+    # TODO: We have remove this when we have alpha-1 or alpha-2 with fix released on core package.
+    - name: Build core (for plugin-hardhat Solidity tests that invoke upgrades-core CLI)
+      if: matrix.package == 'plugin-hardhat'
+      run: yarn --cwd packages/core run prepare
+
+    - name: Force local core CLI (fix bin conflict with upgrades-core-legacy)
+      if: matrix.package == 'plugin-hardhat'
+      run: |
+        rm -f node_modules/.bin/openzeppelin-upgrades-core
+        ln -s ../../packages/core/dist/cli/cli.js node_modules/.bin/openzeppelin-upgrades-core
+        chmod +x packages/core/dist/cli/cli.js
+
     - name: Run tests
       run: yarn --cwd "packages/${{matrix.package}}" run test
 
