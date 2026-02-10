@@ -90,20 +90,6 @@ export async function verify(
   hre: HardhatRuntimeEnvironment,
   runSuper: (taskArguments: Record<string, unknown>) => Promise<unknown>,
 ): Promise<unknown> {
-  const verifyTask = hre.tasks?.getTask?.('verify') ?? (hre as any).tasks?.getTask?.('verify');
-  if (!verifyTask) {
-    throw new UpgradesError(
-      'The hardhat-verify plugin must be imported before the hardhat-upgrades plugin.',
-      () =>
-        'Import the plugins in the following order in hardhat.config.js:\n' +
-        '  require("@nomicfoundation/hardhat-verify");\n' +
-        '  require("@openzeppelin/hardhat-upgrades");\n' +
-        'Or if you are using TypeScript, import the plugins in the following order in hardhat.config.ts:\n' +
-        '  import "@nomicfoundation/hardhat-verify";\n' +
-        '  import "@openzeppelin/hardhat-upgrades";\n',
-    );
-  }
-
   const connection = await hre.network.connect();
   const { provider } = connection;
   const proxyAddress = args.address as string;

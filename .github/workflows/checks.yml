@@ -43,23 +43,9 @@ jobs:
     - name: Set up environment
       uses: ./.github/actions/setup
 
-    # The plugin-hardhat Solidity test suite invokes the `openzeppelin-upgrades-core` CLI via `npx`.
-    # This repo can end up with two packages exposing the same binary name:
-    #   - upgrades-core-legacy (from dependencies)
-    #   - our local packages/core
-    # In that situation, `npx` may resolve to the legacy binary, causing tests to run against the wrong implementation.
-    # To ensure the tests exercise the current workspace code, we first build the local core package and then
-    # replace `node_modules/.bin/openzeppelin-upgrades-core` with a symlink to the locally built CLI.
-    - name: Build core (for plugin-hardhat Solidity tests that invoke upgrades-core CLI)
+    - name: Force local core CLI (for plugin-hardhat Solidity tests)
       if: matrix.package == 'plugin-hardhat'
-      run: yarn --cwd packages/core run prepare
-
-    - name: Force local core CLI (fix bin conflict with upgrades-core-legacy)
-      if: matrix.package == 'plugin-hardhat'
-      run: |
-        rm -f node_modules/.bin/openzeppelin-upgrades-core
-        ln -s ../../packages/core/dist/cli/cli.js node_modules/.bin/openzeppelin-upgrades-core
-        chmod +x packages/core/dist/cli/cli.js
+      uses: ./.github/actions/force-local-core-cli
 
     - name: Run tests
       run: yarn --cwd "packages/${{matrix.package}}" run test
@@ -75,19 +61,10 @@ jobs:
     - name: Set up environment
       uses: ./.github/actions/setup
 
-    # Same fix as in tests job - see comment there for details
-    - name: Build core (for coverage tests that invoke upgrades-core CLI)
-      run: yarn --cwd packages/core run prepare
-
-    - name: Force local core CLI (fix bin conflict with upgrades-core-legacy)
-      run: |
-        chmod +x packages/core/dist/cli/cli.js
-        # Fix root node_modules
-        rm -f node_modules/.bin/openzeppelin-upgrades-core
-        ln -s ../../packages/core/dist/cli/cli.js node_modules/.bin/openzeppelin-upgrades-core
-        # Fix plugin-hardhat node_modules (coverage runs tests in subdirs)
-        rm -f packages/plugin-hardhat/node_modules/.bin/openzeppelin-upgrades-core
-        ln -s ../../../core/dist/cli/cli.js packages/plugin-hardhat/node_modules/.bin/openzeppelin-upgrades-core
+    - name: Force local core CLI (for coverage tests that invoke upgrades-core CLI)
+      uses: ./.github/actions/force-local-core-cli
+      with:
+        fix_plugin_hardhat_bin: 'true'
 
     - name: Run coverage
       run: yarn coverage

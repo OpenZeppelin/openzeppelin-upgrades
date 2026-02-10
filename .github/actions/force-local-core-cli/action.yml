@@ -1,0 +1,30 @@
+name: Force local core CLI
+
+description: >
+  Builds packages/core and replaces node_modules/.bin/openzeppelin-upgrades-core
+  with a symlink to the local CLI so tests run against workspace code instead of
+  upgrades-core-legacy.
+
+inputs:
+  fix_plugin_hardhat_bin:
+    description: 'If true, also symlink in packages/plugin-hardhat/node_modules/.bin (for coverage job)'
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Build core
+      run: yarn --cwd packages/core run prepare
+      shell: bash
+
+    - name: Force local core CLI (fix bin conflict with upgrades-core-legacy)
+      run: |
+        chmod +x packages/core/dist/cli/cli.js
+        rm -f node_modules/.bin/openzeppelin-upgrades-core
+        ln -s ../../packages/core/dist/cli/cli.js node_modules/.bin/openzeppelin-upgrades-core
+        if [ "${{ inputs.fix_plugin_hardhat_bin }}" = 'true' ]; then
+          rm -f packages/plugin-hardhat/node_modules/.bin/openzeppelin-upgrades-core
+          ln -s ../../../core/dist/cli/cli.js packages/plugin-hardhat/node_modules/.bin/openzeppelin-upgrades-core
+        fi
+      shell: bash
