@@ -32,21 +32,12 @@ fi
 
 # Run Solidity tests if any
 if [ ${#sol_tests[@]} -gt 0 ]; then
-  # If there are extra args, include them; otherwise call without other_args
-  if [ ${#other_args[@]} -gt 0 ]; then
-    hardhat test solidity "${sol_tests[@]}" "${other_args[@]}"
-  else
-    hardhat test solidity "${sol_tests[@]}"
-  fi
+  hardhat test solidity "${sol_tests[@]}" "${other_args[@]}"
 fi
 
 # Run JavaScript tests if any
 if [ ${#js_tests[@]} -gt 0 ]; then
-  if [ ${#other_args[@]} -gt 0 ]; then
-    ava "${js_tests[@]}" "${other_args[@]}"
-  else
-    ava "${js_tests[@]}"
-  fi
+  ava "${js_tests[@]}" "${other_args[@]}"
 fi
 
 # If no arguments, run all tests
