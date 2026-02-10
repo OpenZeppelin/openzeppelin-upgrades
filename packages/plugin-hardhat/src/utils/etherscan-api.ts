@@ -40,7 +40,7 @@ export const RESPONSE_OK = '1';
  */
 export async function getEtherscanFromConnection(hre: HardhatRuntimeEnvironment): Promise<EtherscanInstance> {
   const connection = await hre.network.connect();
-  const verification = (connection as { verification?: { etherscan?: EtherscanInstance } }).verification;
+  const verification = (connection as unknown as { verification?: { etherscan?: EtherscanInstance } }).verification;
   if (!verification?.etherscan) {
     throw new UpgradesError(
       'Etherscan verification is not available for this network.',
