@@ -1,5 +1,6 @@
 import '@nomicfoundation/hardhat-ethers';
 import './type-extensions.js';
+import { overrideTask } from 'hardhat/config';
 import type { HardhatPlugin } from 'hardhat/types/plugins';
 
 const plugin: HardhatPlugin = {
@@ -10,11 +11,17 @@ const plugin: HardhatPlugin = {
     solidity: () => import('./hooks/solidity.js'),
   },
 
-  tasks: [],
+  tasks: [
+    overrideTask('verify')
+      .setAction(async () => import('./verify-proxy-task-action.js'))
+      .build(),
+  ],
 
   dependencies: () => {
-    // Return array of promises to plugin modules
-    return [import('@nomicfoundation/hardhat-ethers').then(m => ({ default: m.default }))];
+    return [
+      import('@nomicfoundation/hardhat-ethers').then(m => ({ default: m.default })),
+      import('@nomicfoundation/hardhat-verify').then(m => ({ default: m.default })),
+    ];
   },
 };
 

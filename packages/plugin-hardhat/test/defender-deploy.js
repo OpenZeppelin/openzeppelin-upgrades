@@ -59,16 +59,21 @@ test.beforeEach(async t => {
     '../dist/defender/client.js': {
       getDeployClient: () => t.context.fakeDefenderClient,
     },
-    '../dist/utils/etherscan-api.js': {
-      getEtherscanAPIConfig: () => {
-        return { key: ETHERSCAN_API_KEY };
-      },
-    },
   });
+
+  // Mock verification.etherscan for Hardhat 3 (hardhat-verify v3.0.10+)
+  const mockEtherscan = {
+    customApiCall: sinon.stub().resolves({ status: '1', message: 'OK', result: null }),
+    verify: sinon.stub().resolves({ message: 'guid' }),
+    getVerificationStatus: sinon.stub().resolves({ success: true, message: 'OK' }),
+  };
 
   // Create a mock connection with mocked provider
   const fakeConnection = {
     ...connection,
+    verification: {
+      etherscan: mockEtherscan,
+    },
     ethers: {
       ...connection.ethers,
       provider: {
@@ -1004,11 +1009,6 @@ async function testGetDeployedContractPolling(t, getDeployedContractStub, expect
     },
     '../dist/defender/client.js': {
       getDeployClient: () => defenderClientWaits,
-    },
-    '../dist/utils/etherscan-api.js': {
-      getEtherscanAPIConfig: () => {
-        return { key: ETHERSCAN_API_KEY };
-      },
     },
   });
 

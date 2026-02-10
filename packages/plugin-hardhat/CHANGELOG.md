@@ -27,7 +27,8 @@
 
   - Migrated from `extendEnvironment` to Hardhat 3's `HardhatPlugin` with `hookHandlers`
   - Converted package to ESM with updated TypeScript configuration (`moduleResolution: "node16"`)
-  - Updated dependencies: `hardhat@^3.0.16`, `@nomicfoundation/hardhat-ethers@^4.0.2`, `@nomicfoundation/hardhat-verify@^3.0.3`
+  - Updated dependencies: `hardhat@^3.0.16`, `@nomicfoundation/hardhat-ethers@^4.0.2`, `@nomicfoundation/hardhat-verify@^3.0.10`
+  - Proxy verification using hardhat-verify v3.0.10+ API. The plugin overrides the `verify` task and uses `(await hre.network.connect()).verification.etherscan` for Etherscan operations (`customApiCall`, `verify`, etc.). Proxy verification requires `@nomicfoundation/hardhat-verify@^3.0.10`.
   - Replaced `import ... with { type: 'json' }` with `createRequire()` for Babel/nyc compatibility
   - Fixed CI/CD workflows to initialize git submodules
   - Updated example projects to work with Hardhat 3
