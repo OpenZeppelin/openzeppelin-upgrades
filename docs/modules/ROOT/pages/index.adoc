@@ -27,7 +27,7 @@ For example, `deployProxy` does the following:
 
 2. Deploys the xref:faq.adoc#what-is-an-implementation-contract[implementation contract]. Note that the Hardhat plugin first checks if there is an implementation contract deployed with the same bytecode, and skips this step if one is already deployed.
 
-3. Creates and initializes the proxy contract, along with a xref:faq.adoc#what-is-a-proxy-admin[proxy admin] (if needed).
+3. Creates and initializes the proxy contract, along with a xref:faq.adoc#what-is-a-proxy-admin[proxy admin] (if needed). Note that the Hardhat plugin deploys proxy contracts using xref:faq.adoc#precompiled-proxy-contracts[precompiled bytecodes] from the `@openzeppelin/upgrades-core` package, which are compiled independently from your project's Solidity compiler version.
 
 And when you call `upgradeProxy`:
 
