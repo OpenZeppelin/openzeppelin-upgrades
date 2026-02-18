@@ -12,7 +12,7 @@ The Hardhat Upgrades plugin deploys proxy contracts using **precompiled bytecode
 
 * **For consistent proxy bytecodes across chains**, you should use the same versions of `@openzeppelin/hardhat-upgrades` and `@openzeppelin/upgrades-core` for all deployments. This is particularly important for **source code verification**, since the verification process depends on the exact compiler version and settings used to produce the deployed bytecode.
 
-NOTE: The Foundry Upgrades library (https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades[`openzeppelin-foundry-upgrades`]) compiles proxy contracts as part of the project's build process using the project's own compiler configuration, so this behavior is specific to the Hardhat plugin.
+NOTE: The Foundry Upgrades library (https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades[`openzeppelin-foundry-upgrades`]) compiles proxy contracts as part of the project's build process using the project's own compiler configuration, so the above behavior is specific to the Hardhat plugin only.
 
 [[is-it-safe-to-upgrade-a-contract-compiled-with-a-version-of-solidity-to-another-compiled-with-a-different-version]]
 == Can I change Solidity compiler versions when upgrading?
