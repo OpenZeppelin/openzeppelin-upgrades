@@ -27,7 +27,7 @@ For example, `deployProxy` does the following:
 
 2. Deploys the xref:faq.adoc#what-is-an-implementation-contract[implementation contract]. Note that the Hardhat plugin first checks if there is an implementation contract deployed with the same bytecode, and skips this step if one is already deployed.
 
-3. Creates and initializes the proxy contract, along with a xref:faq.adoc#what-is-a-proxy-admin[proxy admin] (if needed). Note that the Hardhat plugin deploys proxy contracts using xref:faq.adoc#precompiled-proxy-contracts[precompiled bytecodes] from the `@openzeppelin/upgrades-core` package, which are compiled independently from your project's Solidity compiler version.
+3. Creates and initializes the proxy contract, along with a xref:faq.adoc#what-is-a-proxy-admin[proxy admin] (if needed).
 
 And when you call `upgradeProxy`:
 
@@ -38,6 +38,8 @@ And when you call `upgradeProxy`:
 3. Upgrades the proxy to use the new implementation contract.
 
 The Hardhat plugin keeps track of all the implementation contracts you have deployed in an `.openzeppelin` folder in the project root, as well as the proxy admin. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
+
+Note that the Hardhat plugin deploys proxy contracts using xref:faq.adoc#precompiled-proxy-contracts[precompiled bytecodes] from the `@openzeppelin/upgrades-core` package, which are compiled independently from your project's Solidity compiler version.
 
 The Foundry plugin does not keep track of implementation contracts, but requires you to https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades?tab=readme-ov-file#before-running[define reference contracts] in order to validate new versions of implementations for upgrade safety.
 
