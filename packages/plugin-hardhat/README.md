@@ -44,6 +44,8 @@ main();
 
 This will automatically check that the `Box` contract is upgrade-safe, deploy an implementation contract for the `Box` contract (unless there is one already from a previous deployment), create a proxy (along with a proxy admin if needed), and initialize it by calling `initialize(42)`.
 
+> **Note:** The proxy contract itself is deployed using precompiled bytecodes from `@openzeppelin/upgrades-core`, not compiled with your project's Solidity compiler. See [Precompiled proxy contracts](https://docs.openzeppelin.com/upgrades-plugins/faq#precompiled-proxy-contracts) for details.
+
 Then, in another script, you can use the `upgradeProxy` function to upgrade the deployed instance to a new version. The new version can be a different contract (such as `BoxV2`), or you can just modify the existing `Box` contract and recompile it - the plugin will note it changed.
 
 ```js
