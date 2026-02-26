@@ -3,7 +3,7 @@
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.openzeppelin.com/upgrades-plugins/hardhat-upgrades)
 [![NPM Package](https://img.shields.io/npm/v/@openzeppelin/hardhat-upgrades.svg)](https://www.npmjs.org/package/@openzeppelin/hardhat-upgrades)
 
-**Hardhat plugin for deploying and managing upgradeable contracts.** This package adds functions to your Hardhat scripts so you can deploy and upgrade proxies for your contracts. Depends on `ethers.js`.
+**Hardhat plugin for deploying and managing upgradeable contracts.** This package adds functions to your Hardhat scripts so you can deploy and upgrade proxies for your contracts. Requires `@nomicfoundation/hardhat-ethers`.
 
 > **⚠️ Migrating from Hardhat 2?** See the [Migration Guide](./MIGRATION.md) for breaking changes and how to update your code.
 
@@ -13,6 +13,8 @@
 npm install --save-dev @openzeppelin/hardhat-upgrades
 npm install --save-dev @nomicfoundation/hardhat-ethers ethers # peer dependencies
 ```
+
+> **Note:** Hardhat 3 supports both ethers and viem, but this plugin requires `@nomicfoundation/hardhat-ethers` because it uses `connection.ethers` internally. If your project uses viem, you can install both `@nomicfoundation/hardhat-ethers` and `@nomicfoundation/hardhat-viem` together — the upgrades plugin will use ethers internally while your own code continues to use viem.
 
 And register the plugin in your [`hardhat.config.ts`](https://hardhat.org/config/):
 

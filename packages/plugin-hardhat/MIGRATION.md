@@ -7,7 +7,7 @@
 1. **No automatic `hre.upgrades`** - Must call factory function explicitly
 2. **Factory functions are async** - Require `await` and network connection
 3. **Import changes** - Import factory functions, not just the plugin
-4. **Removed peerDependencies** - `hardhat` and `@nomicfoundation/hardhat-ethers` must be added to devDependencies
+4. **Updated peerDependencies** - `hardhat` and `@nomicfoundation/hardhat-ethers` peer dependency versions have been updated for Hardhat 3. Hardhat 3 supports both ethers and viem, but this plugin uses `connection.ethers` internally and will not work in a viem-only project. Install `@nomicfoundation/hardhat-ethers` even if your own code uses viem.
 
 ## Install Dependencies
 
@@ -16,6 +16,8 @@ If upgrading from a previous version, ensure these packages are in your `devDepe
 ```bash
 npm install --save-dev hardhat @nomicfoundation/hardhat-ethers
 ```
+
+> **Using viem?** You can install both `@nomicfoundation/hardhat-ethers` and `@nomicfoundation/hardhat-viem`. The upgrades plugin uses ethers internally; your own scripts and tests can still use viem.
 
 ## Migration
 
@@ -171,6 +173,7 @@ Note: Both `upgrades` and `defender` receive `hre` and `connection` as parameter
 
 ## Checklist
 
+- Install `@nomicfoundation/hardhat-ethers` — required even if your project uses viem (install both if needed)
 - Add plugin to `plugins` array in `hardhat.config.ts`: `plugins: [hardhatUpgrades]`
 - Replace `import '@openzeppelin/hardhat-upgrades'` → `import { upgrades, defender } from '@openzeppelin/hardhat-upgrades'` in scripts/tests
 - Add `const connection = await hre.network.connect();` (share connection across operations, don't create new ones)
