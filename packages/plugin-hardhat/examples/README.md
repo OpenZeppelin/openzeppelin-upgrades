@@ -1,6 +1,6 @@
 # Examples
 
-Two self-contained examples demonstrating the OpenZeppelin Hardhat Upgrades plugin with Hardhat 3.
+Two self-contained example projects demonstrating the OpenZeppelin Hardhat Upgrades plugin with Hardhat 3.
 
 Both use a simple `Box` contract (stores a value, V2 adds `increment`) to demonstrate how to deploy and upgrade a proxy using the plugin.
 
@@ -26,5 +26,5 @@ npm test
 
 ## Resources
 
-- [OpenZeppelin Hardhat Upgrades docs](https://docs.openzeppelin.com/upgrades-plugins)
+- [OpenZeppelin Hardhat Upgrades readme](../README.md)
 - [Hardhat 3 migration guide](../MIGRATION.md)
