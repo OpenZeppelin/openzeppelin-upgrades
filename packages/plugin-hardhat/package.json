@@ -33,7 +33,7 @@
     "upgrade:existing": "hardhat ignition deploy ignition/modules/upgrade-greeter-uups.ts"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-ethers": "^4.0.2",
+    "@nomicfoundation/hardhat-ethers": "^4.0.0",
     "@nomicfoundation/hardhat-verify": "^3.0.10",
     "@openzeppelin/contracts": "5.3.0",
     "@openzeppelin/contracts-upgradeable": "5.3.0",
