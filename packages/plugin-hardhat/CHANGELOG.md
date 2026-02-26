@@ -25,7 +25,6 @@
 
   - Migrated from `extendEnvironment` to Hardhat 3's `HardhatPlugin` with `hookHandlers`
   - Converted package to ESM
-  - `@nomicfoundation/hardhat-ethers` is loaded automatically — do not add it to your Hardhat config.
   - Etherscan verification requires `@nomicfoundation/hardhat-verify@^3.0.10` (optional peer dependency).
   - Updated example projects to work with Hardhat 3
 
