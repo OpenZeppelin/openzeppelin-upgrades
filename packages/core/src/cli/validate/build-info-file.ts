@@ -160,9 +160,13 @@ Ensure foundry.toml has:
 Then run: ${FOUNDRY_COMPILE_COMMAND}`;
 
 const HH3_BUILD_INFO_HELP = `\
-Hardhat 3 (HH3) build-info uses a main .json file (input, solcVersion) and a separate .output.json (output).
-Ensure you have compiled with Hardhat 3 so that artifacts/build-info/ contains both the main files and the .output.json files.
-Then run: ${HARDHAT_COMPILE_COMMAND}`;
+Hardhat 3's build-info uses a main .json file (input, solcVersion) and a separate .output.json (output).
+Ensure you compile with Hardhat 3 so that artifacts/build-info/ contains both the main files and the .output.json files.
+Run: ${HARDHAT_COMPILE_COMMAND}`;
+
+const GENERIC_BUILD_INFO_HELP = `\
+If using Foundry, ensure foundry.toml has build_info = true and extra_output = ["storageLayout"], then compile with '${FOUNDRY_COMPILE_COMMAND}'.
+If using Hardhat, compile with '${HARDHAT_COMPILE_COMMAND}'.`;
 
 async function loadBuildInfo(buildInfoFilePath: string): Promise<{
   input: SolcInput;
@@ -194,10 +198,7 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
     );
   }
 
-  if (
-    typeof format === 'string' &&
-    (format.startsWith('hh3-sol-build-info') || format.startsWith('hh-sol-build-info'))
-  ) {
+  if (typeof format === 'string' && format.startsWith('hh3-sol-build-info')) {
     if (buildInfoJson.input === undefined || buildInfoJson.solcVersion === undefined) {
       throw new ValidateCommandError(
         `Build info file ${buildInfoFilePath} (Hardhat 3 format) must contain input and solcVersion. Got format: ${format}.`,
@@ -267,11 +268,9 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
     };
   }
 
-  const isHH3Dir = buildInfoFilePath.includes('artifacts' + path.sep + 'build-info');
-  const isFoundryDir = buildInfoFilePath.includes('out' + path.sep + 'build-info');
   throw new ValidateCommandError(
-    `Build info file ${buildInfoFilePath} must contain Solidity compiler input, output, and solcVersion. Got format: ${format ?? 'unknown'}.`,
-    () => (isHH3Dir ? HH3_BUILD_INFO_HELP : isFoundryDir ? FOUNDRY_BUILD_INFO_HELP : ''),
+    `Build info from ${buildInfoFilePath} must include Solidity compiler input, output, and solcVersion. Got format: ${format ?? 'unknown'}.`,
+    () => GENERIC_BUILD_INFO_HELP,
   );
 }
 

@@ -357,12 +357,12 @@ test.serial('get build info files - override with custom absolute path', async t
   assertBuildInfoFiles(t, buildInfoFiles);
 });
 
-test.serial('invalid build info file', async t => {
+test.serial('generic invalid build info file', async t => {
   await fs.mkdir('invalid-build-info', { recursive: true });
 
   await fs.writeFile('invalid-build-info/invalid.json', JSON.stringify({ output: {} }));
   const error = await t.throwsAsync(getBuildInfoFiles('invalid-build-info'));
-  t.true(error?.message.includes('must contain Solidity compiler input, output, and solcVersion'));
+  t.true(error?.message.includes('must include Solidity compiler input, output, and solcVersion'));
 });
 
 test.serial('Foundry format (ethers-rs) with missing output suggests forge clean && forge build', async t => {
@@ -383,7 +383,7 @@ test.serial('Foundry format (ethers-rs) with missing output suggests forge clean
   t.true(error?.message.includes('forge clean && forge build'));
 });
 
-test.serial('Hardhat 3 (HH3) format with missing .output.json suggests hardhat compile', async t => {
+test.serial('Hardhat 3 format with missing .output.json suggests hardhat compile', async t => {
   await fs.mkdir('hh3-format-missing-output', { recursive: true });
 
   await fs.writeFile(
@@ -398,6 +398,29 @@ test.serial('Hardhat 3 (HH3) format with missing .output.json suggests hardhat c
   const error = await t.throwsAsync(getBuildInfoFiles('hh3-format-missing-output'));
   t.true(error?.message.includes('could not be read') || error?.message.includes('missing Solidity compiler output'));
   t.true(error?.message.includes('hardhat compile'));
+});
+
+test.serial('Hardhat 2 format with missing output falls back to generic help', async t => {
+  await fs.mkdir('invalid-hh2-build-info', { recursive: true });
+
+  // Missing output but has an hh2-style _format with input and solcVersion.
+  await fs.writeFile(
+    'invalid-hh2-build-info/invalid.json',
+    JSON.stringify({
+      _format: 'hh-sol-build-info-1',
+      input: BUILD_INFO.input,
+      solcVersion: '0.8.9',
+      // output missing
+    }),
+  );
+
+  const error = await t.throwsAsync(getBuildInfoFiles('invalid-hh2-build-info'));
+  t.true(
+    error?.message.includes(
+      'Build info from invalid-hh2-build-info/invalid.json must include Solidity compiler input, output, and solcVersion',
+    ),
+  );
+  t.false(error?.message.includes('Hardhat 3'));
 });
 
 test.serial('dir does not exist', async t => {
