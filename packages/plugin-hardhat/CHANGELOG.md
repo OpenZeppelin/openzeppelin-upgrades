@@ -25,7 +25,8 @@
 
   - Migrated from `extendEnvironment` to Hardhat 3's `HardhatPlugin` with `hookHandlers`
   - Converted package to ESM
-  - Proxy verification using hardhat-verify v3.0.10+ API. The plugin overrides the `verify` task and uses `(await hre.network.connect()).verification.etherscan` for Etherscan operations (`customApiCall`, `verify`, etc.). Proxy verification requires `@nomicfoundation/hardhat-verify@^3.0.10`.
+  - `@nomicfoundation/hardhat-ethers` is loaded automatically — do not add it to your Hardhat config.
+  - Etherscan verification requires `@nomicfoundation/hardhat-verify@^3.0.10` (optional peer dependency).
   - Updated example projects to work with Hardhat 3
 
 
