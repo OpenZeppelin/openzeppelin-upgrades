@@ -10,13 +10,13 @@
 ## Installation
 
 ```
-npm install --save-dev @openzeppelin/hardhat-upgrades
+npm install --save-dev @openzeppelin/hardhat-upgrades@next
 npm install --save-dev @nomicfoundation/hardhat-ethers ethers # peer dependencies
 ```
 
-> **Note:** Hardhat 3 supports both ethers and viem, but this plugin requires `@nomicfoundation/hardhat-ethers` because it uses `connection.ethers` internally. If your project uses viem, you can install both `@nomicfoundation/hardhat-ethers` and `@nomicfoundation/hardhat-viem` together — the upgrades plugin will use ethers internally while your own code continues to use viem.
+> **Note:** Hardhat 3 supports both ethers and viem, and your project can use `@nomicfoundation/hardhat-ethers` or `@nomicfoundation/hardhat-viem`. However, this plugin uses `@nomicfoundation/hardhat-ethers` internally and enables it automatically in Hardhat. Do not include `@nomicfoundation/hardhat-ethers` in your Hardhat config, otherwise Hardhat may give errors about multiple versions of the same plugin.
 
-And register the plugin in your [`hardhat.config.ts`](https://hardhat.org/config/):
+Register the `@openzeppelin/hardhat-upgrades` plugin in your [`hardhat.config.ts`](https://hardhat.org/config/):
 
 ```typescript
 import { defineConfig } from 'hardhat/config';
