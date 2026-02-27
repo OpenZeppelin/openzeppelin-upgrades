@@ -511,7 +511,7 @@ async function linkProxyWithImplementationAbi(
     address: proxyAddress,
     expectedimplementation: implAddress,
   };
-  let responseBody = await callEtherscanApi(etherscan, params);
+  let responseBody = await callEtherscanApi(etherscan, params, { method: 'POST', body: params });
 
   if (responseBody.status === RESPONSE_OK) {
     const guid = responseBody.result as string;

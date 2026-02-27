@@ -1,13 +1,14 @@
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type {
   Etherscan,
+  EtherscanCustomApiCallOptions,
   EtherscanVerifyArgs,
   EtherscanResponseBody,
 } from '@nomicfoundation/hardhat-verify/types';
 import { UpgradesError } from '@openzeppelin/upgrades-core';
 import debug from './debug.js';
 
-export type { Etherscan, EtherscanVerifyArgs, EtherscanResponseBody };
+export type { Etherscan, EtherscanCustomApiCallOptions, EtherscanVerifyArgs, EtherscanResponseBody };
 
 export const RESPONSE_OK = '1';
 
@@ -34,9 +35,10 @@ export async function getEtherscanFromConnection(hre: HardhatRuntimeEnvironment)
 export async function callEtherscanApi(
   etherscan: Etherscan,
   params: Record<string, string | number | undefined>,
+  options?: EtherscanCustomApiCallOptions,
 ): Promise<EtherscanResponseBody> {
   try {
-    const response = await etherscan.customApiCall(params);
+    const response = await etherscan.customApiCall(params, options);
     debug('Etherscan response', JSON.stringify(response));
     return response;
   } catch (e: unknown) {
