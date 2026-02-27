@@ -27,10 +27,6 @@
     "prepare": "yarn compile",
     "test": "tsc -b && bash scripts/test.sh",
     "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --",
-    "deploy:transparent": "hardhat ignition deploy ignition/modules/deploy-greeter-transparent.ts",
-    "deploy:beacon": "hardhat ignition deploy ignition/modules/deploy-greeter-beacon.ts",
-    "deploy:uups": "hardhat ignition deploy ignition/modules/deploy-greeter-uups.ts",
-    "upgrade:existing": "hardhat ignition deploy ignition/modules/upgrade-greeter-uups.ts",
     "test:examples": "cd examples/BoxTransparent && npm install && npm test && cd ../BoxUUPS && npm install && npm test"
   },
   "devDependencies": {
