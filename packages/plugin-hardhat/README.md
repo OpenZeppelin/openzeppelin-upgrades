@@ -45,16 +45,16 @@ async function main() {
   // Create connection once and reuse for all operations
   const connection = await hre.network.connect();
   const { ethers } = connection;
-  const { deployProxy, upgradeProxy } = await upgrades(hre, connection);
+  const upgradesApi = await upgrades(hre, connection);
   
   const Box = await ethers.getContractFactory("Box");
-  const box = await deployProxy(Box, [42]);
+  const box = await upgradesApi.deployProxy(Box, [42]);
   await box.waitForDeployment();
   console.log("Box deployed to:", await box.getAddress());
   
   // Reuse the same connection for upgrades
   const BoxV2 = await ethers.getContractFactory("BoxV2");
-  await upgradeProxy(await box.getAddress(), BoxV2);
+  await upgradesApi.upgradeProxy(await box.getAddress(), BoxV2);
 }
 
 main();
@@ -72,10 +72,10 @@ import { upgrades } from "@openzeppelin/hardhat-upgrades";
 async function main() {
   const connection = await hre.network.connect();
   const { ethers } = connection;
-  const { upgradeProxy } = await upgrades(hre, connection);
+  const upgradesApi = await upgrades(hre, connection);
   
   const BoxV2 = await ethers.getContractFactory("BoxV2");
-  await upgradeProxy(BOX_ADDRESS, BoxV2);
+  await upgradesApi.upgradeProxy(BOX_ADDRESS, BoxV2);
   console.log("Box upgraded");
 }
 
@@ -98,15 +98,15 @@ import { upgrades } from "@openzeppelin/hardhat-upgrades";
 async function main() {
   const connection = await hre.network.connect();
   const { ethers } = connection;
-  const { deployBeacon, deployBeaconProxy } = await upgrades(hre, connection);
+  const upgradesApi = await upgrades(hre, connection);
   
   const Box = await ethers.getContractFactory("Box");
 
-  const beacon = await deployBeacon(Box);
+  const beacon = await upgradesApi.deployBeacon(Box);
   await beacon.waitForDeployment();
   console.log("Beacon deployed to:", await beacon.getAddress());
 
-  const box = await deployBeaconProxy(beacon, Box, [42]);
+  const box = await upgradesApi.deployBeaconProxy(beacon, Box, [42]);
   await box.waitForDeployment();
   console.log("Box deployed to:", await box.getAddress());
 }
@@ -124,10 +124,10 @@ import { upgrades } from "@openzeppelin/hardhat-upgrades";
 async function main() {
   const connection = await hre.network.connect();
   const { ethers } = connection;
-  const { upgradeBeacon } = await upgrades(hre, connection);
+  const upgradesApi = await upgrades(hre, connection);
   
   const BoxV2 = await ethers.getContractFactory("BoxV2");
-  await upgradeBeacon(BEACON_ADDRESS, BoxV2);
+  await upgradesApi.upgradeBeacon(BEACON_ADDRESS, BoxV2);
   console.log("Beacon upgraded");
 
   const box = BoxV2.attach(BOX_ADDRESS);
@@ -215,7 +215,7 @@ import type { HardhatUpgrades, DefenderHardhatUpgrades } from '@openzeppelin/har
 
 task('deploy', async (args, hre) => {
   const connection = await hre.network.connect();
-  const api: HardhatUpgrades = await upgrades(hre, connection);
+  const upgradesApi: HardhatUpgrades = await upgrades(hre, connection);
   // ...
 });
 ```

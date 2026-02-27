@@ -4,10 +4,10 @@ import { upgrades } from '@openzeppelin/hardhat-upgrades';
 async function main() {
   const connection = await hre.network.connect();
   const { ethers } = connection;
-  const { deployProxy } = await upgrades(hre, connection);
+  const upgradesApi = await upgrades(hre, connection);
 
   const Box = await ethers.getContractFactory('Box');
-  const box = await deployProxy(Box, [42], { kind: 'transparent' });
+  const box = await upgradesApi.deployProxy(Box, [42], { kind: 'transparent' });
   await box.waitForDeployment();
 
   const proxyAddress = await box.getAddress();

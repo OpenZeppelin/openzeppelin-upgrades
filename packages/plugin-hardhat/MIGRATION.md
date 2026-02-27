@@ -82,8 +82,8 @@ await hre.upgrades.deployProxy(MyContract, []);
 **After:**
 ```typescript
 const connection = await hre.network.connect();
-const { deployProxy } = await upgrades(hre, connection);
-await deployProxy(MyContract, []);
+const upgradesApi = await upgrades(hre, connection);
+await upgradesApi.deployProxy(MyContract, []);
 ```
 
 **Important:** 
@@ -102,13 +102,13 @@ import { upgrades } from '@openzeppelin/hardhat-upgrades';
 async function main() {
   const connection = await hre.network.connect();
   const { ethers } = connection;
-  const { deployProxy, upgradeProxy } = await upgrades(hre, connection);
+  const upgradesApi = await upgrades(hre, connection);
   
   const MyContract = await ethers.getContractFactory('MyContract');
-  const proxy = await deployProxy(MyContract, []);
+  const proxy = await upgradesApi.deployProxy(MyContract, []);
   
   const MyContractV2 = await ethers.getContractFactory('MyContractV2');
-  await upgradeProxy(proxy, MyContractV2);
+  await upgradesApi.upgradeProxy(proxy, MyContractV2);
 }
 
 main();
@@ -123,9 +123,9 @@ import { upgrades } from '@openzeppelin/hardhat-upgrades';
 task('deploy', async (args, hre) => {
   const connection = await hre.network.connect();
   const { ethers } = connection;
-  const { deployProxy } = await upgrades(hre, connection);
+  const upgradesApi = await upgrades(hre, connection);
   const MyContract = await ethers.getContractFactory('MyContract');
-  await deployProxy(MyContract, []);
+  await upgradesApi.deployProxy(MyContract, []);
 });
 ```
 
@@ -208,6 +208,6 @@ Note that you do not need to include constructor arguments when verifying if you
 - Replace `import '@openzeppelin/hardhat-upgrades'` → `import { upgrades, defender } from '@openzeppelin/hardhat-upgrades'` in scripts/tests
 - Add `const connection = await hre.network.connect();` (share connection across operations, don't create new ones)
 - Replace `hre.ethers` → `ethers` from connection (`const { ethers } = connection`)
-- Replace `hre.upgrades.method()` → destructure from `await upgrades(hre, connection)`
-- Replace `hre.defender.method()` → destructure from `await defender(hre, connection)`
+- Replace `hre.upgrades.method()` → call methods from `const upgradesApi = await upgrades(hre, connection)`
+- Replace `hre.defender.method()` → call methods from `const defenderApi = await defender(hre, connection)`
 - Update all scripts, tasks, and tests

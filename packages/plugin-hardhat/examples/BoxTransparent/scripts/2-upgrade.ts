@@ -11,10 +11,10 @@ async function main() {
 
   const connection = await hre.network.connect();
   const { ethers } = connection;
-  const { upgradeProxy } = await upgrades(hre, connection);
+  const upgradesApi = await upgrades(hre, connection);
 
   const BoxV2 = await ethers.getContractFactory('BoxV2');
-  const box = await upgradeProxy(PROXY_ADDRESS, BoxV2);
+  const box = await upgradesApi.upgradeProxy(PROXY_ADDRESS, BoxV2);
   await box.waitForDeployment();
 
   console.log('Box upgraded at:', await box.getAddress());
