@@ -30,7 +30,8 @@
     "deploy:transparent": "hardhat ignition deploy ignition/modules/deploy-greeter-transparent.ts",
     "deploy:beacon": "hardhat ignition deploy ignition/modules/deploy-greeter-beacon.ts",
     "deploy:uups": "hardhat ignition deploy ignition/modules/deploy-greeter-uups.ts",
-    "upgrade:existing": "hardhat ignition deploy ignition/modules/upgrade-greeter-uups.ts"
+    "upgrade:existing": "hardhat ignition deploy ignition/modules/upgrade-greeter-uups.ts",
+    "test:examples": "cd examples/BoxTransparent && npm install && npm test && cd ../BoxUUPS && npm install && npm test"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.0",
