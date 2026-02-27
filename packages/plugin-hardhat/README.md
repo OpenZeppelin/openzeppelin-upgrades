@@ -38,8 +38,8 @@ You can use this plugin in a [Hardhat script](https://hardhat.org/guides/scripts
 
 ```js
 // scripts/create-box.js
-const hre = require("hardhat");
-const { upgrades } = require("@openzeppelin/hardhat-upgrades");
+import hre from "hardhat";
+import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 async function main() {
   // Create connection once and reuse for all operations
@@ -66,8 +66,8 @@ Then, in another script, you can use the `upgradeProxy` function to upgrade the 
 
 ```js
 // scripts/upgrade-box.js
-const hre = require("hardhat");
-const { upgrades } = require("@openzeppelin/hardhat-upgrades");
+import hre from "hardhat";
+import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 async function main() {
   const connection = await hre.network.connect();
@@ -92,8 +92,8 @@ You can also use this plugin to deploy an upgradeable beacon for your contract w
 
 ```js
 // scripts/create-box.js
-const hre = require("hardhat");
-const { upgrades } = require("@openzeppelin/hardhat-upgrades");
+import hre from "hardhat";
+import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 async function main() {
   const connection = await hre.network.connect();
@@ -118,8 +118,8 @@ Then, in another script, you can use the `upgradeBeacon` function to upgrade the
 
 ```js
 // scripts/upgrade-box.js
-const hre = require("hardhat");
-const { upgrades } = require("@openzeppelin/hardhat-upgrades");
+import hre from "hardhat";
+import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 async function main() {
   const connection = await hre.network.connect();
@@ -145,14 +145,14 @@ You can also use the plugin's functions from your Hardhat tests, in case you wan
 ### Proxies
 
 ```js
-const { expect } = require("chai");
-const hre = require("hardhat");
-const { upgrades } = require("@openzeppelin/hardhat-upgrades");
+import { expect } from "chai";
+import hre from "hardhat";
+import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 describe("Box", function() {
   let upgradesApi;
   let ethers;
-  
+
   before(async () => {
     const connection = await hre.network.connect();
     ({ ethers } = connection);
@@ -162,7 +162,7 @@ describe("Box", function() {
   it('works', async () => {
     const Box = await ethers.getContractFactory("Box");
     const BoxV2 = await ethers.getContractFactory("BoxV2");
-  
+
     const instance = await upgradesApi.deployProxy(Box, [42]);
     const upgraded = await upgradesApi.upgradeProxy(await instance.getAddress(), BoxV2);
 
@@ -175,14 +175,14 @@ describe("Box", function() {
 ### Beacon proxies
 
 ```js
-const { expect } = require("chai");
-const hre = require("hardhat");
-const { upgrades } = require("@openzeppelin/hardhat-upgrades");
+import { expect } from "chai";
+import hre from "hardhat";
+import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 describe("Box", function() {
   let upgradesApi;
   let ethers;
-  
+
   before(async () => {
     const connection = await hre.network.connect();
     ({ ethers } = connection);
