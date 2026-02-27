@@ -43,9 +43,9 @@ jobs:
     - name: Set up environment
       uses: ./.github/actions/setup
 
-    - name: Force local core CLI (for plugin-hardhat Solidity tests)
+    - name: Log upgrades-core resolution (plugin-hardhat)
       if: matrix.package == 'plugin-hardhat'
-      uses: ./.github/actions/force-local-core-cli
+      run: bash packages/plugin-hardhat/scripts/debug-upgrades-core-resolution.sh
 
     - name: Run tests
       run: yarn --cwd "packages/${{matrix.package}}" run test
@@ -61,10 +61,8 @@ jobs:
     - name: Set up environment
       uses: ./.github/actions/setup
 
-    - name: Force local core CLI (for coverage tests that invoke upgrades-core CLI)
-      uses: ./.github/actions/force-local-core-cli
-      with:
-        fix_plugin_hardhat_bin: 'true'
+    - name: Log upgrades-core resolution
+      run: bash packages/plugin-hardhat/scripts/debug-upgrades-core-resolution.sh
 
     - name: Run coverage
       run: yarn coverage
