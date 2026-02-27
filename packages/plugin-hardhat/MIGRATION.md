@@ -7,7 +7,7 @@
 1. **No automatic `hre.upgrades`** - Must call factory function explicitly
 2. **Factory functions are async** - Require `await` and network connection
 3. **Import changes** - Import factory functions, not just the plugin
-4. **Updated peerDependencies** - `hardhat` and `@nomicfoundation/hardhat-ethers` peer dependency versions have been updated for Hardhat 3. Hardhat 3 supports both ethers and viem, but this plugin uses `connection.ethers` internally and will not work in a viem-only project. Install `@nomicfoundation/hardhat-ethers` even if your own code uses viem.
+4. **Updated peerDependencies** - `hardhat` and `@nomicfoundation/hardhat-ethers` peer dependency versions have been updated for Hardhat 3.
 
 ## Install Dependencies
 
@@ -38,6 +38,23 @@ import hardhatUpgrades from '@openzeppelin/hardhat-upgrades';
 export default defineConfig({
   plugins: [hardhatUpgrades],
   // ... rest of config
+});
+```
+
+If you use the `verify` task, also add `@nomicfoundation/hardhat-verify` and configure Hardhat's `verify.etherscan.apiKey` setting:
+
+```typescript
+import { configVariable, defineConfig } from 'hardhat/config';
+import hardhatVerify from '@nomicfoundation/hardhat-verify';
+import hardhatUpgrades from '@openzeppelin/hardhat-upgrades';
+
+export default defineConfig({
+  plugins: [hardhatVerify, hardhatUpgrades],
+  verify: {
+    etherscan: {
+      apiKey: configVariable('ETHERSCAN_API_KEY'),
+    },
+  },
 });
 ```
 
@@ -171,10 +188,23 @@ describe('MyContract', () => {
 
 Note: Both `upgrades` and `defender` receive `hre` and `connection` as parameters.
 
+## Verify Task (Optional)
+
+If your Hardhat config file's `verify.etherscan.apiKey` setting uses `configVariable('ETHERSCAN_API_KEY')`, set `ETHERSCAN_API_KEY` before running Hardhat (or use a provider such as `@nomicfoundation/hardhat-keystore`):
+
+```bash
+ETHERSCAN_API_KEY=... npx hardhat verify --network mainnet PROXY_ADDRESS
+```
+
+The upgrades plugin extends hardhat-verify's `verify` task for proxy addresses.
+
+Note that you do not need to include constructor arguments when verifying if your implementation contract only uses initializers. However, if your implementation contract has an actual constructor with arguments (such as to set immutable variables), then include constructor arguments according to [Hardhat's documentation for verifying a contract](https://hardhat.org/docs/guides/smart-contract-verification#verifying-a-contract).
+
 ## Checklist
 
 - Install `@nomicfoundation/hardhat-ethers` — required even if your project uses viem (install both if needed)
-- Add plugin to `plugins` array in `hardhat.config.ts`: `plugins: [hardhatUpgrades]`
+- Add `hardhatUpgrades` to `plugins` in `hardhat.config.ts`
+- If using `verify`, add `hardhatVerify` to `plugins`, install `@nomicfoundation/hardhat-verify`, and configure Hardhat's `verify.etherscan.apiKey` setting
 - Replace `import '@openzeppelin/hardhat-upgrades'` → `import { upgrades, defender } from '@openzeppelin/hardhat-upgrades'` in scripts/tests
 - Add `const connection = await hre.network.connect();` (share connection across operations, don't create new ones)
 - Replace `hre.ethers` → `ethers` from connection (`const { ethers } = connection`)
