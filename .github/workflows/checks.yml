@@ -43,9 +43,9 @@ jobs:
     - name: Set up environment
       uses: ./.github/actions/setup
 
-    - name: Log upgrades-core resolution (plugin-hardhat)
+    - name: Assert upgrades-core resolution (plugin-hardhat)
       if: matrix.package == 'plugin-hardhat'
-      run: bash packages/plugin-hardhat/scripts/debug-upgrades-core-resolution.sh
+      run: bash packages/plugin-hardhat/scripts/assert-upgrades-core-resolution.sh
 
     - name: Run tests
       run: yarn --cwd "packages/${{matrix.package}}" run test
@@ -61,8 +61,8 @@ jobs:
     - name: Set up environment
       uses: ./.github/actions/setup
 
-    - name: Log upgrades-core resolution
-      run: bash packages/plugin-hardhat/scripts/debug-upgrades-core-resolution.sh
+    - name: Assert upgrades-core resolution
+      run: bash packages/plugin-hardhat/scripts/assert-upgrades-core-resolution.sh
 
     - name: Run coverage
       run: yarn coverage
