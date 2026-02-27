@@ -5,6 +5,11 @@
 [![Checks](https://github.com/OpenZeppelin/openzeppelin-upgrades/actions/workflows/checks.yml/badge.svg)](https://github.com/OpenZeppelin/openzeppelin-upgrades/actions/workflows/checks.yml)
 [![License](https://img.shields.io/github/license/OpenZeppelin/openzeppelin-upgrades)](https://github.com/OpenZeppelin/openzeppelin-upgrades/blob/master/LICENSE)
 
+> [!NOTE]
+> This branch contains support for Hardhat 3. This version of the plugin is currently in alpha and is not recommended for production use. For details and migration instructions, see:
+> - [Hardhat Upgrades for Hardhat 3](./packages/plugin-hardhat/README.md)
+> - [Hardhat 2 to 3 migration guide](./packages/plugin-hardhat/MIGRATION.md)
+
 **Integrate upgrades into your existing workflow.** Plugins for [Hardhat](https://hardhat.org/) and [Foundry](https://book.getfoundry.sh/) to deploy and manage upgradeable contracts on Ethereum.
 
 - Deploy upgradeable contracts.
