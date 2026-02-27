@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/github/license/OpenZeppelin/openzeppelin-upgrades)](https://github.com/OpenZeppelin/openzeppelin-upgrades/blob/master/LICENSE)
 
 > [!NOTE]
-> This branch contains support for Hardhat 3. This version of the plugin is currently in alpha and is not recommended for production use. For details and migration instructions, see:
+> This branch contains support for Hardhat 3. This version is still in testing. Do not use it to deploy or upgrade production deployments. For details and migration instructions, see:
 > - [Hardhat Upgrades for Hardhat 3](./packages/plugin-hardhat/README.md)
 > - [Hardhat 2 to 3 migration guide](./packages/plugin-hardhat/MIGRATION.md)
 

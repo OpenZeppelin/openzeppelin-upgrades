@@ -2,6 +2,8 @@
 
 ## 4.0.0-alpha.0 (2026-02-26)
 
+> **Note** ⚠️ This version is still in testing. Do not use it to deploy or upgrade production deployments.
+
 - Migrate to Hardhat 3 with ESM module structure and plugin hooks architecture. ([#1194](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1194))
 
   ### Breaking Changes
