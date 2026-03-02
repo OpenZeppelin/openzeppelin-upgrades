@@ -5,7 +5,7 @@
 
 **Hardhat plugin for deploying and managing upgradeable contracts.** This package adds functions to your Hardhat scripts so you can deploy and upgrade proxies for your contracts. Requires `@nomicfoundation/hardhat-ethers`.
 
-> **⚠️ Migrating from Hardhat 2?** See the [Migration Guide](./MIGRATION.md) for breaking changes and how to update your code, or see the [example projects](./example/) for complete transparent and UUPS proxy examples using Hardhat 3.
+> **⚠️ Migrating from Hardhat 2?** See the [Migration Guide](./MIGRATION.md) for breaking changes and how to update your code, or see the [example projects](./examples/) for complete transparent and UUPS proxy examples using Hardhat 3.
 >
 > **Note** ⚠️ This version is still in testing. Do not use it to deploy or upgrade production deployments.
 

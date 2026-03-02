@@ -90,7 +90,7 @@ await upgradesApi.deployProxy(MyContract, []);
 
 **Important:** 
 - Both `upgrades` and `defender` receive `hre` and `connection` as parameters: `upgrades(hre, connection)` or `defender(hre, connection)`
-- Share the connection across multiple operations do not create a new one each time
+- Share the connection across multiple operations; do not create a new one each time
 - In tests, create the connection once in a `before` block or use top-level await (ESM)
 
 ## Examples

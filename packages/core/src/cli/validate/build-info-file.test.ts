@@ -415,11 +415,8 @@ test.serial('Hardhat 2 format with missing output falls back to generic help', a
   );
 
   const error = await t.throwsAsync(getBuildInfoFiles('invalid-hh2-build-info'));
-  t.true(
-    error?.message.includes(
-      'Build info from invalid-hh2-build-info/invalid.json must include Solidity compiler input, output, and solcVersion',
-    ),
-  );
+  t.true(error?.message.includes('must include Solidity compiler input, output, and solcVersion'));
+  t.true(error?.message.includes('invalid.json'));
   t.false(error?.message.includes('Hardhat 3'));
 });
 

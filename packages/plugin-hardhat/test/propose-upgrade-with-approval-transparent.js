@@ -13,7 +13,7 @@ let upgrades;
 
 const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
-const approvalProcessId = '123'; // ← ADICIONEI
+const approvalProcessId = '123';
 
 test.before(async () => {
   upgrades = await upgradesFactory(hre, connection);
@@ -66,7 +66,6 @@ test.beforeEach(async t => {
 
   t.context.Greeter = await ethers.getContractFactory('GreeterDefender');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterDefenderV2');
-  // ← MUDEI AQUI: usar transparent proxy ao invés de beacon
   t.context.greeter = await upgrades.deployProxy(t.context.Greeter, { kind: 'transparent' });
   t.context.proxyAdmin = await upgrades.erc1967.getAdminAddress(await t.context.greeter.getAddress());
 });
