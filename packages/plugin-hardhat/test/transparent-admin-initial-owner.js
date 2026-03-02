@@ -1,15 +1,28 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { createRequire } from 'node:module';
 
-const { ethers, upgrades } = require('hardhat');
-const hre = require('hardhat');
+const require = createRequire(import.meta.url);
 
 const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
 
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
+
+let upgrades;
+
 const OWNABLE_ABI = ['function owner() view returns (address)'];
 
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.HasOwner = await ethers.getContractFactory('HasOwner');
+  t.context.HasOwner = await ethers.getContractFactory('contracts/HasOwner.sol:HasOwner');
   t.context.ProxyAdmin = await ethers.getContractFactory(ProxyAdmin.abi, ProxyAdmin.bytecode);
 });
 
@@ -18,7 +31,7 @@ test('initial owner using default signer', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello']);
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
+  const admin = await ethers.getContractAt(OWNABLE_ABI, adminAddress);
 
   const defaultSigner = await ethers.provider.getSigner(0);
 
@@ -32,7 +45,7 @@ test('initial owner using custom signer', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello']);
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
+  const admin = await ethers.getContractAt(OWNABLE_ABI, adminAddress);
 
   t.is(await admin.owner(), customSigner.address);
 });
@@ -44,7 +57,7 @@ test('initial owner using initialOwner option', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello'], { initialOwner: initialOwner.address });
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
+  const admin = await ethers.getContractAt(OWNABLE_ABI, adminAddress);
 
   t.is(await admin.owner(), initialOwner.address);
 });
@@ -62,7 +75,7 @@ test('initial owner - no signer in ContractFactory', async t => {
 
   const proxy = await upgrades.deployProxy(Greeter, ['hello'], { initialOwner: initialOwner.address });
   const adminAddress = await upgrades.erc1967.getAdminAddress(await proxy.getAddress());
-  const admin = await hre.ethers.getContractAt(OWNABLE_ABI, adminAddress);
+  const admin = await ethers.getContractAt(OWNABLE_ABI, adminAddress);
 
   t.is(await admin.owner(), initialOwner.address);
 });

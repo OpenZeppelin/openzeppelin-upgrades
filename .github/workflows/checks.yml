@@ -17,6 +17,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Set up environment
       uses: ./.github/actions/setup
@@ -35,9 +37,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Set up environment
       uses: ./.github/actions/setup
+
+    - name: Assert upgrades-core resolution (plugin-hardhat)
+      if: matrix.package == 'plugin-hardhat'
+      run: bash packages/plugin-hardhat/scripts/assert-upgrades-core-resolution.sh
 
     - name: Run tests
       run: yarn --cwd "packages/${{matrix.package}}" run test
@@ -47,9 +55,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Set up environment
       uses: ./.github/actions/setup
+
+    - name: Assert upgrades-core resolution
+      run: bash packages/plugin-hardhat/scripts/assert-upgrades-core-resolution.sh
 
     - name: Run coverage
       run: yarn coverage

@@ -151,6 +151,23 @@ async function readBuildInfo(buildInfoFilePaths: string[], dirShortName: string)
   return buildInfoFiles;
 }
 
+const FOUNDRY_BUILD_INFO_HELP = `\
+Foundry build-info files must contain Solidity compiler input, output, and solcVersion.
+Ensure foundry.toml has:
+  [profile.default]
+  build_info = true
+  extra_output = ["storageLayout"]
+Then run: ${FOUNDRY_COMPILE_COMMAND}`;
+
+const HH3_BUILD_INFO_HELP = `\
+Hardhat 3's build-info uses a main .json file (input, solcVersion) and a separate .output.json (output).
+Ensure you compile with Hardhat 3 so that artifacts/build-info/ contains both the main files and the .output.json files.
+Run: ${HARDHAT_COMPILE_COMMAND}`;
+
+const GENERIC_BUILD_INFO_HELP = `\
+If using Foundry, ensure foundry.toml has build_info = true and extra_output = ["storageLayout"], then compile with '${FOUNDRY_COMPILE_COMMAND}'.
+If using Hardhat, compile with '${HARDHAT_COMPILE_COMMAND}'.`;
+
 async function loadBuildInfo(buildInfoFilePath: string): Promise<{
   input: SolcInput;
   output: SolcOutput;
@@ -172,75 +189,88 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
 
   const format = buildInfoJson._format as string | undefined;
 
-  if (
-    typeof format === 'string' &&
-    (format.startsWith('hh3-sol-build-info') || format.startsWith('hh-sol-build-info'))
-  ) {
-    if (buildInfoJson.input !== undefined && buildInfoJson.solcVersion !== undefined) {
-      let inputData: SolcInput = buildInfoJson.input;
-      let outputData: SolcOutput | undefined = buildInfoJson.output;
+  // Foundry (ethers-rs-sol-build-info-1) normally has input, output, solcVersion at top level.
+  // If we reach here with Foundry format, a field is missing — suggest recompiling.
+  if (typeof format === 'string' && format.startsWith('ethers-rs-sol-build-info')) {
+    throw new ValidateCommandError(
+      `Build info file ${buildInfoFilePath} must contain Solidity compiler input, output, and solcVersion. Got format: ${format}.`,
+      () => FOUNDRY_BUILD_INFO_HELP,
+    );
+  }
+
+  if (typeof format === 'string' && format.startsWith('hh3-sol-build-info')) {
+    if (buildInfoJson.input === undefined || buildInfoJson.solcVersion === undefined) {
+      throw new ValidateCommandError(
+        `Build info file ${buildInfoFilePath} (Hardhat 3 format) must contain input and solcVersion. Got format: ${format}.`,
+        () => HH3_BUILD_INFO_HELP,
+      );
+    }
+    let inputData: SolcInput = buildInfoJson.input;
+    let outputData: SolcOutput | undefined = buildInfoJson.output;
+
+    if (outputData === undefined) {
+      const { dir, name } = path.parse(buildInfoFilePath);
+      const outputFilePath = path.join(dir, `${name}.output.json`);
+
+      try {
+        const outputJson = await readJSON(outputFilePath);
+        outputData = outputJson.output ?? outputJson;
+      } catch (error) {
+        throw new ValidateCommandError(
+          `Build info file ${buildInfoFilePath} does not contain output, and output file ${outputFilePath} could not be read.`,
+          () => HH3_BUILD_INFO_HELP,
+        );
+      }
 
       if (outputData === undefined) {
-        const { dir, name } = path.parse(buildInfoFilePath);
-        const outputFilePath = path.join(dir, `${name}.output.json`);
-
-        try {
-          const outputJson = await readJSON(outputFilePath);
-          outputData = outputJson.output ?? outputJson;
-        } catch (error) {
-          throw new ValidateCommandError(
-            `Build info file ${buildInfoFilePath} does not contain output, and output file ${outputFilePath} could not be read.`,
-          );
-        }
-
-        if (outputData === undefined) {
-          throw new ValidateCommandError(
-            `Build info file ${buildInfoFilePath} does not contain output, and output file ${outputFilePath} is missing Solidity compiler output.`,
-          );
-        }
+        throw new ValidateCommandError(
+          `Build info file ${buildInfoFilePath} does not contain output, and output file ${outputFilePath} is missing Solidity compiler output.`,
+          () => HH3_BUILD_INFO_HELP,
+        );
       }
-
-      const userSourceNameMap: Record<string, string> | undefined = buildInfoJson.userSourceNameMap;
-      if (userSourceNameMap !== undefined) {
-        const canonicalToUser: Record<string, string> = {};
-        for (const [userSource, canonicalSource] of Object.entries(userSourceNameMap)) {
-          canonicalToUser[canonicalSource] = userSource;
-        }
-
-        if (inputData.sources !== undefined) {
-          inputData = {
-            ...inputData,
-            sources: remapKeys(inputData.sources, canonicalToUser),
-          };
-        }
-
-        if (outputData.sources !== undefined) {
-          outputData = {
-            ...outputData,
-            sources: remapKeys(outputData.sources, canonicalToUser),
-            contracts:
-              outputData.contracts !== undefined
-                ? remapKeys(outputData.contracts, canonicalToUser)
-                : outputData.contracts,
-          };
-        } else if (outputData.contracts !== undefined) {
-          outputData = {
-            ...outputData,
-            contracts: remapKeys(outputData.contracts, canonicalToUser),
-          };
-        }
-      }
-
-      return {
-        input: inputData,
-        output: outputData,
-        solcVersion: buildInfoJson.solcVersion,
-      };
     }
+
+    const userSourceNameMap: Record<string, string> | undefined = buildInfoJson.userSourceNameMap;
+    if (userSourceNameMap !== undefined) {
+      const canonicalToUser: Record<string, string> = {};
+      for (const [userSource, canonicalSource] of Object.entries(userSourceNameMap)) {
+        canonicalToUser[canonicalSource] = userSource;
+      }
+
+      if (inputData.sources !== undefined) {
+        inputData = {
+          ...inputData,
+          sources: remapKeys(inputData.sources, canonicalToUser),
+        };
+      }
+
+      if (outputData.sources !== undefined) {
+        outputData = {
+          ...outputData,
+          sources: remapKeys(outputData.sources, canonicalToUser),
+          contracts:
+            outputData.contracts !== undefined
+              ? remapKeys(outputData.contracts, canonicalToUser)
+              : outputData.contracts,
+        };
+      } else if (outputData.contracts !== undefined) {
+        outputData = {
+          ...outputData,
+          contracts: remapKeys(outputData.contracts, canonicalToUser),
+        };
+      }
+    }
+
+    return {
+      input: inputData,
+      output: outputData,
+      solcVersion: buildInfoJson.solcVersion,
+    };
   }
 
   throw new ValidateCommandError(
-    `Build info file ${buildInfoFilePath} must contain Solidity compiler input, output, and solcVersion. Got format: ${format ?? 'unknown'}.`,
+    `Build info from ${buildInfoFilePath} must include Solidity compiler input, output, and solcVersion. Got format: ${format ?? 'unknown'}.`,
+    () => GENERIC_BUILD_INFO_HELP,
   );
 }
 

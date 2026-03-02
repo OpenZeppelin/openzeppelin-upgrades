@@ -1,15 +1,27 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
 
-const { ethers, upgrades } = require('hardhat');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
+let upgrades;
+
+test.after.always(async () => {
+  await connection.close();
+});
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
 });
 
 test('infer proxy kind', async t => {
   const { Greeter, GreeterProxiable } = t.context;
 
+  const signer = await ethers.provider.getSigner();
   const uups = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!']);
   t.is(await upgrades.erc1967.getAdminAddress(await uups.getAddress()), ethers.ZeroAddress);
 
