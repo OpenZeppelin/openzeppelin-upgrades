@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.0.0-alpha.0 (2026-02-26)
+## 4.0.0-alpha.0 (2026-03-02)
 
 > **Note** ⚠️ This version is still in testing. Do not use it to deploy or upgrade production deployments.
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.45.0-alpha.1 (2026-02-26)
+## 1.45.0-alpha.1 (2026-03-02)
 
 - Improve support for validating build-info files in CLI for Hardhat 3, Hardhat 2, and Foundry. ([#1194](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1194))
 
