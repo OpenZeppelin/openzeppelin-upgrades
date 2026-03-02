@@ -9,15 +9,12 @@
  *
  * @returns {string[]} An array of file paths to OpenZeppelin proxy and beacon contracts
  */
-export function OZfilesToBuild(): string[] {
+export function proxyFilesToBuild(): string[] {
   return [
     '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol',
     '@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol',
     '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol',
     '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol',
     '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol',
-    '@openzeppelin/foundry-upgrades/src/Upgrades.sol',
-    '@openzeppelin/foundry-upgrades/src/Options.sol',
-    '@openzeppelin/foundry-upgrades/src/internal/StringFinder.sol',
   ];
 }

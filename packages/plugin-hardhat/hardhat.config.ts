@@ -3,7 +3,7 @@ import type { SolcUserConfig } from 'hardhat/types/config';
 import hardhatVerify from '@nomicfoundation/hardhat-verify';
 import hardhatEthers from '@nomicfoundation/hardhat-ethers';
 import hardhatUpgrades from './dist/index.js';
-import { OZfilesToBuild } from './dist/index.js';
+import { proxyFilesToBuild } from './dist/index.js';
 
 import 'dotenv/config';
 
@@ -45,7 +45,7 @@ const config: HardhatUserConfig = {
       'contracts/GapV2.sol': override,
       'contracts/GapV2_Bad.sol': override,
     },
-    npmFilesToBuild: [...OZfilesToBuild(), '@openzeppelin/contracts/access/manager/AccessManager.sol'],
+    npmFilesToBuild: [...proxyFilesToBuild(), '@openzeppelin/contracts/access/manager/AccessManager.sol'],
   },
   paths: {
     tests: {

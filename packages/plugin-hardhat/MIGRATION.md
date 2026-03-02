@@ -202,6 +202,8 @@ The upgrades plugin extends hardhat-verify's `verify` task for proxy addresses.
 
 Note that you do not need to include constructor arguments when verifying if your implementation contract only uses initializers. However, if your implementation contract has an actual constructor with arguments (such as to set immutable variables), then include constructor arguments according to [Hardhat's documentation for verifying a contract](https://hardhat.org/docs/guides/smart-contract-verification#verifying-a-contract).
 
+For Solidity test setup in Hardhat 3 (including use of `@openzeppelin/foundry-upgrades`), see the [README section on Solidity tests](./README.md#solidity-tests-hardhat-3).
+
 ## Checklist
 
 - Install `@nomicfoundation/hardhat-ethers` — required even if your project uses viem (install both if needed)

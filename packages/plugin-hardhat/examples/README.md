@@ -1,8 +1,8 @@
 # Examples
 
-Two self-contained example projects demonstrating the OpenZeppelin Hardhat Upgrades plugin with Hardhat 3.
+Self-contained example projects demonstrating the OpenZeppelin Hardhat Upgrades plugin with Hardhat 3.
 
-Both use a simple `Box` contract (stores a value, V2 adds `increment`) to demonstrate how to deploy and upgrade a proxy using the plugin.
+All use a simple `Box` contract (stores a value, V2 adds `increment`).
 
 ## BoxTransparent
 
@@ -20,6 +20,16 @@ UUPS proxy pattern. The implementation contract controls upgrades via `_authoriz
 
 ```bash
 cd BoxUUPS
+npm install
+npm test
+```
+
+## BoxSolidityTests
+
+Solidity test example using `hardhat test solidity` with `@openzeppelin/foundry-upgrades` (FFI enabled).
+
+```bash
+cd BoxSolidityTests
 npm install
 npm test
 ```

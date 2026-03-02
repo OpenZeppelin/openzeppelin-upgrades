@@ -28,7 +28,8 @@
   - Migrated from `extendEnvironment` to Hardhat 3's `HardhatPlugin` with `hookHandlers`
   - Converted package to ESM
   - Etherscan verification requires `@nomicfoundation/hardhat-verify@^3.0.10` (optional peer dependency).
-  - Updated example projects to work with Hardhat 3
+  - Support Solidity tests in Hardhat 3 using `hardhat test solidity` with `@openzeppelin/foundry-upgrades`.
+  - Added example projects to work with Hardhat 3
 
 
 ## 3.9.1 (2025-06-30)

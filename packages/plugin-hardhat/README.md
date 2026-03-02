@@ -207,6 +207,52 @@ describe("Box", function() {
 });
 ```
 
+### Solidity tests (Hardhat 3)
+
+You can also write Solidity tests in Hardhat 3 and perform proxy deployments, upgrades, and upgrade safety validations directly from Solidity via `@openzeppelin/foundry-upgrades`.
+
+This is optional and only needed if you want Solidity-based tests.
+
+Install:
+
+```bash
+npm install --save-dev @openzeppelin/foundry-upgrades@next
+```
+
+Configure your Hardhat config for Solidity tests:
+
+```typescript
+import { defineConfig } from 'hardhat/config';
+import hardhatUpgrades, { proxyFilesToBuild } from '@openzeppelin/hardhat-upgrades';
+
+if (!process.env.FOUNDRY_OUT) {
+  process.env.FOUNDRY_OUT = 'artifacts/contracts';
+}
+
+export default defineConfig({
+  plugins: [hardhatUpgrades],
+  solidity: {
+    version: '0.8.28',
+    npmFilesToBuild: [...proxyFilesToBuild()],
+  },
+  test: {
+    solidity: {
+      ffi: true,
+      fsPermissions: {
+        readDirectory: ['artifacts/contracts'],
+      },
+    },
+  },
+});
+```
+
+Run `npx hardhat clean` or `npx hardhat compile --force` before running your Solidity tests:
+
+```bash
+npx hardhat compile --force
+npx hardhat test solidity
+```
+
 ## TypeScript Support
 
 Full TypeScript support is included. Import the factory functions with type safety:
