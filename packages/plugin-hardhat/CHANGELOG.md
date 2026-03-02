@@ -19,16 +19,16 @@
     - Before: `import '@openzeppelin/hardhat-upgrades'`
     - After: `import { upgrades, defender } from '@openzeppelin/hardhat-upgrades'`
 
-  ### Migration
+  ### Usage and Migration
 
-  See `MIGRATION.md` for complete migration guide with examples for scripts, tasks, and tests.
+  See the [README](./README.md) for Hardhat 3 usage, the [examples](./examples/README.md) directory for sample projects, and the [Migration Guide](./MIGRATION.md) for Hardhat 2 to 3 migration steps.
 
   ### Changes
 
   - Migrated from `extendEnvironment` to Hardhat 3's `HardhatPlugin` with `hookHandlers`
   - Converted package to ESM
   - Etherscan verification requires `@nomicfoundation/hardhat-verify@^3.0.10` (optional peer dependency).
-  - Support Solidity tests in Hardhat 3 using `hardhat test solidity` with `@openzeppelin/foundry-upgrades`.
+  - Support [Solidity tests in Hardhat 3](./README.md#solidity-tests-hardhat-3) with `@openzeppelin/foundry-upgrades`.
   - Added example projects to work with Hardhat 3
 
 
