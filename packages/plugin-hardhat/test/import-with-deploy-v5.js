@@ -88,7 +88,7 @@ test('deploy then import with same impl', async t => {
   // upgrade imported proxy to different impl
   await upgrades.upgradeProxy(greeter2, GreeterV2Proxiable);
   const implAddrUpgraded2 = await upgrades.erc1967.getImplementationAddress(await greeter2.getAddress());
-  t.not(implAddrUpgraded2 !== implAddrUpgraded, implAddrUpgraded2);
+  t.not(implAddrUpgraded2, implAddrUpgraded);
 });
 
 test('import previous deployment', async t => {

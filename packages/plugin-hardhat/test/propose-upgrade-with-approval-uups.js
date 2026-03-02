@@ -94,7 +94,7 @@ test('proposes an upgrade and get tx response', async t => {
 
   // even though impl was already deployed in first proposal, it should still provide a tx response for the same tx hash
   t.is(proposal2.txResponse.hash, proposal.txResponse.hash);
-  const txReceipt2 = await proposal.txResponse.wait();
+  const txReceipt2 = await proposal2.txResponse.wait();
   t.is(txReceipt2.contractAddress, txReceipt.contractAddress);
 });
 
