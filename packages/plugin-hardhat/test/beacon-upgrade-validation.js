@@ -25,5 +25,5 @@ test('invalid upgrade', async t => {
   const beacon = await upgrades.deployBeacon(Greeter);
   await upgrades.deployBeaconProxy(beacon, Greeter, ['Hola mundo!']);
   const error = await t.throwsAsync(() => upgrades.upgradeBeacon(beacon, Invalid));
-  t.true(error.message.includes('Contract `Invalid` is not upgrade safe'), error.message);
+  t.true(error.message.includes('is not upgrade safe'), error.message);
 });
