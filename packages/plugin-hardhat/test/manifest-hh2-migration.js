@@ -59,7 +59,7 @@ function collectSrcs(layout) {
   ];
 }
 
-test.serial('upgrade refreshes stale V1 src paths when V1 source still exists', async t => {
+test.serial('upgrade refreshes stale V1 layout srcs', async t => {
   const V1 = await ethers.getContractFactory('MultipleNamespacesAndRegularVariables');
   const V2 = await ethers.getContractFactory('MultipleNamespacesAndRegularVariablesV2_Ok');
 
@@ -98,7 +98,7 @@ test.serial('upgrade refreshes stale V1 src paths when V1 source still exists', 
   t.true(collectSrcs(after.impls[v2Key].layout).every(s => !s.startsWith('legacy/')));
 });
 
-test.serial('upgrade preserves V1 manifest entry when V1 source is gone', async t => {
+test.serial('upgrade preserves V1 entry with no version hash match', async t => {
   const V1 = await ethers.getContractFactory('Example');
   const V2 = await ethers.getContractFactory('ExampleV2_Ok');
 
