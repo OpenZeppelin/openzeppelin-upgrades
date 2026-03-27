@@ -24,7 +24,7 @@ jobs:
       - name: Set up environment
         uses: ./.github/actions/setup
       - name: Create Prepare Release PR
-        uses: changesets/action@e0145edc7d9d8679003495b11f87bd8ef63c0cba # v1.5.3
+        uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1.7.0
         with:
           title: Prepare Release
           commit: Prepare Release
