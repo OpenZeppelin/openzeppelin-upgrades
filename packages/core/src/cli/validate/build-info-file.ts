@@ -222,7 +222,12 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
         );
       }
 
-      if (outputData === undefined) {
+      if (
+        outputData === undefined ||
+        outputData === null ||
+        typeof outputData !== 'object' ||
+        (!('sources' in outputData) && !('contracts' in outputData) && !('errors' in outputData))
+      ) {
         throw new ValidateCommandError(
           `Build info file ${buildInfoFilePath} does not contain output, and output file ${outputFilePath} is missing Solidity compiler output.`,
           () => HH3_BUILD_INFO_HELP,
