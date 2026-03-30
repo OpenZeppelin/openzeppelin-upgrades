@@ -581,6 +581,74 @@ test.serial('no output selection', async t => {
   t.true(error?.message.includes('is not from a full compilation'));
 });
 
+test.serial('Hardhat 3 format with userSourceNameMap remaps input and output sources', async t => {
+  const dir = 'hh3-source-name-map';
+
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(
+    `${dir}/solc-0_8_9-abc123.json`,
+    JSON.stringify({
+      _format: 'hh3-sol-build-info-1',
+      solcVersion: '0.8.9',
+      input: {
+        language: 'Solidity',
+        sources: {
+          'project/contracts/MyContract.sol': {
+            content: 'contract MyContract {}',
+          },
+          'lib/Helper.sol': {
+            content: 'contract Helper {}',
+          },
+        },
+        settings: {
+          outputSelection: {
+            '*': {
+              '*': ['storageLayout'],
+            },
+          },
+        },
+      },
+      // Only maps project sources, not library sources
+      userSourceNameMap: {
+        'contracts/MyContract.sol': 'project/contracts/MyContract.sol',
+      },
+    }),
+  );
+  await fs.writeFile(
+    `${dir}/solc-0_8_9-abc123.output.json`,
+    JSON.stringify({
+      sources: {
+        'project/contracts/MyContract.sol': { ast: {}, id: 0 },
+        'lib/Helper.sol': { ast: {}, id: 1 },
+      },
+      contracts: {
+        'project/contracts/MyContract.sol': { MyContract: {} },
+      },
+    }),
+  );
+
+  const buildInfoFiles = await getBuildInfoFiles(dir);
+
+  t.is(buildInfoFiles.length, 1);
+  const file = buildInfoFiles[0];
+
+  const user = 'contracts/MyContract.sol';
+  const canonical = 'project/contracts/MyContract.sol';
+  const lib = 'lib/Helper.sol';
+
+  // Mapped: canonical paths replaced with user paths
+  t.truthy(file.input.sources[user]);
+  t.falsy(file.input.sources[canonical]);
+  t.truthy(file.output.sources[user]);
+  t.falsy(file.output.sources[canonical]);
+  t.truthy(file.output.contracts?.[user]);
+  t.falsy(file.output.contracts?.[canonical]);
+
+  // Unmapped: library deps preserved as-is
+  t.truthy(file.input.sources[lib]);
+  t.truthy(file.output.sources[lib]);
+});
+
 function assertBuildInfoFiles(t: ExecutionContext, buildInfoFiles: BuildInfoFile[]) {
   t.is(buildInfoFiles.length, 2);
 
