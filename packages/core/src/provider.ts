@@ -141,6 +141,7 @@ export const networkNames: { [chainId in number]?: string } = Object.freeze({
   42161: 'arbitrum-one',
   42170: 'arbitrum-nova',
   421613: 'arbitrum-goerli',
+  421614: 'arbitrum-sepolia',
   43113: 'avalanche-fuji',
   43114: 'avalanche',
   42220: 'celo',
