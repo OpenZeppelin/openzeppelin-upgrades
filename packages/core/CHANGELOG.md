@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 1.44.3 (2026-04-10)
+
+- Add Arbitrum Sepolia network to manifest file names. ([#1236](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1236))
+
 ## 1.44.2 (2025-11-03)
 
 - Add Celo Sepolia network to manifest file names. ([#1189](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1189))
