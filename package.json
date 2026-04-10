@@ -28,7 +28,7 @@
     "typescript": "^5.0.0",
     "wsrun": "^5.2.4",
     "@changesets/cli": "^2.29.3",
-    "@changesets/changelog-github": "^0.5.1"
+    "@changesets/changelog-github": "^0.6.0"
   },
   "workspaces": {
     "packages": [
