@@ -28,6 +28,17 @@ test('validate upgrade safety', async t => {
   t.snapshot(report.explain());
 });
 
+test('validate upgrade safety selfdestruct', async t => {
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/ValidateSelfdestruct.sol:Safe`);
+
+  await fs.mkdir('validate-upgrade-safety-selfdestruct');
+  await fs.writeFile('validate-upgrade-safety-selfdestruct/1.json', JSON.stringify(buildInfo));
+
+  const report = await validateUpgradeSafety('validate-upgrade-safety-selfdestruct');
+  t.false(report.ok);
+  t.snapshot(report.explain());
+});
+
 test('ambiguous upgrades-from', async t => {
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:Safe`);
 

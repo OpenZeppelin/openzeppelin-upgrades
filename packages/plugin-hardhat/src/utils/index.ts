@@ -14,3 +14,4 @@ export {
   attachProxyAdminV4,
   attachProxyAdminV5,
 } from './attach-abi';
+export { getContracts } from './get-contracts';
