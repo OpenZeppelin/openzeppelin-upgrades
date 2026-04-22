@@ -217,8 +217,11 @@ export default async (): Promise<Partial<SolidityHooks>> => {
 };
 
 /**
- * Injects AST from build-info output files into artifact files for Hardhat 3 compatibility.
- * This allows the Foundry upgrades plugin to find AST in artifact files as expected.
+ * Injects AST and metadata from HH3's split `.output.json` build-info files into artifact JSON.
+ *
+ * Required by the `@openzeppelin/foundry-upgrades` npm package, which reads this data from
+ * artifacts via FFI during `hardhat test solidity`. HH3's artifact schema does not include AST
+ * by default, so this hook bridges the gap. Removing it breaks `examples/BoxSolidityTests`.
  */
 export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir: string): Promise<void> {
   const path = await import('path');
