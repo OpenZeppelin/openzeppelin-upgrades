@@ -6,13 +6,11 @@
 **Hardhat plugin for deploying and managing upgradeable contracts.** This package adds functions to your Hardhat scripts so you can deploy and upgrade proxies for your contracts. Requires `@nomicfoundation/hardhat-ethers`.
 
 > **⚠️ Migrating from Hardhat 2?** See the [Migration Guide](./MIGRATION.md) for breaking changes and how to update your code, or see the [example projects](./examples/) for complete transparent and UUPS proxy examples using Hardhat 3.
->
-> **Note** ⚠️ This version is still in testing. Do not use it to deploy or upgrade production deployments.
 
 ## Installation
 
 ```
-npm install --save-dev @openzeppelin/hardhat-upgrades@next
+npm install --save-dev @openzeppelin/hardhat-upgrades
 npm install --save-dev @nomicfoundation/hardhat-ethers ethers # peer dependencies
 ```
 
@@ -216,7 +214,7 @@ This is optional and only needed if you want Solidity-based tests.
 Install:
 
 ```bash
-npm install --save-dev @openzeppelin/foundry-upgrades@next
+npm install --save-dev @openzeppelin/foundry-upgrades
 ```
 
 Configure your Hardhat config for Solidity tests:
@@ -251,21 +249,6 @@ Run `npx hardhat clean` or `npx hardhat compile --force` before running your Sol
 ```bash
 npx hardhat compile --force
 npx hardhat test solidity
-```
-
-## TypeScript Support
-
-Full TypeScript support is included. Import the factory functions with type safety:
-
-```typescript
-import { upgrades, defender } from '@openzeppelin/hardhat-upgrades';
-import type { HardhatUpgrades, DefenderHardhatUpgrades } from '@openzeppelin/hardhat-upgrades';
-
-task('deploy', async (args, hre) => {
-  const connection = await hre.network.connect();
-  const upgradesApi: HardhatUpgrades = await upgrades(hre, connection);
-  // ...
-});
 ```
 
 ## Learn more

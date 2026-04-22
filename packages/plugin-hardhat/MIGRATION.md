@@ -1,8 +1,6 @@
 # Migration Guide: Hardhat 2 to Hardhat 3
 
 > **Prerequisite:** Migrate your Hardhat project to Hardhat 3 first. See the [official Hardhat 3 migration guide](https://hardhat.org/docs/migrate-from-hardhat2).
->
-> **Note** ⚠️ This version is still in testing. Do not use it to deploy or upgrade production deployments.
 
 ## Breaking Changes
 
