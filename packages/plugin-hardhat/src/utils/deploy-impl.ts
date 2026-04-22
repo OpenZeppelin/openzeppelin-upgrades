@@ -66,13 +66,9 @@ export async function deployUpgradeableImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: StandaloneOptions,
-  currentImplAddress?: string,
-  connection?: NetworkConnection,
+  currentImplAddress: string | undefined,
+  connection: NetworkConnection,
 ): Promise<DeployedImpl> {
-  // If connection not provided, create one (for backwards compatibility during migration)
-  if (!connection) {
-    connection = await hre.network.connect();
-  }
   const deployData = await getDeployData(hre, ImplFactory, opts, connection);
   await validateImpl(deployData, opts, currentImplAddress);
   return await deployImpl(hre, deployData, ImplFactory, opts, connection);
@@ -82,13 +78,9 @@ export async function deployProxyImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
-  proxyAddress?: string,
-  connection?: NetworkConnection,
+  proxyAddress: string | undefined,
+  connection: NetworkConnection,
 ): Promise<DeployedProxyImpl> {
-  // If connection not provided, create one (for backwards compatibility during migration)
-  if (!connection) {
-    connection = await hre.network.connect();
-  }
   const deployData = await getDeployData(hre, ImplFactory, opts, connection);
   await validateProxyImpl(deployData, opts, proxyAddress);
   if (opts.kind === undefined) {
@@ -104,13 +96,9 @@ export async function deployBeaconImpl(
   hre: HardhatRuntimeEnvironment,
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
-  beaconAddress?: string,
-  connection?: NetworkConnection,
+  beaconAddress: string | undefined,
+  connection: NetworkConnection,
 ): Promise<DeployedImpl> {
-  // If connection not provided, create one (for backwards compatibility during migration)
-  if (!connection) {
-    connection = await hre.network.connect();
-  }
   const deployData = await getDeployData(hre, ImplFactory, opts, connection);
   await validateBeaconImpl(deployData, opts, beaconAddress);
   return await deployImpl(hre, deployData, ImplFactory, opts, connection);

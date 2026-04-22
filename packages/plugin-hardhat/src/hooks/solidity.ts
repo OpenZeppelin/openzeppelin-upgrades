@@ -90,8 +90,14 @@ export default async (): Promise<Partial<SolidityHooks>> => {
         nextSolcConfig: SolcConfig,
       ) => Promise<CompilerOutput>,
     ): Promise<CompilerOutput> {
-      const { validate, solcInputOutputDecoder, isNamespaceSupported, makeNamespacedInput, trySanitizeNatSpec } =
-        await import('@openzeppelin/upgrades-core');
+      const {
+        validate,
+        solcInputOutputDecoder,
+        isNamespaceSupported,
+        makeNamespacedInput,
+        trySanitizeNatSpec,
+        assertUnreachable,
+      } = await import('@openzeppelin/upgrades-core');
       const { writeValidations } = await import('../utils/validations.js');
       const { isFullSolcOutput } = await import('../utils/is-full-solc-output.js');
 
@@ -158,6 +164,8 @@ export default async (): Promise<Partial<SolidityHooks>> => {
               }
               case 'ignore':
                 break;
+              default:
+                assertUnreachable(namespacedErrorsSetting);
             }
             namespacedOutput = undefined;
           } else {

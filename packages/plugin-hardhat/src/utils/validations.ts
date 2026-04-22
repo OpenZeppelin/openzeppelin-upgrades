@@ -21,9 +21,10 @@ export async function writeValidations(hre: HardhatRuntimeEnvironment, newRunDat
   try {
     releaseLock = await lock(cachePath);
     const storedData = await readValidations(hre, false).catch(e => {
-      // If there is no previous data to append to, we ignore the error and write
-      // the file from scratch.
-      if (e instanceof ValidationsCacheNotFound) {
+      // No prior data to append to: either the cache file is absent, or it was
+      // outdated and readValidations has already removed it. In both cases,
+      // write from scratch.
+      if (e instanceof ValidationsCacheNotFound || e instanceof ValidationsCacheOutdated) {
         return undefined;
       } else {
         throw e;

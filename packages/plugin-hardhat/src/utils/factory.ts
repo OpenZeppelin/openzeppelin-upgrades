@@ -24,7 +24,7 @@ import {
  * ```
  *
  * @param hre - Hardhat Runtime Environment
- * @param connection - Optional network connection object from await hre.network.connect()
+ * @param connection - Network connection from `await hre.network.connect()`. Share one connection across operations; do not create a new one per call.
  * @returns API object with all upgrade functions
  */
 export async function upgrades(
@@ -32,9 +32,6 @@ export async function upgrades(
   connection: NetworkConnection,
 ): Promise<HardhatUpgrades> {
   await warnOnHardhatDefender();
-  if (!connection) {
-    connection = await hre.network.connect();
-  }
   return await createUpgradesAPI(hre, false, connection);
 }
 
@@ -53,7 +50,7 @@ export async function upgrades(
  * ```
  *
  * @param hre - Hardhat Runtime Environment
- * @param connection - Optional network connection object from await hre.network.connect()
+ * @param connection - Network connection from `await hre.network.connect()`. Share one connection across operations; do not create a new one per call.
  * @returns API object with all upgrade and Defender functions
  */
 export async function defender(
