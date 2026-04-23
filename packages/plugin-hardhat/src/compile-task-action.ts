@@ -14,7 +14,9 @@ import type { TaskOverrideActionFunction } from 'hardhat/types/tasks';
  * fix — see HH3-TODO-FORCE-RECOMPILATION.md for the full analysis.
  */
 const action: TaskOverrideActionFunction = async (taskArguments, hre, runSuper) => {
-  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import('./utils/validations.js');
+  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
+    './utils/validations.js'
+  );
   const { isErrorCode } = await import('./utils/errors.js');
 
   let force = taskArguments.force === true;
