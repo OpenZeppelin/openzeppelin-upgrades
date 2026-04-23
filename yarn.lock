@@ -1728,7 +1728,7 @@
     lodash.startcase "^4.4.0"
     minimist "^1.2.0"
 
-"@openzeppelin/foundry-upgrades@0.4.1-alpha.0":
+"@openzeppelin/foundry-upgrades@^0.4.1-alpha.0":
   version "0.4.1-alpha.0"
   resolved "https://registry.yarnpkg.com/@openzeppelin/foundry-upgrades/-/foundry-upgrades-0.4.1-alpha.0.tgz#62379eb7826dfba25214d895acc9432ed230fcd2"
   integrity sha512-AhZiwM3pFq6OAs7yGj/rWKYMECqXBXffVlDRTs+oCeFPjdfE/MqjzyQSHCWFiYnJlOWDiP5GKz/8zcSbU4FjEQ==
