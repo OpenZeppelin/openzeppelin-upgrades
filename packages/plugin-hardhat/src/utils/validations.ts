@@ -64,6 +64,10 @@ export async function readValidations(
   }
 }
 
+export function isLockError(e: unknown): boolean {
+  return typeof e === 'object' && e !== null && 'code' in e && (e as NodeJS.ErrnoException).code === 'ELOCKED';
+}
+
 export class ValidationsCacheNotFound extends Error {
   constructor() {
     super('Validations cache not found. Recompile with `hardhat compile --force`');

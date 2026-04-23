@@ -47,7 +47,7 @@ function toCompilerInput(input: SolcInput): CompilerInput {
 export default async (): Promise<Partial<SolidityHooks>> => {
   return {
     async preprocessSolcInputBeforeBuilding(context, solcInput, next) {
-      const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
+      const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound, isLockError } = await import(
         '../utils/validations.js'
       );
 
@@ -56,11 +56,12 @@ export default async (): Promise<Partial<SolidityHooks>> => {
         // Cache exists and is valid, continue normally
       } catch (e: unknown) {
         if (e instanceof ValidationsCacheOutdated) {
-          // Cache exists but is outdated
-          // TODO: when hardhat supports forcing recompilation, we should do it here
+          // Cache exists but is outdated. The compile-task override (see
+          // compile-task-action.ts) already detected this and forced a full
+          // recompile, so invokeSolc will regenerate the cache.
         } else if (e instanceof ValidationsCacheNotFound) {
           // Cache doesn't exist - that's fine, just proceed with compilation
-        } else if (typeof e === 'object' && e !== null && 'code' in e && e.code === 'ELOCKED') {
+        } else if (isLockError(e)) {
           // Lock file is being held by another process - warn once and continue
           if (!lockWarningShown) {
             logWarning('Validations cache is locked by another process.', ['Continuing without cache validation.']);
