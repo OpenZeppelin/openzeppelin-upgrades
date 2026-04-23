@@ -14,9 +14,8 @@ import type { TaskOverrideActionFunction } from 'hardhat/types/tasks';
  * fix — see HH3-TODO-FORCE-RECOMPILATION.md for the full analysis.
  */
 const action: TaskOverrideActionFunction = async (taskArguments, hre, runSuper) => {
-  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound, isLockError } = await import(
-    './utils/validations.js'
-  );
+  const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import('./utils/validations.js');
+  const { isErrorCode } = await import('./utils/errors.js');
 
   let force = taskArguments.force === true;
   if (!force) {
@@ -25,7 +24,7 @@ const action: TaskOverrideActionFunction = async (taskArguments, hre, runSuper) 
     } catch (e: unknown) {
       if (e instanceof ValidationsCacheOutdated || e instanceof ValidationsCacheNotFound) {
         force = true;
-      } else if (isLockError(e)) {
+      } else if (isErrorCode(e, 'ELOCKED')) {
         // Another process holds the lock; let that process handle regeneration.
       } else {
         throw e;

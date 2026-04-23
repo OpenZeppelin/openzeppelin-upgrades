@@ -47,9 +47,10 @@ function toCompilerInput(input: SolcInput): CompilerInput {
 export default async (): Promise<Partial<SolidityHooks>> => {
   return {
     async preprocessSolcInputBeforeBuilding(context, solcInput, next) {
-      const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound, isLockError } = await import(
+      const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
         '../utils/validations.js'
       );
+      const { isErrorCode } = await import('../utils/errors.js');
 
       try {
         await readValidations(context as HardhatRuntimeEnvironment);
@@ -61,7 +62,7 @@ export default async (): Promise<Partial<SolidityHooks>> => {
           // recompile, so invokeSolc will regenerate the cache.
         } else if (e instanceof ValidationsCacheNotFound) {
           // Cache doesn't exist - that's fine, just proceed with compilation
-        } else if (isLockError(e)) {
+        } else if (isErrorCode(e, 'ELOCKED')) {
           // Lock file is being held by another process - warn once and continue
           if (!lockWarningShown) {
             logWarning('Validations cache is locked by another process.', ['Continuing without cache validation.']);
@@ -207,7 +208,7 @@ export default async (): Promise<Partial<SolidityHooks>> => {
         // In Hardhat 3, AST is stored in build-info output files, not in artifacts
         // The Foundry upgrades plugin expects AST in artifact files, so we inject it here
         debug('Starting AST injection into artifacts...');
-        await injectAstIntoArtifacts(artifactsDir, buildInfoDir);
+        await injectAstIntoArtifacts(artifactPaths, buildInfoDir);
       } catch (error: unknown) {
         if (typeof error === 'object' && error !== null && 'code' in error && error.code !== 'ENOENT') {
           throw error;
@@ -224,33 +225,11 @@ export default async (): Promise<Partial<SolidityHooks>> => {
  * artifacts via FFI during `hardhat test solidity`. HH3's artifact schema does not include AST
  * by default, so this hook bridges the gap. Removing it breaks `examples/BoxSolidityTests`.
  */
-export async function injectAstIntoArtifacts(artifactsDir: string, buildInfoDir: string): Promise<void> {
+export async function injectAstIntoArtifacts(artifactPaths: string[], buildInfoDir: string): Promise<void> {
   const path = await import('path');
   const fs = await import('fs/promises');
 
-  // Recursively find all artifact JSON files
-  async function findArtifactFiles(dir: string): Promise<string[]> {
-    const files: string[] = [];
-    try {
-      const entries = await fs.readdir(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          files.push(...(await findArtifactFiles(fullPath)));
-        } else if (entry.isFile() && entry.name.endsWith('.json')) {
-          files.push(fullPath);
-        }
-      }
-    } catch (error: unknown) {
-      // Ignore errors (e.g., directory doesn't exist)
-      if (typeof error === 'object' && error !== null && 'code' in error && error.code !== 'ENOENT') {
-        throw error;
-      }
-    }
-    return files;
-  }
-
-  const artifactFiles = await findArtifactFiles(path.join(artifactsDir, 'contracts'));
+  const artifactFiles = artifactPaths.filter(p => p.endsWith('.json'));
   let processedCount = 0;
   let skippedCount = 0;
   let errorCount = 0;

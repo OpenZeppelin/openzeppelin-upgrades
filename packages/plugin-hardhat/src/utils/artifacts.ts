@@ -1,6 +1,7 @@
 import type { BuildInfo, ArtifactManager } from 'hardhat/types/artifacts';
 import type { SolidityBuildInfoOutput, CompilerInput } from 'hardhat/types/solidity';
 import { readJsonFile } from '@nomicfoundation/hardhat-utils/fs';
+import { isErrorCode } from './errors.js';
 
 /**
  * Combined build info with output, compatible with legacy format expectations.
@@ -110,9 +111,19 @@ export async function getCombinedBuildInfo(
     return undefined;
   }
 
-  // Read both files
-  const buildInfo: BuildInfo = await readJsonFile(buildInfoPath);
-  const buildInfoOutput: SolidityBuildInfoOutput = await readJsonFile(buildInfoOutputPath);
+  // Read both files. A stale cache may have left the pair incomplete; treat a
+  // missing file as "no build info" so callers can fall back rather than throw.
+  let buildInfo: BuildInfo;
+  let buildInfoOutput: SolidityBuildInfoOutput;
+  try {
+    buildInfo = await readJsonFile(buildInfoPath);
+    buildInfoOutput = await readJsonFile(buildInfoOutputPath);
+  } catch (e: unknown) {
+    if (isErrorCode(e, 'ENOENT')) {
+      return undefined;
+    }
+    throw e;
+  }
 
   if (!buildInfoOutput.output.contracts) {
     return undefined;
