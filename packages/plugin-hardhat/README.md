@@ -205,9 +205,9 @@ describe("Box", function() {
 });
 ```
 
-### Solidity tests (Hardhat 3)
+### Solidity tests
 
-You can also write Solidity tests in Hardhat 3 and perform proxy deployments, upgrades, and upgrade safety validations directly from Solidity via `@openzeppelin/foundry-upgrades`.
+Hardhat 3 supports writing tests in Solidity. You can use Solidity to test deployments, upgrades, and upgrade safety via the [`@openzeppelin/foundry-upgrades`](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades) Solidity library.
 
 This is optional and only needed if you want Solidity-based tests.
 
