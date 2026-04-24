@@ -119,67 +119,60 @@ export default async (): Promise<Partial<SolidityHooks>> => {
       const decodeSrc = solcInputOutputDecoder(solcInputCore, solcOutputCore);
       let namespacedOutput: SolcOutput | undefined = undefined;
 
-      // Handle namespaced storage layouts
+      // Handle namespaced storage layouts. Solidity compile errors in the namespaced
+      // output are surfaced through the `namespacedCompileErrors` setting below; any
+      // other exception indicates an unexpected bug and is allowed to propagate rather
+      // than silently dropping namespaced layout validation.
       if (isNamespaceSupported(solcVersion)) {
-        try {
-          let namespacedInput = makeNamespacedInput(solcInputCore, solcOutputCore, solcVersion);
-          namespacedInput = await trySanitizeNatSpec(namespacedInput, solcVersion);
+        let namespacedInput = makeNamespacedInput(solcInputCore, solcOutputCore, solcVersion);
+        namespacedInput = await trySanitizeNatSpec(namespacedInput, solcVersion);
 
-          // Run the namespaced compilation by calling next() with modified input
-          const namespacedResult = await next(context, compiler, toCompilerInput(namespacedInput), solcConfig);
+        // Run the namespaced compilation by calling next() with modified input
+        const namespacedResult = await next(context, compiler, toCompilerInput(namespacedInput), solcConfig);
 
-          const namespacedCompileErrors = getNamespacedCompileErrors(namespacedResult);
+        const namespacedCompileErrors = getNamespacedCompileErrors(namespacedResult);
 
-          if (namespacedCompileErrors.length > 0) {
-            const msg = `Failed to compile modified contracts for namespaced storage layout validations:\n\n${namespacedCompileErrors.join('\n')}`;
-            const preamble = [
-              'Please report this at https://zpl.in/upgrades/report.',
-              'If possible, include the source code for the contracts mentioned in the errors above.',
-              'This step allows for advanced storage modifications such as tight variable packing when performing upgrades with namespaced storage layouts.',
-            ];
+        if (namespacedCompileErrors.length > 0) {
+          const msg = `Failed to compile modified contracts for namespaced storage layout validations:\n\n${namespacedCompileErrors.join('\n')}`;
+          const preamble = [
+            'Please report this at https://zpl.in/upgrades/report.',
+            'If possible, include the source code for the contracts mentioned in the errors above.',
+            'This step allows for advanced storage modifications such as tight variable packing when performing upgrades with namespaced storage layouts.',
+          ];
 
-            const namespacedErrorsSetting = (
-              context.config as HardhatRuntimeEnvironment['config'] & {
-                namespacedCompileErrors?: 'error' | 'warn' | 'ignore';
-              }
-            ).namespacedCompileErrors;
-
-            switch (namespacedErrorsSetting) {
-              case undefined:
-              case 'error': {
-                const { UpgradesError } = await import('@openzeppelin/upgrades-core');
-                const details = [
-                  ...preamble,
-                  'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades,',
-                  "you can set namespacedCompileErrors: 'warn' or namespacedCompileErrors: 'ignore' in your hardhat config to convert this to a warning or to ignore this.",
-                ];
-                throw new UpgradesError(msg, () => details.join('\n'));
-              }
-              case 'warn': {
-                const details = [
-                  ...preamble,
-                  "you can set namespacedCompileErrors: 'ignore' in your hardhat config to ignore this.",
-                ];
-                logWarning(msg, details);
-                break;
-              }
-              case 'ignore':
-                break;
-              default:
-                assertUnreachable(namespacedErrorsSetting);
+          const namespacedErrorsSetting = (
+            context.config as HardhatRuntimeEnvironment['config'] & {
+              namespacedCompileErrors?: 'error' | 'warn' | 'ignore';
             }
-            namespacedOutput = undefined;
-          } else {
-            namespacedOutput = toSolcOutput(namespacedResult);
+          ).namespacedCompileErrors;
+
+          switch (namespacedErrorsSetting) {
+            case undefined:
+            case 'error': {
+              const { UpgradesError } = await import('@openzeppelin/upgrades-core');
+              const details = [
+                ...preamble,
+                'If you are not using namespaced storage, or if you do not anticipate making advanced modifications to namespaces during upgrades,',
+                "you can set namespacedCompileErrors: 'warn' or namespacedCompileErrors: 'ignore' in your hardhat config to convert this to a warning or to ignore this.",
+              ];
+              throw new UpgradesError(msg, () => details.join('\n'));
+            }
+            case 'warn': {
+              const details = [
+                ...preamble,
+                "you can set namespacedCompileErrors: 'ignore' in your hardhat config to ignore this.",
+              ];
+              logWarning(msg, details);
+              break;
+            }
+            case 'ignore':
+              break;
+            default:
+              assertUnreachable(namespacedErrorsSetting);
           }
-        } catch (err: unknown) {
-          // If it's an UpgradesError, rethrow it
-          const { UpgradesError } = await import('@openzeppelin/upgrades-core');
-          if (err instanceof UpgradesError) {
-            throw err;
-          }
-          // Otherwise, silently continue without namespaced output
           namespacedOutput = undefined;
+        } else {
+          namespacedOutput = toSolcOutput(namespacedResult);
         }
       }
 
