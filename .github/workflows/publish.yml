@@ -18,6 +18,7 @@ jobs:
         with:
           fetch-depth: 0 # To get all tags
           ref: ${{ github.ref }}
+          submodules: recursive
       - name: Set up environment
         uses: ./.github/actions/setup
       - name: Create Prepare Release PR or Publish

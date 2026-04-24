@@ -1,6 +1,8 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
+
 import type { ethers, ContractFactory, Signer } from 'ethers';
-import debug from './utils/debug';
+import debug from './utils/debug.js';
 import { getAdminAddress, getCode, getUpgradeInterfaceVersion, isEmptySlot } from '@openzeppelin/upgrades-core';
 
 import {
@@ -9,16 +11,16 @@ import {
   getContractAddress,
   ContractAddressOrInstance,
   getSigner,
-} from './utils';
-import { disableDefender } from './defender/utils';
-import { attach } from './utils/ethers';
+} from './utils/index.js';
+import { disableDefender } from './defender/utils.js';
+import { attach } from './utils/ethers.js';
 import {
   attachITransparentUpgradeableProxyV4,
   attachITransparentUpgradeableProxyV5,
   attachProxyAdminV4,
   attachProxyAdminV5,
-} from './utils/attach-abi';
-import { ContractTypeOfFactory } from './type-extensions';
+} from './utils/attach-abi.js';
+import { ContractTypeOfFactory } from './type-extensions.js';
 
 export type UpgradeFunction = <F extends ContractFactory>(
   proxy: ContractAddressOrInstance,
@@ -29,6 +31,7 @@ export type UpgradeFunction = <F extends ContractFactory>(
 export function makeUpgradeProxy(
   hre: HardhatRuntimeEnvironment,
   defenderModule: boolean,
+  connection: NetworkConnection,
   log = debug,
 ): UpgradeFunction {
   return async function upgradeProxy<F extends ContractFactory>(
@@ -40,7 +43,7 @@ export function makeUpgradeProxy(
 
     const proxyAddress = await getContractAddress(proxy);
 
-    const { impl: nextImpl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress);
+    const { impl: nextImpl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress, connection);
     // upgrade kind is inferred above
     const upgradeTo = await getUpgrader(proxyAddress, opts, getSigner(ImplFactory.runner));
     const call = encodeCall(ImplFactory, opts.call);
@@ -55,7 +58,8 @@ export function makeUpgradeProxy(
   type Upgrader = (nextImpl: string, call?: string) => Promise<ethers.TransactionResponse>;
 
   async function getUpgrader(proxyAddress: string, opts: UpgradeProxyOptions, signer?: Signer): Promise<Upgrader> {
-    const { provider } = hre.network;
+    const { ethers } = connection;
+    const provider = ethers.provider;
 
     const adminAddress = await getAdminAddress(provider, proxyAddress);
     const adminBytecode = await getCode(provider, adminAddress);
@@ -67,7 +71,7 @@ export function makeUpgradeProxy(
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, proxyAddress, log);
       switch (upgradeInterfaceVersion) {
         case '5.0.0': {
-          const proxy = await attachITransparentUpgradeableProxyV5(hre, proxyAddress, signer);
+          const proxy = await attachITransparentUpgradeableProxyV5(connection, proxyAddress, signer);
           return (nextImpl, call) => proxy.upgradeToAndCall(nextImpl, call ?? '0x', ...overrides);
         }
         default: {
@@ -78,7 +82,7 @@ export function makeUpgradeProxy(
               `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
             );
           }
-          const proxy = await attachITransparentUpgradeableProxyV4(hre, proxyAddress, signer);
+          const proxy = await attachITransparentUpgradeableProxyV4(connection, proxyAddress, signer);
           return (nextImpl, call) =>
             call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
         }
@@ -88,7 +92,7 @@ export function makeUpgradeProxy(
       const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress, log);
       switch (upgradeInterfaceVersion) {
         case '5.0.0': {
-          const admin = await attachProxyAdminV5(hre, adminAddress, signer);
+          const admin = await attachProxyAdminV5(connection, adminAddress, signer);
           return (nextImpl, call) => admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
         }
         default: {
@@ -99,7 +103,7 @@ export function makeUpgradeProxy(
               `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
             );
           }
-          const admin = await attachProxyAdminV4(hre, adminAddress, signer);
+          const admin = await attachProxyAdminV4(connection, adminAddress, signer);
           return (nextImpl, call) =>
             call
               ? admin.upgradeAndCall(proxyAddress, nextImpl, call, ...overrides)

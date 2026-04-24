@@ -1,12 +1,23 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 
-const { ethers, upgrades } = require('hardhat');
+const connection = await hre.network.connect();
+const { ethers } = connection;
+
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
+let upgrades;
+
+test.after.always(async () => {
+  await connection.close();
+});
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
-  t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2');
+  t.context.GreeterV2Proxiable = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2Proxiable');
   t.context.GreeterFallback = await ethers.getContractFactory('GreeterFallback');
 });
 
@@ -72,8 +83,11 @@ test('block transparent proxy upgrade via upgradeBeacon', async t => {
 
 test('block uups proxy upgrade via upgradeBeacon', async t => {
   const { GreeterProxiable, GreeterV2Proxiable } = t.context;
+  const signer = await ethers.provider.getSigner();
 
-  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!'], { kind: 'uups' });
+  const greeter = await upgrades.deployProxy(GreeterProxiable, ['Hello, Hardhat!'], {
+    kind: 'uups',
+  });
 
   try {
     await upgrades.upgradeBeacon(greeter, GreeterV2Proxiable);

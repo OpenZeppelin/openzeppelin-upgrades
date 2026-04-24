@@ -1,24 +1,25 @@
-const test = require('ava');
-const proxyquire = require('proxyquire').noCallThru();
-const sinon = require('sinon');
+import test from 'ava';
+import hre from 'hardhat';
+import esmock from 'esmock';
+import sinon from 'sinon';
 
-const hre = require('hardhat');
-const { ethers } = hre;
+const connection = await hre.network.connect();
+const { ethers } = connection;
 
 const ADDR = '0x1';
 const TX_HASH = '0x0000000000000000000000000000000000000000000000000000000000000002';
 
 test.before(async t => {
   t.context.NonUpgradeable = await ethers.getContractFactory('NonUpgradeable');
-  t.context.WithConstructor = await ethers.getContractFactory('WithConstructor');
+  t.context.WithConstructor = await ethers.getContractFactory('contracts/WithConstructor.sol:WithConstructor');
   t.context.IsInitializable = await ethers.getContractFactory('IsInitializable');
   t.context.IsInitializableUpgradeable = await ethers.getContractFactory('IsInitializableUpgradeable');
   t.context.IsUUPS = await ethers.getContractFactory('IsUUPS');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
 
-  t.context.deployContract = proxyquire('../dist/deploy-contract', {
-    './defender/deploy': {
-      defenderDeploy: async () => {
+  const { makeDeployContract } = await esmock('../dist/deploy-contract.js', {
+    '../dist/utils/index.js': {
+      deploy: async () => {
         return {
           address: ADDR,
           txHash: TX_HASH,
@@ -26,13 +27,17 @@ test.before(async t => {
           remoteDeploymentId: 'abc',
         };
       },
-      '@global': true,
     },
-  }).makeDeployContract(hre, true);
+  });
+  t.context.deployContract = makeDeployContract(hre, true, connection);
 });
 
 test.afterEach.always(() => {
   sinon.restore();
+});
+
+test.after.always(async () => {
+  await connection.close();
 });
 
 test('deploy contract', async t => {
@@ -102,9 +107,9 @@ test('await deployed contract', async t => {
 
   const precreated = await NonUpgradeable.deploy();
 
-  const deployContract = proxyquire('../dist/deploy-contract', {
-    './defender/deploy': {
-      defenderDeploy: async () => {
+  const { makeDeployContract } = await esmock('../dist/deploy-contract.js', {
+    '../dist/utils/index.js': {
+      deploy: async () => {
         return {
           address: await precreated.getAddress(),
           txHash: precreated.deploymentTransaction().hash,
@@ -112,9 +117,17 @@ test('await deployed contract', async t => {
           remoteDeploymentId: 'abc',
         };
       },
-      '@global': true,
     },
-  }).makeDeployContract(hre, true);
+    '../dist/utils/contract-instance.js': {
+      getContractInstance: (hre, contract, opts, deployment) => {
+        const instance = contract.attach(deployment.address);
+        // @ts-ignore
+        instance.deploymentTransaction = () => deployment.deployTransaction ?? null;
+        return instance;
+      },
+    },
+  });
+  const deployContract = makeDeployContract(hre, true, connection);
 
   const inst = await deployContract(NonUpgradeable);
   t.is(await inst.getAddress(), await precreated.getAddress());
@@ -129,9 +142,9 @@ test('deployed calls wait for deployment', async t => {
   // just predeploy a contract so that it exists on the network
   const deployed = await NonUpgradeable.deploy();
 
-  const deployContract = proxyquire('../dist/deploy-contract', {
-    './defender/deploy': {
-      defenderDeploy: async () => {
+  const { makeDeployContract } = await esmock('../dist/deploy-contract.js', {
+    '../dist/utils/index.js': {
+      deploy: async () => {
         return {
           address: await deployed.getAddress(),
           txHash: TX_HASH,
@@ -139,19 +152,22 @@ test('deployed calls wait for deployment', async t => {
           remoteDeploymentId: 'abc',
         };
       },
-      '@global': true,
     },
-    './defender/utils': {
-      waitForDeployment: stub,
-      enableDefender: (hre, defenderModule, opts) => {
-        return {
-          ...opts,
-          useDefenderDeploy: true,
+    '../dist/utils/contract-instance.js': {
+      getContractInstance: (hre, contract, opts, deployment) => {
+        const instance = contract.attach(deployment.address);
+        // @ts-ignore
+        instance.deploymentTransaction = () => deployment.deployTransaction ?? null;
+        const origWait = instance.waitForDeployment.bind(instance);
+        instance.waitForDeployment = async () => {
+          await stub();
+          return await origWait();
         };
+        return instance;
       },
-      '@global': true,
     },
-  }).makeDeployContract(hre, true);
+  });
+  const deployContract = makeDeployContract(hre, true, connection);
 
   const inst = await deployContract(NonUpgradeable);
   t.is(await inst.getAddress(), await deployed.getAddress());

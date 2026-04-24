@@ -313,6 +313,55 @@ test.serial('get build info files - default foundry', async t => {
   assertBuildInfoFiles(t, buildInfoFiles);
 });
 
+test.serial('get build info files - Foundry format success path', async t => {
+  const dir = 'foundry-format-success';
+
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(
+    `${dir}/build-info.json`,
+    JSON.stringify({
+      _format: 'ethers-rs-sol-build-info-1',
+      ...BUILD_INFO,
+    }),
+  );
+
+  const buildInfoFiles = await getBuildInfoFiles(dir);
+
+  t.is(buildInfoFiles.length, 1);
+  t.is(buildInfoFiles[0]?.dirShortName, dir);
+  t.is(buildInfoFiles[0]?.solcVersion, BUILD_INFO.solcVersion);
+  t.deepEqual(buildInfoFiles[0]?.input, BUILD_INFO.input);
+  t.deepEqual(buildInfoFiles[0]?.output, BUILD_INFO.output);
+});
+
+test.serial('get build info files - Hardhat 3 split format success path', async t => {
+  const dir = 'hh3-format-success';
+
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(
+    `${dir}/solc-0_8_9-abc123.json`,
+    JSON.stringify({
+      _format: 'hh3-sol-build-info-1',
+      input: BUILD_INFO.input,
+      solcVersion: BUILD_INFO.solcVersion,
+    }),
+  );
+  await fs.writeFile(
+    `${dir}/solc-0_8_9-abc123.output.json`,
+    JSON.stringify({
+      output: BUILD_INFO.output,
+    }),
+  );
+
+  const buildInfoFiles = await getBuildInfoFiles(dir);
+
+  t.is(buildInfoFiles.length, 1);
+  t.is(buildInfoFiles[0]?.dirShortName, dir);
+  t.is(buildInfoFiles[0]?.solcVersion, BUILD_INFO.solcVersion);
+  t.deepEqual(buildInfoFiles[0]?.input, BUILD_INFO.input);
+  t.deepEqual(buildInfoFiles[0]?.output, BUILD_INFO.output);
+});
+
 test.serial('get build info files - both hardhat and foundry dirs exist', async t => {
   await fs.mkdir('artifacts/build-info', { recursive: true });
   await fs.writeFile('artifacts/build-info/build-info.json', JSON.stringify(BUILD_INFO));
@@ -357,12 +406,105 @@ test.serial('get build info files - override with custom absolute path', async t
   assertBuildInfoFiles(t, buildInfoFiles);
 });
 
-test.serial('invalid build info file', async t => {
+test.serial('generic invalid build info file', async t => {
   await fs.mkdir('invalid-build-info', { recursive: true });
 
   await fs.writeFile('invalid-build-info/invalid.json', JSON.stringify({ output: {} }));
   const error = await t.throwsAsync(getBuildInfoFiles('invalid-build-info'));
+  t.true(error?.message.includes('must include Solidity compiler input, output, and solcVersion'));
+  t.true(error?.message.includes('Got format: unknown'));
+});
+
+test.serial('Foundry format (ethers-rs) with missing output suggests forge clean && forge build', async t => {
+  await fs.mkdir('foundry-format-missing', { recursive: true });
+
+  await fs.writeFile(
+    'foundry-format-missing/build.json',
+    JSON.stringify({
+      _format: 'ethers-rs-sol-build-info-1',
+      input: BUILD_INFO.input,
+      solcVersion: '0.8.31',
+      // output missing
+    }),
+  );
+  const error = await t.throwsAsync(getBuildInfoFiles('foundry-format-missing'));
   t.true(error?.message.includes('must contain Solidity compiler input, output, and solcVersion'));
+  t.true(error?.message.includes('ethers-rs-sol-build-info'));
+  t.true(error?.message.includes('forge clean && forge build'));
+});
+
+test.serial('Hardhat 3 format with missing input and solcVersion suggests hardhat compile', async t => {
+  await fs.mkdir('hh3-format-missing-input', { recursive: true });
+
+  await fs.writeFile(
+    'hh3-format-missing-input/solc-0_8_0-abc123.json',
+    JSON.stringify({
+      _format: 'hh3-sol-build-info-1',
+    }),
+  );
+  const error = await t.throwsAsync(getBuildInfoFiles('hh3-format-missing-input'));
+  t.true(error?.message.includes('Hardhat 3 format'));
+  t.true(error?.message.includes('must contain input and solcVersion'));
+  t.true(error?.message.includes('hardhat compile'));
+});
+
+test.serial('Hardhat 3 format with missing .output.json suggests hardhat compile', async t => {
+  await fs.mkdir('hh3-format-missing-output', { recursive: true });
+
+  await fs.writeFile(
+    'hh3-format-missing-output/solc-0_8_0-abc123.json',
+    JSON.stringify({
+      _format: 'hh3-sol-build-info-1',
+      input: BUILD_INFO.input,
+      solcVersion: '0.8.9',
+      // output in separate .output.json which we do not create
+    }),
+  );
+  const error = await t.throwsAsync(getBuildInfoFiles('hh3-format-missing-output'));
+  t.true(error?.message.includes('could not be read'));
+  t.false(error?.message.includes('missing Solidity compiler output'));
+  t.true(error?.message.includes('Hardhat 3'));
+  t.true(error?.message.includes('hardhat compile'));
+});
+
+test.serial('Hardhat 3 format with empty .output.json reports missing compiler output', async t => {
+  await fs.mkdir('hh3-format-empty-output', { recursive: true });
+
+  await fs.writeFile(
+    'hh3-format-empty-output/solc-0_8_0-abc123.json',
+    JSON.stringify({
+      _format: 'hh3-sol-build-info-1',
+      input: BUILD_INFO.input,
+      solcVersion: '0.8.9',
+    }),
+  );
+  await fs.writeFile('hh3-format-empty-output/solc-0_8_0-abc123.output.json', JSON.stringify({}));
+
+  const error = await t.throwsAsync(getBuildInfoFiles('hh3-format-empty-output'));
+  t.true(error?.message.includes('missing Solidity compiler output'));
+  t.false(error?.message.includes('could not be read'));
+  t.true(error?.message.includes('Hardhat 3'));
+  t.true(error?.message.includes('hardhat compile'));
+});
+
+test.serial('Hardhat 2 format with missing output falls back to generic help', async t => {
+  await fs.mkdir('invalid-hh2-build-info', { recursive: true });
+
+  // Missing output but has an hh2-style _format with input and solcVersion.
+  await fs.writeFile(
+    'invalid-hh2-build-info/invalid.json',
+    JSON.stringify({
+      _format: 'hh-sol-build-info-1',
+      input: BUILD_INFO.input,
+      solcVersion: '0.8.9',
+      // output missing
+    }),
+  );
+
+  const error = await t.throwsAsync(getBuildInfoFiles('invalid-hh2-build-info'));
+  t.true(error?.message.includes('must include Solidity compiler input, output, and solcVersion'));
+  t.true(error?.message.includes('invalid.json'));
+  t.false(error?.message.includes('Hardhat 3'));
 });
 
 test.serial('dir does not exist', async t => {
@@ -437,6 +579,74 @@ test.serial('no output selection', async t => {
 
   const error = await t.throwsAsync(getBuildInfoFiles(dir));
   t.true(error?.message.includes('is not from a full compilation'));
+});
+
+test.serial('Hardhat 3 format with userSourceNameMap remaps input and output sources', async t => {
+  const dir = 'hh3-source-name-map';
+
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(
+    `${dir}/solc-0_8_9-abc123.json`,
+    JSON.stringify({
+      _format: 'hh3-sol-build-info-1',
+      solcVersion: '0.8.9',
+      input: {
+        language: 'Solidity',
+        sources: {
+          'project/contracts/MyContract.sol': {
+            content: 'contract MyContract {}',
+          },
+          'lib/Helper.sol': {
+            content: 'contract Helper {}',
+          },
+        },
+        settings: {
+          outputSelection: {
+            '*': {
+              '*': ['storageLayout'],
+            },
+          },
+        },
+      },
+      // Only maps project sources, not library sources
+      userSourceNameMap: {
+        'contracts/MyContract.sol': 'project/contracts/MyContract.sol',
+      },
+    }),
+  );
+  await fs.writeFile(
+    `${dir}/solc-0_8_9-abc123.output.json`,
+    JSON.stringify({
+      sources: {
+        'project/contracts/MyContract.sol': { ast: {}, id: 0 },
+        'lib/Helper.sol': { ast: {}, id: 1 },
+      },
+      contracts: {
+        'project/contracts/MyContract.sol': { MyContract: {} },
+      },
+    }),
+  );
+
+  const buildInfoFiles = await getBuildInfoFiles(dir);
+
+  t.is(buildInfoFiles.length, 1);
+  const file = buildInfoFiles[0];
+
+  const user = 'contracts/MyContract.sol';
+  const canonical = 'project/contracts/MyContract.sol';
+  const lib = 'lib/Helper.sol';
+
+  // Mapped: canonical paths replaced with user paths
+  t.truthy(file.input.sources[user]);
+  t.falsy(file.input.sources[canonical]);
+  t.truthy(file.output.sources[user]);
+  t.falsy(file.output.sources[canonical]);
+  t.truthy(file.output.contracts?.[user]);
+  t.falsy(file.output.contracts?.[canonical]);
+
+  // Unmapped: library deps preserved as-is
+  t.truthy(file.input.sources[lib]);
+  t.truthy(file.output.sources[lib]);
 });
 
 function assertBuildInfoFiles(t: ExecutionContext, buildInfoFiles: BuildInfoFile[]) {

@@ -1,6 +1,5 @@
 # Changelog
 
-
 ## 3.9.1 (2025-06-30)
 
 - Support contract verification via etherscan V2 API. ([#1166](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1166))

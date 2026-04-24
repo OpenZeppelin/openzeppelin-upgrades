@@ -1,17 +1,30 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { createRequire } from 'node:module';
 
-const { ethers, upgrades } = require('hardhat');
+const require = createRequire(import.meta.url);
 
 const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
 const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
-
 const ERC1967Proxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json');
 
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
+
+let upgrades;
+
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
+  t.context.GreeterV2Proxiable = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2Proxiable');
 
   t.context.ProxyAdmin = await ethers.getContractFactory(ProxyAdmin.abi, ProxyAdmin.bytecode);
   t.context.TransparentUpgradableProxy = await ethers.getContractFactory(
@@ -75,7 +88,7 @@ test('deploy then import with same impl', async t => {
   // upgrade imported proxy to different impl
   await upgrades.upgradeProxy(greeter2, GreeterV2Proxiable);
   const implAddrUpgraded2 = await upgrades.erc1967.getImplementationAddress(await greeter2.getAddress());
-  t.not(implAddrUpgraded2 !== implAddrUpgraded, implAddrUpgraded2);
+  t.not(implAddrUpgraded2, implAddrUpgraded);
 });
 
 test('import previous deployment', async t => {

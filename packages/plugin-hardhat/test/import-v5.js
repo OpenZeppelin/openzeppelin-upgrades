@@ -1,20 +1,31 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { createRequire } from 'node:module';
 
-const { ethers, upgrades } = require('hardhat');
+const require = createRequire(import.meta.url);
 
 const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
-
 const ERC1967Proxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json');
-
 const BeaconProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json');
 const UpgradableBeacon = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json');
 
+const connection = await hre.network.connect();
+const { ethers } = connection;
+
+let upgrades;
+
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2');
   t.context.GreeterV3 = await ethers.getContractFactory('GreeterV3');
-  t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable');
-  t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable');
+  t.context.GreeterProxiable = await ethers.getContractFactory('contracts/Greeter.sol:GreeterProxiable');
+  t.context.GreeterV2Proxiable = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2Proxiable');
   t.context.GreeterV3Proxiable = await ethers.getContractFactory('GreeterV3Proxiable');
   t.context.CustomProxy = await ethers.getContractFactory('CustomProxy');
   t.context.CustomProxyWithAdmin = await ethers.getContractFactory('CustomProxyWithAdmin');

@@ -1,12 +1,25 @@
-const test = require('ava');
-const sinon = require('sinon');
+import test from 'ava';
+import hre from 'hardhat';
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import sinon from 'sinon';
+import { createRequire } from 'node:module';
 
-const { ethers, upgrades } = require('hardhat');
-const hre = require('hardhat');
+const require = createRequire(import.meta.url);
 
 const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
 
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
+
+let upgrades;
+
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.GreeterTransparent40Fallback = await ethers.getContractFactory('GreeterTransparent40Fallback');
   t.context.GreeterTransparent40FallbackV2 = await ethers.getContractFactory('GreeterTransparent40FallbackV2');
   t.context.UnsafeAdminFallback = await ethers.getContractFactory('UnsafeAdminFallback');
@@ -52,7 +65,8 @@ test('admin with unknown upgrades interface version due to fallback returning no
   await upgrades.forceImport(await proxy.getAddress(), GreeterTransparent40Fallback);
 
   const debugStub = sinon.stub();
-  const upgradeProxy = require('../dist/upgrade-proxy').makeUpgradeProxy(hre, false, debugStub);
+  const { makeUpgradeProxy } = await import('../dist/upgrade-proxy.js');
+  const upgradeProxy = makeUpgradeProxy(hre, false, connection, debugStub);
 
   const greeter2 = await upgradeProxy(proxy, GreeterTransparent40FallbackV2);
   await greeter2.resetGreeting();
@@ -90,7 +104,8 @@ test('admin with unknown upgrades interface version due to fallback returning st
   await upgrades.forceImport(await proxy.getAddress(), GreeterTransparent40FallbackString);
 
   const debugStub = sinon.stub();
-  const upgradeProxy = require('../dist/upgrade-proxy').makeUpgradeProxy(hre, false, debugStub);
+  const { makeUpgradeProxy } = await import('../dist/upgrade-proxy.js');
+  const upgradeProxy = makeUpgradeProxy(hre, false, connection, debugStub);
 
   const greeter2 = await upgradeProxy(proxy, GreeterTransparent40FallbackStringV2);
   await greeter2.resetGreeting();
