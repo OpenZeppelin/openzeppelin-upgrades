@@ -17,25 +17,29 @@ async function writeCache(cache) {
   await fs.writeFile(CACHE_PATH, JSON.stringify(cache, null, 2));
 }
 
-test.serial('hardhat compile regenerates the validations cache when it is outdated', async t => {
-  t.timeout(60000); // Forcing a full recompile of all contracts takes several seconds.
+// Both task IDs must be covered: `hardhat compile` is the user-facing command, while
+// `hardhat test`, `test solidity`, and `run` invoke the `build` task internally.
+for (const taskId of ['compile', 'build']) {
+  test.serial(`hardhat ${taskId} regenerates the validations cache when it is outdated`, async t => {
+    t.timeout(60000); // Forcing a full recompile of all contracts takes several seconds.
 
-  const originalRaw = await fs.readFile(CACHE_PATH, 'utf8');
-  const currentCache = JSON.parse(originalRaw);
-  t.true(isCurrentValidationData(currentCache));
-  t.true(currentCache.log.length > 0);
+    const originalRaw = await fs.readFile(CACHE_PATH, 'utf8');
+    const currentCache = JSON.parse(originalRaw);
+    t.true(isCurrentValidationData(currentCache));
+    t.true(currentCache.log.length > 0);
 
-  try {
-    const outdatedCache = { ...currentCache, version: '3.0' };
-    t.false(isCurrentValidationData(outdatedCache), 'precondition: modified cache must be detectable as outdated');
-    await writeCache(outdatedCache);
+    try {
+      const outdatedCache = { ...currentCache, version: '3.0' };
+      t.false(isCurrentValidationData(outdatedCache), 'precondition: modified cache must be detectable as outdated');
+      await writeCache(outdatedCache);
 
-    await hre.tasks.getTask('compile').run({});
+      await hre.tasks.getTask(taskId).run({});
 
-    const cacheAfterCompile = await readCache();
-    t.true(isCurrentValidationData(cacheAfterCompile), 'compile should regenerate the cache to current schema');
-    t.true(cacheAfterCompile.log.length > 0, 'regenerated cache must retain log entries');
-  } finally {
-    await fs.writeFile(CACHE_PATH, originalRaw);
-  }
-});
+      const cacheAfterCompile = await readCache();
+      t.true(isCurrentValidationData(cacheAfterCompile), `${taskId} should regenerate the cache to current schema`);
+      t.true(cacheAfterCompile.log.length > 0, 'regenerated cache must retain log entries');
+    } finally {
+      await fs.writeFile(CACHE_PATH, originalRaw);
+    }
+  });
+}
