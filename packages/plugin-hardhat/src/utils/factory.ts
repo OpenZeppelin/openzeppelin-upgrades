@@ -7,7 +7,9 @@ import {
   getImplementationAddress,
   getBeaconAddress,
   getImplementationAddressFromBeacon,
+  logWarning,
 } from '@openzeppelin/upgrades-core';
+import { tryRequire } from './try-require.js';
 
 /**
  * Factory function to create the upgrades API for a given HRE.
@@ -31,7 +33,7 @@ export async function upgrades(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): Promise<HardhatUpgrades> {
-  await warnOnHardhatDefender();
+  warnOnHardhatDefender();
   return await createUpgradesAPI(hre, false, connection);
 }
 
@@ -57,7 +59,7 @@ export async function defender(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): Promise<DefenderHardhatUpgrades> {
-  await warnOnHardhatDefender();
+  warnOnHardhatDefender();
   return await createDefenderAPI(hre, connection);
 }
 
@@ -161,17 +163,11 @@ async function createDefenderAPI(
   };
 }
 
-async function warnOnHardhatDefender(): Promise<void> {
-  try {
-    // Try to import the deprecated package to check if it's installed
-    // @ts-expect-error - Package may not be installed, which is the expected case
-    await import('@openzeppelin/hardhat-defender');
-    const { logWarning } = await import('@openzeppelin/upgrades-core');
+function warnOnHardhatDefender(): void {
+  if (tryRequire('@openzeppelin/hardhat-defender', true)) {
     logWarning('The @openzeppelin/hardhat-defender package is deprecated.', [
       'Uninstall the @openzeppelin/hardhat-defender package.',
       'OpenZeppelin Defender integration is included as part of the Hardhat Upgrades plugin.',
     ]);
-  } catch (e: any) {
-    // Package not installed, no warning needed
   }
 }

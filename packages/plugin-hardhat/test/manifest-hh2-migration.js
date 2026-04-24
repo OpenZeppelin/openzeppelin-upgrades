@@ -59,14 +59,22 @@ function collectSrcs(layout) {
   ];
 }
 
+function findManifestKeyByAddress(impls, address) {
+  const entry = Object.entries(impls).find(([, v]) => v.address === address);
+  return entry?.[0];
+}
+
 test.serial('upgrade refreshes stale V1 layout srcs', async t => {
   const V1 = await ethers.getContractFactory('MultipleNamespacesAndRegularVariables');
   const V2 = await ethers.getContractFactory('MultipleNamespacesAndRegularVariablesV2_Ok');
 
   const proxy = await upgrades.deployProxy(V1, { kind: 'transparent' });
+  const proxyAddress = await proxy.getAddress();
+  const v1ImplAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress);
 
   const data = await readManifest(ethers.provider);
-  const v1Key = Object.keys(data.impls)[0];
+  const v1Key = findManifestKeyByAddress(data.impls, v1ImplAddress);
+  t.truthy(v1Key, `expected manifest entry for impl ${v1ImplAddress}`);
   const v1 = data.impls[v1Key];
 
   const srcs = collectSrcs(v1.layout);
@@ -84,6 +92,7 @@ test.serial('upgrade refreshes stale V1 layout srcs', async t => {
 
   const upgraded = await upgrades.upgradeProxy(proxy, V2);
   await upgraded.waitForDeployment();
+  const v2ImplAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress);
 
   const after = await readManifest(ethers.provider);
   const v1After = after.impls[v1Key];
@@ -93,8 +102,8 @@ test.serial('upgrade refreshes stale V1 layout srcs', async t => {
   t.true(collectSrcs(v1After.layout).every(s => !s.startsWith('legacy/')));
   t.deepEqual(omitSrcs(v1After.layout), omitSrcs(v1.layout));
 
-  const v2Key = Object.keys(after.impls).find(k => k !== v1Key);
-  t.truthy(v2Key);
+  const v2Key = findManifestKeyByAddress(after.impls, v2ImplAddress);
+  t.truthy(v2Key, `expected manifest entry for impl ${v2ImplAddress}`);
   t.true(collectSrcs(after.impls[v2Key].layout).every(s => !s.startsWith('legacy/')));
 });
 
@@ -104,10 +113,14 @@ test.serial('upgrade preserves V1 entry with no version hash match', async t => 
 
   const proxy = await upgrades.deployProxy(V1, { kind: 'transparent' });
   const proxyAddress = await proxy.getAddress();
+  const v1ImplAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress);
 
   const fakeHash = 'deadbeef'.repeat(8);
   await patchManifest(ethers.provider, d => {
-    const realKey = Object.keys(d.impls).find(k => d.impls[k].address !== undefined);
+    const realKey = findManifestKeyByAddress(d.impls, v1ImplAddress);
+    if (!realKey) {
+      throw new Error(`Missing manifest entry for impl ${v1ImplAddress}`);
+    }
     const entry = d.impls[realKey];
     delete d.impls[realKey];
     entry.layout = toLegacySrcs(entry.layout);
