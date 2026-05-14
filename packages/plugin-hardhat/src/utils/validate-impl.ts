@@ -3,7 +3,7 @@ import {
   assertStorageUpgradeSafe,
   assertUpgradeSafe,
   getImplementationAddress,
-  getImplementationAddressFromBeacon, // substitute this ( not working )
+  getImplementationAddressFromBeacon,
   getStorageLayoutForAddress,
   Manifest,
   processProxyKind,
