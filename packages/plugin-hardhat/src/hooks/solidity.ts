@@ -289,13 +289,13 @@ export async function injectAstIntoArtifacts(artifactPaths: string[], buildInfoD
               `Expected: ${buildInfoOutputPath}`,
               `buildInfoId: ${artifact.buildInfoId}`,
             ]);
+            skippedCount += 1;
           } else {
             // Log other errors but don't fail the whole process
             const message = err instanceof Error ? err.message : String(err);
             logWarning(`Could not inject AST into artifact ${artifactPath}: ${message}`);
             errorCount += 1;
           }
-          skippedCount += 1;
         }
       }
     } catch (err: unknown) {
