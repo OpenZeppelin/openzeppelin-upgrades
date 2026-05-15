@@ -21,7 +21,9 @@ export default async (): Promise<Partial<ConfigHooks>> => {
           settings.push(compilerOverride.settings);
         }
 
-        // Enable storage layout output for upgrade safety validations
+        // Enable storage layout output for upgrade safety validations.
+        // Also enable metadata, which downstream consumers (Defender license detection,
+        // Foundry-bridge artifact injection) read from the build-info.
         for (const setting of settings) {
           setting.outputSelection ??= {};
           setting.outputSelection['*'] ??= {};
@@ -29,6 +31,9 @@ export default async (): Promise<Partial<ConfigHooks>> => {
 
           if (!setting.outputSelection['*']['*'].includes('storageLayout')) {
             setting.outputSelection['*']['*'].push('storageLayout');
+          }
+          if (!setting.outputSelection['*']['*'].includes('metadata')) {
+            setting.outputSelection['*']['*'].push('metadata');
           }
         }
       }
