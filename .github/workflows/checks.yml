@@ -50,6 +50,20 @@ jobs:
     - name: Run tests
       run: yarn --cwd "packages/${{matrix.package}}" run test
 
+  test-examples:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Set up environment
+      uses: ./.github/actions/setup
+
+    - name: Run example tests
+      run: yarn --cwd packages/plugin-hardhat run test:examples
+
   coverage:
     runs-on: ubuntu-latest
 
