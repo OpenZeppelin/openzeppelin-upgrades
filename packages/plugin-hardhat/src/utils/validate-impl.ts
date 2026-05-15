@@ -9,7 +9,7 @@ import {
   processProxyKind,
   ValidationOptions,
 } from '@openzeppelin/upgrades-core';
-import { DeployData } from './deploy-impl';
+import { DeployData } from './deploy-impl.js';
 
 /**
  * Processes the proxy kind and returns the implementation address if proxyAddress is provided.

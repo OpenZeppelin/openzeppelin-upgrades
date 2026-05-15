@@ -1,10 +1,21 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 
-const { ethers, upgrades } = require('hardhat');
+const connection = await hre.network.connect();
+const { ethers } = connection;
 
-upgrades.silenceWarnings();
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
+let upgrades;
+
+test.after.always(async () => {
+  await connection.close();
+});
 
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
+  upgrades.silenceWarnings();
+
   t.context.Portfolio = await ethers.getContractFactory('Portfolio');
   t.context.PortfolioV2 = await ethers.getContractFactory('PortfolioV2');
   t.context.PortfolioV2Bad = await ethers.getContractFactory('PortfolioV2Bad');

@@ -7,7 +7,7 @@ import {
   withValidationDefaults,
 } from '@openzeppelin/upgrades-core';
 import { ContractFactory, Overrides } from 'ethers';
-import { EthersOrDefenderDeployment } from './deploy';
+import { EthersOrDefenderDeployment } from './deploy.js';
 
 /**
  * Options for customizing the factory or deploy functions

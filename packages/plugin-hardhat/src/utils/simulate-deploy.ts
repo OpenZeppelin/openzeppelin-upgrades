@@ -1,8 +1,9 @@
 import { fetchOrDeploy } from '@openzeppelin/upgrades-core';
 import type { ContractFactory } from 'ethers';
-import type { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getDeployData } from './deploy-impl';
-import { UpgradeOptions } from './options';
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type { NetworkConnection } from 'hardhat/types/network';
+import { getDeployData } from './deploy-impl.js';
+import { UpgradeOptions } from './options.js';
 
 // To import an already deployed contract we want to reuse fetchOrDeploy for its ability to validate
 // a deployment and record it in the network file. We are able to do this by "simulating" a deployment:
@@ -14,8 +15,9 @@ export async function simulateDeployImpl(
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
   implAddress: string,
+  connection: NetworkConnection,
 ) {
-  const { deployData, simulateDeploy } = await getSimulatedData(hre, ImplFactory, opts, implAddress);
+  const { deployData, simulateDeploy } = await getSimulatedData(hre, ImplFactory, opts, implAddress, connection);
   await fetchOrDeploy(deployData.version, deployData.provider, simulateDeploy, opts, true);
 }
 
@@ -27,8 +29,9 @@ async function getSimulatedData(
   ImplFactory: ContractFactory,
   opts: UpgradeOptions,
   implAddress: string,
+  connection: NetworkConnection,
 ) {
-  const deployData = await getDeployData(hre, ImplFactory, opts);
+  const deployData = await getDeployData(hre, ImplFactory, opts, connection);
   const simulateDeploy = async () => {
     return {
       abi: ImplFactory.interface.format(true),

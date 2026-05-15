@@ -1,88 +1,59 @@
+import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
+import type {
+  Etherscan,
+  EtherscanCustomApiCallOptions,
+  EtherscanVerifyArgs,
+  EtherscanResponseBody,
+} from '@nomicfoundation/hardhat-verify/types';
 import { UpgradesError } from '@openzeppelin/upgrades-core';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import debug from './debug.js';
 
-import { request } from 'undici';
-
-import debug from './debug';
-import { Etherscan } from '@nomicfoundation/hardhat-verify/etherscan';
-
-/**
- * Call the configured Etherscan API with the given parameters.
- *
- * @param etherscan Etherscan instance
- * @param params The API parameters to call with
- * @returns The Etherscan API response
- */
-export async function callEtherscanApi(etherscan: Etherscan, params: any): Promise<EtherscanResponseBody> {
-  const parameters = { ...params, apikey: etherscan.apiKey, chainid: etherscan.chainId };
-  const response = await request(etherscan.apiUrl, {
-    method: 'POST',
-    query: parameters,
-  });
-
-  if (!(response.statusCode >= 200 && response.statusCode <= 299)) {
-    const responseBodyText = await response.body.text();
-    throw new UpgradesError(
-      `Etherscan API call failed with status ${response.statusCode}, response: ${responseBodyText}`,
-    );
-  }
-
-  const responseBodyJson = await response.body.json();
-  debug('Etherscan response', JSON.stringify(responseBodyJson));
-
-  return responseBodyJson as EtherscanResponseBody;
-}
-
-/**
- * Gets an Etherscan instance based on Hardhat config.
- * Throws an error if Etherscan API key is not present in config.
- */
-export async function getEtherscanInstance(hre: HardhatRuntimeEnvironment): Promise<Etherscan> {
-  const etherscanConfig: EtherscanConfig | undefined = (hre.config as any).etherscan; // This should never be undefined, but check just in case
-  const chainConfig = await Etherscan.getCurrentChainConfig(
-    hre.network.name,
-    hre.network.provider,
-    etherscanConfig?.customChains ?? [],
-  );
-
-  return Etherscan.fromChainConfig(etherscanConfig?.apiKey, chainConfig);
-}
-
-/**
- * Etherscan configuration for hardhat-verify.
- */
-interface EtherscanConfig {
-  apiKey: string | Record<string, string>;
-  customChains: any[];
-}
-
-/**
- * The response body from an Etherscan API call.
- */
-interface EtherscanResponseBody {
-  status: string;
-  message: string;
-  result: unknown;
-}
+export type { Etherscan, EtherscanCustomApiCallOptions, EtherscanVerifyArgs, EtherscanResponseBody };
 
 export const RESPONSE_OK = '1';
 
-export async function verifyAndGetStatus(
-  params: {
-    contractAddress: string;
-    sourceCode: string;
-    contractName: string;
-    compilerVersion: string;
-    constructorArguments: string;
-  },
+/**
+ * Gets the Etherscan instance from the network connection (hardhat-verify v3.0.10+).
+ * Requires @nomicfoundation/hardhat-verify to be loaded and the network to expose verification.etherscan.
+ */
+export async function getEtherscanFromConnection(hre: HardhatRuntimeEnvironment): Promise<Etherscan> {
+  const connection = await hre.network.connect();
+  const verification = (connection as unknown as { verification?: { etherscan?: Etherscan } }).verification;
+  if (!verification?.etherscan) {
+    throw new UpgradesError(
+      'Etherscan verification is not available for this network.',
+      () =>
+        'Ensure @nomicfoundation/hardhat-verify v3.0.10+ is installed and that the network supports Etherscan (e.g. etherscan config in hardhat.config).',
+    );
+  }
+  return verification.etherscan;
+}
+
+/**
+ * Call the Etherscan API via hardhat-verify's customApiCall (adds apikey and chainid as needed).
+ */
+export async function callEtherscanApi(
   etherscan: Etherscan,
-) {
-  const response = await etherscan.verify(
-    params.contractAddress,
-    params.sourceCode,
-    params.contractName,
-    params.compilerVersion,
-    params.constructorArguments,
-  );
-  return etherscan.getVerificationStatus(response.message);
+  params: Record<string, string | number | undefined>,
+  options?: EtherscanCustomApiCallOptions,
+): Promise<EtherscanResponseBody> {
+  try {
+    const response = await etherscan.customApiCall(params, options);
+    debug('Etherscan response', JSON.stringify(response));
+    return response;
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    throw new UpgradesError(`Etherscan API call failed: ${message}`);
+  }
+}
+
+/**
+ * Submit contract for verification and poll for status using the Etherscan instance.
+ */
+export async function verifyAndGetStatus(
+  params: EtherscanVerifyArgs,
+  etherscan: Etherscan,
+): Promise<{ success: boolean; message: string }> {
+  const guid = await etherscan.verify(params);
+  return etherscan.pollVerificationStatus(guid, params.contractAddress, params.contractName);
 }

@@ -1,5 +1,5 @@
 import { Signer } from 'ethers';
-import { InitialOwner } from './options';
+import { InitialOwner } from './options.js';
 import { UpgradesError } from '@openzeppelin/upgrades-core';
 
 export async function getInitialOwner(opts: InitialOwner, signer?: Signer) {

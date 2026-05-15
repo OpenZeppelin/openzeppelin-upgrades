@@ -1,15 +1,28 @@
-const test = require('ava');
+import test from 'ava';
+import hre from 'hardhat';
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import { createRequire } from 'node:module';
 
-const { ethers, upgrades } = require('hardhat');
+const require = createRequire(import.meta.url);
 
 const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
 const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
-
 const ERC1967Proxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json');
 
+
+const connection = await hre.network.connect();
+const { ethers } = connection;
+
+let upgrades;
+
+test.after.always(async () => {
+  await connection.close();
+});
+
 test.before(async t => {
+  upgrades = await upgradesFactory(hre, connection);
   t.context.Greeter = await ethers.getContractFactory('Greeter');
-  t.context.GreeterV2 = await ethers.getContractFactory('GreeterV2');
+  t.context.GreeterV2 = await ethers.getContractFactory('contracts/GreeterV2.sol:GreeterV2');
   t.context.GreeterProxiable = await ethers.getContractFactory('GreeterProxiable40');
   t.context.GreeterV2Proxiable = await ethers.getContractFactory('GreeterV2Proxiable40');
 

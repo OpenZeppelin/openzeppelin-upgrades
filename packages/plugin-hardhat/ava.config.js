@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   workerThreads: false,
   files: ['test/*.js'],
   watchMode: {

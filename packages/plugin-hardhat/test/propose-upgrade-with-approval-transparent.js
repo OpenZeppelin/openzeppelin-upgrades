@@ -1,14 +1,23 @@
-const test = require('ava');
-const sinon = require('sinon');
-const proxyquire = require('proxyquire').noCallThru();
+import test from 'ava';
+import hre from 'hardhat';
 
-const hre = require('hardhat');
-const { ethers, upgrades } = hre;
+const connection = await hre.network.connect();
+const { ethers } = connection;
+import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
+import sinon from 'sinon';
+import esmock from 'esmock';
+import { mockDeploy } from '../dist/test-utils/mock-deploy.js';
+
+/** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */
+let upgrades;
 
 const proposalId = 'mocked proposal id';
 const proposalUrl = 'https://example.com';
-
 const approvalProcessId = '123';
+
+test.before(async () => {
+  upgrades = await upgradesFactory(hre, connection);
+});
 
 test.beforeEach(async t => {
   t.context.fakeChainId = 'goerli';
@@ -25,15 +34,35 @@ test.beforeEach(async t => {
 
   t.context.spy = sinon.spy(t.context.fakeDefenderClient, 'upgradeContract');
 
-  t.context.proposeUpgradeWithApproval = proxyquire('../dist/defender/propose-upgrade-with-approval', {
-    './utils': {
-      ...require('../dist/defender/utils'),
-      getNetwork: () => t.context.fakeChainId,
+  const { getNetwork: _getNetwork, ...otherDefenderUtils } = await import('../dist/defender/utils.js');
+  const module = await esmock(
+    '../dist/defender/propose-upgrade-with-approval.js',
+    {
+      '../dist/defender/utils.js': {
+        ...otherDefenderUtils,
+        getNetwork: () => t.context.fakeChainId,
+      },
+      '../dist/defender/client.js': {
+        getDeployClient: () => t.context.fakeDefenderClient,
+        getNetworkClient: () => t.context.fakeDefenderClient,
+      },
+      '../dist/utils/deploy.js': {
+        deploy: mockDeploy,
+      },
     },
-    './client': {
-      getDeployClient: () => t.context.fakeDefenderClient,
+    {
+      // Global mocks
+      '../dist/defender/client.js': {
+        getDeployClient: () => t.context.fakeDefenderClient,
+        getNetworkClient: () => t.context.fakeDefenderClient,
+      },
+      '../dist/utils/deploy.js': {
+        deploy: mockDeploy,
+      },
     },
-  }).makeProposeUpgradeWithApproval(hre);
+  );
+
+  t.context.proposeUpgradeWithApproval = module.makeProposeUpgradeWithApproval(hre, true, connection);
 
   t.context.Greeter = await ethers.getContractFactory('GreeterDefender');
   t.context.GreeterV2 = await ethers.getContractFactory('GreeterDefenderV2');
@@ -43,6 +72,10 @@ test.beforeEach(async t => {
 
 test.afterEach.always(() => {
   sinon.restore();
+});
+
+test.after.always(async () => {
+  await connection.close();
 });
 
 test('proposes an upgrade', async t => {

@@ -1,8 +1,9 @@
-const test = require('ava');
-const sinon = require('sinon');
-const proxyquire = require('proxyquire').noCallThru();
-const { disableDefender, enableDefender } = require('../dist/defender/utils');
-const { getDeployClient } = require('../dist/defender/client');
+import test from 'ava';
+
+import sinon from 'sinon';
+import esmock from 'esmock';
+import { disableDefender, enableDefender } from '../dist/defender/utils.js';
+import { getDeployClient } from '../dist/defender/client.js';
 
 test.beforeEach(async t => {
   t.context.fakeChainId = '0x01';
@@ -29,13 +30,18 @@ test('getNetwork finds network', async t => {
     },
   };
 
-  const utils = proxyquire('../dist/defender/utils', {
-    './client': {
+  const utils = await esmock('../dist/defender/utils.js', {
+    '../dist/defender/client.js': {
       getNetworkClient: () => fakeNetworkClient,
     },
   });
 
-  const network = await utils.getNetwork(t.context.fakeHre);
+  const fakeConnection = {
+    networkConfig: { chainId: 1 },
+    ethers: { provider: {} },
+  };
+
+  const network = await utils.getNetwork(t.context.fakeHre, fakeConnection);
   t.is(network, 'mainnet');
 });
 
@@ -51,13 +57,18 @@ test('getNetwork cannot find network', async t => {
     },
   };
 
-  const utils = proxyquire('../dist/defender/utils', {
-    './client': {
+  const utils = await esmock('../dist/defender/utils.js', {
+    '../dist/defender/client.js': {
       getNetworkClient: () => fakeNetworkClient,
     },
   });
 
-  await t.throwsAsync(() => utils.getNetwork(t.context.fakeHre), {
+  const fakeConnection = {
+    networkConfig: { chainId: 0x123456 },
+    ethers: { provider: {} },
+  };
+
+  await t.throwsAsync(() => utils.getNetwork(t.context.fakeHre, fakeConnection), {
     message: /The current network with chainId \d+ is not supported/,
   });
 });
@@ -83,13 +94,18 @@ test('getNetworks finds forked network', async t => {
     },
   };
 
-  const utils = proxyquire('../dist/defender/utils', {
-    './client': {
+  const utils = await esmock('../dist/defender/utils.js', {
+    '../dist/defender/client.js': {
       getNetworkClient: () => fakeNetworkClient,
     },
   });
 
-  const network = await utils.getNetwork(t.context.fakeHre);
+  const fakeConnection = {
+    networkConfig: { chainId: 0x123456 },
+    ethers: { provider: {} },
+  };
+
+  const network = await utils.getNetwork(t.context.fakeHre, fakeConnection);
   t.is(network, 'my-forked-network');
 });
 
@@ -110,13 +126,18 @@ test('getNetwork finds private network', async t => {
     },
   };
 
-  const utils = proxyquire('../dist/defender/utils', {
-    './client': {
+  const utils = await esmock('../dist/defender/utils.js', {
+    '../dist/defender/client.js': {
       getNetworkClient: () => fakeNetworkClient,
     },
   });
 
-  const network = await utils.getNetwork(t.context.fakeHre);
+  const fakeConnection = {
+    networkConfig: { chainId: 0x123456 },
+    ethers: { provider: {} },
+  };
+
+  const network = await utils.getNetwork(t.context.fakeHre, fakeConnection);
   t.is(network, 'my-private-network');
 });
 
@@ -141,13 +162,18 @@ test('getNetworks finds multiple networks', async t => {
     },
   };
 
-  const utils = proxyquire('../dist/defender/utils', {
-    './client': {
+  const utils = await esmock('../dist/defender/utils.js', {
+    '../dist/defender/client.js': {
       getNetworkClient: () => fakeNetworkClient,
     },
   });
 
-  await t.throwsAsync(() => utils.getNetwork(t.context.fakeHre), {
+  const fakeConnection = {
+    networkConfig: { chainId: 0x123456 },
+    ethers: { provider: {} },
+  };
+
+  await t.throwsAsync(() => utils.getNetwork(t.context.fakeHre, fakeConnection), {
     message:
       /Detected multiple networks with the same chainId \d+ on OpenZeppelin Defender: first-forked-network, second-forked-network/,
   });
@@ -170,8 +196,8 @@ test('getNetworks finds one network, does not match specified network', async t 
     },
   };
 
-  const utils = proxyquire('../dist/defender/utils', {
-    './client': {
+  const utils = await esmock('../dist/defender/utils.js', {
+    '../dist/defender/client.js': {
       getNetworkClient: () => fakeNetworkClient,
     },
   });
@@ -184,7 +210,12 @@ test('getNetworks finds one network, does not match specified network', async t 
     },
   };
 
-  await t.throwsAsync(() => utils.getNetwork(hreWithDefenderNetwork), {
+  const fakeConnection = {
+    networkConfig: { chainId: 0x123456 },
+    ethers: { provider: {} },
+  };
+
+  await t.throwsAsync(() => utils.getNetwork(hreWithDefenderNetwork, fakeConnection), {
     message: /Detected network my-forked-network does not match specified network: specified-network/,
   });
 });
@@ -210,8 +241,8 @@ test('getNetworks finds multiple network, does not match specified network', asy
     },
   };
 
-  const utils = proxyquire('../dist/defender/utils', {
-    './client': {
+  const utils = await esmock('../dist/defender/utils.js', {
+    '../dist/defender/client.js': {
       getNetworkClient: () => fakeNetworkClient,
     },
   });
@@ -224,7 +255,12 @@ test('getNetworks finds multiple network, does not match specified network', asy
     },
   };
 
-  await t.throwsAsync(() => utils.getNetwork(hreWithDefenderNetwork), {
+  const fakeConnection = {
+    networkConfig: { chainId: 0x123456 },
+    ethers: { provider: {} },
+  };
+
+  await t.throwsAsync(() => utils.getNetwork(hreWithDefenderNetwork, fakeConnection), {
     message:
       /Specified network specified-network does not match any of the detected networks for chainId 1193046: my-forked-network, my-forked-network-2/,
   });
@@ -251,8 +287,8 @@ test('getNetworks finds multiple networks, includes specified network', async t 
     },
   };
 
-  const utils = proxyquire('../dist/defender/utils', {
-    './client': {
+  const utils = await esmock('../dist/defender/utils.js', {
+    '../dist/defender/client.js': {
       getNetworkClient: () => fakeNetworkClient,
     },
   });
@@ -265,7 +301,12 @@ test('getNetworks finds multiple networks, includes specified network', async t 
     },
   };
 
-  const network = await utils.getNetwork(hreWithDefenderNetwork);
+  const fakeConnection = {
+    networkConfig: { chainId: 0x123456 },
+    ethers: { provider: {} },
+  };
+
+  const network = await utils.getNetwork(hreWithDefenderNetwork, fakeConnection);
   t.is(network, 'specified-network');
 });
 

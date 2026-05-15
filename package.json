@@ -22,7 +22,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-unicorn": "^51.0.0",
-    "ethers": "^6.8.1",
+    "ethers": "^6.14.0",
     "nyc": "^17.0.0",
     "prettier": "^3.0.0",
     "typescript": "^5.0.0",

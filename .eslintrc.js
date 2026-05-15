@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   parserOptions: {
-    ecmaVersion: 2020,
+    ecmaVersion: 2022,
   },
   extends: ['eslint:recommended', 'plugin:prettier/recommended'],
   env: {
@@ -15,7 +15,13 @@ module.exports = {
     'unicorn/no-array-reduce': 'warn',
     'no-plusplus': ['warn', { allowForLoopAfterthoughts: true }],
   },
-  ignorePatterns: ['submodules'],
+  ignorePatterns: [
+    'submodules',
+    // ESLint 8.x doesn't support ES2025 import attributes syntax
+    // uses import attributes (import ... with { type: 'json' })
+    // which is valid ES2025 syntax but ESLint parser doesn't support it yet
+    'packages/plugin-hardhat/test/*.js',
+  ],
   overrides: [
     {
       files: ['*.ts'],
@@ -29,9 +35,13 @@ module.exports = {
       },
     },
     {
-      files: ['ava.config.js'],
+      files: ['ava.config.js', 'packages/plugin-hardhat/test/*.js', 'packages/plugin-hardhat/src/*.js'],
       parserOptions: {
+        ecmaVersion: 'latest',
         sourceType: 'module',
+      },
+      rules: {
+        'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       },
     },
     {
