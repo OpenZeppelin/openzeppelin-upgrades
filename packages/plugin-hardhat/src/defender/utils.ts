@@ -159,7 +159,6 @@ export function disableDefender(
 export async function getRemoteDeployment(
   hre: HardhatRuntimeEnvironment,
   remoteDeploymentId: string,
-  _connection: NetworkConnection,
 ): Promise<RemoteDeployment | undefined> {
   const client = getDeployClient(hre);
   try {
@@ -195,7 +194,7 @@ export async function waitForDeployment(
       break;
     }
 
-    const response = await getRemoteDeployment(hre, remoteDeploymentId, connection);
+    const response = await getRemoteDeployment(hre, remoteDeploymentId);
     lastKnownTxHash = response?.txHash;
     const completed = await isDeploymentCompleted(address, remoteDeploymentId, response);
     if (completed) {

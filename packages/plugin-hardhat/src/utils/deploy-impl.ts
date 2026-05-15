@@ -144,7 +144,7 @@ async function deployImpl(
     },
     opts,
     merge,
-    remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId, connection),
+    remoteDeploymentId => getRemoteDeployment(hre, remoteDeploymentId),
   );
 
   const { ethers } = connection;
