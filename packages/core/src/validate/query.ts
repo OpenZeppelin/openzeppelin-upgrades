@@ -129,8 +129,8 @@ export function getUnlinkedBytecode(data: ValidationData, bytecode: string): str
 
     for (const name of linkableContracts) {
       const { linkReferences } = validation[name];
-      const unlinkedBytecode = unlinkBytecode(bytecode, linkReferences);
       try {
+        const unlinkedBytecode = unlinkBytecode(bytecode, linkReferences);
         const version = getVersion(unlinkedBytecode);
 
         if (validation[name].version?.withMetadata === version.withMetadata) {
