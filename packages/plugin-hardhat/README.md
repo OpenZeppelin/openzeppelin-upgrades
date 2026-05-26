@@ -246,6 +246,36 @@ export default defineConfig({
 });
 ```
 
+Add a `remappings.txt` at your project root so the library's imports resolve to the npm package's source:
+
+```
+openzeppelin-foundry-upgrades/=node_modules/@openzeppelin/foundry-upgrades/src/
+```
+
+Write your Solidity tests using the `Upgrades` library, the same way you would in a Foundry project. The imports match the [Foundry Upgrades API](https://docs.openzeppelin.com/upgrades-plugins/foundry/api/Upgrades):
+
+```solidity
+// test/MyContract.t.sol
+import { Test } from "forge-std/Test.sol";
+import { Upgrades } from "openzeppelin-foundry-upgrades/Upgrades.sol";
+
+import { MyContract } from "../contracts/MyContract.sol";
+
+contract MyContractTest is Test {
+    function testDeploy() public {
+        address proxy = Upgrades.deployTransparentProxy(
+            "contracts/MyContract.sol:MyContract",
+            msg.sender,
+            abi.encodeCall(MyContract.initialize, (42))
+        );
+
+        assertEq(MyContract(proxy).value(), 42);
+    }
+}
+```
+
+Deploy and upgrade calls work the same as in a standalone Foundry project, including the upgrade safety checks that run automatically. See [Using with Foundry](https://docs.openzeppelin.com/upgrades-plugins/foundry/foundry-upgrades#examples) for deploy and upgrade examples.
+
 Run `npx hardhat clean` or `npx hardhat compile --force` before running your Solidity tests:
 
 ```bash
