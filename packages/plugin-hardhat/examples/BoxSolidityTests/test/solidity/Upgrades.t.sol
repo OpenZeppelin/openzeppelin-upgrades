@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 
 import { Test } from "forge-std/Test.sol";
-import { Upgrades } from "@openzeppelin/foundry-upgrades/src/Upgrades.sol";
-import { Options } from "@openzeppelin/foundry-upgrades/src/Options.sol";
+import { Upgrades } from "openzeppelin-foundry-upgrades/Upgrades.sol";
+import { Options } from "openzeppelin-foundry-upgrades/Options.sol";
 
 import { Box } from "../../contracts/Box.sol";
 import { BoxV2 } from "../../contracts/BoxV2.sol";
