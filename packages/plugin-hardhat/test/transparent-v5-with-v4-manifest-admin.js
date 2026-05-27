@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
 
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 let upgrades;

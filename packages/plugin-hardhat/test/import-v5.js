@@ -10,7 +10,7 @@ const ERC1967Proxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppeli
 const BeaconProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/BeaconProxy.sol/BeaconProxy.json');
 const UpgradableBeacon = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json');
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 let upgrades;

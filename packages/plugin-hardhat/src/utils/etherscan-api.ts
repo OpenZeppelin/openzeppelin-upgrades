@@ -17,7 +17,7 @@ export const RESPONSE_OK = '1';
  * Requires @nomicfoundation/hardhat-verify to be loaded and the network to expose verification.etherscan.
  */
 export async function getEtherscanFromConnection(hre: HardhatRuntimeEnvironment): Promise<Etherscan> {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.getOrCreate();
   const verification = (connection as unknown as { verification?: { etherscan?: Etherscan } }).verification;
   if (!verification?.etherscan) {
     throw new UpgradesError(

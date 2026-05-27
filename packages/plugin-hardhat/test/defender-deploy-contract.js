@@ -3,7 +3,7 @@ import hre from 'hardhat';
 import esmock from 'esmock';
 import sinon from 'sinon';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 const ADDR = '0x1';

@@ -7,7 +7,7 @@ import sinon from 'sinon';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
 import { mockDeploy as baseMockDeploy } from '../dist/test-utils/mock-deploy.js';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */

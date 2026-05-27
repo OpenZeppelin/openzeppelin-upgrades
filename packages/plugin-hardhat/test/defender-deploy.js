@@ -17,7 +17,7 @@ const artifactsBuildInfo = require('@openzeppelin/upgrades-core/artifacts/build-
 import { AbiCoder } from 'ethers';
 import * as defenderUtils from '../dist/defender/utils.js';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 const defender = await defenderFactory(hre, connection);
@@ -95,7 +95,8 @@ test.beforeEach(async t => {
     },
     network: {
       provider: { send: async () => t.context.fakeChainId },
-      connect: async () => fakeConnection, // Hardhat 3: network.connect() returns connection with mocked provider
+      create: async () => fakeConnection, // Hardhat 3: network.create() returns connection with mocked provider
+      getOrCreate: async () => fakeConnection,
     },
   };
 });

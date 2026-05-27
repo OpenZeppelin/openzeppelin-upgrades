@@ -2,7 +2,7 @@ import test from 'ava';
 import hre from 'hardhat';
 import { upgrades } from '@openzeppelin/hardhat-upgrades';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection as any;
 const upgradesApi = await upgrades(hre, connection);
 

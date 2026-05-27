@@ -19,14 +19,14 @@ import { tryRequire } from './try-require.js';
  * import { upgrades } from '@openzeppelin/hardhat-upgrades';
  *
  * task('deploy', async (args, hre) => {
- *   const connection = await hre.network.connect();
+ *   const connection = await hre.network.create();
  *   const api = await upgrades(hre, connection);
  *   await api.deployProxy(MyContract, []);
  * });
  * ```
  *
  * @param hre - Hardhat Runtime Environment
- * @param connection - Network connection from `await hre.network.connect()`. Share one connection across operations; do not create a new one per call.
+ * @param connection - Network connection from `await hre.network.create()`. Share one connection across operations; do not create a new one per call.
  * @returns API object with all upgrade functions
  */
 export async function upgrades(
@@ -45,14 +45,14 @@ export async function upgrades(
  * import { defender } from '@openzeppelin/hardhat-upgrades';
  *
  * task('deploy', async (args, hre) => {
- *   const connection = await hre.network.connect();
+ *   const connection = await hre.network.create();
  *   const api = await defender(hre, connection);
  *   await api.deployContract(...);
  * });
  * ```
  *
  * @param hre - Hardhat Runtime Environment
- * @param connection - Network connection from `await hre.network.connect()`. Share one connection across operations; do not create a new one per call.
+ * @param connection - Network connection from `await hre.network.create()`. Share one connection across operations; do not create a new one per call.
  * @returns API object with all upgrade and Defender functions
  */
 export async function defender(

@@ -3,7 +3,7 @@ import hre from 'hardhat';
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';
 import { deploy } from '../dist/utils/deploy.js';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 /** @type {import('@openzeppelin/hardhat-upgrades').HardhatUpgrades} */

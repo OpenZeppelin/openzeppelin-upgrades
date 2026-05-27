@@ -1,7 +1,7 @@
 import test from 'ava';
 import hre from 'hardhat';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 // import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
 import { upgrades as upgradesFactory } from '@openzeppelin/hardhat-upgrades';

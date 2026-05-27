@@ -42,7 +42,7 @@ export function getContractInstance<F extends ContractFactory>(
         deployment.remoteDeploymentId,
       );
 
-      const { ethers } = await hre.network.connect();
+      const { ethers } = await hre.network.create();
 
       if (updatedTxHash !== undefined && updatedTxHash !== deployment.txHash) {
         const updatedTx = await ethers.provider.getTransaction(updatedTxHash);

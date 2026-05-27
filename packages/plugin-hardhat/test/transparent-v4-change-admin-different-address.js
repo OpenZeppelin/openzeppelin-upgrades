@@ -9,7 +9,7 @@ const ProxyAdmin = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/
 const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
 
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 let upgrades;

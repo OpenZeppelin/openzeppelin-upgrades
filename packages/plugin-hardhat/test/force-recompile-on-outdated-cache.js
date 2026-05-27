@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { isCurrentValidationData } from '@openzeppelin/upgrades-core';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 test.after.always(async () => connection.close());
 
 const CACHE_PATH = path.join(hre.config.paths.cache, 'validations.json');

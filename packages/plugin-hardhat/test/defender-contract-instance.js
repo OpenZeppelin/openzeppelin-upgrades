@@ -3,7 +3,7 @@ import hre from 'hardhat';
 import esmock from 'esmock';
 import sinon from 'sinon';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 const DEPLOYMENT_ID = 'abc';
@@ -75,10 +75,10 @@ test('get contract instance - tx hash updated', async t => {
     },
   });
 
-  // Stub hre.network.connect to return a provider with mocked getTransaction
-  const originalConnect = hre.network.connect.bind(hre.network);
-  const connectStub = sinon.stub(hre.network, 'connect').callsFake(async () => {
-    const connection = await originalConnect();
+  // Stub hre.network.create to return a provider with mocked getTransaction
+  const originalCreate = hre.network.create.bind(hre.network);
+  const createStub = sinon.stub(hre.network, 'create').callsFake(async () => {
+    const connection = await originalCreate();
     const originalGetTransaction = connection.ethers.provider.getTransaction.bind(connection.ethers.provider);
     sinon.stub(connection.ethers.provider, 'getTransaction').callsFake(async hash => {
       if (hash === second.deploymentTransaction().hash) {
@@ -105,5 +105,5 @@ test('get contract instance - tx hash updated', async t => {
   t.not(stubbedInstance.deploymentTransaction().hash, first.deploymentTransaction().hash);
   t.is(stubbedInstance.deploymentTransaction().hash, second.deploymentTransaction().hash);
 
-  connectStub.restore();
+  createStub.restore();
 });

@@ -4,7 +4,7 @@ import { defender as defenderFactory } from '@openzeppelin/hardhat-upgrades';
 import sinon from 'sinon';
 import esmock from 'esmock';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const defender = await defenderFactory(hre, connection);
 
 const APPROVAL_PROCESS_ID = 'abc-def';

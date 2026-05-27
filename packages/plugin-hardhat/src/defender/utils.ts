@@ -184,7 +184,7 @@ export async function waitForDeployment(
 ): Promise<string | undefined> {
   const pollInterval = opts.pollingInterval ?? 5e3;
   let lastKnownTxHash: string | undefined;
-  const connection = await hre.network.connect();
+  const connection = await hre.network.create();
   const { ethers } = connection;
 
   // eslint-disable-next-line no-constant-condition

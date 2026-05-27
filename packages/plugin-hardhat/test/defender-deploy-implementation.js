@@ -4,7 +4,7 @@ import esmock from 'esmock';
 import manifest from '@openzeppelin/upgrades-core/dist/manifest.js';
 import { mockDeploy } from '../dist/test-utils/mock-deploy.js';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 test.after.always(async () => {

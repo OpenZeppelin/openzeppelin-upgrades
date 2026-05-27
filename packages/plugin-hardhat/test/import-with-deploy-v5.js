@@ -10,7 +10,7 @@ const TransparentUpgradableProxy = require('@openzeppelin/upgrades-core/artifact
 const ERC1967Proxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/ERC1967/ERC1967Proxy.sol/ERC1967Proxy.json');
 
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 
 let upgrades;

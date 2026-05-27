@@ -65,7 +65,7 @@ export async function defenderDeploy(
   ...args: unknown[]
 ): Promise<DefenderDeployment> {
   // Create connection if not available in context
-  const connection = await hre.network.connect();
+  const connection = await hre.network.create();
 
   const client = getDeployClient(hre);
 

@@ -84,14 +84,14 @@ const verifiableContracts = {
  * Verifies the contract at an address. If the address is an ERC-1967 compatible proxy, verifies the proxy and associated proxy contracts,
  * as well as the implementation. Otherwise, calls hardhat-verify's verify function directly.
  *
- * Requires @nomicfoundation/hardhat-verify v3.0.10+ and uses verification.etherscan from hre.network.connect().
+ * Requires @nomicfoundation/hardhat-verify v3.0.10+ and uses verification.etherscan from hre.network.getOrCreate().
  */
 export async function verify(
   args: Record<string, unknown>,
   hre: HardhatRuntimeEnvironment,
   runSuper: (taskArguments: Record<string, unknown>) => Promise<unknown>,
 ): Promise<unknown> {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.getOrCreate();
   const { provider } = connection;
   const proxyAddress = args.address as string;
   const errorReport: ErrorReport = {
@@ -181,7 +181,7 @@ async function fullVerifyTransparentOrUUPS(
   hardhatVerify: (address: string) => Promise<unknown>,
   errorReport: ErrorReport,
 ): Promise<void> {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.getOrCreate();
   const implAddress = await getImplementationAddress(connection.provider, proxyAddress);
   await verifyImplementation(hardhatVerify, implAddress, errorReport);
 
@@ -235,7 +235,7 @@ async function verifyAdminOrFallback(
     }
 
     const artifact = verifiableContracts.proxyAdmin.artifact;
-    const connection = await hre.network.connect();
+    const connection = await hre.network.getOrCreate();
     const deployedBytecode = await getCode(connection.provider, adminAddress);
     if (deployedBytecode !== artifact.deployedBytecode) {
       throw new BytecodeNotMatchArtifact(
@@ -256,7 +256,7 @@ async function fullVerifyBeaconProxy(
   hardhatVerify: (address: string) => Promise<unknown>,
   errorReport: ErrorReport,
 ): Promise<void> {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.getOrCreate();
   const beaconAddress = await getBeaconAddress(connection.provider, proxyAddress);
   const implAddress = await getImplementationAddressFromBeacon(connection.provider, beaconAddress);
   const etherscan = await getEtherscanFromConnection(hre);
@@ -286,7 +286,7 @@ async function fullVerifyBeacon(
   etherscan: Etherscan,
   errorReport: ErrorReport,
 ): Promise<void> {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.getOrCreate();
   const implAddress = await getImplementationAddressFromBeacon(connection.provider, beaconAddress);
   await verifyImplementation(hardhatVerify, implAddress, errorReport);
   await verifyBeacon();
@@ -407,7 +407,7 @@ async function attemptVerifyWithCreationEvent(
   const { contractInfo, txHash } = await searchEvent(etherscan, address, possibleContractInfo);
   debug(`verifying contract ${contractInfo.artifact.contractName} at ${address}`);
 
-  const connection = await hre.network.connect();
+  const connection = await hre.network.getOrCreate();
   const tx = await getTransactionByHash(connection.provider, txHash);
   if (tx === null) {
     throw new UpgradesError(`The transaction hash ${txHash} from the contract's logs was not found on the network`);

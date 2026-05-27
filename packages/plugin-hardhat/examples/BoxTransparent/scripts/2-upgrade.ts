@@ -9,7 +9,7 @@ async function main() {
     process.exit(1);
   }
 
-  const connection = await hre.network.connect();
+  const connection = await hre.network.create();
   const { ethers } = connection;
   const upgradesApi = await upgrades(hre, connection);
 
