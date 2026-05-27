@@ -1,6 +1,19 @@
 [[frequently-asked-questions]]
 = Frequently Asked Questions
 
+[[precompiled-proxy-contracts]]
+== What compiler version is used for proxy contracts?
+
+The Hardhat Upgrades plugin deploys proxy contracts using **precompiled bytecodes** that are packaged in the `@openzeppelin/upgrades-core` NPM package. This means:
+
+* **The proxy compiler version is independent of your project's compiler version.** Even if your `hardhat.config.js` specifies a different Solidity version, the proxy contracts (such as `ERC1967Proxy`, `TransparentUpgradeableProxy`, `BeaconProxy`, and `UpgradeableBeacon`) are deployed using the bytecode that was precompiled with the version of Solidity included in `@openzeppelin/upgrades-core`. This does _not_ affect your implementation contracts, which are compiled with your project's configured compiler.
+
+* **Different versions of `@openzeppelin/upgrades-core` may use different compiler versions** and different versions of the proxy contracts from https://docs.openzeppelin.com/contracts[OpenZeppelin Contracts]. Upgrading `@openzeppelin/upgrades-core` or `@openzeppelin/hardhat-upgrades` may change the precompiled proxy bytecodes.
+
+* **For consistent proxy bytecodes across chains**, you should use the same versions of `@openzeppelin/hardhat-upgrades` and `@openzeppelin/upgrades-core` for all deployments. This is particularly important for **source code verification**, since the verification process depends on the exact compiler version and settings used to produce the deployed bytecode.
+
+NOTE: The Foundry Upgrades library (https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades[`openzeppelin-foundry-upgrades`]) compiles proxy contracts as part of the project's build process using the project's own compiler configuration, so the above behavior is specific to the Hardhat plugin only.
+
 [[is-it-safe-to-upgrade-a-contract-compiled-with-a-version-of-solidity-to-another-compiled-with-a-different-version]]
 == Can I change Solidity compiler versions when upgrading?
 
