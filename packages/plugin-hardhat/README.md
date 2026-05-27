@@ -213,10 +213,10 @@ This is optional and only needed if you want Solidity-based tests.
 
 > **Proxy source:** In Solidity tests, proxies are compiled from the `@openzeppelin/contracts` version installed in your project (via `proxyFilesToBuild()` + Hardhat 3's `npmFilesToBuild`). In scripts and JavaScript/TypeScript tests, proxies come from precompiled bytecode bundled with the plugin. Because the two paths rely on independent sources and compilation settings, the resulting proxy bytecode may not be identical.
 
-Install:
+Install the library and `forge-std`:
 
 ```bash
-npm install --save-dev @openzeppelin/foundry-upgrades
+npm install --save-dev @openzeppelin/foundry-upgrades "github:foundry-rs/forge-std#semver:^1.9.5"
 ```
 
 Configure your Hardhat config for Solidity tests:
