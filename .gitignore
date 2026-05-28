@@ -11,3 +11,4 @@ coverage
 .env
 /examples
 package-lock.json
+!packages/plugin-hardhat/examples/*/package-lock.json

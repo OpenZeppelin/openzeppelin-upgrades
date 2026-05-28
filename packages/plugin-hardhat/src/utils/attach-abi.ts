@@ -1,41 +1,46 @@
 import { Contract, Signer } from 'ethers';
+import type { NetworkConnection } from 'hardhat/types/network';
+import { createRequire } from 'node:module';
 
-import ITransparentUpgradeableProxyV5 from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/ITransparentUpgradeableProxy.json';
-import ITransparentUpgradeableProxyV4 from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/ITransparentUpgradeableProxy.json';
+const require = createRequire(import.meta.url);
 
-import ProxyAdminV5 from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
-import ProxyAdminV4 from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
-
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
+const ITransparentUpgradeableProxyV5 = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/ITransparentUpgradeableProxy.json');
+const ITransparentUpgradeableProxyV4 = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol/ITransparentUpgradeableProxy.json');
+const ProxyAdminV5 = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
+const ProxyAdminV4 = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json');
 
 export async function attachITransparentUpgradeableProxyV5(
-  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
   address: string,
   signer?: Signer,
 ): Promise<Contract> {
-  return hre.ethers.getContractAt(ITransparentUpgradeableProxyV5.abi, address, signer);
+  const { ethers } = connection;
+  return ethers.getContractAt(ITransparentUpgradeableProxyV5.abi, address, signer);
 }
 
 export async function attachITransparentUpgradeableProxyV4(
-  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
   address: string,
   signer?: Signer,
 ): Promise<Contract> {
-  return hre.ethers.getContractAt(ITransparentUpgradeableProxyV4.abi, address, signer);
+  const { ethers } = connection;
+  return ethers.getContractAt(ITransparentUpgradeableProxyV4.abi, address, signer);
 }
 
 export async function attachProxyAdminV5(
-  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
   address: string,
   signer?: Signer,
 ): Promise<Contract> {
-  return hre.ethers.getContractAt(ProxyAdminV5.abi, address, signer);
+  const { ethers } = connection;
+  return ethers.getContractAt(ProxyAdminV5.abi, address, signer);
 }
 
 export async function attachProxyAdminV4(
-  hre: HardhatRuntimeEnvironment,
+  connection: NetworkConnection,
   address: string,
   signer?: Signer,
 ): Promise<Contract> {
-  return hre.ethers.getContractAt(ProxyAdminV4.abi, address, signer);
+  const { ethers } = connection;
+  return ethers.getContractAt(ProxyAdminV4.abi, address, signer);
 }

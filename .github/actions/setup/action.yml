@@ -5,8 +5,18 @@ runs:
   steps:
     - uses: actions/setup-node@v4
       with:
-        node-version: 20.x
+        node-version: 22.x
         cache: yarn
+
+    - name: Cache Hardhat solc compilers
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/hardhat/compilers-v3
+          ~/.cache/hardhat-nodejs/compilers-v3
+        key: hardhat-compilers-${{ runner.os }}-${{ hashFiles('**/package.json', '**/yarn.lock') }}
+        restore-keys: |
+          hardhat-compilers-${{ runner.os }}-
 
     - name: Install dependencies
       run: yarn --frozen-lockfile --prefer-offline
