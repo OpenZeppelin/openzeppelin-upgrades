@@ -188,6 +188,8 @@ describe('MyContract', () => {
 
 Note: Both `upgrades` and `defender` receive `hre` and `connection` as parameters.
 
+Hardhat 3 also supports tests written in Solidity. See [Solidity tests](./README.md#solidity-tests) for setup with `@openzeppelin/foundry-upgrades`.
+
 ## Verify Task (Optional)
 
 If your Hardhat config file's `verify.etherscan.apiKey` setting uses `configVariable('ETHERSCAN_API_KEY')`, set `ETHERSCAN_API_KEY` before running Hardhat (or use a provider such as `@nomicfoundation/hardhat-keystore`):
@@ -199,8 +201,6 @@ ETHERSCAN_API_KEY=... npx hardhat verify --network mainnet PROXY_ADDRESS
 The upgrades plugin extends hardhat-verify's `verify` task for proxy addresses.
 
 Note that you do not need to include constructor arguments when verifying if your implementation contract only uses initializers. However, if your implementation contract has an actual constructor with arguments (such as to set immutable variables), then include constructor arguments according to [Hardhat's documentation for verifying a contract](https://hardhat.org/docs/guides/smart-contract-verification#verifying-a-contract).
-
-For Solidity test setup in Hardhat 3 (including use of `@openzeppelin/foundry-upgrades`), see the [README section on Solidity tests](./README.md#solidity-tests).
 
 ## Checklist
 
