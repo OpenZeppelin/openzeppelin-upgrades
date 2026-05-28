@@ -18,7 +18,9 @@ jobs:
         with:
           fetch-depth: 0 # To get all tags
           ref: ${{ github.ref }}
-          submodules: recursive
+          # Submodules are intentionally not checked out: publishing only builds
+          # the TypeScript packages, and commitMode: github-api rejects executable
+          # files anywhere in the working tree (e.g. forge-std scripts).
       - name: Set up environment
         uses: ./.github/actions/setup
       - name: Create Prepare Release PR or Publish
