@@ -21,7 +21,12 @@ const action: TaskOverrideActionFunction = async (taskArguments, hre, runSuper) 
       if (e instanceof ValidationsCacheOutdated || e instanceof ValidationsCacheNotFound) {
         force = true;
       } else if (isErrorCode(e, 'ELOCKED')) {
-        // Another process holds the lock; let that process handle regeneration.
+        // Couldn't check the cache's schema version because another process holds
+        // the lock. If the schema is actually outdated, the next readValidations()
+        // from deploy/upgrade/validate still detects it and throws
+        // ValidationsCacheOutdated with an actionable "recompile with --force"
+        // message, so the worst case is a deferred loud error, not silent stale
+        // validation.
       } else {
         throw e;
       }

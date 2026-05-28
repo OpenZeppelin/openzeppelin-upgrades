@@ -1,7 +1,6 @@
-import type { SolidityHooks, HookContext } from 'hardhat/types/hooks';
+import type { SolidityHooks } from 'hardhat/types/hooks';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
-import type { SolcConfig } from 'hardhat/types/config';
-import type { CompilerInput, CompilerOutput, Compiler } from 'hardhat/types/solidity';
+import type { CompilationJob, CompilerInput, CompilerOutput } from 'hardhat/types/solidity';
 import type { SolcInput, SolcOutput } from '@openzeppelin/upgrades-core';
 import { logWarning } from '@openzeppelin/upgrades-core';
 import debug from '../utils/debug.js';
@@ -18,8 +17,6 @@ function getNamespacedCompileErrors(output: CompilerOutput | undefined): string[
   }
   return errors;
 }
-
-let lockWarningShown = false;
 
 /**
  * Converts Hardhat's CompilerInput to upgrades-core's SolcInput.
@@ -44,54 +41,53 @@ function toCompilerInput(input: SolcInput): CompilerInput {
   return input as unknown as CompilerInput;
 }
 
+/**
+ * Wraps a compilation job so that it feeds solc a modified (namespaced) input while
+ * reusing the original job's compiler version, settings, and dependency graph.
+ *
+ * Namespaced storage-layout validation needs a second compilation of source that has
+ * been rewritten to expose namespaced struct members as ordinary storage variables.
+ * We obtain that extra compilation through the build system's public `runCompilationJob`
+ * method; this wrapper is how we hand it the modified input.
+ *
+ * The wrapper is a `Proxy` that forwards all member access to the original job and binds
+ * any method we read back to that same instance. Hardhat's `CompilationJobImplementation`
+ * keys its methods on `#`-private fields (`#hooks`, `#solcInput`, `#buildId`, …), so the
+ * receiver inside a method call must remain the original instance — a plain `Object.create`
+ * wrapper would only work as long as `runCompilationJob` happened not to invoke any such
+ * method on the wrapper, which is a brittle contract to rely on across patch releases.
+ */
+function makeNamespacedCompilationJob(job: Readonly<CompilationJob>, namespacedInput: CompilerInput): CompilationJob {
+  return new Proxy(job as CompilationJob, {
+    get(target, prop, _receiver) {
+      if (prop === 'getSolcInput') {
+        return async (): Promise<CompilerInput> => namespacedInput;
+      }
+      const value = Reflect.get(target, prop, target);
+      // Methods must run with `this === target` so that private-field access resolves on
+      // the real instance the class was declared with.
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}
+
 export default async (): Promise<Partial<SolidityHooks>> => {
   return {
-    async preprocessSolcInputBeforeBuilding(context, solcInput, next) {
-      const { readValidations, ValidationsCacheOutdated, ValidationsCacheNotFound } = await import(
-        '../utils/validations.js'
-      );
-      const { isErrorCode } = await import('../utils/errors.js');
-
-      try {
-        await readValidations(context as HardhatRuntimeEnvironment);
-        // Cache exists and is valid, continue normally
-      } catch (e: unknown) {
-        if (e instanceof ValidationsCacheOutdated) {
-          // Cache exists but is outdated. The compile-task override (see
-          // compile-task-action.ts) already detected this and forced a full
-          // recompile, so invokeSolc will regenerate the cache.
-        } else if (e instanceof ValidationsCacheNotFound) {
-          // Cache doesn't exist - that's fine, just proceed with compilation
-        } else if (isErrorCode(e, 'ELOCKED')) {
-          // Lock file is being held by another process - warn once and continue
-          if (!lockWarningShown) {
-            logWarning('Validations cache is locked by another process.', ['Continuing without cache validation.']);
-            lockWarningShown = true;
-          }
-        } else {
-          throw e;
-        }
-      }
-
-      return await next(context, solcInput);
-    },
-
     /**
-     * Hook that intercepts solc invocation to run upgrade validations.
-     * This replaces the old workaround of reading build-info files in onCleanUpArtifacts.
+     * Runs upgrade-safety validations against each compilation job's solc input/output and
+     * writes the results to the validations cache, where the deploy/upgrade/validate helpers
+     * read them. This is the interception point for validation: if it cannot produce complete
+     * validation data the operation fails closed, because the helpers then find no cache.
+     *
+     * We hook `getCompilationJobErrors` rather than mutate the compiler error list: per its
+     * contract we call `next` first and return that list unchanged, layering validation on top
+     * as a side effect (and, when configured, throwing to abort the build).
      */
-    async invokeSolc(
-      context: HookContext,
-      compiler: Compiler,
-      solcInput: CompilerInput,
-      solcConfig: SolcConfig,
-      next: (
-        nextContext: HookContext,
-        nextCompiler: Compiler,
-        nextSolcInput: CompilerInput,
-        nextSolcConfig: SolcConfig,
-      ) => Promise<CompilerOutput>,
-    ): Promise<CompilerOutput> {
+    async getCompilationJobErrors(context, compilationJob, compilerOutput, next) {
+      // Compute the real error list first and never mutate it; this is the value the build
+      // system uses to report errors, and the hook contract forbids altering it.
+      const errors = await next(context, compilationJob, compilerOutput);
+
       const {
         validate,
         solcInputOutputDecoder,
@@ -103,19 +99,16 @@ export default async (): Promise<Partial<SolidityHooks>> => {
       const { writeValidations } = await import('../utils/validations.js');
       const { isFullSolcOutput } = await import('../utils/is-full-solc-output.js');
 
-      // Run the original compilation
-      const output = await next(context, compiler, solcInput, solcConfig);
-
-      // Convert to upgrades-core types for validation
+      const solcInput = await compilationJob.getSolcInput();
       const solcInputCore = toSolcInput(solcInput);
-      const solcOutputCore = toSolcOutput(output);
+      const solcOutputCore = toSolcOutput(compilerOutput);
 
       // Only process full solc output (with contracts, sources, etc.)
       if (!isFullSolcOutput(solcOutputCore)) {
-        return output;
+        return errors;
       }
 
-      const solcVersion = compiler.version;
+      const solcVersion = compilationJob.solcConfig.version;
       const decodeSrc = solcInputOutputDecoder(solcInputCore, solcOutputCore);
       let namespacedOutput: SolcOutput | undefined = undefined;
 
@@ -127,8 +120,11 @@ export default async (): Promise<Partial<SolidityHooks>> => {
         let namespacedInput = makeNamespacedInput(solcInputCore, solcOutputCore, solcVersion);
         namespacedInput = await trySanitizeNatSpec(namespacedInput, solcVersion);
 
-        // Run the namespaced compilation by calling next() with modified input
-        const namespacedResult = await next(context, compiler, toCompilerInput(namespacedInput), solcConfig);
+        // Run the namespaced compilation through the build system's public API. This compiles
+        // the modified input with the same compiler version/settings without emitting artifacts,
+        // and does not re-enter this hook.
+        const namespacedJob = makeNamespacedCompilationJob(compilationJob, toCompilerInput(namespacedInput));
+        const { output: namespacedResult } = await context.solidity.runCompilationJob(namespacedJob);
 
         const namespacedCompileErrors = getNamespacedCompileErrors(namespacedResult);
 
@@ -180,16 +176,17 @@ export default async (): Promise<Partial<SolidityHooks>> => {
       const validations = validate(solcOutputCore, decodeSrc, solcVersion, solcInputCore, namespacedOutput);
       await writeValidations(context as HardhatRuntimeEnvironment, validations);
 
-      return output;
+      return errors;
     },
 
     /**
-     * Hook for cleanup - only handles AST injection for Foundry plugin compatibility.
-     * Validation logic has been moved to invokeSolc hook.
+     * Post-processes artifacts after a successful build to bridge a Hardhat 3 gap for the
+     * Foundry consumer: HH3 does not store AST in artifacts, so we inject it (and metadata)
+     * from the split `.output.json` build-info files. This runs for the "contracts" scope only
+     * (test artifacts are excluded by the build system), which is exactly the set the Foundry
+     * upgrades plugin reads.
      */
-    async onCleanUpArtifacts(context, artifactPaths, next) {
-      await next(context, artifactPaths);
-
+    async processArtifactsAfterSuccessfulBuild(context, artifactPaths, _buildRootFilePaths, _buildOptions) {
       const path = await import('path');
 
       // Get the artifacts directory
@@ -201,7 +198,7 @@ export default async (): Promise<Partial<SolidityHooks>> => {
         // In Hardhat 3, AST is stored in build-info output files, not in artifacts
         // The Foundry upgrades plugin expects AST in artifact files, so we inject it here
         debug('Starting AST injection into artifacts...');
-        await injectAstIntoArtifacts(artifactPaths, buildInfoDir);
+        await injectAstIntoArtifacts([...artifactPaths], buildInfoDir);
       } catch (error: unknown) {
         if (typeof error === 'object' && error !== null && 'code' in error && error.code !== 'ENOENT') {
           throw error;
@@ -216,7 +213,7 @@ export default async (): Promise<Partial<SolidityHooks>> => {
  *
  * Required by the `@openzeppelin/foundry-upgrades` npm package, which reads this data from
  * artifacts via FFI during `hardhat test solidity`. HH3's artifact schema does not include AST
- * by default, so this hook bridges the gap. Removing it breaks `examples/BoxSolidityTests`.
+ * by default, so this bridges the gap. Removing it breaks `examples/BoxSolidityTests`.
  */
 export async function injectAstIntoArtifacts(artifactPaths: string[], buildInfoDir: string): Promise<void> {
   const path = await import('path');
