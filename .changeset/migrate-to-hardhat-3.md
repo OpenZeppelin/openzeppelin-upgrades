@@ -6,7 +6,7 @@ Migrate to Hardhat 3 with ESM module structure and plugin hooks architecture.
 
 ### Breaking Changes
 
-- **Requires Hardhat 3**: minimum `hardhat@^3.0.0` required.
+- **Requires Hardhat 3**: minimum `hardhat@^3.6.0` required.
 - **ESM-only**: package converted to ESM; CommonJS is no longer supported.
 - **API Changes**:
   - No automatic `hre.upgrades` — call the `upgrades(hre, connection)` factory explicitly.

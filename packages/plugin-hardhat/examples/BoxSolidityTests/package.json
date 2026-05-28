@@ -13,7 +13,7 @@
     "@openzeppelin/foundry-upgrades": "^0.4.1-alpha.0",
     "@openzeppelin/hardhat-upgrades": "@openzeppelin/hardhat-upgrades@4.0.0-alpha.0",
     "forge-std": "github:foundry-rs/forge-std#semver:^1.9.5",
-    "hardhat": "^3.0.0",
+    "hardhat": "^3.6.0",
     "tsx": "^4.7.0",
     "typescript": "^5.0.0"
   }
