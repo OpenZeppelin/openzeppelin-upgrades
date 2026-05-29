@@ -68,9 +68,18 @@ jobs:
       - name: Configure npm auth
         run: |
           if [ "$HAS_NEW_PACKAGES" = "true" ]; then
+            # New packages aren't registered for OIDC trusted publishing yet, so
+            # authenticate with the npm token. setup-node's .npmrc reads it from
+            # NODE_AUTH_TOKEN.
             echo "NODE_AUTH_TOKEN=${NPM_TOKEN}" >> "$GITHUB_ENV"
           else
-            echo "NODE_AUTH_TOKEN=" >> "$GITHUB_ENV"
+            # Existing packages publish via OIDC trusted publishing. npm only
+            # falls through to OIDC when no _authToken is configured, so strip the
+            # line setup-node wrote to the npm userconfig. Removing it is enough:
+            # nothing downstream then reads NODE_AUTH_TOKEN.
+            if [ -n "${NPM_CONFIG_USERCONFIG:-}" ] && [ -f "$NPM_CONFIG_USERCONFIG" ]; then
+              sed -i '/_authToken=/d' "$NPM_CONFIG_USERCONFIG"
+            fi
           fi
         env:
           HAS_NEW_PACKAGES: ${{ steps.check-packages.outputs.has_new_packages }}
