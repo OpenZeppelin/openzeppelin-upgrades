@@ -1,5 +1,15 @@
 # Changelog
 
+
+## 1.45.0 (2026-05-29)
+
+- Support Hardhat 3 build-info file format for CLI validation. ([#1241](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1241))
+  - Handle the split `.json` / `.output.json` file format used by Hardhat 3.
+  - Improve support for validating build-info files in the CLI across Hardhat 3, Hardhat 2, and Foundry.
+  - Improve error handling for Hardhat 3 `.output.json` files.
+
+- Add Arbitrum Sepolia network to manifest file names.
+
 ## 1.44.2 (2025-11-03)
 
 - Add Celo Sepolia network to manifest file names. ([#1189](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1189))
