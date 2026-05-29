@@ -14,6 +14,11 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     environment: publish
+    # The publish job runs on Node 24 (required for npm OIDC), but some dev-only
+    # test deps cap at Node 22. Publishing only builds and ships the packages and
+    # never runs those tools, so skip yarn's engine check for this job.
+    env:
+      YARN_IGNORE_ENGINES: true
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
         with:
