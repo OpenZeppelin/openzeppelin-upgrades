@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      id-token: write
     runs-on: ubuntu-latest
     environment: publish
     steps:
@@ -18,9 +19,71 @@ jobs:
         with:
           fetch-depth: 0 # To get all tags
           ref: ${{ github.ref }}
-          submodules: recursive
+          # Submodules are intentionally not checked out: publishing only builds
+          # the TypeScript packages, and commitMode: github-api rejects executable
+          # files anywhere in the working tree (e.g. forge-std scripts).
       - name: Set up environment
         uses: ./.github/actions/setup
+        with:
+          node-version: '24'
+          cache: 'false'
+      - name: Check for new packages
+        id: check-packages
+        run: |
+          : > "$RUNNER_TEMP/new_packages.txt"
+          while IFS=: read -r pkg dir; do
+            npm_stderr_file="$RUNNER_TEMP/npm-view-${pkg//[^a-zA-Z0-9]/_}.stderr"
+            if npm view "$pkg" version > /dev/null 2> "$npm_stderr_file"; then
+              echo "Existing package: $pkg"
+              rm -f "$npm_stderr_file"
+              continue
+            fi
+
+            npm_error="$(tr '\n' ' ' < "$npm_stderr_file")"
+            rm -f "$npm_stderr_file"
+
+            if [[ "$npm_error" == *"E404"* || "$npm_error" == *"404"* || "$npm_error" == *"Not Found"* ]]; then
+              echo "New package detected: $pkg ($dir)"
+              echo "$dir" >> "$RUNNER_TEMP/new_packages.txt"
+            else
+              echo "::error::npm view failed for $pkg: ${npm_error:-Unknown error}"
+              exit 1
+            fi
+          done < <(yarn workspaces --json info | node -e "
+            const info = JSON.parse(JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).data);
+            for (const [name, meta] of Object.entries(info)) {
+              const pkgJson = require('./' + meta.location + '/package.json');
+              if (!pkgJson.private) console.log(name + ':' + meta.location);
+            }
+          ")
+
+          has_new_packages=false
+          if [ -s "$RUNNER_TEMP/new_packages.txt" ]; then
+            echo "::notice::New packages detected — will use NPM token for publish"
+            has_new_packages=true
+          else
+            echo "All packages exist on npm — using OIDC trusted publishing"
+          fi
+          echo "has_new_packages=$has_new_packages" >> "$GITHUB_OUTPUT"
+      - name: Configure npm auth
+        run: |
+          if [ "$HAS_NEW_PACKAGES" = "true" ]; then
+            # New packages aren't registered for OIDC trusted publishing yet, so
+            # authenticate with the npm token. setup-node's .npmrc reads it from
+            # NODE_AUTH_TOKEN.
+            echo "NODE_AUTH_TOKEN=${NPM_TOKEN}" >> "$GITHUB_ENV"
+          else
+            # Existing packages publish via OIDC trusted publishing. npm only
+            # falls through to OIDC when no _authToken is configured, so strip the
+            # line setup-node wrote to the npm userconfig. Removing it is enough:
+            # nothing downstream then reads NODE_AUTH_TOKEN.
+            if [ -n "${NPM_CONFIG_USERCONFIG:-}" ] && [ -f "$NPM_CONFIG_USERCONFIG" ]; then
+              sed -i '/_authToken=/d' "$NPM_CONFIG_USERCONFIG"
+            fi
+          fi
+        env:
+          HAS_NEW_PACKAGES: ${{ steps.check-packages.outputs.has_new_packages }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create Prepare Release PR or Publish
         id: changesets
         uses: changesets/action@e0145edc7d9d8679003495b11f87bd8ef63c0cba # v1.5.3
@@ -32,7 +95,7 @@ jobs:
           commitMode: github-api
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
       - name: Check changesets status
         if: steps.changesets.outputs.hasChangesets == 'true'
         run: |

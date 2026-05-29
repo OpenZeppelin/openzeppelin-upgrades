@@ -21,7 +21,9 @@ jobs:
         with:
           fetch-depth: 0 # To get all tags
           ref: ${{ github.ref }}
-          submodules: recursive
+          # Submodules are intentionally not checked out: the Prepare Release PR
+          # job only runs `changeset version`, and commitMode: github-api rejects
+          # executable files anywhere in the working tree (e.g. forge-std scripts).
       - name: Set up environment
         uses: ./.github/actions/setup
       - name: Create Prepare Release PR
