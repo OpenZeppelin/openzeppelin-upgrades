@@ -51,7 +51,7 @@ function getNamespacedOverrides() {
 function getOverrides() {
   const overrides = getNamespacedOverrides();
   // The `erc7201(...)` comptime builtin requires Solidity 0.8.35.
-  overrides['contracts/test/Erc7201Builtin.sol'] = { version: '0.8.35', settings };
+  overrides['contracts/test/Erc7201Builtin.sol'] = { version: '0.8.35', settings: settingsWithParisEVM };
   return overrides;
 }
 
@@ -72,7 +72,6 @@ module.exports = {
       { version: '0.8.8', settings },
       { version: '0.8.9', settings },
       proxyCompiler,
-      { version: '0.8.35', settings },
     ],
     overrides: getOverrides(),
   },
