@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import { normalizeUint256Literal } from './integer-literals';
+import { normalizeUint256Literal, toBytes32Hex } from './integer-literals';
 
 const ZEROES = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
@@ -70,4 +70,18 @@ test('full hex with leading and trailing zeroes', t => {
     normalizeUint256Literal('0x00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00'),
     '0x00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00',
   );
+});
+
+test('rejects values above uint256 max', t => {
+  const tooLarge = '0x10000000000000000000000000000000000000000000000000000000000000000';
+  const error = t.throws(() => normalizeUint256Literal(tooLarge));
+  t.regex(error?.message ?? '', /uint256 range/);
+});
+
+test('toBytes32Hex - boundaries', t => {
+  const MAX_HEX = '0x' + 'f'.repeat(64);
+  t.is(toBytes32Hex(0n), '0x' + '0'.repeat(64));
+  t.is(toBytes32Hex(BigInt(MAX_HEX)), MAX_HEX);
+  t.throws(() => toBytes32Hex(BigInt(MAX_HEX) + 1n), { message: /uint256 range/ });
+  t.throws(() => toBytes32Hex(-1n), { message: /uint256 range/ });
 });
