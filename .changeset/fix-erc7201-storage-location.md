@@ -2,4 +2,4 @@
 '@openzeppelin/upgrades-core': patch
 ---
 
-Fix ERC-7201 storage location calculation for namespace ids whose intermediate hash has an odd-length or short hex representation, which previously produced an incorrect location for roughly 6% of ids.
+Fix ERC-7201 storage location calculation when the intermediate value has a leading zero nibble or byte.
