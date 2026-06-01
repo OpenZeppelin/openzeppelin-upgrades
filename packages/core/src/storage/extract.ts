@@ -123,9 +123,13 @@ function loadBaseSlot(contractDef: ContractDefinition, decodeSrc: SrcDecoder, la
 
     const src = decodeSrc(baseSlotExpression);
 
-    // TODO when Slang supports Solidity 0.8.29, use it to parse the expression (of any node type) into a string, then just save it to `layout.baseSlot`.
-    // Then when comparing layouts in `storage/index.ts`, it will only be used when detailed storage layout is not available, and the comparison
-    // can be changed to a string comparison when `layout.baseSlot` not an integer literal.
+    // TODO if a base slot expression other than a numeric literal or an `erc7201(...)` builtin call
+    // needs to be supported, evaluate the right approach per expression — either resolve it to a
+    // computed value (like the erc7201 builtin) or compare its source text across upgrades. A
+    // source-text approach could use Slang to extract the expression's source span (Slang supports
+    // `StorageLayoutSpecifier` from 0.8.29) and store it as a string on `layout.baseSlot`, with the
+    // upgrade-time comparison in `storage/index.ts:validateBaseSlotUnchanged` falling back to a
+    // string compare when `layout.baseSlot` is not a numeric literal.
     throw new UpgradesError(
       `${src}: Custom storage layout expression with node type ${baseSlotExpression.nodeType} is not currently supported`,
       () =>
