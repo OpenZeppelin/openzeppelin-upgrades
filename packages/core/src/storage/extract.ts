@@ -115,9 +115,9 @@ function loadBaseSlot(contractDef: ContractDefinition, decodeSrc: SrcDecoder, la
 
     // Solidity 0.8.35+ allows the `erc7201(string)` comptime builtin as a base slot, e.g.
     // `layout at erc7201("example.main")`. Resolve it to its computed storage location.
-    const erc7201Slot = resolveBaseSlot(baseSlotExpression);
-    if (erc7201Slot !== undefined) {
-      layout.baseSlot = erc7201Slot;
+    const resolvedSlot = resolveBaseSlot(baseSlotExpression);
+    if (resolvedSlot !== undefined) {
+      layout.baseSlot = resolvedSlot;
       return;
     }
 
