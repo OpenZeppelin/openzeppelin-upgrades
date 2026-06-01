@@ -12,8 +12,8 @@ export const ERC7201_FORMULA_PREFIX = 'erc7201:';
 export function calculateERC7201StorageLocation(id: string): string {
   const firstHash = keccak256(Buffer.from(id));
   const minusOne = BigInt(`0x${firstHash.toString('hex')}`) - 1n;
-  // abi.encode(uint256) is a 32-byte zero-padded value, so pad to 64 hex chars before decoding.
-  // Without this, an odd-length or short hex string would be silently truncated by Buffer.from.
+  // Pad to 64 hex chars so that `Buffer.from` doesn't silently truncate odd-length input;
+  // `abi.encode(uint256)` is always 32 bytes.
   const minusOneBuffer = Buffer.from(minusOne.toString(16).padStart(64, '0'), 'hex');
 
   const secondHash = keccak256(minusOneBuffer);
