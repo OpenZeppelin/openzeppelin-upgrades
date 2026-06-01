@@ -57,8 +57,6 @@ export function resolveBaseSlot(node: Expression): string | undefined {
 
   const id = getErc7201BuiltinNamespaceId(node);
   if (id !== undefined) {
-    // calculateERC7201StorageLocation already returns a 0x-prefixed, 64-char lowercase hex string,
-    // matching the format produced by normalizeUint256Literal.
     return calculateERC7201StorageLocation(id);
   }
 

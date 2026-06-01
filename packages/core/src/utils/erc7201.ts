@@ -1,5 +1,7 @@
 import { keccak256 } from 'ethereumjs-util';
 
+import { toBytes32Hex } from './integer-literals';
+
 export const ERC7201_FORMULA_PREFIX = 'erc7201:';
 
 /**
@@ -21,7 +23,5 @@ export function calculateERC7201StorageLocation(id: string): string {
   const mask = BigInt('0xff');
   const masked = BigInt(`0x${secondHash.toString('hex')}`) & ~mask;
 
-  const padded = masked.toString(16).padStart(64, '0');
-
-  return `0x${padded}`;
+  return toBytes32Hex(masked);
 }
