@@ -1,6 +1,7 @@
 import { Expression } from 'solidity-ast';
 import { calculateERC7201StorageLocation } from './erc7201';
 import { normalizeUint256Literal } from './integer-literals';
+import { UpgradesError } from '../error';
 
 /**
  * Recognizes the Solidity 0.8.35+ `erc7201(string)` comptime builtin, which evaluates the ERC-7201
@@ -27,39 +28,35 @@ export function getErc7201BuiltinNamespaceId(node: Expression): string | undefin
 
   // Beyond this point, the call is to `erc7201(...)`. Check its expected shape — one string-literal
   // argument with no user-defined declaration shadowing the builtin — and throw if anything is off.
-  // Valid Solidity 0.8.35+ cannot produce these mismatches inside a `layout at` expression:
-  //   - User-defined `erc7201` (`referencedDeclaration >= 0`): `layout at` requires a comptime-constant
-  //     expression, which user-defined function calls aren't, so solc rejects the contract first.
+  // Valid Solidity 0.8.35+ cannot produce these mismatches in a call to the builtin:
+  //   - User-defined `erc7201` (`referencedDeclaration >= 0`): solc resolves the call to the builtin
+  //     when both are in scope, so this shape doesn't reach a successful compile.
   //   - Wrong number of arguments: enforced by the builtin's signature.
-  //   - Non-`Literal` argument: `layout at` requires comptime-constant, and the only comptime-constant
-  //     string the builtin accepts is a literal.
-  //   - Non-string literal `kind` (e.g. `hex"..."`, which is type `bytes`): wouldn't typecheck against
-  //     the `erc7201(string)` signature.
+  //   - Non-`Literal` argument or non-string literal `kind`: the builtin's signature requires a
+  //     comptime-constant string literal. `hex"..."` is type `bytes` and wouldn't typecheck.
   // We throw instead of returning undefined so a future solc emitting one of these surfaces loudly.
   if (typeof callee.referencedDeclaration === 'number' && callee.referencedDeclaration >= 0) {
-    throw new UnexpectedErc7201BuiltinAstError('callee resolves to a user-defined declaration');
+    throw unexpectedErc7201BuiltinAst('callee resolves to a user-defined declaration');
   }
   if (node.arguments.length !== 1) {
-    throw new UnexpectedErc7201BuiltinAstError(`expected 1 argument, got ${node.arguments.length}`);
+    throw unexpectedErc7201BuiltinAst(`expected 1 argument, got ${node.arguments.length}`);
   }
   const arg = node.arguments[0];
   if (arg.nodeType !== 'Literal') {
-    throw new UnexpectedErc7201BuiltinAstError(`argument is ${arg.nodeType}, expected Literal`);
+    throw unexpectedErc7201BuiltinAst(`argument is ${arg.nodeType}, expected Literal`);
   }
   if (arg.kind !== 'string' && arg.kind !== 'unicodeString') {
-    throw new UnexpectedErc7201BuiltinAstError(`argument literal kind is ${arg.kind}, expected string or unicodeString`);
+    throw unexpectedErc7201BuiltinAst(`argument literal kind is ${arg.kind}, expected string or unicodeString`);
   }
 
   return getStringLiteralValue(arg);
 }
 
-class UnexpectedErc7201BuiltinAstError extends Error {
-  constructor(detail: string) {
-    super(
-      `Unexpected AST for \`erc7201(...)\` builtin call: ${detail}. ` +
-        'Please report this at https://zpl.in/upgrades/report.',
-    );
-  }
+function unexpectedErc7201BuiltinAst(detail: string): UpgradesError {
+  return new UpgradesError(
+    `Unexpected AST for \`erc7201(...)\` builtin call: ${detail}`,
+    () => 'Please report this at https://zpl.in/upgrades/report and include the `erc7201(...)` expression from your contract.',
+  );
 }
 
 /**
@@ -87,7 +84,7 @@ function getStringLiteralValue(literal: { value?: string | null }): string {
   // solc populates `value` for `kind: 'string'`/`'unicodeString'` literals; throw defensively if
   // a future solc ever produces a null/missing `value` for such a literal.
   if (literal.value === undefined || literal.value === null) {
-    throw new UnexpectedErc7201BuiltinAstError('string literal `value` is null or missing');
+    throw unexpectedErc7201BuiltinAst('string literal `value` is null or missing');
   }
   return literal.value;
 }
