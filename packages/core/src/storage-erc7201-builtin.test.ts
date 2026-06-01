@@ -72,7 +72,9 @@ test('erc7201 builtin base slot - changed id - fallback - bad', t => {
   const v1 = t.context.extractStorageLayoutFallback('Erc7201Builtin');
   const v2 = t.context.extractStorageLayoutFallback('Erc7201Builtin_Changed_Id_Bad');
   // Base slot differs between the two erc7201 ids, so the fallback base-slot check must fail.
-  t.throws(() => getStorageUpgradeErrors(v1, v2));
+  t.throws(() => getStorageUpgradeErrors(v1, v2), {
+    message: /Base slot for custom storage layout changed/,
+  });
 });
 
 test('erc7201 builtin and literal-equivalent base slots compare equal', t => {
