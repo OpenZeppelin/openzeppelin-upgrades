@@ -69,7 +69,7 @@ function getStringLiteralValue(literal: { value?: string | null; hexValue: strin
   if (literal.value !== undefined && literal.value !== null) {
     return literal.value;
   }
-  // String literals that the compiler could not represent as a UTF-8 `value` are only available as hex.
+  // If `value` is null, the string contains bytes that aren't valid UTF-8; fall back to the hex form.
   if (literal.hexValue !== undefined) {
     return Buffer.from(literal.hexValue, 'hex').toString('utf8');
   }
