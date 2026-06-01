@@ -87,7 +87,8 @@ test('erc7201 builtin and literal-equivalent base slots compare equal', t => {
 
 test('erc7201 builtin base slot clashes with namespace - error', t => {
   t.throws(() => t.context.extractStorageLayout('Erc7201Builtin_Clash'), {
-    message: /Custom layout for contract Erc7201Builtin_Clash clashes with the storage location for namespace erc7201:example\.main/,
+    message:
+      /Custom layout for contract Erc7201Builtin_Clash clashes with the storage location for namespace erc7201:example\.main/,
   });
 });
 
