@@ -101,6 +101,11 @@ test('erc7201 builtin base slot different from namespace - no error and no warni
   t.deepEqual(warnings, []);
 });
 
+test('erc7201 builtin accepts a unicode string literal argument', t => {
+  const layout = t.context.extractStorageLayout('Erc7201Builtin_Unicode');
+  t.is(layout.baseSlot, '0x2d3e72b7d91644a80150e2643e65016def7067dc9568719707e7eca1a5dab800');
+});
+
 test('literal base slot with namespace - warning not suppressed', t => {
   const warnings = captureWarnings(() => t.context.extractStorageLayout('Erc7201Builtin_LiteralBase_Warns'));
   t.true(warnings.some(w => w.includes('custom storage layout')));

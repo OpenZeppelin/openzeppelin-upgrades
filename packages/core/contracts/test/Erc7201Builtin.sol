@@ -46,6 +46,13 @@ contract Erc7201Builtin_NoClash_NoWarning layout at erc7201("example.other") {
     uint256 a;
 }
 
+// Unicode string literal as the erc7201 argument — `unicode"..."` is the only way to embed non-ASCII
+// characters in a string literal in Solidity 0.8+, so we have to accept this kind as well as regular
+// string literals.
+contract Erc7201Builtin_Unicode layout at erc7201(unicode"café.main") {
+    uint256 a;
+}
+
 // Literal base slot together with a namespace: the overlap warning still applies (not suppressed).
 contract Erc7201Builtin_LiteralBase_Warns layout at 0x1 {
     /// @custom:storage-location erc7201:example.main

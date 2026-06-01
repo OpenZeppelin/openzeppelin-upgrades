@@ -34,8 +34,10 @@ export function getErc7201BuiltinNamespaceId(node: Expression): string | undefin
     return undefined;
   }
 
+  // Accept both regular and `unicode"..."` string literals; `hex"..."` is type `bytes` and wouldn't
+  // typecheck against the `erc7201(string)` builtin.
   const arg = node.arguments[0];
-  if (arg.nodeType !== 'Literal' || arg.kind !== 'string') {
+  if (arg.nodeType !== 'Literal' || (arg.kind !== 'string' && arg.kind !== 'unicodeString')) {
     return undefined;
   }
 
