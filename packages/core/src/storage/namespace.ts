@@ -196,9 +196,10 @@ function warnIfCustomLayoutAndNamespacesFound(
   origContractDef: ContractDefinition,
 ) {
   if (Object.entries(namespacesWithSrc).length > 0 && origContractDef.storageLayout !== undefined) {
-    // When the base slot is itself an `erc7201(...)` builtin call, it is an ERC-7201 hash and cannot
-    // overlap a namespace unless it is an exact clash, which is reported separately as an error. There
-    // is therefore nothing for the user to manually verify, so suppress the warning.
+    // The warning is meant for users who pick an arbitrary literal slot that could land inside a
+    // namespace's range. When the base slot uses the erc7201 comptime builtin, it relies on the
+    // same collision resistance that namespaces rely on against each other, so suppress the warning;
+    // the tool likewise does not warn when multiple namespaces coexist.
     if (getErc7201BuiltinNamespaceId(origContractDef.storageLayout.baseSlotExpression) !== undefined) {
       return;
     }
