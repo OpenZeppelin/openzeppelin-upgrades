@@ -24,8 +24,8 @@ export function getErc7201BuiltinNamespaceId(node: Expression): string | undefin
     return undefined;
   }
 
-  // Builtins reference a negative magic declaration id (or none). A user-defined function named
-  // `erc7201` would resolve to a real declaration (id >= 0), so reject that to avoid misidentifying it.
+  // A non-negative `referencedDeclaration` points to a user-defined function named `erc7201`, not
+  // the comptime builtin (which uses a negative magic id, or none).
   if (typeof callee.referencedDeclaration === 'number' && callee.referencedDeclaration >= 0) {
     return undefined;
   }
