@@ -55,7 +55,8 @@ export function getErc7201BuiltinNamespaceId(node: Expression): string | undefin
 function unexpectedErc7201BuiltinAst(detail: string): UpgradesError {
   return new UpgradesError(
     `Unexpected AST for \`erc7201(...)\` builtin call: ${detail}`,
-    () => 'Please report this at https://zpl.in/upgrades/report and include the `erc7201(...)` expression from your contract.',
+    () =>
+      'Please report this at https://zpl.in/upgrades/report and include the `erc7201(...)` expression from your contract.',
   );
 }
 
