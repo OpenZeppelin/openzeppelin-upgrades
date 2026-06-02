@@ -6,8 +6,6 @@
 - Support the Solidity 0.8.35 `erc7201` comptime builtin as a `layout at` base slot. ([#1253](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1253))
 - Fix ERC-7201 storage location calculation when the intermediate value has a leading zero nibble or byte. ([#1253](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1253))
 - Update dependencies. ([#1258](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1258))
-  - Bump `minimatch` to `^10.2.5` in `@openzeppelin/upgrades-core`.
-  - Bump `undici` to `^8.3.0` in `@openzeppelin/hardhat-upgrades`.
 
 ## 1.45.0 (2026-05-29)
 
