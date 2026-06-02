@@ -3,7 +3,7 @@
 
 ## 4.0.1 (2026-06-02)
 
-- Update dependencies. ([#1258](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1258))
+- Update dependencies. ([#1255](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1255))
 
 ## 4.0.0 (2026-05-29)
 
