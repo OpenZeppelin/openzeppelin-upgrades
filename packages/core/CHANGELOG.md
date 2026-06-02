@@ -1,9 +1,15 @@
 # Changelog
 
 
+## 1.46.0 (2026-06-02)
+
+- Support the Solidity 0.8.35 `erc7201` comptime builtin as a `layout at` base slot. ([#1253](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1253))
+- Fix ERC-7201 storage location calculation when the intermediate value has a leading zero nibble or byte. ([#1253](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1253))
+
 ## 1.45.0 (2026-05-29)
 
 - Support Hardhat 3 build-info file format for CLI validation. ([#1241](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1241))
+
   - Handle the split `.json` / `.output.json` file format used by Hardhat 3.
   - Improve support for validating build-info files in the CLI across Hardhat 3, Hardhat 2, and Foundry.
   - Improve error handling for Hardhat 3 `.output.json` files.
