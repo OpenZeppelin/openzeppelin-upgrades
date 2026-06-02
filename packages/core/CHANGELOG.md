@@ -1,6 +1,12 @@
 # Changelog
 
 
+## 1.46.1 (2026-06-02)
+
+- Update dependencies. ([#1258](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1258))
+  - Bump `minimatch` to `^10.2.5` in `@openzeppelin/upgrades-core`.
+  - Bump `undici` to `^8.3.0` in `@openzeppelin/hardhat-upgrades`.
+
 ## 1.46.0 (2026-06-02)
 
 - Support the Solidity 0.8.35 `erc7201` comptime builtin as a `layout at` base slot. ([#1253](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1253))

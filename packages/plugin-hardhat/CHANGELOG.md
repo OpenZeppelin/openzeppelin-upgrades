@@ -1,6 +1,14 @@
 # Changelog
 
 
+## 4.0.1 (2026-06-02)
+
+- Update dependencies. ([#1258](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1258))
+  - Bump `minimatch` to `^10.2.5` in `@openzeppelin/upgrades-core`.
+  - Bump `undici` to `^8.3.0` in `@openzeppelin/hardhat-upgrades`.
+- Updated dependencies [[`688ce20`](https://github.com/OpenZeppelin/openzeppelin-upgrades/commit/688ce20e7d429c91eeb21eaf3705cc787f8b0e43)]:
+  - @openzeppelin/upgrades-core@1.46.1
+
 ## 4.0.0 (2026-05-29)
 
 - Migrate to Hardhat 3 with ESM module structure and plugin hooks architecture. ([#1241](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1241))
