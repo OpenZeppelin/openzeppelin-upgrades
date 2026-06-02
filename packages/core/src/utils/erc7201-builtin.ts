@@ -1,4 +1,4 @@
-import { Expression } from 'solidity-ast';
+import { Expression, Literal } from 'solidity-ast';
 import { calculateERC7201StorageLocation } from './erc7201';
 import { normalizeUint256Literal } from './integer-literals';
 import { UpgradesError } from '../error';
@@ -81,7 +81,7 @@ export function resolveBaseSlot(node: Expression): string | undefined {
   return undefined;
 }
 
-function getStringLiteralValue(literal: { value?: string | null }): string {
+function getStringLiteralValue(literal: Literal): string {
   // solc populates `value` for `kind: 'string'`/`'unicodeString'` literals; throw defensively if
   // a future solc ever produces a null/missing `value` for such a literal.
   if (literal.value === undefined || literal.value === null) {
