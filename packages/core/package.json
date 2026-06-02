@@ -33,7 +33,7 @@
     "compile": "tsc -b && yarn compile:contracts",
     "compile:contracts": "hardhat compile",
     "copyfiles": "node scripts/copy-build-info-v5.js && bash scripts/copy-legacy-artifacts.sh",
-    "prepare": "yarn clean && yarn compile && yarn copyfiles",
+    "prepare": "yarn compile && yarn copyfiles",
     "pretest": "tsc -b && hardhat compile --force && yarn copyfiles",
     "test": "ava",
     "test:update-snapshots": "yarn test --update-snapshots",
