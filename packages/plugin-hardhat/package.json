@@ -23,8 +23,8 @@
   },
   "scripts": {
     "clean": "rimraf dist *.tsbuildinfo",
-    "compile": "tsc -b --force && hardhat compile",
-    "prepare": "yarn compile",
+    "compile": "tsc -b && hardhat compile",
+    "prepare": "tsc -b",
     "test": "tsc -b && bash scripts/test.sh",
     "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --",
     "test:examples": "cd examples/BoxTransparent && npm install && npm test && cd ../BoxUUPS && npm install && npm test && cd ../BoxSolidityTests && npm install && npm test"
