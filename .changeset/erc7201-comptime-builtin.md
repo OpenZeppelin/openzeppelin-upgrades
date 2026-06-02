@@ -1,5 +1,0 @@
----
-'@openzeppelin/upgrades-core': minor
----
-
-Support the Solidity 0.8.35 `erc7201` comptime builtin as a `layout at` base slot.
