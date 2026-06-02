@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 4.0.1 (2026-06-02)
+
+- Update dependencies. ([#1255](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1255))
+
 ## 4.0.0 (2026-05-29)
 
 - Migrate to Hardhat 3 with ESM module structure and plugin hooks architecture. ([#1241](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1241))
