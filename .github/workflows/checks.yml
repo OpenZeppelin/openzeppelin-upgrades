@@ -81,7 +81,7 @@ jobs:
     - name: Run coverage
       run: yarn coverage
 
-    - uses: codecov/codecov-action@v5
+    - uses: codecov/codecov-action@v6
 
   update-foundry-submodule-docs:
     if: github.event_name == 'repository_dispatch'
