@@ -8,8 +8,8 @@ import { Node } from 'solidity-ast/node';
 import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
 import { UpgradesError } from '../error';
 import * as versions from 'compare-versions';
-import { normalizeUint256Literal } from '../utils/integer-literals';
 import { calculateERC7201StorageLocation, ERC7201_FORMULA_PREFIX } from '../utils/erc7201';
+import { getErc7201BuiltinNamespaceId, resolveBaseSlot } from '../utils/erc7201-builtin';
 import { logWarning } from '../utils/log';
 
 /**
@@ -175,15 +175,18 @@ function checkCustomLayoutClashWithNamespace(
   contractName: string,
   src: string,
 ) {
-  if (contractDef.storageLayout !== undefined && storageLocation.startsWith(ERC7201_FORMULA_PREFIX)) {
-    const namespaceId = storageLocation.substring(ERC7201_FORMULA_PREFIX.length);
-    const calculatedStorageLocation = calculateERC7201StorageLocation(namespaceId);
-    if (contractDef.storageLayout.baseSlotExpression.nodeType === 'Literal') {
-      const baseSlotNormalized = normalizeUint256Literal(contractDef.storageLayout.baseSlotExpression.value); // TODO: when Solidity supports an erc7201 helper function, also check that for clash
-      if (baseSlotNormalized === calculatedStorageLocation) {
-        throw new CustomLayoutClashWithNamespaceError(storageLocation, contractName, src);
-      }
-    }
+  if (contractDef.storageLayout === undefined || !storageLocation.startsWith(ERC7201_FORMULA_PREFIX)) {
+    return;
+  }
+
+  const namespaceId = storageLocation.substring(ERC7201_FORMULA_PREFIX.length);
+
+  // Resolve the base slot (a numeric literal or an erc7201(...) builtin call) and compare it against
+  // the namespace's computed storage location. This covers `layout at erc7201("<id>")` using the same
+  // id as the namespace, since both resolve to the same hash.
+  const baseSlotNormalized = resolveBaseSlot(contractDef.storageLayout.baseSlotExpression);
+  if (baseSlotNormalized !== undefined && baseSlotNormalized === calculateERC7201StorageLocation(namespaceId)) {
+    throw new CustomLayoutClashWithNamespaceError(storageLocation, contractName, src);
   }
 }
 
@@ -192,8 +195,15 @@ function warnIfCustomLayoutAndNamespacesFound(
   decodeSrc: SrcDecoder,
   origContractDef: ContractDefinition,
 ) {
-  // TODO: when Solidity supports an erc7201 helper function, only give this warning if the custom storage layout is not using the erc7201 helper function
   if (Object.entries(namespacesWithSrc).length > 0 && origContractDef.storageLayout !== undefined) {
+    // The warning is meant for users who pick an arbitrary literal slot that could land inside a
+    // namespace's range. When the base slot uses the erc7201 comptime builtin, it relies on the
+    // same collision resistance that namespaces rely on against each other, so suppress the warning;
+    // the tool likewise does not warn when multiple namespaces coexist.
+    if (getErc7201BuiltinNamespaceId(origContractDef.storageLayout.baseSlotExpression) !== undefined) {
+      return;
+    }
+
     const contractName = origContractDef.canonicalName ?? origContractDef.name;
     logWarning(
       `${decodeSrc(origContractDef.storageLayout)}: Ensure custom storage layout does not overlap with namespaced storage layout.`,
