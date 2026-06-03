@@ -149,8 +149,8 @@ contract UpgradesTest is Test {
         Invoker i = new Invoker();
         try i.validateImplementation("Validations.sol:Unsafe", opts) {
             fail();
-        } catch {
-            // TODO: check error message
+        } catch (bytes memory err) {
+            assertTrue(string(err).contains("Use of delegatecall is not allowed"));
         }
     }
 
@@ -160,8 +160,8 @@ contract UpgradesTest is Test {
         Invoker i = new Invoker();
         try i.validateUpgrade("Validations.sol:LayoutV2_Bad", opts) {
             fail();
-        } catch {
-            // TODO: check error message
+        } catch (bytes memory err) {
+            assertTrue(string(err).contains("Inserted `c`"));
         }
     }
 
@@ -170,8 +170,8 @@ contract UpgradesTest is Test {
         Invoker i = new Invoker();
         try i.validateUpgrade("Validations.sol:LayoutV2_UpgradesFrom_Bad", opts) {
             fail();
-        } catch {
-            // TODO: check error message
+        } catch (bytes memory err) {
+            assertTrue(string(err).contains("Inserted `c`"));
         }
     }
 
@@ -181,8 +181,8 @@ contract UpgradesTest is Test {
         Invoker i = new Invoker();
         try i.validateUpgrade("Validations.sol:NamespacedV2_Bad", opts) {
             fail();
-        } catch {
-            // TODO: check error message
+        } catch (bytes memory err) {
+            assertTrue(string(err).contains("Inserted `c`"));
         }
     }
 
@@ -191,8 +191,8 @@ contract UpgradesTest is Test {
         Invoker i = new Invoker();
         try i.validateUpgrade("Validations.sol:NamespacedV2_UpgradesFrom_Bad", opts) {
             fail();
-        } catch {
-            // TODO: check error message
+        } catch (bytes memory err) {
+            assertTrue(string(err).contains("Inserted `c`"));
         }
     }
 
@@ -213,8 +213,8 @@ contract UpgradesTest is Test {
         // validate upgrade without reference contract - an error is expected from upgrades-core CLI
         try i.validateUpgrade("Validations.sol:NamespacedV2_Ok", opts) {
             fail();
-        } catch {
-            // TODO: check error message
+        } catch (bytes memory err) {
+            assertTrue(string(err).contains("does not specify what contract it upgrades from"));
         }
     }
 
