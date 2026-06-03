@@ -81,7 +81,7 @@ await hre.upgrades.deployProxy(MyContract, []);
 
 **After:**
 ```typescript
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const upgradesApi = await upgrades(hre, connection);
 await upgradesApi.deployProxy(MyContract, []);
 ```
@@ -100,7 +100,7 @@ import hre from 'hardhat';
 import { upgrades } from '@openzeppelin/hardhat-upgrades';
 
 async function main() {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.create();
   const { ethers } = connection;
   const upgradesApi = await upgrades(hre, connection);
   
@@ -121,7 +121,7 @@ import { task } from 'hardhat/config';
 import { upgrades } from '@openzeppelin/hardhat-upgrades';
 
 task('deploy', async (args, hre) => {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.create();
   const { ethers } = connection;
   const upgradesApi = await upgrades(hre, connection);
   const MyContract = await ethers.getContractFactory('MyContract');
@@ -156,7 +156,7 @@ describe('MyContract', () => {
   let ethers;
   
   before(async () => {
-    const connection = await hre.network.connect();
+    const connection = await hre.network.create();
     ({ ethers } = connection);
     upgradesApi = await upgrades(hre, connection);
   });
@@ -173,7 +173,7 @@ describe('MyContract', () => {
 import hre from 'hardhat';
 import { upgrades, defender } from '@openzeppelin/hardhat-upgrades';
 
-const connection = await hre.network.connect();
+const connection = await hre.network.create();
 const { ethers } = connection;
 const upgradesApi = await upgrades(hre, connection);
 const defenderApi = await defender(hre, connection);
@@ -208,7 +208,7 @@ Note that you do not need to include constructor arguments when verifying if you
 - Add `hardhatUpgrades` to `plugins` in `hardhat.config.ts`
 - If using `verify`, add `hardhatVerify` to `plugins`, install `@nomicfoundation/hardhat-verify`, and configure Hardhat's `verify.etherscan.apiKey` setting
 - Replace `import '@openzeppelin/hardhat-upgrades'` → `import { upgrades, defender } from '@openzeppelin/hardhat-upgrades'` in scripts/tests
-- Add `const connection = await hre.network.connect();` (share connection across operations, don't create new ones)
+- Add `const connection = await hre.network.create();` (share connection across operations, don't create new ones)
 - Replace `hre.ethers` → `ethers` from connection (`const { ethers } = connection`)
 - Replace `hre.upgrades.method()` → call methods from `const upgradesApi = await upgrades(hre, connection)`
 - Replace `hre.defender.method()` → call methods from `const defenderApi = await defender(hre, connection)`

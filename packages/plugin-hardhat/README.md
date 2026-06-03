@@ -43,7 +43,7 @@ import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 async function main() {
   // Create connection once and reuse for all operations
-  const connection = await hre.network.connect();
+  const connection = await hre.network.create();
   const { ethers } = connection;
   const upgradesApi = await upgrades(hre, connection);
   
@@ -70,7 +70,7 @@ import hre from "hardhat";
 import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 async function main() {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.create();
   const { ethers } = connection;
   const upgradesApi = await upgrades(hre, connection);
   
@@ -96,7 +96,7 @@ import hre from "hardhat";
 import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 async function main() {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.create();
   const { ethers } = connection;
   const upgradesApi = await upgrades(hre, connection);
   
@@ -122,7 +122,7 @@ import hre from "hardhat";
 import { upgrades } from "@openzeppelin/hardhat-upgrades";
 
 async function main() {
-  const connection = await hre.network.connect();
+  const connection = await hre.network.create();
   const { ethers } = connection;
   const upgradesApi = await upgrades(hre, connection);
   
@@ -154,7 +154,7 @@ describe("Box", function() {
   let ethers;
 
   before(async () => {
-    const connection = await hre.network.connect();
+    const connection = await hre.network.create();
     ({ ethers } = connection);
     upgradesApi = await upgrades(hre, connection);
   });
@@ -184,7 +184,7 @@ describe("Box", function() {
   let ethers;
 
   before(async () => {
-    const connection = await hre.network.connect();
+    const connection = await hre.network.create();
     ({ ethers } = connection);
     upgradesApi = await upgrades(hre, connection);
   });

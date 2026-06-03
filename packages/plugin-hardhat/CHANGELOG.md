@@ -16,7 +16,7 @@
   - **API Changes**:
     - No automatic `hre.upgrades` — call the `upgrades(hre, connection)` factory explicitly.
     - Factory functions (`upgrades`, `defender`) are async and require a network connection.
-    - Network connection must be explicitly created: `const connection = await hre.network.connect()`. Share one connection across operations.
+    - Network connection must be explicitly created: `const connection = await hre.network.create()`. Share one connection across operations.
     - `ethers` now comes from the connection (`const { ethers } = connection`), not `hre.ethers`.
   - **Import Changes**: import factory functions instead of a side-effect import.
     - Before: `import '@openzeppelin/hardhat-upgrades'`
