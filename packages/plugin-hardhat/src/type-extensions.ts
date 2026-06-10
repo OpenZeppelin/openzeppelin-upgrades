@@ -3,6 +3,11 @@ import 'hardhat/types/hre';
 import type { HardhatUpgrades, DefenderHardhatUpgrades } from './types.js';
 import type { ContractFactory } from 'ethers';
 
+// Re-export the types of @nomicfoundation/hardhat-ethers, which this plugin loads as a
+// plugin dependency at runtime, so that `connection.ethers` is recognized by TypeScript
+// without requiring users to register the hardhat-ethers plugin themselves.
+export type * from '@nomicfoundation/hardhat-ethers';
+
 export type ContractTypeOfFactory<F extends ContractFactory> = ReturnType<F['attach']> & ReturnType<F['deploy']>;
 
 export interface HardhatDefenderConfig {

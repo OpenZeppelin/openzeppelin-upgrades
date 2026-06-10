@@ -17,7 +17,7 @@ If upgrading from a previous version, ensure these packages are in your `devDepe
 npm install --save-dev hardhat @nomicfoundation/hardhat-ethers
 ```
 
-> **Using viem?** You can install both `@nomicfoundation/hardhat-ethers` and `@nomicfoundation/hardhat-viem`. The upgrades plugin uses ethers internally; your own scripts and tests can still use viem.
+> **Using viem?** You can install both `@nomicfoundation/hardhat-ethers` and `@nomicfoundation/hardhat-viem`. The upgrades plugin uses ethers internally; your own scripts and tests can still use viem. Note that the plugin's functions take ethers contract factories and return ethers contracts, so use `connection.ethers` when calling them.
 
 ## Migration
 
