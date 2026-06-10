@@ -25,9 +25,10 @@
     "clean": "rimraf dist *.tsbuildinfo",
     "compile": "tsc -b && hardhat compile",
     "prepare": "tsc -b",
-    "test": "tsc -b && bash scripts/test.sh",
+    "test": "tsc -b && tsc --noEmit -p test/types && bash scripts/test.sh",
     "test:watch": "fgbg 'bash scripts/test.sh --watch' 'tsc -b --watch' --",
-    "test:examples": "cd examples/BoxTransparent && npm install && npm test && cd ../BoxUUPS && npm install && npm test && cd ../BoxSolidityTests && npm install && npm test"
+    "test:examples": "cd examples/BoxTransparent && npm install && npm test && cd ../BoxUUPS && npm install && npm test && cd ../BoxSolidityTests && npm install && npm test",
+    "test:types": "tsc -b && tsc --noEmit -p test/types"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.0",
