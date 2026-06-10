@@ -11,7 +11,7 @@
     "@openzeppelin/contracts": "^5.6.1",
     "@openzeppelin/contracts-upgradeable": "^5.6.1",
     "@openzeppelin/foundry-upgrades": "^0.4.1",
-    "@openzeppelin/hardhat-upgrades": "^4.0.0",
+    "@openzeppelin/hardhat-upgrades": "^4.0.2",
     "forge-std": "github:foundry-rs/forge-std#semver:^1.9.5",
     "hardhat": "^3.6.0",
     "tsx": "^4.7.0",
