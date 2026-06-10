@@ -11,7 +11,7 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.2",
     "@openzeppelin/contracts-upgradeable": "^5.6.1",
-    "@openzeppelin/hardhat-upgrades": "@openzeppelin/hardhat-upgrades@4.0.0-alpha.0",
+    "@openzeppelin/hardhat-upgrades": "^4.0.0",
     "ava": "^6.0.0",
     "ethers": "^6.8.1",
     "hardhat": "^3.6.0",
