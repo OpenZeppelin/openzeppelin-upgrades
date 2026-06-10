@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 4.0.2 (2026-06-10)
+
+- Re-export `@nomicfoundation/hardhat-ethers` types so that TypeScript recognizes `connection.ethers` when only this plugin is registered. ([#1275](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1275))
+
 ## 4.0.1 (2026-06-02)
 
 - Update dependencies. ([#1255](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1255))
