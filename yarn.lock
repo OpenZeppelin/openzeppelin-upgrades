@@ -675,10 +675,10 @@
     "@babel/helper-validator-identifier" "^7.24.7"
     to-fast-properties "^2.0.0"
 
-"@bytecodealliance/preview2-shim@0.17.0":
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/@bytecodealliance/preview2-shim/-/preview2-shim-0.17.0.tgz#9bc1cadbb9f86c446c6f579d3431c08a06a6672e"
-  integrity sha512-JorcEwe4ud0x5BS/Ar2aQWOQoFzjq/7jcnxYXCvSMh0oRm0dQXzOA+hqLDBnOMks1LLBA7dmiLLsEBl09Yd6iQ==
+"@bytecodealliance/preview2-shim@^0.18.0":
+  version "0.18.1"
+  resolved "https://registry.yarnpkg.com/@bytecodealliance/preview2-shim/-/preview2-shim-0.18.1.tgz#f87ca9d2d51a75691703e533bddc01d77af19cd2"
+  integrity sha512-8+QEByJTHusG1JkYQNUwOZO0ZvP3zQJD7UVYcyRh8OedKfVls1VuPw/HfSuK0ustslzAkGz7uQCkaBbW+fal9w==
 
 "@changesets/apply-release-plan@^7.0.12":
   version "7.0.12"
@@ -1649,12 +1649,12 @@
     "@nomicfoundation/hardhat-errors" "^3.0.13"
     "@nomicfoundation/hardhat-utils" "^4.1.2"
 
-"@nomicfoundation/slang@^0.18.3":
-  version "0.18.3"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang/-/slang-0.18.3.tgz#976b6c3820081cebf050afbea434038aac9313cc"
-  integrity sha512-YqAWgckqbHM0/CZxi9Nlf4hjk9wUNLC9ngWCWBiqMxPIZmzsVKYuChdlrfeBPQyvQQBoOhbx+7C1005kLVQDZQ==
+"@nomicfoundation/slang@^1.0.0":
+  version "1.3.6"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/slang/-/slang-1.3.6.tgz#70ceb6677907d379e11c27f01bc82a20e0bd95f1"
+  integrity sha512-JMpdXQOZ30+LxciU4/A2SddYfYhA5kbvl/9PQ5dIVQyQovHWNchMny9GoFZzF8pGbkTcWnEo2h2C6zyF+DVr5A==
   dependencies:
-    "@bytecodealliance/preview2-shim" "0.17.0"
+    "@bytecodealliance/preview2-shim" "^0.18.0"
 
 "@nomicfoundation/solidity-analyzer-darwin-arm64@0.1.2":
   version "0.1.2"
