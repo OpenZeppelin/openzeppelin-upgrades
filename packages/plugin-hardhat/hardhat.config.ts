@@ -2,6 +2,7 @@ import type { HardhatUserConfig } from 'hardhat/config';
 import type { SolcUserConfig } from 'hardhat/types/config';
 import hardhatVerify from '@nomicfoundation/hardhat-verify';
 import hardhatEthers from '@nomicfoundation/hardhat-ethers';
+import hardhatViem from '@nomicfoundation/hardhat-viem';
 import hardhatUpgrades from './dist/index.js';
 import { proxyFilesToBuild } from './dist/index.js';
 
@@ -21,7 +22,7 @@ const override: SolcUserConfig = {
 };
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatVerify, hardhatEthers, hardhatUpgrades],
+  plugins: [hardhatVerify, hardhatEthers, hardhatViem, hardhatUpgrades],
   solidity: {
     compilers: [
       {

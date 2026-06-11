@@ -24,6 +24,16 @@ npm install
 npm test
 ```
 
+## BoxViem
+
+Transparent proxy pattern using the viem-based API (`@openzeppelin/hardhat-upgrades/viem`) with `@nomicfoundation/hardhat-viem`. Contracts are identified by name and the returned contract instances are viem contract instances — no ethers code in the project.
+
+```bash
+cd BoxViem
+npm install
+npm test
+```
+
 ## BoxSolidityTests
 
 Solidity test example using `hardhat test solidity` with `@openzeppelin/foundry-upgrades` (FFI enabled).

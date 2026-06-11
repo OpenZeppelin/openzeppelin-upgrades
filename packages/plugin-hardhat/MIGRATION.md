@@ -17,7 +17,7 @@ If upgrading from a previous version, ensure these packages are in your `devDepe
 npm install --save-dev hardhat @nomicfoundation/hardhat-ethers
 ```
 
-> **Using viem?** You can install both `@nomicfoundation/hardhat-ethers` and `@nomicfoundation/hardhat-viem`. The upgrades plugin uses ethers internally; your own scripts and tests can still use viem. Note that the plugin's functions take ethers contract factories and return ethers contracts, so use `connection.ethers` when calling them.
+> **Using viem?** Install `@nomicfoundation/hardhat-viem` and `viem`, register `@nomicfoundation/hardhat-viem` in your config's `plugins` array, and use the viem-based API from `@openzeppelin/hardhat-upgrades/viem`. Its functions take contract names and return viem contract instances, so your scripts and tests never need to touch ethers (`@nomicfoundation/hardhat-ethers` and `ethers` are still installed automatically as peer dependencies for the plugin's internal use). See [Usage with viem](./README.md#usage-with-viem).
 
 ## Migration
 
@@ -204,7 +204,8 @@ Note that you do not need to include constructor arguments when verifying if you
 
 ## Checklist
 
-- Install `@nomicfoundation/hardhat-ethers` — required even if your project uses viem (install both if needed)
+- Install `@nomicfoundation/hardhat-ethers` — required even if your project uses viem (npm installs it automatically as a peer dependency)
+- If your project uses viem, install `@nomicfoundation/hardhat-viem` and `viem`, add `hardhatViem` to `plugins`, and use `import { upgrades } from '@openzeppelin/hardhat-upgrades/viem'` for a fully viem-based API
 - Add `hardhatUpgrades` to `plugins` in `hardhat.config.ts`
 - If using `verify`, add `hardhatVerify` to `plugins`, install `@nomicfoundation/hardhat-verify`, and configure Hardhat's `verify.etherscan.apiKey` setting
 - Replace `import '@openzeppelin/hardhat-upgrades'` → `import { upgrades, defender } from '@openzeppelin/hardhat-upgrades'` in scripts/tests
