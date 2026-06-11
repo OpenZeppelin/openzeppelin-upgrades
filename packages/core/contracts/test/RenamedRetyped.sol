@@ -62,3 +62,78 @@ contract LayoutChangeV2 {
     /// @custom:oz-retyped-from bool
     uint8 b;
 }
+
+contract RenameStructV1 {
+    struct History {
+        Checkpoint[] _checkpoints;
+    }
+
+    struct Checkpoint {
+        uint32 _blockNumber;
+        uint224 _value;
+    }
+
+    History history;
+}
+
+contract RenameStructV2a {
+    struct Trace224 {
+        Checkpoint224[] _checkpoints;
+    }
+
+    struct Checkpoint224 {
+        uint32 _blockNumber;
+        uint224 _value;
+    }
+
+    Trace224 history;
+}
+
+contract RenameStructV2b {
+    struct Trace224 {
+        Checkpoint224[] _checkpoints;
+    }
+
+    struct Checkpoint224 {
+        uint32 _key;
+        uint224 _value;
+    }
+
+    /// @custom:oz-retyped-from RenameStructV1.History
+    Trace224 history;
+}
+
+contract InnerRetypeV1 {
+    struct ProposalCore {
+        BlockNumber key;
+        bool flag;
+    }
+
+    struct BlockNumber {
+        uint32 blockNumber;
+    }
+
+    ProposalCore core;
+}
+
+contract InnerRetypeV2Good {
+    struct ProposalCore {
+        uint256 blockNumber;
+        bool flag;
+    }
+
+    /// @custom:oz-retyped-from InnerRetypeV1.ProposalCore
+    ProposalCore core;
+}
+
+contract InnerRetypeV2Bad {
+    struct ProposalCore {
+        uint16 a;
+        uint224 b;
+        uint16 c;
+        bool flag;
+    }
+
+    /// @custom:oz-retyped-from InnerRetypeV1.ProposalCore
+    ProposalCore core;
+}
