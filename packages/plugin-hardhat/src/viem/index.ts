@@ -11,7 +11,7 @@ import {
   getImplementationAddressFromBeacon,
 } from '@openzeppelin/upgrades-core';
 
-import { assertHardhatViem } from './utils.js';
+import { asAddress, assertHardhatViem } from './utils.js';
 
 /**
  * Factory function to create the viem-based upgrades API for a given HRE.
@@ -87,18 +87,18 @@ export async function upgrades(
     },
     erc1967: {
       getAdminAddress: async (proxyAddress: Address) => {
-        return (await getAdminAddress(ethers.provider, proxyAddress)) as Address;
+        return asAddress(await getAdminAddress(ethers.provider, proxyAddress));
       },
       getImplementationAddress: async (proxyAddress: Address) => {
-        return (await getImplementationAddress(ethers.provider, proxyAddress)) as Address;
+        return asAddress(await getImplementationAddress(ethers.provider, proxyAddress));
       },
       getBeaconAddress: async (proxyAddress: Address) => {
-        return (await getBeaconAddress(ethers.provider, proxyAddress)) as Address;
+        return asAddress(await getBeaconAddress(ethers.provider, proxyAddress));
       },
     },
     beacon: {
       getImplementationAddress: async (beaconAddress: Address) => {
-        return (await getImplementationAddressFromBeacon(ethers.provider, beaconAddress)) as Address;
+        return asAddress(await getImplementationAddressFromBeacon(ethers.provider, beaconAddress));
       },
     },
   };

@@ -26,7 +26,7 @@ npm test
 
 ## BoxViem
 
-Transparent proxy pattern using the viem-based API (`@openzeppelin/hardhat-upgrades/viem`) with `@nomicfoundation/hardhat-viem`. Contracts are identified by name and the returned contract instances are viem contract instances — no ethers code in the project.
+Transparent proxy pattern using the viem-based API (`@openzeppelin/hardhat-upgrades/viem`) with `@nomicfoundation/hardhat-viem`. Contracts are identified by name and the returned contract instances are viem contract instances.
 
 ```bash
 cd BoxViem

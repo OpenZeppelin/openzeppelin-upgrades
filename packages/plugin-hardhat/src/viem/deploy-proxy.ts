@@ -2,12 +2,17 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
 import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/types/artifacts';
 import type { ContractReturnType } from '@nomicfoundation/hardhat-viem/types';
-import type { Address } from 'viem';
 
 import { makeDeployProxy as makeEthersDeployProxy } from '../deploy-proxy.js';
 import type { DeployProxyOptions as EthersDeployProxyOptions } from '../utils/options.js';
 import type { DeployProxyOptions } from './options.js';
-import { getContractFactory, getViemContractAt, toEthersOptions, waitForPendingTransaction } from './utils.js';
+import {
+  asAddress,
+  getContractFactory,
+  getViemContractAt,
+  toEthersOptions,
+  waitForPendingTransaction,
+} from './utils.js';
 
 export interface DeployProxyFunction {
   <ContractName extends StringWithArtifactContractNamesAutocompletion>(
@@ -38,6 +43,6 @@ export function makeDeployProxy(hre: HardhatRuntimeEnvironment, connection: Netw
     const proxy = await ethersDeployProxy(factory, args, toEthersOptions<EthersDeployProxyOptions>(opts));
     await waitForPendingTransaction(proxy);
 
-    return getViemContractAt(connection, contractName, (await proxy.getAddress()) as Address, opts.client);
+    return getViemContractAt(connection, contractName, asAddress(await proxy.getAddress()), opts.client);
   };
 }

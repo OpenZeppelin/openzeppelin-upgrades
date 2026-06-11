@@ -23,7 +23,7 @@ export type ContractAddressOrInstance = Address | { address: Address };
  * The viem-based API requires it to create the contract instances that it returns.
  */
 export function assertHardhatViem(connection: NetworkConnection): void {
-  if ((connection as { viem?: unknown }).viem === undefined) {
+  if (!('viem' in connection)) {
     throw new UpgradesError(
       'The viem-based API requires the @nomicfoundation/hardhat-viem plugin.',
       () =>
@@ -42,6 +42,16 @@ export function getContractAddress(addressOrInstance: ContractAddressOrInstance)
 
 export function isAddress(value: string): value is Address {
   return /^0x[0-9a-fA-F]{40}$/.test(value);
+}
+
+/**
+ * Narrows an address string returned by the internal ethers-based machinery to a viem address.
+ */
+export function asAddress(value: string): Address {
+  if (!isAddress(value)) {
+    throw new Error(`Broken invariant: ${value} is not an address`);
+  }
+  return value;
 }
 
 /**

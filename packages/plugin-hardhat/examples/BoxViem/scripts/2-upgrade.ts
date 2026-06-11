@@ -12,7 +12,7 @@ async function main() {
   const connection = await hre.network.create();
   const upgradesApi = await upgrades(hre, connection);
 
-  const box = await upgradesApi.upgradeProxy(PROXY_ADDRESS as `0x${string}`, 'BoxV2');
+  const box = await upgradesApi.upgradeProxy(PROXY_ADDRESS, 'BoxV2');
 
   console.log('Box upgraded at:', box.address);
 }

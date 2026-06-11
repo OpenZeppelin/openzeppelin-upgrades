@@ -2,12 +2,12 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
 import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/types/artifacts';
 import type { ContractReturnType } from '@nomicfoundation/hardhat-viem/types';
-import type { Address } from 'viem';
 
 import { makeDeployBeaconProxy as makeEthersDeployBeaconProxy } from '../deploy-beacon-proxy.js';
 import type { DeployBeaconProxyOptions as EthersDeployBeaconProxyOptions } from '../utils/options.js';
 import type { DeployBeaconProxyOptions } from './options.js';
 import {
+  asAddress,
   ContractAddressOrInstance,
   getContractAddress,
   getInterfaceFactory,
@@ -58,6 +58,6 @@ export function makeDeployBeaconProxy(
     );
     await waitForPendingTransaction(proxy);
 
-    return getViemContractAt(connection, contractName, (await proxy.getAddress()) as Address, opts.client);
+    return getViemContractAt(connection, contractName, asAddress(await proxy.getAddress()), opts.client);
   };
 }

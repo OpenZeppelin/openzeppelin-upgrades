@@ -1,6 +1,7 @@
 import hre from 'hardhat';
 import { upgrades } from '@openzeppelin/hardhat-upgrades/viem';
 import type { HardhatViemUpgrades, UpgradeableBeaconContract } from '@openzeppelin/hardhat-upgrades/viem';
+import type { ParseAbi } from 'viem';
 
 /**
  * Consumer-style type checks for the viem-based API.
@@ -12,44 +13,20 @@ import type { HardhatViemUpgrades, UpgradeableBeaconContract } from '@openzeppel
  * `@nomicfoundation/hardhat-viem` conventions, with no ethers types in the API surface.
  */
 
-// Simulates the artifact type declarations that Hardhat generates on compile,
-// so that the typed-by-contract-name path can be checked.
-interface Box$Type {
-  readonly _format: 'hh3-artifact-1';
-  readonly contractName: 'Box';
-  readonly sourceName: 'contracts/Box.sol';
-  readonly abi: [
-    {
-      readonly inputs: [{ readonly internalType: 'uint256'; readonly name: 'initialValue'; readonly type: 'uint256' }];
-      readonly name: 'initialize';
-      readonly outputs: [];
-      readonly stateMutability: 'nonpayable';
-      readonly type: 'function';
-    },
-    {
-      readonly inputs: [];
-      readonly name: 'retrieve';
-      readonly outputs: [{ readonly internalType: 'uint256'; readonly name: ''; readonly type: 'uint256' }];
-      readonly stateMutability: 'view';
-      readonly type: 'function';
-    },
-    {
-      readonly inputs: [{ readonly internalType: 'uint256'; readonly name: 'value'; readonly type: 'uint256' }];
-      readonly name: 'store';
-      readonly outputs: [];
-      readonly stateMutability: 'nonpayable';
-      readonly type: 'function';
-    },
-  ];
-  readonly bytecode: '0x';
-  readonly deployedBytecode: '0x';
-  readonly linkReferences: object;
-  readonly deployedLinkReferences: object;
-}
+// Simulates the artifact type declarations that `hardhat compile` generates, which cannot be
+// used here because this check runs in isolation without compiling contracts. Only the `abi`
+// member participates in typing the contract instances by name.
+type BoxAbi = ParseAbi<
+  [
+    'function initialize(uint256 initialValue)',
+    'function retrieve() view returns (uint256)',
+    'function store(uint256 value)',
+  ]
+>;
 
 declare module 'hardhat/types/artifacts' {
   interface ArtifactMap {
-    ['Box']: Box$Type;
+    ['Box']: { abi: BoxAbi };
   }
 }
 
