@@ -13,7 +13,6 @@ import {
   getInterfaceFactory,
   getViemContractAt,
   toEthersOptions,
-  waitForPendingTransaction,
 } from './utils.js';
 
 export interface DeployBeaconProxyFunction {
@@ -56,7 +55,7 @@ export function makeDeployBeaconProxy(
       args,
       toEthersOptions<EthersDeployBeaconProxyOptions>(opts),
     );
-    await waitForPendingTransaction(proxy);
+    await proxy.deploymentTransaction()?.wait();
 
     return getViemContractAt(connection, contractName, asAddress(await proxy.getAddress()), opts.client);
   };

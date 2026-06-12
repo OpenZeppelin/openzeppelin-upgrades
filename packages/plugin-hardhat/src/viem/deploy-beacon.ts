@@ -6,7 +6,7 @@ import { makeDeployBeacon as makeEthersDeployBeacon } from '../deploy-beacon.js'
 import type { DeployBeaconOptions as EthersDeployBeaconOptions } from '../utils/options.js';
 import type { DeployBeaconOptions } from './options.js';
 import { getUpgradeableBeaconContract, UpgradeableBeaconContract } from './upgradeable-beacon.js';
-import { asAddress, getContractFactory, toEthersOptions, waitForPendingTransaction } from './utils.js';
+import { asAddress, getContractFactory, toEthersOptions, waitForAttachedTransaction } from './utils.js';
 
 export type DeployBeaconFunction = (
   contractName: StringWithArtifactContractNamesAutocompletion,
@@ -22,7 +22,7 @@ export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, connection: Net
   ): Promise<UpgradeableBeaconContract> {
     const factory = await getContractFactory(connection, contractName, opts);
     const beacon = await ethersDeployBeacon(factory, toEthersOptions<EthersDeployBeaconOptions>(opts));
-    await waitForPendingTransaction(beacon);
+    await waitForAttachedTransaction(beacon);
 
     return getUpgradeableBeaconContract(connection, asAddress(await beacon.getAddress()), opts.client);
   };

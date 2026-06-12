@@ -32,12 +32,18 @@ test('transferProxyAdminOwnership', async t => {
 
   await upgrades.admin.transferProxyAdminOwnership(greeter.address, newOwner.account.address, deployer, {
     silent: true,
+    gas: 500_000n,
   });
 
   t.is(
     await publicClient.readContract({ address: adminAddress, abi: ownableAbi, functionName: 'owner' }),
     getAddress(newOwner.account.address),
   );
+
+  // The gas option applies to the ownership transfer transaction
+  const block = await publicClient.getBlock({ includeTransactions: true });
+  t.is(block.transactions.length, 1);
+  t.is(block.transactions[0].gas, 500_000n);
 });
 
 test('changeProxyAdmin is not supported by v5 admins', async t => {

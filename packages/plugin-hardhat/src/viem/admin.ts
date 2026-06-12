@@ -7,18 +7,21 @@ import {
   makeChangeProxyAdmin as makeEthersChangeProxyAdmin,
   makeTransferProxyAdminOwnership as makeEthersTransferProxyAdminOwnership,
 } from '../admin.js';
-import { getSigner } from './utils.js';
+import type { EthersDeployOptions } from '../utils/options.js';
+import type { AdminOptions } from './options.js';
+import { getSigner, toEthersOptions } from './utils.js';
 
 export type ChangeAdminFunction = (
   proxyAddress: Address,
   newAdmin: Address,
   walletClient?: WalletClient,
+  opts?: AdminOptions,
 ) => Promise<void>;
 export type TransferProxyAdminOwnershipFunction = (
   proxyAddress: Address,
   newOwner: Address,
   walletClient?: WalletClient,
-  opts?: { silent?: boolean },
+  opts?: AdminOptions & { silent?: boolean },
 ) => Promise<void>;
 
 export function makeChangeProxyAdmin(
@@ -31,8 +34,14 @@ export function makeChangeProxyAdmin(
     proxyAddress: Address,
     newAdmin: Address,
     walletClient?: WalletClient,
+    opts: AdminOptions = {},
   ): Promise<void> {
-    await ethersChangeProxyAdmin(proxyAddress, newAdmin, await getSigner(connection, walletClient));
+    await ethersChangeProxyAdmin(
+      proxyAddress,
+      newAdmin,
+      await getSigner(connection, walletClient),
+      toEthersOptions<EthersDeployOptions>(opts),
+    );
   };
 }
 
@@ -46,8 +55,13 @@ export function makeTransferProxyAdminOwnership(
     proxyAddress: Address,
     newOwner: Address,
     walletClient?: WalletClient,
-    opts: { silent?: boolean } = {},
+    opts: AdminOptions & { silent?: boolean } = {},
   ): Promise<void> {
-    await ethersTransferProxyAdminOwnership(proxyAddress, newOwner, await getSigner(connection, walletClient), opts);
+    await ethersTransferProxyAdminOwnership(
+      proxyAddress,
+      newOwner,
+      await getSigner(connection, walletClient),
+      toEthersOptions<EthersDeployOptions & { silent?: boolean }>(opts),
+    );
   };
 }

@@ -11,7 +11,18 @@ import {
   getImplementationAddressFromBeacon,
 } from '@openzeppelin/upgrades-core';
 
-import { asAddress, assertHardhatViem } from './utils.js';
+import { makeDeployProxy } from './deploy-proxy.js';
+import { makeUpgradeProxy } from './upgrade-proxy.js';
+import { makeValidateImplementation } from './validate-implementation.js';
+import { makeValidateUpgrade } from './validate-upgrade.js';
+import { makeDeployImplementation } from './deploy-implementation.js';
+import { makePrepareUpgrade } from './prepare-upgrade.js';
+import { makeDeployBeacon } from './deploy-beacon.js';
+import { makeDeployBeaconProxy } from './deploy-beacon-proxy.js';
+import { makeUpgradeBeacon } from './upgrade-beacon.js';
+import { makeForceImport } from './force-import.js';
+import { makeChangeProxyAdmin, makeTransferProxyAdminOwnership } from './admin.js';
+import { asAddress, assertRequiredPlugins } from './utils.js';
 
 /**
  * Factory function to create the viem-based upgrades API for a given HRE.
@@ -37,34 +48,7 @@ export async function upgrades(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): Promise<HardhatViemUpgrades> {
-  assertHardhatViem(connection);
-
-  // Dynamic imports for ES modules
-  const [
-    { makeDeployProxy },
-    { makeUpgradeProxy },
-    { makeValidateImplementation },
-    { makeValidateUpgrade },
-    { makeDeployImplementation },
-    { makePrepareUpgrade },
-    { makeDeployBeacon },
-    { makeDeployBeaconProxy },
-    { makeUpgradeBeacon },
-    { makeForceImport },
-    { makeChangeProxyAdmin, makeTransferProxyAdminOwnership },
-  ] = await Promise.all([
-    import('./deploy-proxy.js'),
-    import('./upgrade-proxy.js'),
-    import('./validate-implementation.js'),
-    import('./validate-upgrade.js'),
-    import('./deploy-implementation.js'),
-    import('./prepare-upgrade.js'),
-    import('./deploy-beacon.js'),
-    import('./deploy-beacon-proxy.js'),
-    import('./upgrade-beacon.js'),
-    import('./force-import.js'),
-    import('./admin.js'),
-  ]);
+  assertRequiredPlugins(connection);
 
   // The ERC-1967 and beacon helpers of @openzeppelin/upgrades-core are client-agnostic
   const { ethers } = connection;
@@ -105,22 +89,9 @@ export async function upgrades(
 }
 
 // Types
-export type { HardhatViemUpgrades } from './types.js';
+export type * from './types.js';
 export type { ContractAddressOrInstance } from './utils.js';
 export type * from './options.js';
-
-// Function types
-export type { DeployProxyFunction } from './deploy-proxy.js';
-export type { UpgradeProxyFunction } from './upgrade-proxy.js';
-export type { ValidateImplementationFunction } from './validate-implementation.js';
-export type { ValidateUpgradeFunction } from './validate-upgrade.js';
-export type { DeployImplementationFunction } from './deploy-implementation.js';
-export type { PrepareUpgradeFunction } from './prepare-upgrade.js';
-export type { DeployBeaconFunction } from './deploy-beacon.js';
-export type { DeployBeaconProxyFunction } from './deploy-beacon-proxy.js';
-export type { UpgradeBeaconFunction } from './upgrade-beacon.js';
-export type { ForceImportFunction } from './force-import.js';
-export type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction } from './admin.js';
 
 // UpgradeableBeacon contract helpers
 export { upgradeableBeaconAbi } from './upgradeable-beacon.js';

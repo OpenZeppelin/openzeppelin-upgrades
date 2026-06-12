@@ -5,7 +5,7 @@ set -euo pipefail
 # Guard: the optional viem integration must stay isolated under dist/viem so that the
 # main entry point never references @nomicfoundation/hardhat-viem or viem, which are
 # optional peer dependencies that ethers-only users do not install.
-if grep -rl --include='*.js' --include='*.d.ts' -e '@nomicfoundation/hardhat-viem' -e 'from .viem.' -e 'import(.viem.)' dist | grep -v '^dist/viem/'; then
+if grep -rlE --include='*.js' --include='*.d.ts' -e '@nomicfoundation/hardhat-viem' -e "(from |import\()['\"](\.\.?/)*viem" dist | grep -v '^dist/viem/'; then
   echo "Error: files outside dist/viem reference the optional viem integration (see above)." >&2
   exit 1
 fi

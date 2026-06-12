@@ -15,11 +15,9 @@ test.before(async () => {
 });
 
 test('validateImplementation - invalid', async t => {
-  await t.throwsAsync(
-    () => upgrades.validateImplementation('Invalid'),
-    undefined,
-    'Contract `Invalid` is not upgrade safe',
-  );
+  await t.throwsAsync(() => upgrades.validateImplementation('Invalid'), {
+    message: /Invalid` is not upgrade safe/,
+  });
 });
 
 test('validateImplementation - valid', async t => {
@@ -31,8 +29,7 @@ test('validateUpgrade with contract names', async t => {
 
   await t.throwsAsync(
     () => upgrades.validateUpgrade('contracts/Greeter.sol:GreeterProxiable', 'InvalidProxiable', { kind: 'uups' }),
-    undefined,
-    'Contract `InvalidProxiable` is not upgrade safe',
+    { message: /InvalidProxiable` is not upgrade safe/ },
   );
 });
 
@@ -42,14 +39,12 @@ test('validateUpgrade with proxy address', async t => {
 });
 
 test('invalid deployProxy', async t => {
-  await t.throwsAsync(
-    () => upgrades.deployProxy('Invalid', { kind: 'transparent' }),
-    undefined,
-    'Contract `Invalid` is not upgrade safe',
-  );
+  await t.throwsAsync(() => upgrades.deployProxy('Invalid', { kind: 'transparent' }), {
+    message: /Invalid` is not upgrade safe/,
+  });
 });
 
 test('invalid upgradeProxy', async t => {
   const greeter = await upgrades.deployProxy('Greeter', ['Hola mundo!'], { kind: 'transparent' });
-  await t.throwsAsync(() => upgrades.upgradeProxy(greeter, 'Invalid'), undefined, 'is not upgrade safe');
+  await t.throwsAsync(() => upgrades.upgradeProxy(greeter, 'Invalid'), { message: /is not upgrade safe/ });
 });

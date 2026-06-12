@@ -62,7 +62,7 @@ export type GetTxResponse = {
   getTxResponse?: boolean;
 };
 
-type Initializer = {
+export type Initializer = {
   initializer?: string | false;
 };
 

@@ -13,6 +13,21 @@ import type { UpgradeBeaconFunction } from './upgrade-beacon.js';
 import type { ForceImportFunction } from './force-import.js';
 import type { ChangeAdminFunction, TransferProxyAdminOwnershipFunction } from './admin.js';
 
+export type {
+  DeployProxyFunction,
+  UpgradeProxyFunction,
+  ValidateImplementationFunction,
+  ValidateUpgradeFunction,
+  DeployImplementationFunction,
+  PrepareUpgradeFunction,
+  DeployBeaconFunction,
+  DeployBeaconProxyFunction,
+  UpgradeBeaconFunction,
+  ForceImportFunction,
+  ChangeAdminFunction,
+  TransferProxyAdminOwnershipFunction,
+};
+
 /**
  * The viem-based counterpart of the `HardhatUpgrades` interface. Contracts are identified
  * by their names following `@nomicfoundation/hardhat-viem` conventions, and the returned

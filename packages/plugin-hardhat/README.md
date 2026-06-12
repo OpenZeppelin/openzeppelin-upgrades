@@ -340,7 +340,7 @@ await upgradesApi.upgradeBeacon(beacon, "BoxV2");
 console.log("New implementation:", await beacon.read.implementation());
 ```
 
-Functions that take options accept the same upgrade safety options as the ethers-based API, along with viem-style transaction options: `client` (a `{ public, wallet }` pair of viem clients, where the wallet client signs the plugin's transactions and defaults to the first wallet client), `gas`, `gasPrice`, `maxFeePerGas`, `maxPriorityFeePerGas`, and `libraries` for contracts with external libraries.
+Functions that take options accept the same upgrade safety options as the ethers-based API, along with viem-style transaction options: `client` (a `{ public, wallet }` pair of viem clients, where the wallet client selects the account that signs the plugin's transactions and defaults to the first wallet client — it must be an account managed by the network connection, such as those from `connection.viem.getWalletClients()`), `gas`, `gasPrice`, `maxFeePerGas`, `maxPriorityFeePerGas`, `value`, and `libraries` for contracts with external libraries.
 
 Internally the plugin still uses `@nomicfoundation/hardhat-ethers` (installed automatically as a peer dependency), but this is invisible to the API: inputs and outputs are viem-native throughout. See the [BoxViem example project](./examples/BoxViem) for a complete project.
 

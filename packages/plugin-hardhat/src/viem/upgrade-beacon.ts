@@ -11,7 +11,7 @@ import {
   getContractAddress,
   getContractFactory,
   toEthersOptions,
-  waitForPendingTransaction,
+  waitForAttachedTransaction,
 } from './utils.js';
 
 export type UpgradeBeaconFunction = (
@@ -39,7 +39,7 @@ export function makeUpgradeBeacon(
       factory,
       toEthersOptions<EthersUpgradeBeaconOptions>(opts),
     );
-    await waitForPendingTransaction(upgraded);
+    await waitForAttachedTransaction(upgraded);
 
     return getUpgradeableBeaconContract(connection, beaconAddress, opts.client);
   };

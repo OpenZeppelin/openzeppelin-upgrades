@@ -7,6 +7,12 @@ import type {
 import type { KeyedClient } from '@nomicfoundation/hardhat-viem/types';
 import type { Address } from 'viem';
 
+import type {
+  Initializer,
+  StandaloneOptions as EthersStandaloneOptions,
+  UpgradeProxyOptions as EthersUpgradeProxyOptions,
+} from '../utils/options.js';
+
 /**
  * Options for the transactions sent by the plugin's viem-based API, following
  * `@nomicfoundation/hardhat-viem` conventions.
@@ -14,7 +20,8 @@ import type { Address } from 'viem';
 export type TransactionOptions = {
   /**
    * The clients to use, as in `@nomicfoundation/hardhat-viem`'s configuration objects.
-   * The wallet client signs the transactions sent by the plugin and is the viem counterpart
+   * The wallet client selects the account that signs the transactions sent by the plugin,
+   * which must be an account managed by the network connection, and is the viem counterpart
    * of the contract factory's signer in the ethers-based API. Defaults to the first wallet
    * client from `connection.viem.getWalletClients()`.
    */
@@ -39,6 +46,13 @@ export type TransactionOptions = {
    * The maximum priority fee per gas for the transactions sent by the plugin.
    */
   maxPriorityFeePerGas?: bigint;
+
+  /**
+   * The value to send with the transactions sent by the plugin, e.g. for a payable initializer.
+   * Note that it is applied to every transaction the function sends, including the
+   * implementation deployment if one takes place.
+   */
+  value?: bigint;
 };
 
 /**
@@ -61,23 +75,19 @@ export type LibrariesOption = {
 
 /**
  * Options for functions that can deploy an implementation contract.
+ *
+ * Derived from the ethers-based options, replacing the ethers-typed `txOverrides` with
+ * the viem-style `TransactionOptions`, and excluding the deprecated
+ * `useDeployedImplementation` (use `redeployImplementation` instead).
  */
-export type StandaloneOptions = StandaloneValidationOptions &
-  DeployOpts &
+export type StandaloneOptions = Omit<EthersStandaloneOptions, 'txOverrides' | 'useDeployedImplementation'> &
   TransactionOptions &
-  LibrariesOption & {
-    constructorArgs?: unknown[];
-    redeployImplementation?: 'always' | 'never' | 'onchange';
-  };
+  LibrariesOption;
 
 /**
  * Options for functions that can deploy a new version of an implementation contract for upgrading.
  */
 export type UpgradeOptions = ValidationOptions & StandaloneOptions;
-
-type Initializer = {
-  initializer?: string | false;
-};
 
 export type InitialOwner = {
   initialOwner?: Address;
@@ -88,15 +98,18 @@ export type InitialOwner = {
   unsafeSkipProxyAdminCheck?: boolean;
 };
 
+/**
+ * Options for the admin functions, which send a single transaction with the given wallet client.
+ */
+export type AdminOptions = Omit<TransactionOptions, 'client'>;
+
 export type DeployBeaconProxyOptions = TransactionOptions & DeployOpts & ProxyKindOption & Initializer;
 export type DeployBeaconOptions = StandaloneOptions & InitialOwner;
 export type DeployImplementationOptions = StandaloneOptions;
 export type DeployProxyOptions = StandaloneOptions & Initializer & InitialOwner;
-export type ForceImportOptions = ProxyKindOption & LibrariesOption;
+export type ForceImportOptions = ProxyKindOption & LibrariesOption & Pick<TransactionOptions, 'client'>;
 export type PrepareUpgradeOptions = UpgradeOptions;
 export type UpgradeBeaconOptions = UpgradeOptions;
-export type UpgradeProxyOptions = UpgradeOptions & {
-  call?: { fn: string; args?: unknown[] } | string;
-};
+export type UpgradeProxyOptions = UpgradeOptions & Pick<EthersUpgradeProxyOptions, 'call'>;
 export type ValidateImplementationOptions = StandaloneValidationOptions & LibrariesOption;
 export type ValidateUpgradeOptions = ValidationOptions & LibrariesOption;

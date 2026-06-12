@@ -4,10 +4,11 @@ import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/type
 import type { ContractReturnType, KeyedClient, WalletClient } from '@nomicfoundation/hardhat-viem/types';
 import type { Address } from 'viem';
 import type { ContractFactory, Overrides, Signer, TransactionResponse } from 'ethers';
+import { getAddress } from 'ethers';
 
 import { UpgradesError } from '@openzeppelin/upgrades-core';
 
-import type { Libraries, TransactionOptions } from './options.js';
+import type { Libraries, LibrariesOption, TransactionOptions } from './options.js';
 
 // Load the `connection.viem` type extension of @nomicfoundation/hardhat-viem, which is loaded
 // as a Hardhat plugin by the projects that use this module.
@@ -19,10 +20,17 @@ import type {} from '@nomicfoundation/hardhat-viem';
 export type ContractAddressOrInstance = Address | { address: Address };
 
 /**
- * Asserts that the @nomicfoundation/hardhat-viem plugin is in use for the given connection.
- * The viem-based API requires it to create the contract instances that it returns.
+ * Asserts that the plugins required by the viem-based API are in use for the given connection:
+ * @nomicfoundation/hardhat-viem to create the contract instances that the API returns, and
+ * this plugin itself, which loads @nomicfoundation/hardhat-ethers for the internal machinery.
  */
-export function assertHardhatViem(connection: NetworkConnection): void {
+export function assertRequiredPlugins(connection: NetworkConnection): void {
+  if (connection === undefined || connection === null) {
+    throw new UpgradesError(
+      'A network connection is required.',
+      () => 'Create a connection with `await hre.network.create()` and pass it to this function.',
+    );
+  }
   if (!('viem' in connection)) {
     throw new UpgradesError(
       'The viem-based API requires the @nomicfoundation/hardhat-viem plugin.',
@@ -30,13 +38,19 @@ export function assertHardhatViem(connection: NetworkConnection): void {
         'Install the @nomicfoundation/hardhat-viem and viem packages, and register @nomicfoundation/hardhat-viem in the `plugins` array of your Hardhat config.',
     );
   }
+  if (!('ethers' in connection)) {
+    throw new UpgradesError(
+      'The viem-based API requires the @openzeppelin/hardhat-upgrades plugin.',
+      () => 'Register @openzeppelin/hardhat-upgrades in the `plugins` array of your Hardhat config.',
+    );
+  }
 }
 
 export function getContractAddress(addressOrInstance: ContractAddressOrInstance): Address {
   if (typeof addressOrInstance === 'string') {
-    return addressOrInstance;
+    return asAddress(addressOrInstance);
   } else {
-    return addressOrInstance.address;
+    return asAddress(addressOrInstance.address);
   }
 }
 
@@ -45,13 +59,17 @@ export function isAddress(value: string): value is Address {
 }
 
 /**
- * Narrows an address string returned by the internal ethers-based machinery to a viem address.
+ * Returns the given address as a checksummed viem address, so that the addresses returned by
+ * the viem-based API are consistently checksummed regardless of the caller's input case.
+ * Throws if the value is not an address or has an invalid checksum, like the ethers-based
+ * machinery does when given such a value.
  */
 export function asAddress(value: string): Address {
-  if (!isAddress(value)) {
+  const checksummed = getAddress(value);
+  if (!isAddress(checksummed)) {
     throw new Error(`Broken invariant: ${value} is not an address`);
   }
-  return value;
+  return checksummed;
 }
 
 /**
@@ -68,6 +86,25 @@ export async function getSigner(
 ): Promise<Signer | undefined> {
   if (walletClient === undefined) {
     return undefined;
+  }
+  if (walletClient.account === undefined || walletClient.account === null) {
+    throw new UpgradesError(
+      'The wallet client must have an account.',
+      () =>
+        'Use a wallet client from `connection.viem.getWalletClients()` or `connection.viem.getWalletClient(address)`.',
+    );
+  }
+  // The plugin's transactions are signed by the network connection, so only accounts managed
+  // by the connection are supported. Local accounts (such as those created with viem's
+  // privateKeyToAccount) sign client-side and would fail with an obscure error at send time.
+  if (walletClient.account.type !== 'json-rpc') {
+    throw new UpgradesError(
+      `Wallet clients with '${walletClient.account.type}' accounts are not supported.`,
+      () =>
+        'The plugin signs its transactions through the network connection, so the wallet client must use an account managed by the connection. ' +
+        'Use a wallet client from `connection.viem.getWalletClients()` or `connection.viem.getWalletClient(address)`, ' +
+        'or add the account to the `accounts` of your network configuration.',
+    );
   }
   return connection.ethers.getSigner(walletClient.account.address);
 }
@@ -102,6 +139,19 @@ export async function getInterfaceFactory(
   return connection.ethers.getContractFactory(artifact.abi, '0x', signer);
 }
 
+// The options of the viem-based API that have no ethers equivalent and must not be passed
+// through to the ethers-based machinery. Typed as a record so that adding a member to
+// TransactionOptions or LibrariesOption without handling it here is a compile error.
+const VIEM_ONLY_OPTIONS: Record<keyof (Required<TransactionOptions> & Required<LibrariesOption>), true> = {
+  client: true,
+  gas: true,
+  gasPrice: true,
+  maxFeePerGas: true,
+  maxPriorityFeePerGas: true,
+  value: true,
+  libraries: true,
+};
+
 /**
  * Converts the viem-style transaction options to ethers overrides for the internal
  * ethers-based machinery.
@@ -120,6 +170,9 @@ function toTxOverrides(opts: TransactionOptions): Overrides | undefined {
   if (opts.maxPriorityFeePerGas !== undefined) {
     overrides.maxPriorityFeePerGas = opts.maxPriorityFeePerGas;
   }
+  if (opts.value !== undefined) {
+    overrides.value = opts.value;
+  }
   return Object.keys(overrides).length > 0 ? overrides : undefined;
 }
 
@@ -130,16 +183,20 @@ function toTxOverrides(opts: TransactionOptions): Overrides | undefined {
  */
 export function toEthersOptions<T>(opts: TransactionOptions & { libraries?: Libraries }): T {
   const ethersOptions: Record<string, unknown> = { ...opts };
-  delete ethersOptions.client;
-  delete ethersOptions.libraries;
-  delete ethersOptions.gas;
-  delete ethersOptions.gasPrice;
-  delete ethersOptions.maxFeePerGas;
-  delete ethersOptions.maxPriorityFeePerGas;
+  for (const key of Object.keys(VIEM_ONLY_OPTIONS)) {
+    delete ethersOptions[key];
+  }
   const txOverrides = toTxOverrides(opts);
   if (txOverrides !== undefined) {
-    ethersOptions.txOverrides = txOverrides;
+    // Merge over a txOverrides object that may have been passed through from untyped code,
+    // with the declared viem options taking precedence.
+    const existing = ethersOptions.txOverrides;
+    ethersOptions.txOverrides =
+      typeof existing === 'object' && existing !== null ? { ...existing, ...txOverrides } : txOverrides;
   }
+  // The viem-based API does not support OpenZeppelin Defender, so prevent the
+  // `defender.useDefenderDeploy` Hardhat configuration from enabling it.
+  ethersOptions.useDefenderDeploy = false;
   return ethersOptions as T;
 }
 
@@ -157,18 +214,13 @@ export async function getViemContractAt<ContractName extends StringWithArtifactC
 }
 
 /**
- * Waits for the transaction that the internal ethers-based machinery recorded on a contract
- * instance, so that the viem-based API only returns once the transaction has been mined,
- * like `connection.viem.deployContract` does.
+ * Waits for the transaction that the ethers-based upgrade and beacon functions record on
+ * the returned instance as the untyped `deployTransaction` property, so that the viem-based
+ * API only returns once the transaction has been mined, like `connection.viem.deployContract`
+ * does. For deployments, the wrappers instead await the instance's typed
+ * `deploymentTransaction()` directly.
  */
-export async function waitForPendingTransaction(instance: object): Promise<void> {
-  let tx: TransactionResponse | null | undefined;
-  if ('deploymentTransaction' in instance && typeof instance.deploymentTransaction === 'function') {
-    tx = instance.deploymentTransaction() as TransactionResponse | null;
-  }
-  // upgradeProxy, upgradeBeacon, and deployBeacon record the transaction as a property instead.
-  if (!tx && 'deployTransaction' in instance) {
-    tx = instance.deployTransaction as TransactionResponse | undefined;
-  }
+export async function waitForAttachedTransaction(instance: object): Promise<void> {
+  const tx = (instance as { deployTransaction?: TransactionResponse }).deployTransaction;
   await tx?.wait();
 }

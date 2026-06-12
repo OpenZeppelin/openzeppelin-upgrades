@@ -79,12 +79,20 @@ export async function typeCheck(): Promise<void> {
   await upgradesApi.validateUpgrade('Box', 'Box', { kind: 'transparent' });
   await upgradesApi.validateUpgrade(box.address, 'Box');
 
-  // Admin functions take viem wallet clients
-  await upgradesApi.admin.changeProxyAdmin(box.address, adminAddress, walletClient);
-  await upgradesApi.admin.transferProxyAdminOwnership(box.address, adminAddress, walletClient, { silent: true });
+  // Admin functions take viem wallet clients and transaction options
+  await upgradesApi.admin.changeProxyAdmin(box.address, adminAddress, walletClient, { gas: 500_000n });
+  await upgradesApi.admin.transferProxyAdminOwnership(box.address, adminAddress, walletClient, {
+    silent: true,
+    maxFeePerGas: 1_000_000_000n,
+  });
 
-  // Force import
-  await upgradesApi.forceImport(box.address, 'Box', { kind: 'transparent' });
+  // Transactions can send value, e.g. for payable initializers
+  await upgradesApi.deployProxy('Box', [42n], { value: 1n });
+
+  // Force import takes an address or instance and returns a typed instance
+  const imported = await upgradesApi.forceImport(box.address, 'Box', { kind: 'transparent' });
+  await imported.read.retrieve();
+  await upgradesApi.forceImport(box, 'Box', { client: { wallet: walletClient } });
 
   // The clients are usable as regular viem clients
   await publicClient.getCode({ address });

@@ -44,3 +44,12 @@ test('deployBeaconProxy with beacon address and options overload', async t => {
   const greeter = await upgrades.deployBeaconProxy(beacon.address, 'Greeter', { initializer: false });
   t.is(await greeter.read.greet(), '');
 });
+
+test('upgradeableBeaconAbi matches the UpgradeableBeacon artifact', async t => {
+  // The const ABI exists for typing; it must stay in sync with the artifact that deployBeacon deploys
+  const { createRequire } = await import('node:module');
+  const require = createRequire(import.meta.url);
+  const artifact = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json');
+  const { upgradeableBeaconAbi } = await import('@openzeppelin/hardhat-upgrades/viem');
+  t.deepEqual(JSON.parse(JSON.stringify(upgradeableBeaconAbi)), artifact.abi);
+});

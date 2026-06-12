@@ -42,7 +42,6 @@ test('without unsafeAllow flag', async t => {
         kind: 'uups',
         libraries: { SafeMath: safeMathLib.address },
       }),
-    undefined,
-    'Contract `Token` is not upgrade safe',
+    { message: /TokenProxiable` is not upgrade safe/ },
   );
 });

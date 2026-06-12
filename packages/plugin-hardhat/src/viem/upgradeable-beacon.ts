@@ -2,6 +2,8 @@ import type { NetworkConnection } from 'hardhat/types/network';
 import type { GetContractReturnType, KeyedClient } from '@nomicfoundation/hardhat-viem/types';
 import type { Address } from 'viem';
 
+import { UpgradesError } from '@openzeppelin/upgrades-core';
+
 /**
  * ABI of the UpgradeableBeacon contract from OpenZeppelin Contracts 5.x, which is the beacon
  * that `deployBeacon` deploys. Exposed as a `const` so that the beacon contract instances
@@ -100,8 +102,18 @@ export async function getUpgradeableBeaconContract(
   client?: KeyedClient,
 ): Promise<UpgradeableBeaconContract> {
   const { getContract } = await import('viem');
-  const publicClient = client?.public ?? (await connection.viem.getPublicClient());
-  const walletClient = client?.wallet ?? (await connection.viem.getWalletClients())[0];
+  const [publicClient, walletClient] = await Promise.all([
+    client?.public ?? connection.viem.getPublicClient(),
+    client?.wallet ?? connection.viem.getWalletClients().then(clients => clients[0]),
+  ]);
+  if (walletClient === undefined) {
+    // hardhat-viem's getContractAt fails the same way when the connection has no accounts,
+    // and an instance without a wallet client would contradict the declared contract type.
+    throw new UpgradesError(
+      'No wallet client is available for the beacon contract.',
+      () => 'Provide a wallet client with the `client` option, or configure accounts for the network connection.',
+    );
+  }
   return getContract({
     address,
     abi: upgradeableBeaconAbi,

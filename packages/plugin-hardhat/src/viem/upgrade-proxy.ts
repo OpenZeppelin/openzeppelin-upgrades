@@ -12,7 +12,7 @@ import {
   getContractFactory,
   getViemContractAt,
   toEthersOptions,
-  waitForPendingTransaction,
+  waitForAttachedTransaction,
 } from './utils.js';
 
 export type UpgradeProxyFunction = <ContractName extends StringWithArtifactContractNamesAutocompletion>(
@@ -33,7 +33,7 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, connection: Net
 
     const factory = await getContractFactory(connection, contractName, opts);
     const upgraded = await ethersUpgradeProxy(proxyAddress, factory, toEthersOptions<EthersUpgradeProxyOptions>(opts));
-    await waitForPendingTransaction(upgraded);
+    await waitForAttachedTransaction(upgraded);
 
     return getViemContractAt(connection, contractName, proxyAddress, opts.client);
   };

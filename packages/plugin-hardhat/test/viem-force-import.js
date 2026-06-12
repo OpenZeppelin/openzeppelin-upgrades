@@ -1,7 +1,7 @@
 import test from 'ava';
 import hre from 'hardhat';
 import { createRequire } from 'node:module';
-import { encodeFunctionData } from 'viem';
+import { encodeFunctionData, getAddress } from 'viem';
 
 const require = createRequire(import.meta.url);
 
@@ -28,7 +28,7 @@ test.before(async () => {
 async function deployRaw(artifact, args = []) {
   const hash = await walletClient.deployContract({ abi: artifact.abi, bytecode: artifact.bytecode, args });
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
-  return receipt.contractAddress;
+  return getAddress(receipt.contractAddress);
 }
 
 test('import proxy', async t => {
@@ -69,7 +69,8 @@ test('import implementation', async t => {
   // Deploy an implementation without the plugin, so that it is not in the manifest
   const impl = await connection.viem.deployContract('GreeterV3Proxiable');
 
-  const imported = await upgrades.forceImport(impl.address, 'GreeterV3Proxiable');
-  t.is(imported.address, impl.address);
+  // A viem contract instance can be passed in place of the address
+  const imported = await upgrades.forceImport(impl, 'GreeterV3Proxiable');
+  t.is(imported.address, getAddress(impl.address));
   t.is(await imported.read.version(), 'V3');
 });
