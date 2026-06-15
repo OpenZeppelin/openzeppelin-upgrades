@@ -10,6 +10,23 @@ if grep -rlE --include='*.js' --include='*.d.ts' -e '@nomicfoundation/hardhat-vi
   exit 1
 fi
 
+# Guard: the viem binding (dist/viem) must not import ethers or @nomicfoundation/hardhat-ethers,
+# which are optional peer dependencies that viem-only users do not install. (Matches import
+# statements only, so doc comments mentioning the packages are allowed.)
+if grep -rlE --include='*.js' --include='*.d.ts' -e "@nomicfoundation/hardhat-ethers" -e "(from |import\()['\"]ethers['\"]" dist/viem; then
+  echo "Error: dist/viem references the optional ethers integration (see above)." >&2
+  exit 1
+fi
+
+# Guard: the client-neutral engine (dist/engine) must reference neither client library, so that
+# either flavor can sit on top of it and a single-client install resolves it.
+if grep -rlE --include='*.js' --include='*.d.ts' \
+  -e "@nomicfoundation/hardhat-ethers" -e "@nomicfoundation/hardhat-viem" \
+  -e "(from |import\()['\"]ethers['\"]" -e "(from |import\()['\"]viem['\"]" dist/engine; then
+  echo "Error: dist/engine references a specific client library (see above)." >&2
+  exit 1
+fi
+
 rimraf .openzeppelin
 
 hardhat compile

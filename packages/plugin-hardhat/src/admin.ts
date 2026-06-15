@@ -1,14 +1,14 @@
-import chalk from 'chalk';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
-import type { EthereumProvider } from 'hardhat/types/providers';
+import type { Contract, Signer } from 'ethers';
 
-import { Manifest, getAdminAddress } from '@openzeppelin/upgrades-core';
-import { Contract, Signer } from 'ethers';
-import { EthersDeployOptions, attachProxyAdminV4 } from './utils/index.js';
+import { EthersDeployOptions } from './utils/index.js';
 import { disableDefender } from './defender/utils.js';
-
-const SUCCESS_CHECK = chalk.green('✔') + ' ';
+import { makeEthersBinding } from './ethers-binding.js';
+import {
+  changeProxyAdmin as engineChangeProxyAdmin,
+  transferProxyAdminOwnership as engineTransferProxyAdminOwnership,
+} from './engine/admin.js';
 
 type TransferProxyAdminOwnershipOptions = {
   silent?: boolean;
@@ -41,15 +41,8 @@ export function makeChangeProxyAdmin(
   ) {
     disableDefender(hre, defenderModule, {}, changeProxyAdmin.name);
 
-    const { ethers } = connection;
-    const provider = ethers.provider as unknown as EthereumProvider;
-
-    const proxyAdminAddress = await getAdminAddress(provider, proxyAddress);
-    // Only compatible with v4 admins
-    const admin = await attachProxyAdminV4(connection, proxyAdminAddress, signer);
-
-    const overrides = opts.txOverrides ? [opts.txOverrides] : [];
-    await admin.changeProxyAdmin(proxyAddress, newAdmin, ...overrides);
+    const binding = makeEthersBinding(hre, connection, signer, opts);
+    await engineChangeProxyAdmin(binding, proxyAddress, newAdmin);
   };
 }
 
@@ -66,33 +59,7 @@ export function makeTransferProxyAdminOwnership(
   ) {
     disableDefender(hre, defenderModule, {}, transferProxyAdminOwnership.name);
 
-    const { ethers } = connection;
-    const provider = ethers.provider as unknown as EthereumProvider;
-
-    const proxyAdminAddress = await getAdminAddress(provider, proxyAddress);
-    // Compatible with both v4 and v5 admins since they both have transferOwnership
-    const admin = await attachProxyAdminV4(connection, proxyAdminAddress, signer);
-
-    const overrides = opts.txOverrides ? [opts.txOverrides] : [];
-    await admin.transferOwnership(newOwner, ...overrides);
-
-    if (!opts.silent) {
-      const manifest = await Manifest.forNetwork(provider);
-      const { proxies } = await manifest.read();
-      const adminAddress = await admin.getAddress();
-
-      const affected = [];
-      for (const proxy of proxies) {
-        const controller = await getAdminAddress(provider, proxy.address);
-        if (controller === adminAddress) {
-          affected.push(proxy);
-        }
-      }
-
-      if (affected.length > 0) {
-        console.log(SUCCESS_CHECK + `${affected.length} proxies ownership transferred through proxy admin`);
-        affected.forEach(proxy => console.log(`    - ${proxy.address} (${proxy.kind})`));
-      }
-    }
+    const binding = makeEthersBinding(hre, connection, signer, opts);
+    await engineTransferProxyAdminOwnership(binding, proxyAddress, newOwner, { silent: opts.silent });
   };
 }

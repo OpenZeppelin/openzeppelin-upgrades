@@ -16,12 +16,11 @@ test('throws a helpful error if hardhat-viem is not in use', async t => {
   });
 });
 
-test('throws a helpful error if the hardhat-upgrades plugin is not in use', async t => {
-  // Simulates a connection from a Hardhat config that registers @nomicfoundation/hardhat-viem
-  // but not this plugin, which is what loads @nomicfoundation/hardhat-ethers
+test('does not require @nomicfoundation/hardhat-ethers', async t => {
+  // The viem-based API drives the client-neutral engine through viem, so it no longer depends on
+  // @nomicfoundation/hardhat-ethers being loaded (which is what `connection.ethers` would indicate).
+  // A connection that has viem but no ethers must build the API without throwing.
   const connectionWithoutEthers = { viem: {} };
 
-  await t.throwsAsync(() => upgradesFactory(hre, connectionWithoutEthers), {
-    message: /requires the @openzeppelin\/hardhat-upgrades plugin/,
-  });
+  await t.notThrowsAsync(() => upgradesFactory(hre, connectionWithoutEthers));
 });

@@ -1,35 +1,18 @@
-import 'hardhat/types/config';
 import 'hardhat/types/hre';
 import type { HardhatUpgrades, DefenderHardhatUpgrades } from './types.js';
 import type { ContractFactory } from 'ethers';
 
 // Re-export the types of @nomicfoundation/hardhat-ethers, which this plugin loads as a
 // plugin dependency at runtime, so that `connection.ethers` is recognized by TypeScript
-// without requiring users to register the hardhat-ethers plugin themselves.
+// without requiring users to register the hardhat-ethers plugin themselves. This is the
+// ethers-typed type-extensions module, loaded only from the main and `/ethers` entry points;
+// the neutral Hardhat config augmentations live in `type-extensions-config.ts`.
 export type * from '@nomicfoundation/hardhat-ethers';
 
+// Re-exported for backwards compatibility with importers of these config types.
+export type { HardhatDefenderConfig, NamespacedCompileErrorsRule } from './type-extensions-config.js';
+
 export type ContractTypeOfFactory<F extends ContractFactory> = ReturnType<F['attach']> & ReturnType<F['deploy']>;
-
-export interface HardhatDefenderConfig {
-  apiKey: string;
-  apiSecret: string;
-  useDefenderDeploy?: boolean;
-  network?: string;
-}
-
-export type NamespacedCompileErrorsRule = 'error' | 'warn' | 'ignore';
-
-declare module 'hardhat/types/config' {
-  export interface HardhatUserConfig {
-    defender?: HardhatDefenderConfig;
-    namespacedCompileErrors?: NamespacedCompileErrorsRule;
-  }
-
-  export interface HardhatConfig {
-    defender?: HardhatDefenderConfig;
-    namespacedCompileErrors?: NamespacedCompileErrorsRule;
-  }
-}
 
 declare module 'hardhat/types/hre' {
   export interface HardhatRuntimeEnvironment {

@@ -2,17 +2,10 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
 import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/types/artifacts';
 
-import { makeUpgradeBeacon as makeEthersUpgradeBeacon } from '../upgrade-beacon.js';
-import type { UpgradeBeaconOptions as EthersUpgradeBeaconOptions } from '../utils/options.js';
+import { upgradeBeacon as engineUpgradeBeacon } from '../engine/upgrade-beacon.js';
 import type { UpgradeBeaconOptions } from './options.js';
 import { getUpgradeableBeaconContract, UpgradeableBeaconContract } from './upgradeable-beacon.js';
-import {
-  ContractAddressOrInstance,
-  getContractAddress,
-  getContractFactory,
-  toEthersOptions,
-  waitForAttachedTransaction,
-} from './utils.js';
+import { ContractAddressOrInstance, getContractAddress, getContractInfo, makeBinding } from './utils.js';
 
 export type UpgradeBeaconFunction = (
   beacon: ContractAddressOrInstance,
@@ -24,8 +17,6 @@ export function makeUpgradeBeacon(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): UpgradeBeaconFunction {
-  const ethersUpgradeBeacon = makeEthersUpgradeBeacon(hre, false, connection);
-
   return async function upgradeBeacon(
     beacon: ContractAddressOrInstance,
     contractName: StringWithArtifactContractNamesAutocompletion,
@@ -33,13 +24,9 @@ export function makeUpgradeBeacon(
   ): Promise<UpgradeableBeaconContract> {
     const beaconAddress = getContractAddress(beacon);
 
-    const factory = await getContractFactory(connection, contractName, opts);
-    const upgraded = await ethersUpgradeBeacon(
-      beaconAddress,
-      factory,
-      toEthersOptions<EthersUpgradeBeaconOptions>(opts),
-    );
-    await waitForAttachedTransaction(upgraded);
+    const binding = await makeBinding(hre, connection, opts);
+    const implInfo = await getContractInfo(hre, contractName, opts.libraries);
+    await engineUpgradeBeacon(binding, beaconAddress, implInfo, opts);
 
     return getUpgradeableBeaconContract(connection, beaconAddress, opts.client);
   };

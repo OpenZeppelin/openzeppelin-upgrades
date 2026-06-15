@@ -3,16 +3,14 @@ import type { NetworkConnection } from 'hardhat/types/network';
 import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/types/artifacts';
 import type { ContractReturnType } from '@nomicfoundation/hardhat-viem/types';
 
-import { makeUpgradeProxy as makeEthersUpgradeProxy } from '../upgrade-proxy.js';
-import type { UpgradeProxyOptions as EthersUpgradeProxyOptions } from '../utils/options.js';
+import { upgradeProxy as engineUpgradeProxy } from '../engine/upgrade-proxy.js';
 import type { UpgradeProxyOptions } from './options.js';
 import {
   ContractAddressOrInstance,
   getContractAddress,
-  getContractFactory,
+  getContractInfo,
   getViemContractAt,
-  toEthersOptions,
-  waitForAttachedTransaction,
+  makeBinding,
 } from './utils.js';
 
 export type UpgradeProxyFunction = <ContractName extends StringWithArtifactContractNamesAutocompletion>(
@@ -22,8 +20,6 @@ export type UpgradeProxyFunction = <ContractName extends StringWithArtifactContr
 ) => Promise<ContractReturnType<ContractName>>;
 
 export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): UpgradeProxyFunction {
-  const ethersUpgradeProxy = makeEthersUpgradeProxy(hre, false, connection);
-
   return async function upgradeProxy<ContractName extends StringWithArtifactContractNamesAutocompletion>(
     proxy: ContractAddressOrInstance,
     contractName: ContractName,
@@ -31,9 +27,10 @@ export function makeUpgradeProxy(hre: HardhatRuntimeEnvironment, connection: Net
   ): Promise<ContractReturnType<ContractName>> {
     const proxyAddress = getContractAddress(proxy);
 
-    const factory = await getContractFactory(connection, contractName, opts);
-    const upgraded = await ethersUpgradeProxy(proxyAddress, factory, toEthersOptions<EthersUpgradeProxyOptions>(opts));
-    await waitForAttachedTransaction(upgraded);
+    const binding = await makeBinding(hre, connection, opts);
+    const implInfo = await getContractInfo(hre, contractName, opts.libraries);
+    // The viem binding waits for the upgrade transaction's receipt before returning.
+    await engineUpgradeProxy(binding, proxyAddress, implInfo, opts);
 
     return getViemContractAt(connection, contractName, proxyAddress, opts.client);
   };

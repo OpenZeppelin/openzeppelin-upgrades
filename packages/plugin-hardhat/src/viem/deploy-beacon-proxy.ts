@@ -3,16 +3,15 @@ import type { NetworkConnection } from 'hardhat/types/network';
 import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/types/artifacts';
 import type { ContractReturnType } from '@nomicfoundation/hardhat-viem/types';
 
-import { makeDeployBeaconProxy as makeEthersDeployBeaconProxy } from '../deploy-beacon-proxy.js';
-import type { DeployBeaconProxyOptions as EthersDeployBeaconProxyOptions } from '../utils/options.js';
+import { deployBeaconProxy as engineDeployBeaconProxy } from '../engine/deploy-beacon-proxy.js';
 import type { DeployBeaconProxyOptions } from './options.js';
 import {
   asAddress,
   ContractAddressOrInstance,
+  getAbi,
   getContractAddress,
-  getInterfaceFactory,
   getViemContractAt,
-  toEthersOptions,
+  makeBinding,
 } from './utils.js';
 
 export interface DeployBeaconProxyFunction {
@@ -33,8 +32,6 @@ export function makeDeployBeaconProxy(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): DeployBeaconProxyFunction {
-  const ethersDeployBeaconProxy = makeEthersDeployBeaconProxy(hre, false, connection);
-
   return async function deployBeaconProxy<ContractName extends StringWithArtifactContractNamesAutocompletion>(
     beacon: ContractAddressOrInstance,
     contractName: ContractName,
@@ -46,17 +43,12 @@ export function makeDeployBeaconProxy(
       args = [];
     }
 
-    // The contract name identifies the beacon's current implementation. Only its interface is
-    // used (to encode the initializer call and to attach), so an ABI-only factory is sufficient.
-    const attachTo = await getInterfaceFactory(hre, connection, contractName, opts);
-    const proxy = await ethersDeployBeaconProxy(
-      getContractAddress(beacon),
-      attachTo,
-      args,
-      toEthersOptions<EthersDeployBeaconProxyOptions>(opts),
-    );
-    await proxy.deploymentTransaction()?.wait();
+    const binding = await makeBinding(hre, connection, opts);
+    // The contract name identifies the beacon's current implementation. Only its ABI is used,
+    // to encode the initializer call.
+    const attachToAbi = await getAbi(hre, contractName);
+    const proxyDeployment = await engineDeployBeaconProxy(binding, getContractAddress(beacon), attachToAbi, args, opts);
 
-    return getViemContractAt(connection, contractName, asAddress(await proxy.getAddress()), opts.client);
+    return getViemContractAt(connection, contractName, asAddress(proxyDeployment.address), opts.client);
   };
 }

@@ -12,6 +12,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./ethers": {
+      "types": "./dist/ethers.d.ts",
+      "default": "./dist/ethers.js"
+    },
     "./viem": {
       "types": "./dist/viem/index.d.ts",
       "default": "./dist/viem/index.js"
@@ -62,10 +66,16 @@
     "viem": "^2.30.0"
   },
   "peerDependenciesMeta": {
+    "@nomicfoundation/hardhat-ethers": {
+      "optional": true
+    },
     "@nomicfoundation/hardhat-verify": {
       "optional": true
     },
     "@nomicfoundation/hardhat-viem": {
+      "optional": true
+    },
+    "ethers": {
       "optional": true
     },
     "viem": {

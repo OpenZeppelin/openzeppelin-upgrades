@@ -8,8 +8,26 @@ import {
   getBeaconAddress,
   getImplementationAddressFromBeacon,
   logWarning,
+  UpgradesError,
 } from '@openzeppelin/upgrades-core';
 import { tryRequire } from './try-require.js';
+
+/**
+ * Asserts that @nomicfoundation/hardhat-ethers is in use, since the ethers-flavored API takes
+ * ethers `ContractFactory` inputs and returns ethers contracts. Both packages are optional peer
+ * dependencies, so this turns a missing one into an actionable error instead of a cryptic
+ * `TypeError` reading `provider` of `undefined`.
+ */
+function assertHardhatEthers(connection: NetworkConnection): void {
+  if (!('ethers' in connection) || (connection as { ethers?: unknown }).ethers === undefined) {
+    throw new UpgradesError(
+      'The @openzeppelin/hardhat-upgrades ethers-based API requires @nomicfoundation/hardhat-ethers and ethers.',
+      () =>
+        'Install them with `npm install --save-dev @nomicfoundation/hardhat-ethers ethers` (they are loaded automatically once installed), ' +
+        'or use the viem-based API from `@openzeppelin/hardhat-upgrades/viem`.',
+    );
+  }
+}
 
 /**
  * Factory function to create the upgrades API for a given HRE.
@@ -33,6 +51,7 @@ export async function upgrades(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): Promise<HardhatUpgrades> {
+  assertHardhatEthers(connection);
   warnOnHardhatDefender();
   return await createUpgradesAPI(hre, false, connection);
 }
@@ -59,6 +78,7 @@ export async function defender(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): Promise<DefenderHardhatUpgrades> {
+  assertHardhatEthers(connection);
   warnOnHardhatDefender();
   return await createDefenderAPI(hre, connection);
 }
@@ -95,8 +115,9 @@ async function createUpgradesAPI(
     import('../admin.js'),
   ]);
 
-  // Extract ethers from connection for use in erc1967 and beacon helpers
-  const { ethers } = connection;
+  // The erc1967 and beacon helpers of @openzeppelin/upgrades-core read through the connection's
+  // EIP-1193 provider directly.
+  const provider = connection.provider;
 
   return {
     silenceWarnings,
@@ -116,18 +137,18 @@ async function createUpgradesAPI(
     },
     erc1967: {
       getAdminAddress: async (proxyAddress: string) => {
-        return getAdminAddress(ethers.provider, proxyAddress);
+        return getAdminAddress(provider, proxyAddress);
       },
       getImplementationAddress: async (proxyAddress: string) => {
-        return getImplementationAddress(ethers.provider, proxyAddress);
+        return getImplementationAddress(provider, proxyAddress);
       },
       getBeaconAddress: async (proxyAddress: string) => {
-        return getBeaconAddress(ethers.provider, proxyAddress);
+        return getBeaconAddress(provider, proxyAddress);
       },
     },
     beacon: {
       getImplementationAddress: async (beaconAddress: string) => {
-        return getImplementationAddressFromBeacon(ethers.provider, beaconAddress);
+        return getImplementationAddressFromBeacon(provider, beaconAddress);
       },
     },
   };

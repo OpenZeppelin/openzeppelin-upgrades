@@ -50,8 +50,9 @@ export async function upgrades(
 ): Promise<HardhatViemUpgrades> {
   assertRequiredPlugins(connection);
 
-  // The ERC-1967 and beacon helpers of @openzeppelin/upgrades-core are client-agnostic
-  const { ethers } = connection;
+  // The ERC-1967 and beacon helpers of @openzeppelin/upgrades-core are client-agnostic and read
+  // through the connection's EIP-1193 provider directly, with no ethers dependency.
+  const provider = connection.provider;
 
   return {
     silenceWarnings,
@@ -71,22 +72,27 @@ export async function upgrades(
     },
     erc1967: {
       getAdminAddress: async (proxyAddress: Address) => {
-        return asAddress(await getAdminAddress(ethers.provider, proxyAddress));
+        return asAddress(await getAdminAddress(provider, proxyAddress));
       },
       getImplementationAddress: async (proxyAddress: Address) => {
-        return asAddress(await getImplementationAddress(ethers.provider, proxyAddress));
+        return asAddress(await getImplementationAddress(provider, proxyAddress));
       },
       getBeaconAddress: async (proxyAddress: Address) => {
-        return asAddress(await getBeaconAddress(ethers.provider, proxyAddress));
+        return asAddress(await getBeaconAddress(provider, proxyAddress));
       },
     },
     beacon: {
       getImplementationAddress: async (beaconAddress: Address) => {
-        return asAddress(await getImplementationAddressFromBeacon(ethers.provider, beaconAddress));
+        return asAddress(await getImplementationAddressFromBeacon(provider, beaconAddress));
       },
     },
   };
 }
+
+// Re-export the shared plugin object so that a viem-only project registers it in its Hardhat
+// config (`plugins: [..., hardhatUpgrades]`) by importing from this entry point, without its
+// config ever resolving the main entry point's ethers-flavored type chain.
+export { default } from '../plugin.js';
 
 // Types
 export type * from './types.js';

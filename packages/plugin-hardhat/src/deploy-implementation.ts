@@ -3,8 +3,9 @@ import type { NetworkConnection } from 'hardhat/types/network';
 import type { ContractFactory, ethers } from 'ethers';
 
 import { DeployImplementationOptions } from './utils/index.js';
-import { deployUpgradeableImpl } from './utils/deploy-impl.js';
+import { deployUpgradeableImpl } from './engine/deploy-impl.js';
 import { enableDefender } from './defender/utils.js';
+import { makeEthersBinding, contractInfo, txResponseOf } from './ethers-binding.js';
 
 export type DeployImplementationFunction = (
   ImplFactory: ContractFactory,
@@ -21,12 +22,15 @@ export function makeDeployImplementation(
   return async function deployImplementation(ImplFactory, opts: DeployImplementationOptions = {}) {
     opts = enableDefender(hre, defenderModule, opts);
 
-    const deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts, undefined, connection);
+    const binding = makeEthersBinding(hre, connection, ImplFactory.runner, opts);
+    const deployedImpl = await deployUpgradeableImpl(binding, contractInfo(ImplFactory), opts, undefined);
 
-    if (opts.getTxResponse && deployedImpl.txResponse) {
-      return deployedImpl.txResponse;
-    } else {
-      return deployedImpl.impl;
+    if (opts.getTxResponse) {
+      const txResponse = await txResponseOf(deployedImpl.deployment, connection);
+      if (txResponse) {
+        return txResponse;
+      }
     }
+    return deployedImpl.impl;
   };
 }

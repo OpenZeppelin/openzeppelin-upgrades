@@ -7,11 +7,7 @@ import type {
 import type { KeyedClient } from '@nomicfoundation/hardhat-viem/types';
 import type { Address } from 'viem';
 
-import type {
-  Initializer,
-  StandaloneOptions as EthersStandaloneOptions,
-  UpgradeProxyOptions as EthersUpgradeProxyOptions,
-} from '../utils/options.js';
+import type { Call, Initializer, StandaloneOptions as EngineStandaloneOptions } from '../engine/options.js';
 
 /**
  * Options for the transactions sent by the plugin's viem-based API, following
@@ -80,7 +76,7 @@ export type LibrariesOption = {
  * the viem-style `TransactionOptions`, and excluding the deprecated
  * `useDeployedImplementation` (use `redeployImplementation` instead).
  */
-export type StandaloneOptions = Omit<EthersStandaloneOptions, 'txOverrides' | 'useDeployedImplementation'> &
+export type StandaloneOptions = Omit<EngineStandaloneOptions, 'useDeployedImplementation'> &
   TransactionOptions &
   LibrariesOption;
 
@@ -110,6 +106,6 @@ export type DeployProxyOptions = StandaloneOptions & Initializer & InitialOwner;
 export type ForceImportOptions = ProxyKindOption & LibrariesOption & Pick<TransactionOptions, 'client'>;
 export type PrepareUpgradeOptions = UpgradeOptions;
 export type UpgradeBeaconOptions = UpgradeOptions;
-export type UpgradeProxyOptions = UpgradeOptions & Pick<EthersUpgradeProxyOptions, 'call'>;
+export type UpgradeProxyOptions = UpgradeOptions & { call?: Call };
 export type ValidateImplementationOptions = StandaloneValidationOptions & LibrariesOption;
 export type ValidateUpgradeOptions = ValidationOptions & LibrariesOption;

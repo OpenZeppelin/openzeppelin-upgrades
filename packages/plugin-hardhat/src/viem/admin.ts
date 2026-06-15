@@ -4,12 +4,12 @@ import type { WalletClient } from '@nomicfoundation/hardhat-viem/types';
 import type { Address } from 'viem';
 
 import {
-  makeChangeProxyAdmin as makeEthersChangeProxyAdmin,
-  makeTransferProxyAdminOwnership as makeEthersTransferProxyAdminOwnership,
-} from '../admin.js';
-import type { EthersDeployOptions } from '../utils/options.js';
+  changeProxyAdmin as engineChangeProxyAdmin,
+  transferProxyAdminOwnership as engineTransferProxyAdminOwnership,
+} from '../engine/admin.js';
 import type { AdminOptions } from './options.js';
-import { getSigner, toEthersOptions } from './utils.js';
+import { execOptions, resolveWalletClient } from './utils.js';
+import { makeViemBinding } from './viem-binding.js';
 
 export type ChangeAdminFunction = (
   proxyAddress: Address,
@@ -28,20 +28,15 @@ export function makeChangeProxyAdmin(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): ChangeAdminFunction {
-  const ethersChangeProxyAdmin = makeEthersChangeProxyAdmin(hre, false, connection);
-
   return async function changeProxyAdmin(
     proxyAddress: Address,
     newAdmin: Address,
     walletClient?: WalletClient,
     opts: AdminOptions = {},
   ): Promise<void> {
-    await ethersChangeProxyAdmin(
-      proxyAddress,
-      newAdmin,
-      await getSigner(connection, walletClient),
-      toEthersOptions<EthersDeployOptions>(opts),
-    );
+    const wc = await resolveWalletClient(connection, walletClient);
+    const binding = makeViemBinding(hre, connection, wc, execOptions(opts));
+    await engineChangeProxyAdmin(binding, proxyAddress, newAdmin);
   };
 }
 
@@ -49,19 +44,14 @@ export function makeTransferProxyAdminOwnership(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): TransferProxyAdminOwnershipFunction {
-  const ethersTransferProxyAdminOwnership = makeEthersTransferProxyAdminOwnership(hre, false, connection);
-
   return async function transferProxyAdminOwnership(
     proxyAddress: Address,
     newOwner: Address,
     walletClient?: WalletClient,
     opts: AdminOptions & { silent?: boolean } = {},
   ): Promise<void> {
-    await ethersTransferProxyAdminOwnership(
-      proxyAddress,
-      newOwner,
-      await getSigner(connection, walletClient),
-      toEthersOptions<EthersDeployOptions & { silent?: boolean }>(opts),
-    );
+    const wc = await resolveWalletClient(connection, walletClient);
+    const binding = makeViemBinding(hre, connection, wc, execOptions(opts));
+    await engineTransferProxyAdminOwnership(binding, proxyAddress, newOwner, { silent: opts.silent });
   };
 }

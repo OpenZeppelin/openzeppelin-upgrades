@@ -4,19 +4,9 @@ import type { NetworkConnection } from 'hardhat/types/network';
 import { ContractFactory } from 'ethers';
 
 import { ContractAddressOrInstance, getContractAddress } from './utils/index.js';
-import {
-  getBeaconAddress,
-  isBeaconProxy,
-  isTransparentOrUUPSProxy,
-  isBeacon,
-  assertUpgradeSafe,
-  assertStorageUpgradeSafe,
-  ValidationOptions,
-  inferProxyKind,
-  ValidateUpdateRequiresKindError,
-} from '@openzeppelin/upgrades-core';
-import { validateBeaconImpl, validateImpl, validateProxyImpl } from './utils/validate-impl.js';
-import { getDeployData } from './utils/deploy-impl.js';
+import { ValidationOptions } from '@openzeppelin/upgrades-core';
+import { makeEthersBinding, contractInfo } from './ethers-binding.js';
+import { validateUpgrade as engineValidateUpgrade } from './engine/validate.js';
 
 export interface ValidateUpgradeFunction {
   (origImplFactory: ContractFactory, newImplFactory: ContractFactory, opts?: ValidationOptions): Promise<void>;
@@ -36,36 +26,19 @@ export function makeValidateUpgrade(
     newImplFactory: ContractFactory,
     opts: ValidationOptions = {},
   ) {
+    const binding = makeEthersBinding(hre, connection, newImplFactory.runner, opts);
+    const newImplInfo = contractInfo(newImplFactory);
+
     if (referenceAddressOrImplFactory instanceof ContractFactory) {
-      const origDeployData = await getDeployData(hre, referenceAddressOrImplFactory, opts, connection);
-      if (opts.kind === undefined) {
-        opts.kind = inferProxyKind(origDeployData.validations, origDeployData.version);
-      }
-
-      const newDeployData = await getDeployData(hre, newImplFactory, opts, connection);
-      assertUpgradeSafe(newDeployData.validations, newDeployData.version, newDeployData.fullOpts);
-
-      if (opts.unsafeSkipStorageCheck !== true) {
-        assertStorageUpgradeSafe(origDeployData.layout, newDeployData.layout, newDeployData.fullOpts);
-      }
+      await engineValidateUpgrade(
+        binding,
+        { kind: 'info', info: contractInfo(referenceAddressOrImplFactory) },
+        newImplInfo,
+        opts,
+      );
     } else {
       const referenceAddress = await getContractAddress(referenceAddressOrImplFactory);
-      const { ethers } = connection;
-      const provider = ethers.provider;
-      const deployData = await getDeployData(hre, newImplFactory, opts, connection);
-      if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
-        await validateProxyImpl(deployData, opts, referenceAddress);
-      } else if (await isBeaconProxy(provider, referenceAddress)) {
-        const beaconAddress = await getBeaconAddress(provider, referenceAddress);
-        await validateBeaconImpl(deployData, opts, beaconAddress);
-      } else if (await isBeacon(provider, referenceAddress)) {
-        await validateBeaconImpl(deployData, opts, referenceAddress);
-      } else {
-        if (opts.kind === undefined) {
-          throw new ValidateUpdateRequiresKindError();
-        }
-        await validateImpl(deployData, opts, referenceAddress);
-      }
+      await engineValidateUpgrade(binding, { kind: 'address', address: referenceAddress }, newImplInfo, opts);
     }
   };
 }

@@ -1,31 +1,24 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
+import type { ContractFactory, ethers } from 'ethers';
 
-import type { ContractFactory } from 'ethers';
-
-import {
-  ContractAddressOrInstance,
-  getContractAddress,
-  deployProxyImpl,
-  deployBeaconImpl,
-  PrepareUpgradeOptions,
-} from './utils/index.js';
-import {
-  getBeaconAddress,
-  isBeaconProxy,
-  isTransparentOrUUPSProxy,
-  isBeacon,
-  PrepareUpgradeRequiresKindError,
-} from '@openzeppelin/upgrades-core';
+import { ContractAddressOrInstance, getContractAddress, PrepareUpgradeOptions } from './utils/index.js';
 import { DeployImplementationResponse } from './deploy-implementation.js';
 import { enableDefender } from './defender/utils.js';
-import { deployUpgradeableImpl, DeployedImpl } from './utils/deploy-impl.js';
+import { deployImplForUpgrade as engineDeployImplForUpgrade } from './engine/prepare-upgrade.js';
+import { makeEthersBinding, contractInfo, txResponseOf } from './ethers-binding.js';
 
 export type PrepareUpgradeFunction = (
   referenceAddressOrContract: ContractAddressOrInstance,
   ImplFactory: ContractFactory,
   opts?: PrepareUpgradeOptions,
 ) => Promise<DeployImplementationResponse>;
+
+/** Implementation deployment for an upgrade, with the ethers transaction response for `getTxResponse`. */
+export interface DeployedImpl {
+  impl: string;
+  txResponse?: ethers.TransactionResponse;
+}
 
 export function makePrepareUpgrade(
   hre: HardhatRuntimeEnvironment,
@@ -53,22 +46,9 @@ export async function deployImplForUpgrade(
   connection: NetworkConnection,
 ): Promise<DeployedImpl> {
   const referenceAddress = await getContractAddress(referenceAddressOrContract);
-  const { ethers } = connection;
-  const provider = ethers.provider;
+  const binding = makeEthersBinding(hre, connection, ImplFactory.runner, opts);
+  const deployedImpl = await engineDeployImplForUpgrade(binding, referenceAddress, contractInfo(ImplFactory), opts);
 
-  let deployedImpl;
-  if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
-    deployedImpl = await deployProxyImpl(hre, ImplFactory, opts, referenceAddress, connection);
-  } else if (await isBeaconProxy(provider, referenceAddress)) {
-    const beaconAddress = await getBeaconAddress(provider, referenceAddress);
-    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, beaconAddress, connection);
-  } else if (await isBeacon(provider, referenceAddress)) {
-    deployedImpl = await deployBeaconImpl(hre, ImplFactory, opts, referenceAddress, connection);
-  } else {
-    if (opts.kind === undefined) {
-      throw new PrepareUpgradeRequiresKindError();
-    }
-    deployedImpl = await deployUpgradeableImpl(hre, ImplFactory, opts, referenceAddress, connection);
-  }
-  return deployedImpl;
+  const txResponse = opts.getTxResponse ? await txResponseOf(deployedImpl.deployment, connection) : undefined;
+  return { impl: deployedImpl.impl, txResponse };
 }

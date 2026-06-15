@@ -2,16 +2,9 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
 import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/types/artifacts';
 
-import { makeValidateUpgrade as makeEthersValidateUpgrade } from '../validate-upgrade.js';
-import type { ValidateUpgradeOptions as EthersValidateUpgradeOptions } from '../utils/options.js';
+import { validateUpgrade as engineValidateUpgrade } from '../engine/validate.js';
 import type { ValidateUpgradeOptions } from './options.js';
-import {
-  ContractAddressOrInstance,
-  getContractAddress,
-  getContractFactory,
-  isAddress,
-  toEthersOptions,
-} from './utils.js';
+import { ContractAddressOrInstance, getContractAddress, getContractInfo, isAddress, makeReadBinding } from './utils.js';
 
 export interface ValidateUpgradeFunction {
   (
@@ -30,22 +23,25 @@ export function makeValidateUpgrade(
   hre: HardhatRuntimeEnvironment,
   connection: NetworkConnection,
 ): ValidateUpgradeFunction {
-  const ethersValidateUpgrade = makeEthersValidateUpgrade(hre, connection);
-
   return async function validateUpgrade(
     reference: StringWithArtifactContractNamesAutocompletion | ContractAddressOrInstance,
     newContractName: StringWithArtifactContractNamesAutocompletion,
     opts: ValidateUpgradeOptions = {},
   ): Promise<void> {
-    const newImplFactory = await getContractFactory(connection, newContractName, opts);
-    const ethersOpts = toEthersOptions<EthersValidateUpgradeOptions>(opts);
+    const binding = await makeReadBinding(hre, connection);
+    const newImplInfo = await getContractInfo(hre, newContractName, opts.libraries);
 
     if (typeof reference === 'string' && !isAddress(reference)) {
-      // The reference is a contract name
-      const origImplFactory = await getContractFactory(connection, reference, opts);
-      await ethersValidateUpgrade(origImplFactory, newImplFactory, ethersOpts);
+      // The reference is a contract name (contracts-only form)
+      const origInfo = await getContractInfo(hre, reference, opts.libraries);
+      await engineValidateUpgrade(binding, { kind: 'info', info: origInfo }, newImplInfo, opts);
     } else {
-      await ethersValidateUpgrade(getContractAddress(reference), newImplFactory, ethersOpts);
+      await engineValidateUpgrade(
+        binding,
+        { kind: 'address', address: getContractAddress(reference) },
+        newImplInfo,
+        opts,
+      );
     }
   };
 }

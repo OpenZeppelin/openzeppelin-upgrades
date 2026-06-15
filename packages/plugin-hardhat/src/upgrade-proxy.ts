@@ -1,26 +1,14 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
+import type { ContractFactory, TransactionResponse } from 'ethers';
 
-import type { ethers, ContractFactory, Signer } from 'ethers';
 import debug from './utils/debug.js';
-import { getAdminAddress, getCode, getUpgradeInterfaceVersion, isEmptySlot } from '@openzeppelin/upgrades-core';
-
-import {
-  UpgradeProxyOptions,
-  deployProxyImpl,
-  getContractAddress,
-  ContractAddressOrInstance,
-  getSigner,
-} from './utils/index.js';
+import { UpgradeProxyOptions, getContractAddress, ContractAddressOrInstance } from './utils/index.js';
 import { disableDefender } from './defender/utils.js';
 import { attach } from './utils/ethers.js';
-import {
-  attachITransparentUpgradeableProxyV4,
-  attachITransparentUpgradeableProxyV5,
-  attachProxyAdminV4,
-  attachProxyAdminV5,
-} from './utils/attach-abi.js';
 import { ContractTypeOfFactory } from './type-extensions.js';
+import { makeEthersBinding, contractInfo } from './ethers-binding.js';
+import { upgradeProxy as engineUpgradeProxy } from './engine/upgrade-proxy.js';
 
 export type UpgradeFunction = <F extends ContractFactory>(
   proxy: ContractAddressOrInstance,
@@ -43,85 +31,12 @@ export function makeUpgradeProxy(
 
     const proxyAddress = await getContractAddress(proxy);
 
-    const { impl: nextImpl } = await deployProxyImpl(hre, ImplFactory, opts, proxyAddress, connection);
-    // upgrade kind is inferred above
-    const upgradeTo = await getUpgrader(proxyAddress, opts, getSigner(ImplFactory.runner));
-    const call = encodeCall(ImplFactory, opts.call);
-    const upgradeTx = await upgradeTo(nextImpl, call);
+    const binding = makeEthersBinding(hre, connection, ImplFactory.runner, opts);
+    const { sent } = await engineUpgradeProxy(binding, proxyAddress, contractInfo(ImplFactory), opts, log);
 
     const inst = attach(ImplFactory, proxyAddress);
     // @ts-ignore Won't be readonly because inst was created through attach.
-    inst.deployTransaction = upgradeTx;
+    inst.deployTransaction = sent.txResponse as TransactionResponse | undefined;
     return inst as ContractTypeOfFactory<F>;
   };
-
-  type Upgrader = (nextImpl: string, call?: string) => Promise<ethers.TransactionResponse>;
-
-  async function getUpgrader(proxyAddress: string, opts: UpgradeProxyOptions, signer?: Signer): Promise<Upgrader> {
-    const { ethers } = connection;
-    const provider = ethers.provider;
-
-    const adminAddress = await getAdminAddress(provider, proxyAddress);
-    const adminBytecode = await getCode(provider, adminAddress);
-
-    const overrides = opts.txOverrides ? [opts.txOverrides] : [];
-
-    if (isEmptySlot(adminAddress) || adminBytecode === '0x') {
-      // No admin contract: use ITransparentUpgradeableProxy to get proxiable interface
-      const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, proxyAddress, log);
-      switch (upgradeInterfaceVersion) {
-        case '5.0.0': {
-          const proxy = await attachITransparentUpgradeableProxyV5(connection, proxyAddress, signer);
-          return (nextImpl, call) => proxy.upgradeToAndCall(nextImpl, call ?? '0x', ...overrides);
-        }
-        default: {
-          if (upgradeInterfaceVersion !== undefined) {
-            // Log as debug if the interface version is an unknown string.
-            // Do not throw an error because this could be caused by a fallback function.
-            log(
-              `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy at ${proxyAddress}. Expected 5.0.0`,
-            );
-          }
-          const proxy = await attachITransparentUpgradeableProxyV4(connection, proxyAddress, signer);
-          return (nextImpl, call) =>
-            call ? proxy.upgradeToAndCall(nextImpl, call, ...overrides) : proxy.upgradeTo(nextImpl, ...overrides);
-        }
-      }
-    } else {
-      // Admin contract: redirect upgrade call through it
-      const upgradeInterfaceVersion = await getUpgradeInterfaceVersion(provider, adminAddress, log);
-      switch (upgradeInterfaceVersion) {
-        case '5.0.0': {
-          const admin = await attachProxyAdminV5(connection, adminAddress, signer);
-          return (nextImpl, call) => admin.upgradeAndCall(proxyAddress, nextImpl, call ?? '0x', ...overrides);
-        }
-        default: {
-          if (upgradeInterfaceVersion !== undefined) {
-            // Log as debug if the interface version is an unknown string.
-            // Do not throw an error because this could be caused by a fallback function.
-            log(
-              `Unknown UPGRADE_INTERFACE_VERSION ${upgradeInterfaceVersion} for proxy admin at ${adminAddress}. Expected 5.0.0`,
-            );
-          }
-          const admin = await attachProxyAdminV4(connection, adminAddress, signer);
-          return (nextImpl, call) =>
-            call
-              ? admin.upgradeAndCall(proxyAddress, nextImpl, call, ...overrides)
-              : admin.upgrade(proxyAddress, nextImpl, ...overrides);
-        }
-      }
-    }
-  }
-}
-
-function encodeCall(factory: ContractFactory, call: UpgradeProxyOptions['call']): string | undefined {
-  if (!call) {
-    return undefined;
-  }
-
-  if (typeof call === 'string') {
-    call = { fn: call };
-  }
-
-  return factory.interface.encodeFunctionData(call.fn, call.args ?? []);
 }

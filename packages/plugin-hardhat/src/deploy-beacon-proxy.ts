@@ -2,30 +2,14 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
 import { ContractFactory } from 'ethers';
 
-import {
-  Manifest,
-  logWarning,
-  ProxyDeployment,
-  isBeacon,
-  DeployBeaconProxyUnsupportedError,
-  DeployBeaconProxyKindError,
-  UpgradesError,
-  RemoteDeploymentId,
-} from '@openzeppelin/upgrades-core';
+import { UpgradesError } from '@openzeppelin/upgrades-core';
 
-import {
-  DeployBeaconProxyOptions,
-  deploy,
-  DeployTransaction,
-  getBeaconProxyFactory,
-  ContractAddressOrInstance,
-  getContractAddress,
-  getInitializerData,
-  getSigner,
-} from './utils/index.js';
+import { DeployBeaconProxyOptions, ContractAddressOrInstance, getContractAddress } from './utils/index.js';
 import { enableDefender } from './defender/utils.js';
 import { getContractInstance } from './utils/contract-instance.js';
 import { ContractTypeOfFactory } from './type-extensions.js';
+import { makeEthersBinding, contractInfo } from './ethers-binding.js';
+import { deployBeaconProxy as engineDeployBeaconProxy } from './engine/deploy-beacon-proxy.js';
 
 export interface DeployBeaconProxyFunction {
   <F extends ContractFactory>(
@@ -65,39 +49,15 @@ export function makeDeployBeaconProxy(
 
     opts = enableDefender(hre, defenderModule, opts);
 
-    const { ethers } = connection;
-    const provider = ethers.provider;
-    const manifest = await Manifest.forNetwork(provider);
-
-    if (opts.kind !== undefined && opts.kind !== 'beacon') {
-      throw new DeployBeaconProxyKindError(opts.kind);
-    }
-    opts.kind = 'beacon';
-
+    const binding = makeEthersBinding(hre, connection, attachTo.runner, opts);
     const beaconAddress = await getContractAddress(beacon);
-
-    const isBeaconResult = await isBeacon(provider as any, beaconAddress);
-    if (!isBeaconResult) {
-      throw new DeployBeaconProxyUnsupportedError(beaconAddress);
-    }
-
-    const data = getInitializerData(attachTo.interface, args, opts.initializer);
-
-    if (await manifest.getAdmin()) {
-      logWarning(`A proxy admin was previously deployed on this network`, [
-        `This is not natively used with the current kind of proxy ('beacon').`,
-        `Changes to the admin will have no effect on this new proxy.`,
-      ]);
-    }
-
-    const BeaconProxyFactory =
-      opts.proxyFactory || (await getBeaconProxyFactory(connection, getSigner(attachTo.runner)));
-    const proxyDeployment: Required<ProxyDeployment> & DeployTransaction & RemoteDeploymentId = Object.assign(
-      { kind: opts.kind },
-      await (opts.deployFunction || deploy)(hre, opts, BeaconProxyFactory, beaconAddress, data),
+    const proxyDeployment = await engineDeployBeaconProxy(
+      binding,
+      beaconAddress,
+      contractInfo(attachTo).abi,
+      args,
+      opts,
     );
-
-    await manifest.addProxy(proxyDeployment);
 
     return getContractInstance(hre, attachTo, opts, proxyDeployment);
   };

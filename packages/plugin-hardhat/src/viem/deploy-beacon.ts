@@ -2,11 +2,10 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
 import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/types/artifacts';
 
-import { makeDeployBeacon as makeEthersDeployBeacon } from '../deploy-beacon.js';
-import type { DeployBeaconOptions as EthersDeployBeaconOptions } from '../utils/options.js';
+import { deployBeacon as engineDeployBeacon } from '../engine/deploy-beacon.js';
 import type { DeployBeaconOptions } from './options.js';
 import { getUpgradeableBeaconContract, UpgradeableBeaconContract } from './upgradeable-beacon.js';
-import { asAddress, getContractFactory, toEthersOptions, waitForAttachedTransaction } from './utils.js';
+import { asAddress, getContractInfo, makeBinding } from './utils.js';
 
 export type DeployBeaconFunction = (
   contractName: StringWithArtifactContractNamesAutocompletion,
@@ -14,16 +13,14 @@ export type DeployBeaconFunction = (
 ) => Promise<UpgradeableBeaconContract>;
 
 export function makeDeployBeacon(hre: HardhatRuntimeEnvironment, connection: NetworkConnection): DeployBeaconFunction {
-  const ethersDeployBeacon = makeEthersDeployBeacon(hre, false, connection);
-
   return async function deployBeacon(
     contractName: StringWithArtifactContractNamesAutocompletion,
     opts: DeployBeaconOptions = {},
   ): Promise<UpgradeableBeaconContract> {
-    const factory = await getContractFactory(connection, contractName, opts);
-    const beacon = await ethersDeployBeacon(factory, toEthersOptions<EthersDeployBeaconOptions>(opts));
-    await waitForAttachedTransaction(beacon);
+    const binding = await makeBinding(hre, connection, opts);
+    const implInfo = await getContractInfo(hre, contractName, opts.libraries);
+    const beaconDeployment = await engineDeployBeacon(binding, implInfo, opts);
 
-    return getUpgradeableBeaconContract(connection, asAddress(await beacon.getAddress()), opts.client);
+    return getUpgradeableBeaconContract(connection, asAddress(beaconDeployment.address), opts.client);
   };
 }
