@@ -89,9 +89,8 @@ export async function upgrades(
   };
 }
 
-// Re-export the shared plugin object so that a viem-only project registers it in its Hardhat
-// config (`plugins: [..., hardhatUpgrades]`) by importing from this entry point, without its
-// config ever resolving the main entry point's ethers-flavored type chain.
+// Re-export the plugin object so a viem-only project can register it by importing from this entry
+// point, instead of the root entry whose types reference @nomicfoundation/hardhat-ethers.
 export { default } from '../plugin.js';
 
 // Types

@@ -9,9 +9,8 @@ const BeaconProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin
 const UpgradeableBeacon = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/beacon/UpgradeableBeacon.sol/UpgradeableBeacon.json');
 const TransparentUpgradeableProxy = require('@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json');
 
-// These ethers proxy/beacon factory builders are retained for the ethers binding (to attach to a
-// deployed beacon) and for tests that construct proxy factories directly. The engine itself
-// deploys proxies and beacons from the vendored artifacts via `src/engine/artifacts.ts`.
+// getProxyFactory, getTransparentUpgradeableProxyFactory, and getBeaconProxyFactory are used only
+// by the test suite; the plugin itself uses getUpgradeableBeaconFactory to attach to a beacon.
 
 export async function getProxyFactory(connection: NetworkConnection, signer?: Signer): Promise<ContractFactory> {
   const { ethers } = connection;

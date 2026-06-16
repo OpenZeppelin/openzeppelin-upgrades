@@ -9,10 +9,9 @@ const noopPlugin: HardhatPlugin = {
 };
 
 /**
- * The shared Hardhat plugin object, registered in the `plugins` array of a Hardhat config. It is
- * deliberately defined in its own module with a client-neutral declaration chain (it only
- * side-effect-imports the neutral config type extensions), so that importing it — including from
- * the `/viem` entry point — never pulls @nomicfoundation/hardhat-ethers into the type graph.
+ * The shared Hardhat plugin object for the `plugins` array of a Hardhat config. It lives in its
+ * own module with a client-neutral type chain so it can be re-exported from the `/viem` entry
+ * point without requiring @nomicfoundation/hardhat-ethers.
  */
 const plugin: HardhatPlugin = {
   id: '@openzeppelin/hardhat-upgrades',
