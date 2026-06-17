@@ -24,7 +24,8 @@ test('deploys with constructorArgs (happy path)', async t => {
 });
 
 test('deployProxy throws when a required constructor argument is omitted', async t => {
-  // Must fail fast like the ethers API, not silently deploy an implementation with value == 0.
+  // Must fail fast at encode time like the ethers API, rather than broadcasting a deploy that
+  // reverts on-chain with a generic RPC error.
   await t.throwsAsync(() => upgrades.deployProxy(CONTRACT, [], { initializer: false }), {
     message: /constructor argument/i,
   });
