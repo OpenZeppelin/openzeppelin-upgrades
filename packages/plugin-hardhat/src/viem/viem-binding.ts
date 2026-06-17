@@ -153,6 +153,8 @@ function findBySignature(abi: Abi, signature: string): AbiFunction | undefined {
 }
 
 function constructorInputs(abi: Abi): readonly AbiParameter[] {
-  const constructor = abi.find(item => item !== null && typeof item === 'object' && item.type === 'constructor');
-  return (constructor?.inputs as readonly AbiParameter[] | undefined) ?? [];
+  const constructor = (abi as ViemAbi).find(
+    (item): item is Extract<ViemAbi[number], { type: 'constructor' }> => item.type === 'constructor',
+  );
+  return constructor?.inputs ?? [];
 }
