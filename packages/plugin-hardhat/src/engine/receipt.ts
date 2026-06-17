@@ -1,5 +1,5 @@
 import type { EthereumProvider } from 'hardhat/types/providers';
-import { UpgradesError } from '@openzeppelin/upgrades-core';
+import { getTransactionReceipt, isReceiptSuccessful, UpgradesError } from '@openzeppelin/upgrades-core';
 
 interface RpcTransactionReceipt {
   status?: string;
@@ -12,6 +12,12 @@ interface RpcTransactionReceipt {
  * in-process auto-mining network this resolves immediately, and on real networks it polls at the
  * configured interval — so the engine owns its transaction-waiting semantics without depending on
  * any client library's provider polling behavior.
+ *
+ * A mined receipt is accepted only when it reports success, reusing `@openzeppelin/upgrades-core`'s
+ * `getTransactionReceipt` (which normalizes the status) and `isReceiptSuccessful` (success iff
+ * `status === '0x1'`) — the same revert check core uses when validating deployments. Any mined
+ * receipt that is not successful — a revert (`0x0`) or a missing/unknown status that cannot be
+ * confirmed — is treated as a failure, rather than optimistically assumed to have succeeded.
  */
 export async function waitForReceipt(
   provider: EthereumProvider,
@@ -24,10 +30,15 @@ export async function waitForReceipt(
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const receipt: RpcTransactionReceipt | null = await provider.send('eth_getTransactionReceipt', [txHash]);
+    // `getTransactionReceipt` returns null while the transaction is still pending, and normalizes
+    // the receipt's status when it is mined.
+    const receipt = await getTransactionReceipt(provider, txHash);
     if (receipt !== null) {
-      if (receipt.status !== undefined && Number(receipt.status) === 0) {
-        throw new UpgradesError(`Transaction ${txHash} to deploy or upgrade a contract reverted`);
+      if (!isReceiptSuccessful(receipt)) {
+        throw new UpgradesError(
+          `The transaction ${txHash} to deploy or upgrade a contract was not successful`,
+          () => 'The transaction was reverted, or the network did not report a successful status for it.',
+        );
       }
       return receipt;
     }
