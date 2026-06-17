@@ -152,9 +152,12 @@ function findBySignature(abi: Abi, signature: string): AbiFunction | undefined {
   return abi.find((item): item is AbiFunction => item.type === 'function' && toFunctionSignature(item) === signature);
 }
 
+// `Abi` is intentionally untyped (`readonly any[]`, see engine/binding.ts), so describe just the
+// part of a constructor entry this helper reads. The type guard then narrows the found item and
+// keeps `inputs` typed without asserting the whole ABI.
+type ConstructorAbiItem = { type: 'constructor'; inputs?: readonly AbiParameter[] };
+
 function constructorInputs(abi: Abi): readonly AbiParameter[] {
-  const constructor = (abi as ViemAbi).find(
-    (item): item is Extract<ViemAbi[number], { type: 'constructor' }> => item.type === 'constructor',
-  );
+  const constructor = abi.find((item): item is ConstructorAbiItem => item.type === 'constructor');
   return constructor?.inputs ?? [];
 }
