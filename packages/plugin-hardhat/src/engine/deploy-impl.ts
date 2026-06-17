@@ -132,7 +132,7 @@ async function deployImpl(
         }
       };
       deployed = await attemptDeploy();
-      return { ...{ abi }, ...deployed, layout };
+      return { abi, ...deployed, layout };
     },
     opts,
     merge,
