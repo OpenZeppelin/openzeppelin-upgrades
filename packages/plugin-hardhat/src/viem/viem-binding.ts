@@ -1,5 +1,11 @@
-import { encodeDeployData, encodeFunctionData as viemEncodeFunctionData, getAddress, toFunctionSignature } from 'viem';
-import type { Abi as ViemAbi, AbiFunction, Hex } from 'viem';
+import {
+  encodeAbiParameters,
+  encodeDeployData,
+  encodeFunctionData as viemEncodeFunctionData,
+  getAddress,
+  toFunctionSignature,
+} from 'viem';
+import type { Abi as ViemAbi, AbiFunction, AbiParameter, Hex } from 'viem';
 import type { WalletClient } from '@nomicfoundation/hardhat-viem/types';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
@@ -70,12 +76,22 @@ export function makeViemBinding(
     provider,
 
     encodeConstructorArgs(info: ContractInfo, args: readonly unknown[]): string {
-      // Encode only the constructor arguments (no bytecode) for the version hash.
-      return encodeDeployData({
-        abi: info.abi as ViemAbi,
-        bytecode: '0x',
-        ...(args.length > 0 ? { args: args as readonly unknown[] } : {}),
-      } as Parameters<typeof encodeDeployData>[0]);
+      // Validate the constructor argument count up front and ABI-encode just the arguments (no
+      // bytecode) for the version hash. viem's `encodeDeployData` silently returns the bytecode
+      // unchanged when no args are passed, so a contract with required constructor parameters
+      // deployed without `constructorArgs` would otherwise be encoded with no arguments instead of
+      // failing — `encodeAbiParameters` throws on a length mismatch, matching the ethers binding.
+      const inputs = constructorInputs(info.abi);
+      if (inputs.length !== args.length) {
+        throw new UpgradesError(
+          `Expected ${inputs.length} constructor argument(s) but got ${args.length}`,
+          () => "Provide the implementation contract's constructor arguments with the `constructorArgs` option.",
+        );
+      }
+      if (inputs.length === 0) {
+        return '0x';
+      }
+      return encodeAbiParameters(inputs, args as readonly unknown[]);
     },
 
     encodeFunctionData(abi: Abi, fn: string, args: readonly unknown[]): string {
@@ -134,4 +150,9 @@ export function makeViemBinding(
 
 function findBySignature(abi: Abi, signature: string): AbiFunction | undefined {
   return abi.find((item): item is AbiFunction => item.type === 'function' && toFunctionSignature(item) === signature);
+}
+
+function constructorInputs(abi: Abi): readonly AbiParameter[] {
+  const constructor = abi.find(item => item !== null && typeof item === 'object' && item.type === 'constructor');
+  return (constructor?.inputs as readonly AbiParameter[] | undefined) ?? [];
 }
