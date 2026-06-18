@@ -60,7 +60,7 @@ export function makeViemBinding(
   const waitOpts = { timeout: exec.timeout, pollingInterval: exec.pollingInterval };
 
   type SendParams = Parameters<WalletClient['sendTransaction']>[0];
-  const send = (request: { to?: string; data: string }): Promise<Hex> => {
+  const send = (request: { to?: string; data: string; nonce?: number }): Promise<Hex> => {
     if (walletClient === undefined) {
       // Read-only bindings (validation, force-import) never reach here.
       throw new UpgradesError('Broken invariant: a transaction was sent without a wallet client');
@@ -72,13 +72,14 @@ export function makeViemBinding(
     } as unknown as SendParams);
   };
 
-  const broadcastDeploy = (info: ContractInfo, args: readonly unknown[]): Promise<Hex> =>
+  const broadcastDeploy = (info: ContractInfo, args: readonly unknown[], nonce?: number): Promise<Hex> =>
     send({
       data: encodeDeployData({
         abi: info.abi as ViemAbi,
         bytecode: info.bytecode as Hex,
         ...(args.length > 0 ? { args: args as readonly unknown[] } : {}),
       } as Parameters<typeof encodeDeployData>[0]),
+      ...(nonce !== undefined ? { nonce } : {}),
     });
 
   return {
@@ -131,14 +132,23 @@ export function makeViemBinding(
     },
 
     async deployUnconfirmed(info: ContractInfo, args: readonly unknown[]): Promise<DeployedContract> {
-      // Broadcast and return immediately with the eventual address, predicted from the transaction's
-      // nonce the same way hardhat-viem's `sendDeploymentTransaction` does. This lets the engine
-      // record the deployment before it is mined; `@openzeppelin/upgrades-core` confirms it
-      // afterwards, outside the manifest lock, so the lock is not held while the contract mines.
-      const txHash = await broadcastDeploy(info, args);
+      // Determine the eventual address before broadcasting: read the sender's pending nonce, send the
+      // deployment with that explicit nonce, and compute the CREATE address from `(from, nonce)`
+      // locally — the address depends only on the sender and nonce, not on the bytecode or arguments.
+      // This mirrors how the ethers binding deploys, and unlike querying the chain for the transaction
+      // after broadcasting it leaves no step that can fail between the (irreversible) broadcast and
+      // returning the record, so the engine always records the deployment before it is mined.
+      // `@openzeppelin/upgrades-core` then confirms it outside the manifest lock, so the lock is not
+      // held while the contract mines.
+      const account = walletClient?.account;
+      if (account === undefined) {
+        // Read-only bindings (validation, force-import) never reach here.
+        throw new UpgradesError('Broken invariant: a transaction was sent without a wallet client');
+      }
       const publicClient = await connection.viem.getPublicClient();
-      const tx = await publicClient.getTransaction({ hash: txHash });
-      return { address: getContractAddress({ from: tx.from, nonce: BigInt(tx.nonce) }), txHash };
+      const nonce = await publicClient.getTransactionCount({ address: account.address, blockTag: 'pending' });
+      const txHash = await broadcastDeploy(info, args, nonce);
+      return { address: getContractAddress({ from: account.address, nonce: BigInt(nonce) }), txHash };
     },
 
     async deploy(info: ContractInfo, args: readonly unknown[]): Promise<DeployedContract> {
