@@ -48,3 +48,23 @@ test('invalid upgradeProxy', async t => {
   const greeter = await upgrades.deployProxy('Greeter', ['Hola mundo!'], { kind: 'transparent' });
   await t.throwsAsync(() => upgrades.upgradeProxy(greeter, 'Invalid'), { message: /is not upgrade safe/ });
 });
+
+// The remaining implementation-validating entries must also reject an unsafe contract, so every
+// public entry that deploys or upgrades an implementation is confirmed to route through validation.
+test('invalid deployImplementation', async t => {
+  await t.throwsAsync(() => upgrades.deployImplementation('Invalid'), { message: /Invalid` is not upgrade safe/ });
+});
+
+test('invalid deployBeacon', async t => {
+  await t.throwsAsync(() => upgrades.deployBeacon('Invalid'), { message: /Invalid` is not upgrade safe/ });
+});
+
+test('invalid upgradeBeacon', async t => {
+  const beacon = await upgrades.deployBeacon('Greeter');
+  await t.throwsAsync(() => upgrades.upgradeBeacon(beacon.address, 'Invalid'), { message: /is not upgrade safe/ });
+});
+
+test('invalid prepareUpgrade', async t => {
+  const greeter = await upgrades.deployProxy('Greeter', ['Hola!'], { kind: 'transparent' });
+  await t.throwsAsync(() => upgrades.prepareUpgrade(greeter.address, 'Invalid'), { message: /is not upgrade safe/ });
+});
