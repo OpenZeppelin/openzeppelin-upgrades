@@ -128,7 +128,7 @@ async function deployImpl(
             }
           });
         } else {
-          return binding.deploy(info, deployData.fullOpts.constructorArgs);
+          return binding.deployUnconfirmed(info, deployData.fullOpts.constructorArgs);
         }
       };
       deployed = await attemptDeploy();

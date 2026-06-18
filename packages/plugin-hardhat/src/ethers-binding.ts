@@ -61,6 +61,12 @@ export function makeEthersBinding(
       return signer === undefined ? undefined : await signer.getAddress();
     },
 
+    deployUnconfirmed(info: ContractInfo, args: readonly unknown[]): Promise<DeployedContract> {
+      // ethers' deploy already returns the pending transaction without waiting for the receipt, so
+      // upgrades-core confirms it the same way; there is nothing different to do for ethers.
+      return this.deploy(info, args);
+    },
+
     async deploy(info: ContractInfo, args: readonly unknown[]): Promise<DeployedContract> {
       const factory = await connection.ethers.getContractFactory([...info.abi], info.bytecode, signer);
       return toDeployedContract(await deploy(hre, opts, factory, ...args));

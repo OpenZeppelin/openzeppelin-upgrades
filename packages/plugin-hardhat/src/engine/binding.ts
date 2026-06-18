@@ -104,10 +104,20 @@ export interface EngineBinding {
   getSignerAddress(): Promise<string | undefined>;
 
   /**
-   * Deploys a contract (an implementation, a beacon, or a standalone contract) from its
-   * {@link ContractInfo} and constructor arguments, using the account/options this binding was
-   * created with. Implementations build and broadcast the transaction with their own client
-   * library (or, for the ethers binding with `useDefenderDeploy`, through Defender).
+   * Deploys an implementation contract whose deployment is recorded and confirmed by the engine
+   * through `@openzeppelin/upgrades-core`'s `fetchOrDeploy`. Returns as soon as the deployment
+   * transaction is broadcast — with the eventual contract address — so the engine can record the
+   * deployment before it is mined and core can confirm it afterwards, without the binding holding
+   * the manifest lock while the contract mines. The ethers binding implements this as its normal
+   * (already non-waiting) deploy; the viem binding predicts the address from the transaction nonce.
+   */
+  deployUnconfirmed(info: ContractInfo, args: readonly unknown[]): Promise<DeployedContract>;
+
+  /**
+   * Deploys a contract and, for the viem binding, waits until it is mined so the returned address is
+   * immediately usable. Used for deployments the engine does not confirm itself: the beacon contract,
+   * and standalone contracts for the ethers binding (which returns the pending transaction). For the
+   * ethers binding with `useDefenderDeploy`, the deployment goes through Defender.
    */
   deploy(info: ContractInfo, args: readonly unknown[]): Promise<DeployedContract>;
 

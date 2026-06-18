@@ -3,6 +3,7 @@ import {
   encodeDeployData,
   encodeFunctionData as viemEncodeFunctionData,
   getAddress,
+  getContractAddress,
   toFunctionSignature,
 } from 'viem';
 import type { Abi as ViemAbi, AbiFunction, AbiParameter, Hex } from 'viem';
@@ -71,6 +72,15 @@ export function makeViemBinding(
     } as unknown as SendParams);
   };
 
+  const broadcastDeploy = (info: ContractInfo, args: readonly unknown[]): Promise<Hex> =>
+    send({
+      data: encodeDeployData({
+        abi: info.abi as ViemAbi,
+        bytecode: info.bytecode as Hex,
+        ...(args.length > 0 ? { args: args as readonly unknown[] } : {}),
+      } as Parameters<typeof encodeDeployData>[0]),
+    });
+
   return {
     hre,
     provider,
@@ -120,13 +130,21 @@ export function makeViemBinding(
       return walletClient?.account?.address;
     },
 
+    async deployUnconfirmed(info: ContractInfo, args: readonly unknown[]): Promise<DeployedContract> {
+      // Broadcast and return immediately with the eventual address, predicted from the transaction's
+      // nonce the same way hardhat-viem's `sendDeploymentTransaction` does. This lets the engine
+      // record the deployment before it is mined; `@openzeppelin/upgrades-core` confirms it
+      // afterwards, outside the manifest lock, so the lock is not held while the contract mines.
+      const txHash = await broadcastDeploy(info, args);
+      const publicClient = await connection.viem.getPublicClient();
+      const tx = await publicClient.getTransaction({ hash: txHash });
+      return { address: getContractAddress({ from: tx.from, nonce: BigInt(tx.nonce) }), txHash };
+    },
+
     async deploy(info: ContractInfo, args: readonly unknown[]): Promise<DeployedContract> {
-      const data = encodeDeployData({
-        abi: info.abi as ViemAbi,
-        bytecode: info.bytecode as Hex,
-        ...(args.length > 0 ? { args: args as readonly unknown[] } : {}),
-      } as Parameters<typeof encodeDeployData>[0]);
-      const txHash = await send({ data });
+      // Wait for the receipt so the returned address is immediately usable. Used for deployments the
+      // engine does not confirm itself (the beacon contract); proxies go through `deployProxy`.
+      const txHash = await broadcastDeploy(info, args);
       const receipt = await waitForReceipt(provider, txHash, waitOpts);
       if (receipt.contractAddress === undefined || receipt.contractAddress === null) {
         throw new UpgradesError(`Deployment transaction ${txHash} did not create a contract`);
