@@ -7,10 +7,10 @@ import { forceImport as engineForceImport } from '../engine/force-import.js';
 import type { ForceImportOptions } from './options.js';
 import { getUpgradeableBeaconContract } from './upgradeable-beacon.js';
 import {
+  attachViemContract,
   ContractAddressOrInstance,
   getContractAddress,
   getContractInfo,
-  getViemContractAt,
   makeReadBinding,
 } from './utils.js';
 
@@ -43,7 +43,10 @@ export function makeForceImport(hre: HardhatRuntimeEnvironment, connection: Netw
       // The beacon's ABI is unrelated to the named contract's, as documented on ForceImportFunction.
       return beacon as unknown as ContractReturnType<ContractName>;
     } else {
-      return getViemContractAt(connection, contractName, address, opts.client);
+      // Attach from the implementation ABI rather than re-reading the artifact, and without
+      // requiring an account: the import (above) does not need one, so neither should building the
+      // returned instance — it is read-capable, and write-capable when an account is available.
+      return attachViemContract<ContractName>(connection, implInfo.abi, address, opts.client);
     }
   };
 }

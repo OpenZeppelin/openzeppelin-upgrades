@@ -2,8 +2,8 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
 import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/types/artifacts';
 import type { ContractReturnType, KeyedClient, WalletClient } from '@nomicfoundation/hardhat-viem/types';
-import type { Address } from 'viem';
-import { getAddress } from 'viem';
+import type { Abi, Address } from 'viem';
+import { getAddress, getContract } from 'viem';
 import { resolveLinkedBytecode } from '@nomicfoundation/hardhat-utils/bytecode';
 
 import { UpgradesError } from '@openzeppelin/upgrades-core';
@@ -173,4 +173,28 @@ export async function getViemContractAt<ContractName extends StringWithArtifactC
   client?: KeyedClient,
 ): Promise<ContractReturnType<ContractName>> {
   return connection.viem.getContractAt(contractName, address, client !== undefined ? { client } : undefined);
+}
+
+/**
+ * Builds a viem contract instance at `address` for the given ABI, usable for reads even when the
+ * connection has no accounts. A wallet client (the provided one, or the connection's first account)
+ * enables writes; without one the instance is read-only — so attaching to an existing contract does
+ * not require an account, mirroring the ethers-based API. Used by `forceImport`, which records the
+ * deployment without needing an account and so must be able to return an instance without one.
+ */
+export async function attachViemContract<ContractName extends StringWithArtifactContractNamesAutocompletion>(
+  connection: NetworkConnection,
+  abi: ContractInfo['abi'],
+  address: Address,
+  client?: KeyedClient,
+): Promise<ContractReturnType<ContractName>> {
+  const [publicClient, walletClient] = await Promise.all([
+    client?.public ?? connection.viem.getPublicClient(),
+    client?.wallet ?? connection.viem.getWalletClients().then(clients => clients[0]),
+  ]);
+  const contract =
+    walletClient !== undefined
+      ? getContract({ address, abi: abi as Abi, client: { public: publicClient, wallet: walletClient } })
+      : getContract({ address, abi: abi as Abi, client: { public: publicClient } });
+  return contract as unknown as ContractReturnType<ContractName>;
 }
