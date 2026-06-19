@@ -41,6 +41,10 @@ test('import proxy', async t => {
   t.is(imported.address, proxyAddress);
   t.is(await imported.read.greet(), 'Hello');
 
+  // With an account available, the returned instance is writable, not just readable.
+  await imported.write.setGreeting(['Hi from the imported proxy']);
+  t.is(await imported.read.greet(), 'Hi from the imported proxy');
+
   // The imported proxy can then be upgraded with the plugin
   const greeter2 = await upgrades.upgradeProxy(proxyAddress, 'contracts/GreeterV2.sol:GreeterV2Proxiable');
   await greeter2.write.resetGreeting();
