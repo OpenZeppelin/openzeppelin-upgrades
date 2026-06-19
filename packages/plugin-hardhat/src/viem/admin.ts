@@ -8,7 +8,7 @@ import {
   transferProxyAdminOwnership as engineTransferProxyAdminOwnership,
 } from '../engine/admin.js';
 import type { AdminOptions } from './options.js';
-import { execOptions, resolveWalletClient } from './utils.js';
+import { asAddress, execOptions, resolveWalletClient } from './utils.js';
 import { makeViemBinding } from './viem-binding.js';
 
 export type ChangeAdminFunction = (
@@ -36,7 +36,7 @@ export function makeChangeProxyAdmin(
   ): Promise<void> {
     const wc = await resolveWalletClient(connection, walletClient);
     const binding = makeViemBinding(hre, connection, wc, execOptions(opts));
-    await engineChangeProxyAdmin(binding, proxyAddress, newAdmin);
+    await engineChangeProxyAdmin(binding, asAddress(proxyAddress), asAddress(newAdmin));
   };
 }
 
@@ -52,6 +52,8 @@ export function makeTransferProxyAdminOwnership(
   ): Promise<void> {
     const wc = await resolveWalletClient(connection, walletClient);
     const binding = makeViemBinding(hre, connection, wc, execOptions(opts));
-    await engineTransferProxyAdminOwnership(binding, proxyAddress, newOwner, { silent: opts.silent });
+    await engineTransferProxyAdminOwnership(binding, asAddress(proxyAddress), asAddress(newOwner), {
+      silent: opts.silent,
+    });
   };
 }

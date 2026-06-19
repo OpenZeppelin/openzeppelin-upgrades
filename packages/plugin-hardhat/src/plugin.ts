@@ -27,7 +27,15 @@ const plugin: HardhatPlugin = {
   dependencies: () => [
     import('@nomicfoundation/hardhat-ethers')
       .then(m => ({ default: m.default }))
-      .catch(() => ({ default: noopPlugin })),
+      .catch(e => {
+        // Only treat a missing optional peer as "not installed". Surface any other failure (e.g. a
+        // corrupt or version-incompatible install, or a throwing import) instead of masking it as
+        // the package being absent, which would misdirect the user to reinstall something present.
+        if (e?.code === 'ERR_MODULE_NOT_FOUND' || e?.code === 'MODULE_NOT_FOUND') {
+          return { default: noopPlugin };
+        }
+        throw e;
+      }),
   ],
 
   conditionalDependencies: [
