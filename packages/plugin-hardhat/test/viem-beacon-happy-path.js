@@ -33,6 +33,8 @@ test('happy path', async t => {
   t.not(newImplAddress, implAddress);
 
   const greeter2 = await connection.viem.getContractAt('contracts/GreeterV2.sol:GreeterV2', greeter.address);
+  // The greeting set before the upgrade is preserved, matching the ethers beacon happy path.
+  t.is(await greeter2.read.greet(), 'Hello, Hardhat!');
   await greeter2.write.resetGreeting();
   t.is(await greeter2.read.greet(), 'Hello World');
 });
