@@ -2,7 +2,7 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types/hre';
 import type { NetworkConnection } from 'hardhat/types/network';
 import type { StringWithArtifactContractNamesAutocompletion } from 'hardhat/types/artifacts';
 import type { ContractReturnType, KeyedClient, WalletClient } from '@nomicfoundation/hardhat-viem/types';
-import type { Abi, Address } from 'viem';
+import type { Address } from 'viem';
 import { getAddress, getContract } from 'viem';
 import { resolveLinkedBytecode } from '@nomicfoundation/hardhat-utils/bytecode';
 
@@ -194,7 +194,7 @@ export async function attachViemContract<ContractName extends StringWithArtifact
   ]);
   const contract =
     walletClient !== undefined
-      ? getContract({ address, abi: abi as Abi, client: { public: publicClient, wallet: walletClient } })
-      : getContract({ address, abi: abi as Abi, client: { public: publicClient } });
+      ? getContract({ address, abi, client: { public: publicClient, wallet: walletClient } })
+      : getContract({ address, abi, client: { public: publicClient } });
   return contract as unknown as ContractReturnType<ContractName>;
 }
