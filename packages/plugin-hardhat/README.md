@@ -10,16 +10,17 @@
 ## Installation
 
 ```
+# install the plugin:
 npm install --save-dev @openzeppelin/hardhat-upgrades
 
-# if you use ethers:
+# and the peer dependencies for the library you use — either ethers:
 npm install --save-dev @nomicfoundation/hardhat-ethers ethers
 
-# or if you use viem:
+# or viem:
 npm install --save-dev @nomicfoundation/hardhat-viem viem
 ```
 
-> **Note:** `@nomicfoundation/hardhat-ethers`/`ethers` and `@nomicfoundation/hardhat-viem`/`viem` are optional peer dependencies — install only the pair for the library you use. **If you use viem, import the plugin and the API from `@openzeppelin/hardhat-upgrades/viem`** (not `@openzeppelin/hardhat-upgrades`); its functions take contract names and return viem contract instances. The examples below use ethers — see [Usage with viem](#usage-with-viem) for the viem equivalents.
+> **Note:** You need the `@openzeppelin/hardhat-upgrades` plugin **plus** the peer dependencies for the library you use — `@nomicfoundation/hardhat-ethers` and `ethers`, or `@nomicfoundation/hardhat-viem` and `viem`. (These are peer dependencies, so they aren't installed automatically.) **If you use viem, import the plugin and the API from `@openzeppelin/hardhat-upgrades/viem`** (not `@openzeppelin/hardhat-upgrades`); its functions take contract names and return viem contract instances. The examples below use ethers — see [Usage with viem](#usage-with-viem) for the viem equivalents.
 
 Register the `@openzeppelin/hardhat-upgrades` plugin in your [`hardhat.config.ts`](https://hardhat.org/config/):
 
