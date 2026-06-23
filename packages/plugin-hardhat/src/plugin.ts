@@ -24,6 +24,11 @@ const plugin: HardhatPlugin = {
   // Auto-load @nomicfoundation/hardhat-ethers when it is installed, preserving the no-registration
   // UX for ethers users, while degrading gracefully to a no-op for viem-only projects that do not
   // install it (it is now an optional peer dependency).
+  //
+  // Conditional dependencies aren't a fit here: they only activate when another plugin the user
+  // already registered is present (as with hardhat-verify below), not when a package is merely
+  // installed, and they silently ignore load errors, so a broken ethers install would be
+  // indistinguishable from ethers being absent.
   dependencies: () => [
     import('@nomicfoundation/hardhat-ethers')
       .then(m => ({ default: m.default }))
@@ -38,6 +43,8 @@ const plugin: HardhatPlugin = {
       }),
   ],
 
+  // Load our hardhat-verify integration only when the user has registered hardhat-verify (see the
+  // note on dependencies above for why ethers can't use this mechanism).
   conditionalDependencies: [
     {
       condition: () => [import('@nomicfoundation/hardhat-verify').then(m => ({ default: m.default }))],
