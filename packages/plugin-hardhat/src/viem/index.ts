@@ -93,6 +93,10 @@ export async function upgrades(
 // point, instead of the root entry whose types reference @nomicfoundation/hardhat-ethers.
 export { default } from '../plugin.js';
 
+// Re-export the Solidity-test build helper from here too, so a viem-only project can configure
+// `npmFilesToBuild` without importing the root entry (whose types reference @nomicfoundation/hardhat-ethers).
+export { proxyFilesToBuild } from '../utils/npmFilesToBuild.js';
+
 // Types
 export type * from './types.js';
 export type { ContractAddressOrInstance } from './utils.js';

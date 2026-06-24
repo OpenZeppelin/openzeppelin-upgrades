@@ -1,5 +1,5 @@
 import hre from 'hardhat';
-import { upgrades } from '@openzeppelin/hardhat-upgrades/viem';
+import { upgrades, proxyFilesToBuild } from '@openzeppelin/hardhat-upgrades/viem';
 import type { HardhatViemUpgrades, UpgradeableBeaconContract } from '@openzeppelin/hardhat-upgrades/viem';
 import type { ParseAbi } from 'viem';
 
@@ -93,6 +93,12 @@ export async function typeCheck(): Promise<void> {
   const imported = await upgradesApi.forceImport(box.address, 'Box', { kind: 'transparent' });
   await imported.read.retrieve();
   await upgradesApi.forceImport(box, 'Box', { client: { wallet: walletClient } });
+
+  // Solidity-test helper is available from the viem entry point too, so a viem-only project
+  // (without @nomicfoundation/hardhat-ethers) can configure `npmFilesToBuild` without importing
+  // the ethers-typed root entry.
+  const proxyFiles: string[] = proxyFilesToBuild();
+  void proxyFiles;
 
   // The clients are usable as regular viem clients
   await publicClient.getCode({ address });
