@@ -1,5 +1,4 @@
-import { keccak256 } from 'ethereumjs-util';
-
+import { keccak256 } from './keccak256';
 import { toBytes32Hex } from './integer-literals';
 
 export const ERC7201_FORMULA_PREFIX = 'erc7201:';

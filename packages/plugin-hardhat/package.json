@@ -65,7 +65,7 @@
     "@openzeppelin/upgrades-core": "^1.45.0",
     "chalk": "^4.1.0",
     "debug": "^4.1.1",
-    "ethereumjs-util": "^7.1.5",
+    "ethereum-cryptography": "^2.2.1",
     "proper-lockfile": "^4.1.1",
     "undici": "^8.3.0"
   }
