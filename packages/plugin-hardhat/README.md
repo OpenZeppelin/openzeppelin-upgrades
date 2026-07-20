@@ -9,7 +9,7 @@
 
 ## Installation
 
-```
+```bash
 # install the plugin:
 npm install --save-dev @openzeppelin/hardhat-upgrades
 
@@ -297,7 +297,7 @@ If you use [viem](https://viem.sh) instead of ethers, import the plugin and the 
 
 Install the viem packages alongside this plugin:
 
-```
+```bash
 npm install --save-dev @nomicfoundation/hardhat-viem viem
 ```
 

@@ -30,6 +30,8 @@ test('transferProxyAdminOwnership', async t => {
     getAddress(deployer.account.address),
   );
 
+  const fromBlockNumber = await publicClient.getBlockNumber();
+
   await upgrades.admin.transferProxyAdminOwnership(greeter.address, newOwner.account.address, deployer, {
     silent: true,
     gas: 500_000n,
@@ -40,10 +42,20 @@ test('transferProxyAdminOwnership', async t => {
     getAddress(newOwner.account.address),
   );
 
-  // The gas option applies to the ownership transfer transaction
-  const block = await publicClient.getBlock({ includeTransactions: true });
-  t.is(block.transactions.length, 1);
-  t.is(block.transactions[0].gas, 500_000n);
+  // The gas option applies to the ownership transfer transaction. Scan only blocks mined by
+  // this call so concurrent tests sharing the connection cannot make `latest` look wrong.
+  const toBlockNumber = await publicClient.getBlockNumber();
+  t.true(toBlockNumber > fromBlockNumber);
+  let sawTransferTx = false;
+  for (let i = fromBlockNumber + 1n; i <= toBlockNumber; i++) {
+    const block = await publicClient.getBlock({ blockNumber: i, includeTransactions: true });
+    for (const tx of block.transactions) {
+      if (tx.gas === 500_000n) {
+        sawTransferTx = true;
+      }
+    }
+  }
+  t.true(sawTransferTx);
 });
 
 test('changeProxyAdmin is not supported by v5 admins', async t => {

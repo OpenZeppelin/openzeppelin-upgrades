@@ -86,7 +86,8 @@ export function makeEthersBinding(
       // signer to match `connection.ethers.getContractAt(...)` when no factory signer is available.
       const txSigner = signer ?? (await connection.ethers.provider.getSigner());
       const overrides = opts.txOverrides ?? {};
-      const response = await txSigner.sendTransaction({ to: tx.to, data: tx.data, ...overrides });
+      // Apply overrides first so caller-supplied `to`/`data` cannot replace the plugin's call.
+      const response = await txSigner.sendTransaction({ ...overrides, to: tx.to, data: tx.data });
       return { txHash: response.hash, txResponse: response };
     },
 
