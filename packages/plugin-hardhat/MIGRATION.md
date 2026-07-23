@@ -204,7 +204,7 @@ Note that you do not need to include constructor arguments when verifying if you
 
 ## Checklist
 
-- If you use ethers, install `@nomicfoundation/hardhat-ethers` and `ethers` (now optional peer dependencies — not needed if you use viem)
+- If you use ethers, install `@nomicfoundation/hardhat-ethers` and `ethers` (now optional peer dependencies; not needed if you use viem)
 - If you use viem, install `@nomicfoundation/hardhat-viem` and `viem`, add `hardhatViem` to `plugins`, and import both the upgrades plugin and the API from `@openzeppelin/hardhat-upgrades/viem`
 - Add `hardhatUpgrades` to `plugins` in `hardhat.config.ts`
 - If using `verify`, add `hardhatVerify` to `plugins`, install `@nomicfoundation/hardhat-verify`, and configure Hardhat's `verify.etherscan.apiKey` setting

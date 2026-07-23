@@ -13,14 +13,14 @@
 # install the plugin:
 npm install --save-dev @openzeppelin/hardhat-upgrades
 
-# and the peer dependencies for the library you use — either ethers:
+# and the peer dependencies for the library you use, either ethers:
 npm install --save-dev @nomicfoundation/hardhat-ethers ethers
 
 # or viem:
 npm install --save-dev @nomicfoundation/hardhat-viem viem
 ```
 
-> **Note:** You need the `@openzeppelin/hardhat-upgrades` plugin **plus** the peer dependencies for the library you use — `@nomicfoundation/hardhat-ethers` and `ethers`, or `@nomicfoundation/hardhat-viem` and `viem`. (These are peer dependencies, so they aren't installed automatically.) **If you use viem, import the plugin and the API from `@openzeppelin/hardhat-upgrades/viem`** (not `@openzeppelin/hardhat-upgrades`); its functions take contract names and return viem contract instances. The examples below use ethers — see [Usage with viem](#usage-with-viem) for the viem equivalents.
+> **Note:** You need the `@openzeppelin/hardhat-upgrades` plugin **plus** the peer dependencies for the library you use: `@nomicfoundation/hardhat-ethers` and `ethers`, or `@nomicfoundation/hardhat-viem` and `viem`. (These are peer dependencies, so they aren't installed automatically.) **If you use viem, import the plugin and the API from `@openzeppelin/hardhat-upgrades/viem`** (not `@openzeppelin/hardhat-upgrades`); its functions take contract names and return viem contract instances. The examples below use ethers. See [Usage with viem](#usage-with-viem) for the viem equivalents.
 
 Register the `@openzeppelin/hardhat-upgrades` plugin in your [`hardhat.config.ts`](https://hardhat.org/config/):
 
@@ -348,9 +348,9 @@ await upgradesApi.upgradeBeacon(beacon, "BoxV2");
 console.log("New implementation:", await beacon.read.implementation());
 ```
 
-Functions that take options accept the same upgrade safety options, along with viem-style transaction options: `client` (a `{ public, wallet }` pair of viem clients, where the wallet client selects the account that signs the plugin's transactions and defaults to the first wallet client — it must be an account managed by the network connection, such as those from `connection.viem.getWalletClients()`), `gas`, `gasPrice`, `maxFeePerGas`, `maxPriorityFeePerGas`, `value`, and `libraries` for contracts with external libraries.
+Functions that take options accept the same upgrade safety options, along with viem-style transaction options: `client`, `gas`, `gasPrice`, `maxFeePerGas`, `maxPriorityFeePerGas`, `value`, and `libraries` for contracts with external libraries. The `client` option is a `{ public, wallet }` pair of viem clients. Its wallet client selects the account that signs the plugin's transactions and defaults to the first wallet client; it must be an account managed by the network connection, such as those from `connection.viem.getWalletClients()`.
 
-Inputs and outputs are viem-native throughout, and this does not require `ethers` or `@nomicfoundation/hardhat-ethers`. See the [BoxViem example project](./examples/BoxViem) for a complete project.
+Inputs and outputs use viem types throughout, and this does not require `ethers` or `@nomicfoundation/hardhat-ethers`. See the [BoxViem example project](./examples/BoxViem) for a complete project.
 
 ## Learn more
 * Refer to the [API documentation](https://docs.openzeppelin.com/upgrades-plugins/api-hardhat-upgrades).
