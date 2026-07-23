@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 4.1.0 (2026-07-23)
+
+- Add a viem-based API at `@openzeppelin/hardhat-upgrades/viem`, following `@nomicfoundation/hardhat-viem` conventions: contracts are identified by name, addresses are typed as `` `0x${string}` ``, and the returned contract instances are viem contract instances. ([#1279](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1279))
+  - To use the viem-based API, install `viem` and `@nomicfoundation/hardhat-viem`, then import both the plugin (for your Hardhat config's `plugins` array) and the API (for your scripts) from `@openzeppelin/hardhat-upgrades/viem`. It supports wallet clients backed by local accounts, such as viem's `privateKeyToAccount`. The `proxyFilesToBuild` helper for Solidity tests is also exported from this entry point, so viem-only projects can configure `npmFilesToBuild` without importing the ethers-typed root entry.
+  - The ethers-based API is unchanged. Import its plugin and API from `@openzeppelin/hardhat-upgrades` as before, or from the new `@openzeppelin/hardhat-upgrades/ethers` alias.
+  - **Potentially breaking changes**: `ethers` and `@nomicfoundation/hardhat-ethers` are now optional peer dependencies, required only by the ethers-based API; viem-only projects no longer need them. If you use the ethers-based API, install them explicitly with `npm install --save-dev @nomicfoundation/hardhat-ethers ethers`. Previously they were required peer dependencies that package managers installed automatically.
+
 ## 4.0.2 (2026-06-10)
 
 - Re-export `@nomicfoundation/hardhat-ethers` types so that TypeScript recognizes `connection.ethers` when only this plugin is registered. ([#1275](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1275))
