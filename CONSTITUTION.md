@@ -1,23 +1,3 @@
-<!--
-Sync Impact Report
-==================
-Version change: (template) → 1.0.0
-Modified principles: n/a (initial ratification — all principles newly defined)
-Added sections:
-  - Core Principles (I–V)
-  - Security & Compatibility Constraints
-  - Development Workflow & Quality Gates
-  - Governance
-Removed sections: none (template placeholders replaced)
-Templates:
-  - .specify/templates/plan-template.md ✅ aligned (generic Constitution Check gate; gates are
-    derived from this file at plan time — no edits required)
-  - .specify/templates/spec-template.md ✅ aligned (no constitution-specific sections required)
-  - .specify/templates/tasks-template.md ✅ aligned (task categories accommodate the
-    validation/parity/test discipline below — no edits required)
-Follow-up TODOs: none
--->
-
 # OpenZeppelin Upgrades Constitution
 
 ## Core Principles
