@@ -3027,10 +3027,10 @@ better-path-resolve@1.0.0:
   dependencies:
     is-windows "^1.0.0"
 
-bignumber.js@^9.1.2:
-  version "9.1.2"
-  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.1.2.tgz#b7c4242259c008903b13707983b5f4bbd31eda0c"
-  integrity sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==
+bignumber.js@^11.0.0:
+  version "11.1.5"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-11.1.5.tgz#0f678769f989e6947138d16adaaaa475a9b0bc65"
+  integrity sha512-6WmzCNtUnfKpbozq+hOgWaZMMzORmYBwF1xZScyoIX3QRYWeKTtxxwDOW5tIz7C9BdjkIYHGTcelCLkXg0mndw==
 
 binary-extensions@^2.0.0:
   version "2.3.0"
