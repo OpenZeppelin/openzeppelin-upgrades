@@ -104,9 +104,10 @@ method makes it survivable across contributors.
   and produce identical results across bindings.
 - **Read-only paths cannot deploy.** Validation-only entry points run on bindings that are
   structurally incapable of sending transactions.
-- **Toolchain constraints.** Yarn workspaces monorepo; TypeScript throughout; changes under
-  `packages/` require a changeset; ava is pinned to `^7` (ava 8 is ESM-only and forces a
-  repo-wide TypeScript bump).
+- **Toolchain constraints.** Yarn workspaces monorepo; TypeScript throughout; changes affecting
+  packaged code require a changeset (dev-only changes instead carry the `ignore-changeset`
+  label); ava is intentionally held back (currently `ava@^6` with `@ava/typescript@^7`)
+  because ESM-only ava majors force a repo-wide TypeScript bump.
 
 ## Development Workflow & Quality Gates
 
@@ -115,8 +116,9 @@ method makes it survivable across contributors.
   gate merges.
 - Release-gating PRs (new framework major versions, new client bindings, engine refactors)
   additionally require a written invariant review per Principle V before acceptance.
-- Public API changes MUST keep documentation (package READMEs, docs site sources) in sync in
-  the same PR.
+- Public API changes MUST keep documentation in sync: package READMEs in the same PR, and the
+  docs site sources in their separate repository. The Antora sources under `docs/` in this
+  repository are deprecated and MUST NOT be extended.
 - Code comments explain invariants and constraints self-containedly; they do not reference PRs,
   tickets, or review threads.
 
