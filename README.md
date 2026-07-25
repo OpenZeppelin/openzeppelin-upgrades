@@ -41,6 +41,8 @@ And when you call `upgradeProxy`:
 
 The Hardhat plugin keeps track of all the implementation contracts you have deployed in an `.openzeppelin` folder in the project root. You will find one file per network there. It is advised that you commit to source control the files for all networks except the development ones (you may see them as `.openzeppelin/unknown-*.json`).
 
+Note that the Hardhat plugin deploys proxy contracts using [precompiled bytecodes](https://docs.openzeppelin.com/upgrades-plugins/faq#precompiled-proxy-contracts) from the `@openzeppelin/upgrades-core` package, which are compiled independently from your project's Solidity compiler version.
+
 The Foundry plugin does not keep track of implementation contracts, but requires you to [define reference contracts](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades?tab=readme-ov-file#before-running) in order to validate new versions of implementations for upgrade safety.
 
 ## Proxy patterns
