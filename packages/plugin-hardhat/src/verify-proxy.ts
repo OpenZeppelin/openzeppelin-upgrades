@@ -21,7 +21,7 @@ import UpgradeableBeacon from '@openzeppelin/upgrades-core/artifacts/@openzeppel
 import TransparentUpgradeableProxy from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/TransparentUpgradeableProxy.sol/TransparentUpgradeableProxy.json';
 import ProxyAdmin from '@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts-v5/proxy/transparent/ProxyAdmin.sol/ProxyAdmin.json';
 
-import { keccak256 } from 'ethereumjs-util';
+import { keccak256 } from 'ethereum-cryptography/keccak';
 
 import debug from './utils/debug.js';
 import {
@@ -470,7 +470,7 @@ async function getEventResponse(
     fromBlock: '0',
     toBlock: 'latest',
     address,
-    topic0: '0x' + keccak256(Buffer.from(topic)).toString('hex'),
+    topic0: '0x' + Buffer.from(keccak256(Buffer.from(topic))).toString('hex'),
   };
 
   const responseBody = await callEtherscanApi(etherscan, params);

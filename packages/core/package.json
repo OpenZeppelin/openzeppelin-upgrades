@@ -68,7 +68,7 @@
     "compare-versions": "^6.0.0",
     "bignumber.js": "^9.1.2",
     "debug": "^4.1.1",
-    "ethereumjs-util": "^7.0.3",
+    "ethereum-cryptography": "^2.2.1",
     "minimist": "^1.2.7",
     "proper-lockfile": "^4.1.1",
     "solidity-ast": "^0.4.60",
