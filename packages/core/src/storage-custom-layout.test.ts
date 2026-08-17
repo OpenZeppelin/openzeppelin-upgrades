@@ -8,6 +8,9 @@ import { getStorageUpgradeErrors } from './storage';
 import { StorageLayout } from './storage/layout';
 import { extractStorageLayout } from './storage/extract';
 import { stabilizeStorageLayout } from './utils/stabilize-layout';
+import { getStorageLayout } from './validate/query';
+import { ContractValidation } from './validate/run';
+import { Version } from './version';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
@@ -355,4 +358,87 @@ test('Gap - changed root - fallback - unsafeSkipStorageCheck', t => {
   const v2 = t.context.extractStorageLayoutFallback('Gap_Changed_Root_Ok');
   const comparison = getStorageUpgradeErrors(v1, v2, { unsafeSkipStorageCheck: true });
   t.deepEqual(comparison, []);
+});
+
+const unfoldVersion: Version = {
+  withMetadata: 'wm',
+  withoutMetadata: 'wo',
+  linkedWithoutMetadata: 'lw',
+};
+
+const unfoldTypes = { t_uint256: { label: 'uint256', numberOfBytes: '32' } };
+const unfoldStorage = [{ label: 'alpha', type: 't_uint256', contract: 'T', src: 'S.sol:4' }];
+
+function validationEntry(layout: StorageLayout, inherit: string[] = []): ContractValidation {
+  return {
+    version: unfoldVersion,
+    src: 'S.sol:1',
+    inherit,
+    libraries: [],
+    methods: [],
+    linkReferences: [],
+    errors: [],
+    solcVersion: '0.8.29',
+    layout,
+  };
+}
+
+function unfoldLayout(layout: StorageLayout, inherit: string[] = [], parents: Record<string, StorageLayout> = {}) {
+  const run: Record<string, ContractValidation> = {
+    'S.sol:T': validationEntry(layout, inherit),
+  };
+  for (const name of inherit) {
+    run[name] = {
+      src: `${name}:1`,
+      inherit: [],
+      libraries: [],
+      methods: [],
+      linkReferences: [],
+      errors: [],
+      solcVersion: '0.8.29',
+      layout: parents[name],
+    };
+  }
+  return getStorageLayout({ version: '3.4', log: [run] }, unfoldVersion);
+}
+
+test('getStorageLayout preserves baseSlot for a flat layout', t => {
+  const layout: StorageLayout = {
+    solcVersion: '0.8.29',
+    baseSlot: '0x1',
+    storage: unfoldStorage,
+    types: unfoldTypes,
+    flat: true,
+  };
+  t.is(unfoldLayout(layout).baseSlot, '0x1');
+});
+
+test('getStorageLayout preserves baseSlot when unfolding inherited layouts', t => {
+  const layout: StorageLayout = {
+    solcVersion: '0.8.29',
+    baseSlot: '0x1',
+    storage: unfoldStorage,
+    types: unfoldTypes,
+  };
+  const parent: StorageLayout = {
+    solcVersion: '0.8.29',
+    storage: [{ label: 'beta', type: 't_uint256', contract: 'B', src: 'B.sol:4' }],
+    types: unfoldTypes,
+  };
+  t.is(unfoldLayout(layout, ['B.sol:B'], { 'B.sol:B': parent }).baseSlot, '0x1');
+});
+
+test('getStorageLayout round-trip still detects a changed base slot', t => {
+  const layoutAt = (baseSlot: string): StorageLayout => ({
+    solcVersion: '0.8.29',
+    baseSlot,
+    storage: unfoldStorage,
+    types: unfoldTypes,
+    flat: true,
+  });
+  const before = unfoldLayout(layoutAt('0x' + '00'.repeat(32)));
+  const after = unfoldLayout(layoutAt('0x' + '00'.repeat(31) + '01'));
+  t.throws(() => getStorageUpgradeErrors(before, after), {
+    message: /Base slot for custom storage layout changed/,
+  });
 });
