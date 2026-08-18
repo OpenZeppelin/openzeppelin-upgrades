@@ -92,6 +92,15 @@ test('fails deployment fast if tx reverts', async t => {
   await t.throwsAsync(waitAndValidateDeployment(provider, deployment));
 });
 
+test('merge waits for previous deployment and fails if it reverted', async t => {
+  const provider = stubProvider();
+  const first = await resumeOrDeploy(provider, undefined, provider.deploy);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  provider.failTx(first.txHash!);
+  await t.throwsAsync(resumeOrDeploy(provider, first, provider.deploy, 'implementation', undefined, undefined, true));
+  t.is(provider.deployCount, 1);
+});
+
 test('waits for a deployment to return contract code', async t => {
   const timeout = Symbol('timeout');
   const provider = stubProvider();
