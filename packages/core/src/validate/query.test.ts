@@ -1,8 +1,33 @@
 import test from 'ava';
 
 import { ContractValidation, ValidationRunData } from './run';
-import { getUnlinkedBytecode } from './query';
+import { getUnlinkedBytecode, unfoldStorageLayout } from './query';
 import { getVersion } from '../version';
+
+test('unfoldStorageLayout preserves baseSlot for inherited layouts', t => {
+  const runData = {
+    'contracts/Base.sol:Base': {
+      layout: {
+        storage: [],
+        types: {},
+        flat: false,
+        namespaces: {},
+      },
+    },
+    'contracts/Child.sol:Child': {
+      layout: {
+        storage: [],
+        types: {},
+        flat: false,
+        namespaces: {},
+        baseSlot: '0x1',
+      },
+      inherit: ['contracts/Base.sol:Base'],
+    },
+  } as unknown as ValidationRunData;
+
+  t.is(unfoldStorageLayout(runData, 'contracts/Child.sol:Child').baseSlot, '0x1');
+});
 
 test('getUnlinkedBytecode', t => {
   const unlinkedBytecode = '0x12__$5ae0c2211b657f8a7ca51e0b14f2a8333d$__78';
