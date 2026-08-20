@@ -29,6 +29,22 @@ test('unfoldStorageLayout preserves baseSlot for inherited layouts', t => {
   t.is(unfoldStorageLayout(runData, 'contracts/Child.sol:Child').baseSlot, '0x1');
 });
 
+test('unfoldStorageLayout preserves baseSlot for flat layouts', t => {
+  const runData = {
+    'contracts/Flat.sol:Flat': {
+      layout: {
+        storage: [],
+        types: {},
+        flat: true,
+        namespaces: {},
+        baseSlot: '0x2',
+      },
+    },
+  } as unknown as ValidationRunData;
+
+  t.is(unfoldStorageLayout(runData, 'contracts/Flat.sol:Flat').baseSlot, '0x2');
+});
+
 test('getUnlinkedBytecode', t => {
   const unlinkedBytecode = '0x12__$5ae0c2211b657f8a7ca51e0b14f2a8333d$__78';
   const linkedBytecode = '0x12456456456456456456456456456456456456456478';
