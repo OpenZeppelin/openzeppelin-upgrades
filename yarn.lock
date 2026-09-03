@@ -4377,9 +4377,10 @@ foreground-child@^3.1.0:
     cross-spawn "^7.0.6"
     signal-exit "^4.0.1"
 
-"forge-std@github:foundry-rs/forge-std#v1.16.1":
-  version "1.16.1"
-  resolved "https://codeload.github.com/foundry-rs/forge-std/tar.gz/620536fa5277db4e3fd46772d5cbc1ea0696fb43"
+"forge-std@github:foundry-rs/forge-std#v1.16.2":
+  version "1.16.2"
+  uid bf647bd6046f2f7da30d0c2bf435e5c76a780c1b
+  resolved "https://codeload.github.com/foundry-rs/forge-std/tar.gz/bf647bd6046f2f7da30d0c2bf435e5c76a780c1b"
 
 form-data@^4.0.5:
   version "4.0.5"
