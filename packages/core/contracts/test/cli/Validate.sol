@@ -37,6 +37,22 @@ contract HasUpgradeToConstructorUnsafe {
 }
 
 /**
+ * @custom:stateless
+ */
+contract StatelessConstructor {
+  constructor() {
+    assembly {
+      sstore(0x9b779b17422d0df92223018b32b4d1fa46e071723d6817e2486d003becc55f00, 1)
+    }
+  }
+}
+
+contract HasStatelessConstructorParent is StatelessConstructor {
+  function upgradeTo(address) public {
+  }
+}
+
+/**
  * @custom:oz-upgrades
  */
 contract MultipleUnsafe {

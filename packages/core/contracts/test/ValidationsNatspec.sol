@@ -26,10 +26,20 @@ contract HasNonEmptyConstructorNatspec4 {
   constructor() { msg.sender; }
 }
 
+/// @custom:stateless
+contract StatelessNonEmptyConstructor {
+  constructor() {
+    assembly {
+      sstore(0x9b779b17422d0df92223018b32b4d1fa46e071723d6817e2486d003becc55f00, 1)
+    }
+  }
+}
+
 contract ParentHasNonEmptyConstructorNatspec1 is HasNonEmptyConstructorNatspec1 {}
 contract ParentHasNonEmptyConstructorNatspec2 is HasNonEmptyConstructorNatspec2 {}
 contract AncestorHasNonEmptyConstructorNatspec1 is ParentHasNonEmptyConstructorNatspec1 {}
 contract AncestorHasNonEmptyConstructorNatspec2 is ParentHasNonEmptyConstructorNatspec2 {}
+contract ChildOfStatelessNonEmptyConstructor is StatelessNonEmptyConstructor {}
 
 /// @custom:oz-upgrades-unsafe-allow state-variable-assignment
 contract HasStateVariableAssignmentNatspec1 {
