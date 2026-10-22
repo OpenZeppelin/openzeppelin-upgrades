@@ -60,7 +60,7 @@ contract NamespacedExactMap {
     struct Inner {
         /// @custom:oz-renamed-from old_p
         uint256 p;
-        // ñ 日本 🚀
+        // Multi-byte character: 🚀
         /// @custom:oz-renamed-from old_q
         uint128 q; /// @custom:oz-renamed-from old_r
         uint128 r;
@@ -70,7 +70,7 @@ contract NamespacedExactMap {
     struct ExactStorage {
         /// @custom:oz-renamed-from old_a
         uint256 a;
-        // ñ 日本 🚀
+        // Multi-byte character: 🚀
         /// @custom:oz-renamed-from old_b
         uint128 b; /// @custom:oz-renamed-from old_c
         uint128 c;

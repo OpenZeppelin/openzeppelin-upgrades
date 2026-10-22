@@ -70,7 +70,7 @@ contract StructMemberExactMap {
     struct S {
         /// @custom:oz-renamed-from old_a
         uint256 a;
-        // ñ 日本 🚀
+        // Multi-byte character: 🚀
         /// @custom:oz-renamed-from old_b
         uint128 b; /// @custom:oz-renamed-from old_c
         uint128 c;

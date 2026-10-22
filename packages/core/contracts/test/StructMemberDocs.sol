@@ -101,7 +101,7 @@ contract StructMemberDocs {
     /** @custom:oz-renamed-from a *//** @custom:oz-retyped-from uint8 */
     uint256 adjacentBlocks;
 
-    /// ñ 日本 🚀
+    /// 🚀
     /// @custom:oz-renamed-from a
     uint256 unicodeText;
 
@@ -241,7 +241,7 @@ contract StructMemberDocs {
         /** @custom:oz-renamed-from a *//** @custom:oz-retyped-from uint8 */
         uint256 adjacentBlocks;
 
-        /// ñ 日本 🚀
+        /// 🚀
         /// @custom:oz-renamed-from a
         uint256 unicodeText;
 
