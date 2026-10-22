@@ -282,3 +282,18 @@ test('multiple annotations in a doc block without line prefixes', t => {
   const layout = t.context.layout('StateVariableDocBlock');
   t.like(layout.storage, { length: 1, 0: { label: 'x', renamedFrom: 'a', retypedFrom: 'uint8' } });
 });
+
+test('stale rename annotation report', t => {
+  const v1 = t.context.layout('StructMemberBadV1');
+  const v2 = t.context.layout('StructMemberStaleRenameV2');
+  const report = getStorageUpgradeReport(v1, v2, withValidationDefaults({}));
+  t.false(report.ok);
+  t.is(
+    report.explain(),
+    `${v2.storage[0].src}: Upgraded \`s\` to an incompatible type\n` +
+      '  - Bad upgrade from struct StructMemberBadV1.S to struct StructMemberStaleRenameV2.S\n' +
+      '  - In struct StructMemberStaleRenameV2.S\n' +
+      "    - `y` has a '@custom:oz-renamed-from q' annotation, but it was not renamed\n" +
+      '      > If the annotation is left over from an earlier upgrade, remove it.',
+  );
+});

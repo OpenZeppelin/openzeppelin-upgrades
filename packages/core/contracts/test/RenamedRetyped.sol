@@ -62,3 +62,12 @@ contract LayoutChangeV2 {
     /// @custom:oz-retyped-from bool
     uint8 b;
 }
+
+contract StaleRenameV1 {
+    uint y;
+}
+
+contract StaleRenameV2 {
+    /// @custom:oz-renamed-from x
+    uint y;
+}

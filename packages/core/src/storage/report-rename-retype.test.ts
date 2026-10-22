@@ -155,3 +155,19 @@ test('kept retype annotation without layout info', t => {
   const updated = t.context.extractStorageLayoutWithoutSlots('NonHardcodedRetypeV2');
   t.true(getReport(original, updated).ok);
 });
+
+test('rename annotation without rename', t => {
+  const v1 = t.context.extractStorageLayout('StaleRenameV1');
+  const v2 = t.context.extractStorageLayout('StaleRenameV2');
+  const report = getReport(v1, v2);
+  t.false(report.ok);
+  t.is(
+    report.explain(),
+    "file.sol:1: `y` has a '@custom:oz-renamed-from x' annotation, but it was not renamed\n" +
+      '  > If the annotation is left over from an earlier upgrade, remove it.',
+  );
+
+  // A rename to a different name is reported as such
+  const renamed = getReport(v1, t.context.extractStorageLayout('RenameV1'));
+  t.is(renamed.explain(), 'file.sol:1: Renamed `y` to `x`');
+});

@@ -109,8 +109,16 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
     case 'finishgap':
       return `Converted end of storage gap ${label(op.original)} to ${label(op.updated)}`;
 
-    case 'rename':
+    case 'rename': {
+      if (op.original.label === op.updated.label && op.updated.renamedFrom !== undefined) {
+        // The field keeps its name, so the annotation describes a rename that did not happen in this upgrade
+        return printWithHints({
+          title: `${label(op.updated)} has a '@custom:oz-renamed-from ${op.updated.renamedFrom}' annotation, but it was not renamed`,
+          hints: ['If the annotation is left over from an earlier upgrade, remove it.'],
+        });
+      }
       return `Renamed ${label(op.original)} to ${label(op.updated)}`;
+    }
 
     case 'replace':
       return `Replaced ${label(op.original)} with ${label(op.updated)} of incompatible type`;

@@ -320,3 +320,19 @@ test('solc 0.8.20', async t => {
   const validation = await compileAndValidate(t.context.input, content, '0.8.20');
   assertAnnotationsApplied(t, validation);
 });
+
+test('stale rename annotation report', t => {
+  const v1 = getLayout(t.context.validation, 'NamespacedBadV1');
+  const v2 = getLayout(t.context.validation, 'NamespacedStaleRenameV2');
+  const report = getStorageUpgradeReport(v1, v2, withValidationDefaults({}));
+  t.false(report.ok);
+  const items = v2.namespaces?.['erc7201:example.main'];
+  if (items === undefined) {
+    throw new Error('Namespace not found');
+  }
+  t.is(
+    report.explain(),
+    `${items[1].src}: \`y\` has a '@custom:oz-renamed-from q' annotation, but it was not renamed\n` +
+      '  > If the annotation is left over from an earlier upgrade, remove it.',
+  );
+});
