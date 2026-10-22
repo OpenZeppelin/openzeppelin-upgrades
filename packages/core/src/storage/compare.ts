@@ -203,12 +203,11 @@ export class StorageLayoutComparator {
       original.label !== updated.renamedFrom &&
       (updated.label !== original.label ||
         (updated.renamedFrom !== undefined && updated.renamedFrom !== original.renamedFrom));
-    const typeChange =
-      !this.isRetypedFromOriginal(original, updated) &&
-      this.getTypeChange(original.type, updated.type, { allowAppend: false });
+    const retypedFromOriginal = this.isRetypedFromOriginal(original, updated);
+    const typeChange = !retypedFromOriginal && this.getTypeChange(original.type, updated.type, { allowAppend: false });
     const layoutChange = this.getLayoutChange(original, updated);
 
-    if (updated.retypedFrom && layoutChange && (!layoutChange.uncertain || !layoutChange.knownCompatible)) {
+    if (retypedFromOriginal && layoutChange && (!layoutChange.uncertain || !layoutChange.knownCompatible)) {
       return { kind: 'layoutchange', original, updated, change: layoutChange, cost: LAYOUTCHANGE_COST };
     } else if (nameChange && endMatchesGap(original, updated)) {
       // original is a gap that was consumed by a non-gap ending at the same slot, which is safe

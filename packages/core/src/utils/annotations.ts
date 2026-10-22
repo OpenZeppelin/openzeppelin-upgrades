@@ -1,6 +1,9 @@
 import { execall } from './execall';
 import { Node } from 'solidity-ast/node';
 
+// Matches one NatSpec tag: `@title:tag args`, where the args run until the next line that starts with a tag
+export const ANNOTATION_REGEX = /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s*@\w+)[^])*)/m;
+
 /**
  * Whether the given doc string has an annotation tag.
  */
@@ -18,10 +21,7 @@ export function hasAnnotationTag(doc: string, tag: string): boolean {
  */
 export function getAnnotationArgs(doc: string, tag: string, supportedArgs?: readonly string[]) {
   const result: string[] = [];
-  for (const { groups } of execall(
-    /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s*@\w+)[^])*)/m,
-    doc,
-  )) {
+  for (const { groups } of execall(ANNOTATION_REGEX, doc)) {
     if (groups && groups.title === 'custom' && groups.tag === tag) {
       const trimmedArgs = groups.args.trim();
       if (trimmedArgs.length > 0) {

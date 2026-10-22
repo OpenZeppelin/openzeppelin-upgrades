@@ -5,7 +5,7 @@ import { StorageItem, StorageLayout, TypeItem, isStructMembers } from './layout'
 import { SrcDecoder } from '../src-decoder';
 import { getAnnotationArgs, getDocumentation, hasAnnotationTag } from '../utils/annotations';
 import { Node } from 'solidity-ast/node';
-import { CompilationContext, getTypeMembers, loadLayoutType } from './extract';
+import { CompilationContext, getTypeMembers, loadLayoutType, setMemberAnnotations } from './extract';
 import { UpgradesError } from '../error';
 import * as versions from 'compare-versions';
 import { calculateERC7201StorageLocation, ERC7201_FORMULA_PREFIX } from '../utils/erc7201';
@@ -49,7 +49,9 @@ export function loadNamespaces(
   const linearized = namespacedLinearized ?? origLinearized;
   for (const [i, contractDef] of linearized.entries()) {
     const origContractDef = origLinearized[i];
-    const contractContext = { ...context, contractDef };
+    // Member documentation is read from the original sources, so the resolver comes from the original context
+    // even when the namespaced context is used to look up the structs.
+    const contractContext = { ...context, contractDef, structDocs: origContext.structDocs };
     addContractNamespacesWithSrc(
       namespacesWithSrc,
       decodeSrc,
@@ -248,6 +250,7 @@ function getNamespacedStorageItems(
   origContractDef: ContractDefinition,
 ): StorageItem[] {
   const storageItems: StorageItem[] = [];
+  const docs = context.structDocs === undefined ? undefined : context.structDocs(node);
 
   for (const astMember of getTypeMembers(node, { typeName: true })) {
     const item: StorageItem = {
@@ -256,6 +259,10 @@ function getNamespacedStorageItems(
       type: astMember.type,
       src: decodeSrc({ src: getOriginalMemberSrc(node.canonicalName, astMember.label, origContractDef) }),
     };
+
+    if (docs !== undefined) {
+      setMemberAnnotations(item, docs);
+    }
 
     const layoutMember = findLayoutStructMember(
       context.storageLayout?.types ?? {},
@@ -272,7 +279,7 @@ function getNamespacedStorageItems(
 
     // If context is namespaced, we have storage layout, and this will fill in enum members just like in extractStorageLayout.
     // If context is original, this will add the types from the namespace structs to the layout.
-    loadLayoutType(astMember.typeName, layout, context.deref);
+    loadLayoutType(astMember.typeName, layout, context.deref, context.structDocs);
   }
   return storageItems;
 }
