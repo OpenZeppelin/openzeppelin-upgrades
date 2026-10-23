@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 1.47.0 (2026-10-23)
+
+- Support `@custom:oz-renamed-from` and `@custom:oz-retyped-from` annotations on struct members, including members of ERC-7201 namespaced structs. ([#1308](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1308))
+  - Fix parsing of multiple annotations in a `/** */` comment block without `*` line prefixes.
+  - Fix "Layout could have changed" errors for variables whose type didn't change but that keep a `@custom:oz-retyped-from` annotation from an earlier upgrade.
+  - Clarify the error for a `@custom:oz-renamed-from` annotation on a variable or struct member that was not renamed.
+
 ## 1.46.0 (2026-06-02)
 
 - Support the Solidity 0.8.35 `erc7201` comptime builtin as a `layout at` base slot. ([#1253](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1253))
