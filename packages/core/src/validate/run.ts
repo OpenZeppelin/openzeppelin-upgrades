@@ -21,6 +21,7 @@ import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
 import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
 import { getStorageLocationAnnotation, isNamespaceSupported } from '../storage/namespace';
+import { makeStructDocsResolver } from '../utils/struct-member-docs';
 import { UpgradesError } from '../error';
 import { assertUnreachable } from '../utils/assert';
 import { logWarning } from '../utils/log';
@@ -177,7 +178,7 @@ export function skipCheck(error: ValidationError['kind'], node: Node): boolean {
  * @param solcOutput Solc output to validate
  * @param decodeSrc Source decoder for the original source code
  * @param solcVersion The version of solc used to compile the contracts
- * @param solcInput Solc input that the compiler was invoked with
+ * @param solcInput Solc input that the compiler was invoked with. If omitted, annotations on struct members are not read.
  * @param namespacedOutput Namespaced solc output to extract storage layout information for namespaced types
  * @returns A record of validation results for each fully qualified contract name
  */
@@ -194,6 +195,10 @@ export function validate(
   const libraryIds: Record<string, number[]> = {};
 
   const deref = astDereferencer(solcOutput);
+  if (namespacedOutput !== undefined) {
+    checkNamespacedSourceIds(solcOutput, namespacedOutput);
+  }
+  const structDocs = makeStructDocsResolver(solcInput, solcOutput, decodeSrc);
 
   const delegateCallCache = initOpcodeCache();
   const selfDestructCache = initOpcodeCache();
@@ -253,6 +258,7 @@ export function validate(
           deref,
           solcOutput.contracts[source][contractDef.name].storageLayout,
           getNamespacedCompilationContext(source, contractDef, namespacedOutput),
+          structDocs,
         );
 
         validation[key].methods = [...findAll('FunctionDefinition', contractDef)]
@@ -331,6 +337,22 @@ function assertNotNamespace(node: StructDefinition, decodeSrc: SrcDecoder, stric
       logWarning(msg, [
         'Structs with the @custom:storage-location annotation must be defined within a contract, otherwise they are not included in storage layout validations. Move the struct definition into a contract, or remove the annotation if the struct is not used for namespaced storage.',
       ]);
+    }
+  }
+}
+
+/**
+ * Throws if a source of the solc output is missing from the namespaced solc output or has a different id there.
+ * Structs from the namespaced compilation are mapped back to their original definitions by source id.
+ */
+function checkNamespacedSourceIds(solcOutput: SolcOutput, namespacedOutput: SolcOutput) {
+  for (const [source, { id }] of Object.entries(solcOutput.sources)) {
+    const namespacedSource = namespacedOutput.sources[source];
+    if (namespacedSource === undefined) {
+      throw new Error(`Source ${source} not found in namespaced solc output`);
+    }
+    if (namespacedSource.id !== id) {
+      throw new Error(`Source ids differ between the solc output and the namespaced solc output for ${source}`);
     }
   }
 }

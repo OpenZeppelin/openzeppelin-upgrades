@@ -9,6 +9,8 @@ import { getStorageUpgradeErrors } from '.';
 
 interface Context {
   extractStorageLayout: (contract: string) => ReturnType<typeof extractStorageLayout>;
+  // Without the compiler's storage layout, the variables have no slots
+  extractStorageLayoutWithoutSlots: (contract: string) => ReturnType<typeof extractStorageLayout>;
 }
 
 const test = _test as TestFn<Context>;
@@ -50,6 +52,8 @@ test.before(async t => {
 
   t.context.extractStorageLayout = name =>
     extractStorageLayout(contracts[name], dummyDecodeSrc, deref[name], storageLayout[name]);
+  t.context.extractStorageLayoutWithoutSlots = name =>
+    extractStorageLayout(contracts[name], dummyDecodeSrc, deref[name]);
 });
 
 function getReport(original: StorageLayout, updated: StorageLayout) {
@@ -129,4 +133,41 @@ test('retype with layout change', t => {
   const report = getReport(v1, v2);
   t.false(report.ok);
   t.snapshot(report.explain());
+});
+
+test('retype without layout info', t => {
+  // Without slots, a retype is uncertain unless the types are known to be compatible
+  const v1 = t.context.extractStorageLayoutWithoutSlots('NonHardcodedRetypeV1');
+  const v2 = t.context.extractStorageLayoutWithoutSlots('NonHardcodedRetypeV2');
+  const report = getReport(v1, v2);
+  t.false(report.ok);
+  t.true(report.explain().includes('Layout could have changed for `a` (address -> bytes20)'), report.explain());
+
+  const compatibleV1 = t.context.extractStorageLayoutWithoutSlots('RetypeV1');
+  const compatibleV2 = t.context.extractStorageLayoutWithoutSlots('RetypeV2');
+  t.true(getReport(compatibleV1, compatibleV2).ok);
+});
+
+test('kept retype annotation without layout info', t => {
+  // Upgrading from and to the same contract: `a` stays `bytes20` and keeps its `@custom:oz-retyped-from address`
+  // annotation from an earlier retype, which doesn't apply to this upgrade
+  const original = t.context.extractStorageLayoutWithoutSlots('NonHardcodedRetypeV2');
+  const updated = t.context.extractStorageLayoutWithoutSlots('NonHardcodedRetypeV2');
+  t.true(getReport(original, updated).ok);
+});
+
+test('rename annotation without rename', t => {
+  const v1 = t.context.extractStorageLayout('StaleRenameV1');
+  const v2 = t.context.extractStorageLayout('StaleRenameV2');
+  const report = getReport(v1, v2);
+  t.false(report.ok);
+  t.is(
+    report.explain(),
+    "file.sol:1: `y` has a '@custom:oz-renamed-from x' annotation, but it was not renamed\n" +
+      '  > If the annotation is left over from an earlier upgrade, remove it.',
+  );
+
+  // A rename to a different name is reported as such
+  const renamed = getReport(v1, t.context.extractStorageLayout('RenameV1'));
+  t.is(renamed.explain(), 'file.sol:1: Renamed `y` to `x`');
 });

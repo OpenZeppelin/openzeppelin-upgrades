@@ -8,12 +8,14 @@ import {
   TypeName,
 } from 'solidity-ast';
 import { isNodeType, findAll, ASTDereferencer } from 'solidity-ast/utils';
-import { StorageLayout, StructMember, TypeItem, isStructMembers, EnumMember } from './layout';
+import { StorageLayout, StorageField, StructMember, TypeItem, isStructMembers, EnumMember } from './layout';
 import { normalizeTypeIdentifier } from '../utils/type-id';
 import { SrcDecoder } from '../src-decoder';
 import { mapValues } from '../utils/map-values';
 import { pick } from '../utils/pick';
 import { execall } from '../utils/execall';
+import { ANNOTATION_REGEX, getDocumentation } from '../utils/annotations';
+import { StructDocsResolver } from '../utils/struct-member-docs';
 import { loadNamespaces } from './namespace';
 import { UpgradesError } from '../error';
 import { resolveBaseSlot } from '../utils/erc7201-builtin';
@@ -28,6 +30,7 @@ export interface CompilationContext {
   deref: ASTDereferencer;
   contractDef: ContractDefinition;
   storageLayout?: StorageLayout;
+  structDocs?: StructDocsResolver;
 }
 
 export function extractStorageLayout(
@@ -36,6 +39,7 @@ export function extractStorageLayout(
   deref: ASTDereferencer,
   storageLayout?: StorageLayout,
   namespacedContext?: CompilationContext,
+  structDocs?: StructDocsResolver,
 ): StorageLayout {
   const layout: StorageLayout = { storage: [], types: {}, layoutVersion: currentLayoutVersion, flat: false };
 
@@ -72,7 +76,7 @@ export function extractStorageLayout(
       const { varDecl, contract } = origin;
       const { renamedFrom, retypedFrom } = getRetypedRenamed(varDecl);
       // Solc layout doesn't bring members for enums so we get them using the ast method
-      loadLayoutType(varDecl.typeName, layout, deref);
+      loadLayoutType(varDecl.typeName, layout, deref, structDocs);
       const { label, offset, slot, type } = storage;
       const src = decodeSrc(varDecl);
       layout.storage.push({ label, offset, slot, type, contract, src, retypedFrom, renamedFrom });
@@ -93,13 +97,13 @@ export function extractStorageLayout(
             renamedFrom,
           });
 
-          loadLayoutType(varDecl.typeName, layout, deref);
+          loadLayoutType(varDecl.typeName, layout, deref, structDocs);
         }
       }
     }
   }
 
-  const origContext = { deref, contractDef, storageLayout };
+  const origContext = { deref, contractDef, storageLayout, structDocs };
   loadNamespaces(decodeSrc, layout, origContext, namespacedContext);
 
   return layout;
@@ -201,7 +205,12 @@ function getOriginContract(contract: ContractDefinition, astId: number | undefin
   }
 }
 
-export function loadLayoutType(typeName: TypeName | null | undefined, layout: StorageLayout, deref: ASTDereferencer) {
+export function loadLayoutType(
+  typeName: TypeName | null | undefined,
+  layout: StorageLayout,
+  deref: ASTDereferencer,
+  structDocs?: StructDocsResolver,
+) {
   // Note: A UserDefinedTypeName can also refer to a ContractDefinition but we won't care about those.
   const derefUserDefinedType = deref(['StructDefinition', 'EnumDefinition', 'UserDefinedValueTypeDefinition']);
 
@@ -224,6 +233,10 @@ export function loadLayoutType(typeName: TypeName | null | undefined, layout: St
         layout.types[type].underlying = typeDef.underlyingType.typeDescriptions.typeIdentifier ?? undefined;
       } else {
         layout.types[type].members ??= getTypeMembers(typeDef);
+        if (typeDef.nodeType === 'StructDefinition' && structDocs !== undefined) {
+          // Add annotations whether the members came from the compiler's storage layout or from the AST above
+          setStructMemberAnnotations(layout.types[type], structDocs(typeDef));
+        }
       }
 
       // Recursively look for the types referenced in this definition and add them to the queue.
@@ -238,22 +251,46 @@ export function loadLayoutType(typeName: TypeName | null | undefined, layout: St
 }
 
 function getRetypedRenamed(varDecl: VariableDeclaration) {
+  return getRetypedRenamedFromDoc(getDocumentation(varDecl));
+}
+
+export function getRetypedRenamedFromDoc(doc: string) {
   let retypedFrom, renamedFrom;
-  if ('documentation' in varDecl) {
-    const docs =
-      typeof varDecl.documentation === 'string' ? varDecl.documentation : (varDecl.documentation?.text ?? '');
-    for (const { groups } of execall(
-      /^\s*(?:@(?<title>\w+)(?::(?<tag>[a-z][a-z-]*))? )?(?<args>(?:(?!^\s@\w+)[^])*)/m,
-      docs,
-    )) {
-      if (groups?.title === 'custom') {
-        if (groups.tag === 'oz-retyped-from') {
-          retypedFrom = groups.args.trim();
-        } else if (groups.tag === 'oz-renamed-from') {
-          renamedFrom = groups.args.trim();
-        }
+  for (const { groups } of execall(ANNOTATION_REGEX, doc)) {
+    if (groups?.title === 'custom') {
+      if (groups.tag === 'oz-retyped-from') {
+        retypedFrom = groups.args.trim();
+      } else if (groups.tag === 'oz-renamed-from') {
+        renamedFrom = groups.args.trim();
       }
     }
   }
   return { retypedFrom, renamedFrom };
+}
+
+/**
+ * Sets `renamedFrom` and `retypedFrom` on the given layout field (a namespace member or a member of a struct type)
+ * from the annotations in that member's NatSpec, for the storage layout comparison to use. Each field is only set if
+ * the NatSpec has the corresponding annotation, so unannotated members have no `renamedFrom` or `retypedFrom` key.
+ */
+export function setMemberAnnotations(field: StorageField, docs: Map<string, string>) {
+  const doc = docs.get(field.label);
+  if (doc !== undefined) {
+    const { retypedFrom, renamedFrom } = getRetypedRenamedFromDoc(doc);
+    if (retypedFrom !== undefined) {
+      field.retypedFrom = retypedFrom;
+    }
+    if (renamedFrom !== undefined) {
+      field.renamedFrom = renamedFrom;
+    }
+  }
+}
+
+function setStructMemberAnnotations(typeItem: TypeItem, docs: Map<string, string> | undefined) {
+  if (docs !== undefined) {
+    assert(typeItem.members !== undefined && isStructMembers(typeItem.members));
+    for (const member of typeItem.members) {
+      setMemberAnnotations(member, docs);
+    }
+  }
 }

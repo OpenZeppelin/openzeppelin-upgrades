@@ -7,10 +7,10 @@ type ValidationDataV1 = ValidationRunData;
 type ValidationDataV2 = ValidationRunData[];
 
 const currentMajor = '3';
-const currentVersion = '3.4';
+const currentVersion = '3.5';
 
 interface ValidationDataV3 {
-  version: '3' | '3.1' | '3.2' | '3.3' | '3.4';
+  version: '3' | '3.1' | '3.2' | '3.3' | '3.4' | '3.5';
   log: ValidationRunData[];
 }
 
