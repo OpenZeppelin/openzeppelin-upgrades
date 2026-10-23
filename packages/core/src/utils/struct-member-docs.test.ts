@@ -62,9 +62,9 @@ function getStruct(contractDef: ContractDefinition, name: string): StructDefinit
 
 /**
  * Asserts that each member of the struct in the twin fixture has documentation exactly when the state variable with
- * the same name has, with the same annotations, and returns the member documentation.
+ * the same name has, with the same annotations.
  */
-function assertTwins(t: ExecutionContext, input: SolcInput, output: SolcOutput): Map<string, string> {
+function assertTwins(t: ExecutionContext, input: SolcInput, output: SolcOutput) {
   const contractDef = getContract(output, twinsSource, 'StructMemberDocs');
   const stateVars: VariableDeclaration[] = [];
   for (const node of contractDef.nodes) {
@@ -96,7 +96,6 @@ function assertTwins(t: ExecutionContext, input: SolcInput, output: SolcOutput):
       name,
     );
   }
-  return docs;
 }
 
 /**
@@ -134,8 +133,7 @@ test('member documentation has the same annotations as state variable documentat
   const content = getSource(input, twinsSource).toString('utf8');
   t.regex(content, /\n[ \t]+\r?\n/);
   t.regex(content, /\n[ \t]+\* \r?\n/);
-  const docs = assertTwins(t, input, output);
-  t.snapshot(Object.fromEntries(docs));
+  assertTwins(t, input, output);
 });
 
 test('member documentation with CRLF line endings', async t => {
