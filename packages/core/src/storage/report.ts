@@ -11,6 +11,7 @@ import {
   LayoutChange,
   storageFieldEnd,
   storageFieldBegin,
+  stripContractSubstrings,
 } from './compare';
 import { itemize, itemizeWith } from '../utils/itemize';
 import { indent } from '../utils/indent';
@@ -126,7 +127,7 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
     case 'layoutchange': {
       const title =
         `Layout ${op.change.uncertain ? 'could have changed' : 'changed'} for ${label(op.updated)} ` +
-        `(${op.original.type.item.label} -> ${op.updated.type.item.label})\n` +
+        `(${typeLabel(op.original.type)} -> ${typeLabel(op.updated.type)})\n` +
         describeLayoutTransition(op.change);
       const hints = [];
 
@@ -192,11 +193,11 @@ function explainTypeChange(ch: TypeChange, original: StorageField, updated: Stor
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent representation sizes`;
 
     case 'mapping key':
-      return `In key of ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner, original, updated));
+      return `In key of ${typeLabel(ch.updated)}\n` + itemize(explainTypeChange(ch.inner, original, updated));
 
     case 'mapping value':
     case 'array value':
-      return `In ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner, original, updated));
+      return `In ${typeLabel(ch.updated)}\n` + itemize(explainTypeChange(ch.inner, original, updated));
 
     case 'array shrink':
     case 'array grow': {
@@ -228,7 +229,7 @@ function explainTypeChange(ch: TypeChange, original: StorageField, updated: Stor
     }
 
     case 'unknown':
-      return `Unknown type ${ch.updated.item.label}`;
+      return `Unknown type ${typeLabel(ch.updated)}`;
   }
 }
 
@@ -273,7 +274,7 @@ function explainTypeChangeDetails(ch: TypeChange): string | undefined {
     case 'struct members': {
       const { allowAppend } = ch;
       return (
-        `In ${ch.updated.item.label}\n` +
+        `In ${typeLabel(ch.updated)}\n` +
         itemize(
           ...ch.ops.flatMap((op, i) => {
             if (op.kind === 'layoutchange' && i !== 0) {
@@ -288,7 +289,7 @@ function explainTypeChangeDetails(ch: TypeChange): string | undefined {
     }
 
     case 'enum members':
-      return `In ${ch.updated.item.label}\n` + itemize(...ch.ops.map(explainEnumOperation));
+      return `In ${typeLabel(ch.updated)}\n` + itemize(...ch.ops.map(explainEnumOperation));
   }
 }
 
@@ -319,8 +320,8 @@ function explainBasicOperation<T>(op: BasicOperation<T>, getName: (t: T) => stri
 }
 
 function describeTransition(original: ParsedTypeDetailed, updated: ParsedTypeDetailed): string {
-  const originalLabel = original.item.label;
-  const updatedLabel = updated.item.label;
+  const originalLabel = typeLabel(original);
+  const updatedLabel = typeLabel(updated);
 
   if (originalLabel === updatedLabel) {
     return `to ${updatedLabel}`;
@@ -339,6 +340,10 @@ function describeLayoutTransition(change: LayoutChange): string {
     }
   }
   return itemize(...res);
+}
+
+function typeLabel(type: ParsedTypeDetailed): string {
+  return stripContractSubstrings(type.item.label) ?? type.item.label;
 }
 
 function label(variable: { label: string }): string {
