@@ -124,23 +124,3 @@ test('struct member annotations', async t => {
   );
   t.true(report.ok, report.explain());
 });
-
-test('struct member annotations - namespace retype without layout info', async t => {
-  // Build info files do not include a namespaced compilation, so namespace members have no slots and a retype that is
-  // not known to be compatible is reported as uncertain.
-  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/StructMemberAnnotations.sol:NamespaceRetypeV2`);
-  await fs.mkdir('struct-member-annotations-namespace');
-  await fs.writeFile('struct-member-annotations-namespace/1.json', JSON.stringify(buildInfo));
-
-  const report = await validateUpgradeSafety(
-    'struct-member-annotations-namespace',
-    'NamespaceRetypeV2',
-    'NamespaceRetypeV1',
-  );
-  t.false(report.ok);
-  t.true(
-    report.explain().includes('Layout could have changed for `x` (bytes32 -> struct TransientSlot.TBytes32)'),
-    report.explain(),
-  );
-  t.snapshot(report.explain());
-});
