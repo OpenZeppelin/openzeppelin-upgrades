@@ -164,15 +164,17 @@ export function getErrors(data: ValidationData, version: Version, opts: Validati
 }
 
 function getAllErrors(runValidation: ValidationRunData, fullContractName: string) {
-  // add self's opcode errors only, since opcode errors already include parents
-  const opcodeErrors = runValidation[fullContractName].errors.filter(error => isOpcodeError(error));
+  // Opcode and constructor errors already include parents (with allow-reachable filtering).
+  const selfContainedErrors = runValidation[fullContractName].errors.filter(
+    error => isOpcodeError(error) || error.kind === 'constructor',
+  );
 
   // add other errors from self and inherited contracts
   const otherErrors = getUsedContracts(fullContractName, runValidation)
     .flatMap(name => runValidation[name].errors)
-    .filter(error => !isOpcodeError(error));
+    .filter(error => !isOpcodeError(error) && error.kind !== 'constructor');
 
-  return [...opcodeErrors, ...otherErrors];
+  return [...selfContainedErrors, ...otherErrors];
 }
 
 function getAllMethods(runValidation: ValidationRunData, fullContractName: string): string[] {

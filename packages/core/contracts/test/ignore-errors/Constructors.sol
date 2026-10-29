@@ -92,3 +92,21 @@ contract UnsafeChild9 is UnsafeFunctions {
 
     function foo9(uint x) public {}
 }
+
+abstract contract ParentHasConstructor {
+    /// @custom:oz-upgrades-unsafe-allow state-variable-immutable
+    uint256 immutable x;
+    constructor(uint256 _x) {
+        x = _x;
+    }
+}
+
+/// @custom:oz-upgrades-unsafe-allow constructor
+contract ChildHasAllowConstructor_Bad is ParentHasConstructor {
+    constructor() ParentHasConstructor(1) {}
+}
+
+/// @custom:oz-upgrades-unsafe-allow-reachable constructor
+contract ChildHasAllowReachableConstructor_Ok is ParentHasConstructor {
+    constructor() ParentHasConstructor(1) {}
+}

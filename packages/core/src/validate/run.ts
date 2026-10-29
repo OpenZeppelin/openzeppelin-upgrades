@@ -242,7 +242,7 @@ export function validate(
 
         validation[key].src = decodeSrc(contractDef);
         validation[key].errors = [
-          ...getConstructorErrors(contractDef, decodeSrc),
+          ...getConstructorErrors(contractDef, deref, decodeSrc),
           ...getOpcodeErrors(contractDef, deref, decodeSrc, delegateCallCache, selfDestructCache),
           ...getStateVariableErrors(contractDef, decodeSrc),
           // TODO: add linked libraries support
@@ -390,7 +390,27 @@ function getNamespacedCompilationContext(
   };
 }
 
-function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
+function* getConstructorErrors(
+  contractDef: ContractDefinition,
+  deref: ASTDereferencer,
+  decodeSrc: SrcDecoder,
+): Generator<ValidationError> {
+  yield* getDirectConstructorErrors(contractDef, decodeSrc);
+
+  // Reachable constructors in parent contracts are skipped when the current contract
+  // (or an annotation that applies to it) allows `constructor` via allow-reachable.
+  if (!skipCheckReachable('constructor', contractDef)) {
+    for (const base of contractDef.baseContracts) {
+      const referencedContract = deref('ContractDefinition', base.baseName.referencedDeclaration);
+      yield* getConstructorErrors(referencedContract, deref, decodeSrc);
+    }
+  }
+}
+
+function* getDirectConstructorErrors(
+  contractDef: ContractDefinition,
+  decodeSrc: SrcDecoder,
+): Generator<ValidationError> {
   for (const fnDef of findAll('FunctionDefinition', contractDef, node => skipCheck('constructor', node))) {
     if (fnDef.kind === 'constructor' && ((fnDef.body?.statements?.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
       yield {

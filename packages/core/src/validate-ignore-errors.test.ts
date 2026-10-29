@@ -49,6 +49,8 @@ test.before(async t => {
     'contracts/test/ignore-errors/Constructors.sol:UnsafeAllowChild7',
     'contracts/test/ignore-errors/Constructors.sol:AllowReachableChild8',
     'contracts/test/ignore-errors/Constructors.sol:UnsafeChild9',
+    'contracts/test/ignore-errors/Constructors.sol:ChildHasAllowConstructor_Bad',
+    'contracts/test/ignore-errors/Constructors.sol:ChildHasAllowReachableConstructor_Ok',
     // 'contracts/test/ignore-errors/Modifiers.sol:ModifierNotUsed',
     'contracts/test/ignore-errors/Modifiers.sol:ModifierUsed',
   ];
@@ -135,3 +137,6 @@ testValid('UnsafeChild9', 'transparent', false);
 // testValid('ModifierNotUsed', 'transparent', true);
 
 testValid('ModifierUsed', 'transparent', false);
+
+testValid('ChildHasAllowConstructor_Bad', 'transparent', false);
+testValid('ChildHasAllowReachableConstructor_Ok', 'transparent', true);
