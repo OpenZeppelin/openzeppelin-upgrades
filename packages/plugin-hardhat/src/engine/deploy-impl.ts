@@ -37,16 +37,36 @@ export interface DeployData {
   fullOpts: Required<UpgradeOptions>;
 }
 
+export type GetDeployDataOptions = {
+  /**
+   * When true, missing `constructorArgs` do not fail encoding. Validation looks up
+   * contracts by bytecode `withMetadata` and does not need constructor calldata.
+   * Deploy paths must leave this unset so a required constructor still errors.
+   */
+  allowMissingConstructorArgs?: boolean;
+};
+
 export async function getDeployData(
   binding: EngineBinding,
   info: ContractInfo,
   opts: UpgradeOptions,
+  options: GetDeployDataOptions = {},
 ): Promise<DeployData> {
   const provider = binding.provider;
   const validations = await readValidations(binding.hre);
 
   const unlinkedBytecode = getUnlinkedBytecode(validations, info.bytecode);
-  const encodedArgs = binding.encodeConstructorArgs(info, opts.constructorArgs ?? []);
+  let encodedArgs: string;
+  try {
+    encodedArgs = binding.encodeConstructorArgs(info, opts.constructorArgs ?? []);
+  } catch (e) {
+    if (options.allowMissingConstructorArgs && opts.constructorArgs === undefined) {
+      // Layout/version lookup for validation uses withMetadata (bytecode only).
+      encodedArgs = '';
+    } else {
+      throw e;
+    }
+  }
   const version = getVersion(unlinkedBytecode, info.bytecode, encodedArgs);
   const layout = getStorageLayout(validations, version);
   const fullOpts = withDefaults(opts);

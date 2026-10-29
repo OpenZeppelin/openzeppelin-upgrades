@@ -72,3 +72,19 @@ test('upgrade - redeploy with different args', async t => {
 
   t.not(implementation1, implementation2);
 });
+
+test('validateImplementation without constructorArgs', async t => {
+  const { WithConstructor } = t.context;
+  // Regression for #654: validation must not require constructorArgs.
+  await t.notThrowsAsync(() =>
+    upgrades.validateImplementation(WithConstructor, { unsafeAllow: ['constructor'] }),
+  );
+});
+
+test('deployProxy still requires constructorArgs when the constructor needs them', async t => {
+  const { WithConstructor } = t.context;
+  await t.throwsAsync(() => upgrades.deployProxy(WithConstructor, [], { initializer: false }), {
+    message: /types\/values length mismatch|Expected .* constructor argument/,
+  });
+});
+

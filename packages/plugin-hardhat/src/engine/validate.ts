@@ -19,7 +19,7 @@ export async function validateImplementation(
   implInfo: ContractInfo,
   opts: ValidateImplementationOptions,
 ): Promise<void> {
-  const deployData = await getDeployData(binding, implInfo, opts);
+  const deployData = await getDeployData(binding, implInfo, opts, { allowMissingConstructorArgs: true });
   await validateImpl(deployData, opts);
 }
 
@@ -36,12 +36,12 @@ export async function validateUpgrade(
   opts: ValidateUpgradeOptions,
 ): Promise<void> {
   if (reference.kind === 'info') {
-    const origDeployData = await getDeployData(binding, reference.info, opts);
+    const origDeployData = await getDeployData(binding, reference.info, opts, { allowMissingConstructorArgs: true });
     if (opts.kind === undefined) {
       opts.kind = inferProxyKind(origDeployData.validations, origDeployData.version);
     }
 
-    const newDeployData = await getDeployData(binding, newImplInfo, opts);
+    const newDeployData = await getDeployData(binding, newImplInfo, opts, { allowMissingConstructorArgs: true });
     assertUpgradeSafe(newDeployData.validations, newDeployData.version, newDeployData.fullOpts);
 
     if (opts.unsafeSkipStorageCheck !== true) {
@@ -50,7 +50,7 @@ export async function validateUpgrade(
   } else {
     const referenceAddress = reference.address;
     const provider = binding.provider;
-    const deployData = await getDeployData(binding, newImplInfo, opts);
+    const deployData = await getDeployData(binding, newImplInfo, opts, { allowMissingConstructorArgs: true });
     if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
       await validateProxyImpl(deployData, opts, referenceAddress);
     } else if (await isBeaconProxy(provider, referenceAddress)) {
