@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-// Upgrades of namespaced storage whose safety depends on the detailed storage layout
+// Upgrades of namespaced storage whose validation depends on the detailed storage layout
 
 contract FillSlotV1 {
     /// @custom:storage-location erc7201:example.main
@@ -87,6 +87,56 @@ contract UseGapInStructV2 {
     }
 }
 
+// Uses two slots of the gap of UseGapV1
+contract UseGapMultipleSlotsV2 {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        uint256 x;
+        uint256 y;
+        uint256 z;
+        uint256[47] __gap;
+    }
+}
+
+contract GapBeforeMemberV1 {
+    struct S {
+        uint256 x;
+        uint256[49] __gap;
+    }
+
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        S s;
+        uint256 last;
+    }
+}
+
+// Uses part of the gap in the struct, so `last` keeps its slot
+contract GapBeforeMemberV2 {
+    struct S {
+        uint256 x;
+        uint256 y;
+        uint256[48] __gap;
+    }
+
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        S s;
+        uint256 last;
+    }
+}
+
+// Fills the unused space in a slot and appends to the namespace of FillSlotV1
+contract FillSlotAndAppendV2 {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        uint128 a;
+        uint128 c;
+        uint256 b;
+        uint256 d;
+    }
+}
+
 contract RetypeInStructV1 {
     struct S {
         bytes32 x;
@@ -123,6 +173,7 @@ contract UserDefinedValueTypeV1 {
     }
 }
 
+// The underlying type of `U` changes to another type of the same size
 contract UserDefinedValueTypeV2 {
     type U is int128;
 
@@ -145,6 +196,7 @@ contract UserDefinedValueTypeInStructV1 {
     }
 }
 
+// The underlying type of `U` changes to another type of the same size
 contract UserDefinedValueTypeInStructV2 {
     type U is int128;
 
@@ -158,7 +210,7 @@ contract UserDefinedValueTypeInStructV2 {
     }
 }
 
-// Unsafe: the gap is not reduced for the new variable
+// The gap of UseGapV1 is not reduced for the new variable
 contract WrongGapV2 {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -168,7 +220,43 @@ contract WrongGapV2 {
     }
 }
 
-// Unsafe: `a` changes size, compared to FillSlotV1
+// The gap of UseGapV1 is reduced by one slot for two new variables
+contract GapReducedTooLittleV2 {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        uint256 x;
+        uint256 y;
+        uint256 z;
+        uint256[48] __gap;
+    }
+}
+
+// The gap of UseGapV1 is reduced by two slots for one new variable
+contract GapReducedTooMuchV2 {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        uint256 x;
+        uint256 y;
+        uint256[47] __gap;
+    }
+}
+
+// The gap in the struct of GapBeforeMemberV1 is not reduced, so `last` moves to another slot
+contract GapBeforeMemberWrongV2 {
+    struct S {
+        uint256 x;
+        uint256 y;
+        uint256[49] __gap;
+    }
+
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        S s;
+        uint256 last;
+    }
+}
+
+// `a` changes size, compared to FillSlotV1
 contract TypeChangeV2 {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -177,7 +265,17 @@ contract TypeChangeV2 {
     }
 }
 
-// Safe without a detailed storage layout: appends to the namespace of FillSlotV1
+// `a` changes size with a retype annotation, compared to FillSlotV1
+contract RetypeSizeChangeV2 {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        /// @custom:oz-retyped-from uint128
+        uint256 a;
+        uint256 b;
+    }
+}
+
+// Passes without a detailed storage layout: appends to the namespace of FillSlotV1
 contract AppendV2 {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {

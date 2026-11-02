@@ -86,11 +86,14 @@ for (const [reference, contract] of [
   ['FillSlotInStructV1', 'FillSlotInStructV2'],
   ['UseGapV1', 'UseGapV2'],
   ['UseGapInStructV1', 'UseGapInStructV2'],
+  ['UseGapV1', 'UseGapMultipleSlotsV2'],
+  ['GapBeforeMemberV1', 'GapBeforeMemberV2'],
+  ['FillSlotV1', 'FillSlotAndAppendV2'],
   ['RetypeInStructV1', 'RetypeInStructV2'],
   ['UserDefinedValueTypeV1', 'UserDefinedValueTypeV2'],
   ['UserDefinedValueTypeInStructV1', 'UserDefinedValueTypeInStructV2'],
 ]) {
-  test.serial(`safe with a detailed storage layout - ${contract}`, async t => {
+  test.serial(`passes with a detailed storage layout - ${contract}`, async t => {
     await prefillCache();
     const report = await validate(t, reference, contract);
     t.true(report.ok, report.explain());
@@ -98,7 +101,7 @@ for (const [reference, contract] of [
   });
 }
 
-test.serial('safe with a detailed storage layout - namespace retype', async t => {
+test.serial('passes with a detailed storage layout - namespace retype', async t => {
   await prefillCache();
   const report = await validate(
     t,
@@ -127,7 +130,7 @@ test.serial('compiler unavailable', async t => {
   t.snapshot(report.explain());
 });
 
-test.serial('unsafe with a detailed storage layout - wrong gap size', async t => {
+test.serial('fails with a detailed storage layout - wrong gap size', async t => {
   await prefillCache();
   const report = await validate(t, 'UseGapV1', 'WrongGapV2');
   t.false(report.ok);
@@ -135,7 +138,22 @@ test.serial('unsafe with a detailed storage layout - wrong gap size', async t =>
   t.false(report.explain().includes(NOTE), report.explain());
 });
 
-test.serial('unsafe with a detailed storage layout - type change', async t => {
+for (const [reference, contract, error] of [
+  ['UseGapV1', 'GapReducedTooLittleV2', 'Bad storage gap resize from 49 to 48'],
+  ['UseGapV1', 'GapReducedTooMuchV2', 'Bad storage gap resize from 49 to 47'],
+  ['GapBeforeMemberV1', 'GapBeforeMemberWrongV2', 'Slot changed from 1 to 2'],
+  ['FillSlotV1', 'RetypeSizeChangeV2', 'Number of bytes changed from 16 to 32'],
+]) {
+  test.serial(`fails with a detailed storage layout - ${contract}`, async t => {
+    await prefillCache();
+    const report = await validate(t, reference, contract);
+    t.false(report.ok);
+    t.true(report.explain().includes(error), report.explain());
+    t.false(report.explain().includes(NOTE), report.explain());
+  });
+}
+
+test.serial('fails with a detailed storage layout - type change', async t => {
   await prefillCache();
   const report = await validate(t, 'FillSlotV1', 'TypeChangeV2');
   t.false(report.ok);
@@ -143,7 +161,7 @@ test.serial('unsafe with a detailed storage layout - type change', async t => {
   t.false(report.explain().includes(NOTE), report.explain());
 });
 
-test.serial('unsafe with a detailed storage layout - deleted namespace', async t => {
+test.serial('fails with a detailed storage layout - deleted namespace', async t => {
   await prefillCache();
   const report = await validate(t, 'FillSlotV1', 'DeletedNamespaceV2');
   t.false(report.ok);
@@ -169,7 +187,7 @@ test.serial('no second pass - error that is not about storage', async t => {
   t.false(await exists(await getSolcCacheDir()));
 });
 
-test.serial('no second pass - safe without a detailed storage layout', async t => {
+test.serial('no second pass - passes without a detailed storage layout', async t => {
   const report = await validate(t, 'FillSlotV1', 'AppendV2');
   t.true(report.ok, report.explain());
   t.deepEqual(fetchCalls, []);
