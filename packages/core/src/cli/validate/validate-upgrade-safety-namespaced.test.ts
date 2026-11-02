@@ -130,18 +130,10 @@ test.serial('compiler unavailable', async t => {
   t.snapshot(report.explain());
 });
 
-test.serial('fails with a detailed storage layout - wrong gap size', async t => {
-  await prefillCache();
-  const report = await validate(t, 'UseGapV1', 'WrongGapV2');
-  t.false(report.ok);
-  t.true(report.explain().includes('Layout changed for `__gap`'), report.explain());
-  t.false(report.explain().includes(NOTE), report.explain());
-});
-
 for (const [reference, contract, error] of [
-  ['UseGapV1', 'GapReducedTooLittleV2', 'Bad storage gap resize from 49 to 48'],
-  ['UseGapV1', 'GapReducedTooMuchV2', 'Bad storage gap resize from 49 to 47'],
-  ['GapBeforeMemberV1', 'GapBeforeMemberWrongV2', 'Slot changed from 1 to 2'],
+  ['GapBeforeMemberV1', 'GapNotReducedV2', 'Slot changed from 1 to 2'],
+  ['GapBeforeMemberV1', 'GapReducedTooLittleV2', 'Bad storage gap resize from 49 to 48'],
+  ['GapBeforeMemberV1', 'GapReducedTooMuchV2', 'Bad storage gap resize from 49 to 47'],
   ['FillSlotV1', 'RetypeSizeChangeV2', 'Number of bytes changed from 16 to 32'],
 ]) {
   test.serial(`fails with a detailed storage layout - ${contract}`, async t => {

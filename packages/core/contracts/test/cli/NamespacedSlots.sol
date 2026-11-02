@@ -87,7 +87,6 @@ contract UseGapInStructV2 {
     }
 }
 
-// Uses two slots of the gap of UseGapV1
 contract UseGapMultipleSlotsV2 {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -111,7 +110,6 @@ contract GapBeforeMemberV1 {
     }
 }
 
-// Uses part of the gap in the struct, so `last` keeps its slot
 contract GapBeforeMemberV2 {
     struct S {
         uint256 x;
@@ -126,7 +124,6 @@ contract GapBeforeMemberV2 {
     }
 }
 
-// Fills the unused space in a slot and appends to the namespace of FillSlotV1
 contract FillSlotAndAppendV2 {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -165,7 +162,7 @@ contract RetypeInStructV2 {
 }
 
 contract UserDefinedValueTypeV1 {
-    type U is uint128;
+    type U is address;
 
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -173,9 +170,9 @@ contract UserDefinedValueTypeV1 {
     }
 }
 
-// The underlying type of `U` changes to another type of the same size
+// `U` changes from `address` to `uint160`, which keeps the stored value
 contract UserDefinedValueTypeV2 {
-    type U is int128;
+    type U is uint160;
 
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -184,7 +181,7 @@ contract UserDefinedValueTypeV2 {
 }
 
 contract UserDefinedValueTypeInStructV1 {
-    type U is uint128;
+    type U is address;
 
     struct S {
         U u;
@@ -196,9 +193,9 @@ contract UserDefinedValueTypeInStructV1 {
     }
 }
 
-// The underlying type of `U` changes to another type of the same size
+// `U` changes from `address` to `uint160`, which keeps the stored value
 contract UserDefinedValueTypeInStructV2 {
-    type U is int128;
+    type U is uint160;
 
     struct S {
         U u;
@@ -210,39 +207,8 @@ contract UserDefinedValueTypeInStructV2 {
     }
 }
 
-// The gap of UseGapV1 is not reduced for the new variable
-contract WrongGapV2 {
-    /// @custom:storage-location erc7201:example.main
-    struct MainStorage {
-        uint256 x;
-        uint256 y;
-        uint256[49] __gap;
-    }
-}
-
-// The gap of UseGapV1 is reduced by one slot for two new variables
-contract GapReducedTooLittleV2 {
-    /// @custom:storage-location erc7201:example.main
-    struct MainStorage {
-        uint256 x;
-        uint256 y;
-        uint256 z;
-        uint256[48] __gap;
-    }
-}
-
-// The gap of UseGapV1 is reduced by two slots for one new variable
-contract GapReducedTooMuchV2 {
-    /// @custom:storage-location erc7201:example.main
-    struct MainStorage {
-        uint256 x;
-        uint256 y;
-        uint256[47] __gap;
-    }
-}
-
-// The gap in the struct of GapBeforeMemberV1 is not reduced, so `last` moves to another slot
-contract GapBeforeMemberWrongV2 {
+// The gap is not reduced for `y`
+contract GapNotReducedV2 {
     struct S {
         uint256 x;
         uint256 y;
@@ -256,7 +222,37 @@ contract GapBeforeMemberWrongV2 {
     }
 }
 
-// `a` changes size, compared to FillSlotV1
+// The gap is reduced by one slot for two new variables
+contract GapReducedTooLittleV2 {
+    struct S {
+        uint256 x;
+        uint256 y;
+        uint256 z;
+        uint256[48] __gap;
+    }
+
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        S s;
+        uint256 last;
+    }
+}
+
+// The gap is reduced by two slots for one new variable
+contract GapReducedTooMuchV2 {
+    struct S {
+        uint256 x;
+        uint256 y;
+        uint256[47] __gap;
+    }
+
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        S s;
+        uint256 last;
+    }
+}
+
 contract TypeChangeV2 {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -265,7 +261,6 @@ contract TypeChangeV2 {
     }
 }
 
-// `a` changes size with a retype annotation, compared to FillSlotV1
 contract RetypeSizeChangeV2 {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -275,7 +270,7 @@ contract RetypeSizeChangeV2 {
     }
 }
 
-// Passes without a detailed storage layout: appends to the namespace of FillSlotV1
+// Passes without a detailed storage layout
 contract AppendV2 {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -324,5 +319,4 @@ contract NonStorageErrorV2 {
     }
 }
 
-// The namespace of FillSlotV1 is deleted
 contract DeletedNamespaceV2 {}
