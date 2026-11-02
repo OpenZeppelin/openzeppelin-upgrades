@@ -157,7 +157,7 @@ async function readBuildInfo(buildInfoFilePaths: string[], dirShortName: string)
       output: buildInfo.output,
       solcVersion: buildInfo.solcVersion,
       dirShortName,
-      ...(buildInfo.userSourceNameMap !== undefined && { userSourceNameMap: buildInfo.userSourceNameMap }),
+      userSourceNameMap: buildInfo.userSourceNameMap,
     });
   }
   return buildInfoFiles;
