@@ -17,7 +17,7 @@ const LIST_URL = 'https://binaries.soliditylang.org/emscripten-wasm32/list.json'
 const FILE_NAME = 'solc-emscripten-wasm32-v0.8.29+commit.ab55807c.js';
 const FILE_URL = `https://binaries.soliditylang.org/emscripten-wasm32/${FILE_NAME}`;
 
-// The compiler of the test contracts' version, from a dev dependency on that version of the solc package
+// Use a pinned compiler version for test contracts, since the CLI only uses the compiler of the build info's version
 const BUNDLED_SOLJSON = require.resolve('solc-0.8.29/soljson.js');
 
 const originalFetch = globalThis.fetch;
