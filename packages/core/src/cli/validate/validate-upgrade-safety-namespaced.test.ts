@@ -10,6 +10,7 @@ import {
   TASK_COMPILE_SOLIDITY_RUN_SOLCJS,
 } from 'hardhat/builtin-tasks/task-names';
 import { SolcBuild } from 'hardhat/types/builtin-tasks';
+import { version as VERSION } from 'solc-for-namespaced-cli-tests/package.json';
 
 import { SolcInput, SolcOutput } from '../../solc-api';
 import { getSolcCacheDir, setSolcCacheDirForTesting } from './namespaced-compilation';
@@ -30,7 +31,7 @@ test.before(async () => {
 });
 
 test.beforeEach(async () => {
-  // Network access fails, so tests put the compiler from the solc-0.8.29 dev dependency in the cache
+  // Network access fails, so tests put the pinned compiler in the cache
   fetchCalls = [];
   globalThis.fetch = async (input: string | URL | Request) => {
     fetchCalls.push(input.toString());
@@ -49,7 +50,7 @@ test.after.always(async () => {
   }
 });
 
-async function prefillCache(version = '0.8.29', soljson = require.resolve('solc-0.8.29/soljson.js')) {
+async function prefillCache(version = VERSION, soljson = require.resolve('solc-for-namespaced-cli-tests/soljson.js')) {
   const dir = await getSolcCacheDir();
   await fs.mkdir(dir, { recursive: true });
   await fs.copyFile(soljson, path.join(dir, `soljson-v${version}.cjs`));
@@ -103,23 +104,13 @@ for (const [reference, contract] of [
 
 test.serial('passes with a detailed storage layout - namespace retype', async t => {
   await prefillCache();
-  const report = await validate(
-    t,
-    'NamespaceRetypeV1',
-    'NamespaceRetypeV2',
-    'contracts/test/cli/StructMemberAnnotations.sol',
-  );
+  const report = await validate(t, 'NamespaceRetypeV1', 'NamespaceRetypeV2');
   t.true(report.ok, report.explain());
 });
 
 test.serial('compiler unavailable', async t => {
   // The namespace retype is uncertain without a detailed storage layout, and the compiler cannot be downloaded
-  const report = await validate(
-    t,
-    'NamespaceRetypeV1',
-    'NamespaceRetypeV2',
-    'contracts/test/cli/StructMemberAnnotations.sol',
-  );
+  const report = await validate(t, 'NamespaceRetypeV1', 'NamespaceRetypeV2');
   t.false(report.ok);
   t.true(
     report.explain().includes('Layout could have changed for `x` (bytes32 -> struct TransientSlot.TBytes32)'),
@@ -190,7 +181,7 @@ test.serial('corrupt cached compiler', async t => {
   // A path that no earlier test loaded the compiler from, since Node keeps loaded modules
   setSolcCacheDirForTesting(path.resolve('corrupt-solc-cache'));
   await fs.mkdir(await getSolcCacheDir(), { recursive: true });
-  await fs.writeFile(path.join(await getSolcCacheDir(), 'soljson-v0.8.29.cjs'), 'not a compiler');
+  await fs.writeFile(path.join(await getSolcCacheDir(), `soljson-v${VERSION}.cjs`), 'not a compiler');
 
   const report = await validate(t, 'FillSlotV1', 'FillSlotV2');
   t.false(report.ok);
@@ -213,7 +204,7 @@ test.serial('cache folder that cannot be written', async t => {
 });
 
 test.serial('cached compiler of another version', async t => {
-  // The cached file for 0.8.28 is actually the 0.8.29 compiler
+  // The cached file for 0.8.28 is actually the pinned compiler
   await prefillCache('0.8.28');
   const buildInfo = await getBuildInfo(`${fixture}:FillSlotV2`);
   buildInfo.solcVersion = '0.8.28';
@@ -222,7 +213,7 @@ test.serial('cached compiler of another version', async t => {
   const report = await validateUpgradeSafety('cached-compiler-of-another-version', 'FillSlotV2', 'FillSlotV1');
   t.false(report.ok);
   t.true(report.explain().includes('Inserted `c`'), report.explain());
-  t.true(report.explain().includes('expected solc 0.8.28, but found solc 0.8.29'), report.explain());
+  t.true(report.explain().includes(`expected solc 0.8.28, but found solc ${VERSION}`), report.explain());
 });
 
 test.serial('namespaced compilation error', async t => {
@@ -299,18 +290,18 @@ test.serial('Hardhat 3 build info', async t => {
       },
     },
   };
-  const output = await hardhatCompile({ language: 'Solidity', ...input } as SolcInput, '0.8.29');
+  const output = await hardhatCompile({ language: 'Solidity', ...input } as SolcInput, VERSION);
   await fs.mkdir('hardhat-3-build-info', { recursive: true });
   await fs.writeFile(
-    'hardhat-3-build-info/solc-0_8_29-test.json',
+    'hardhat-3-build-info/test.json',
     JSON.stringify({
       _format: 'hh3-sol-build-info-1',
-      solcVersion: '0.8.29',
+      solcVersion: VERSION,
       userSourceNameMap,
       input: { language: 'Solidity', ...input },
     }),
   );
-  await fs.writeFile('hardhat-3-build-info/solc-0_8_29-test.output.json', JSON.stringify({ output }));
+  await fs.writeFile('hardhat-3-build-info/test.output.json', JSON.stringify({ output }));
 
   const report = await validateUpgradeSafety('hardhat-3-build-info', 'HH3V2', 'HH3V1');
   t.true(report.ok, report.explain());

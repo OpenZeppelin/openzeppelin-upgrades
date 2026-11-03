@@ -3,6 +3,12 @@ pragma solidity ^0.8.20;
 
 // Upgrades of namespaced storage whose validation depends on the detailed storage layout
 
+library TransientSlot {
+    struct TBytes32 {
+        bytes32 _placeholder;
+    }
+}
+
 contract FillSlotV1 {
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -320,3 +326,18 @@ contract NonStorageErrorV2 {
 }
 
 contract DeletedNamespaceV2 {}
+
+contract NamespaceRetypeV1 {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        bytes32 x;
+    }
+}
+
+contract NamespaceRetypeV2 {
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        /// @custom:oz-retyped-from bytes32
+        TransientSlot.TBytes32 x;
+    }
+}

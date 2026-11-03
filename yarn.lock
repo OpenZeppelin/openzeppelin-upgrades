@@ -6412,10 +6412,10 @@ slice-ansi@^5.0.0:
     ansi-styles "^6.0.0"
     is-fullwidth-code-point "^4.0.0"
 
-"solc-0.8.29@npm:solc@0.8.29":
-  version "0.8.29"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.8.29.tgz#ec8fc1859a17ba60e7eed19ff4c9f90fc9abd23e"
-  integrity sha512-M1hmcsejAtT1RWC+wy45Oi8a82nSnDl65wDzA3/8uWTC7R7VcnrMVIHv6/LHqnQPZ7OM2RIeKh3zpNo4E5lYbw==
+"solc-for-namespaced-cli-tests@npm:solc@0.8.38":
+  version "0.8.38"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.8.38.tgz#7a5c29234301c4fd69cd34399de21b56adb2dff0"
+  integrity sha512-DsDLa7uACQVVkE0DYNnUGC49b/yuCJ9ymWlcCEwmaJGcETPC6pTC+BXaRK9ADW8YVeMyxEKUtJsUwRAIG28jtQ==
   dependencies:
     command-exists "^1.2.8"
     commander "^8.1.0"
@@ -6423,7 +6423,7 @@ slice-ansi@^5.0.0:
     js-sha3 "0.8.0"
     memorystream "^0.3.1"
     semver "^5.5.0"
-    tmp "0.0.33"
+    tmp "0.2.6"
 
 solc@0.8.26:
   version "0.8.26"

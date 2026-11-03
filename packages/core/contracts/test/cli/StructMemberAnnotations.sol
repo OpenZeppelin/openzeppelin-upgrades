@@ -37,18 +37,3 @@ contract StructMemberAnnotationsV2 {
 
     S s;
 }
-
-contract NamespaceRetypeV1 {
-    /// @custom:storage-location erc7201:example.main
-    struct MainStorage {
-        bytes32 x;
-    }
-}
-
-contract NamespaceRetypeV2 {
-    /// @custom:storage-location erc7201:example.main
-    struct MainStorage {
-        /// @custom:oz-retyped-from bytes32
-        TransientSlot.TBytes32 x;
-    }
-}
