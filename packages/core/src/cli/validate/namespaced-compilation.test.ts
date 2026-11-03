@@ -4,7 +4,7 @@ import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
 import { rimraf } from 'rimraf';
-import { version as VERSION } from 'solc-for-namespaced-cli-tests/package.json';
+import { version as SOLC_VERSION } from 'solc-for-namespaced-cli-tests/package.json';
 
 import {
   getSolcCacheDir,
@@ -17,7 +17,7 @@ import {
 const BUNDLED_SOLJSON = require.resolve('solc-for-namespaced-cli-tests/soljson.js');
 
 const LIST_URL = 'https://binaries.soliditylang.org/emscripten-wasm32/list.json';
-const FILE_NAME = `solc-emscripten-wasm32-v${VERSION}+commit.test.js`;
+const FILE_NAME = `solc-emscripten-wasm32-v${SOLC_VERSION}+commit.test.js`;
 const FILE_URL = `https://binaries.soliditylang.org/emscripten-wasm32/${FILE_NAME}`;
 
 const originalFetch = globalThis.fetch;
@@ -44,7 +44,7 @@ async function getBundledSoljson() {
 
 function list(sha256: string) {
   return () =>
-    new Response(JSON.stringify({ releases: { [VERSION]: FILE_NAME }, builds: [{ path: FILE_NAME, sha256 }] }));
+    new Response(JSON.stringify({ releases: { [SOLC_VERSION]: FILE_NAME }, builds: [{ path: FILE_NAME, sha256 }] }));
 }
 
 test.before(async () => {
@@ -73,20 +73,20 @@ test.serial('downloads, checks and caches the compiler', async t => {
   const { bytes, sha256 } = await getBundledSoljson();
   stubFetch({ [LIST_URL]: list(sha256), [FILE_URL]: () => new Response(bytes) });
 
-  const file = await getSolcFile(VERSION);
+  const file = await getSolcFile(SOLC_VERSION);
 
-  t.is(file, path.join(await getSolcCacheDir(), `soljson-v${VERSION}.cjs`));
+  t.is(file, path.join(await getSolcCacheDir(), `soljson-v${SOLC_VERSION}.cjs`));
   t.deepEqual(await fs.readFile(file), bytes);
   t.deepEqual(fetchCalls, [LIST_URL, FILE_URL]);
 });
 
 test.serial('uses the cached compiler without network access', async t => {
   await fs.mkdir(await getSolcCacheDir(), { recursive: true });
-  await fs.copyFile(BUNDLED_SOLJSON, path.join(await getSolcCacheDir(), `soljson-v${VERSION}.cjs`));
+  await fs.copyFile(BUNDLED_SOLJSON, path.join(await getSolcCacheDir(), `soljson-v${SOLC_VERSION}.cjs`));
 
-  const file = await getSolcFile(VERSION);
+  const file = await getSolcFile(SOLC_VERSION);
 
-  t.is(file, path.join(await getSolcCacheDir(), `soljson-v${VERSION}.cjs`));
+  t.is(file, path.join(await getSolcCacheDir(), `soljson-v${SOLC_VERSION}.cjs`));
   t.deepEqual(fetchCalls, []);
 });
 
@@ -94,7 +94,7 @@ test.serial('rejects a download that does not match its checksum', async t => {
   const { bytes } = await getBundledSoljson();
   stubFetch({ [LIST_URL]: list(`0x${'0'.repeat(64)}`), [FILE_URL]: () => new Response(bytes) });
 
-  const error = await t.throwsAsync(getSolcFile(VERSION), { instanceOf: NamespacedCompilationUnavailableError });
+  const error = await t.throwsAsync(getSolcFile(SOLC_VERSION), { instanceOf: NamespacedCompilationUnavailableError });
 
   t.true(error?.message.includes('sha256'), error?.message);
   t.deepEqual(await fs.readdir(await getSolcCacheDir()).catch(() => []), []);
@@ -111,7 +111,7 @@ test.serial('rejects a version that is not a release', async t => {
 });
 
 test.serial('reports network failures as an unavailable compiler', async t => {
-  const error = await t.throwsAsync(getSolcFile(VERSION), { instanceOf: NamespacedCompilationUnavailableError });
+  const error = await t.throwsAsync(getSolcFile(SOLC_VERSION), { instanceOf: NamespacedCompilationUnavailableError });
 
   t.true(error?.message.includes(`Unexpected request to ${LIST_URL}`), error?.message);
 });
@@ -119,7 +119,7 @@ test.serial('reports network failures as an unavailable compiler', async t => {
 test.serial('reports HTTP errors as an unavailable compiler', async t => {
   stubFetch({ [LIST_URL]: () => new Response('Not Found', { status: 404 }) });
 
-  const error = await t.throwsAsync(getSolcFile(VERSION), { instanceOf: NamespacedCompilationUnavailableError });
+  const error = await t.throwsAsync(getSolcFile(SOLC_VERSION), { instanceOf: NamespacedCompilationUnavailableError });
 
   t.true(error?.message.includes(`${LIST_URL} returned HTTP status 404`), error?.message);
 });

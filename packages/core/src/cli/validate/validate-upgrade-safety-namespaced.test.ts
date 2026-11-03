@@ -10,7 +10,7 @@ import {
   TASK_COMPILE_SOLIDITY_RUN_SOLCJS,
 } from 'hardhat/builtin-tasks/task-names';
 import { SolcBuild } from 'hardhat/types/builtin-tasks';
-import { version as VERSION } from 'solc-for-namespaced-cli-tests/package.json';
+import { version as SOLC_VERSION } from 'solc-for-namespaced-cli-tests/package.json';
 
 import { SolcInput, SolcOutput } from '../../solc-api';
 import { getSolcCacheDir, setSolcCacheDirForTesting } from './namespaced-compilation';
@@ -50,7 +50,10 @@ test.after.always(async () => {
   }
 });
 
-async function prefillCache(version = VERSION, soljson = require.resolve('solc-for-namespaced-cli-tests/soljson.js')) {
+async function prefillCache(
+  version = SOLC_VERSION,
+  soljson = require.resolve('solc-for-namespaced-cli-tests/soljson.js'),
+) {
   const dir = await getSolcCacheDir();
   await fs.mkdir(dir, { recursive: true });
   await fs.copyFile(soljson, path.join(dir, `soljson-v${version}.cjs`));
@@ -181,7 +184,7 @@ test.serial('corrupt cached compiler', async t => {
   // A path that no earlier test loaded the compiler from, since Node keeps loaded modules
   setSolcCacheDirForTesting(path.resolve('corrupt-solc-cache'));
   await fs.mkdir(await getSolcCacheDir(), { recursive: true });
-  await fs.writeFile(path.join(await getSolcCacheDir(), `soljson-v${VERSION}.cjs`), 'not a compiler');
+  await fs.writeFile(path.join(await getSolcCacheDir(), `soljson-v${SOLC_VERSION}.cjs`), 'not a compiler');
 
   const report = await validate(t, 'FillSlotV1', 'FillSlotV2');
   t.false(report.ok);
@@ -213,7 +216,7 @@ test.serial('cached compiler of another version', async t => {
   const report = await validateUpgradeSafety('cached-compiler-of-another-version', 'FillSlotV2', 'FillSlotV1');
   t.false(report.ok);
   t.true(report.explain().includes('Inserted `c`'), report.explain());
-  t.true(report.explain().includes(`expected solc 0.8.28, but found solc ${VERSION}`), report.explain());
+  t.true(report.explain().includes(`expected solc 0.8.28, but found solc ${SOLC_VERSION}`), report.explain());
 });
 
 test.serial('namespaced compilation error', async t => {
@@ -290,13 +293,13 @@ test.serial('Hardhat 3 build info', async t => {
       },
     },
   };
-  const output = await hardhatCompile({ language: 'Solidity', ...input } as SolcInput, VERSION);
+  const output = await hardhatCompile({ language: 'Solidity', ...input } as SolcInput, SOLC_VERSION);
   await fs.mkdir('hardhat-3-build-info', { recursive: true });
   await fs.writeFile(
     'hardhat-3-build-info/test.json',
     JSON.stringify({
       _format: 'hh3-sol-build-info-1',
-      solcVersion: VERSION,
+      solcVersion: SOLC_VERSION,
       userSourceNameMap,
       input: { language: 'Solidity', ...input },
     }),
