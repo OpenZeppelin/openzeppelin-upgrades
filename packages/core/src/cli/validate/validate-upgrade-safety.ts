@@ -1,9 +1,14 @@
 import path from 'path';
 import { ValidationOptions, withValidationDefaults } from '../..';
 
-import { getBuildInfoFiles } from './build-info-file';
+import { BuildInfoFile, getBuildInfoFiles } from './build-info-file';
 import { getContractReports } from './contract-report';
 import { findContract } from './find-contract';
+import {
+  NamespacedCompilationUnavailableError,
+  needsNamespacedLayouts,
+  withNamespacedOutputs,
+} from './namespaced-compilation';
 import { ProjectReport, getProjectReport } from './project-report';
 import { SourceContract, validateBuildInfoContracts } from './validations';
 
@@ -22,6 +27,11 @@ export type SpecifiedContracts = {
 /**
  * Validates the upgrade safety of all contracts in the build info dir's build info files.
  * Only contracts that are detected as upgradeable will be validated.
+ *
+ * If the only storage layout errors are in namespaced storage, they are checked again with a detailed storage layout,
+ * which has the slot and offset of each variable. This compiles the contracts again with the build info's Solidity
+ * compiler version, which is downloaded from binaries.soliditylang.org to the user's cache directory the first time it
+ * is needed.
  *
  * @param buildInfoDir Path of build info directory, or undefined to use the default Hardhat or Foundry build-info dir.
  * @param contract The name or fully qualified name of the contract to validate. If not specified, all upgradeable contracts in the build info directory will be validated.
@@ -42,6 +52,74 @@ export async function validateUpgradeSafety(
   const allOpts = withCliDefaults(opts);
 
   const buildInfoFiles = await getBuildInfoFiles(buildInfoDir);
+  const referenceBuildInfoFiles = await getReferenceBuildInfoFiles(buildInfoFiles, referenceBuildInfoDirs);
+
+  const report = getReport(buildInfoFiles, referenceBuildInfoFiles, allOpts, contract, reference, exclude);
+  if (needsNamespacedLayouts(report)) {
+    // The storage layout errors are all in namespaced storage, so check again with detailed storage layouts from
+    // namespaced compilations
+    let namespacedBuildInfoFiles: BuildInfoFile[];
+    const namespacedReferenceBuildInfoFiles: Record<string, BuildInfoFile[]> = {};
+    try {
+      namespacedBuildInfoFiles = await withNamespacedOutputs(buildInfoFiles);
+      for (const [key, files] of Object.entries(referenceBuildInfoFiles)) {
+        namespacedReferenceBuildInfoFiles[key] = await withNamespacedOutputs(files);
+      }
+    } catch (e) {
+      if (e instanceof NamespacedCompilationUnavailableError) {
+        return new ProjectReport(report.upgradeableContractReports, report.specifiedContract, [
+          `Namespaced storage was checked without a detailed storage layout. ${e.message}\n  > ${e.hint}`,
+        ]);
+      }
+      throw e;
+    }
+    return getReport(
+      namespacedBuildInfoFiles,
+      namespacedReferenceBuildInfoFiles,
+      allOpts,
+      contract,
+      reference,
+      exclude,
+    );
+  } else {
+    return report;
+  }
+}
+
+/**
+ * Gets the build info files of each reference build info directory, keyed by the directory's short name.
+ */
+async function getReferenceBuildInfoFiles(
+  buildInfoFiles: BuildInfoFile[],
+  referenceBuildInfoDirs?: string[],
+): Promise<Record<string, BuildInfoFile[]>> {
+  const referenceBuildInfoFiles: Record<string, BuildInfoFile[]> = {};
+  const usedKeys = new Set(['']);
+  if (buildInfoFiles.length > 0) {
+    usedKeys.add(buildInfoFiles[0].dirShortName);
+  }
+
+  for (const referenceBuildInfoDir of referenceBuildInfoDirs ?? []) {
+    const key = path.basename(referenceBuildInfoDir);
+
+    if (usedKeys.has(key)) {
+      throw new Error(`Reference build info directory short name '${key}' is not unique.`);
+    }
+    usedKeys.add(key);
+
+    referenceBuildInfoFiles[key] = await getBuildInfoFiles(referenceBuildInfoDir);
+  }
+  return referenceBuildInfoFiles;
+}
+
+function getReport(
+  buildInfoFiles: BuildInfoFile[],
+  referenceBuildInfoFiles: Record<string, BuildInfoFile[]>,
+  opts: Required<ValidateUpgradeSafetyOptions>,
+  contract?: string,
+  reference?: string,
+  exclude?: string[],
+): ProjectReport {
   const sourceContracts = validateBuildInfoContracts(buildInfoFiles);
 
   const buildInfoDictionary: BuildInfoDictionary = {};
@@ -49,23 +127,13 @@ export async function validateUpgradeSafety(
   if (buildInfoFiles.length > 0) {
     buildInfoDictionary[buildInfoFiles[0].dirShortName] = sourceContracts;
   }
-
-  if (referenceBuildInfoDirs !== undefined) {
-    for (const referenceBuildInfoDir of referenceBuildInfoDirs) {
-      const key = path.basename(referenceBuildInfoDir);
-
-      if (buildInfoDictionary[key] !== undefined) {
-        throw new Error(`Reference build info directory short name '${key}' is not unique.`);
-      }
-
-      const referenceBuildInfoFiles = await getBuildInfoFiles(referenceBuildInfoDir);
-      buildInfoDictionary[key] = validateBuildInfoContracts(referenceBuildInfoFiles);
-    }
+  for (const [key, files] of Object.entries(referenceBuildInfoFiles)) {
+    buildInfoDictionary[key] = validateBuildInfoContracts(files);
   }
 
-  const specifiedContracts = findSpecifiedContracts(buildInfoDictionary, allOpts, contract, reference);
+  const specifiedContracts = findSpecifiedContracts(buildInfoDictionary, opts, contract, reference);
 
-  const contractReports = getContractReports(buildInfoDictionary, allOpts, specifiedContracts, exclude);
+  const contractReports = getContractReports(buildInfoDictionary, opts, specifiedContracts, exclude);
   return getProjectReport(contractReports, specifiedContracts !== undefined);
 }
 

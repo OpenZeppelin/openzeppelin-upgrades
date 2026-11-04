@@ -5,6 +5,7 @@ export class ProjectReport implements Report {
   constructor(
     readonly upgradeableContractReports: UpgradeableContractReport[],
     readonly specifiedContract?: boolean,
+    readonly notes: string[] = [],
   ) {}
 
   get ok(): boolean {
@@ -15,7 +16,7 @@ export class ProjectReport implements Report {
     if (this.numTotal === 0) {
       return 'No upgradeable contracts detected.';
     } else {
-      const lines = this.upgradeableContractReports.map(r => r.explain(color));
+      const lines = [...this.upgradeableContractReports.map(r => r.explain(color)), ...this.notes];
       const status = this.ok ? 'SUCCESS' : 'FAILED';
 
       if (this.specifiedContract) {

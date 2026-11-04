@@ -54,6 +54,17 @@ export interface BuildInfoFile {
    * Short name of the build info dir containing this file.
    */
   dirShortName: string;
+
+  /**
+   * For Hardhat 3 build info files, the canonical source name of each user source name. The `input` and `output` use
+   * the user source names, but the compiler input refers to sources by their canonical names.
+   */
+  userSourceNameMap?: Record<string, string>;
+
+  /**
+   * The Solidity compiler output of the namespaced compilation, if one was run for this file.
+   */
+  namespacedOutput?: SolcOutput;
 }
 
 /**
@@ -146,6 +157,7 @@ async function readBuildInfo(buildInfoFilePaths: string[], dirShortName: string)
       output: buildInfo.output,
       solcVersion: buildInfo.solcVersion,
       dirShortName,
+      userSourceNameMap: buildInfo.userSourceNameMap,
     });
   }
   return buildInfoFiles;
@@ -172,6 +184,7 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
   input: SolcInput;
   output: SolcOutput;
   solcVersion: string;
+  userSourceNameMap?: Record<string, string>;
 }> {
   const buildInfoJson = await readJSON(buildInfoFilePath);
 
@@ -270,6 +283,7 @@ async function loadBuildInfo(buildInfoFilePath: string): Promise<{
       input: inputData,
       output: outputData,
       solcVersion: buildInfoJson.solcVersion,
+      userSourceNameMap,
     };
   }
 
@@ -317,10 +331,10 @@ async function readJSON(path: string) {
   return JSON.parse(await fs.readFile(path, 'utf8'));
 }
 
-function remapKeys<T>(original: Record<string, T>, canonicalToUser: Record<string, string>): Record<string, T> {
+export function remapKeys<T>(original: Record<string, T>, keyMap: Record<string, string>): Record<string, T> {
   const remapped: Record<string, T> = {};
   for (const [key, value] of Object.entries(original)) {
-    const mappedKey = canonicalToUser[key] ?? key;
+    const mappedKey = keyMap[key] ?? key;
     remapped[mappedKey] = value;
   }
   return remapped;

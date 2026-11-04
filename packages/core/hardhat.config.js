@@ -47,6 +47,11 @@ function getOverrides() {
   }
   // The `erc7201(...)` comptime builtin requires Solidity 0.8.35.
   overrides['contracts/test/Erc7201Builtin.sol'] = { version: '0.8.35', settings: settingsWithParisEVM };
+  // The CLI's namespaced compilation tests use the compiler of this version from the solc package
+  overrides['contracts/test/cli/NamespacedSlots.sol'] = {
+    version: require('solc-for-namespaced-cli-tests/package.json').version,
+    settings: settingsWithParisEVM,
+  };
   return overrides;
 }
 

@@ -26,9 +26,9 @@ export function validateBuildInfoContracts(buildInfoFiles: BuildInfoFile[]): Sou
 }
 
 function runValidations(buildInfoFile: BuildInfoFile) {
-  const { input, output, solcVersion } = buildInfoFile;
+  const { input, output, solcVersion, namespacedOutput } = buildInfoFile;
   const decodeSrc = solcInputOutputDecoder(input, output);
-  const validation = validate(output, decodeSrc, solcVersion, input);
+  const validation = validate(output, decodeSrc, solcVersion, input, namespacedOutput);
   return validation;
 }
 
