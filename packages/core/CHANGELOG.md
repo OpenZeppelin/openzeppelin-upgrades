@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 1.48.0 (2026-11-04)
+
+- CLI: Use detailed namespaced storage layouts for validations. When needed, this downloads the Solidity compiler from binaries.soliditylang.org. ([#1313](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1313))
+
 ## 1.47.0 (2026-10-23)
 
 - Support `@custom:oz-renamed-from` and `@custom:oz-retyped-from` annotations on struct members, including members of ERC-7201 namespaced structs. ([#1308](https://github.com/OpenZeppelin/openzeppelin-upgrades/pull/1308))
