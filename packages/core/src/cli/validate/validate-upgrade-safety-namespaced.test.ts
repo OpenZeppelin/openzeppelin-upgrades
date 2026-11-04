@@ -239,10 +239,17 @@ test.serial('reference build info dir', async t => {
   await writeBuildInfo('reference-dir/current', buildInfo);
   await writeBuildInfo('reference-dir/previous', buildInfo);
 
-  const report = await validateUpgradeSafety('reference-dir/current', 'FillSlotV2', 'previous:FillSlotV1', {}, [
+  const passing = await validateUpgradeSafety('reference-dir/current', 'FillSlotV2', 'previous:FillSlotV1', {}, [
     'reference-dir/previous',
   ]);
-  t.true(report.ok, report.explain());
+  t.true(passing.ok, passing.explain());
+
+  const failing = await validateUpgradeSafety('reference-dir/current', 'TypeChangeV2', 'previous:FillSlotV1', {}, [
+    'reference-dir/previous',
+  ]);
+  t.false(failing.ok);
+  t.true(failing.explain().includes('Bad upgrade from uint128 to uint256'), failing.explain());
+  t.false(failing.explain().includes(NOTE), failing.explain());
 });
 
 test.serial('Foundry build info', async t => {
@@ -264,15 +271,25 @@ test.serial('Foundry build info', async t => {
     output,
   });
 
-  const report = await validateUpgradeSafety('foundry-build-info', 'FillSlotV2', 'FillSlotV1');
-  t.true(report.ok, report.explain());
+  const passing = await validateUpgradeSafety('foundry-build-info', 'FillSlotV2', 'FillSlotV1');
+  t.true(passing.ok, passing.explain());
+
+  const failing = await validateUpgradeSafety('foundry-build-info', 'TypeChangeV2', 'FillSlotV1');
+  t.false(failing.ok);
+  t.true(failing.explain().includes('Bad upgrade from uint128 to uint256'), failing.explain());
+  t.false(failing.explain().includes(NOTE), failing.explain());
 });
 
 test.serial('Hardhat 3 build info', async t => {
+  // Core's tests use Hardhat 2, so this writes a Hardhat 3 build info by hand
   await prefillCache();
   const namespace = (members: string) =>
     `/// @custom:storage-location erc7201:example.main\n  struct MainStorage { ${members} }`;
-  const userSourceNameMap = { 'contracts/V1.sol': 'project/zzz/V1.sol', 'contracts/V2.sol': 'project/aaa/V2.sol' };
+  const userSourceNameMap = {
+    'contracts/V1.sol': 'project/zzz/V1.sol',
+    'contracts/V2.sol': 'project/aaa/V2.sol',
+    'contracts/V3.sol': 'project/mmm/V3.sol',
+  };
   // Sorted by user source name, V1 comes first, but sorted by canonical source name, V2 comes first. Solc numbers
   // sources in sorted order, so source ids only match if the namespaced compilation uses the canonical names.
   const input: SolcInput = {
@@ -282,6 +299,9 @@ test.serial('Hardhat 3 build info', async t => {
       },
       'project/aaa/V2.sol': {
         content: `pragma solidity ^0.8.20;\ncontract HH3V2 {\n  ${namespace('uint128 a; uint128 c; uint256 b;')}\n}\n`,
+      },
+      'project/mmm/V3.sol': {
+        content: `pragma solidity ^0.8.20;\ncontract HH3V3 {\n  ${namespace('uint256 a; uint256 b;')}\n}\n`,
       },
     },
     settings: {
@@ -306,8 +326,13 @@ test.serial('Hardhat 3 build info', async t => {
   );
   await fs.writeFile('hardhat-3-build-info/test.output.json', JSON.stringify({ output }));
 
-  const report = await validateUpgradeSafety('hardhat-3-build-info', 'HH3V2', 'HH3V1');
-  t.true(report.ok, report.explain());
+  const passing = await validateUpgradeSafety('hardhat-3-build-info', 'HH3V2', 'HH3V1');
+  t.true(passing.ok, passing.explain());
+
+  const failing = await validateUpgradeSafety('hardhat-3-build-info', 'HH3V3', 'HH3V1');
+  t.false(failing.ok);
+  t.true(failing.explain().includes('Bad upgrade from uint128 to uint256'), failing.explain());
+  t.false(failing.explain().includes(NOTE), failing.explain());
 });
 
 async function hardhatCompile(input: SolcInput, solcVersion: string): Promise<SolcOutput> {
