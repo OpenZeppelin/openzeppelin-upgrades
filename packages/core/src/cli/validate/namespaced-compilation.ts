@@ -138,6 +138,20 @@ interface Solc {
   compile(input: string): string;
 }
 
+/**
+ * The wasm build of solc, which turns the functions it exports into JavaScript functions with `cwrap`. Only the
+ * functions that are used are declared, each with its argument and return types.
+ */
+interface Soljson {
+  cwrap(name: 'solidity_version', returnType: 'string', argTypes: []): () => string;
+  cwrap(
+    name: 'solidity_compile',
+    returnType: 'string',
+    argTypes: ['string', 'number', 'number'],
+  ): (input: string, readCallback: number, context: number) => string;
+  cwrap(name: 'solidity_reset', returnType: null, argTypes: []): () => void;
+}
+
 async function getSolc(version: string): Promise<Solc> {
   const file = await getSolcFile(version);
   const notLoaded = (reason: string) =>
@@ -147,17 +161,41 @@ async function getSolc(version: string): Promise<Solc> {
     );
 
   let solc: Solc;
+  let loadedVersion: string;
   try {
-    const { default: wrapper } = await import('solc/wrapper.js');
-    const { default: soljson } = await import(pathToFileURL(file).href);
-    solc = wrapper(soljson);
+    const soljson: Soljson = (await import(pathToFileURL(file).href)).default;
+    solc = wrapSoljson(soljson);
+    loadedVersion = solc.version();
   } catch (e) {
     throw notLoaded(errorMessage(e));
   }
-  if (!solc.version().startsWith(`${version}+commit`)) {
-    throw notLoaded(`expected solc ${version}, but found solc ${solc.version()}`);
+  if (!loadedVersion.startsWith(`${version}+commit`)) {
+    throw notLoaded(`expected solc ${version}, but found solc ${loadedVersion}`);
   }
   return solc;
+}
+
+/**
+ * Calls the functions that the wasm build of solc exports for compiling standard JSON input. Namespaces require solc
+ * 0.8.20 or later, so only the functions of those versions are needed.
+ */
+function wrapSoljson(soljson: Soljson): Solc {
+  const version = soljson.cwrap('solidity_version', 'string', []);
+  const compile = soljson.cwrap('solidity_compile', 'string', ['string', 'number', 'number']);
+  const reset = soljson.cwrap('solidity_reset', null, []);
+
+  return {
+    version,
+    compile: input => {
+      try {
+        // No callback for reading files, since the input has the content of every source
+        return compile(input, 0, 0);
+      } finally {
+        // Frees the memory that the compiler allocated. The output has already been copied into a JavaScript string.
+        reset();
+      }
+    },
+  };
 }
 
 let solcCacheDirForTesting: string | undefined;

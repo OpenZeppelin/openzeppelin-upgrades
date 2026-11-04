@@ -74,7 +74,6 @@
     "proper-lockfile": "^4.1.1",
     "solidity-ast": "^0.4.60",
     "minimatch": "^10.2.5",
-    "env-paths": "^2.2.1",
-    "solc": "^0.8.38"
+    "env-paths": "^2.2.1"
   }
 }
