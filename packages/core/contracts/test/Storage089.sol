@@ -29,7 +29,7 @@ contract Storage089_MappingUVDTKey_V1 {
 }
 
 contract Storage089_MappingUVDTKey_V2_Ok {
-  type MyUserValueType is uint8;
+  type MyUserValueType is bool;
 
   mapping (MyUserValueType => uint) m1;
   mapping (MyUserValueType => uint) m2;
@@ -38,6 +38,14 @@ contract Storage089_MappingUVDTKey_V2_Ok {
 
 contract Storage089_MappingUVDTKey_V2_Bad {
   type MyUserValueType is uint16;
+
+  mapping (MyUserValueType => uint) m1;
+  mapping (MyUserValueType => uint) m2;
+  mapping (uint8 => uint) m3;
+}
+
+contract Storage089_MappingUVDTKey_V2_UnderlyingTypeChange {
+  type MyUserValueType is uint8;
 
   mapping (MyUserValueType => uint) m1;
   mapping (MyUserValueType => uint) m2;

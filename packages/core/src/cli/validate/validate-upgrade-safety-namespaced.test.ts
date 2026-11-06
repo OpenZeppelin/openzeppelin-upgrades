@@ -129,6 +129,7 @@ for (const [reference, contract, error] of [
   ['GapBeforeMemberV1', 'GapReducedTooLittleV2', 'Bad storage gap resize from 49 to 48'],
   ['GapBeforeMemberV1', 'GapReducedTooMuchV2', 'Bad storage gap resize from 49 to 47'],
   ['FillSlotV1', 'RetypeSizeChangeV2', 'Number of bytes changed from 16 to 32'],
+  ['UserDefinedValueTypeV1', 'UserDefinedValueTypeUnannotatedV2', 'Underlying type changed from address to uint160'],
 ]) {
   test.serial(`fails with a detailed storage layout - ${contract}`, async t => {
     await prefillCache();

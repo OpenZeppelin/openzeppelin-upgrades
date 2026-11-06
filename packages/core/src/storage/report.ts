@@ -11,6 +11,8 @@ import {
   LayoutChange,
   storageFieldEnd,
   storageFieldBegin,
+  getUnderlyingTypesLabel,
+  isIgnoredRetypeAnnotation,
 } from './compare';
 import { itemize, itemizeWith } from '../utils/itemize';
 import { indent } from '../utils/indent';
@@ -99,6 +101,16 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
         if (suggestion) {
           hints.push(suggestion);
         }
+      }
+      if (isIgnoredRetypeAnnotation(op.original, op.updated)) {
+        hints.push(
+          `The annotation '@custom:oz-retyped-from ${op.updated.retypedFrom}' is ignored, because it names the type in both versions`,
+        );
+      }
+      if (isUnderlyingTypeChangeOnly(op.change)) {
+        hints.push(
+          `If this change is intended and you have checked that it is safe for the stored values, annotate ${label(op.updated)} with '@custom:oz-retyped-from ${getUnderlyingTypesLabel(op.original.type)}'`,
+        );
       }
       return printWithHints({
         title: `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details),
@@ -191,6 +203,12 @@ function explainTypeChange(ch: TypeChange, original: StorageField, updated: Stor
     case 'type resize':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent representation sizes`;
 
+    case 'underlying type':
+      return (
+        `Bad upgrade ${describeTransition(ch.original, ch.updated)}\n` +
+        `Underlying type changed from ${underlyingLabel(ch.original)} to ${underlyingLabel(ch.updated)}`
+      );
+
     case 'mapping key':
       return `In key of ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner, original, updated));
 
@@ -255,6 +273,7 @@ function getAllTypeChanges(root: TypeChange): TypeChange[] {
       case 'obvious mismatch':
       case 'enum members':
       case 'type resize':
+      case 'underlying type':
       case 'mapping key':
       case 'array shrink':
       case 'array grow':
@@ -327,6 +346,29 @@ function describeTransition(original: ParsedTypeDetailed, updated: ParsedTypeDet
   } else {
     return `from ${originalLabel} to ${updatedLabel}`;
   }
+}
+
+/**
+ * Whether the type change consists only of changes of the underlying types of user defined value types, which an
+ * annotation with the original underlying types allows.
+ */
+function isUnderlyingTypeChangeOnly(change: TypeChange): boolean {
+  switch (change.kind) {
+    case 'underlying type':
+      return true;
+    case 'mapping key':
+    case 'mapping value':
+    case 'array value':
+      return isUnderlyingTypeChangeOnly(change.inner);
+    default:
+      return false;
+  }
+}
+
+function underlyingLabel(type: ParsedTypeDetailed): string {
+  const underlying = type.item.underlying;
+  assert(underlying !== undefined);
+  return underlying.item.label;
 }
 
 function describeLayoutTransition(change: LayoutChange): string {
