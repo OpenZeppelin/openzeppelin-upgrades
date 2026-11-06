@@ -44,10 +44,16 @@ test.before(async t => {
   }
 });
 
+function explain(original: StorageLayout, updated: StorageLayout) {
+  return getStorageUpgradeReport(original, updated, withValidationDefaults({})).explain(false);
+}
+
+const HINT = 'If this change is intended and you have checked that it is safe for the stored values, annotate';
+
 test('unannotated', t => {
   const { UnderlyingTypeV1, UnderlyingTypeUnannotated } = t.context.layouts;
   t.like(getStorageUpgradeErrors(UnderlyingTypeV1, UnderlyingTypeUnannotated), {
-    length: 2,
+    length: 3,
     0: {
       kind: 'typechange',
       change: { kind: 'underlying type' },
@@ -60,27 +66,40 @@ test('unannotated', t => {
       original: { label: 'm' },
       updated: { label: 'm' },
     },
+    2: {
+      kind: 'typechange',
+      change: { kind: 'array value', inner: { kind: 'underlying type' } },
+      original: { label: 'list' },
+      updated: { label: 'list' },
+    },
   });
 });
 
 test('unannotated report', t => {
   const { UnderlyingTypeV1, UnderlyingTypeUnannotated } = t.context.layouts;
-  const report = getStorageUpgradeReport(UnderlyingTypeV1, UnderlyingTypeUnannotated, withValidationDefaults({}));
   t.is(
-    report.explain(false),
-    'contracts/test/UnderlyingTypeV2.sol:10: Upgraded `a` to an incompatible type\n' +
+    explain(UnderlyingTypeV1, UnderlyingTypeUnannotated),
+    'contracts/test/UnderlyingTypeV2.sol:9: Upgraded `a` to an incompatible type\n' +
       '  - Bad upgrade to Amount\n' +
       '    Underlying type changed from uint128 to int128\n' +
-      "  > If the change is intended, add the annotation '@custom:oz-retyped-from uint128'\n" +
+      `  > ${HINT} \`a\` with '@custom:oz-retyped-from uint128'\n` +
       '\n' +
-      'contracts/test/UnderlyingTypeV2.sol:11: Upgraded `m` to an incompatible type\n' +
+      'contracts/test/UnderlyingTypeV2.sol:10: Upgraded `m` to an incompatible type\n' +
       '  - In mapping(address => Amount)\n' +
       '    - Bad upgrade to Amount\n' +
-      '      Underlying type changed from uint128 to int128',
+      '      Underlying type changed from uint128 to int128\n' +
+      `  > ${HINT} \`m\` with '@custom:oz-retyped-from mapping(address => uint128)'\n` +
+      '\n' +
+      'contracts/test/UnderlyingTypeV2.sol:11: Upgraded `list` to an incompatible type\n' +
+      '  - In Amount[]\n' +
+      '    - Bad upgrade to Amount\n' +
+      '      Underlying type changed from uint128 to int128\n' +
+      `  > ${HINT} \`list\` with '@custom:oz-retyped-from uint128[]'`,
   );
 });
 
 test('annotated', t => {
+  // The annotations are the ones that the errors of the unannotated upgrade suggest
   const { UnderlyingTypeV1, UnderlyingTypeAnnotated } = t.context.layouts;
   t.deepEqual(getStorageUpgradeErrors(UnderlyingTypeV1, UnderlyingTypeAnnotated), []);
 });
@@ -95,7 +114,7 @@ test('annotations that name the own type', t => {
   // Such an annotation would match again in every later upgrade, so it does not allow the underlying type to change
   const { UnderlyingTypeV1, UnderlyingTypeOwnTypeAnnotated } = t.context.layouts;
   t.like(getStorageUpgradeErrors(UnderlyingTypeV1, UnderlyingTypeOwnTypeAnnotated), {
-    length: 2,
+    length: 3,
     0: {
       kind: 'typechange',
       change: { kind: 'underlying type' },
@@ -108,11 +127,42 @@ test('annotations that name the own type', t => {
       original: { label: 'm' },
       updated: { label: 'm', retypedFrom: 'mapping(address => Amount)' },
     },
+    2: {
+      kind: 'typechange',
+      change: { kind: 'array value', inner: { kind: 'underlying type' } },
+      original: { label: 'list' },
+      updated: { label: 'list', retypedFrom: 'Amount[]' },
+    },
   });
 });
 
+test('annotations that name the own type report', t => {
+  const { UnderlyingTypeV1, UnderlyingTypeOwnTypeAnnotated } = t.context.layouts;
+  t.is(
+    explain(UnderlyingTypeV1, UnderlyingTypeOwnTypeAnnotated),
+    'contracts/test/UnderlyingTypeV2.sol:26: Upgraded `a` to an incompatible type\n' +
+      '  - Bad upgrade to Amount\n' +
+      '    Underlying type changed from uint128 to int128\n' +
+      "  > The annotation '@custom:oz-retyped-from Amount' is ignored, because it names the type in both versions\n" +
+      `  > ${HINT} \`a\` with '@custom:oz-retyped-from uint128'\n` +
+      '\n' +
+      'contracts/test/UnderlyingTypeV2.sol:28: Upgraded `m` to an incompatible type\n' +
+      '  - In mapping(address => Amount)\n' +
+      '    - Bad upgrade to Amount\n' +
+      '      Underlying type changed from uint128 to int128\n' +
+      "  > The annotation '@custom:oz-retyped-from mapping(address => Amount)' is ignored, because it names the type in both versions\n" +
+      `  > ${HINT} \`m\` with '@custom:oz-retyped-from mapping(address => uint128)'\n` +
+      '\n' +
+      'contracts/test/UnderlyingTypeV2.sol:30: Upgraded `list` to an incompatible type\n' +
+      '  - In Amount[]\n' +
+      '    - Bad upgrade to Amount\n' +
+      '      Underlying type changed from uint128 to int128\n' +
+      "  > The annotation '@custom:oz-retyped-from Amount[]' is ignored, because it names the type in both versions\n" +
+      `  > ${HINT} \`list\` with '@custom:oz-retyped-from uint128[]'`,
+  );
+});
+
 test('annotated with a size change', t => {
-  // The annotation does not allow the size to change
   const { UnderlyingTypeV1, UnderlyingTypeResized } = t.context.layouts;
   t.like(getStorageUpgradeErrors(UnderlyingTypeV1, UnderlyingTypeResized), {
     length: 1,

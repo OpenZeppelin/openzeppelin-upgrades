@@ -234,18 +234,15 @@ export class StorageLayoutComparator {
     const retypedFrom = stripContractSubstrings(updated.retypedFrom?.trim());
 
     if (originalLabel === retypedFrom) {
-      // An annotation that names the field's own type would match again in every later upgrade, so it does not allow
-      // a change of the underlying type of a user defined value type.
-      const namesOwnType = originalLabel === stripContractSubstrings(updated.type.item.label);
-      return !(namesOwnType && containsUnderlyingTypeChange(original.type, updated.type));
+      return !isIgnoredRetypeAnnotation(original, updated);
     }
 
     // A change of the underlying type of a user defined value type is allowed by an annotation that names the
-    // original underlying type.
+    // original type with its underlying types, such as `uint128` or `mapping(address => uint128)`.
     return (
       retypedFrom !== undefined &&
-      isUnderlyingTypeChange(original.type, updated.type) &&
-      retypedFrom === original.type.item.underlying?.item.label
+      containsUnderlyingTypeChange(original.type, updated.type) &&
+      retypedFrom === getUnderlyingTypesLabel(original.type)
     );
   }
 
@@ -484,10 +481,53 @@ function containsUnderlyingTypeChange(original: ParsedTypeDetailed, updated: Par
   );
 }
 
+/**
+ * Whether the field has a retype annotation that names its own type, which is the same in both versions, while the
+ * underlying type of a user defined value type within it changed. Such an annotation would match again in every later
+ * upgrade, so it does not allow the change.
+ */
+export function isIgnoredRetypeAnnotation(original: StorageField, updated: StorageField): boolean {
+  const retypedFrom = stripContractSubstrings(updated.retypedFrom?.trim());
+  return (
+    retypedFrom !== undefined &&
+    retypedFrom === stripContractSubstrings(original.type.item.label) &&
+    retypedFrom === stripContractSubstrings(updated.type.item.label) &&
+    containsUnderlyingTypeChange(original.type, updated.type)
+  );
+}
+
+/**
+ * Gets the label of the type, with each user defined value type that is the type itself, a mapping key, a mapping value
+ * or an array element replaced by its underlying type. For example, `mapping(address => uint128)` for
+ * `mapping(address => Amount)` where `Amount` is `uint128`.
+ */
+export function getUnderlyingTypesLabel(type: ParsedTypeDetailed): string {
+  let label = type.item.label;
+  for (const [udvtLabel, underlyingLabel] of getUnderlyingTypes(type)) {
+    const escaped = udvtLabel.replace(/[.$]/g, '\\$&');
+    label = label.replace(new RegExp(`(?<![\\w.$])${escaped}(?![\\w.$])`, 'g'), underlyingLabel);
+  }
+  return stripContractSubstrings(label);
+}
+
+function* getUnderlyingTypes(type: ParsedTypeDetailed): Generator<[string, string]> {
+  if (type.head === 't_userDefinedValueType') {
+    if (type.item.underlying !== undefined) {
+      yield [type.item.label, type.item.underlying.item.label];
+    }
+  } else {
+    for (const arg of type.args ?? []) {
+      yield* getUnderlyingTypes(arg);
+    }
+  }
+}
+
 function enumSize(memberCount: number): number {
   return Math.ceil(Math.log2(Math.max(2, memberCount)) / 8);
 }
 
+export function stripContractSubstrings(label: string): string;
+export function stripContractSubstrings(label?: string): string | undefined;
 export function stripContractSubstrings(label?: string) {
   if (label !== undefined) {
     return label.replace(/\b(contract|struct|enum) /g, '');

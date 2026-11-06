@@ -7,4 +7,5 @@ type Amount is uint128;
 contract UnderlyingTypeV1 {
     Amount a;
     mapping(address => Amount) m;
+    Amount[] list;
 }

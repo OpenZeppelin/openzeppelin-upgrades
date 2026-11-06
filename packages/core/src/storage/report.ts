@@ -11,6 +11,8 @@ import {
   LayoutChange,
   storageFieldEnd,
   storageFieldBegin,
+  getUnderlyingTypesLabel,
+  isIgnoredRetypeAnnotation,
 } from './compare';
 import { itemize, itemizeWith } from '../utils/itemize';
 import { indent } from '../utils/indent';
@@ -100,9 +102,14 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
           hints.push(suggestion);
         }
       }
-      if (op.change.kind === 'underlying type') {
+      if (isIgnoredRetypeAnnotation(op.original, op.updated)) {
         hints.push(
-          `If the change is intended, add the annotation '@custom:oz-retyped-from ${underlyingLabel(op.change.original)}'`,
+          `The annotation '@custom:oz-retyped-from ${op.updated.retypedFrom}' is ignored, because it names the type in both versions`,
+        );
+      }
+      if (isUnderlyingTypeChangeOnly(op.change)) {
+        hints.push(
+          `If this change is intended and you have checked that it is safe for the stored values, annotate ${label(op.updated)} with '@custom:oz-retyped-from ${getUnderlyingTypesLabel(op.original.type)}'`,
         );
       }
       return printWithHints({
@@ -338,6 +345,23 @@ function describeTransition(original: ParsedTypeDetailed, updated: ParsedTypeDet
     return `to ${updatedLabel}`;
   } else {
     return `from ${originalLabel} to ${updatedLabel}`;
+  }
+}
+
+/**
+ * Whether the type change consists only of changes of the underlying types of user defined value types, which an
+ * annotation with the original underlying types allows.
+ */
+function isUnderlyingTypeChangeOnly(change: TypeChange): boolean {
+  switch (change.kind) {
+    case 'underlying type':
+      return true;
+    case 'mapping key':
+    case 'mapping value':
+    case 'array value':
+      return isUnderlyingTypeChangeOnly(change.inner);
+    default:
+      return false;
   }
 }
 
