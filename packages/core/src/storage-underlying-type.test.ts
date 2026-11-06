@@ -15,6 +15,12 @@ const sources = {
     'UnderlyingTypeOwnTypeAnnotated',
     'UnderlyingTypeResized',
   ],
+  'contracts/test/UnderlyingTypePlain.sol': [
+    'UnderlyingTypePlain',
+    'UnderlyingTypeUserDefined',
+    'UnderlyingTypeFromPlainAnnotated',
+    'UnderlyingTypeToPlainAnnotated',
+  ],
 };
 
 interface Context {
@@ -173,6 +179,40 @@ test('annotated with a size change', t => {
       updated: { label: 'a' },
     },
   });
+});
+
+test('from the underlying type', t => {
+  const { UnderlyingTypePlain, UnderlyingTypeUserDefined, UnderlyingTypeFromPlainAnnotated } = t.context.layouts;
+  t.like(getStorageUpgradeErrors(UnderlyingTypePlain, UnderlyingTypeUserDefined), {
+    length: 1,
+    0: {
+      kind: 'typechange',
+      change: { kind: 'obvious mismatch' },
+      original: { label: 'a' },
+      updated: { label: 'a' },
+    },
+  });
+  t.deepEqual(getStorageUpgradeErrors(UnderlyingTypePlain, UnderlyingTypeFromPlainAnnotated), []);
+});
+
+test('to the underlying type', t => {
+  const { UnderlyingTypeUserDefined, UnderlyingTypePlain, UnderlyingTypeToPlainAnnotated } = t.context.layouts;
+  t.like(getStorageUpgradeErrors(UnderlyingTypeUserDefined, UnderlyingTypePlain), {
+    length: 1,
+    0: {
+      kind: 'typechange',
+      change: { kind: 'obvious mismatch' },
+      original: { label: 'a' },
+      updated: { label: 'a' },
+    },
+  });
+  t.deepEqual(getStorageUpgradeErrors(UnderlyingTypeUserDefined, UnderlyingTypeToPlainAnnotated), []);
+});
+
+test('kept annotation from the underlying type', t => {
+  // Upgrading from and to the same contract: the annotation from the earlier upgrade doesn't apply to this upgrade
+  const { UnderlyingTypeFromPlainAnnotated } = t.context.layouts;
+  t.deepEqual(getStorageUpgradeErrors(UnderlyingTypeFromPlainAnnotated, UnderlyingTypeFromPlainAnnotated), []);
 });
 
 test('original layout without underlying types', t => {
