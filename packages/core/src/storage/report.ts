@@ -100,6 +100,11 @@ function explainStorageOperation(op: StorageOperation<StorageField>, ctx: Storag
           hints.push(suggestion);
         }
       }
+      if (op.change.kind === 'underlying type') {
+        hints.push(
+          `If the change is intended, add the annotation '@custom:oz-retyped-from ${underlyingLabel(op.change.original)}'`,
+        );
+      }
       return printWithHints({
         title: `Upgraded ${label(op.updated)} to an incompatible type\n` + itemize(basic, ...details),
         hints,
@@ -191,6 +196,12 @@ function explainTypeChange(ch: TypeChange, original: StorageField, updated: Stor
     case 'type resize':
       return `Bad upgrade ${describeTransition(ch.original, ch.updated)}\nDifferent representation sizes`;
 
+    case 'underlying type':
+      return (
+        `Bad upgrade ${describeTransition(ch.original, ch.updated)}\n` +
+        `Underlying type changed from ${underlyingLabel(ch.original)} to ${underlyingLabel(ch.updated)}`
+      );
+
     case 'mapping key':
       return `In key of ${ch.updated.item.label}\n` + itemize(explainTypeChange(ch.inner, original, updated));
 
@@ -255,6 +266,7 @@ function getAllTypeChanges(root: TypeChange): TypeChange[] {
       case 'obvious mismatch':
       case 'enum members':
       case 'type resize':
+      case 'underlying type':
       case 'mapping key':
       case 'array shrink':
       case 'array grow':
@@ -327,6 +339,12 @@ function describeTransition(original: ParsedTypeDetailed, updated: ParsedTypeDet
   } else {
     return `from ${originalLabel} to ${updatedLabel}`;
   }
+}
+
+function underlyingLabel(type: ParsedTypeDetailed): string {
+  const underlying = type.item.underlying;
+  assert(underlying !== undefined);
+  return underlying.item.label;
 }
 
 function describeLayoutTransition(change: LayoutChange): string {

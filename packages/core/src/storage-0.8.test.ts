@@ -143,3 +143,30 @@ test('mapping with user defined value type key - bad', async t => {
     },
   });
 });
+
+test('mapping with user defined value type key - underlying type change', async t => {
+  const v1 = await t.context.extractStorageLayout('Storage089_MappingUVDTKey_V1');
+  const v2 = await t.context.extractStorageLayout('Storage089_MappingUVDTKey_V2_UnderlyingTypeChange');
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.like(comparison, {
+    length: 2,
+    0: {
+      kind: 'typechange',
+      change: {
+        kind: 'mapping key',
+        inner: { kind: 'underlying type' },
+      },
+      original: { label: 'm1' },
+      updated: { label: 'm1' },
+    },
+    1: {
+      kind: 'typechange',
+      change: {
+        kind: 'mapping key',
+        inner: { kind: 'underlying type' },
+      },
+      original: { label: 'm2' },
+      updated: { label: 'm2' },
+    },
+  });
+});

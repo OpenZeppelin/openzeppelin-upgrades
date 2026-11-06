@@ -158,3 +158,30 @@ test('mapping with user defined value type key - bad', t => {
     },
   });
 });
+
+test('mapping with user defined value type key - underlying type change', t => {
+  const v1 = t.context.extractStorageLayout('NamespacedUDVT_MappingKey_V1', true);
+  const v2 = t.context.extractStorageLayout('NamespacedUDVT_MappingKey_V2_UnderlyingTypeChange', true);
+  const comparison = getStorageUpgradeErrors(v1, v2);
+  t.like(comparison, {
+    length: 2,
+    0: {
+      kind: 'typechange',
+      change: {
+        kind: 'mapping key',
+        inner: { kind: 'underlying type' },
+      },
+      original: { label: 'm1' },
+      updated: { label: 'm1' },
+    },
+    1: {
+      kind: 'typechange',
+      change: {
+        kind: 'mapping key',
+        inner: { kind: 'underlying type' },
+      },
+      original: { label: 'm2' },
+      updated: { label: 'm2' },
+    },
+  });
+});

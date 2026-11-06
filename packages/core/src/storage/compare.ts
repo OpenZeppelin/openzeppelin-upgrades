@@ -35,6 +35,7 @@ export type TypeChange = (
         | 'array shrink'
         | 'array dynamic'
         | 'type resize'
+        | 'underlying type'
         | 'missing members';
     }
   | {
@@ -230,9 +231,22 @@ export class StorageLayoutComparator {
 
   private isRetypedFromOriginal(original: StorageField, updated: StorageField) {
     const originalLabel = stripContractSubstrings(original.type.item.label);
-    const updatedLabel = stripContractSubstrings(updated.retypedFrom?.trim());
+    const retypedFrom = stripContractSubstrings(updated.retypedFrom?.trim());
 
-    return originalLabel === updatedLabel;
+    if (originalLabel === retypedFrom) {
+      // An annotation that names the field's own type would match again in every later upgrade, so it does not allow
+      // a change of the underlying type of a user defined value type.
+      const namesOwnType = originalLabel === stripContractSubstrings(updated.type.item.label);
+      return !(namesOwnType && containsUnderlyingTypeChange(original.type, updated.type));
+    }
+
+    // A change of the underlying type of a user defined value type is allowed by an annotation that names the
+    // original underlying type.
+    return (
+      retypedFrom !== undefined &&
+      isUnderlyingTypeChange(original.type, updated.type) &&
+      retypedFrom === original.type.item.underlying?.item.label
+    );
   }
 
   getLayoutChange(original: StorageField, updated: StorageField): LayoutChange | undefined {
@@ -427,6 +441,8 @@ export class StorageLayoutComparator {
         }
         if (original.item.numberOfBytes !== updated.item.numberOfBytes) {
           return { kind: 'type resize', original, updated };
+        } else if (isUnderlyingTypeChange(original, updated)) {
+          return { kind: 'underlying type', original, updated };
         } else {
           return undefined;
         }
@@ -436,6 +452,36 @@ export class StorageLayoutComparator {
         return { kind: 'unknown', original, updated };
     }
   }
+}
+
+/**
+ * Whether both types are user defined value types whose underlying types are known and differ. Layouts written by
+ * versions that did not record the underlying type are compared by size only.
+ */
+function isUnderlyingTypeChange(original: ParsedTypeDetailed, updated: ParsedTypeDetailed): boolean {
+  const originalUnderlying = original.item.underlying;
+  const updatedUnderlying = updated.item.underlying;
+  return (
+    original.head === 't_userDefinedValueType' &&
+    updated.head === 't_userDefinedValueType' &&
+    originalUnderlying !== undefined &&
+    updatedUnderlying !== undefined &&
+    originalUnderlying.id !== updatedUnderlying.id
+  );
+}
+
+/**
+ * Whether the types, or the mapping key, mapping value and array element types within them, are user defined value
+ * types whose underlying type changed. Struct members are not included.
+ */
+function containsUnderlyingTypeChange(original: ParsedTypeDetailed, updated: ParsedTypeDetailed): boolean {
+  if (isUnderlyingTypeChange(original, updated)) {
+    return true;
+  }
+  const updatedArgs = updated.args ?? [];
+  return (original.args ?? []).some(
+    (arg, i) => i < updatedArgs.length && containsUnderlyingTypeChange(arg, updatedArgs[i]),
+  );
 }
 
 function enumSize(memberCount: number): number {

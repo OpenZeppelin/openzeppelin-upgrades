@@ -42,7 +42,7 @@ contract NamespacedUDVT_MappingKey_V1 {
 }
 
 contract NamespacedUDVT_MappingKey_V2_Ok {
-    type MyUserValueType is uint8;
+    type MyUserValueType is bool;
 
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
@@ -54,6 +54,17 @@ contract NamespacedUDVT_MappingKey_V2_Ok {
 
 contract NamespacedUDVT_MappingKey_V2_Bad {
     type MyUserValueType is uint16;
+
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
+        mapping (MyUserValueType => uint) m1;
+        mapping (MyUserValueType => uint) m2;
+        mapping (uint8 => uint) m3;
+    }
+}
+
+contract NamespacedUDVT_MappingKey_V2_UnderlyingTypeChange {
+    type MyUserValueType is uint8;
 
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {

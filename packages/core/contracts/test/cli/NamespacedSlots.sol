@@ -182,6 +182,16 @@ contract UserDefinedValueTypeV2 {
 
     /// @custom:storage-location erc7201:example.main
     struct MainStorage {
+        /// @custom:oz-retyped-from address
+        U u;
+    }
+}
+
+contract UserDefinedValueTypeUnannotatedV2 {
+    type U is uint160;
+
+    /// @custom:storage-location erc7201:example.main
+    struct MainStorage {
         U u;
     }
 }
@@ -204,6 +214,7 @@ contract UserDefinedValueTypeInStructV2 {
     type U is uint160;
 
     struct S {
+        /// @custom:oz-retyped-from address
         U u;
     }
 
