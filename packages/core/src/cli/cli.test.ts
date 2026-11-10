@@ -290,6 +290,15 @@ test('validate - single contract - ok', async t => {
   t.snapshot(output);
 });
 
+test('validate - single contract with stateless constructor parent - ok', async t => {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/Validate.sol:HasStatelessConstructorParent`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+
+  const output = (await execAsync(`${CLI} validate ${temp} --contract HasStatelessConstructorParent`)).stdout;
+  t.regex(output, /SUCCESS/);
+});
+
 test('validate - fully qualified version of ambiguous contract name', async t => {
   const temp = await getTempDir(t);
   const buildInfo = await artifacts.getBuildInfo(`contracts/test/ValidationsSameNameSafe.sol:SameName`);

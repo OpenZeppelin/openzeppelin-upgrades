@@ -19,7 +19,11 @@ import { extractLinkReferences, LinkReference } from '../link-refs';
 import { extractStorageLayout } from '../storage/extract';
 import { StorageLayout } from '../storage/layout';
 import { getFullyQualifiedName } from '../utils/contract-name';
-import { getAnnotationArgs as getSupportedAnnotationArgs, getDocumentation } from '../utils/annotations';
+import {
+  getAnnotationArgs as getSupportedAnnotationArgs,
+  getDocumentation,
+  hasAnnotationTag,
+} from '../utils/annotations';
 import { getStorageLocationAnnotation, isNamespaceSupported } from '../storage/namespace';
 import { makeStructDocsResolver } from '../utils/struct-member-docs';
 import { UpgradesError } from '../error';
@@ -391,6 +395,10 @@ function getNamespacedCompilationContext(
 }
 
 function* getConstructorErrors(contractDef: ContractDefinition, decodeSrc: SrcDecoder): Generator<ValidationError> {
+  if (hasAnnotationTag(getDocumentation(contractDef), 'stateless')) {
+    return;
+  }
+
   for (const fnDef of findAll('FunctionDefinition', contractDef, node => skipCheck('constructor', node))) {
     if (fnDef.kind === 'constructor' && ((fnDef.body?.statements?.length ?? 0) > 0 || fnDef.modifiers.length > 0)) {
       yield {

@@ -22,6 +22,7 @@ test.before(async t => {
   const contracts = [
     'contracts/test/Validations.sol:HasEmptyConstructor',
     'contracts/test/ValidationsNatspec.sol:HasNonEmptyConstructorNatspec1',
+    'contracts/test/ValidationsNatspec.sol:ChildOfStatelessNonEmptyConstructor',
     'contracts/test/Proxiable.sol:ChildOfProxiable',
     'contracts/test/ValidationsUDVT.sol:ValidationsUDVT',
     'contracts/test/ValidationsFunctionPointers.sol:InternalFunctionPointer',
@@ -128,6 +129,7 @@ testValid('ParentHasNonEmptyConstructorNatspec1', 'transparent', true);
 testValid('ParentHasNonEmptyConstructorNatspec2', 'transparent', true);
 testValid('AncestorHasNonEmptyConstructorNatspec1', 'transparent', true);
 testValid('AncestorHasNonEmptyConstructorNatspec2', 'transparent', true);
+testValid('ChildOfStatelessNonEmptyConstructor', 'transparent', true);
 testValid('HasStateVariableAssignmentNatspec1', 'transparent', true);
 testValid('HasStateVariableAssignmentNatspec2', 'transparent', true);
 testValid('HasStateVariableAssignmentNatspec3', 'transparent', false);
