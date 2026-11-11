@@ -73,7 +73,7 @@
     "minimist": "^1.2.7",
     "proper-lockfile": "^4.1.1",
     "solidity-ast": "^0.4.60",
-    "minimatch": "^10.2.5",
+    "minimatch": "^11.0.0",
     "env-paths": "^2.2.1"
   }
 }
