@@ -10,7 +10,7 @@ import {
 } from '@openzeppelin/upgrades-core';
 
 import type { ContractInfo, EngineBinding } from './binding.js';
-import { getDeployData } from './deploy-impl.js';
+import { getValidateData } from './deploy-impl.js';
 import { validateBeaconImpl, validateImpl, validateProxyImpl } from './validate-impl.js';
 import type { ValidateImplementationOptions, ValidateUpgradeOptions } from './options.js';
 
@@ -19,7 +19,7 @@ export async function validateImplementation(
   implInfo: ContractInfo,
   opts: ValidateImplementationOptions,
 ): Promise<void> {
-  const deployData = await getDeployData(binding, implInfo, opts);
+  const deployData = await getValidateData(binding, implInfo, opts);
   await validateImpl(deployData, opts);
 }
 
@@ -36,12 +36,12 @@ export async function validateUpgrade(
   opts: ValidateUpgradeOptions,
 ): Promise<void> {
   if (reference.kind === 'info') {
-    const origDeployData = await getDeployData(binding, reference.info, opts);
+    const origDeployData = await getValidateData(binding, reference.info, opts);
     if (opts.kind === undefined) {
       opts.kind = inferProxyKind(origDeployData.validations, origDeployData.version);
     }
 
-    const newDeployData = await getDeployData(binding, newImplInfo, opts);
+    const newDeployData = await getValidateData(binding, newImplInfo, opts);
     assertUpgradeSafe(newDeployData.validations, newDeployData.version, newDeployData.fullOpts);
 
     if (opts.unsafeSkipStorageCheck !== true) {
@@ -50,7 +50,7 @@ export async function validateUpgrade(
   } else {
     const referenceAddress = reference.address;
     const provider = binding.provider;
-    const deployData = await getDeployData(binding, newImplInfo, opts);
+    const deployData = await getValidateData(binding, newImplInfo, opts);
     if (await isTransparentOrUUPSProxy(provider, referenceAddress)) {
       await validateProxyImpl(deployData, opts, referenceAddress);
     } else if (await isBeaconProxy(provider, referenceAddress)) {
