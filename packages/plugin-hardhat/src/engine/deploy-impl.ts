@@ -37,16 +37,25 @@ export interface DeployData {
   fullOpts: Required<UpgradeOptions>;
 }
 
+export function getValidateData(
+  binding: EngineBinding,
+  info: ContractInfo,
+  opts: ValidationOptions,
+): Promise<DeployData> {
+  return getDeployData(binding, info, opts, false);
+}
+
 export async function getDeployData(
   binding: EngineBinding,
   info: ContractInfo,
   opts: UpgradeOptions,
+  encodeArgs = true,
 ): Promise<DeployData> {
   const provider = binding.provider;
   const validations = await readValidations(binding.hre);
 
   const unlinkedBytecode = getUnlinkedBytecode(validations, info.bytecode);
-  const encodedArgs = binding.encodeConstructorArgs(info, opts.constructorArgs ?? []);
+  const encodedArgs = encodeArgs ? binding.encodeConstructorArgs(info, opts.constructorArgs ?? []) : '';
   const version = getVersion(unlinkedBytecode, info.bytecode, encodedArgs);
   const layout = getStorageLayout(validations, version);
   const fullOpts = withDefaults(opts);

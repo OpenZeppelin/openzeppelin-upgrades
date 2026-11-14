@@ -72,3 +72,13 @@ test('upgrade - redeploy with different args', async t => {
 
   t.not(implementation1, implementation2);
 });
+
+test('validateImplementation and validateUpgrade succeed without constructorArgs', async t => {
+  const { WithConstructor } = t.context;
+
+  await t.notThrowsAsync(() => upgrades.validateImplementation(WithConstructor));
+  await t.notThrowsAsync(() => upgrades.validateUpgrade(WithConstructor, WithConstructor));
+
+  const proxy = await upgrades.deployProxy(WithConstructor, [], { constructorArgs: [17], initializer: false });
+  await t.notThrowsAsync(() => upgrades.validateUpgrade(proxy, WithConstructor));
+});
