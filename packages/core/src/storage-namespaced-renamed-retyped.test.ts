@@ -204,6 +204,21 @@ test('namespaced output with different source ids', t => {
   );
 });
 
+test('namespaced output with source locations of different source ids', t => {
+  // The ids match, but the source id in the location of each source unit does not
+  const { input, output, namespacedOutput, solcVersion } = t.context;
+  const sources = Object.fromEntries(
+    Object.entries(namespacedOutput.sources).map(([path, s]) => [
+      path,
+      { ...s, ast: { ...s.ast, src: s.ast.src.replace(/\d+$/, String(s.id + 1)) } },
+    ]),
+  );
+  t.throws(
+    () => validate(output, solcInputOutputDecoder(input, output), solcVersion, input, { ...namespacedOutput, sources }),
+    { message: /Source ids differ between the solc output and the namespaced solc output/ },
+  );
+});
+
 test('two annotated namespaces in one contract', t => {
   const v1 = getLayout(t.context.validation, 'NamespacedTwoV1');
   const v2 = getLayout(t.context.validation, 'NamespacedTwoV2');
