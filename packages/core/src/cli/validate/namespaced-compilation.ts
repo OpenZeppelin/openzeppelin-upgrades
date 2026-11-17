@@ -118,7 +118,7 @@ export async function getNamespacedOutput(buildInfoFile: BuildInfoFile): Promise
   }
 
   if (userSourceNameMap === undefined) {
-    return namespacedOutput;
+    return matchSourceIds(namespacedOutput, output);
   }
   const canonicalToUser = Object.fromEntries(
     Object.entries(userSourceNameMap).map(([userSourceName, canonicalSourceName]) => [
@@ -126,11 +126,64 @@ export async function getNamespacedOutput(buildInfoFile: BuildInfoFile): Promise
       userSourceName,
     ]),
   );
-  return {
-    ...namespacedOutput,
-    sources: remapKeys(namespacedOutput.sources, canonicalToUser),
-    contracts: remapKeys(namespacedOutput.contracts, canonicalToUser),
-  };
+  return matchSourceIds(
+    {
+      ...namespacedOutput,
+      sources: remapKeys(namespacedOutput.sources, canonicalToUser),
+      contracts: remapKeys(namespacedOutput.contracts, canonicalToUser),
+    },
+    output,
+  );
+}
+
+const SOURCE_LOCATION_KEY = /^(?:src|nativeSrc)$|Locations?$/;
+
+/**
+ * Gives each source of the namespaced output the id it has in the original output, and rewrites the source locations
+ * in its ASTs to match. solc numbers sources by name, but other compilers such as Solar number them by import order,
+ * and the validations read the original sources through the ids in these locations.
+ */
+export function matchSourceIds(namespacedOutput: SolcOutput, output: SolcOutput): SolcOutput {
+  const ids = new Map<number, number>();
+  for (const [source, { id }] of Object.entries(namespacedOutput.sources)) {
+    const originalId = output.sources[source]?.id;
+    if (originalId !== undefined) {
+      ids.set(id, originalId);
+    }
+  }
+  if ([...ids].every(([id, originalId]) => id === originalId)) {
+    return namespacedOutput;
+  }
+  for (const source of Object.values(namespacedOutput.sources)) {
+    source.id = ids.get(source.id) ?? source.id;
+    rewriteSourceLocations(source.ast, ids);
+  }
+  return namespacedOutput;
+}
+
+function rewriteSourceLocations(node: unknown, ids: Map<number, number>): void {
+  if (Array.isArray(node)) {
+    node.forEach(child => rewriteSourceLocations(child, ids));
+  } else if (typeof node === 'object' && node !== null) {
+    const object = node as Record<string, unknown>;
+    for (const [key, value] of Object.entries(object)) {
+      if (!SOURCE_LOCATION_KEY.test(key)) {
+        rewriteSourceLocations(value, ids);
+      } else if (typeof value === 'string') {
+        object[key] = rewriteSourceLocation(value, ids);
+      } else if (Array.isArray(value)) {
+        object[key] = value.map(location =>
+          typeof location === 'string' ? rewriteSourceLocation(location, ids) : location,
+        );
+      }
+    }
+  }
+}
+
+function rewriteSourceLocation(location: string, ids: Map<number, number>): string {
+  const match = /^(\d+:\d+:)(\d+)$/.exec(location);
+  const originalId = match === null ? undefined : ids.get(Number(match[2]));
+  return match === null || originalId === undefined ? location : `${match[1]}${originalId}`;
 }
 
 interface Solc {

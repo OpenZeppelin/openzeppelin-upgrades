@@ -342,8 +342,9 @@ function assertNotNamespace(node: StructDefinition, decodeSrc: SrcDecoder, stric
 }
 
 /**
- * Throws if a source of the solc output is missing from the namespaced solc output or has a different id there.
- * Structs from the namespaced compilation are mapped back to their original definitions by source id.
+ * Throws if a source of the solc output is missing from the namespaced solc output or has a different id there, either
+ * as its id or in the source location of its AST. Structs from the namespaced compilation are mapped back to their
+ * original definitions by the source id in their source locations.
  */
 function checkNamespacedSourceIds(solcOutput: SolcOutput, namespacedOutput: SolcOutput) {
   for (const [source, { id }] of Object.entries(solcOutput.sources)) {
@@ -351,7 +352,7 @@ function checkNamespacedSourceIds(solcOutput: SolcOutput, namespacedOutput: Solc
     if (namespacedSource === undefined) {
       throw new Error(`Source ${source} not found in namespaced solc output`);
     }
-    if (namespacedSource.id !== id) {
+    if (namespacedSource.id !== id || Number(namespacedSource.ast.src.split(':')[2]) !== id) {
       throw new Error(`Source ids differ between the solc output and the namespaced solc output for ${source}`);
     }
   }

@@ -111,6 +111,88 @@ test.serial('passes with a detailed storage layout - namespace retype', async t 
   t.true(report.ok, report.explain());
 });
 
+/**
+ * Renumbers the sources of a build info as a compiler that does not number them like solc would. For example, Solar
+ * numbers sources by import order and solc numbers them by name. The source locations in the ASTs follow the new ids.
+ */
+function renumberSources<T extends { output: SolcOutput }>(buildInfo: T, newId: (id: number) => number): T {
+  const renumbered = JSON.parse(JSON.stringify(buildInfo));
+  for (const source of Object.values(renumbered.output.sources) as { id: number }[]) {
+    source.id = newId(source.id);
+  }
+  const renumber = (location: string) =>
+    location.replace(/:(\d+)$/, (_: string, id: string) => `:${newId(Number(id))}`);
+  return JSON.parse(JSON.stringify(renumbered), (key, value) => {
+    if (key !== 'src' && key !== 'nativeSrc' && !/Locations?$/.test(key)) {
+      return value;
+    }
+    return typeof value === 'string' ? renumber(value) : Array.isArray(value) ? value.map(renumber) : value;
+  });
+}
+
+async function validateShifted(t: ExecutionContext, reference: string, contract: string) {
+  const dir = t.title.replace(/\W+/g, '-');
+  // Every source gets the next id, as Solar does when an imported file takes id 0
+  const buildInfo = renumberSources(await getBuildInfo(`${fixture}:${contract}`), id => id + 1);
+  await writeBuildInfo(dir, buildInfo);
+  return validateUpgradeSafety(dir, contract, reference);
+}
+
+test.serial('passes with a detailed storage layout - source ids not numbered by solc', async t => {
+  await prefillCache();
+  // The member annotation is read from the original source through the source id in the namespaced output
+  const report = await validateShifted(t, 'RetypeInStructV1', 'RetypeInStructV2');
+  t.true(report.ok, report.explain());
+  t.deepEqual(fetchCalls, []);
+});
+
+test.serial('fails with a detailed storage layout - source ids not numbered by solc', async t => {
+  await prefillCache();
+  const report = await validateShifted(t, 'GapBeforeMemberV1', 'GapNotReducedV2');
+  t.false(report.ok);
+  t.true(report.explain().includes('Slot changed from 1 to 2'), report.explain());
+  t.true(report.explain().includes('contracts/test/cli/NamespacedSlots.sol:'), report.explain());
+  t.false(report.explain().includes(NOTE), report.explain());
+});
+
+test.serial('fails with a detailed storage layout - swapped source ids', async t => {
+  await prefillCache();
+  // Both sources define structs with the same names, but only B.sol has the rename annotation. If a struct of A.sol
+  // from the namespaced compilation were mapped to the struct of B.sol, the unsafe rename in A.sol would pass.
+  const structs = (renameAnnotation: string) =>
+    `struct Item { uint256 a; uint256 b; }\nstruct ItemV2 { uint256 a; ${renameAnnotation}uint256 c; }\n`;
+  const store = (member: string) =>
+    `contract Store {\n  /// @custom:storage-location erc7201:example.main\n  struct Main { ${member} }\n}\n`;
+  const input = {
+    language: 'Solidity',
+    sources: {
+      'contracts/A.sol': {
+        content: `pragma solidity ^0.8.20;\nimport "./B.sol" as B;\n${structs('')}${store('ItemV2 item;')}`,
+      },
+      'contracts/B.sol': {
+        content: `pragma solidity ^0.8.20;\n${structs('/// @custom:oz-renamed-from b\n')}${store('Item item;')}`,
+      },
+    },
+    settings: {
+      outputSelection: {
+        '*': {
+          '*': ['storageLayout', 'abi', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers'],
+          '': ['ast'],
+        },
+      },
+    },
+  };
+  const output = await hardhatCompile(input, SOLC_VERSION);
+  // solc numbers the sources by name, and Solar numbers the imported B.sol first, so the ids are swapped
+  const buildInfo = renumberSources({ input, output, solcVersion: SOLC_VERSION }, id => (id === 0 ? 1 : 0));
+  await writeBuildInfo('swapped-source-ids', buildInfo);
+
+  const report = await validateUpgradeSafety('swapped-source-ids', 'contracts/A.sol:Store', 'contracts/B.sol:Store');
+  t.false(report.ok);
+  t.true(report.explain().includes('Renamed `b` to `c`'), report.explain());
+  t.false(report.explain().includes(NOTE), report.explain());
+});
+
 test.serial('compiler unavailable', async t => {
   // The namespace retype is uncertain without a detailed storage layout, and the compiler cannot be downloaded
   const report = await validate(t, 'NamespaceRetypeV1', 'NamespaceRetypeV2');
