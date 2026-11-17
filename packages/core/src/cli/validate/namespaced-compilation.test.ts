@@ -6,9 +6,11 @@ import crypto from 'crypto';
 import { rimraf } from 'rimraf';
 import { version as SOLC_VERSION } from 'solc-for-namespaced-cli-tests/package.json';
 
+import { SolcOutput } from '../../solc-api';
 import {
   getSolcCacheDir,
   getSolcFile,
+  matchSourceIds,
   NamespacedCompilationUnavailableError,
   setSolcCacheDirForTesting,
 } from './namespaced-compilation';
@@ -122,4 +124,50 @@ test.serial('reports HTTP errors as an unavailable compiler', async t => {
   const error = await t.throwsAsync(getSolcFile(SOLC_VERSION), { instanceOf: NamespacedCompilationUnavailableError });
 
   t.true(error?.message.includes(`${LIST_URL} returned HTTP status 404`), error?.message);
+});
+
+function outputWithSources(sources: Record<string, { id: number; ast: object }>): SolcOutput {
+  return { contracts: {}, sources } as unknown as SolcOutput;
+}
+
+test('matchSourceIds gives sources their original ids and rewrites locations', t => {
+  const original = outputWithSources({ 'A.sol': { id: 0, ast: {} }, 'B.sol': { id: 1, ast: {} } });
+  // The ids of the first two sources are swapped, so a location must not be rewritten twice
+  const namespaced = outputWithSources({
+    'A.sol': {
+      id: 1,
+      ast: {
+        src: '0:10:1',
+        nativeSrc: '0:10:1',
+        nodes: [{ src: '2:3:0', nameLocations: ['4:1:1', '5:1:0'], referencedDeclaration: 1 }],
+      },
+    },
+    'B.sol': { id: 0, ast: { src: '0:20:0', nodes: [{ src: '6:1:1', documentation: '7:1:1' }] } },
+  });
+
+  matchSourceIds(namespaced, original);
+
+  t.deepEqual(namespaced.sources, {
+    'A.sol': {
+      id: 0,
+      ast: {
+        src: '0:10:0',
+        nativeSrc: '0:10:0',
+        nodes: [{ src: '2:3:1', nameLocations: ['4:1:0', '5:1:1'], referencedDeclaration: 1 }],
+      },
+    },
+    'B.sol': { id: 1, ast: { src: '0:20:1', nodes: [{ src: '6:1:0', documentation: '7:1:1' }] } },
+  });
+});
+
+test('matchSourceIds leaves a namespaced output with the same ids unchanged', t => {
+  const original = outputWithSources({ 'A.sol': { id: 0, ast: {} }, 'B.sol': { id: 1, ast: {} } });
+  const namespaced = outputWithSources({
+    'A.sol': { id: 0, ast: { src: '0:10:0', nodes: [{ src: '2:3:1' }] } },
+    'B.sol': { id: 1, ast: { src: '0:20:1' } },
+  });
+  const before = JSON.stringify(namespaced);
+
+  t.is(matchSourceIds(namespaced, original), namespaced);
+  t.is(JSON.stringify(namespaced), before);
 });

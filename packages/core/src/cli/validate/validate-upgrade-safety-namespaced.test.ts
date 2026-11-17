@@ -111,6 +111,45 @@ test.serial('passes with a detailed storage layout - namespace retype', async t 
   t.true(report.ok, report.explain());
 });
 
+/**
+ * Gives every source the next id, as Solar does when an imported file takes id 0, since Solar numbers sources by
+ * import order and solc numbers them by name. The source locations in the ASTs follow the new ids.
+ */
+function shiftSourceIds<T extends { output: SolcOutput }>(buildInfo: T): T {
+  const shifted = JSON.parse(JSON.stringify(buildInfo));
+  for (const source of Object.values(shifted.output.sources) as { id: number }[]) {
+    source.id += 1;
+  }
+  return JSON.parse(JSON.stringify(shifted), (key, value) =>
+    (key === 'src' || key === 'nativeSrc' || /Locations?$/.test(key)) && typeof value === 'string'
+      ? value.replace(/:(\d+)$/, (_: string, id: string) => `:${Number(id) + 1}`)
+      : value,
+  );
+}
+
+async function validateShifted(t: ExecutionContext, reference: string, contract: string) {
+  const dir = t.title.replace(/\W+/g, '-');
+  await writeBuildInfo(dir, shiftSourceIds(await getBuildInfo(`${fixture}:${contract}`)));
+  return validateUpgradeSafety(dir, contract, reference);
+}
+
+test.serial('passes with a detailed storage layout - source ids not numbered by solc', async t => {
+  await prefillCache();
+  // The member annotation is read from the original source through the source id in the namespaced output
+  const report = await validateShifted(t, 'RetypeInStructV1', 'RetypeInStructV2');
+  t.true(report.ok, report.explain());
+  t.deepEqual(fetchCalls, []);
+});
+
+test.serial('fails with a detailed storage layout - source ids not numbered by solc', async t => {
+  await prefillCache();
+  const report = await validateShifted(t, 'GapBeforeMemberV1', 'GapNotReducedV2');
+  t.false(report.ok);
+  t.true(report.explain().includes('Slot changed from 1 to 2'), report.explain());
+  t.true(report.explain().includes('contracts/test/cli/NamespacedSlots.sol:'), report.explain());
+  t.false(report.explain().includes(NOTE), report.explain());
+});
+
 test.serial('compiler unavailable', async t => {
   // The namespace retype is uncertain without a detailed storage layout, and the compiler cannot be downloaded
   const report = await validate(t, 'NamespaceRetypeV1', 'NamespaceRetypeV2');
