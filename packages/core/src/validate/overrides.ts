@@ -99,6 +99,10 @@ export const ValidationErrorUnsafeMessages: Record<ValidationError['kind'], stri
     `Make sure you have manually checked that the contract initializer calls each parent initializer only once.`,
   ],
   'incorrect-initializer-order': null,
+  'selector-clash': [
+    `You are using the \`unsafeAllow.selector-clash\` flag.`,
+    `Make sure you have manually checked that no function in the new implementation shares a selector with a different function in the previous implementation.`,
+  ],
 };
 
 export function withValidationDefaults(opts: ValidationOptions): Required<ValidationOptions> {

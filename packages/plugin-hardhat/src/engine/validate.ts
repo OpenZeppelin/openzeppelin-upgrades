@@ -5,6 +5,7 @@ import {
   isBeacon,
   assertUpgradeSafe,
   assertStorageUpgradeSafe,
+  assertSelectorClashFree,
   inferProxyKind,
   ValidateUpdateRequiresKindError,
 } from '@openzeppelin/upgrades-core';
@@ -43,6 +44,13 @@ export async function validateUpgrade(
 
     const newDeployData = await getDeployData(binding, newImplInfo, opts);
     assertUpgradeSafe(newDeployData.validations, newDeployData.version, newDeployData.fullOpts);
+    assertSelectorClashFree(
+      origDeployData.validations,
+      origDeployData.version,
+      newDeployData.validations,
+      newDeployData.version,
+      newDeployData.fullOpts,
+    );
 
     if (opts.unsafeSkipStorageCheck !== true) {
       assertStorageUpgradeSafe(origDeployData.layout, newDeployData.layout, newDeployData.fullOpts);

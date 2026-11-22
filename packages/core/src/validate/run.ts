@@ -13,7 +13,7 @@ import debug from '../utils/debug';
 import { SolcOutput, SolcBytecode, SolcInput } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
 import { isNullish } from '../utils/is-nullish';
-import { getFunctionSignature } from '../utils/function';
+import { getAbiFunctionSignature, getFunctionSignature } from '../utils/function';
 import { Version, getVersion } from '../version';
 import { extractLinkReferences, LinkReference } from '../link-refs';
 import { extractStorageLayout } from '../storage/extract';
@@ -35,6 +35,7 @@ export interface ContractValidation {
   inherit: string[];
   libraries: string[];
   methods: string[];
+  abiMethods?: string[];
   linkReferences: LinkReference[];
   errors: ValidationError[];
   layout: StorageLayout;
@@ -56,7 +57,10 @@ export const errorKinds = [
   'missing-initializer-call',
   'duplicate-initializer-call',
   'incorrect-initializer-order',
+  'selector-clash',
 ] as const;
+
+const annotatableErrorKinds = errorKinds.filter(kind => kind !== 'selector-clash');
 
 export const convertToWarnings: (typeof errorKinds)[number][] = ['incorrect-initializer-order'] as const;
 
@@ -65,7 +69,8 @@ export type ValidationError =
   | ValidationErrorOpcode
   | ValidationErrorWithName
   | ValidationErrorUpgradeability
-  | ValidationExceptionInitializer;
+  | ValidationExceptionInitializer
+  | ValidationErrorSelectorClash;
 
 interface ValidationErrorBase {
   src: string;
@@ -109,6 +114,13 @@ export type ValidationExceptionInitializer =
   | ValidationErrorMissingInitializerCall
   | ValidationErrorDuplicateInitializerCall
   | ValidationWarningIncorrectInitializerOrder;
+
+interface ValidationErrorSelectorClash extends ValidationErrorBase {
+  kind: 'selector-clash';
+  selector: string;
+  original: string;
+  updated: string;
+}
 
 interface ValidationErrorConstructor extends ValidationErrorBase {
   kind: 'constructor';
@@ -154,7 +166,7 @@ function getAllowed(node: Node, reachable: boolean): string[] {
 }
 
 export function getAnnotationArgs(doc: string, tag: string) {
-  return getSupportedAnnotationArgs(doc, tag, errorKinds);
+  return getSupportedAnnotationArgs(doc, tag, annotatableErrorKinds);
 }
 
 function skipCheckReachable(error: string, node: Node): boolean {
@@ -261,9 +273,15 @@ export function validate(
           structDocs,
         );
 
-        validation[key].methods = [...findAll('FunctionDefinition', contractDef)]
-          .filter(fnDef => ['external', 'public'].includes(fnDef.visibility))
-          .map(fnDef => getFunctionSignature(fnDef, deref));
+        const externalFunctions = [...findAll('FunctionDefinition', contractDef)].filter(fnDef =>
+          ['external', 'public'].includes(fnDef.visibility),
+        );
+        validation[key].methods = externalFunctions.map(fnDef => getFunctionSignature(fnDef, deref));
+        if (contractDef.contractKind !== 'library') {
+          validation[key].abiMethods = externalFunctions
+            .filter(fnDef => fnDef.kind === 'function')
+            .map(fnDef => getAbiFunctionSignature(fnDef, deref));
+        }
       }
     }
   }

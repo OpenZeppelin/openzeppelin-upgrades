@@ -3,7 +3,9 @@ import { artifacts } from 'hardhat';
 import { FunctionDefinition } from 'solidity-ast';
 import { findAll, astDereferencer } from 'solidity-ast/utils';
 
-import { getFunctionSignature } from './function';
+import { getAbiFunctionSignature, getFunctionSignature } from './function';
+import { validate } from '../validate';
+import { solcInputOutputDecoder } from '../src-decoder';
 import { SolcOutput } from '../solc-api';
 
 testContract('ContractFunctionSignatures');
@@ -31,6 +33,20 @@ function testContract(contractName: string) {
     for (const signature of signatures) {
       const name = signature.replace(/\(.*/, '');
       t.is(getFunctionSignature(functions[name], deref), signature);
+      if (contractName === 'ContractFunctionSignatures') {
+        t.is(getAbiFunctionSignature(functions[name], deref), signature);
+      }
     }
   });
 }
+
+test('validate succeeds with library functions that have storage parameters', async t => {
+  const buildInfo = await artifacts.getBuildInfo('contracts/test/FunctionSignatures.sol:LibraryFunctionSignatures');
+  if (buildInfo === undefined) {
+    throw new Error('Build info not found');
+  }
+  const decodeSrc = solcInputOutputDecoder(buildInfo.input, buildInfo.output);
+  const run = validate(buildInfo.output, decodeSrc);
+  t.is(run['contracts/test/FunctionSignatures.sol:LibraryFunctionSignatures'].abiMethods, undefined);
+  t.truthy(run['contracts/test/FunctionSignatures.sol:ContractFunctionSignatures'].abiMethods);
+});

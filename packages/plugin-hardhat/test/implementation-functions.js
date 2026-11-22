@@ -21,6 +21,8 @@ test.before(async t => {
   t.context.Invalid = await ethers.getContractFactory('Invalid');
   t.context.GreeterStorageConflict = await ethers.getContractFactory('GreeterStorageConflict');
   t.context.GreeterStorageConflictProxiable = await ethers.getContractFactory('GreeterStorageConflictProxiable');
+  t.context.SelectorClashV1 = await ethers.getContractFactory('SelectorClashV1');
+  t.context.SelectorClashV2 = await ethers.getContractFactory('SelectorClashV2');
 });
 
 function getUpgradeUnsafeRegex(contractName) {
@@ -234,6 +236,20 @@ test('validate upgrade - contracts only - incompatible storage - forced', async 
   const { Greeter, GreeterStorageConflict } = t.context;
 
   await upgrades.validateUpgrade(Greeter, GreeterStorageConflict, { unsafeSkipStorageCheck: true });
+});
+
+test('validate upgrade - contracts only - function selector clash', async t => {
+  const { SelectorClashV1, SelectorClashV2 } = t.context;
+
+  await t.throwsAsync(() => upgrades.validateUpgrade(SelectorClashV1, SelectorClashV2), {
+    message: getUpgradeUnsafeRegex('SelectorClashV2'),
+  });
+});
+
+test('validate upgrade - contracts only - function selector clash - unsafeAllow', async t => {
+  const { SelectorClashV1, SelectorClashV2 } = t.context;
+
+  await upgrades.validateUpgrade(SelectorClashV1, SelectorClashV2, { unsafeAllow: ['selector-clash'] });
 });
 
 test('validate upgrade - contracts only - uups inferred - no upgrade function', async t => {
