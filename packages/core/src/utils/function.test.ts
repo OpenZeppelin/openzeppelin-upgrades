@@ -1,7 +1,7 @@
 import test from 'ava';
 import { artifacts } from 'hardhat';
 import { FunctionDefinition } from 'solidity-ast';
-import { findAll, astDereferencer } from 'solidity-ast/utils';
+import { findAll, astDereferencer, ASTDereferencer } from 'solidity-ast/utils';
 
 import { getAbiFunctionSignature, getFunctionSignature } from './function';
 import { validate } from '../validate';
@@ -49,4 +49,17 @@ test('validate succeeds with library functions that have storage parameters', as
   const run = validate(buildInfo.output, decodeSrc);
   t.is(run['contracts/test/FunctionSignatures.sol:LibraryFunctionSignatures'].abiMethods, undefined);
   t.truthy(run['contracts/test/FunctionSignatures.sol:ContractFunctionSignatures'].abiMethods);
+});
+
+test('getAbiFunctionSignature - enum with 256 members', t => {
+  const fnDef = {
+    name: 'f',
+    parameters: { parameters: [{ typeName: { nodeType: 'UserDefinedTypeName', referencedDeclaration: 1 } }] },
+  } as unknown as FunctionDefinition;
+  const deref = (() => ({
+    nodeType: 'EnumDefinition',
+    members: new Array(256).fill({}),
+  })) as unknown as ASTDereferencer;
+
+  t.is(getAbiFunctionSignature(fnDef, deref), 'f(uint8)');
 });

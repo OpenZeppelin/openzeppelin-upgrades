@@ -88,7 +88,7 @@ function serializeAbiTypeName(typeName: TypeName, deref: ASTDereferencer): strin
             .join(',')})`;
 
         case 'EnumDefinition':
-          assert(userDefinedType.members.length < 256);
+          assert(userDefinedType.members.length <= 256);
           return 'uint8';
 
         case 'ContractDefinition':
