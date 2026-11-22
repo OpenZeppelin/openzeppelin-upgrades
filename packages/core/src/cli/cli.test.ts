@@ -94,6 +94,27 @@ test('validate - single contract, reference', async t => {
   t.snapshot(expectation.join('\n'));
 });
 
+async function validateSelectorClash(t: ExecutionContext, options: string) {
+  const temp = await getTempDir(t);
+  const buildInfo = await artifacts.getBuildInfo(`contracts/test/cli/SelectorClash.sol:SelectorClashV1`);
+  await fs.writeFile(path.join(temp, 'validate.json'), JSON.stringify(buildInfo));
+  return execAsync(`${CLI} validate ${temp} --contract SelectorClashV2 --reference SelectorClashV1 ${options}`);
+}
+
+test('validate - function selector clash with reference', async t => {
+  const error = await t.throwsAsync(validateSelectorClash(t, ''));
+  t.regex((error as any).stdout, /burn\(uint256\).*same selector.*collate_propagate_storage\(bytes16\)/s);
+});
+
+test('validate - function selector clash with reference - unsafeSkipStorageCheck', async t => {
+  const error = await t.throwsAsync(validateSelectorClash(t, '--unsafeSkipStorageCheck'));
+  t.regex((error as any).stdout, /same selector/);
+});
+
+test('validate - function selector clash with reference - unsafeAllow', async t => {
+  await t.notThrowsAsync(validateSelectorClash(t, '--unsafeAllow selector-clash'));
+});
+
 test('validate - single contract, reference with same build info dir', async t => {
   const temp = await getTempDir(t);
   const buildInfoDir = path.join(temp, 'build-info');

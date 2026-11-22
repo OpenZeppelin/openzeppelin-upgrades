@@ -94,6 +94,13 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
 - Expected: ${e.expectedLinearization.join(', ')}`,
     hint: () => `Call parent initializers in linearized order`,
   },
+  'selector-clash': {
+    msg: e =>
+      `Function \`${e.updated}\` has the same selector (${e.selector}) as \`${e.original}\` in the previous implementation`,
+    hint: e =>
+      `Rename the function or change its parameters so that its selector differs, or skip this check with the \`unsafeAllow.selector-clash\` flag\n` +
+      `    if you have verified that existing callers of \`${e.original}\` will not unintentionally invoke \`${e.updated}\``,
+  },
 };
 
 export function describeError(e: ValidationError, color = true): string {

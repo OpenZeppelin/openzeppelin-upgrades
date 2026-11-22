@@ -20,6 +20,7 @@ import { BuildInfoDictionary, SpecifiedContracts } from './validate-upgrade-safe
 import { minimatch } from 'minimatch';
 import { ValidateCommandError } from './error';
 import { defaultExclude } from './default-exclude';
+import { getSelectorClashErrors } from '../../validate/selector-clash';
 
 /**
  * Report for an upgradeable contract.
@@ -155,10 +156,20 @@ function getUpgradeableContractReport(
   }
 
   debug('Checking: ' + contract.fullyQualifiedName);
-  const standaloneReport = getStandaloneReport(contract.validationData, version, opts, excludeWithDefaults);
-
   let reference: string | undefined;
   let storageLayoutReport: LayoutCompatibilityReport | undefined;
+  let standaloneReport = getStandaloneReport(contract.validationData, version, opts, excludeWithDefaults);
+
+  if (referenceContract !== undefined) {
+    const errors = getSelectorClashErrors(
+      referenceContract.validationData,
+      referenceContract.fullyQualifiedName,
+      contract.validationData,
+      contract.fullyQualifiedName,
+      opts,
+    );
+    standaloneReport = new UpgradeableContractErrorReport([...standaloneReport.errors, ...errors]);
+  }
 
   if (opts.unsafeSkipStorageCheck !== true && referenceContract !== undefined) {
     const layout = getStorageLayout(contract.validationData, version);

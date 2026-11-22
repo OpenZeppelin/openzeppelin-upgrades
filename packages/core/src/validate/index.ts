@@ -14,6 +14,7 @@ export {
   inferProxyKind,
   inferInitializable,
 } from './query';
+export { assertSelectorClashFree } from './selector-clash';
 export { UpgradeableContractErrorReport } from './report';
 
 // Backwards compatibility
