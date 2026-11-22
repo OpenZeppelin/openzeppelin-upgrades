@@ -117,3 +117,21 @@ export function getAbiFunctionSignature(fnDef: FunctionDefinition, deref: ASTDer
   });
   return `${fnDef.name}(${parameters.join(',')})`;
 }
+
+function getGetterParameterTypes(typeName: TypeName, deref: ASTDereferencer): string[] {
+  switch (typeName.nodeType) {
+    case 'Mapping':
+      return [serializeAbiTypeName(typeName.keyType, deref), ...getGetterParameterTypes(typeName.valueType, deref)];
+
+    case 'ArrayTypeName':
+      return ['uint256', ...getGetterParameterTypes(typeName.baseType, deref)];
+
+    default:
+      return [];
+  }
+}
+
+export function getAbiGetterSignature(varDecl: VariableDeclaration, deref: ASTDereferencer): string {
+  assert(!!varDecl.typeName);
+  return `${varDecl.name}(${getGetterParameterTypes(varDecl.typeName, deref).join(',')})`;
+}

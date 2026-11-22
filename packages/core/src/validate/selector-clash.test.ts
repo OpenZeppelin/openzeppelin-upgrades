@@ -66,11 +66,26 @@ test('unsafeAllow skips the check', t => {
   t.notThrows(() => check(t, 'SelectorClashV1', 'SelectorClashV2Bad', { unsafeAllow: ['selector-clash'] }));
 });
 
-test('signatures match the compiler method identifiers', t => {
-  const { abiMethods } = t.context.validation[`${file}:SelectorClashCanonical`];
-  const identifiers = Object.keys(t.context.buildInfoOutput.SelectorClashCanonical.evm.methodIdentifiers ?? {});
-  t.deepEqual([...(abiMethods ?? [])].sort(), identifiers.sort());
+test('rejects a clash with a public state variable getter', t => {
+  t.throws(() => check(t, 'SelectorClashGetterV1', 'SelectorClashV2Bad'), { instanceOf: ValidationErrors });
+  t.throws(() => check(t, 'SelectorClashV2Bad', 'SelectorClashGetterV1'), { instanceOf: ValidationErrors });
 });
+
+test('rejects a clash with a getter declared in a parent contract', t => {
+  t.throws(() => check(t, 'SelectorClashGetterChild', 'SelectorClashV2Bad'), { instanceOf: ValidationErrors });
+});
+
+test('accepts a getter that implements an interface function', t => {
+  t.notThrows(() => check(t, 'SelectorClashOverride', 'SelectorClashOverride'));
+});
+
+for (const name of ['SelectorClashCanonical', 'SelectorClashGetters', 'SelectorClashOverride']) {
+  test(`signatures match the compiler method identifiers - ${name}`, t => {
+    const { abiMethods } = t.context.validation[`${file}:${name}`];
+    const identifiers = Object.keys(t.context.buildInfoOutput[name].evm.methodIdentifiers ?? {});
+    t.deepEqual([...(abiMethods ?? [])].sort(), identifiers.sort());
+  });
+}
 
 test('fails closed without ABI signatures', t => {
   const run = {

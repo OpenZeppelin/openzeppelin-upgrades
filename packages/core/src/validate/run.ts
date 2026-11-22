@@ -13,7 +13,7 @@ import debug from '../utils/debug';
 import { SolcOutput, SolcBytecode, SolcInput } from '../solc-api';
 import { SrcDecoder } from '../src-decoder';
 import { isNullish } from '../utils/is-nullish';
-import { getAbiFunctionSignature, getFunctionSignature } from '../utils/function';
+import { getAbiFunctionSignature, getAbiGetterSignature, getFunctionSignature } from '../utils/function';
 import { Version, getVersion } from '../version';
 import { extractLinkReferences, LinkReference } from '../link-refs';
 import { extractStorageLayout } from '../storage/extract';
@@ -278,9 +278,14 @@ export function validate(
         );
         validation[key].methods = externalFunctions.map(fnDef => getFunctionSignature(fnDef, deref));
         if (contractDef.contractKind !== 'library') {
-          validation[key].abiMethods = externalFunctions
-            .filter(fnDef => fnDef.kind === 'function')
-            .map(fnDef => getAbiFunctionSignature(fnDef, deref));
+          validation[key].abiMethods = [
+            ...externalFunctions
+              .filter(fnDef => fnDef.kind === 'function')
+              .map(fnDef => getAbiFunctionSignature(fnDef, deref)),
+            ...[...findAll('VariableDeclaration', contractDef)]
+              .filter(varDecl => varDecl.stateVariable && varDecl.visibility === 'public')
+              .map(varDecl => getAbiGetterSignature(varDecl, deref)),
+          ];
         }
       }
     }
