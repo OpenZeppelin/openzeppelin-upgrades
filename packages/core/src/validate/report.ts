@@ -15,38 +15,41 @@ export class UpgradeableContractErrorReport {
   }
 }
 
+const writingUpgradeable = 'https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable';
+const faq = 'https://docs.openzeppelin.com/upgrades-plugins/faq';
+
 const errorInfo: ErrorDescriptions<ValidationError> = {
   constructor: {
     msg: e => `Contract \`${e.contract}\` has a constructor`,
     hint: () => 'Define an initializer instead',
-    link: 'https://zpl.in/upgrades/error-001',
+    link: `${writingUpgradeable}#initializers`,
   },
   delegatecall: {
     msg: () => `Use of delegatecall is not allowed`,
-    link: 'https://zpl.in/upgrades/error-002',
+    link: `${writingUpgradeable}#potentially-unsafe-operations`,
   },
   selfdestruct: {
     msg: () => `Use of selfdestruct is not allowed`,
-    link: 'https://zpl.in/upgrades/error-003',
+    link: `${writingUpgradeable}#potentially-unsafe-operations`,
   },
   'state-variable-assignment': {
     msg: e => `Variable \`${e.name}\` is assigned an initial value`,
     hint: () => 'Move the assignment to the initializer',
-    link: 'https://zpl.in/upgrades/error-004',
+    link: `${writingUpgradeable}#avoiding-initial-values-in-field-declarations`,
   },
   'state-variable-immutable': {
     msg: e => `Variable \`${e.name}\` is immutable and will be initialized on the implementation`,
     hint: () =>
       `If by design, annotate with '@custom:oz-upgrades-unsafe-allow state-variable-immutable'\n` +
       `Otherwise, consider a constant variable or use a mutable variable instead`,
-    link: 'https://zpl.in/upgrades/error-005',
+    link: `${faq}#why-cant-i-use-immutable-variables`,
   },
   'external-library-linking': {
     msg: e => `Linking external libraries like \`${e.name}\` is not yet supported`,
     hint: () =>
       `Use libraries with internal functions only, or skip this check with the \`unsafeAllowLinkedLibraries\` flag \n` +
       `    if you have manually checked that the libraries are upgrade safe`,
-    link: 'https://zpl.in/upgrades/error-006',
+    link: `${faq}#why-cant-i-use-external-libraries`,
   },
   'struct-definition': {
     msg: e => `Structs like \`${e.name}\` are supported in the latest version of the plugin`,
@@ -62,7 +65,7 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
     hint: () =>
       `Inherit UUPSUpgradeable to include one or both of these functions in your contract\n` +
       `    @openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol`,
-    link: 'https://zpl.in/upgrades/error-008',
+    link: `${faq}#why-do-i-need-a-public-upgradeto-or-upgradetoandcall-function`,
   },
   'internal-function-storage': {
     msg: e => `Variable \`${e.name}\` is an internal function`,
@@ -70,22 +73,22 @@ const errorInfo: ErrorDescriptions<ValidationError> = {
       `Use external functions or avoid functions in storage.\n` +
       `     If you must use internal functions, skip this check with the \`unsafeAllow.internal-function-storage\`\n` +
       `     flag and ensure you always reassign internal functions in storage during upgrades`,
-    link: 'https://zpl.in/upgrades/error-009',
+    link: `${faq}#how-can-i-use-internal-functions-in-storage-variables`,
   },
   'missing-initializer': {
     msg: () => `Missing initializer`,
     hint: () => `Define an initializer function and use it to call the initializers of parent contracts`,
-    link: 'https://zpl.in/upgrades/error-001',
+    link: `${writingUpgradeable}#validating-initializers`,
   },
   'missing-initializer-call': {
     msg: e => `Missing initializer calls for one or more parent contracts: \`${e.parentContracts.join(', ')}\``,
     hint: () => `Call the parent initializers in your initializer function`,
-    link: 'https://zpl.in/upgrades/error-001',
+    link: `${writingUpgradeable}#validating-initializers`,
   },
   'duplicate-initializer-call': {
     msg: e => `Duplicate calls found to initializer \`${e.parentInitializer}\` for contract \`${e.parentContract}\``,
     hint: () => `Only call each parent initializer once`,
-    link: 'https://zpl.in/upgrades/error-001',
+    link: `${writingUpgradeable}#validating-initializers`,
   },
   'incorrect-initializer-order': {
     msg: e =>
