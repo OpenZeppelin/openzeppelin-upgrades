@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereumjs-util';
+import { keccak256 } from './utils/keccak256';
 import { call, EthereumProvider } from './provider';
 
 export async function callOptionalSignature(provider: EthereumProvider, address: string, signature: string) {

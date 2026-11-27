@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereumjs-util';
+import { keccak256 } from './utils/keccak256';
 import cbor from 'cbor';
 
 export interface Version {
