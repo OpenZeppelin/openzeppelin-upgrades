@@ -144,7 +144,7 @@ async function validateStoredDeployment<T extends Deployment & RemoteDeploymentI
       debug('resuming previous deployment', foundDeployment);
       if (merge) {
         // If merging, wait for the existing deployment to be mined
-        waitAndValidateDeployment(provider, deployment, type, opts, getRemoteDeployment);
+        await waitAndValidateDeployment(provider, deployment, type, opts, getRemoteDeployment);
       }
     } else {
       // If the transaction is not found we throw an error, except if we're in
