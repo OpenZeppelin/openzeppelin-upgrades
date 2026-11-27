@@ -151,6 +151,8 @@ contract ERC20Upgradeable is Initializable, ContextUpgradeable, IERC20Upgradeabl
 
 Whether using OpenZeppelin Contracts or another smart contract library, always make sure that the package is set up to handle upgradeable contracts.
 
+WARNING: Interfaces and libraries are not included in the `@openzeppelin/contracts-upgradeable` package. They should be imported from the main `@openzeppelin/contracts` package. For example, use `IERC20` from `@openzeppelin/contracts/token/ERC20/IERC20.sol` instead of `IERC20Upgradeable`. This is because interfaces and libraries do not have state variables or constructors that would require special handling for upgrades. See the https://docs.openzeppelin.com/contracts/5.x/upgradeable[OpenZeppelin Contracts 5.x documentation] for more details.
+
 Learn more about OpenZeppelin Contracts Upgradeable in xref:contracts::upgradeable.adoc[Contracts: Using with Upgrades].
 
 [[avoid-initial-values-in-field-declarations]]
@@ -239,12 +241,12 @@ If you would like the `ERC20` instance to be upgradeable, the easiest way to ach
 pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MyContract is Initializable {
-    IERC20Upgradeable public token;
+    IERC20 public token;
 
-    function initialize(IERC20Upgradeable _token) public initializer {
+    function initialize(IERC20 _token) public initializer {
         token = _token;
     }
 }
